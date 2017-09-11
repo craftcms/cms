@@ -46,6 +46,7 @@ class PluginStoreController extends Controller
      */
     public function actionIndex()
     {
+        Craft::$app->getView()->registerJsFile('https://js.stripe.com/v3/');
         Craft::$app->getView()->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";');
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
 

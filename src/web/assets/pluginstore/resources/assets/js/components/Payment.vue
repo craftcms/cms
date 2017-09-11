@@ -64,15 +64,25 @@
 					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
 
 					<template v-if="paymentMode == 'newCard'">
-						<credit-card v-model="creditCard"></credit-card>
-						<checkbox-field id="saveCreditCard" label="Save as my new credit card" />
+						<template v-if="!cardToken">
+							<card-form ref="newCard" @save="onCardFormSave"></card-form>
+						</template>
+						<template v-else>
+							{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} — {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}
+						</template>
+						<!--<credit-card v-model="creditCard"></credit-card>-->
+						<checkbox-field id="saveNewCard" label="Save as my new credit card" />
+						<a class="btn submit" @click="saveNewCard();">Continue</a>
+					</template>
+					<template v-else>
+						<a class="btn submit" @click="activeSection = null">Continue</a>
 					</template>
 				</template>
 				<template v-else>
 					<credit-card v-model="creditCard"></credit-card>
 				</template>
 
-				<a class="btn submit" @click="activeSection=null">Continue</a>
+				<!--<a class="btn submit" @click="activeSection=null">Continue</a>-->
 			</template>
 			<template v-else>
 
@@ -83,6 +93,13 @@
 							{{ craftIdAccount.card.brand }}
 							•••• •••• •••• {{ craftIdAccount.card.last4 }}
 							— {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}
+						</p>
+
+						<p v-if="paymentMode == 'newCard'">
+							{{ cardToken.card.brand }}
+							•••• •••• •••• {{ cardToken.card.last4 }}
+							— {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}
+							(New card)
 						</p>
 
 					</template>
@@ -183,6 +200,7 @@
     import TextInput from './inputs/TextInput';
     import SelectInput from './inputs/SelectInput';
     import CreditCard from './CreditCard';
+    import CardForm from './CardForm';
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
@@ -192,6 +210,7 @@
             TextField,
             TextInput,
             CreditCard,
+            CardForm,
             SelectInput,
         },
 
@@ -206,6 +225,7 @@
                 },
 
                 paymentMode: 'existingCard',
+				cardToken: null,
                 creditCard: {
                     number: '',
                     expiry: '',
@@ -277,9 +297,21 @@
         },
 
 		methods: {
+            saveNewCard() {
+				if(!this.cardToken) {
+                    this.$refs.newCard.save();
+				} else {
+				    this.activeSection = null;
+				}
+			},
 
-            sectionValidates(section)
-			{
+            onCardFormSave(card, token) {
+				console.log('card, token', card, token)
+                this.activeSection = null;
+				this.cardToken = token;
+			},
+
+            sectionValidates(section) {
 				switch(section) {
 					case 'identity':
 						switch(this.identityMode) {
@@ -295,6 +327,11 @@
 							case 'existingCard':
 								if(this.craftIdAccount.card) {
 								    return true;
+								}
+							    break;
+							case 'newCard':
+							    if(this.cardToken) {
+							        return true;
 								}
 							    break;
 						}
