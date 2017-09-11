@@ -80,7 +80,7 @@ class InstallController extends Controller
     public function actionIndex()
     {
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout("Craft is already installed!\n");
+            $this->stdout('Craft is already installed!'.PHP_EOL);
             return;
         }
 
@@ -106,7 +106,7 @@ class InstallController extends Controller
         }
 
         if (!empty($errors)) {
-            $this->stderr("Invalid arguments:\n    - ".implode("\n    - ", $errors)."\n");
+            $this->stderr('Invalid arguments:'.PHP_EOL.'    - '.implode(PHP_EOL.'    - ', $errors).PHP_EOL);
             return;
         }
 
@@ -136,14 +136,14 @@ class InstallController extends Controller
         $migrator = Craft::$app->getMigrator();
 
         if ($migrator->migrateUp($migration) !== false) {
-            $this->stdout("{$siteName} was successfully installed.\n", Console::FG_GREEN);
+            $this->stdout($siteName.' was successfully installed.'.PHP_EOL, Console::FG_GREEN);
 
             // Mark all existing migrations as applied
             foreach ($migrator->getNewMigrations() as $name) {
                 $migrator->addMigrationHistory($name);
             }
         } else {
-            $this->stderr("There was a problem installing {$siteName}.\n", Console::FG_RED);
+            $this->stderr("There was a problem installing {$siteName}.".PHP_EOL, Console::FG_RED);
         }
     }
 
@@ -209,12 +209,12 @@ class InstallController extends Controller
         top:
         $this->stdout('Password: ');
         if (($password = CliPrompt::hiddenPrompt()) === '') {
-            $this->stdout("Invalid input.\n");
+            $this->stdout('Invalid input.'.PHP_EOL);
             goto top;
         }
         $this->stdout('Confirm: ');
         if (!($matched = ($password === CliPrompt::hiddenPrompt()))) {
-            $this->stdout("Passwords didn't match, try again.\n");
+            $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL);
             goto top;
         }
         return $password;
