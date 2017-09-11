@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Changed
 - Added support for the `application/font-woff2` MIME type (`.woff2`). ([#1966](https://github.com/craftcms/cms/issues/1966))
 - `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
+- Global sets’ global template variables are now available to all templates rendered when the Template Mode is set to `site`. ([#1953](https://github.com/craftcms/cms/issues/1953))
 
 ### Fixed
 - Fixed a bug where you could get a PHP error uploading some JPG files on PHP 7.1.
