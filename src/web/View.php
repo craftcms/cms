@@ -81,9 +81,14 @@ class View extends \yii\web\View
     private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
-     * @var Environment|null
+     * @var Environment|null The Twig environment instance used for CP templates
      */
-    private $_twig;
+    private $_cpTwig;
+
+    /**
+     * @var Environment|null The Twig environment instance used for site templates
+     */
+    private $_siteTwig;
 
     /**
      * @var
@@ -195,25 +200,33 @@ class View extends \yii\web\View
      */
     public function getTwig(): Environment
     {
-        if ($this->_twig !== null) {
-            return $this->_twig;
-        }
+        return $this->_templateMode === self::TEMPLATE_MODE_CP
+            ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
+            : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
+    }
 
-        $this->_twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+    /**
+     * Creates a new Twig environment.
+     *
+     * @return Environment
+     */
+    public function createTwig(): Environment
+    {
+        $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
-        $this->_twig->addExtension(new \Twig_Extension_StringLoader());
-        $this->_twig->addExtension(new Extension($this, $this->_twig));
+        $twig->addExtension(new \Twig_Extension_StringLoader());
+        $twig->addExtension(new Extension($this, $twig));
 
         if (YII_DEBUG) {
-            $this->_twig->addExtension(new \Twig_Extension_Debug());
+            $twig->addExtension(new \Twig_Extension_Debug());
         }
 
         // Set our timezone
         /** @var \Twig_Extension_Core $core */
-        $core = $this->_twig->getExtension(\Twig_Extension_Core::class);
+        $core = $twig->getExtension(\Twig_Extension_Core::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
-        return $this->_twig;
+        return $twig;
     }
 
     /**

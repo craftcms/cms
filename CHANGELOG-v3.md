@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\helpers\StringHelper::split()`.
+- Added `craft\web\View::createTwig()`.
 
 ### Changed
 - Plugin translation sources are now configured with `forceTranslations` enabled.
@@ -12,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - Performance improvement to `craft\services\Images::getSupportImageFormats()` if you have Imagick installed. ([#1969](https://github.com/craftcms/cms/pull/1969))
 - Performance improvement to `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
 - Queue info requests in the Control Panel no longer extend the user session.
+- `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
