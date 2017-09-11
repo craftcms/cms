@@ -159,11 +159,6 @@ class InstallController extends Controller
      */
     public function actionPlugin(string $handle)
     {
-        if (!$handle) {
-            $this->stderr('You must specify a plugin handle to install.'.PHP_EOL);
-            return;
-        }
-
         try {
             Craft::$app->plugins->installPlugin($handle);
             $this->stdout($handle.' sucessfully installed!'.PHP_EOL);
