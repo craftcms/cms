@@ -70,38 +70,29 @@
 			<h2>Payment Method</h2>
 
 			<a class="block-toggle" v-if="!(activeSection=='paymentMethod')" @click="activeSection = 'paymentMethod'">Edit</a>
-			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
+			<a class="block-toggle" v-else @click="savePaymentMethod()">Done</a>
 
-			<template v-if="activeSection=='paymentMethod'">
+			<form v-if="activeSection=='paymentMethod'" @submit.prevent="savePaymentMethod()">
 				<template v-if="identityMode == 'craftid'">
 					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span v-if="craftIdAccount">{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
 					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
 
 					<template v-if="paymentMode == 'newCard'">
-						<template v-if="!cardToken">
-							<card-form ref="newCard" @save="onCardFormSave"></card-form>
-						</template>
-						<template v-else>
-							{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} — {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}
-						</template>
-						<!--<credit-card v-model="creditCard"></credit-card>-->
+
+						<card-form v-if="!cardToken" ref="newCard" @save="onCardFormSave"></card-form>
+						<template v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} — {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}</template>
+
 						<checkbox-field id="saveNewCard" label="Save as my new credit card" />
-						<a class="btn submit" @click="saveNewCard();">Continue</a>
 					</template>
-					<template v-else>
-						<a class="btn submit" @click="activeSection = null">Continue</a>
-					</template>
-				</template>
-				<template v-else>
-					<!--<credit-card v-model="creditCard"></credit-card>-->
-					<card-form ref="guestCard" @save="onGuestCardFormSave"></card-form>
-					<a class="btn submit" @click="saveGuestCard();">Continue</a>
+
 				</template>
 
-				<!--<a class="btn submit" @click="activeSection=null">Continue</a>-->
-			</template>
+				<card-form v-else ref="guestCard" @save="onGuestCardFormSave"></card-form>
+
+				<input type="submit" class="btn submit" value="Continue" />
+			</form>
+
 			<template v-else>
-
 				<template v-if="identityMode == 'craftid'">
 					<template v-if="craftIdAccount">
 
@@ -140,7 +131,7 @@
 			   @click="activeSection = 'billing'">Edit</a>
 			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
 
-			<template v-if="activeSection=='billing'">
+			<form v-if="activeSection=='billing'" @submit.prevent="saveBilling()">
 				<div class="field">
 					<div class="input">
 						<div class="multitext">
@@ -183,8 +174,8 @@
 
 				<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
 
-				<a class="btn submit" @click="activeSection=null">Continue</a>
-			</template>
+				<input type="submit" class="btn submit" value="Continue" />
+			</form>
 			<template v-else>
 				<ul>
 					<li>{{ billing.businessName }}</li>
@@ -356,24 +347,38 @@
 					    break;
 				}
 			},
-            saveNewCard() {
-				if(!this.cardToken) {
-                    this.$refs.newCard.save();
-				} else {
-				    this.activeSection = null;
-				}
+
+            savePaymentMethod() {
+				switch(this.identityMode) {
+                    case 'craftid':
+                        if(this.paymentMode === 'newCard') {
+                            // Save new card
+                            if(!this.cardToken) {
+                                this.$refs.newCard.save();
+                            } else {
+                                this.activeSection = null;
+                            }
+						} else {
+                            this.activeSection = null;
+                        }
+                        break;
+
+                    case 'guest':
+                        // Save guest card
+                        if(!this.guestCardToken) {
+                            this.$refs.guestCard.save();
+                        } else {
+                            this.activeSection = null;
+                        }
+                        break;
+                }
 			},
 
-            saveGuestCard() {
-				if(!this.guestCardToken) {
-                    this.$refs.guestCard.save();
-				} else {
-				    this.activeSection = null;
-				}
+			saveBilling() {
+              	this.activeSection = null;
 			},
-
+			
             onCardFormSave(card, token) {
-				console.log('card, token', card, token)
                 this.activeSection = null;
 				this.cardToken = token;
 			},
