@@ -5,37 +5,42 @@
 			<h2>Identity</h2>
 
 			<a class="block-toggle" v-if="!(activeSection=='identity')" @click="activeSection = 'identity'">Edit</a>
-			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
+			<a class="block-toggle" v-else @click="saveIdentity()">Done</a>
 
 			<template v-if="activeSection=='identity'">
-				<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
 
-				<template v-if="identityMode == 'craftid'">
-					<template v-if="craftIdAccount">
-						<ul>
-							<li>{{ craftIdAccount.name }}</li>
-							<li>{{ craftIdAccount.email }}</li>
-						</ul>
-						<p><a class="btn submit" @click="activeSection = 'paymentMethod'">Continue</a></p>
+				<form @submit.prevent="saveIdentity()">
+
+					<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
+
+					<template v-if="identityMode == 'craftid'">
+						<template v-if="craftIdAccount">
+							<ul>
+								<li>{{ craftIdAccount.name }}</li>
+								<li>{{ craftIdAccount.email }}</li>
+							</ul>
+							<p>
+								<!--<a class="btn submit" @click="activeSection = 'paymentMethod'">Continue</a>-->
+								<input type="submit" class="btn submit" value="Continue">
+							</p>
+						</template>
+
+						<template v-else>
+							<p><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
+						</template>
 					</template>
 
-					<template v-else>
-						<p><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
-					</template>
-				</template>
+					<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
-				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
+					<template v-if="identityMode == 'guest'">
 
-				<template v-if="identityMode == 'guest'">
-
-					<form @submit.prevent="saveGuestIdentity()">
 						<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName" :errors="guestIdentityErrors.fullName"></text-field>
 						<text-field id="email" placeholder="Email" v-model="guestIdentity.email" :errors="guestIdentityErrors.email"></text-field>
 
 						<input type="submit" class="btn submit" value="Continue" />
-					</form>
 
-				</template>
+					</template>
+				</form>
 			</template>
 			<template v-else>
 				<div v-if="identityMode == 'craftid'">
@@ -315,32 +320,41 @@
         },
 
 		methods: {
-            saveGuestIdentity() {
-                if(!this.guestIdentity.fullName) {
-                    this.guestIdentityErrors.fullName = true;
-				} else {
-                    this.guestIdentityErrors.fullName = false;
+            saveIdentity() {
+				switch(this.identityMode) {
+					case 'craftid':
+					    if(this.craftIdAccount) {
+                            this.activeSection = 'paymentMethod';
+						}
+					    break;
+					case 'guest':
+                        if(!this.guestIdentity.fullName) {
+                            this.guestIdentityErrors.fullName = true;
+                        } else {
+                            this.guestIdentityErrors.fullName = false;
+                        }
+
+                        if(!this.guestIdentity.email) {
+                            this.guestIdentityErrors.email = true;
+                        } else {
+                            this.guestIdentityErrors.email = false;
+                        }
+
+                        let validates = true;
+
+                        for(let key in this.guestIdentityErrors) {
+                            if(!this.guestIdentityErrors.hasOwnProperty(key)) continue;
+
+                            if(this.guestIdentityErrors[key] === true) {
+                                validates = false;
+                            }
+                        }
+
+                        if(validates) {
+                            this.activeSection = 'paymentMethod';
+                        }
+					    break;
 				}
-
-                if(!this.guestIdentity.email) {
-                    this.guestIdentityErrors.email = true;
-                } else {
-                    this.guestIdentityErrors.email = false;
-                }
-
-                let validates = true;
-
-                for(let key in this.guestIdentityErrors) {
-                    if(!this.guestIdentityErrors.hasOwnProperty(key)) continue;
-
-                    if(this.guestIdentityErrors[key] === true) {
-                        validates = false;
-					}
-				}
-
-				if(validates) {
-                	this.activeSection = 'paymentMethod';
-                }
 			},
             saveNewCard() {
 				if(!this.cardToken) {
