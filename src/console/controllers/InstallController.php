@@ -65,18 +65,18 @@ class InstallController extends Controller
      */
     public function options($actionID)
     {
+        $options = parent::options($actionID);
+
         if ($actionID == 'index') {
-            $options = parent::options($actionID);
             $options[] = 'email';
             $options[] = 'username';
             $options[] = 'password';
             $options[] = 'siteName';
             $options[] = 'siteUrl';
             $options[] = 'language';
-            return $options;
         }
 
-        return parent::options($actionID);
+        return $options;
     }
 
     /**
@@ -154,23 +154,23 @@ class InstallController extends Controller
     
     /**
      * Installs a plugin
+     *
+     * @param string $handle
      */
-    public function actionPlugin($handle)
+    public function actionPlugin(string $handle)
     {
         if (!$handle) {
-            $this->stderr("You must specify a plugin handle to install.\n");
+            $this->stderr('You must specify a plugin handle to install.'.PHP_EOL);
             return;
         }
 
         try {
             Craft::$app->plugins->installPlugin($handle);
-            $this->stdout("{$handle} sucessfully installed!\r\n");
-        }
-        catch (InvalidPluginException $e) {
-            $this->stderr("Could not find a plugin with the handle: {$handle}\r\n");
-        }
-        catch (Exception $e) {
-            $this->stderr("There was a problem installing {$handle}: ".get_class($e)."\r\n");
+            $this->stdout($handle.' sucessfully installed!'.PHP_EOL);
+        } catch (InvalidPluginException $e) {
+            $this->stderr('Could not find a plugin with the handle: '.$handle.PHP_EOL);
+        } catch (Exception $e) {
+            $this->stderr("There was a problem installing {$handle}: ".$e->getMessage().PHP_EOL);
         }
     }
 
