@@ -4,10 +4,10 @@
 		<div class="block">
 			<h2>Identity</h2>
 
-			<a class="block-toggle" v-if="!showIdentity" @click="showIdentity=true">Edit</a>
-			<a class="block-toggle" v-else @click="showIdentity=false">Done</a>
+			<a class="block-toggle" v-if="!(activeSection=='identity')" @click="activeSection = 'identity'">Edit</a>
+			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
 
-			<template v-if="showIdentity">
+			<template v-if="activeSection=='identity'">
 				<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
 
 				<template v-if="identityMode == 'craftid'">
@@ -16,7 +16,7 @@
 							<li>{{ craftIdAccount.name }}</li>
 							<li>{{ craftIdAccount.email }}</li>
 						</ul>
-						<p><a class="btn submit" @click="showIdentity=false">Continue</a></p>
+						<p><a class="btn submit" @click="activeSection = 'paymentMethod'">Continue</a></p>
 					</template>
 
 					<template v-else>
@@ -30,7 +30,7 @@
 					<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName"></text-field>
 					<text-field id="email" placeholder="Email" v-model="guestIdentity.email"></text-field>
 
-					<a class="btn submit" @click="showIdentity=false">Continue</a>
+					<a class="btn submit" @click="activeSection = 'paymentMethod'">Continue</a>
 				</template>
 			</template>
 			<template v-else>
@@ -39,6 +39,7 @@
 						<li>{{ craftIdAccount.name }} <em>(Craft ID)</em></li>
 						<li>{{ craftIdAccount.email }}</li>
 					</ul>
+					<p v-else class="light">Not connected to Craft ID.</p>
 				</div>
 				<div v-if="identityMode == 'guest'">
 					<ul>
@@ -54,10 +55,10 @@
 		<div class="block">
 			<h2>Payment Method</h2>
 
-			<a class="block-toggle" v-if="!showPaymentMethod" @click="showPaymentMethod=true">Edit</a>
-			<a class="block-toggle" v-else @click="showPaymentMethod=false">Done</a>
+			<a class="block-toggle" v-if="!(activeSection=='paymentMethod')" @click="activeSection = 'paymentMethod'">Edit</a>
+			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
 
-			<template v-if="showPaymentMethod">
+			<template v-if="activeSection=='paymentMethod'">
 				<template v-if="identityMode == 'craftid'">
 					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span v-if="craftIdAccount">{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
 					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
@@ -71,14 +72,23 @@
 					<credit-card v-model="creditCard"></credit-card>
 				</template>
 
-				<a class="btn submit" @click="showPaymentMethod=false">Continue</a>
+				<a class="btn submit" @click="activeSection=null">Continue</a>
 			</template>
 			<template v-else>
-				<ul v-if="identityMode == 'craftid' && paymentMode == 'existingCard' && craftIdAccount">
-					<li>{{ craftIdAccount.cardNumber }}</li>
-					<li>{{ craftIdAccount.cardExpiry }}</li>
-					<li>{{ craftIdAccount.cardCvc }}</li>
-				</ul>
+
+				<template v-if="identityMode == 'craftid'">
+					<template v-if="craftIdAccount">
+
+						<ul v-if="paymentMode == 'existingCard'">
+							<li>{{ craftIdAccount.cardNumber }}</li>
+							<li>{{ craftIdAccount.cardExpiry }}</li>
+							<li>{{ craftIdAccount.cardCvc }}</li>
+						</ul>
+
+					</template>
+
+					<p v-else class="light">Not defined.</p>
+				</template>
 
 				<ul v-else>
 					<li>{{ creditCard.number }}</li>
@@ -93,11 +103,11 @@
 		<div class="block">
 			<h2>Billing</h2>
 
-			<a class="block-toggle" v-if="!showBilling"
-			   @click="showBilling=true">Edit</a>
-			<a class="block-toggle" v-else @click="showBilling=false">Done</a>
+			<a class="block-toggle" v-if="!(activeSection=='billing')"
+			   @click="activeSection = 'billing'">Edit</a>
+			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
 
-			<template v-if="showBilling">
+			<template v-if="activeSection=='billing'">
 				<div class="field">
 					<div class="input">
 						<div class="multitext">
@@ -140,7 +150,7 @@
 
 				<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
 
-				<a class="btn submit" @click="showBilling=false">Continue</a>
+				<a class="btn submit" @click="activeSection=null">Continue</a>
 			</template>
 			<template v-else>
 				<ul>
@@ -185,6 +195,37 @@
             SelectInput,
         },
 
+        data() {
+            return {
+                activeSection: 'identity',
+
+                identityMode: 'craftid',
+                guestIdentity: {
+                    fullName: "",
+                    email: "",
+                },
+
+                paymentMode: 'existingCard',
+                creditCard: {
+                    number: '',
+                    expiry: '',
+                    cvc: '',
+                },
+
+                guestBilling: {
+                    businessName: '',
+                    businessTaxId: '',
+                    businessAddressLine1: '',
+                    businessAddressLine2: '',
+                    businessCountry: '',
+                    businessState: '',
+                    businessCity: '',
+                    businessZipCode: '',
+                    businessNotes: '',
+                }
+            }
+        },
+
         computed: {
             ...mapGetters({
                 cartTotal: 'cartTotal',
@@ -192,22 +233,22 @@
                 countries: 'countries',
                 states: 'states',
             }),
+
 			readyToPay() {
-                if(!this.showIdentity && !this.showPaymentMethod && !this.showBilling) {
+                if(!this.activeSection && this.sectionValidates('identity')) {
                     return true;
 				}
 
 				return false;
 			},
-			csrfInput() {
-                return '';
-			},
+
 			billing() {
                 if(this.identityMode == 'craftid' && this.craftIdAccount) {
                     return this.craftIdAccount;
 				}
                 return this.guestBilling;
 			},
+
 			countryOptions() {
                 let options = [];
 
@@ -220,6 +261,7 @@
 
 				return options;
 			},
+
 			stateOptions() {
                 let options = [];
 
@@ -235,6 +277,36 @@
         },
 
 		methods: {
+
+            sectionValidates(section)
+			{
+				switch(section) {
+					case 'identity':
+						switch(this.identityMode) {
+							case 'craftid':
+							    if(this.craftIdAccount) {
+							        return true;
+								}
+							    break;
+						}
+					    break;
+				}
+
+				return false;
+			},
+
+            isSectionActive(section) {
+                if(this.activeSection == section) {
+					return true;
+				}
+
+				return false;
+			},
+
+            closeSection(section) {
+                this.activeSection = null;
+			},
+
             connectCraftId() {
                 let width = 800;
                 let height = 600;
@@ -252,35 +324,5 @@
                 window.open(url, name, specs);
             },
 		},
-
-        data() {
-            return {
-                identityMode: 'craftid',
-                paymentMode: 'existingCard',
-                showIdentity: true,
-                showPaymentMethod: false,
-                showBilling: false,
-                guestIdentity: {
-                    fullName: "",
-                    email: "",
-                },
-                creditCard: {
-                    number: '',
-                    expiry: '',
-                    cvc: '',
-                },
-                guestBilling: {
-                    businessName: '',
-                    businessTaxId: '',
-                    businessAddressLine1: '',
-                    businessAddressLine2: '',
-                    businessCountry: '',
-                    businessState: '',
-                    businessCity: '',
-                    businessZipCode: '',
-                    businessNotes: '',
-                }
-            }
-        }
     }
 </script>
