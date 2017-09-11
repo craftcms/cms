@@ -235,7 +235,7 @@
             }),
 
 			readyToPay() {
-                if(!this.activeSection && this.sectionValidates('identity')) {
+                if(!this.activeSection && this.sectionValidates('identity') && this.sectionValidates('paymentMethod')) {
                     return true;
 				}
 
