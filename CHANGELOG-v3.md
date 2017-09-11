@@ -16,6 +16,7 @@ Craft CMS 3.0 Working Changelog
 - Improved the performance of `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
 - Queue info requests in the Control Panel no longer extend the user session.
 - `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
+- Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name.
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.

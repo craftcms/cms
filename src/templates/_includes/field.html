@@ -22,6 +22,6 @@
         instructions: instructions|e,
         id: field.handle,
         errors: errors,
-        input: input
+        input: '<div data-type="'~className(field)~'">'~input~'</div>'
     } only %}
 {% endif %}
