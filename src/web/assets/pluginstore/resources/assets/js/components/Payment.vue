@@ -82,7 +82,7 @@
 						<card-form v-if="!cardToken" ref="newCard" @save="onCardFormSave"></card-form>
 						<template v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} — {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}</template>
 
-						<checkbox-field id="saveNewCard" label="Save as my new credit card" />
+						<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
 					</template>
 
 				</template>
@@ -170,7 +170,7 @@
 					</div>
 				</div>
 
-				<checkbox-field id="saveBillingInfos" label="Save as my new billing informations" />
+				<checkbox-field id="replaceBillingInfos" v-model="replaceBillingInfos" label="Save as my new billing informations" />
 
 				<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
 
@@ -239,12 +239,7 @@
                 paymentMode: 'existingCard',
 				cardToken: null,
                 guestCardToken: null,
-
-                creditCard: {
-                    number: '',
-                    expiry: '',
-                    cvc: '',
-                },
+				replaceCard: false,
 
                 guestBilling: {
                     businessName: '',
@@ -256,7 +251,8 @@
                     businessCity: '',
                     businessZipCode: '',
                     businessNotes: '',
-                }
+                },
+				replaceBillingInfos: false,
             }
         },
 
