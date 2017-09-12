@@ -13,6 +13,7 @@ use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\web\View;
 use craftcms\oauth2\client\provider\CraftId;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -47,7 +48,7 @@ class PluginStoreController extends Controller
     public function actionIndex()
     {
         Craft::$app->getView()->registerJsFile('https://js.stripe.com/v3/');
-        Craft::$app->getView()->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";');
+        Craft::$app->getView()->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
 
         return $this->renderTemplate('plugin-store/_index');
