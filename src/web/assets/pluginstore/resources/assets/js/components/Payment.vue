@@ -192,10 +192,11 @@
 		<hr>
 
 		<div class="buttons">
-			<a class="btn submit" :class="{ disabled: !readyToPay }">Pay {{ cartTotal() | currency }}</a>
+			<a class="btn submit" :class="{ disabled: !readyToPay }" @click="checkout()">Pay {{ cartTotal() | currency }}</a>
 		</div>
 
 		<p>Your payment is safe and secure with Stripe.</p>
+
 	</div>
 
 </template>
@@ -258,6 +259,7 @@
 
         computed: {
             ...mapGetters({
+                cartItems: 'cartItems',
                 cartTotal: 'cartTotal',
                 craftIdAccount: 'craftIdAccount',
                 countries: 'countries',
@@ -307,6 +309,52 @@
         },
 
 		methods: {
+
+            checkout() {
+              	if(this.readyToPay) {
+              	    let craftId = null;
+              	    let identity = null;
+                    let cardToken = null;
+
+                    switch(this.identityMode) {
+                        case 'craftid':
+                            craftId = this.craftIdAccount;
+
+                            switch(this.paymentMode) {
+								case 'newCard':
+								    cardToken = this.cardToken;
+								    break;
+								case 'existingCard':
+                                    cardToken = this.craftIdAccount.card;
+								    break;
+							}
+                            break;
+                        case 'guest':
+                            identity = {
+                                fullName: this.guestIdentity.fullName,
+                                email: this.guestIdentity.email,
+                            };
+                            cardToken = this.guestCardToken;
+                            break;
+                    }
+
+              	    let order = {
+              	        craftId: craftId,
+              	        identity: identity,
+						cardToken: cardToken,
+						replaceCard: this.replaceCard,
+						billingInfos: this.billing,
+						replaceBillingInfos: this.replaceBillingInfos,
+						cartItems: this.cartItems,
+					};
+
+                    console.log('order', order);
+
+                    this.$root.lastOrder = order;
+                    this.$root.modalStep = 'thankYou';
+				}
+			},
+
             saveIdentity() {
 				switch(this.identityMode) {
 					case 'craftid':
@@ -373,7 +421,7 @@
 			saveBilling() {
               	this.activeSection = null;
 			},
-			
+
             onCardFormSave(card, token) {
                 this.activeSection = null;
 				this.cardToken = token;

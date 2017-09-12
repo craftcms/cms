@@ -28,6 +28,12 @@
                         </div>
                     </div>
                 </template>
+
+                <template v-else-if="modalStep === 'thankYou'">
+                    <div class="body">
+                        <thank-you></thank-you>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -37,6 +43,7 @@
     import PluginDetails from './PluginDetails';
     import Cart from './Cart';
     import Payment from './Payment';
+    import ThankYou from './ThankYou';
 
     export default {
         props: ['plugin', 'show'],
@@ -44,7 +51,8 @@
         components: {
             PluginDetails,
             Cart,
-            Payment
+            Payment,
+            ThankYou
         },
 
         data() {

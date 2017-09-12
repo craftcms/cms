@@ -34,6 +34,7 @@ window.pluginStoreApp = new Vue({
           modalStep: null,
           loading: true,
           showModal: false,
+          lastOrder: null,
       }
     },
 
