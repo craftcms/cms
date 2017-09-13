@@ -77,6 +77,8 @@ const actions = {
             api.getPluginStoreData(data => {
                 commit(types.RECEIVE_PLUGIN_STORE_DATA, { data })
                 resolve(data);
+            }, response => {
+                reject(response);
             })
         })
     }

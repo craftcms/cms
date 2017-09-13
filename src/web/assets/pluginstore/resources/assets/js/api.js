@@ -28,12 +28,16 @@ export default {
         });
     },
 
-    getPluginStoreData(cb) {
-        Vue.http.get(window.craftApiEndpoint+'/plugin-store').then(function(data) {
-            let pluginStoreData = data.body;
+    getPluginStoreData(cb, cbError) {
+        Vue.http.get(window.craftApiEndpoint+'/plugin-store')
+            .then(function(data) {
+                let pluginStoreData = data.body;
 
-            return cb(pluginStoreData);
-        });
+                return cb(pluginStoreData);
+            })
+            .catch(response => {
+                return cbError(response);
+            });
     },
 
     getCraftData(cb) {
