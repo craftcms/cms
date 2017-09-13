@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
+- Deprecated the previously-removed config settings: `defaultFilePermissions`, `defaultFolderPermissions`, `useWriteFileLock`, `backupDbOnUpdate`, `restoreDbOnUpdateFailure`, `activateAccountFailurePath`, and `validationKey`.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

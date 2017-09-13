@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
@@ -713,6 +714,33 @@ class GeneralConfig extends Object
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Check for renamed settings
+        $renamedSettings = [
+            'defaultFilePermissions' => 'defaultFileMode',
+            'defaultFolderPermissions' => 'defaultDirMode',
+            'useWriteFileLock' => 'useFileLocks',
+            'backupDbOnUpdate' => 'backupOnUpdate',
+            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+            'activateAccountFailurePath' => 'invalidUserTokenPath',
+            'validationKey' => 'securityKey',
+        ];
+
+        foreach ($renamedSettings as $old => $new) {
+            if (array_key_exists($old, $config)) {
+                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.");
+                $config[$new] = $config[$old];
+                unset($config[$old]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
