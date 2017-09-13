@@ -57,6 +57,15 @@ const actions = {
         api.getCartState(cartState => {
             commit(types.RECEIVE_CART_STATE, { cartState });
         })
+    },
+
+    processOrder({ commit }, order) {
+        return new Promise((resolve, reject) => {
+            api.processOrder(order => {
+                commit(types.PROCESS_ORDER, { order });
+                resolve(order);
+            }, order);
+        })
     }
 }
 
@@ -85,7 +94,13 @@ const mutations = {
             state.items = cartState.items;
             state.checkoutStatus = cartState.checkoutStatus;
         }
+    },
+
+    [types.PROCESS_ORDER] (state, { order }) {
+        console.log('mutation:PROCESS_ORDER', order);
     }
+
+
 }
 
 export default {

@@ -352,6 +352,10 @@
 
                     this.$root.lastOrder = order;
                     this.$root.modalStep = 'thankYou';
+
+                    this.$store.dispatch('processOrder', order).then(() => {
+                        console.log('done');
+					});
 				}
 			},
 

@@ -56,5 +56,12 @@ export default {
         Vue.http.get(Craft.getActionUrl('plugin-store/clear-craft-data')).then(function(data) {
             return cb(data);
         });
+    },
+
+    processOrder(cb, order) {
+        Vue.http.post(window.craftApiEndpoint+'/checkout', order, {emulateJSON: true}).then(function(data) {
+            let body = data.body;
+            return cb(body);
+        });
     }
 }
