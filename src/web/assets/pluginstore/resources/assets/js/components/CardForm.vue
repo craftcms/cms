@@ -1,6 +1,6 @@
 <template>
-	<form @submit.prevent="save()">
-		<div ref="cardElement" class="stripe-card" :class="{error: error}"></div>
+	<form class="stripe-card-form" @submit.prevent="save()">
+		<div ref="cardElement" class="stripe-card" :class="{ error: error }"></div>
 		<p v-if="error" class="error">{{ error }}</p>
 
 		<!--
@@ -34,8 +34,7 @@
                     } else {
                         vm.$emit('save', vm.card, result.token);
                     }
-                }).catch(result => {
-				});
+                });
             },
 
             cancel() {
