@@ -37,6 +37,39 @@ const getters = {
                 return total;
             }, 0)
         }
+    },
+
+    cartPlugins(state, rootState) {
+
+        let items = state.items.filter(({ id }) => {
+            if(rootState.pluginStoreData.plugins) {
+                return rootState.pluginStoreData.plugins.find(p => p.id === id)
+            }
+        })
+
+        return items.map(({ id }) => {
+            if(rootState.pluginStoreData.plugins) {
+                return rootState.pluginStoreData.plugins.find(p => p.id === id)
+            }
+        })
+    },
+
+    activeTrialPlugins(state, rootState) {
+        if(!rootState.craftData.installedPlugins) {
+            return [];
+        }
+
+        let plugins = rootState.craftData.installedPlugins.map( id  => {
+            if(rootState.pluginStoreData.plugins) {
+                return rootState.pluginStoreData.plugins.find(p => p.id == id)
+            }
+        })
+
+        return plugins.filter(p => {
+            if(p) {
+                return p.price > 0;
+            }
+        });
     }
 }
 
@@ -91,6 +124,7 @@ const mutations = {
             })
         }
     },
+
     [types.REMOVE_FROM_CART] (state, { id }) {
         const record = state.items.find(p => p.id === id)
 
@@ -98,9 +132,11 @@ const mutations = {
 
         state.items.splice(index, 1);
     },
+
     [types.SAVE_CART_STATE] (state) {
 
     },
+
     [types.RECEIVE_CART_STATE] (state, { cartState }) {
         if(cartState) {
             state.items = cartState.items;

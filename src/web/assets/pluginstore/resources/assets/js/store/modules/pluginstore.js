@@ -7,9 +7,11 @@ const state = {
 
 const getters = {
     pluginStoreData: state => state.data,
+
     pluginStoreGetAllCategories(state) {
         return state.data.categories;
     },
+
     getFeaturedPlugin(state) {
         return function(id) {
             if(state.data.featuredPlugins) {
@@ -19,7 +21,6 @@ const getters = {
     },
 
     getAllCategories(state) {
-        console.log('state', state);
         return function() {
             return state.data.categories;
         }
@@ -31,8 +32,44 @@ const getters = {
                 return state.data.categories.find(c => c.id == id)
             }
         };
+    },
+
+    isInstalled(state, rootState) {
+        return function(plugin) {
+            return rootState.installedPlugins.find(p => p.id == plugin.id)
+        }
+    },
+
+    allPlugins: (state, rootState) => {
+        return state.data.plugins;
+    },
+
+    getPluginById(state, rootState) {
+        return id => {
+            if(state.data.plugins) {
+                return state.data.plugins.find(p => p.id == id)
+            }
+
+            return false;
+        };
+    },
+
+    getPluginsByIds(state, rootState) {
+        return ids => {
+            return state.data.plugins.filter(p => {
+                return ids.find(id => id == p.id)
+            })
+        };
+    },
+
+    getPluginsByCategory(state, rootState) {
+        return categoryId => {
+            return state.data.plugins.filter(p => {
+                return p.categories.find(c =>  c == categoryId);
+            })
+        }
     }
-}
+};
 
 const actions = {
     getPluginStoreData ({ commit }) {

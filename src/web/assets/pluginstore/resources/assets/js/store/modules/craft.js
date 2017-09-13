@@ -10,6 +10,7 @@ const getters = {
     craftData: (state) => {
         return state.craftData;
     },
+
     installedPlugins: (state, rootState) => {
         if(!rootState.allPlugins) {
             return [];
@@ -22,12 +23,15 @@ const getters = {
             return false;
         })
     },
+
     craftIdAccount: state => {
         return state.craftData.craftId
     },
+
     countries: state => {
         return state.craftData.countries;
     },
+
     states: state => {
         return state.craftData.states;
     }
@@ -76,15 +80,19 @@ const mutations = {
             state.craftData.installedPlugins.push(plugin.id)
         }
     },
+
     [types.RECEIVE_CRAFT_DATA] (state, { data }) {
         state.craftData = data
     },
+
     [types.SAVE_CRAFT_DATA] (state) {
 
     },
+
     [types.CLEAR_CRAFT_DATA] (state) {
 
     },
+
     [types.UPDATE_CRAFT_ID] (state, { craftId }) {
         state.craftData.craftId = craftId;
     },
