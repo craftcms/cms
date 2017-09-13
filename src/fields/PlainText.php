@@ -57,6 +57,11 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $charLimit;
 
     /**
+     * @var string|null The HTML5 input type (text, email, tel, url)
+     */
+    public $inputType;
+
+    /**
      * @var string The type of database column the field should have in the content table
      */
     public $columnType = Schema::TYPE_TEXT;
