@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added the `install/plugin` console command, which makes it possible to install plugins from the command line. ([#1973](https://github.com/craftcms/cms/pull/1973))
 - Added the `setup/security-key` console command, which generates a new security key and stores it in a `CRAFT_SECURITY_KEY` variable in the project’s `.env` file.
+- Added support for a `CRAFT_LICENSE_KEY_PATH` PHP constant, which can be used to customize the location of the license key file. ([#1015](https://github.com/craftcms/cms/issues/1015))
 - Added the “Email” and “URL” field types. ([#1981](https://github.com/craftcms/cms/pull/1981))
 - Added `craft\helpers\StringHelper::split()`.
 - Added `craft\web\View::createTwig()`.

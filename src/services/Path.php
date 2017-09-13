@@ -420,12 +420,12 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to `config/license.key`.
+     * Returns the path to the license key file.
      *
      * @return string
      */
     public function getLicenseKeyPath(): string
     {
-        return $this->getConfigPath().DIRECTORY_SEPARATOR.'license.key';
+        return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath().DIRECTORY_SEPARATOR.'license.key';
     }
 }
