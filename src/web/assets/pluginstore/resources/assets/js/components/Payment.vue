@@ -19,26 +19,18 @@
 								<li>{{ craftIdAccount.name }}</li>
 								<li>{{ craftIdAccount.email }}</li>
 							</ul>
-							<p>
-								<!--<a class="btn submit" @click="activeSection = 'paymentMethod'">Continue</a>-->
-								<input type="submit" class="btn submit" value="Continue">
-							</p>
+							<p><input type="submit" class="btn submit" value="Continue"></p>
 						</template>
 
-						<template v-else>
-							<p><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
-						</template>
+						<p v-else><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
 					</template>
 
 					<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 					<template v-if="identityMode == 'guest'">
-
 						<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName" :errors="guestIdentityErrors.fullName"></text-field>
 						<text-field id="email" placeholder="Email" v-model="guestIdentity.email" :errors="guestIdentityErrors.email"></text-field>
-
 						<input type="submit" class="btn submit" value="Continue" />
-
 					</template>
 				</form>
 			</template>
@@ -57,9 +49,8 @@
 							<li>{{ guestIdentity.email }}</li>
 						</ul>
 					</template>
-					<template v-else>
-						<p class="light">Missing informations.</p>
-					</template>
+
+					<p v-else class="light">Missing informations.</p>
 				</div>
 			</template>
 		</div>
@@ -78,17 +69,13 @@
 					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
 
 					<template v-if="paymentMode == 'newCard'">
-
 						<card-form v-if="!cardToken" ref="newCard" @save="onCardFormSave"></card-form>
 						<template v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} — {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}</template>
-
 						<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
 					</template>
-
 				</template>
 
 				<card-form v-else ref="guestCard" @save="onGuestCardFormSave"></card-form>
-
 				<input type="submit" class="btn submit" value="Continue" />
 			</form>
 
@@ -171,9 +158,7 @@
 				</div>
 
 				<checkbox-field id="replaceBillingInfos" v-model="replaceBillingInfos" label="Save as my new billing informations" />
-
 				<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
-
 				<input type="submit" class="btn submit" value="Continue" />
 			</form>
 			<template v-else>
@@ -275,8 +260,18 @@
 			},
 
 			billing() {
-                if(this.identityMode == 'craftid' && this.craftIdAccount) {
-                    return this.craftIdAccount;
+                if(this.identityMode === 'craftid' && this.craftIdAccount) {
+					return {
+                        businessName: this.craftIdAccount.businessName,
+                        businessTaxId: this.craftIdAccount.businessTaxId,
+                        businessAddressLine1: this.craftIdAccount.businessAddressLine1,
+                        businessAddressLine2: this.craftIdAccount.businessAddressLine2,
+                        businessCountry: this.craftIdAccount.businessCountry,
+                        businessState: this.craftIdAccount.businessState,
+                        businessCity: this.craftIdAccount.businessCity,
+                        businessZipCode: this.craftIdAccount.businessZipCode,
+                        businessNotes: this.craftIdAccount.businessNotes,
+					}
 				}
                 return this.guestBilling;
 			},
@@ -318,14 +313,11 @@
 
                     switch(this.identityMode) {
                         case 'craftid':
-                            craftId = this.craftIdAccount;
+                            craftId = this.craftIdAccount.id;
 
                             switch(this.paymentMode) {
 								case 'newCard':
-								    cardToken = this.cardToken;
-								    break;
-								case 'existingCard':
-                                    cardToken = this.craftIdAccount.card;
+								    cardToken = this.cardToken.id;
 								    break;
 							}
                             break;
@@ -334,7 +326,7 @@
                                 fullName: this.guestIdentity.fullName,
                                 email: this.guestIdentity.email,
                             };
-                            cardToken = this.guestCardToken;
+                            cardToken = this.guestCardToken.id;
                             break;
                     }
 
@@ -342,9 +334,9 @@
               	        craftId: craftId,
               	        identity: identity,
 						cardToken: cardToken,
-						replaceCard: this.replaceCard,
+						replaceCard: (this.replaceCard ? 1 : 0),
 						billingInfos: this.billing,
-						replaceBillingInfos: this.replaceBillingInfos,
+						replaceBillingInfos: (this.replaceBillingInfos ? 1 : 0),
 						cartItems: this.cartItems,
 					};
 
