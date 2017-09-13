@@ -10,6 +10,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
 
 ### Changed
+- Renamed the `validationKey` config setting to `securityKey`.
+- If the `securityKey` config setting isn’t set, an auto-generated key will now be stored at `storage/security.key` rather than `storage/runtime/validation.key`.
 - Plugin translation sources are now configured with `forceTranslations` enabled.
 - Checkbox and radio groups now have `div.checkbox-group` and `div.radio-group` container elements. ([#1965](https://github.com/craftcms/cms/pull/1965))
 - Improved the performance of `craft\services\Images::getSupportImageFormats()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
@@ -17,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - Queue info requests in the Control Panel no longer extend the user session.
 - `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
 - Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Renamed `craft\services\Security::getValidationKey()` to `getKey()`.
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.

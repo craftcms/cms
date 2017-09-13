@@ -89,22 +89,22 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Returns a validation key unique to this Craft installation. Craft will initially check the 'validationKey'
+     * Returns a validation key unique to this Craft installation. Craft will initially check the 'securityKey'
      * config setting and return that if one has been explicitly set. If not, Craft will generate a cryptographically
-     * secure, random key and save it in `craft\storage\validation.key` and serve that on future requests.
+     * secure, random key and save it in `storage/security.key` and serve that on future requests.
      *
      * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
      *
      * @return mixed|string The validation key.
      * @throws Exception if the validation key could not be written
      */
-    public function getValidationKey()
+    public function getKey()
     {
-        if ($key = Craft::$app->getConfig()->getGeneral()->validationKey) {
+        if ($key = Craft::$app->getConfig()->getGeneral()->securityKey) {
             return $key;
         }
 
-        $validationKeyPath = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'validation.key';
+        $validationKeyPath = Craft::$app->getPath()->getStoragePath().DIRECTORY_SEPARATOR.'security.key';
 
         if (is_file($validationKeyPath)) {
             return StringHelper::trim(file_get_contents($validationKeyPath));
@@ -141,7 +141,7 @@ class Security extends \yii\base\Security
     public function hashData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = $this->getValidationKey();
+            $key = $this->getKey();
         }
 
         return parent::hashData($data, $key, $rawHash);
@@ -168,7 +168,7 @@ class Security extends \yii\base\Security
     public function validateData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = $this->getValidationKey();
+            $key = $this->getKey();
         }
 
         return parent::validateData($data, $key, $rawHash);

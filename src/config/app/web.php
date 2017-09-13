@@ -8,7 +8,7 @@ return [
             return Craft::createObject([
                 'class' => craft\web\Request::class,
                 'enableCookieValidation' => true,
-                'cookieValidationKey' => Craft::$app->getSecurity()->getValidationKey(),
+                'cookieValidationKey' => Craft::$app->getSecurity()->getKey(),
                 'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
                 'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
                 'csrfParam' => $generalConfig->csrfTokenName,

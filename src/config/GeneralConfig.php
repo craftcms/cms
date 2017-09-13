@@ -572,6 +572,14 @@ class GeneralConfig extends Object
      */
     public $sanitizeSvgUploads = true;
     /**
+     * @var string|null A private, random, cryptographically-secure key that is used for hashing and encrypting
+     * data in [[\craft\services\Security]]. If not set, a random one will be generated to generate and stored
+     * in `storage/runtime/validation.key`.
+     *
+     * This value should be the same across all environments.
+     */
+    public $securityKey;
+    /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
     public $sendPoweredByHeader = true;
@@ -691,15 +699,6 @@ class GeneralConfig extends Object
      * @var bool Whether Craft should use XSendFile to serve files when possible.
      */
     public $useXSendFile = false;
-    /**
-     * @var string|null If set, should be a private, random, cryptographically secure key that is used to generate HMAC
-     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-     * If not set, a random one is generated for you. Ultimately saved in `storage/runtime/validation.key`.
-     *
-     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
-     * should be set to the same key across all web servers.
-     */
-    public $validationKey;
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
