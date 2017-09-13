@@ -7,7 +7,6 @@
 
 namespace craft\services;
 
-use craft\config\ApcConfig;
 use craft\config\DbCacheConfig;
 use craft\config\DbConfig;
 use craft\config\FileCacheConfig;
@@ -25,7 +24,6 @@ use yii\base\Object;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property ApcConfig       $apc       the APC config settings
  * @property DbConfig        $db        the DB config settings
  * @property DbCacheConfig   $dbCache   the DB Cache config settings
  * @property FileCacheConfig $fileCache the file cache config settings
@@ -40,7 +38,6 @@ class Config extends Component
     // Constants
     // =========================================================================
 
-    const CATEGORY_APC = 'apc';
     const CATEGORY_DB = 'db';
     const CATEGORY_DBCACHE = 'dbcache';
     const CATEGORY_FILECACHE = 'filecache';
@@ -88,9 +85,6 @@ class Config extends Component
         }
 
         switch ($category) {
-            case self::CATEGORY_APC:
-                $class = ApcConfig::class;
-                break;
             case self::CATEGORY_DB:
                 $class = DbConfig::class;
                 break;
@@ -114,16 +108,6 @@ class Config extends Component
         $config = $this->getConfigFromFile($category);
 
         return $this->_configSettings[$category] = new $class($config);
-    }
-
-    /**
-     * Returns the APC config settings.
-     *
-     * @return ApcConfig
-     */
-    public function getApc(): ApcConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_APC);
     }
 
     /**
