@@ -296,6 +296,8 @@
 
             checkout() {
               	if(this.readyToPay) {
+              	    this.loading = true;
+
               	    let craftId = null;
               	    let identity = null;
                     let cardToken = null;
@@ -329,11 +331,10 @@
 						cartItems: this.cartItems,
 					};
 
-                    this.$root.lastOrder = order;
-                    this.$root.modalStep = 'thankYou';
-
                     this.$store.dispatch('processOrder', order).then(() => {
-
+						this.loading = false;
+                        this.$root.lastOrder = order;
+                        this.$root.modalStep = 'thankYou';
 					});
 				}
 			},
