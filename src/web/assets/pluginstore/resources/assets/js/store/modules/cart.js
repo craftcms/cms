@@ -10,16 +10,19 @@ const getters = {
     cartItems(state) {
         return state.items;
     },
+    
     isInTrial(state, rootState) {
         return function(plugin) {
             return rootState.activeTrialPlugins.find(p => p.id == plugin.id)
         }
     },
+
     isInCart(state) {
         return function(plugin) {
             return state.items.find(p => p.id == plugin.id)
         }
     },
+
     cartTotal(state, rootState) {
         return function() {
             return rootState.cartPlugins.reduce((total, p) => {
@@ -97,10 +100,8 @@ const mutations = {
     },
 
     [types.PROCESS_ORDER] (state, { order }) {
-        
+
     }
-
-
 }
 
 export default {
