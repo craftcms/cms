@@ -59,44 +59,45 @@
 
 			<form v-if="activeSection=='paymentMethod'" @submit.prevent="savePaymentMethod()">
 				<template v-if="identityMode == 'craftid'">
-					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span v-if="craftIdAccount">{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
-					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
+					<p v-if="craftIdAccount && craftIdAccount.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
+					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
 
 					<template v-if="paymentMode == 'newCard'">
-						<card-form v-if="!cardToken" ref="newCard" @save="onCardFormSave"></card-form>
-						<template v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} — {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}</template>
+						<card-form v-if="!cardToken" ref="newCard" @save="onCardFormSave" @error="onCardFormError"></card-form>
+						<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
 						<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
 					</template>
 				</template>
 
-				<card-form v-else ref="guestCard" @save="onGuestCardFormSave"></card-form>
+				<card-form v-else ref="guestCard" @save="onGuestCardFormSave" @error="onGuestCardFormError"></card-form>
 				<input type="submit" class="btn submit" value="Continue" />
+				<div v-if="paymentMethodLoading" class="spinner"></div>
 			</form>
 
 			<template v-else>
 				<template v-if="identityMode == 'craftid'">
 					<template v-if="craftIdAccount">
-						<p v-if="paymentMode == 'existingCard'">
+						<p v-if="paymentMode == 'existingCard' && craftIdAccount.card">
 							{{ craftIdAccount.card.brand }}
 							•••• •••• •••• {{ craftIdAccount.card.last4 }}
-							— {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}
+							({{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }})
 						</p>
 
-						<p v-if="paymentMode == 'newCard'">
+						<p v-if="paymentMode == 'newCard' && cardToken && cardToken.card">
 							{{ cardToken.card.brand }}
 							•••• •••• •••• {{ cardToken.card.last4 }}
-							— {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}
-							(New card)
+							({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }})
 						</p>
+						<p v-if="replaceCard" class="light">Will be saved as your new default card.</p>
 					</template>
 
 					<p v-else class="light">Not defined.</p>
 				</template>
 
-				<p v-else-if="guestCardToken">
+				<p v-else-if="guestCardToken && guestCardToken.card">
 					{{ guestCardToken.card.brand }}
 					•••• •••• •••• {{ guestCardToken.card.last4 }}
-					— {{ guestCardToken.card.exp_month }}/{{ guestCardToken.card.exp_year }}
+					({{ guestCardToken.card.exp_month }}/{{ guestCardToken.card.exp_year }})
 				</p>
 			</template>
 		</div>
@@ -168,6 +169,7 @@
 
 		<div class="buttons">
 			<a class="btn submit" :class="{ disabled: !readyToPay }" @click="checkout()">Pay {{ cartTotal() | currency }}</a>
+			<div v-if="loading" class="spinner"></div>
 		</div>
 
 		<p>Your payment is safe and secure with Stripe.</p>
@@ -198,6 +200,7 @@
 
         data() {
             return {
+                loading: false,
                 activeSection: 'identity',
 
                 identityMode: 'craftid',
@@ -215,6 +218,7 @@
 				cardToken: null,
                 guestCardToken: null,
 				replaceCard: false,
+				paymentMethodLoading: false,
 
                 guestBilling: {
                     businessName: '',
@@ -230,6 +234,16 @@
 				replaceBillingInfos: false,
             }
         },
+
+		watch: {
+          	craftIdAccount(newVal) {
+          	    if(!newVal.card) {
+                    this.paymentMode = 'newCard';
+                }
+
+          	    return newVal;
+			}
+		},
 
         computed: {
             ...mapGetters({
@@ -382,6 +396,7 @@
                         if(this.paymentMode === 'newCard') {
                             // Save new card
                             if(!this.cardToken) {
+                                this.paymentMethodLoading = true;
                                 this.$refs.newCard.save();
                             } else {
                                 this.activeSection = null;
@@ -394,6 +409,7 @@
                     case 'guest':
                         // Save guest card
                         if(!this.guestCardToken) {
+                            this.paymentMethodLoading = true;
                             this.$refs.guestCard.save();
                         } else {
                             this.activeSection = null;
@@ -409,11 +425,21 @@
             onCardFormSave(card, token) {
                 this.activeSection = null;
 				this.cardToken = token;
+                this.paymentMethodLoading = false;
+			},
+
+            onCardFormError(error) {
+              	this.paymentMethodLoading = false;
 			},
 
             onGuestCardFormSave(card, token) {
                 this.activeSection = null;
 				this.guestCardToken = token;
+                this.paymentMethodLoading = false;
+			},
+
+            onGuestCardFormError(error) {
+                this.paymentMethodLoading = false;
 			},
 
             sectionValidates(section) {
