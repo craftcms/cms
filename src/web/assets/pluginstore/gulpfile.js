@@ -18,4 +18,5 @@ require('laravel-elixir-webpack-official');
 elixir(function(mix) {
     mix.sass('main.scss');
     mix.webpack('main.js');
+    mix.copy('resources/assets/images', 'dist/images');
 });
