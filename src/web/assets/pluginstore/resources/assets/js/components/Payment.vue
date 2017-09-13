@@ -446,25 +446,35 @@
 								}
 							    break;
 							case 'guest':
-							    if(this.guestIdentity.fullName && this.guestIdentityLastName) {
+							    if(this.guestIdentity.fullName && this.guestIdentity.email) {
 							        return true;
 								}
 							    break;
 						}
 					    break;
 					case 'paymentMethod':
-					    switch(this.paymentMode) {
-							case 'existingCard':
-								if(this.craftIdAccount.card) {
-								    return true;
+					    switch(this.identityMode) {
+							case 'craftid':
+								switch(this.paymentMode) {
+									case 'existingCard':
+										if(this.craftIdAccount.card) {
+											return true;
+										}
+										break;
+									case 'newCard':
+										if(this.cardToken) {
+											return true;
+										}
+										break;
 								}
-							    break;
-							case 'newCard':
-							    if(this.cardToken) {
+								break;
+
+							case 'guest':
+							    if(this.guestCardToken) {
 							        return true;
 								}
 							    break;
-						}
+                        }
 					    break;
 				}
 
