@@ -4,7 +4,6 @@ import * as actions from './actions'
 import * as getters from './getters'
 import cart from './modules/cart'
 import plugins from './modules/plugins'
-import categories from './modules/categories'
 import developers from './modules/developers'
 import pluginstore from './modules/pluginstore'
 import craft from './modules/craft'
@@ -20,7 +19,6 @@ export default new Vuex.Store({
     modules: {
         cart,
         plugins,
-        categories,
         developers,
         pluginstore,
         craft

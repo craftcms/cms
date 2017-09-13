@@ -17,6 +17,21 @@ const getters = {
             }
         };
     },
+
+    getAllCategories(state) {
+        console.log('state', state);
+        return function() {
+            return state.data.categories;
+        }
+    },
+
+    getCategoryById(state) {
+        return function(id) {
+            if(state.data.categories) {
+                return state.data.categories.find(c => c.id == id)
+            }
+        };
+    }
 }
 
 const actions = {
