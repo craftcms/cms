@@ -13,7 +13,7 @@ const getters = {
     },
 
     getFeaturedPlugin(state) {
-        return function(id) {
+        return id => {
             if(state.data.featuredPlugins) {
                 return state.data.featuredPlugins.find(g => g.id == id)
             }
@@ -21,13 +21,13 @@ const getters = {
     },
 
     getAllCategories(state) {
-        return function() {
+        return () => {
             return state.data.categories;
         }
     },
 
     getCategoryById(state) {
-        return function(id) {
+        return id => {
             if(state.data.categories) {
                 return state.data.categories.find(c => c.id == id)
             }
@@ -35,7 +35,7 @@ const getters = {
     },
 
     isInstalled(state, rootState) {
-        return function(plugin) {
+        return  plugin => {
             return rootState.installedPlugins.find(p => p.id == plugin.id)
         }
     },

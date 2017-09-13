@@ -42,7 +42,7 @@
             }
         },
 
-        created: function() {
+        created() {
             this.$root.showCrumbs = true;
 
             this.categoryId = this.$route.params.id;

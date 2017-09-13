@@ -87,11 +87,11 @@
             }
         },
 
-        created: function() {
+        created() {
             this.$root.pageTitle = 'Plugin Store';
         },
 
-        mounted: function() {
+        mounted() {
             this.$root.showCrumbs = false;
         }
     }

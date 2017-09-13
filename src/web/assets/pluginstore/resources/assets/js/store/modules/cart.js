@@ -16,19 +16,19 @@ const getters = {
     },
 
     isInTrial(state, rootState) {
-        return function(plugin) {
+        return plugin => {
             return rootState.activeTrialPlugins.find(p => p.id == plugin.id)
         }
     },
 
     isInCart(state) {
-        return function(plugin) {
+        return plugin => {
             return state.items.find(p => p.id == plugin.id)
         }
     },
 
     cartTotal(state, rootState) {
-        return function() {
+        return () => {
             return rootState.cartPlugins.reduce((total, p) => {
                 if(p) {
                     return total + parseFloat(p.price)

@@ -62,7 +62,7 @@
 
                 this.$emit('showResults');
 
-                return this._.filter(this.plugins, function(o) {
+                return this._.filter(this.plugins, o => {
                     if(o.name && self._.includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }

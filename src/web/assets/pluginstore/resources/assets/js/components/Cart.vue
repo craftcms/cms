@@ -139,7 +139,7 @@
             addAllToCart () {
                 let $store = this.$store;
 
-                this.pendingActiveTrials.forEach(function(activeTrial) {
+                this.pendingActiveTrials.forEach(activeTrial => {
                     $store.dispatch('addToCart', activeTrial)
                 })
             },

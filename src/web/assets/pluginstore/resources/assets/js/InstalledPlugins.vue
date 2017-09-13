@@ -20,7 +20,7 @@
             }),
         },
 
-        created: function() {
+        created() {
             this.$root.pageTitle = 'Installed Plugins';
             this.$root.showCrumbs = true;
         },

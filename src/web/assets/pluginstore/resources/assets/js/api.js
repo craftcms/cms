@@ -21,7 +21,7 @@ export default {
     },
 
     getDeveloper(cb, developerId) {
-        Vue.http.get(window.craftApiEndpoint+'/developer/'+developerId).then(function(data) {
+        Vue.http.get(window.craftApiEndpoint+'/developer/'+developerId).then(data => {
             let developer = data.body;
 
             return cb(developer);
@@ -30,10 +30,8 @@ export default {
 
     getPluginStoreData(cb, cbError) {
         Vue.http.get(window.craftApiEndpoint+'/plugin-store')
-            .then(function(data) {
-                let pluginStoreData = data.body;
-
-                return cb(pluginStoreData);
+            .then(response => {
+                return cb(response.body);
             })
             .catch(response => {
                 return cbError(response);
@@ -41,7 +39,7 @@ export default {
     },
 
     getCraftData(cb) {
-        Vue.http.get(Craft.getActionUrl('plugin-store/craft-data')).then(function(data) {
+        Vue.http.get(Craft.getActionUrl('plugin-store/craft-data')).then(data => {
             let craftData = data.body;
 
             return cb(craftData);
@@ -49,7 +47,7 @@ export default {
     },
 
     saveCraftData(cb, craftData) {
-        Vue.http.post(Craft.getActionUrl('plugin-store/save-craft-data'), { craftData: craftData }, {emulateJSON: true}).then(function(data) {
+        Vue.http.post(Craft.getActionUrl('plugin-store/save-craft-data'), { craftData: craftData }, {emulateJSON: true}).then(data => {
             let craftData = data.body;
 
             return cb(craftData);

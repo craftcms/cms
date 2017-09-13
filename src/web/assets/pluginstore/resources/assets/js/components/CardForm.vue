@@ -27,7 +27,7 @@
             save() {
                 this.$emit('beforeSave');
                 let vm = this;
-                this.stripe.createToken(this.card).then(function(result) {
+                this.stripe.createToken(this.card).then(result => {
                     if (result.error) {
                         vm.error = result.error.message;
                         vm.$emit('error', result.error);
