@@ -1,10 +1,12 @@
 <template>
 	<form @submit.prevent="save()">
-		<div ref="cardElement" id="card-element" class="form-control mb-3"></div>
-		<p id="card-errors" class="text-danger" role="alert"></p>
+		<div ref="cardElement" class="stripe-card" :class="{error: error}"></div>
+		<p v-if="error" class="error">{{ error }}</p>
 
-<!--		<input type="submit" class="btn btn-primary" value="Save"></input>
-		<button type="button" class="btn btn-secondary" @click="cancel()">Cancel</button>-->
+		<!--
+		<input type="submit" class="btn btn-primary" value="Save"></input>
+		<button type="button" class="btn btn-secondary" @click="cancel()">Cancel</button>
+		-->
 
 		<div class="spinner" v-if="loading"></div>
 	</form>
@@ -15,14 +17,19 @@
     export default {
         props: ['loading'],
 
+		data() {
+          	return {
+          	 	error: null,
+			};
+		},
+
         methods: {
             save() {
                 this.$emit('beforeSave');
                 let vm = this;
                 this.stripe.createToken(this.card).then(function(result) {
                     if (result.error) {
-                        let errorElement = document.getElementById('card-errors');
-                        errorElement.textContent = result.error.message;
+                        vm.error = result.error.message;
                         vm.$emit('error', result.error);
                     } else {
                         vm.$emit('save', vm.card, result.token);
@@ -34,8 +41,7 @@
             cancel() {
                 this.card.clear();
 
-                let errorElement = document.getElementById('card-errors');
-                errorElement.textContent = '';
+                this.error = null;
 
                 this.$emit('cancel');
             }
@@ -43,7 +49,7 @@
 
         mounted() {
             this.stripe = Stripe('pk_test_B2opWU3D3nmA2QXyHKlIx6so');
-            this.elements = this.stripe.elements();
+            this.elements = this.stripe.elements({locale: 'en'});
             this.card = this.elements.create('card');
 
             // Vue likes to stay in control of $el but Stripe needs a real element

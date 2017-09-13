@@ -1,6 +1,17 @@
 /* Flexbox stuff */
 /* Other */
 /* RTL stuff */
+.stripe-card {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 6px;
+  max-width: 390px;
+}
+
+.stripe-card.error {
+  border-color: #da5a47;
+}
+
 /* Grids */
 .cssgrid-wrapper {
   display: -ms-grid;
