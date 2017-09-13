@@ -1,6 +1,10 @@
 /* Flexbox stuff */
 /* Other */
 /* RTL stuff */
+.stripe-card-form {
+  margin-bottom: 24px;
+}
+
 .stripe-card {
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -47,6 +51,48 @@
   overflow: hidden;
 }
 
+#thank-you {
+  width: 320px;
+  height: 150px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -75px;
+  margin-left: -160px;
+  text-align: center;
+}
+
+#thank-you h2 {
+  margin-top: 24px;
+}
+
+#graphic {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+
+#graphic.error {
+  background-image: url(../images/error.png);
+}
+
+#graphic.success {
+  background-image: url(../images/success.png);
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
+  #graphic.error {
+    background-image: url(../images/error_2x.png);
+    background-size: 48px;
+  }
+  #graphic.success {
+    background-image: url(../images/success_2x.png);
+    background-size: 48px;
+  }
+}
+
 /* Index Page */
 ul.categories li:first-child a {
   border-top: 1px solid #eee;
@@ -77,16 +123,14 @@ ul.categories li a img {
   padding: 24px;
   border: 1px solid #eee;
   margin-top: 24px;
-  text-align: right;
 }
 
 .cart-review table th, .cart-review table td {
-  text-align: right;
   padding: 3px 0;
   font-size: 1.2em;
 }
 
-.cart-review table td {
+.cart-review table th {
   width: 100px;
 }
 
