@@ -39,11 +39,11 @@
 
 {% set content %}
 
-	<div :class="{hidden: !loading}">
+	<div :class="{hidden: !pluginStoreDataLoading}">
 		Loading…
 	</div>
 
-	<div :class="{ hidden: loading }">
+	<div :class="{ hidden: pluginStoreDataLoading }">
 		<router-view></router-view>
 	</div>
 

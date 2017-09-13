@@ -32,7 +32,8 @@ window.pluginStoreApp = new Vue({
           pageTitle: 'Plugin Store',
           plugin: null,
           modalStep: null,
-          loading: true,
+          pluginStoreDataLoading: true,
+          craftIdDataLoading: true,
           showModal: false,
           lastOrder: null,
       }
@@ -134,9 +135,11 @@ window.pluginStoreApp = new Vue({
         // Dispatch actions
 
         this.$store.dispatch('getCraftData').then(() => {
-            this.$store.dispatch('getPluginStoreData').then(() => {
-                this.loading = false
-            });
+            this.craftIdDataLoading = false
+        });
+
+        this.$store.dispatch('getPluginStoreData').then(() => {
+            this.pluginStoreDataLoading = false
         });
 
         this.$store.dispatch('getCartState')
