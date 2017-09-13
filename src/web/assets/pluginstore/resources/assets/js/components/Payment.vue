@@ -168,6 +168,8 @@
 
 			<hr>
 
+			<p v-if="error" class="error">{{ error }}</p>
+
 			<div class="buttons">
 				<a class="btn submit" :class="{ disabled: !readyToPay }" @click="checkout()">Pay {{ cartTotal() | currency }}</a>
 				<div v-if="loading" class="spinner"></div>
@@ -204,6 +206,7 @@
 
         data() {
             return {
+                error: false,
                 loading: false,
                 activeSection: 'identity',
 
@@ -353,11 +356,17 @@
 						cartItems: this.cartItems,
 					};
 
-                    this.$store.dispatch('processOrder', order).then(() => {
-						this.loading = false;
-                        this.$root.lastOrder = order;
-                        this.$root.modalStep = 'thankYou';
-					});
+                    this.$store.dispatch('checkout', order)
+						.then(response => {
+							this.loading = false;
+                            this.error = false;
+							this.$root.lastOrder = order;
+							this.$root.modalStep = 'thankYou';
+						})
+						.catch(response => {
+						    this.loading = false;
+						    this.error = response.statusText;
+						});
 				}
 			},
 

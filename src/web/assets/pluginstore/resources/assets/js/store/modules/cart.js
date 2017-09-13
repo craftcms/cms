@@ -1,5 +1,9 @@
 import api from '../../api'
 import * as types from '../mutation-types'
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex);
 
 const state = {
     items: [],
@@ -62,12 +66,17 @@ const actions = {
         })
     },
 
-    processOrder({ commit }, order) {
+    checkout({ commit }, order) {
         return new Promise((resolve, reject) => {
-            api.processOrder(order => {
-                commit(types.PROCESS_ORDER, { order });
-                resolve(order);
-            }, order);
+            api.checkout(order)
+                .then(response => {
+                    let body = response.body;
+                    commit(types.CHECKOUT, { order: body });
+                    resolve(body);
+                })
+                .catch(response => {
+                    reject(response)
+                });
         })
     }
 }
@@ -99,8 +108,8 @@ const mutations = {
         }
     },
 
-    [types.PROCESS_ORDER] (state, { order }) {
-
+    [types.CHECKOUT] (state, { order }) {
+        console.log('mutation', order);
     }
 }
 

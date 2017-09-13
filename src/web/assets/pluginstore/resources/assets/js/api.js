@@ -58,10 +58,7 @@ export default {
         });
     },
 
-    processOrder(cb, order) {
-        Vue.http.post(window.craftApiEndpoint+'/checkout', order, {emulateJSON: true}).then(function(data) {
-            let body = data.body;
-            return cb(body);
-        });
+    checkout(order) {
+        return Vue.http.post(window.craftApiEndpoint+'/checkout', order, {emulateJSON: true});
     }
 }
