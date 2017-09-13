@@ -134,13 +134,21 @@ window.pluginStoreApp = new Vue({
 
         // Dispatch actions
 
-        this.$store.dispatch('getCraftData').then(() => {
-            this.craftIdDataLoading = false
-        });
+        this.$store.dispatch('getCraftData')
+            .then(data => {
+                this.craftIdDataLoading = false
+            })
+            .catch(response => {
+                this.craftIdDataLoading = false
+            });
 
-        this.$store.dispatch('getPluginStoreData').then(() => {
-            this.pluginStoreDataLoading = false
-        });
+        this.$store.dispatch('getPluginStoreData')
+            .then(data => {
+                this.pluginStoreDataLoading = false
+            })
+            .catch(response => {
+                this.pluginStoreDataLoading = false
+            });
 
         this.$store.dispatch('getCartState')
     },

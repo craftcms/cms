@@ -20,38 +20,49 @@ export default {
         return cb(cartState);
     },
 
-    getDeveloper(cb, developerId) {
-        Vue.http.get(window.craftApiEndpoint+'/developer/'+developerId).then(data => {
-            let developer = data.body;
-
-            return cb(developer);
-        });
+    getDeveloper(developerId, cb, errorCb) {
+        Vue.http.get(window.craftApiEndpoint+'/developer/'+developerId)
+            .then(data => {
+                let developer = data.body;
+                return cb(developer);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
     },
 
-    getPluginStoreData(cb, cbError) {
+    getPluginStoreData(cb, errorCb) {
         Vue.http.get(window.craftApiEndpoint+'/plugin-store')
             .then(response => {
                 return cb(response.body);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
+    },
+
+    getCraftData(cb, cbError) {
+        Vue.http.get(Craft.getActionUrl('plugin-store/craft-data'))
+            .then(data => {
+                let craftData = data.body;
+                return cb(craftData);
             })
             .catch(response => {
                 return cbError(response);
             });
     },
 
-    getCraftData(cb) {
-        Vue.http.get(Craft.getActionUrl('plugin-store/craft-data')).then(data => {
-            let craftData = data.body;
-
-            return cb(craftData);
-        });
-    },
-
-    saveCraftData(cb, craftData) {
-        Vue.http.post(Craft.getActionUrl('plugin-store/save-craft-data'), { craftData: craftData }, {emulateJSON: true}).then(data => {
-            let craftData = data.body;
-
-            return cb(craftData);
-        });
+    saveCraftData(craftData, cb, cbError) {
+        let body = { craftData: craftData };
+        let options = { emulateJSON: true };
+        Vue.http.post(Craft.getActionUrl('plugin-store/save-craft-data'), body, options)
+            .then(data => {
+                let craftData = data.body;
+                return cb(craftData);
+            })
+            .catch(response => {
+                return cbError(response);
+            });
     },
 
     clearCraftData(cb) {

@@ -34,10 +34,14 @@
 
             this.$root.loading = true;
 
-            this.$store.dispatch('getDeveloper', developerId).then((developer) => {
-                this.$root.pageTitle = developer.developerName;
-                this.$root.loading = false;
-            });
+            this.$store.dispatch('getDeveloper', developerId)
+                .then(developer => {
+                    this.$root.pageTitle = developer.developerName;
+                    this.$root.loading = false;
+                })
+                .catch(response => {
+                    this.$root.loading = false;
+                });
         },
     }
 </script>

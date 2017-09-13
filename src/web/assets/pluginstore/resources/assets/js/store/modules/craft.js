@@ -48,6 +48,8 @@ const actions = {
             api.getCraftData(data => {
                 commit(types.RECEIVE_CRAFT_DATA, { data })
                 resolve(data);
+            }, response => {
+                reject(response);
             })
         })
     },
@@ -57,9 +59,16 @@ const actions = {
     },
 
     saveCraftData({ commit, state }) {
-        api.saveCraftData(() => {
-            commit(types.SAVE_CRAFT_DATA);
-        }, state.craftData)
+        return new Promise((resolve, reject) => {
+            api.saveCraftData(state.craftData,
+                craftData => {
+                    commit(types.SAVE_CRAFT_DATA);
+                    resolve(craftData);
+                },
+                response => {
+                    reject(response);
+                })
+        })
     },
 
     clearCraftData ({ commit }) {

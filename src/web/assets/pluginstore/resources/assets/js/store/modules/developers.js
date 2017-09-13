@@ -12,10 +12,12 @@ const getters = {
 const actions = {
     getDeveloper({ commit }, developerId) {
         return new Promise((resolve, reject) => {
-            api.getDeveloper(developer => {
+            api.getDeveloper(developerId, developer => {
                 commit(types.RECEIVE_DEVELOPER, { developer });
                 resolve(developer);
-            }, developerId)
+            }, response => {
+                reject(response);
+            })
         })
     }
 }

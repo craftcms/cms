@@ -42,7 +42,7 @@
         },
 
         methods: {
-            showPlugin: plugin => {
+            showPlugin(plugin) {
                 this.$root.showPlugin(plugin);
             },
         },
