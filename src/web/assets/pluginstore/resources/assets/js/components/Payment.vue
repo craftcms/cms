@@ -3,37 +3,32 @@
 	<div>
 		<div class="block">
 			<h2>Identity</h2>
-
 			<a class="block-toggle" v-if="!(activeSection=='identity')" @click="activeSection = 'identity'">Edit</a>
 			<a class="block-toggle" v-else @click="saveIdentity()">Done</a>
 
-			<template v-if="activeSection=='identity'">
+			<form v-if="activeSection=='identity'" @submit.prevent="saveIdentity()">
+				<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
 
-				<form @submit.prevent="saveIdentity()">
-
-					<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
-
-					<template v-if="identityMode == 'craftid'">
-						<template v-if="craftIdAccount">
-							<ul>
-								<li>{{ craftIdAccount.name }}</li>
-								<li>{{ craftIdAccount.email }}</li>
-							</ul>
-							<p><input type="submit" class="btn submit" value="Continue"></p>
-						</template>
-
-						<p v-else><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
+				<template v-if="identityMode == 'craftid'">
+					<template v-if="craftIdAccount">
+						<ul>
+							<li>{{ craftIdAccount.name }}</li>
+							<li>{{ craftIdAccount.email }}</li>
+						</ul>
+						<p><input type="submit" class="btn submit" value="Continue"></p>
 					</template>
 
-					<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
+					<p v-else><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
+				</template>
 
-					<template v-if="identityMode == 'guest'">
-						<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName" :errors="guestIdentityErrors.fullName"></text-field>
-						<text-field id="email" placeholder="Email" v-model="guestIdentity.email" :errors="guestIdentityErrors.email"></text-field>
-						<input type="submit" class="btn submit" value="Continue" />
-					</template>
-				</form>
-			</template>
+				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
+
+				<template v-if="identityMode == 'guest'">
+					<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName" :errors="guestIdentityErrors.fullName"></text-field>
+					<text-field id="email" placeholder="Email" v-model="guestIdentity.email" :errors="guestIdentityErrors.email"></text-field>
+					<input type="submit" class="btn submit" value="Continue" />
+				</template>
+			</form>
 			<template v-else>
 				<div v-if="identityMode == 'craftid'">
 					<ul v-if="craftIdAccount">
@@ -59,7 +54,6 @@
 
 		<div class="block">
 			<h2>Payment Method</h2>
-
 			<a class="block-toggle" v-if="!(activeSection=='paymentMethod')" @click="activeSection = 'paymentMethod'">Edit</a>
 			<a class="block-toggle" v-else @click="savePaymentMethod()">Done</a>
 
@@ -82,7 +76,6 @@
 			<template v-else>
 				<template v-if="identityMode == 'craftid'">
 					<template v-if="craftIdAccount">
-
 						<p v-if="paymentMode == 'existingCard'">
 							{{ craftIdAccount.card.brand }}
 							•••• •••• •••• {{ craftIdAccount.card.last4 }}
@@ -95,7 +88,6 @@
 							— {{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}
 							(New card)
 						</p>
-
 					</template>
 
 					<p v-else class="light">Not defined.</p>
@@ -113,9 +105,7 @@
 
 		<div class="block">
 			<h2>Billing</h2>
-
-			<a class="block-toggle" v-if="!(activeSection=='billing')"
-			   @click="activeSection = 'billing'">Edit</a>
+			<a class="block-toggle" v-if="!(activeSection=='billing')" @click="activeSection = 'billing'">Edit</a>
 			<a class="block-toggle" v-else @click="activeSection=null">Done</a>
 
 			<form v-if="activeSection=='billing'" @submit.prevent="saveBilling()">
@@ -181,7 +171,6 @@
 		</div>
 
 		<p>Your payment is safe and secure with Stripe.</p>
-
 	</div>
 
 </template>
