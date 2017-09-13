@@ -31,7 +31,7 @@ class SetupController extends Controller
      */
     public function actionSecurityKey($name = 'CRAFT_SECURITY_KEY')
     {
-        $path = CRAFT_BASE_PATH.DIRECTORY_SEPARATOR.'.env';
+        $path = Craft::getAlias('@root/.env');
         if (!file_exists($path)) {
             if ($this->confirm("A .env file doesn't exist at {$path}. Would you like to create one?")) {
                 FileHelper::writeToFile($path, "{$name}=".PHP_EOL);

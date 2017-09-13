@@ -14,6 +14,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Craft;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -38,7 +39,7 @@ class Composer extends Component
      */
     public function getJsonPath(): string
     {
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : CRAFT_BASE_PATH.'/composer.json';
+        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : Craft::getAlias('@root/composer.json');
         if (!file_exists($jsonPath)) {
             throw new Exception('Could not locate your composer.json file.');
         }

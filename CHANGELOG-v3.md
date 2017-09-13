@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\StringHelper::split()`.
 - Added `craft\web\View::createTwig()`.
 - Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
+- Added a `@root` path alias, which is set to the project root directory (what `$craftPath`/`CRAFT_BASE_PATH` is set to in `index.php`).
 
 ### Changed
 - Renamed the `validationKey` config setting to `securityKey`.
