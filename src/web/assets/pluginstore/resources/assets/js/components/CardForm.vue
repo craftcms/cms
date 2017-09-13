@@ -17,24 +17,17 @@
 
         methods: {
             save() {
-                console.log('hello save');
                 this.$emit('beforeSave');
-                console.log('zero');
                 let vm = this;
-                console.log('one', this.card);
                 this.stripe.createToken(this.card).then(function(result) {
-                    console.log('a');
                     if (result.error) {
-                        console.log('b');
                         let errorElement = document.getElementById('card-errors');
                         errorElement.textContent = result.error.message;
                         vm.$emit('error', result.error);
                     } else {
-                        console.log('emit save');
                         vm.$emit('save', vm.card, result.token);
                     }
                 }).catch(result => {
-                    console.log('error');
 				});
             },
 

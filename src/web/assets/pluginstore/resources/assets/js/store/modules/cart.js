@@ -97,7 +97,7 @@ const mutations = {
     },
 
     [types.PROCESS_ORDER] (state, { order }) {
-        console.log('mutation:PROCESS_ORDER', order);
+        
     }
 
 
