@@ -573,11 +573,11 @@ class GeneralConfig extends Object
      */
     public $sanitizeSvgUploads = true;
     /**
-     * @var string|null A private, random, cryptographically-secure key that is used for hashing and encrypting
-     * data in [[\craft\services\Security]]. If not set, a random one will be generated to generate and stored
-     * in `storage/runtime/validation.key`.
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
+     * data in [[\craft\services\Security]].
      *
-     * This value should be the same across all environments.
+     * This value should be the same across all environments. Note that if this key ever changes, any data that
+     * was encrypted with it will be inaccessible.
      */
     public $securityKey;
     /**

@@ -21,11 +21,12 @@ Craft CMS 3.0 Working Changelog
 - Queue info requests in the Control Panel no longer extend the user session.
 - `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
 - Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
-- Renamed `craft\services\Security::getValidationKey()` to `getKey()`.
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
-- Deprecated the previously-removed config settings: `defaultFilePermissions`, `defaultFolderPermissions`, `useWriteFileLock`, `backupDbOnUpdate`, `restoreDbOnUpdateFailure`, `activateAccountFailurePath`, and `validationKey`.
+- Deprecated the `defaultFilePermissions`, `defaultFolderPermissions`, `useWriteFileLock`, `backupDbOnUpdate`, `restoreDbOnUpdateFailure`, `activateAccountFailurePath`, and `validationKey`. (These were removed outright in earlier Craft 3 Beta releases.)
+- Running Craft without the `securityKey` config setting explicitly set is now deprecated.
+- Deprecated `craft\services\Security::getValidationKey()`. Use `Craft::$app->config->general->securityKey` instead.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

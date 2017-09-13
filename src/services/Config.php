@@ -7,14 +7,18 @@
 
 namespace craft\services;
 
+use Craft;
 use craft\config\DbCacheConfig;
 use craft\config\DbConfig;
 use craft\config\FileCacheConfig;
 use craft\config\GeneralConfig;
 use craft\config\MemCacheConfig;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use yii\base\Component;
+use yii\base\ErrorException;
+use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Object;
 
@@ -106,8 +110,29 @@ class Config extends Component
 
         // Get any custom config settings
         $config = $this->getConfigFromFile($category);
+        $config = $this->_configSettings[$category] = new $class($config);
 
-        return $this->_configSettings[$category] = new $class($config);
+        // todo: remove this eventually
+        if ($category === self::CATEGORY_GENERAL) {
+            /** @var GeneralConfig $config */
+            if ($config->securityKey === null) {
+                $keyPath = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'validation.key';
+                if (file_exists($keyPath)) {
+                    $config->securityKey = trim(file_get_contents($keyPath));
+                } else {
+                    $key = Craft::$app->getSecurity()->generateRandomString();
+                    try {
+                        FileHelper::writeToFile($keyPath, $key);
+                    } catch (ErrorException $e) {
+                        throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: '.$e->getMessage());
+                    }
+                    $config->securityKey = $key;
+                }
+                Craft::$app->getDeprecator()->log('validation.key', 'The auto-generated validation key stored at '.$keyPath.' has been deprecated. Copy its value to the securityKey config setting.');
+            }
+        }
+
+        return $config;
     }
 
     /**
