@@ -53,9 +53,7 @@ export default {
     },
 
     clearCraftData(cb) {
-        Vue.http.get(Craft.getActionUrl('plugin-store/clear-craft-data')).then(function(data) {
-            return cb(data);
-        });
+        return Vue.http.get(Craft.getActionUrl('plugin-store/clear-craft-data'));
     },
 
     checkout(order) {

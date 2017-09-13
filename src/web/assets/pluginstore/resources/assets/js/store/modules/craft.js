@@ -64,10 +64,14 @@ const actions = {
 
     clearCraftData ({ commit }) {
         return new Promise((resolve, reject) => {
-            api.clearCraftData(data => {
-                commit(types.CLEAR_CRAFT_DATA, { data })
-                resolve(data);
-            })
+            api.clearCraftData()
+                .then(data => {
+                    commit(types.CLEAR_CRAFT_DATA, { data })
+                    resolve(data);
+                })
+                .catch(response => {
+                    reject(response);
+                });
         })
     },
 }
