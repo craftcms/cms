@@ -42,7 +42,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\AssetTransforms::getResizedAssetServerPath()`.
 - Removed `craft\services\Path::getAssetsCachePath()`.
 - Removed `craft\services\Path::getResizedAssetsPath()`.
-- Removed support for `resized` and `icons` resource URLs.
+- Removed `craft\services\Path::getTempUploadsPath()`.
+- Removed support for `icons`, `resized` and `tempuploads` resource URLs.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

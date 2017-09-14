@@ -96,10 +96,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'tempuploads':
-                    array_shift($segs);
-
-                    return Craft::$app->getPath()->getTempUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 case 'tempassets':
                     array_shift($segs);
 

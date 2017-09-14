@@ -171,19 +171,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/temp/uploads/` directory.
-     *
-     * @return string
-     */
-    public function getTempUploadsPath(): string
-    {
-        $path = $this->getTempPath().DIRECTORY_SEPARATOR.'uploads';
-        FileHelper::createDirectory($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the `storage/runtime/assets/` directory.
      *
      * @return string
