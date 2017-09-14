@@ -566,27 +566,27 @@ class Assets extends Component
         // Does the file actually exist?
         if ($index->fileExists) {
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
-        } else {
-            if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
-                try {
-                    return $assetTransforms->ensureTransformUrlByIndexModel($index);
-                } catch (ImageException $exception) {
-                    Craft::warning($exception->getMessage(), __METHOD__);
-                    $assetTransforms->deleteTransformIndex($index->id);
+        }
 
-                    return UrlHelper::resourceUrl('404');
-                }
-            } else {
-                // Queue up a new Generate Pending Transforms job
-                if (!$this->_queuedGeneratePendingTransformsJob) {
-                    Craft::$app->getQueue()->push(new GeneratePendingTransforms());
-                    $this->_queuedGeneratePendingTransformsJob = true;
-                }
+        if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
+            try {
+                return $assetTransforms->ensureTransformUrlByIndexModel($index);
+            } catch (ImageException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
+                $assetTransforms->deleteTransformIndex($index->id);
 
-                // Return the temporary transform URL
-                return UrlHelper::resourceUrl('transforms/'.$index->id);
+                return UrlHelper::resourceUrl('404');
             }
         }
+
+        // Queue up a new Generate Pending Transforms job
+        if (!$this->_queuedGeneratePendingTransformsJob) {
+            Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+            $this->_queuedGeneratePendingTransformsJob = true;
+        }
+
+        // Return the temporary transform URL
+        return UrlHelper::resourceUrl('transforms/'.$index->id);
     }
 
     /**
