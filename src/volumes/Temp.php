@@ -48,7 +48,7 @@ class Temp extends Local
         }
 
         if ($this->url === null) {
-            $this->url = rtrim(UrlHelper::resourceUrl(), '/').'/tempassets/';
+            $this->url = UrlHelper::actionUrl('assets/download-temp-asset', ['path' => '']);
         }
 
         if ($this->name === null) {

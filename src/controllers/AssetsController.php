@@ -18,6 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
@@ -25,6 +26,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -49,7 +51,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform', 'download-temp-asset'];
 
     // Public Methods
     // =========================================================================
@@ -838,6 +840,29 @@ class AssetsController extends Controller
         }
 
         return $this->redirect($url);
+    }
+
+    /**
+     * Downloads a temporary asset.
+     *
+     * @param string $path
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
+     * @throws NotFoundHttpException if $path doesn't exist
+     */
+    public function actionDownloadTempAsset(string $path): Response
+    {
+        $path = ltrim($path, "/\\");
+        if (PathHelper::ensurePathIsContained($path) === false) {
+            throw new ForbiddenHttpException('Invalid path: '.$path);
+        }
+        $fullPath = Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$path;
+        if (!file_exists($fullPath)) {
+            throw new NotFoundHttpException('File not found: '.$path);
+        }
+        return Craft::$app->getResponse()
+            ->sendFile($fullPath, null, ['inline' => true]);
     }
 
     /**

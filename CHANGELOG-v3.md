@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\View::createTwig()`.
 - Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
 - Added a `@root` path alias, which is set to the project root directory (what `$craftPath`/`CRAFT_BASE_PATH` is set to in `index.php`).
+- Added the `assets/download-temp-asset` action, for viewing temporary assets that haven’t been placed in their permanent volume yet.
 - Added the `assets/generate-thumb` action, which generates an asset thumb and redirects to its URL.
 
 ### Changed
@@ -43,7 +44,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Path::getAssetsCachePath()`.
 - Removed `craft\services\Path::getResizedAssetsPath()`.
 - Removed `craft\services\Path::getTempUploadsPath()`.
-- Removed support for `icons`, `resized` and `tempuploads` resource URLs.
+- Removed support for `icons`, `resized`, `tempassets`, and `tempuploads` resource URLs.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

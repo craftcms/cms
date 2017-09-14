@@ -12,7 +12,6 @@ use craft\cache\AppPathDependency;
 use craft\events\ResolveResourcePathEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\Component;
 use yii\web\ForbiddenHttpException;
@@ -96,10 +95,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'tempassets':
-                    array_shift($segs);
-
-                    return Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 case 'rebrand':
                     if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
