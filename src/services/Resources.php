@@ -104,30 +104,6 @@ class Resources extends Component
                     array_shift($segs);
 
                     return Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
-                case 'resized':
-                    if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2])) {
-                        return $this->_getBrokenImageThumbPath();
-                    }
-                    $fileModel = Craft::$app->getAssets()->getAssetById($segs[1]);
-                    if (empty($fileModel)) {
-                        return $this->_getBrokenImageThumbPath();
-                    }
-                    $size = $segs[2];
-                    // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
-                    Craft::$app->getPlugins()->loadPlugins();
-                    try {
-                        $path = Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
-                    } catch (\Throwable $e) {
-                        $path = $this->_getBrokenImageThumbPath();
-                    }
-
-                    return $path;
-                case 'icons':
-                    if (empty($segs[1]) || !preg_match('/^\w+/i', $segs[1])) {
-                        return false;
-                    }
-
-                    return $this->_getIconPath($segs[1]);
                 case 'rebrand':
                     if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
@@ -294,58 +270,5 @@ class Resources extends Component
 
         // Return the normalized CSS URL declaration
         return $match[1].$url.$match[4];
-    }
-
-    /**
-     * Returns the icon path for a given extension
-     *
-     * @param string $ext
-     *
-     * @return string
-     */
-    private function _getIconPath(string $ext): string
-    {
-        $pathService = Craft::$app->getPath();
-        $sourceIconPath = Craft::getAlias('@app/icons/file.svg');
-        $extLength = mb_strlen($ext);
-
-        if ($extLength > 5) {
-            // Too long; just use the blank file icon
-            return $sourceIconPath;
-        }
-
-        // See if the icon already exists
-        $iconPath = $pathService->getAssetsIconsPath().DIRECTORY_SEPARATOR.StringHelper::toLowerCase($ext).'.svg';
-
-        if (file_exists($iconPath)) {
-            return $iconPath;
-        }
-
-        // Create a new one
-        $svgContents = file_get_contents($sourceIconPath);
-        if ($extLength <= 3) {
-            $textSize = '26';
-        } else {
-            $textSize = $extLength === 4 ? '22' : '18';
-        }
-        $textNode = '<text x="50" y="73" text-anchor="middle" font-family="sans-serif" fill="#8F98A3" '.
-            'font-size="'.$textSize.'">'.
-            StringHelper::toUpperCase($ext).
-            '</text>';
-        $svgContents = str_replace('<!-- EXT -->', $textNode, $svgContents);
-        FileHelper::writeToFile($iconPath, $svgContents);
-
-        return $iconPath;
-    }
-
-    /**
-     * Returns the path to the broken image thumbnail.
-     *
-     * @return string
-     */
-    private function _getBrokenImageThumbPath(): string
-    {
-        //http_response_code(404);
-        return Craft::getAlias('@app/icons/broken-image.svg');
     }
 }

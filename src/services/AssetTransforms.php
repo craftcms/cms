@@ -827,32 +827,6 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get a thumb server path by Asset model and size.
-     *
-     * @param Asset $asset
-     * @param int   $size
-     *
-     * @return bool|string
-     */
-    public function getResizedAssetServerPath(Asset $asset, int $size)
-    {
-        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().DIRECTORY_SEPARATOR.$size;
-        FileHelper::createDirectory($thumbFolder);
-        $extension = $this->_getThumbExtension($asset);
-        $thumbPath = $thumbFolder.DIRECTORY_SEPARATOR.$asset->id.'.'.$extension;
-
-        if (!is_file($thumbPath)) {
-            $imageSource = $this->getLocalImageSource($asset);
-
-            Craft::$app->getImages()->loadImage($imageSource, false, $size)
-                ->scaleToFit($size, $size)
-                ->saveAs($thumbPath);
-        }
-
-        return $thumbPath;
-    }
-
-    /**
      * Get a local image source to use for transforms.
      *
      * @param Asset $asset
@@ -1116,7 +1090,7 @@ class AssetTransforms extends Component
     public function deleteResizedAssetVersion(Asset $asset)
     {
         $dirs = [
-            Craft::$app->getPath()->getResizedAssetsPath(),
+            Craft::$app->getPath()->getAssetThumbsPath(),
             Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id
         ];
 
@@ -1383,22 +1357,5 @@ class AssetTransforms extends Component
         if (!$volume instanceof LocalVolumeInterface) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
-    }
-
-    /**
-     * Return the thumbnail extension for a asset.
-     *
-     * @param Asset $asset
-     *
-     * @return string
-     */
-    private function _getThumbExtension(Asset $asset): string
-    {
-        // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats(), true)) {
-            return 'jpg';
-        }
-
-        return $asset->getExtension();
     }
 }

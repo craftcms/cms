@@ -249,13 +249,13 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/cache/resized/` directory.
+     * Returns the path to the `storage/runtime/assets/thumbs/` directory.
      *
      * @return string
      */
-    public function getResizedAssetsPath(): string
+    public function getAssetThumbsPath(): string
     {
-        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'resized';
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'thumbs';
         FileHelper::createDirectory($path);
 
         return $path;

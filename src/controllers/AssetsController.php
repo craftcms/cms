@@ -25,6 +25,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -48,7 +49,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-transform'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     // Public Methods
     // =========================================================================
@@ -784,6 +785,29 @@ class AssetsController extends Controller
     }
 
     /**
+     * Generates a thumbnail.
+     *
+     * @param string $uid  The asset's UID
+     * @param int    $size The thumbnail size
+     *
+     * @return Response
+     */
+    public function actionGenerateThumb(string $uid, int $size): Response
+    {
+        $asset = Asset::find()->uid($uid)->one();
+        if (!$asset) {
+            return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: '.$uid));
+        }
+        try {
+            $url = Craft::$app->getAssets()->getThumbUrl($asset, $size, true);
+        } catch (\Exception $e) {
+            return $this->_handleImageException($e);
+        }
+
+        return $this->redirect($url);
+    }
+
+    /**
      * Generate a transform.
      *
      * @return Response
@@ -814,6 +838,25 @@ class AssetsController extends Controller
         }
 
         return $this->redirect($url);
+    }
+
+    /**
+     * Handles an error when generating a thumb/transform.
+     *
+     * @param \Exception $e The exception that was thrown
+     *
+     * @return Response
+     */
+    private function _handleImageException(\Exception $e): Response
+    {
+        Craft::$app->getErrorHandler()->logException($e);
+        $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
+        return Craft::$app->getResponse()
+            ->sendFile(Craft::getAlias('@app/icons/broken-image.svg'), 'nope.svg', [
+                'mimeType' => 'image/svg+xml',
+                'inline' => true,
+            ])
+            ->setStatusCode($statusCode);
     }
 
     /**

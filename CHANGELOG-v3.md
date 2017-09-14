@@ -9,9 +9,12 @@ Craft CMS 3.0 Working Changelog
 - Added support for a `CRAFT_LICENSE_KEY_PATH` PHP constant, which can be used to customize the location of the license key file. ([#1015](https://github.com/craftcms/cms/issues/1015))
 - Added the “Email” and “URL” field types. ([#1981](https://github.com/craftcms/cms/pull/1981))
 - Added `craft\helpers\StringHelper::split()`.
+- Added `craft\services\Assets::getThumbUrl()`.
+- Added `craft\services\Path::getAssetThumbsPath()`.
 - Added `craft\web\View::createTwig()`.
 - Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
 - Added a `@root` path alias, which is set to the project root directory (what `$craftPath`/`CRAFT_BASE_PATH` is set to in `index.php`).
+- Added the `assets/generate-thumb` action, which generates an asset thumb and redirects to its URL.
 
 ### Changed
 - Renamed the `validationKey` config setting to `securityKey`.
@@ -23,12 +26,19 @@ Craft CMS 3.0 Working Changelog
 - Queue info requests in the Control Panel no longer extend the user session.
 - `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
 - Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Asset thumbnails are now published to the web-accessible `cpresources/` folder, so they can be served by web servers directly rather than going through PHP. ([#1982](https://github.com/craftcms/cms/issues/1982))
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
 - Deprecated the `defaultFilePermissions`, `defaultFolderPermissions`, `useWriteFileLock`, `backupDbOnUpdate`, `restoreDbOnUpdateFailure`, `activateAccountFailurePath`, and `validationKey`. (These were removed outright in earlier Craft 3 Beta releases.)
 - Running Craft without the `securityKey` config setting explicitly set is now deprecated.
 - Deprecated `craft\services\Security::getValidationKey()`. Use `Craft::$app->config->general->securityKey` instead.
+
+### Removed
+- Removed `craft\elements\Asset::getHasThumb()`.
+- Removed `craft\services\AssetTransforms::getResizedAssetServerPath()`.
+- Removed `craft\services\Path::getResizedAssetsPath()`.
+- Removed support for `resized` and `icons` resource URLs.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

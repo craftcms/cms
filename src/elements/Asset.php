@@ -681,23 +681,7 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        if ($this->getHasThumb()) {
-            return UrlHelper::resourceUrl('resized/'.$this->id.'/'.$size, [
-                Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
-            ]);
-        } else {
-            return UrlHelper::resourceUrl('icons/'.$this->getExtension());
-        }
-    }
-
-    /**
-     * Returns whether the file has a thumbnail.
-     *
-     * @return bool
-     */
-    public function getHasThumb(): bool
-    {
-        return Image::canManipulateAsImage($this->getExtension());
+        return Craft::$app->getAssets()->getThumbUrl($this, $size, false);
     }
 
     /**

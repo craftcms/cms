@@ -590,6 +590,74 @@ class Assets extends Component
     }
 
     /**
+     * Returns the CP thumbnail URL for a given asset.
+     *
+     * @param Asset $asset
+     * @param int   $size
+     * @param bool  $generate Whether the thumbnail should be generated if it doesn't exist yet.
+     *
+     * @return string
+     * @see Asset::getThumbUrl()
+     */
+    public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
+    {
+        $ext = $asset->getExtension();
+
+        // If it's not an image, return a generic file extension icon
+        if (!Image::canManipulateAsImage($ext)) {
+            $dir = Craft::$app->getPath()->getAssetsIconsPath();
+            $name = strtolower($ext).'.svg';
+            $path = $dir.DIRECTORY_SEPARATOR.$name;
+
+            if (!file_exists($path)) {
+                $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
+                $extLength = strlen($ext);
+                if ($extLength <= 3) {
+                    $textSize = '26';
+                } else if ($extLength === 4) {
+                    $textSize = '22';
+                } else {
+                    if ($extLength > 5) {
+                        $ext = substr($ext, 0, 4).'…';
+                    }
+                    $textSize = '18';
+                }
+                $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">".strtoupper($ext).'</text>';
+                $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+                FileHelper::writeToFile($path, $svg);
+            }
+
+            return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+        }
+
+        // Make the thumb a JPG if the image format isn't safe for web
+        $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
+        $dir = Craft::$app->getPath()->getAssetThumbsPath().DIRECTORY_SEPARATOR.$asset->id;
+        $name = "thumb-{$size}x{$size}.{$ext}";
+        $path = $dir.DIRECTORY_SEPARATOR.$name;
+
+        if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
+            // If we're not ready to generate it yet, return the thumb generation URL instead
+            if (!$generate) {
+                return UrlHelper::actionUrl('assets/generate-thumb', [
+                    'uid' => $asset->uid,
+                    'size' => $size,
+                ]);
+            }
+
+            // Generate the thumb
+            FileHelper::createDirectory($dir);
+            $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
+            Craft::$app->getImages()->loadImage($imageSource, false, $size)
+                ->scaleToFit($size, $size)
+                ->saveAs($path);
+        }
+
+        // Publish the thumb directory (if necessary) and return the thumb's published URL
+        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+    }
+
+    /**
      * Find a replacement for a filename
      *
      * @param string $originalFilename the original filename for which to find a replacement.
