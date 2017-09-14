@@ -127,18 +127,6 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        if (!isset($config['csrfCookie'])) {
-            $config['csrfCookie'] = Craft::cookieConfig([], $this);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
         parent::init();
