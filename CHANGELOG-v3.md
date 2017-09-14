@@ -45,7 +45,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Path::getResizedAssetsPath()`.
 - Removed `craft\services\Path::getTempUploadsPath()`.
 - Removed `Craft.getResourceUrl()` (JS).
-- Removed support for `icons`, `rebrand`, `resized`, `tempassets`, and `tempuploads` resource URLs.
+- Removed support for `icons`, `rebrand`, `resized`, `tempassets`, `tempuploads`, and `transforms` resource URLs.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

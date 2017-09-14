@@ -586,7 +586,7 @@ class Assets extends Component
         }
 
         // Return the temporary transform URL
-        return UrlHelper::resourceUrl('transforms/'.$index->id);
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
     }
 
     /**

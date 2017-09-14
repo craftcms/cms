@@ -812,30 +812,34 @@ class AssetsController extends Controller
     /**
      * Generate a transform.
      *
+     * @param int|null $transformId
+     *
      * @return Response
+     * @throws NotFoundHttpException if the transform can't be found
      */
-    public function actionGenerateTransform(): Response
+    public function actionGenerateTransform(int $transformId = null): Response
     {
         $request = Craft::$app->getRequest();
-        $transformId = $request->getQueryParam('transformId');
-        $returnUrl = (bool)$request->getBodyParam('returnUrl', false);
 
         // If transform Id was not passed in, see if file id and handle were.
         $assetTransforms = Craft::$app->getAssetTransforms();
 
-        if (empty($transformId)) {
+        if ($transformId) {
+            $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
+        } else {
             $assetId = $request->getBodyParam('assetId');
             $handle = $request->getBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
-            $transformIndexModel = $assetTransforms->getTransformIndex($assetModel,
-                $handle);
-        } else {
-            $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
+            $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
+        }
+
+        if (!$transformIndexModel) {
+            throw new NotFoundHttpException('Image transform not found.');
         }
 
         $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
 
-        if ($returnUrl) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);
         }
 

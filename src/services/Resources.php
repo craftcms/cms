@@ -95,23 +95,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'transforms':
-                    // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
-                    Craft::$app->getPlugins()->loadPlugins();
-                    try {
-                        if (!empty($segs[1])) {
-                            $transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndexModelById((int)$segs[1]);
-                        }
-                        if (empty($transformIndexModel)) {
-                            throw new NotFoundHttpException(Craft::t('app', 'Image transform not found'));
-                        }
-                        $url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
-                    } catch (\Throwable $exception) {
-                        throw new ServerErrorHttpException($exception->getMessage());
-                    }
-                    Craft::$app->getResponse()->redirect($url);
-                    Craft::$app->end();
-                    break;
                 case '404':
                     throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
             }
