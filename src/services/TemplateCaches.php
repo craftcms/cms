@@ -277,8 +277,7 @@ class TemplateCaches extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
-        // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains(stripslashes($body), UrlHelper::siteUrl(UrlHelper::resourceTrigger().'/transforms'))) {
+        if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {
             return;
         }
 
