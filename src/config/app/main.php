@@ -131,10 +131,6 @@ return [
             'migrationNamespace' => 'craft\migrations',
             'migrationPath' => '@app/migrations',
         ],
-        'resources' => [
-            'class' => craft\services\Resources::class,
-            'dateParam' => 'd',
-        ],
         'sites' => [
             'class' => craft\services\Sites::class,
             'currentSite' => null,

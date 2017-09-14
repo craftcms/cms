@@ -73,7 +73,6 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Plugins         $plugins            The plugins service
  * @property Queue|QueueInterface            $queue              The job queue
  * @property \craft\services\Relations       $relations          The relations service
- * @property \craft\services\Resources       $resources          The resources service
  * @property \craft\services\Routes          $routes             The routes service
  * @property \craft\services\Search          $search             The search service
  * @property Security                        $security           The security component
@@ -973,17 +972,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('relations');
-    }
-
-    /**
-     * Returns the resources service.
-     *
-     * @return \craft\services\Resources The resources service
-     */
-    public function getResources()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('resources');
     }
 
     /**

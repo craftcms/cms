@@ -40,13 +40,13 @@ Craft CMS 3.0 Working Changelog
 - Deprecated `craft\services\Security::getValidationKey()`. Use `Craft::$app->config->general->securityKey` instead.
 
 ### Removed
+- Removed support for “resource URLs”, including the `resources` service (`craft\services\Resources`), `craft\helpers\UrlHelper::resourceTrigger()`, `craft\helpers\UrlHelper::resourceUrl()`, the `resourceUrl()` Twig function, the `Craft.getResourceUrl()` JS function,
+- Removed `craft\base\ApplicationTrait::getResources()`.
 - Removed `craft\elements\Asset::getHasThumb()`.
 - Removed `craft\services\AssetTransforms::getResizedAssetServerPath()`.
 - Removed `craft\services\Path::getAssetsCachePath()`.
 - Removed `craft\services\Path::getResizedAssetsPath()`.
 - Removed `craft\services\Path::getTempUploadsPath()`.
-- Removed `Craft.getResourceUrl()` (JS).
-- Removed support for `404`, `icons`, `rebrand`, `resized`, `tempassets`, `tempuploads`, and `transforms` resource URLs.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

@@ -35,7 +35,6 @@
             omitScriptNameInUrls:  {{ craft.app.config.general.omitScriptNameInUrls ? 'true' : 'false' }},
             usePathInfo:           {{ craft.app.config.general.usePathInfo ? 'true' : 'false' }},
             useCompressedJs:       {{ craft.app.config.general.useCompressedJs ? 'true' : 'false' }},
-            resourceTrigger:       "resources",
             actionTrigger:         "{{ craft.app.config.general.actionTrigger|e('js') }}",
             path:                  "{{ craft.app.request.getPathInfo()|e('js') }}",
             language:              "{{ craft.app.language|e('js') }}",
