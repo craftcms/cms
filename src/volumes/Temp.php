@@ -39,6 +39,8 @@ class Temp extends Local
     {
         parent::init();
 
+        $this->hasUrls = true;
+
         if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
