@@ -47,7 +47,7 @@
         },
 
         mounted() {
-            this.stripe = Stripe('pk_test_B2opWU3D3nmA2QXyHKlIx6so');
+            this.stripe = Stripe(window.stripeApiKey);
             this.elements = this.stripe.elements({locale: 'en'});
             this.card = this.elements.create('card');
 
