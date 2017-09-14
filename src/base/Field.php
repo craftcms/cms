@@ -207,7 +207,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 ['handle'],
                 UniqueValidator::class,
                 'targetClass' => FieldRecord::class,
-                'targetAttribute' => ['handle', 'context']
+                'targetAttribute' => ['handle', 'context'],
+                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
         ];
 

@@ -48,7 +48,7 @@ class TemplatesController extends Controller
     public function beforeAction($action)
     {
         $actionSegments = Craft::$app->getRequest()->getActionSegments();
-        if (isset($actionSegments[0]) && $actionSegments[0] === 'templates') {
+        if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
         }
 
@@ -128,15 +128,15 @@ class TemplatesController extends Controller
                 }
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
-            } else {
-                return $this->renderTemplate('_special/cantrun', [
-                    'reqCheck' => $reqCheck
-                ]);
             }
-        } else {
-            // Cache the base path.
-            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
+
+            return $this->renderTemplate('_special/cantrun', [
+                'reqCheck' => $reqCheck
+            ]);
         }
+
+        // Cache the base path.
+        Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
 
         return null;
     }

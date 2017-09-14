@@ -226,7 +226,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             // No Matrix-Inception, sorry buddy.
             /** @var Field|string $class */
             if ($class !== self::class) {
-                $fieldTypeOptions['new'] = [
+                $fieldTypeOptions['new'][] = [
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
@@ -237,7 +237,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             foreach ($this->getBlockTypes() as $blockType) {
                 foreach ($blockType->getFields() as $field) {
                     /** @var Field $field */
-                    if ($field->id) {
+                    if ($field->id && strpos((string)$field->id, 'new') !== 0) {
                         $fieldTypeOptions[$field->id] = [];
                         foreach ($fieldsService->getCompatibleFieldTypes($field, true) as $class) {
                             // No Matrix-Inception, sorry buddy.

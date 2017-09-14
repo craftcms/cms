@@ -20,6 +20,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
+use Twig_ExtensionInterface;
 use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -81,14 +82,24 @@ class View extends \yii\web\View
     private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
-     * @var Environment|null
+     * @var Environment|null The Twig environment instance used for CP templates
      */
-    private $_twig;
+    private $_cpTwig;
+
+    /**
+     * @var Environment|null The Twig environment instance used for site templates
+     */
+    private $_siteTwig;
 
     /**
      * @var
      */
     private $_twigOptions;
+
+    /**
+     * @var Twig_ExtensionInterface[] List of Twig extensions registered with [[registerTwigExtension()]]
+     */
+    private $_twigExtensions = [];
 
     /**
      * @var
@@ -195,25 +206,56 @@ class View extends \yii\web\View
      */
     public function getTwig(): Environment
     {
-        if ($this->_twig !== null) {
-            return $this->_twig;
-        }
+        return $this->_templateMode === self::TEMPLATE_MODE_CP
+            ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
+            : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
+    }
 
-        $this->_twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+    /**
+     * Creates a new Twig environment.
+     *
+     * @return Environment
+     */
+    public function createTwig(): Environment
+    {
+        $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
-        $this->_twig->addExtension(new \Twig_Extension_StringLoader());
-        $this->_twig->addExtension(new Extension($this, $this->_twig));
+        $twig->addExtension(new \Twig_Extension_StringLoader());
+        $twig->addExtension(new Extension($this, $twig));
 
         if (YII_DEBUG) {
-            $this->_twig->addExtension(new \Twig_Extension_Debug());
+            $twig->addExtension(new \Twig_Extension_Debug());
+        }
+
+        // Add plugin-supplied extensions
+        foreach ($this->_twigExtensions as $extension) {
+            $twig->addExtension($extension);
         }
 
         // Set our timezone
         /** @var \Twig_Extension_Core $core */
-        $core = $this->_twig->getExtension(\Twig_Extension_Core::class);
+        $core = $twig->getExtension(\Twig_Extension_Core::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
-        return $this->_twig;
+        return $twig;
+    }
+
+    /**
+     * Registers a new Twig extension, which will be added on existing environments and queued up for future environments.
+     *
+     * @param Twig_ExtensionInterface $extension
+     */
+    public function registerTwigExtension(Twig_ExtensionInterface $extension)
+    {
+        $this->_twigExtensions[] = $extension;
+
+        // Add it to any existing Twig environments
+        if ($this->_cpTwig !== null) {
+            $this->_cpTwig->addExtension($extension);
+        }
+        if ($this->_siteTwig !== null) {
+            $this->_siteTwig->addExtension($extension);
+        }
     }
 
     /**

@@ -4,14 +4,46 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added the `install/plugin` console command, which makes it possible to install plugins from the command line. ([#1973](https://github.com/craftcms/cms/pull/1973))
+- Added the `setup/security-key` console command, which generates a new security key and stores it in a `CRAFT_SECURITY_KEY` variable in the project’s `.env` file.
+- Added support for a `CRAFT_LICENSE_KEY_PATH` PHP constant, which can be used to customize the location of the license key file. ([#1015](https://github.com/craftcms/cms/issues/1015))
+- Added the “Email” and “URL” field types. ([#1981](https://github.com/craftcms/cms/pull/1981))
 - Added `craft\helpers\StringHelper::split()`.
+- Added `craft\web\View::createTwig()`.
+- Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
+- Added a `@root` path alias, which is set to the project root directory (what `$craftPath`/`CRAFT_BASE_PATH` is set to in `index.php`).
+
+### Changed
+- Renamed the `validationKey` config setting to `securityKey`.
+- If the `securityKey` config setting isn’t set, an auto-generated key will now be stored at `storage/security.key` rather than `storage/runtime/validation.key`.
+- Plugin translation sources are now configured with `forceTranslations` enabled.
+- Checkbox and radio groups now have `div.checkbox-group` and `div.radio-group` container elements. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Improved the performance of `craft\services\Images::getSupportImageFormats()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Improved the performance of `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Queue info requests in the Control Panel no longer extend the user session.
+- `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
+- Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
+- Deprecated the `defaultFilePermissions`, `defaultFolderPermissions`, `useWriteFileLock`, `backupDbOnUpdate`, `restoreDbOnUpdateFailure`, `activateAccountFailurePath`, and `validationKey`. (These were removed outright in earlier Craft 3 Beta releases.)
+- Running Craft without the `securityKey` config setting explicitly set is now deprecated.
+- Deprecated `craft\services\Security::getValidationKey()`. Use `Craft::$app->config->general->securityKey` instead.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))
 - Fixed a bug where the “Parent” field was showing up on Edit Entry pages in Structure sections that were limited to a single level. ([#1940](https://github.com/craftcms/cms/pull/1940))
+- Fixed a bug where the “Delete Stale Template Cache” task would fail when saving an existing Single section.
+- Fixed a bug where it was not possible to use `:notempty:` with PostgreSQL.
+- Fixed a bug where the `job` column in the `queue` table wasn’t large enough to store some job data. ([#1948](https://github.com/craftcms/cms/issues/1948))
+- Fixed a JS error that occurred on CP templates that extended `_layouts/cp` but overrode the `body` block to remove the sidebar, if there were any running/waiting jobs in the queue. ([#1950](https://github.com/craftcms/cms/issues/1950))
+- Updated some outdated references to `runPendingTasks()` in the CP JavaScript files, which resulted in JS errors. ([#1951](https://github.com/craftcms/cms/issues/1951))
+- Fixed a bug where the “Translation Method” setting was visible for existing Matrix sub-fields even when there was only one available translation method (e.g. Entries fields). ([#1967](https://github.com/craftcms/cms/issues/1967))
+- Fixed a bug where Craft would get confused whether or not it could manipulate SVG files. ([#1874](https://github.com/craftcms/cms/issues/1874))
+- Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel. ([#1957](https://github.com/craftcms/cms/issues/1957))
+- Fixed a “divide by zero” error when paginating an empty set of elements. ([#1970](https://github.com/craftcms/cms/pull/1970))
+- Fixed a bug where the “Host Name”, “Port”, and “Timeout” SMTP mailer type settings weren’t marked as required. ([#1976](https://github.com/craftcms/cms/issues/1976))
+- Fixed some weird behavior when saving a Matrix field with validation errors. ([#1971](https://github.com/craftcms/cms/issues/1971))
 
 ## 3.0.0-beta.26 - 2017-08-22
 

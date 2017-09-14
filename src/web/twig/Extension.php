@@ -751,8 +751,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $globals['currentUser'] = null;
         }
 
+        $templateMode = $this->view->getTemplateMode();
+
         // CP-only variables
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+        if ($templateMode === View::TEMPLATE_MODE_CP) {
             $globals['CraftEdition'] = Craft::$app->getEdition();
             $globals['CraftPersonal'] = Craft::Personal;
             $globals['CraftClient'] = Craft::Client;
@@ -767,8 +769,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $globals['siteName'] = $site->name;
             $globals['siteUrl'] = $site->baseUrl;
 
-            // Global sets (front end only)
-            if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
+            // Global sets (site templates only)
+            if ($templateMode === View::TEMPLATE_MODE_SITE) {
                 foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
                     $globals[$globalSet->handle] = $globalSet;
                 }

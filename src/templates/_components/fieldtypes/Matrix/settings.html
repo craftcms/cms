@@ -111,7 +111,7 @@
 
                                     {% if craft.app.getIsMultiSite() %}
                                         {% set translationMethods = field.supportedTranslationMethods %}
-                                        {% if translationMethods|length > 0 %}
+                                        {% if translationMethods|length > 1 %}
                                             <div id="translation-settings">
                                                 {{ forms.selectField({
                                                     label: "Translation Method"|t('app'),
