@@ -792,8 +792,7 @@ class AssetsController extends Controller
     {
         $request = Craft::$app->getRequest();
         $transformId = $request->getQueryParam('transformId');
-        $returnUrl = (bool)$request->getBodyParam('returnUrl',
-            false);
+        $returnUrl = (bool)$request->getBodyParam('returnUrl', false);
 
         // If transform Id was not passed in, see if file id and handle were.
         $assetTransforms = Craft::$app->getAssetTransforms();

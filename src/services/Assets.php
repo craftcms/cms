@@ -531,7 +531,6 @@ class Assets extends Component
     // File and folder managing
     // -------------------------------------------------------------------------
 
-
     /**
      * Get URL for a file.
      *
@@ -566,7 +565,6 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
         } else {
             if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
