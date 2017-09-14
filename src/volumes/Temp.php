@@ -42,7 +42,7 @@ class Temp extends Local
         if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
-            $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
+            $this->path = Craft::$app->getPath()->getTempAssetUploadsPath();
         }
 
         if ($this->url === null) {

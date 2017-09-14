@@ -871,7 +871,7 @@ class Assets extends Component
             $this->storeFolderRecord($folder);
         }
 
-        FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
+        FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$folderName);
 
         /**
          * @var VolumeFolder $folder ;

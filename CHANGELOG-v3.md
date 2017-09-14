@@ -27,6 +27,9 @@ Craft CMS 3.0 Working Changelog
 - `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
 - Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
 - Asset thumbnails are now published to the web-accessible `cpresources/` folder, so they can be served by web servers directly rather than going through PHP. ([#1982](https://github.com/craftcms/cms/issues/1982))
+- Moved the location of cached asset sources, thumbnails, and icons up to `storage/runtime/assets/`.
+- Renamed `craft\services\Path::getAssetsTempVolumePath()` to `getTempAssetUploadsPath()`.
+- Renamed `craft\services\Path::getAssetsImageSourcePath()` to `getAssetSourcesPath()`.
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
@@ -37,6 +40,7 @@ Craft CMS 3.0 Working Changelog
 ### Removed
 - Removed `craft\elements\Asset::getHasThumb()`.
 - Removed `craft\services\AssetTransforms::getResizedAssetServerPath()`.
+- Removed `craft\services\Path::getAssetsCachePath()`.
 - Removed `craft\services\Path::getResizedAssetsPath()`.
 - Removed support for `resized` and `icons` resource URLs.
 

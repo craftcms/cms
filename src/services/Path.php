@@ -197,24 +197,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/cache/` directory.
-     *
-     * @return string
-     */
-    public function getAssetsCachePath(): string
-    {
-        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'cache';
-        FileHelper::createDirectory($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the `storage/runtime/assets/tempuploads/` directory.
      *
      * @return string
      */
-    public function getAssetsTempVolumePath(): string
+    public function getTempAssetUploadsPath(): string
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads';
         FileHelper::createDirectory($path);
@@ -227,9 +214,9 @@ class Path extends Component
      *
      * @return string
      */
-    public function getAssetsImageSourcePath(): string
+    public function getAssetSourcesPath(): string
     {
-        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'sources';
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'sources';
         FileHelper::createDirectory($path);
 
         return $path;
@@ -268,7 +255,7 @@ class Path extends Component
      */
     public function getAssetsIconsPath(): string
     {
-        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'icons';
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'icons';
         FileHelper::createDirectory($path);
 
         return $path;

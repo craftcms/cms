@@ -103,7 +103,7 @@ class Resources extends Component
                 case 'tempassets':
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
+                    return Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 case 'rebrand':
                     if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
