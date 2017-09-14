@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
 - Asset thumbnails are now published to the web-accessible `cpresources/` folder, so they can be served by web servers directly rather than going through PHP. ([#1982](https://github.com/craftcms/cms/issues/1982))
 - Moved the location of cached asset sources, thumbnails, and icons up to `storage/runtime/assets/`.
+- Renamed `craft\services\Assets::getUrlForAsset()` to `getAssetUrl()`, and now it is possible that `null` will be returned.
 - Renamed `craft\services\Path::getAssetsTempVolumePath()` to `getTempAssetUploadsPath()`.
 - Renamed `craft\services\Path::getAssetsImageSourcePath()` to `getAssetSourcesPath()`.
 
@@ -45,7 +46,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Path::getResizedAssetsPath()`.
 - Removed `craft\services\Path::getTempUploadsPath()`.
 - Removed `Craft.getResourceUrl()` (JS).
-- Removed support for `icons`, `rebrand`, `resized`, `tempassets`, `tempuploads`, and `transforms` resource URLs.
+- Removed support for `404`, `icons`, `rebrand`, `resized`, `tempassets`, `tempuploads`, and `transforms` resource URLs.
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))

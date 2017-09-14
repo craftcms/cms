@@ -532,14 +532,14 @@ class Assets extends Component
     // -------------------------------------------------------------------------
 
     /**
-     * Get URL for a file.
+     * Returns the URL for an asset, possibly with a given transform applied.
      *
      * @param Asset                            $asset
      * @param AssetTransform|string|array|null $transform
      *
-     * @return string
+     * @return string|null
      */
-    public function getUrlForAsset(Asset $asset, $transform = null): string
+    public function getAssetUrl(Asset $asset, $transform = null)
     {
         // Maybe a plugin wants to do something here
         $event = new GetAssetUrlEvent([
@@ -574,8 +574,7 @@ class Assets extends Component
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage(), __METHOD__);
                 $assetTransforms->deleteTransformIndex($index->id);
-
-                return UrlHelper::resourceUrl('404');
+                return null;
             }
         }
 

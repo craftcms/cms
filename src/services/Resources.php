@@ -90,16 +90,6 @@ class Resources extends Component
      */
     public function resolveResourcePath(string $uri)
     {
-        $segs = explode('/', $uri);
-
-        // Special resource routing
-        if (isset($segs[0])) {
-            switch ($segs[0]) {
-                case '404':
-                    throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
-            }
-        }
-
         // Maybe a plugin wants to do something custom with this URL
         Craft::$app->getPlugins()->loadPlugins();
         $event = new ResolveResourcePathEvent([
