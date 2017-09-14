@@ -43,17 +43,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     assert.equal(Craft.getSiteUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/about?foo=1&bar=1');
     assert.equal(Craft.getSiteUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/about?foo=1#bar');
 
-    assert.equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/admin/resources?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/admin/resources?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/admin/resources?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/admin/resources?foo=1#bar');
-    assert.equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/admin/resources/about?foo=1#bar');
-
     assert.equal(Craft.getActionUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
@@ -99,17 +88,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     assert.equal(Craft.getSiteUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/about?foo=1&bar=1');
     assert.equal(Craft.getSiteUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/about?foo=1#bar');
 
-    assert.equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/resources?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/resources?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/resources?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/resources?foo=1#bar');
-    assert.equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/admin/resources/about?foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/resources/about?foo=1#bar');
-
     assert.equal(Craft.getActionUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('', 'foo=1&bar=1'), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('', '?foo=1&bar=1&'), 'http://craft.dev/index.php/admin/actions?foo=1&bar=1');
@@ -154,17 +132,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     assert.equal(Craft.getSiteUrl('about?foo=1', 'bar=1'), 'http://craft.dev/?p=about&foo=1&bar=1');
     assert.equal(Craft.getSiteUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/?p=about&foo=1&bar=1');
     assert.equal(Craft.getSiteUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=about&foo=1#bar');
-
-    assert.equal(Craft.getResourceUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/resources&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/resources&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', '?foo=1&bar=1&'), 'http://craft.dev/?p=admin/resources&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/resources&foo=1#bar');
-    assert.equal(Craft.getResourceUrl('about', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', '?foo=1&bar=1&'), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about?foo=1', 'bar=1'), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/?p=admin/resources/about&foo=1&bar=1');
-    assert.equal(Craft.getResourceUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/?p=admin/resources/about&foo=1#bar');
 
     assert.equal(Craft.getActionUrl('', {'foo': 1, 'bar': 1}), 'http://craft.dev/?p=admin/actions&foo=1&bar=1');
     assert.equal(Craft.getActionUrl('', 'foo=1&bar=1'), 'http://craft.dev/?p=admin/actions&foo=1&bar=1');

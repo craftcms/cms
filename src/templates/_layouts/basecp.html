@@ -30,7 +30,6 @@
             baseCpUrl:             "{{ cpUrl()|e('js') }}",
             baseSiteUrl:           "{{ siteUrl()|e('js') }}",
             actionUrl:             "{{ actionUrl()|e('js') }}",
-            resourceUrl:           "{{ resourceUrl()|e('js') }}",
             jqueryPaymentUrl:      "{{ (view.getAssetManager().getPublishedUrl('@lib/jquery.payment', true)~'/jquery.payment.min.js')|e('js') }}",
             scriptName:            "{{ craft.app.request.getScriptFilename()|e('js') }}",
             omitScriptNameInUrls:  {{ craft.app.config.general.omitScriptNameInUrls ? 'true' : 'false' }},

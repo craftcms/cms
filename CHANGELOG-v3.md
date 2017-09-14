@@ -44,6 +44,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Path::getAssetsCachePath()`.
 - Removed `craft\services\Path::getResizedAssetsPath()`.
 - Removed `craft\services\Path::getTempUploadsPath()`.
+- Removed `Craft.getResourceUrl()` (JS).
 - Removed support for `icons`, `resized`, `tempassets`, and `tempuploads` resource URLs.
 
 ### Fixed

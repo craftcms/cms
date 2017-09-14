@@ -1,4 +1,4 @@
-/*!   - 2017-09-06 */
+/*!   - 2017-09-14 */
 (function($){
 
 /** global: Craft */
@@ -402,17 +402,6 @@ $.extend(Craft,
          */
         getSiteUrl: function(path, params) {
             return this.getUrl(path, params, Craft.baseSiteUrl);
-        },
-
-        /**
-         * Returns a resource URL.
-         *
-         * @param {string} path
-         * @param {object|string|undefined} params
-         * @return string
-         */
-        getResourceUrl: function(path, params) {
-            return Craft.getUrl(path, params, Craft.resourceUrl);
         },
 
         /**

@@ -402,17 +402,6 @@ $.extend(Craft,
         },
 
         /**
-         * Returns a resource URL.
-         *
-         * @param {string} path
-         * @param {object|string|undefined} params
-         * @return string
-         */
-        getResourceUrl: function(path, params) {
-            return Craft.getUrl(path, params, Craft.resourceUrl);
-        },
-
-        /**
          * Returns an action URL.
          *
          * @param {string} path
