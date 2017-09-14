@@ -87,12 +87,15 @@ ul.categories li a img { position: absolute; top: 7px; left: 0; width: 24px;  }
 
 /* GlobalModal */
 
-.globalmodal { max-width: 900px; }
-.globalmodal .globalmodalcontent { position: relative; height: calc(100% - 72px); }
+.globalmodal { max-width: 850px;
+  max-height:650px; }
+/*.globalmodal .globalmodalcontent { position: relative; height: calc(100% - 72px); }*/
+.globalmodal .globalmodalcontent { position: relative; height: 100%; display: flex;
+  flex-direction:column; }
 .globalmodal .globalmodalcontent header .btn-left { position: absolute; top: 28px; left: 24px; }
 .globalmodal .globalmodalcontent header h1 { text-align: center; }
-.globalmodal .globalmodalcontent .body { position: relative; height: 100%; }
-.globalmodal .globalmodalcontent .body .content { margin: -24px; padding: 24px; overflow: auto; height: 100%; }
+.globalmodal .globalmodalcontent .body { position: relative; display: flex; flex-grow: 1; }
+.globalmodal .globalmodalcontent .body .content { margin: -24px; padding: 24px; overflow: auto; flex-grow: 1; }
 
 
 /* Payment */
@@ -114,16 +117,17 @@ ul.categories li a img { position: absolute; top: 7px; left: 0; width: 24px;  }
 
 /* PluginDetails */
 
+.plugin-details { position: relative; flex-grow: 1; display: flex; flex-direction: column; }
 .plugin-details-header { display: flex; }
 .plugin-details-header .plugin-icon-large { margin-right: 14px; }
 
-.plugin-details-header { display: flex; }
+.plugin-details-header { flex-shrink: 0; display: flex; border-bottom: 1px solid #eee; padding-bottom: 24px; margin-bottom: 24px; }
 .plugin-details-header .description { flex-grow:1; margin-left: 14px; }
 .plugin-details-header .description h2 { margin-bottom: 10px; }
 .plugin-details-header .description p { margin: 0.4em 0; }
 .plugin-details-header .buttons { margin-top:0; }
 
-.plugin-details-body { display: flex;  height: 500px; overflow: auto; }
+.plugin-details-body { flex-grow: 1; display: flex; overflow: auto; }
 .plugin-details-body .plugin-description { flex-grow: 1; }
 .plugin-details-body .plugin-sidebar { width: 300px; flex-shrink:0; margin-left: 24px; }
 .plugin-details-body .plugin-sidebar .plugin-meta { border: 1px solid #eee; border-radius: 4px; padding: 24px; }
@@ -132,6 +136,8 @@ ul.categories li a img { position: absolute; top: 7px; left: 0; width: 24px;  }
 .plugin-details-body .plugin-sidebar .plugin-meta ul li span,
 .plugin-details-body .plugin-sidebar .plugin-meta ul li strong { flex-grow:1; }
 .plugin-details-body .plugin-sidebar .plugin-meta ul li strong { text-align: right; }
+.plugin-details-body .screenshots { height: 250px; max-width: 470px;  overflow-x: auto; overflow-y: hidden; white-space:nowrap; }
+.plugin-details-body .screenshots img { height: 250px; margin-right: 20px; }
 
 
 /* PluginSearch */

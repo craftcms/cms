@@ -1,5 +1,5 @@
 <template>
-    <div v-if="plugin">
+    <div v-if="plugin" class="plugin-details">
         <div class="plugin-details-header">
             <div class="plugin-icon-large">
                 <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="60" />
@@ -32,8 +32,6 @@
             </div>
         </div>
 
-        <hr>
-
         <div class="plugin-details-body">
             <div class="plugin-description">
                 <h2>{{ "Description"|t('app') }}</h2>
@@ -41,10 +39,9 @@
 
                 <h2>{{ "Screenshots"|t('app') }}</h2>
 
-                <div v-for="screenshot in plugin.screenshots">
-                    <img :src="screenshot" height="150" />
+                <div class="screenshots">
+                    <img v-for="screenshot in plugin.screenshots" :src="screenshot" />
                 </div>
-
             </div>
 
             <div class="plugin-sidebar">

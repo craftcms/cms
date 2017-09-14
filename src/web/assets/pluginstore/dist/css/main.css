@@ -141,12 +141,19 @@ ul.categories li a img {
 
 /* GlobalModal */
 .globalmodal {
-  max-width: 900px;
+  max-width: 850px;
+  max-height: 650px;
 }
 
+/*.globalmodal .globalmodalcontent { position: relative; height: calc(100% - 72px); }*/
 .globalmodal .globalmodalcontent {
   position: relative;
-  height: calc(100% - 72px);
+  height: 100%;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
 }
 
 .globalmodal .globalmodalcontent header .btn-left {
@@ -161,14 +168,18 @@ ul.categories li a img {
 
 .globalmodal .globalmodalcontent .body {
   position: relative;
-  height: 100%;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-flex: 1;
+  flex-grow: 1;
 }
 
 .globalmodal .globalmodalcontent .body .content {
   margin: -24px;
   padding: 24px;
   overflow: auto;
-  height: 100%;
+  -webkit-box-flex: 1;
+  flex-grow: 1;
 }
 
 /* Payment */
@@ -223,6 +234,17 @@ ul.categories li a img {
 }
 
 /* PluginDetails */
+.plugin-details {
+  position: relative;
+  -webkit-box-flex: 1;
+  flex-grow: 1;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
+}
+
 .plugin-details-header {
   display: -webkit-box;
   display: flex;
@@ -233,8 +255,12 @@ ul.categories li a img {
 }
 
 .plugin-details-header {
+  flex-shrink: 0;
   display: -webkit-box;
   display: flex;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .plugin-details-header .description {
@@ -256,9 +282,10 @@ ul.categories li a img {
 }
 
 .plugin-details-body {
+  -webkit-box-flex: 1;
+  flex-grow: 1;
   display: -webkit-box;
   display: flex;
-  height: 500px;
   overflow: auto;
 }
 
@@ -298,6 +325,19 @@ ul.categories li a img {
 
 .plugin-details-body .plugin-sidebar .plugin-meta ul li strong {
   text-align: right;
+}
+
+.plugin-details-body .screenshots {
+  height: 250px;
+  max-width: 470px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+.plugin-details-body .screenshots img {
+  height: 250px;
+  margin-right: 20px;
 }
 
 /* PluginSearch */
