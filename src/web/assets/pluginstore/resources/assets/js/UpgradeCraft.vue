@@ -142,10 +142,10 @@
                 isInCart: 'isInCart',
             }),
             craftClientPlugin() {
-                return this.$store.getters.getPluginById(152);
+                return this.$store.getters.getPluginById(18);
             },
             craftProPlugin() {
-                return this.$store.getters.getPluginById(153);
+                return this.$store.getters.getPluginById(19);
             },
         },
 
