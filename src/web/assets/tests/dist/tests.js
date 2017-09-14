@@ -5,10 +5,8 @@ QUnit.test('Craft.getUrl()', function(assert) {
     Craft.baseCpUrl = 'http://craft.dev/admin';
     Craft.baseSiteUrl = 'http://craft.dev/';
     Craft.actionUrl = 'http://craft.dev/index.php/admin/actions';
-    Craft.resourceUrl = 'http://craft.dev/admin/resources';
     Craft.omitScriptNameInUrls = true;
     Craft.usePathInfo = true;
-    Craft.resourceTrigger = 'resources';
     Craft.actionTrigger = 'actions';
     Craft.path = '';
     Craft.language = 'en_us';
@@ -60,7 +58,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     Craft.baseCpUrl = 'http://craft.dev/index.php/admin';
     Craft.baseSiteUrl = 'http://craft.dev/';
     Craft.actionUrl = 'http://craft.dev/index.php/admin/actions';
-    Craft.resourceUrl = 'http://craft.dev/index.php/admin/resources';
     Craft.omitScriptNameInUrls = false;
 
     assert.equal(Craft.getUrl(), 'http://craft.dev/index.php/admin');
@@ -105,7 +102,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     Craft.baseCpUrl = 'http://craft.dev/?p=admin';
     Craft.baseSiteUrl = 'http://craft.dev/';
     Craft.actionUrl = 'http://craft.dev/?p=admin/actions';
-    Craft.resourceUrl = 'http://craft.dev/?p=admin/resources';
     Craft.usePathInfo = false;
 
     assert.equal(Craft.getUrl(), 'http://craft.dev/?p=admin');
@@ -148,7 +144,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     Craft.baseCpUrl = "http://craft.dev/admin";
     Craft.baseSiteUrl = "http://craft.dev/";
     Craft.actionUrl = "http://craft.dev/index.php?p=admin/actions";
-    Craft.resourceUrl = "http://craft.dev/admin/resources";
     Craft.omitScriptNameInUrls = true;
     Craft.usePathInfo = false;
 
