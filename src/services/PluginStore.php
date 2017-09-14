@@ -49,7 +49,7 @@ class PluginStore extends Component
     /**
      * @var string Stripe API key
      */
-    public $stripeApiKey = 'pk_test_B2opWU3D3nmA2QXyHKlIx6so';
+    public $stripeApiKey;
 
     // Public Methods
     // =========================================================================
