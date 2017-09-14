@@ -95,12 +95,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'rebrand':
-                    if (!in_array($segs[1], ['logo', 'icon'], true)) {
-                        return false;
-                    }
-
-                    return Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$segs[1].DIRECTORY_SEPARATOR.$segs[2];
                 case 'transforms':
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
