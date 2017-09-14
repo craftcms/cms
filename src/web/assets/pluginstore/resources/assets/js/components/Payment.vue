@@ -362,6 +362,8 @@
                             this.error = false;
 							this.$root.lastOrder = order;
 							this.$root.modalStep = 'thankYou';
+
+							this.$store.dispatch('resetCart');
 						})
 						.catch(response => {
 						    this.loading = false;

@@ -177,5 +177,15 @@ window.pluginStoreApp = new Vue({
             $this.openGlobalModal('payment');
         });
 
+
+        // reset-cart-button
+
+        let $resetCartButton = $('#reset-cart-button');
+
+        $resetCartButton.on('click', (e) => {
+            e.preventDefault();
+            this.$store.dispatch('resetCart');
+        });
+
     },
 });

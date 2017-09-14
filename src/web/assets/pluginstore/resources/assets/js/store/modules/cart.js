@@ -111,6 +111,11 @@ const actions = {
                     reject(response)
                 });
         })
+    },
+
+    resetCart({dispatch, commit}) {
+        commit(types.RESET_CART);
+        dispatch('saveCartState');
     }
 }
 
@@ -142,6 +147,10 @@ const mutations = {
             state.items = cartState.items;
             state.checkoutStatus = cartState.checkoutStatus;
         }
+    },
+
+    [types.RESET_CART] (state) {
+        state.items = [];
     },
 
     [types.CHECKOUT] (state, { order }) {
