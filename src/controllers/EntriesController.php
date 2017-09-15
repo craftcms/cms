@@ -163,6 +163,11 @@ class EntriesController extends BaseEntriesController
             // Get the initially selected parent
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
+            // Get first element if query contained an array and not a single id
+            if ($parentId && is_array($parentId)) {
+                $parentId = $parentId[0];
+            }
+
             if ($parentId === null && $entry->id !== null) {
                 // Is it already set on the model (e.g. if we're loading a draft)?
                 if ($entry->newParentId !== null) {
