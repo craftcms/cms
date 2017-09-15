@@ -684,6 +684,12 @@ class WebApp extends \CWebApplication
 			return;
 		}
 
+		// Because: https://bugs.php.net/bug.php?id=74980
+		if (version_compare(PHP_VERSION, '7.1', '>=') && strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false)
+		{
+			return;
+		}
+
 		parent::handleError($code, $message, $file, $line);
 	}
 
