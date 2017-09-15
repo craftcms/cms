@@ -168,12 +168,12 @@ class EntriesController extends BaseEntriesController
                 if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
                 } else {
-                    $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
-
-                    if (!empty($parentIds)) {
-                        $parentId = $parentIds[0];
-                    }
+                    $parentId = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
                 }
+            }
+
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {
@@ -247,7 +247,7 @@ class EntriesController extends BaseEntriesController
 
             if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
-                foreach ($entry->getAncestors() as $ancestor) {
+                foreach ($entry->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
                         'url' => $ancestor->getCpEditUrl()
@@ -910,7 +910,7 @@ class EntriesController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $parentId = reset($parentId) ?: null;
         }
 
         $entry->newParentId = $parentId ?: null;

@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2990 - 2017-09-15
 
 ### Changed
 - Added support for the `application/font-woff2` MIME type (`.woff2`). ([#1966](https://github.com/craftcms/cms/issues/1966))
@@ -14,11 +14,12 @@ Craft CMS Changelog
 - Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel.
 - Fixed a bug where transforms could break sometimes on external asset sources that used path prefix.
 - Fixed a bug where transforms would not be deleted when an Asset was being moved in some cases.
+- Implemented a workaround for [PHP bug #74980](https://bugs.php.net/bug.php?id=74980) that affected some Craft installs running PHP 7.1+.
 
 ### Security
 - Fixed an XSS vulnerability.
 
-## 2.6.2989  2017-08-15
+## 2.6.2989 - 2017-08-15
 
 ### Added
 - Added the [onLockUser](https://craftcms.com/docs/plugins/events-reference#users-onLockUser) event, which fires when a user account is locked.

@@ -529,10 +529,6 @@ class GeneralConfig extends Object
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
-     * @var string The URI segment Craft should use for resource URLs on the front end.
-     */
-    public $resourceTrigger = 'cpresources';
-    /**
      * @var string|null Craft will use the command line libraries `psql` and `mysql` for restoring a database
      * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
