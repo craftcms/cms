@@ -14,14 +14,16 @@
 {% endif %}
 
 {% if instructions or input %}
-    {% include "_includes/forms/field" with {
-        label: field.name|t('site')|e,
-        translatable: translatable,
-        siteId: siteId,
-        required: (not static ? required : false),
-        instructions: instructions|e,
-        id: field.handle,
-        errors: errors,
-        input: '<div data-type="'~className(field)~'">'~input~'</div>'
-    } only %}
+    <div class="field-wrapper" id="{{ field.handle }}-field-wrapper" data-type="{{ className(field) }}">
+        {% include "_includes/forms/field" with {
+            label: field.name|t('site')|e,
+            translatable: translatable,
+            siteId: siteId,
+            required: (not static ? required : false),
+            instructions: instructions|e,
+            id: field.handle,
+            errors: errors,
+            input: input
+        } only %}
+    </div>
 {% endif %}
