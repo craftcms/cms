@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2990 - 2017-09-15
 
 ### Changed
 - Added support for the `application/font-woff2` MIME type (`.woff2`). ([#1966](https://github.com/craftcms/cms/issues/1966))
@@ -18,7 +18,7 @@ Craft CMS Changelog
 ### Security
 - Fixed an XSS vulnerability.
 
-## 2.6.2989  2017-08-15
+## 2.6.2989 - 2017-08-15
 
 ### Added
 - Added the [onLockUser](https://craftcms.com/docs/plugins/events-reference#users-onLockUser) event, which fires when a user account is locked.
