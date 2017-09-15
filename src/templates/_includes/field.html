@@ -14,7 +14,7 @@
 {% endif %}
 
 {% if instructions or input %}
-    <div class="field-wrapper" data-type="{{ className(field) }}">
+    <div class="field-wrapper" id="{{ field.handle }}-field-wrapper" data-type="{{ className(field) }}">
         {% include "_includes/forms/field" with {
             label: field.name|t('site')|e,
             translatable: translatable,
