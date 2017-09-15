@@ -21,7 +21,7 @@
   "minimum-stability": "beta",
   "require": {
     "php": ">=7.0.0",
-    "craftcms/cms": "^3.0.0-beta.10",
+    "craftcms/cms": "^3.0.0-beta.27",
     "vlucas/phpdotenv": "^2.4.0",
     "roave/security-advisories": "dev-master"
   },
@@ -31,6 +31,9 @@
   "scripts": {
     "post-root-package-install": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-create-project-cmd": [
+      "@php craft setup/security-key"
     ]
   }
 }
