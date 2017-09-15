@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a PHP error that occurred when saving a new relational field within a Matrix field, if the “Manage relations on a per-site basis” setting was enabled. ([#1987](https://github.com/craftcms/cms/issues/1987))
+- Fixed a bug where the `setup/security-key` console command wouldn’t recognize that the `.env` file already specified a security key, if it wasn’t defined on the first line of the file.
 
 ## 3.0.0-beta.27 - 2017-09-15
 
