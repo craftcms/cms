@@ -340,7 +340,7 @@ class CategoriesController extends Controller
         ];
 
         /** @var Category $ancestor */
-        foreach ($category->getAncestors() as $ancestor) {
+        foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
                 'url' => $ancestor->getCpEditUrl()

@@ -439,7 +439,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $value = $element->getFieldValue($this->handle);
         $blocksValidate = true;
 
-        foreach ($value as $block) {
+        foreach ($value->all() as $block) {
             /** @var MatrixBlock $block */
             if (!$block->validate()) {
                 $blocksValidate = false;
@@ -461,7 +461,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $keywords = [];
         $contentService = Craft::$app->getContent();
 
-        foreach ($value as $block) {
+        foreach ($value->all() as $block) {
             $originalContentTable = $contentService->contentTable;
             $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
             $originalFieldContext = $contentService->fieldContext;

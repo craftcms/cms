@@ -40,7 +40,7 @@ Craft CMS 3.0 Working Changelog
 - Deprecated `craft\services\Security::getValidationKey()`. Use `Craft::$app->config->general->securityKey` instead.
 
 ### Removed
-- Removed support for “resource URLs”, including the `resources` service (`craft\services\Resources`), `craft\helpers\UrlHelper::resourceTrigger()`, `craft\helpers\UrlHelper::resourceUrl()`, the `resourceUrl()` Twig function, the `Craft.getResourceUrl()` JS function,
+- Removed support for “resource URLs”, including the `resources` service (`craft\services\Resources`), `craft\helpers\UrlHelper::resourceTrigger()`, `craft\helpers\UrlHelper::resourceUrl()`, the `resourceUrl()` Twig function, the `Craft.getResourceUrl()` JS function, the `resourceTrigger` config setting.
 - Removed `craft\base\ApplicationTrait::getResources()`.
 - Removed `craft\elements\Asset::getHasThumb()`.
 - Removed `craft\services\AssetTransforms::getResizedAssetServerPath()`.
@@ -63,6 +63,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the “Host Name”, “Port”, and “Timeout” SMTP mailer type settings weren’t marked as required. ([#1976](https://github.com/craftcms/cms/issues/1976))
 - Fixed some weird behavior when saving a Matrix field with validation errors. ([#1971](https://github.com/craftcms/cms/issues/1971))
 - Fixed a bug where temporary assets didn’t get URLs.
+- Fixed some deprecation errors in the Control Panel. ([#1983](https://github.com/craftcms/cms/issues/1983))
 
 ## 3.0.0-beta.26 - 2017-08-22
 
