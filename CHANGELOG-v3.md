@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- Console requests no longer validate the DB connection settings up front, so the `setup/security-key` console command can be run even with invalid settings.
+
 ### Fixed
 - Fixed a PHP error that occurred when saving a new relational field within a Matrix field, if the “Manage relations on a per-site basis” setting was enabled. ([#1987](https://github.com/craftcms/cms/issues/1987))
 - Fixed a bug where the `setup/security-key` console command wouldn’t recognize that the `.env` file already specified a security key, if it wasn’t defined on the first line of the file.
