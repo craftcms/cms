@@ -590,7 +590,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
-					$this->deleteSourceFile($from);
+                    @$this->_s3->deleteObject($sourceBucket, $from);
 				}
 			}
 			else
@@ -721,6 +721,29 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
 	}
 
+    /**
+     * @inheritDoc BaseAssetSourceType::copyTransform()
+     *
+     * @param AssetFileModel           $file
+     * @param string                   $targetFolderPath
+     * @param AssetTransformIndexModel $source
+     * @param AssetTransformIndexModel $target
+     *
+     * @return bool
+     */
+	public function copyTransform(AssetFileModel $file, $targetFolderPath, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
+    {
+        $sourceTransformPath = $this->_getPathPrefix().$file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $source);
+        $targetTransformPath = $this->_getPathPrefix().$targetFolderPath.craft()->assetTransforms->getTransformSubpath($file, $target);
+
+        if ($sourceTransformPath == $targetTransformPath)
+        {
+            return true;
+        }
+
+        return $this->copySourceFile($sourceTransformPath, $targetTransformPath);
+    }
+
 	/**
 	 * @inheritDoc BaseAssetSourceType::copySourceFile()
 	 *
@@ -737,6 +760,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$bucket = $this->getSettings()->bucket;
+
+        $this->_prepareForRequests();
 
 		return (bool) @$this->_s3->copyObject($bucket, $sourceUri, $bucket, $targetUri, $this->_getACL());
 	}

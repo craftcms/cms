@@ -44,7 +44,7 @@ class TemplatesController extends BaseController
 	public function beforeAction($action)
 	{
 		$actionSegments = craft()->request->getActionSegments();
-		if (isset($actionSegments[0]) && $actionSegments[0] === 'templates') {
+		if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
 			throw new HttpException(403);
 		}
 

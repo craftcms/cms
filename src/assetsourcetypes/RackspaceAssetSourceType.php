@@ -710,7 +710,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
-		$this->_copyFile($sourceUri, $targetUri);
+		$this->_copyFile($this->_getPathPrefix().$sourceUri, $this->_getPathPrefix().$targetUri);
 
 		// Optimist much?
 		return true;

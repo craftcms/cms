@@ -1,7 +1,24 @@
 Craft CMS Changelog
 ===================
 
-## 2.6.2989  2017-08-15
+## 2.6.2990 - 2017-09-15
+
+### Changed
+- Added support for the `application/font-woff2` MIME type (`.woff2`). ([#1966](https://github.com/craftcms/cms/issues/1966))
+- `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
+- Global sets’ global template variables are now available to all templates rendered when the Template Mode is set to `site`. ([#1953](https://github.com/craftcms/cms/issues/1953))
+
+### Fixed
+- Fixed a bug where you could get a PHP error uploading some JPG files on PHP 7.1.
+- Fixed a bug where user photos and site logos/icons were not taking into account the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting.
+- Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel.
+- Fixed a bug where transforms could break sometimes on external asset sources that used path prefix.
+- Fixed a bug where transforms would not be deleted when an Asset was being moved in some cases.
+
+### Security
+- Fixed an XSS vulnerability.
+
+## 2.6.2989 - 2017-08-15
 
 ### Added
 - Added the [onLockUser](https://craftcms.com/docs/plugins/events-reference#users-onLockUser) event, which fires when a user account is locked.

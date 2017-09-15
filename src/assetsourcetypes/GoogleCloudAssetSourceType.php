@@ -561,7 +561,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
-					$this->deleteSourceFile($from);
+                    @$this->_googleCloud->deleteObject($sourceBucket, $from);
 				}
 			}
 			else
@@ -707,6 +707,29 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		return false;
 	}
 
+    /**
+     * @inheritDoc BaseAssetSourceType::copyTransform()
+     *
+     * @param AssetFileModel           $file
+     * @param string                   $targetFolderPath
+     * @param AssetTransformIndexModel $source
+     * @param AssetTransformIndexModel $target
+     *
+     * @return bool
+     */
+    public function copyTransform(AssetFileModel $file, $targetFolderPath, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
+    {
+        $sourceTransformPath = $this->_getPathPrefix().$file->folderPath.craft()->assetTransforms->getTransformSubpath($file, $source);
+        $targetTransformPath = $this->_getPathPrefix().$targetFolderPath.craft()->assetTransforms->getTransformSubpath($file, $target);
+
+        if ($sourceTransformPath == $targetTransformPath)
+        {
+            return true;
+        }
+
+        return $this->copySourceFile($sourceTransformPath, $targetTransformPath);
+    }
+
 	/**
 	 * @inheritDoc BaseAssetSourceType::copySourceFile()
 	 *
@@ -722,7 +745,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 			return true;
 		}
 
-		$bucket = $this->getSettings()->bucket;
+        $bucket = $this->getSettings()->bucket;
+
+		$this->_prepareForRequests();
+
 		return (bool) @$this->_googleCloud->copyObject($bucket, $sourceUri, $bucket, $targetUri, $this->_getACL());
 	}
 

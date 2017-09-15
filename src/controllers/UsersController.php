@@ -1157,28 +1157,29 @@ class UsersController extends BaseController
 
 				$user = craft()->users->getUserById($userId);
 				$userName = AssetsHelper::cleanAssetName($user->username, false, true);
-
 				$folderPath = craft()->path->getTempUploadsPath().'userphotos/'.$userName.'/';
+				$fullPath = $folderPath.$fileName;
 
 				IOHelper::clearFolder($folderPath);
-
 				IOHelper::ensureFolderExists($folderPath);
 
-				move_uploaded_file($file->getTempName(), $folderPath.$fileName);
+				move_uploaded_file($file->getTempName(), $fullPath);
 
 				// Test if we will be able to perform image actions on this image
-				if (!craft()->images->checkMemoryForImage($folderPath.$fileName))
+				if (!craft()->images->checkMemoryForImage($fullPath))
 				{
-					IOHelper::deleteFile($folderPath.$fileName);
+					IOHelper::deleteFile($fullPath);
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				craft()->images->
-					loadImage($folderPath.$fileName)->
-					scaleToFit(500, 500, false)->
-					saveAs($folderPath.$fileName);
+				craft()->images->cleanImage($fullPath);
 
-				list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
+				craft()->images->
+					loadImage($fullPath)->
+					scaleToFit(500, 500, false)->
+					saveAs($fullPath);
+
+				list ($width, $height) = ImageHelper::getImageSize($fullPath);
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
