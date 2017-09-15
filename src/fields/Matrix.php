@@ -720,7 +720,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $oldBlocksById = [];
 
         // Get the old blocks that are still around
-        if ($element->id) {
+        if ($element && $element->id) {
             $ownerId = $element->id;
 
             $ids = [];
