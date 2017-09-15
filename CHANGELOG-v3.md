@@ -64,6 +64,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed some weird behavior when saving a Matrix field with validation errors. ([#1971](https://github.com/craftcms/cms/issues/1971))
 - Fixed a bug where temporary assets didn’t get URLs.
 - Fixed some deprecation errors in the Control Panel. ([#1983](https://github.com/craftcms/cms/issues/1983))
+- Fixed a PHP error that occurred when saving an entry or category with a parent entry/category, if there were any validation errors. ([#1984](https://github.com/craftcms/cms/issues/1984))
 
 ## 3.0.0-beta.26 - 2017-08-22
 

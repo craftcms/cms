@@ -168,12 +168,12 @@ class EntriesController extends BaseEntriesController
                 if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
                 } else {
-                    $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
-
-                    if (!empty($parentIds)) {
-                        $parentId = $parentIds[0];
-                    }
+                    $parentId = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
                 }
+            }
+
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {

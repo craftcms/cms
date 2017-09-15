@@ -305,11 +305,11 @@ class CategoriesController extends Controller
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $category->id !== null) {
-                $parentIds = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+                $parentId = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+            }
 
-                if (!empty($parentIds)) {
-                    $parentId = $parentIds[0];
-                }
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {
