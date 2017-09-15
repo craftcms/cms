@@ -13,9 +13,14 @@
     (first is defined and first ? 'first' : null),
     (errors ? 'has-errors' : null),
     (fieldClass is defined and fieldClass ? fieldClass : null)
-]|filter|join(' ') -%}
+]|filter|join(' ') %}
+{%- set dataAttributes %}
+    {%- if data is defined %}
+        {%- for dataKey, dataVal in data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
+    {%- endif %}
+{%- endset -%}
 
-<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}>
+<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}{{ dataAttributes }}>
     {% if label or instructions %}
         <div class="heading">
             {% if label %}

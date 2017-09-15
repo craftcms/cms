@@ -62,7 +62,6 @@ use yii\validators\Validator;
  * @property bool                  $isEditable            Whether the current user can edit the element
  * @property string|null           $cpEditUrl             The element’s CP edit URL
  * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
- * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
  * @property string|null           $status                The element’s status
  * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
  * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria

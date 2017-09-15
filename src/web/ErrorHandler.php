@@ -75,6 +75,19 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
+    public function handleError($code, $message, $file, $line)
+    {
+        // Because: https://bugs.php.net/bug.php?id=74980
+        if (PHP_VERSION_ID >= 70100 && strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
+            return null;
+        }
+
+        return parent::handleError($code, $message, $file, $line);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getExceptionName($exception)
     {
         // Yii isn't translating its own exceptions' names, so meh

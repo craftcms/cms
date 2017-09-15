@@ -1190,7 +1190,10 @@ class Elements extends Component
         }
 
         // Normalize the paths and find any custom path criterias
-        $with = ArrayHelper::toArray($with);
+        if (is_string($with)) {
+            $with = StringHelper::split($with);
+        }
+
         $paths = [];
         $pathCriterias = [];
 

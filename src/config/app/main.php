@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.26',
-    'schemaVersion' => '3.0.58',
+    'version' => '3.0.0-beta.27',
+    'schemaVersion' => '3.0.61',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -130,10 +130,6 @@ return [
             'type' => craft\db\MigrationManager::TYPE_APP,
             'migrationNamespace' => 'craft\migrations',
             'migrationPath' => '@app/migrations',
-        ],
-        'resources' => [
-            'class' => craft\services\Resources::class,
-            'dateParam' => 'd',
         ],
         'sites' => [
             'class' => craft\services\Sites::class,

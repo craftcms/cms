@@ -23,6 +23,14 @@ use yii\base\InvalidParamException;
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static $mimeMagicFile = '@app/config/mimeTypes.php';
+
     // Properties
     // =========================================================================
 

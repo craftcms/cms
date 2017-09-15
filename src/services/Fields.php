@@ -25,6 +25,7 @@ use craft\fields\Checkboxes as CheckboxesField;
 use craft\fields\Color as ColorField;
 use craft\fields\Date as DateField;
 use craft\fields\Dropdown as DropdownField;
+use craft\fields\Email as EmailField;
 use craft\fields\Entries as EntriesField;
 use craft\fields\Lightswitch as LightswitchField;
 use craft\fields\Matrix as MatrixField;
@@ -37,6 +38,7 @@ use craft\fields\RadioButtons as RadioButtonsField;
 use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
+use craft\fields\Url as UrlField;
 use craft\fields\Users as UsersField;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
@@ -385,6 +387,7 @@ class Fields extends Component
             ColorField::class,
             DateField::class,
             DropdownField::class,
+            EmailField::class,
             EntriesField::class,
             LightswitchField::class,
             MatrixField::class,
@@ -396,6 +399,7 @@ class Fields extends Component
             RichTextField::class,
             TableField::class,
             TagsField::class,
+            UrlField::class,
             UsersField::class,
         ];
 

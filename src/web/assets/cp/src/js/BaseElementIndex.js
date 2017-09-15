@@ -678,7 +678,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         afterAction: function(action, params) {
 
             // There may be a new background task that needs to be run
-            Craft.cp.runPendingTasks();
+            Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
         },

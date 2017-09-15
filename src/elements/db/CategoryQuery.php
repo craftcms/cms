@@ -11,8 +11,8 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\Category;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use yii\db\Connection;
 
@@ -201,7 +201,11 @@ class CategoryQuery extends ElementQuery
             return;
         }
 
-        $refs = ArrayHelper::toArray($this->ref);
+        $refs = $this->ref;
+        if (!is_array($refs)) {
+            $refs = is_string($refs) ? StringHelper::split($refs) : [$refs];
+        }
+
         $condition = ['or'];
         $joinCategoryGroups = false;
 

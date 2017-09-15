@@ -90,15 +90,15 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
 // Set the vendor path. By default assume that it's 4 levels up from here
 $vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
 
-// Set the base directory path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$basePath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+// Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
+$rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
-$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
-$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
-$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
-$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
+$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath.'/config';
+$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath.'/migrations';
+$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath.'/storage';
+$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath.'/templates';
+$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath.'/translations';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -188,6 +188,7 @@ spl_autoload_unregister(['Yii', 'autoload']);
 spl_autoload_register(['Yii', 'autoload'], true, false);
 
 // Set aliases
+Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);

@@ -124,8 +124,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
             var data = {
                 assetId: elementId,
-                handle: transform,
-                returnUrl: true
+                handle: transform
             };
 
             Craft.postActionRequest('assets/generate-transform', data, $.proxy(function(response, textStatus) {
