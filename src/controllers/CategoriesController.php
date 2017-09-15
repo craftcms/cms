@@ -767,7 +767,7 @@ class CategoriesController extends Controller
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $parentId = reset($parentId) ?: null;
         }
 
         $category->newParentId = $parentId ?: null;

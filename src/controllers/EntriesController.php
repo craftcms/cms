@@ -910,7 +910,7 @@ class EntriesController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $parentId = reset($parentId) ?: null;
         }
 
         $entry->newParentId = $parentId ?: null;
