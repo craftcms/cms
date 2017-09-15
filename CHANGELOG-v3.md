@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.28 - 2017-09-15
 
 ### Changed
 - Console requests no longer validate the DB connection settings up front, so the `setup/security-key` console command can be run even with invalid settings.
