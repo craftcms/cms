@@ -39,11 +39,11 @@ class DeleteStaleTemplateCaches extends BaseJob
         // What type of element(s) are we dealing with?
         if (is_array($this->elementId)) {
             $elementType = Craft::$app->getElements()->getElementTypesByIds($this->elementId);
-        } else {
+        } else if ($this->elementId) {
             $elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
         }
 
-        if ($elementType === null) {
+        if (empty($elementType)) {
             return;
         }
 
