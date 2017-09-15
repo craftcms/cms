@@ -15,6 +15,7 @@
 
 {% if instructions or input %}
     {% include "_includes/forms/field" with {
+        data: {type: className(field)},
         label: field.name|t('site')|e,
         translatable: translatable,
         siteId: siteId,
@@ -22,6 +23,6 @@
         instructions: instructions|e,
         id: field.handle,
         errors: errors,
-        input: '<div data-type="'~className(field)~'">'~input~'</div>'
+        input: input
     } only %}
 {% endif %}

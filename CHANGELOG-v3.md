@@ -16,6 +16,7 @@ Craft CMS 3.0 Working Changelog
 - Added a `@root` path alias, which is set to the project root directory (what `$craftPath`/`CRAFT_BASE_PATH` is set to in `index.php`).
 - Added the `assets/download-temp-asset` action, for viewing temporary assets that haven’t been placed in their permanent volume yet.
 - Added the `assets/generate-thumb` action, which generates an asset thumb and redirects to its URL.
+- The `_includes/forms/field` include template now supports passing a `data` variable, set to an object of `data-x` attribute name/value pairs.
 
 ### Changed
 - Renamed the `validationKey` config setting to `securityKey`.
@@ -26,7 +27,7 @@ Craft CMS 3.0 Working Changelog
 - Improved the performance of `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
 - Queue info requests in the Control Panel no longer extend the user session.
 - `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
-- Custom field inputs in the Control Panel are now wrapped with a `<div>` element with a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Custom field inputs’ `<div class="field">` container elements now have a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
 - Asset thumbnails are now published to the web-accessible `cpresources/` folder, so they can be served by web servers directly rather than going through PHP. ([#1982](https://github.com/craftcms/cms/issues/1982))
 - Moved the location of cached asset sources, thumbnails, and icons up to `storage/runtime/assets/`.
 - Renamed `craft\services\Assets::getUrlForAsset()` to `getAssetUrl()`, and now it is possible that `null` will be returned.
