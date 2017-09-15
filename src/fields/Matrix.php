@@ -99,7 +99,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return $this->_blockTypes;
         }
 
-        if ($this->id === null) {
+        if ($this->getIsNew()) {
             return [];
         }
 
@@ -233,11 +233,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
         }
 
-        if ($this->id) {
+        if (!$this->getIsNew()) {
             foreach ($this->getBlockTypes() as $blockType) {
                 foreach ($blockType->getFields() as $field) {
                     /** @var Field $field */
-                    if ($field->id && strpos((string)$field->id, 'new') !== 0) {
+                    if (!$field->getIsNew()) {
                         $fieldTypeOptions[$field->id] = [];
                         foreach ($fieldsService->getCompatibleFieldTypes($field, true) as $class) {
                             // No Matrix-Inception, sorry buddy.
@@ -720,7 +720,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $oldBlocksById = [];
 
         // Get the old blocks that are still around
-        if ($element->id) {
+        if ($element && $element->id) {
             $ownerId = $element->id;
 
             $ids = [];

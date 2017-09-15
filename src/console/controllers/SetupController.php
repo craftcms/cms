@@ -46,7 +46,7 @@ class SetupController extends Controller
         $config = Craft::$app->getConfig()->getGeneral();
         $qName = preg_quote($name, '/');
         $key = Craft::$app->getSecurity()->generateRandomString();
-        $contents = preg_replace("/^(\s*){$qName}=.*/", "\$1{$name}=\"{$key}\"", $contents, -1, $count);
+        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$key}\"", $contents, -1, $count);
         if ($count === 0) {
             if ($this->confirm("{$name} could not be found in {$path}. Would you like to add it?")) {
                 $contents = rtrim($contents);

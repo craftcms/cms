@@ -460,7 +460,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $this->_makeExistingRelationsTranslatable = false;
 
-        if ($this->id && $this->localizeRelations) {
+        if (!$this->getIsNew() && $this->localizeRelations) {
             /** @var Field $existingField */
             $existingField = Craft::$app->getFields()->getFieldById($this->id);
 
