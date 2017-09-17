@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
+
 ### Fixed
 - Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
 
