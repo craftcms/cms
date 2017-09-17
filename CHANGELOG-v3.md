@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
+
 ### Changed
 - It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
 
