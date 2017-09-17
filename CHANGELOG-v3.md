@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
+- Fixed a PHP error that occurred after cancelling a DB-only update.
 
 ## 3.0.0-beta.28 - 2017-09-15
 

@@ -165,10 +165,18 @@ class UpdaterController extends Controller
             $this->_data['dbBackupPath'] = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
             Craft::error('Error backing up the database: '.$e->getMessage(), __METHOD__);
+            if (!empty($this->_data['install'])) {
+                $firstAction = $this->_actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
+            } else {
+                $firstAction = $this->_finishedState([
+                    'label' => Craft::t('app', 'Abort the update'),
+                    'status' => Craft::t('app', 'Update aborted.')
+                ]);
+            }
             return $this->_send([
                 'error' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
                 'options' => [
-                    $this->_actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT),
+                    $firstAction,
                     $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_BACKUP),
                     $this->_actionOption(Craft::t('app', 'Continue anyway'), self::ACTION_MIGRATE),
                 ]
