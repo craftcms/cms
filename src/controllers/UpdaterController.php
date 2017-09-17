@@ -35,6 +35,7 @@ class UpdaterController extends Controller
     // Constants
     // =========================================================================
 
+    const ACTION_FORCE_UPDATE = 'force-update';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_BACKUP = 'backup';
     const ACTION_INSTALL = 'install';
@@ -131,6 +132,16 @@ class UpdaterController extends Controller
         $this->getView()->registerJs('Craft.updater = (new Craft.Updater()).setState('.Json::encode($state).');');
 
         return $this->renderTemplate('_special/updates/go');
+    }
+
+    /**
+     * Forces the update even if Craft is already in Maintenance Mode.
+     *
+     * @return Response
+     */
+    public function actionForceUpdate(): Response
+    {
+        return $this->_send($this->_initialState(true));
     }
 
     /**
@@ -471,9 +482,11 @@ class UpdaterController extends Controller
     /**
      * Returns the initial state for the updater JS.
      *
+     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
+     *
      * @return array
      */
-    private function _initialState(): array
+    private function _initialState(bool $force = false): array
     {
         // Is there anything to install/update?
         if (empty($this->_data['install']) && empty($this->_data['migrate'])) {
@@ -483,10 +496,13 @@ class UpdaterController extends Controller
         }
 
         // Is Craft already in Maintenance Mode?
-        if (Craft::$app->getIsInMaintenanceMode()) {
+        if (!$force && Craft::$app->getIsInMaintenanceMode()) {
             // Bail if Craft is already in maintenance mode
             return [
-                'error' => Craft::t('app', 'It looks like someone is currently performing a system update.'),
+                'error' => str_replace('<br>', "\n\n", Craft::t('app', 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
+                'options' => [
+                    $this->_actionOption(Craft::t('app', 'Continue'), self::ACTION_FORCE_UPDATE, ['submit' => true]),
+                ]
             ];
         }
 
@@ -646,6 +662,9 @@ class UpdaterController extends Controller
         $state['nextAction'] = $nextAction;
 
         switch ($nextAction) {
+            case self::ACTION_FORCE_UPDATE:
+                $state['status'] = Craft::t('app', 'Updating…');
+                break;
             case self::ACTION_RECHECK_COMPOSER:
                 $state['status'] = Craft::t('app', 'Checking…');
                 break;
