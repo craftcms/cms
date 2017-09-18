@@ -6,7 +6,7 @@
 {%- set instructions = (instructions is defined ? instructions : null) %}
 {%- set warning = (warning is defined ? warning : null) %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
-{%- set translatable = translatable ?? site is not same as(null) %}
+{%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
 {%- set fieldClass = [
     'field',

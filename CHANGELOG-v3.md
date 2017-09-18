@@ -3,8 +3,28 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
+
+### Changed
+- It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
+- `options` arrays passed to `_includes/forms/checkboxGroup.html` and `checkboxSelect.html` can now contain any of the properties supported by `checkbox.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
+- `options` arrays passed to `_includes/forms/radioGroup.html` can now contain any of the properties supported by `radio.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
+- The `limit` property is no longer required by `_includes/forms/elementSelect.html`.
+
+### Fixed
+- Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
+- Fixed a PHP error that occurred after cancelling a DB-only update.
+- Fixed a bug where all fields were getting marked as translatable on edit pages. ([#1996](https://github.com/craftcms/cms/issues/1996))
+
+## 3.0.0-beta.28 - 2017-09-15
+
+### Changed
+- Console requests no longer validate the DB connection settings up front, so the `setup/security-key` console command can be run even with invalid settings.
+
 ### Fixed
 - Fixed a PHP error that occurred when saving a new relational field within a Matrix field, if the “Manage relations on a per-site basis” setting was enabled. ([#1987](https://github.com/craftcms/cms/issues/1987))
+- Fixed a bug where the `setup/security-key` console command wouldn’t recognize that the `.env` file already specified a security key, if it wasn’t defined on the first line of the file.
 
 ## 3.0.0-beta.27 - 2017-09-15
 

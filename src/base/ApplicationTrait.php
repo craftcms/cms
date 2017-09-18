@@ -1217,8 +1217,10 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
+        if ((bool)$info->maintenance === $value) {
+            return true;
+        }
         $info->maintenance = $value;
-
         return $this->saveInfo($info);
     }
 

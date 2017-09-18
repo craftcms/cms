@@ -450,11 +450,6 @@ class Application extends \yii\web\Application
                 ]));
             }
 
-            // Bail if Craft is already in maintenance mode
-            if ($this->getIsInMaintenanceMode()) {
-                throw new ServiceUnavailableHttpException(Craft::t('app', 'It looks like someone is currently performing a system update.'));
-            }
-
             // Clear the template caches in case they've been compiled since this release was cut.
             FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
 
