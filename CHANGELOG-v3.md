@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
 - Fixed a PHP error that occurred after cancelling a DB-only update.
+- Fixed a bug where all fields were getting marked as translatable on edit pages. ([#1996](https://github.com/craftcms/cms/issues/1996))
 
 ## 3.0.0-beta.28 - 2017-09-15
 
