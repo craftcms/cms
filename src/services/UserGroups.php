@@ -98,11 +98,11 @@ class UserGroups extends Component
     /**
      * Gets a user group by its handle.
      *
-     * @param int $groupHandle
+     * @param string $groupHandle
      *
      * @return UserGroup
      */
-    public function getGroupByHandle(int $groupHandle): UserGroup
+    public function getGroupByHandle(string $groupHandle): UserGroup
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['handle' => $groupHandle])
