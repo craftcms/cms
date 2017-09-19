@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
+- Added the `Craft.DynamicGenerator` JavaScript class, for creating dynamic input generators.
 
 ### Changed
 - It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
