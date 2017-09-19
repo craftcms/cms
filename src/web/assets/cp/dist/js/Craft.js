@@ -1,4 +1,4 @@
-/*!   - 2017-08-14 */
+/*!   - 2017-09-19 */
 (function($){
 
 /** global: Craft */
@@ -402,17 +402,6 @@ $.extend(Craft,
          */
         getSiteUrl: function(path, params) {
             return this.getUrl(path, params, Craft.baseSiteUrl);
-        },
-
-        /**
-         * Returns a resource URL.
-         *
-         * @param {string} path
-         * @param {object|string|undefined} params
-         * @return string
-         */
-        getResourceUrl: function(path, params) {
-            return Craft.getUrl(path, params, Craft.resourceUrl);
         },
 
         /**
@@ -2516,7 +2505,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         afterAction: function(action, params) {
 
             // There may be a new background task that needs to be run
-            Craft.cp.runPendingTasks();
+            Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
         },
@@ -6147,7 +6136,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         responseArray.push(data);
 
                         // If assets were just merged we should get the reference tags updated right away
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
 
                     if (responseArray.length >= parameterArray.length) {
@@ -6532,8 +6521,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
             var data = {
                 assetId: elementId,
-                handle: transform,
-                returnUrl: true
+                handle: transform
             };
 
             Craft.postActionRequest('assets/generate-transform', data, $.proxy(function(response, textStatus) {
@@ -6644,13 +6632,12 @@ Craft.AuthManager = Garnish.Base.extend(
                 dataType: 'json',
                 complete: $.proxy(function(jqXHR, textStatus) {
                     if (textStatus === 'success') {
-                        this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
-
-                        this.submitLoginIfLoggedOut = false;
-
                         if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                             Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
                         }
+
+                        this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
+                        this.submitLoginIfLoggedOut = false;
                     }
                     else {
                         this.updateRemainingSessionTime(-1);
@@ -8826,7 +8813,7 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _trackJobProgressInternal: function() {
-            Craft.queueActionRequest('queue/get-job-info', $.proxy(function(response, textStatus) {
+            Craft.queueActionRequest('queue/get-job-info?dontExtendSession=1', $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
                     this.trackJobProgressTimeout = null;
                     this.setJobInfo(response, true);
@@ -8895,7 +8882,7 @@ Craft.CP = Garnish.Base.extend(
         },
 
         updateJobIcon: function(animate) {
-            if (!this.enableQueue) {
+            if (!this.enableQueue || !this.$nav.length) {
                 return;
             }
 
@@ -10039,6 +10026,25 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         defaults: {
             onSubmit: $.noop,
             redirect: null
+        }
+    });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Handle Generator
+ */
+Craft.DynamicGenerator = Craft.BaseInputGenerator.extend(
+    {
+        callback: $.noop,
+
+        init: function(source, target, callback) {
+            this.callback = callback;
+            this.base(source, target);
+        },
+
+        generateTargetValue: function(sourceVal) {
+            return this.callback(sourceVal);
         }
     });
 
@@ -14718,7 +14724,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                         }
 
                         // See if we should run any pending tasks
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
                 }, this));
             }

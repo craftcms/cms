@@ -99,7 +99,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return $this->_blockTypes;
         }
 
-        if ($this->id === null) {
+        if ($this->getIsNew()) {
             return [];
         }
 
@@ -226,18 +226,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             // No Matrix-Inception, sorry buddy.
             /** @var Field|string $class */
             if ($class !== self::class) {
-                $fieldTypeOptions['new'] = [
+                $fieldTypeOptions['new'][] = [
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
             }
         }
 
-        if ($this->id) {
+        if (!$this->getIsNew()) {
             foreach ($this->getBlockTypes() as $blockType) {
                 foreach ($blockType->getFields() as $field) {
                     /** @var Field $field */
-                    if ($field->id) {
+                    if (!$field->getIsNew()) {
                         $fieldTypeOptions[$field->id] = [];
                         foreach ($fieldsService->getCompatibleFieldTypes($field, true) as $class) {
                             // No Matrix-Inception, sorry buddy.
@@ -439,7 +439,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $value = $element->getFieldValue($this->handle);
         $blocksValidate = true;
 
-        foreach ($value as $block) {
+        foreach ($value->all() as $block) {
             /** @var MatrixBlock $block */
             if (!$block->validate()) {
                 $blocksValidate = false;
@@ -461,7 +461,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $keywords = [];
         $contentService = Craft::$app->getContent();
 
-        foreach ($value as $block) {
+        foreach ($value->all() as $block) {
             $originalContentTable = $contentService->contentTable;
             $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
             $originalFieldContext = $contentService->fieldContext;
@@ -720,7 +720,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $oldBlocksById = [];
 
         // Get the old blocks that are still around
-        if ($element->id) {
+        if ($element && $element->id) {
             $ownerId = $element->id;
 
             $ids = [];

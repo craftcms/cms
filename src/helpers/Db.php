@@ -506,7 +506,7 @@ class Db
                         $condition[] = [
                             'not',
                             [
-                                [$column => null],
+                                $column => null,
                             ]
                         ];
                     }

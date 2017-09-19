@@ -88,31 +88,23 @@ class UserGroups extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if ($result) {
-            return new UserGroup($result);
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
      * Gets a user group by its handle.
      *
-     * @param int $groupHandle
+     * @param string $groupHandle
      *
      * @return UserGroup
      */
-    public function getGroupByHandle(int $groupHandle): UserGroup
+    public function getGroupByHandle(string $groupHandle): UserGroup
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['handle' => $groupHandle])
             ->one();
 
-        if ($result) {
-            return new UserGroup($result);
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**

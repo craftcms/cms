@@ -673,7 +673,7 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        return Craft::$app->getAssets()->getUrlForAsset($this, $transform);
+        return Craft::$app->getAssets()->getAssetUrl($this, $transform);
     }
 
     /**
@@ -681,23 +681,7 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        if ($this->getHasThumb()) {
-            return UrlHelper::resourceUrl('resized/'.$this->id.'/'.$size, [
-                Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
-            ]);
-        } else {
-            return UrlHelper::resourceUrl('icons/'.$this->getExtension());
-        }
-    }
-
-    /**
-     * Returns whether the file has a thumbnail.
-     *
-     * @return bool
-     */
-    public function getHasThumb(): bool
-    {
-        return Image::canManipulateAsImage($this->getExtension());
+        return Craft::$app->getAssets()->getThumbUrl($this, $size, false);
     }
 
     /**
@@ -814,7 +798,7 @@ class Asset extends Element
             return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());
         }
 
-        return Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
+        return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
     }
 
     /**

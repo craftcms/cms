@@ -98,9 +98,6 @@ class Application extends \yii\web\Application
      */
     public function handleRequest($request): Response
     {
-        // If this is a resource request, we should respond with the resource ASAP
-        $this->_processResourceRequest();
-
         $headers = $this->getResponse()->getHeaders();
 
         if ($request->getIsCpRequest()) {
@@ -298,25 +295,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * Processes resource requests.
-     *
-     * @throws HttpException
-     * @return void
-     */
-    private function _processResourceRequest()
-    {
-        $request = $this->getRequest();
-
-        if ($request->getIsResourceRequest()) {
-            // Get the path segments, except for the first one which we already know is "resources"
-            $segs = array_slice(array_merge($request->getSegments()), 1);
-            $uri = implode('/', $segs);
-
-            $this->getResources()->sendResource($uri);
-        }
-    }
-
-    /**
      * Processes install requests.
      *
      * @param Request $request
@@ -470,11 +448,6 @@ class Application extends \yii\web\Application
                     'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
                     'targetVersion' => Craft::$app->getVersion(),
                 ]));
-            }
-
-            // Bail if Craft is already in maintenance mode
-            if ($this->getIsInMaintenanceMode()) {
-                throw new ServiceUnavailableHttpException(Craft::t('app', 'It looks like someone is currently performing a system update.'));
             }
 
             // Clear the template caches in case they've been compiled since this release was cut.

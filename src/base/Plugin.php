@@ -70,6 +70,7 @@ class Plugin extends Module implements PluginInterface
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => $this->getBasePath().DIRECTORY_SEPARATOR.'translations',
+                'forceTranslation' => true,
                 'allowOverrides' => true,
             ];
         }

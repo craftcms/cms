@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
+use craft\errors\InvalidPluginException;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
@@ -65,12 +66,16 @@ class InstallController extends Controller
     public function options($actionID)
     {
         $options = parent::options($actionID);
-        $options[] = 'email';
-        $options[] = 'username';
-        $options[] = 'password';
-        $options[] = 'siteName';
-        $options[] = 'siteUrl';
-        $options[] = 'language';
+
+        if ($actionID === 'index') {
+            $options[] = 'email';
+            $options[] = 'username';
+            $options[] = 'password';
+            $options[] = 'siteName';
+            $options[] = 'siteUrl';
+            $options[] = 'language';
+        }
+
         return $options;
     }
 
@@ -80,7 +85,7 @@ class InstallController extends Controller
     public function actionIndex()
     {
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout("Craft is already installed!\n");
+            $this->stdout('Craft is already installed!'.PHP_EOL);
             return;
         }
 
@@ -106,7 +111,7 @@ class InstallController extends Controller
         }
 
         if (!empty($errors)) {
-            $this->stderr("Invalid arguments:\n    - ".implode("\n    - ", $errors)."\n");
+            $this->stderr('Invalid arguments:'.PHP_EOL.'    - '.implode(PHP_EOL.'    - ', $errors).PHP_EOL);
             return;
         }
 
@@ -136,14 +141,31 @@ class InstallController extends Controller
         $migrator = Craft::$app->getMigrator();
 
         if ($migrator->migrateUp($migration) !== false) {
-            $this->stdout("{$siteName} was successfully installed.\n", Console::FG_GREEN);
+            $this->stdout($siteName.' was successfully installed.'.PHP_EOL, Console::FG_GREEN);
 
             // Mark all existing migrations as applied
             foreach ($migrator->getNewMigrations() as $name) {
                 $migrator->addMigrationHistory($name);
             }
         } else {
-            $this->stderr("There was a problem installing {$siteName}.\n", Console::FG_RED);
+            $this->stderr("There was a problem installing {$siteName}.".PHP_EOL, Console::FG_RED);
+        }
+    }
+    
+    /**
+     * Installs a plugin
+     *
+     * @param string $handle
+     */
+    public function actionPlugin(string $handle)
+    {
+        try {
+            Craft::$app->plugins->installPlugin($handle);
+            $this->stdout($handle.' sucessfully installed!'.PHP_EOL);
+        } catch (InvalidPluginException $e) {
+            $this->stderr('Could not find a plugin with the handle: '.$handle.PHP_EOL);
+        } catch (Exception $e) {
+            $this->stderr("There was a problem installing {$handle}: ".$e->getMessage().PHP_EOL);
         }
     }
 
@@ -209,12 +231,12 @@ class InstallController extends Controller
         top:
         $this->stdout('Password: ');
         if (($password = CliPrompt::hiddenPrompt()) === '') {
-            $this->stdout("Invalid input.\n");
+            $this->stdout('Invalid input.'.PHP_EOL);
             goto top;
         }
         $this->stdout('Confirm: ');
         if (!($matched = ($password === CliPrompt::hiddenPrompt()))) {
-            $this->stdout("Passwords didn't match, try again.\n");
+            $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL);
             goto top;
         }
         return $password;

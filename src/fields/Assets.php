@@ -195,8 +195,9 @@ class Assets extends BaseRelationField
 
         // Get all the value's assets' filenames
         /** @var Element $element */
+        /** @var AssetQuery $value */
         $value = $element->getFieldValue($this->handle);
-        foreach ($value as $asset) {
+        foreach ($value->all() as $asset) {
             /** @var Asset $asset */
             $filenames[] = $asset->filename;
         }

@@ -24,6 +24,17 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 {
     /**
      * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Use LONGBLOB for "binary" columns rather than BLOB
+        $this->typeMap[Schema::TYPE_BINARY] = 'longblob';
+    }
+
+    /**
+     * @inheritdoc
      *
      * @param string      $table   the name of the table to be created. The name will be properly quoted by the method.
      * @param array       $columns the columns (name => definition) in the new table.

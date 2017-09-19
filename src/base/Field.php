@@ -207,12 +207,13 @@ abstract class Field extends SavableComponent implements FieldInterface
                 ['handle'],
                 UniqueValidator::class,
                 'targetClass' => FieldRecord::class,
-                'targetAttribute' => ['handle', 'context']
+                'targetAttribute' => ['handle', 'context'],
+                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
         ];
 
         // Only validate the ID if it's not a new field
-        if ($this->id !== null && strpos($this->id, 'new') !== 0) {
+        if (!$this->getIsNew()) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 

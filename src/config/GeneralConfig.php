@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
@@ -528,10 +529,6 @@ class GeneralConfig extends Object
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
-     * @var string The URI segment Craft should use for resource URLs on the front end.
-     */
-    public $resourceTrigger = 'cpresources';
-    /**
      * @var string|null Craft will use the command line libraries `psql` and `mysql` for restoring a database
      * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
@@ -571,6 +568,14 @@ class GeneralConfig extends Object
      * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
      */
     public $sanitizeSvgUploads = true;
+    /**
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
+     * data in [[\craft\services\Security]].
+     *
+     * This value should be the same across all environments. Note that if this key ever changes, any data that
+     * was encrypted with it will be inaccessible.
+     */
+    public $securityKey;
     /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
@@ -692,15 +697,6 @@ class GeneralConfig extends Object
      */
     public $useXSendFile = false;
     /**
-     * @var string|null If set, should be a private, random, cryptographically secure key that is used to generate HMAC
-     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-     * If not set, a random one is generated for you. Ultimately saved in `storage/runtime/validation.key`.
-     *
-     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
-     * should be set to the same key across all web servers.
-     */
-    public $validationKey;
-    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
@@ -714,6 +710,33 @@ class GeneralConfig extends Object
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Check for renamed settings
+        $renamedSettings = [
+            'defaultFilePermissions' => 'defaultFileMode',
+            'defaultFolderPermissions' => 'defaultDirMode',
+            'useWriteFileLock' => 'useFileLocks',
+            'backupDbOnUpdate' => 'backupOnUpdate',
+            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+            'activateAccountFailurePath' => 'invalidUserTokenPath',
+            'validationKey' => 'securityKey',
+        ];
+
+        foreach ($renamedSettings as $old => $new) {
+            if (array_key_exists($old, $config)) {
+                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.");
+                $config[$new] = $config[$old];
+                unset($config[$old]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
