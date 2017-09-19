@@ -1,4 +1,4 @@
-/*!   - 2017-09-14 */
+/*!   - 2017-09-19 */
 (function($){
 
 /** global: Craft */
@@ -10026,6 +10026,25 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         defaults: {
             onSubmit: $.noop,
             redirect: null
+        }
+    });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Handle Generator
+ */
+Craft.DynamicGenerator = Craft.BaseInputGenerator.extend(
+    {
+        callback: $.noop,
+
+        init: function(source, target, callback) {
+            this.callback = callback;
+            this.base(source, target);
+        },
+
+        generateTargetValue: function(sourceVal) {
+            return this.callback(sourceVal);
         }
     });
 
