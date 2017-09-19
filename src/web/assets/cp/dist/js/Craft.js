@@ -5496,7 +5496,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 fileuploaddone: $.proxy(this, '_onUploadComplete')
             };
 
-            if (typeof this.settings.criteria.kind !== 'undefined') {
+            if (this.settings.criteria && typeof this.settings.criteria.kind !== 'undefined') {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
