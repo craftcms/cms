@@ -88,11 +88,7 @@ class UserGroups extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if ($result) {
-            return new UserGroup($result);
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
@@ -108,11 +104,7 @@ class UserGroups extends Component
             ->where(['handle' => $groupHandle])
             ->one();
 
-        if ($result) {
-            return new UserGroup($result);
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
