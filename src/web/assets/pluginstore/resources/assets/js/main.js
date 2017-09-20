@@ -157,35 +157,35 @@ window.pluginStoreApp = new Vue({
 
         let $this = this;
 
+        if(window.enableCraftId) {
+            // Cart Button
 
-        // Cart Button
+            this.$cartButton = $('#cart-button')
 
-        this.$cartButton = $('#cart-button')
-
-        this.$cartButton.on('click', (e) => {
-            e.preventDefault();
-            $this.openGlobalModal('cart');
-        });
-        
-
-        // Payment button
-
-        let $paymentButton = $('#payment-button');
-
-        $paymentButton.on('click', (e) => {
-            e.preventDefault();
-            $this.openGlobalModal('payment');
-        });
+            this.$cartButton.on('click', (e) => {
+                e.preventDefault();
+                $this.openGlobalModal('cart');
+            });
 
 
-        // reset-cart-button
+            // Payment button
 
-        let $resetCartButton = $('#reset-cart-button');
+            let $paymentButton = $('#payment-button');
 
-        $resetCartButton.on('click', (e) => {
-            e.preventDefault();
-            this.$store.dispatch('resetCart');
-        });
+            $paymentButton.on('click', (e) => {
+                e.preventDefault();
+                $this.openGlobalModal('payment');
+            });
 
+
+            // reset-cart-button
+
+            let $resetCartButton = $('#reset-cart-button');
+
+            $resetCartButton.on('click', (e) => {
+                e.preventDefault();
+                this.$store.dispatch('resetCart');
+            });
+        }
     },
 });
