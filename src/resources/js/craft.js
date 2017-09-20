@@ -1,4 +1,4 @@
-/*! Craft  - 2017-09-06 */
+/*! Craft  - 2017-09-20 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -16259,6 +16259,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 		this.addListener(this.$addTagInput, 'textchange', $.proxy(function()
 		{
+			var val = this.$addTagInput.val();
+			if (val !== (val = val.trim()))
+			{
+				this.$addTagInput.val(val).data('garnish-textchange-value', val);
+			}
+
 			if (this.searchTimeout)
 			{
 				clearTimeout(this.searchTimeout);
