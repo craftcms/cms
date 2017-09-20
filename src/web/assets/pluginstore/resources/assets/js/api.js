@@ -21,7 +21,10 @@ export default {
     },
 
     getDeveloper(developerId, cb, errorCb) {
-        Vue.http.get(window.craftApiEndpoint+'/developer/'+developerId)
+        let body = { enableCraftId: window.enableCraftId };
+        let options = { emulateJSON: true };
+
+        Vue.http.post(window.craftApiEndpoint+'/developer/'+developerId, body, options)
             .then(data => {
                 let developer = data.body;
                 return cb(developer);
