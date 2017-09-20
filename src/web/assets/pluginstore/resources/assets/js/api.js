@@ -32,7 +32,9 @@ export default {
     },
 
     getPluginStoreData(cb, errorCb) {
-        Vue.http.get(window.craftApiEndpoint+'/plugin-store')
+        let body = { enableCraftId: window.enableCraftId };
+        let options = { emulateJSON: true };
+        Vue.http.post(window.craftApiEndpoint+'/plugin-store', body, options)
             .then(response => {
                 return cb(response.body);
             })
