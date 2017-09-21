@@ -34,10 +34,7 @@
 
         <div class="plugin-details-body">
             <div class="plugin-description">
-                <h2>{{ "Description"|t('app') }}</h2>
                 <div v-html="description"></div>
-
-                <h2>{{ "Screenshots"|t('app') }}</h2>
 
                 <div class="screenshots">
                     <img v-for="screenshot in plugin.screenshots" :src="screenshot" />
