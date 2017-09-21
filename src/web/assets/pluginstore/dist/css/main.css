@@ -300,7 +300,7 @@ ul.categories li a img {
 }
 
 .plugin-details-body .plugin-sidebar {
-  width: 300px;
+  width: 260px;
   flex-shrink: 0;
   margin-left: 24px;
 }
@@ -333,16 +333,12 @@ ul.categories li a img {
 }
 
 .plugin-details-body .screenshots {
-  height: 250px;
-  max-width: 470px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
+  margin-top: 24px;
 }
 
 .plugin-details-body .screenshots img {
-  height: 250px;
-  margin-right: 20px;
+  width: 100%;
+  margin-bottom: 24px;
 }
 
 /* PluginSearch */
