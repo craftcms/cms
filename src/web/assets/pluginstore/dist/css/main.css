@@ -66,6 +66,11 @@
   margin-top: 24px;
 }
 
+#install {
+  text-align: center;
+  padding: 48px;
+}
+
 #graphic {
   display: inline-block;
   width: 48px;

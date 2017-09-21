@@ -5,8 +5,10 @@
 		</div>
 
 		<div v-if="plugin">
-			<div class="spinner"></div>
-			<p>Installing {{ plugin.title }}…</p>
+			<div id="install">
+				<div id="graphic" class="spinner big"></div>
+				<p>Installing {{ plugin.title }}…</p>
+			</div>
 		</div>
 	</div>
 </template>
@@ -51,7 +53,7 @@
 
 					this.$store.dispatch('installPlugin', { plugin })
 						.then(data => {
-							if(plugin.price === '00.00') {
+							if(plugin.price === '0.00') {
                                 this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
 							} else {
                                 this.$root.displayNotice(Craft.t('app', 'Plugin installed in trial mode.'));
