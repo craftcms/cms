@@ -423,7 +423,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%oauth_tokens}}', [
+        $this->createTable('{{%oauthtokens}}', [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'provider' => $this->string()->notNull(),
@@ -445,6 +445,14 @@ class Install extends Migration
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
             'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%pluginstoretokens}}', [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'oauthTokenId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -803,8 +811,9 @@ class Install extends Migration
         $this->createIndex(null, '{{%matrixblocktypes}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%migrations}}', ['pluginId'], false);
         $this->createIndex(null, '{{%migrations}}', ['type', 'pluginId'], false);
-        $this->createIndex(null, '{{%oauth_tokens}}', ['provider', 'userId'], false);
+        $this->createIndex(null, '{{%oauthtokens}}', ['provider', 'userId'], false);
         $this->createIndex(null, '{{%plugins}}', ['handle'], true);
+        $this->createIndex(null, '{{%pluginstoretokens}}', ['userId'], true);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'delay']);
         $this->createIndex(null, '{{%relations}}', ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], true);
@@ -953,7 +962,9 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%matrixblocktypes}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%matrixblocktypes}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%migrations}}', ['pluginId'], '{{%plugins}}', ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%oauth_tokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%oauthtokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%pluginstoretokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%pluginstoretokens}}', ['oauthTokenId'], '{{%oauthtokens}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['sourceId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['sourceSiteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');

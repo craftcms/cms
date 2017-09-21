@@ -1993,7 +1993,7 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 
 #global-sidebar .photo-container { vertical-align: middle; width: 32px; height: 32px; }
 
-#global-sidebar .photo-container img { display: block; width: 32px; height: 32px; border-radius: 3px; }
+#global-sidebar .photo-container > img { display: block; width: 32px; height: 32px; border-radius: 100%; }
 
 #global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden; }
 
@@ -2019,6 +2019,8 @@ body.rtl #global-sidebar .topbar .settings { padding-left: 0; }
 body.ltr #global-sidebar .topbar .settingsmenu { padding-left: 0; }
 body.rtl #global-sidebar .topbar .settingsmenu { padding-right: 0; }
 
+#global-sidebar .topbar a:hover { background-color: transparent; }
+
 #global-sidebar #job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
 
 #global-sidebar #job-icon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
@@ -2035,19 +2037,28 @@ body.rtl #global-sidebar .topbar .settingsmenu { padding-right: 0; }
 
 #global-sidebar #job-icon:hover .progressbar-inner { background: #fff; }
 
-#global-sidebar .bottombar #account-info { height: 60px; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: center; align-items: center; position: relative; }
-body.ltr #global-sidebar .bottombar #account-info { padding: 0 17px 0 7px; }
-body.rtl #global-sidebar .bottombar #account-info { padding: 0 7px 0 17px; }
+#global-sidebar #account-info.menubtn:after { display: none !important; }
 
-#global-sidebar .bottombar #account-info:after { display: none; }
+#global-sidebar a#account-info:focus { outline: none; }
 
-#global-sidebar .bottombar #account-info > div { padding: 7px; }
+#global-sidebar #account-info .photo-container { position: relative; }
 
-#global-sidebar .bottombar #account-info .username { width: 108px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 16px; }
+#global-sidebar #account-info .photo-container .craftid { position: absolute; bottom: -3px; right: -3px; border: 2px solid #333f4d; border-radius: 100%; }
 
-#global-sidebar .bottombar #account-info #account-menu-anchor { padding: 7px 0; width: 28px; text-align: center; }
+#global-sidebar #account-info .photo-container .craftid > img { display: block; width: 14px; height: 14px; }
 
-#global-sidebar .bottombar #account-info #account-menu-anchor:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'upangle'; font-size: 24px; }
+#account-info-preview { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -webkit-box-orient: horizontal; -ms-flex-direction: row; flex-direction: row; }
+
+#account-info-preview:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; margin-top: 21px; margin-left: 14px; font-size: 13px; color: #8f98a3; }
+body.ltr #account-info-preview:after { content: 'rightangle'; }
+body.rtl #account-info-preview:after { content: 'leftangle'; }
+
+body.ltr #account-info-preview .photo-container { margin-right: 14px; }
+body.rtl #account-info-preview .photo-container { margin-left: 14px; }
+
+#account-info-preview .photo-container > img { border-radius: 100%; }
+
+#account-info-preview .photo-container .craftid > img { position: relative; top: 3px; }
 
 /* container */
 #container { overflow: auto; display: block; -webkit-box-orient: vertical; -ms-flex-direction: column; flex-direction: column; position: relative; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }

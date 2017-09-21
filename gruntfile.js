@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		watch: {
 			sass: {
-				files: ['src/web/assets/**/*.scss'],
+				files: ['src/web/assets/**/*.scss', '!src/web/assets/pluginstoreapp/**/*.scss'],
 				tasks: 'sass'
 			},
 			cpjs: {
@@ -12,7 +12,7 @@ module.exports = function(grunt) {
 				tasks: ['concat', 'uglify:cpjs'],
 			},
 			otherjs: {
-				files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js'],
+				files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js', '!src/web/assets/pluginstoreapp/**/*.js'],
 				tasks: ['uglify:otherjs']
 			},
             colorpickerjs: {
@@ -32,7 +32,10 @@ module.exports = function(grunt) {
             dist: {
                 expand: true,
                 cwd: 'src/web/assets',
-                src: '**/*.scss',
+                src: [
+                	'**/*.scss',
+                    '!pluginstoreapp/**/*.scss'
+				],
                 dest: 'src/web/assets',
 				rename: function(dest, src) {
                 	// Keep them where they came from
@@ -52,7 +55,8 @@ module.exports = function(grunt) {
 					'src/web/assets/cp/src/js/Craft.js',
 					'src/web/assets/cp/src/js/Base*.js',
 					'src/web/assets/cp/src/js/*.js',
-					'!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)'
+					'!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)',
+                    '!src/web/assets/pluginstoreapp/**/*.js',
 				],
 				dest: 'src/web/assets/cp/dist/js/Craft.js'
 			}
@@ -101,7 +105,8 @@ module.exports = function(grunt) {
 				'gruntfile.js',
 				'src/web/assets/**/*.js',
 				'!src/web/assets/**/*.min.js',
-				'!src/web/assets/cp/dist/js/Craft.js'
+				'!src/web/assets/cp/dist/js/Craft.js',
+				'!src/web/assets/pluginstoreapp/**/*.js',
 			],
 			afterconcat: [
 				'src/web/assets/cp/dist/js/Craft.js'

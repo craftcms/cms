@@ -36,6 +36,30 @@ class Cp extends Component
     // =========================================================================
 
     /**
+     * Returns the Craft ID account.
+     *
+     * @return array|null
+     */
+    public function craftIdAccount()
+    {
+        try {
+            return Craft::$app->getPluginStore()->getCraftIdAccount();
+        } catch(\GuzzleHttp\Exception\ServerException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the Craft ID account URL.
+     *
+     * @return string
+     */
+    public function craftIdAccountUrl()
+    {
+        return Craft::$app->getPluginStore()->craftIdEndpoint.'/account';
+    }
+
+    /**
      * Returns the Control Panel nav items.
      *
      * @return array
@@ -127,6 +151,15 @@ class Cp extends Component
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
                 'icon' => 'settings'
+            ];
+
+            
+            // Add Plugin Store section
+
+            $navItems[] = [
+                'url' => 'plugin-store',
+                'label' => Craft::t('app', 'Plugin Store'),
+                'icon' => 'plugin'
             ];
         }
 

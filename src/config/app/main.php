@@ -71,6 +71,9 @@ return [
         'plugins' => [
             'class' => craft\services\Plugins::class,
         ],
+        'pluginStore' => [
+            'class' => craft\services\PluginStore::class,
+        ],
         'queue' => [
             'class' => craft\queue\Queue::class,
         ],

@@ -254,84 +254,84 @@
             </form>
         </div><!--/item-->
 
-        {% if CraftEdition >= CraftClient and not isNewAccount %}
-            <div class="item" data-position="right">
-                <form class="pane lightpane meta" method="post"
-                      accept-charset="UTF-8">
-                    {{ hiddenInputs }}
-                    <div class="data first">
-                        <h5 class="heading">{{ "Account Status"|t('app') }}</h5>
-                        <div class="value flex">
-                            <div class="flex-grow"><span
-                                        class="status {{ account.status }}"></span> {{ statusLabel }}
-                            </div>
-
-                            {% if actions|length %}
-                                <div>
-                                    <div id="action-menubtn" class="btn menubtn"
-                                         data-icon="settings"
-                                         title="{{ 'Actions'|t('app') }}"></div>
-                                    <div class="menu">
-                                        {% for actionList in actions %}
-                                            {% if not loop.first %}
-                                                <hr>{% endif %}
-                                            <ul>
-                                                {% for actionItem in actionList %}
-                                                    <li><a
-                                                                {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
-                                                                {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
-                                                        >{{ actionItem.label }}</a>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        {% endfor %}
-                                    </div>
-                                    <div id="action-spinner"
-                                         class="spinner hidden"></div>
+        <div class="item" data-position="right">
+			{% if not isNewAccount %}
+                {% if CraftEdition >= CraftClient %}
+                    <form class="pane lightpane meta" method="post"
+                          accept-charset="UTF-8">
+                        {{ hiddenInputs }}
+                        <div class="data first">
+                            <h5 class="heading">{{ "Account Status"|t('app') }}</h5>
+                            <div class="value flex">
+                                <div class="flex-grow"><span
+                                            class="status {{ account.status }}"></span> {{ statusLabel }}
                                 </div>
-                            {% endif %}
+
+                                {% if actions|length %}
+                                    <div>
+                                        <div id="action-menubtn" class="btn menubtn"
+                                             data-icon="settings"
+                                             title="{{ 'Actions'|t('app') }}"></div>
+                                        <div class="menu">
+                                            {% for actionList in actions %}
+                                                {% if not loop.first %}
+                                                    <hr>{% endif %}
+                                                <ul>
+                                                    {% for actionItem in actionList %}
+                                                        <li><a
+                                                                    {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+                                                                    {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
+                                                            >{{ actionItem.label }}</a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endfor %}
+                                        </div>
+                                        <div id="action-spinner"
+                                             class="spinner hidden"></div>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
 
                     {% if account.status == 'locked' and craft.app.config.general.cooldownDuration and account.remainingCooldownTime %}
                         <div class="data">
                             <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                             <p class="value">{{ account.remainingCooldownTime|duration }}</p>
                         </div>
-                    {% endif %}
 
-                    <div class="data">
-                        <h5 class="heading">{{ "Registration Date"|t('app') }}</h5>
-                        <p class="value">{{ account.dateCreated|datetime('short') }}</p>
-                    </div>
+                        {% if account.status != 'pending' %}
+                            <div class="data">
+                                <h5 class="heading">{{ "Last Login Date"|t('app') }}</h5>
+                                <p class="value">{% if account.lastLoginDate %}{{ account.lastLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            </div>
 
-                    {% if account.status != 'pending' %}
-                        <div class="data">
-                            <h5 class="heading">{{ "Last Login Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastLoginDate %}{{ account.lastLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
-                        </div>
+                            <div class="data">
+                                <h5 class="heading">{{ "Last Invalid Login Date"|t('app') }}</h5>
+                                <p class="value">{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            </div>
 
-                        <div class="data">
-                            <h5 class="heading">{{ "Last Invalid Login Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
-                        </div>
+                            <div class="data">
+                                <h5 class="heading">{{ "Last Password Change Date"|t('app') }}</h5>
+                                <p class="value">{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            </div>
 
-                        <div class="data">
-                            <h5 class="heading">{{ "Last Password Change Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
-                        </div>
+                            <div class="data">
+                                <h5 class="heading">{{ "Invalid Login Count"|t('app') }}</h5>
+                                <p class="value">{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</p>
+                            </div>
+                        {% endif %}
+                    </form>
+                {% endif %}
 
-                        <div class="data">
-                            <h5 class="heading">{{ "Invalid Login Count"|t('app') }}</h5>
-                            <p class="value">{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</p>
-                        </div>
-                    {% endif %}
-                </form>
+				{% if account.getIsCurrent() %}
+					{% include 'users/_pluginstore' %}
+				{% endif %}
+			{% endif %}
 
-                {# Give plugins a chance to add other panes here #}
-                {% hook "cp.users.edit.right-pane" %}
-            </div><!--/item-->
-        {% endif %}
+            {# Give plugins a chance to add other panes here #}
+            {% hook "cp.users.edit.right-pane" %}
+        </div><!--/item-->
     </div><!--/grid-->
 {% endblock %}
 

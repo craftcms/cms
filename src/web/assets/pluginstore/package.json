@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "laravel-elixir": "^6.0.0-15",
+    "laravel-elixir-vue-2": "^0.3.0",
+    "laravel-elixir-webpack-official": "^1.0.10",
+    "lodash": "^4.17.4",
+    "marked": "^0.3.6",
+    "vue": "^2.3.3",
+    "vue-lodash": "^1.0.3",
+    "vue-resource": "^1.3.3",
+    "vue-router": "^2.5.3",
+    "vuex": "^2.3.1",
+    "webpack": "^2.6.1"
+  },
+  "dependencies": {}
+}

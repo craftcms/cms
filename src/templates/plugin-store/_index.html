@@ -1,0 +1,59 @@
+{% extends "_layouts/cp" %}
+
+{% set crumbs = [
+	{ label: "Plugin Store"|t('app'), url: url('plugin-store') }
+] %}
+
+{% set title = 'Plugin Store'|t('app') %}
+
+{% do view.registerTranslations('app', [
+	"Staff Picks",
+	"Search plugins",
+	"See all",
+	"Cart",
+	"Categories",
+	"Try",
+	"Version",
+	"Description",
+	"Screenshots",
+	"Last update",
+	"Active installs",
+	"Compatibility",
+	"Buy {price}",
+	"Items in your cart",
+	"Add to cart",
+	"Active Trials",
+	"Plugin Name",
+	"Price",
+	"Buy later",
+	"Subtotal",
+	"Pro Rate Discount",
+	"Total",
+	"Process My Order",
+]) %}
+
+{% set extraPageHeaderHtml %}
+	{% if enableCraftId %}
+		<a id="cart-button">Cart (0)</a>
+		{#
+		<a id="payment-button">Payment</a>
+		<a id="reset-cart-button">Reset cart</a>
+		#}
+	{% endif %}
+{% endset %}
+
+{% set content %}
+
+	<div :class="{hidden: !pluginStoreDataLoading}">
+		Loading…
+	</div>
+
+	<div :class="{ hidden: pluginStoreDataLoading }">
+		<router-view></router-view>
+	</div>
+
+
+
+	<global-modal :show.sync="showModal" :plugin="plugin"></global-modal>
+
+{% endset %}

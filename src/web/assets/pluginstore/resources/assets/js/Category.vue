@@ -1,0 +1,51 @@
+<template>
+
+    <div v-if="category">
+        <plugin-index :plugins="plugins"></plugin-index>
+    </div>
+
+</template>
+
+<script>
+    import PluginIndex from './components/PluginIndex';
+    import { mapGetters } from 'vuex'
+
+    export default {
+        components: {
+            PluginIndex,
+        },
+
+        data () {
+            return {
+                categoryId: null,
+            }
+        },
+
+        computed: {
+            ...mapGetters({
+                getCategoryById: 'getCategoryById',
+                getPluginsByCategory: 'getPluginsByCategory',
+            }),
+
+            category() {
+                let category = this.getCategoryById(this.categoryId);
+
+                if(category) {
+                    this.$root.pageTitle = category.title;
+                }
+
+                return category;
+            },
+
+            plugins() {
+                return this.getPluginsByCategory(this.categoryId);
+            }
+        },
+
+        created() {
+            this.$root.showCrumbs = true;
+
+            this.categoryId = this.$route.params.id;
+        },
+    }
+</script>
