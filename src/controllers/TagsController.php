@@ -180,7 +180,7 @@ class TagsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $search = Craft::$app->getRequest()->getBodyParam('search');
+        $search = trim(Craft::$app->getRequest()->getBodyParam('search'));
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
         $excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
         $allowSimilarTags = Craft::$app->getConfig()->getGeneral()->allowSimilarTags;
@@ -251,7 +251,7 @@ class TagsController extends Controller
         $tag = new Tag();
         $tag->groupId = $group->id;
         $tag->fieldLayoutId = $group->fieldLayoutId;
-        $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
+        $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
         $tag->validateCustomFields = false;
 
         if (Craft::$app->getElements()->saveElement($tag)) {
