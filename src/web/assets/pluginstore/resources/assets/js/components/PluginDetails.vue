@@ -116,9 +116,8 @@
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed in trial mode.'));
             },
             installPlugin(plugin) {
-                this.$store.dispatch('installPlugin', { plugin })
                 this.$root.closeGlobalModal();
-                this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
+                this.$router.push({ path: '/install/'+plugin.id });
             },
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();

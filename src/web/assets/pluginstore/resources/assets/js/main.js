@@ -33,7 +33,9 @@ window.pluginStoreApp = new Vue({
           plugin: null,
           modalStep: null,
           pluginStoreDataLoading: true,
+          pluginStoreDataLoaded: false,
           craftIdDataLoading: true,
+          craftIdDataLoaded: false,
           showModal: false,
           lastOrder: null,
       }
@@ -136,15 +138,21 @@ window.pluginStoreApp = new Vue({
 
         this.$store.dispatch('getCraftData')
             .then(data => {
-                this.craftIdDataLoading = false
+                this.craftIdDataLoading = false;
+                this.craftIdDataLoaded = true;
+                this.$emit('craftIdDataLoaded');
             })
             .catch(response => {
                 this.craftIdDataLoading = false
+                this.craftIdDataLoaded = true;
+                this.$emit('craftIdDataLoaded');
             });
 
         this.$store.dispatch('getPluginStoreData')
             .then(data => {
-                this.pluginStoreDataLoading = false
+                this.pluginStoreDataLoading = false;
+                this.pluginStoreDataLoaded = true;
+                this.$emit('pluginStoreDataLoaded');
             })
             .catch(response => {
                 this.pluginStoreDataLoading = false
@@ -158,6 +166,7 @@ window.pluginStoreApp = new Vue({
         let $this = this;
 
         if(window.enableCraftId) {
+
             // Cart Button
 
             this.$cartButton = $('#cart-button')

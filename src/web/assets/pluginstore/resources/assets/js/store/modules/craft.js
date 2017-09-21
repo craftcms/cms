@@ -39,8 +39,15 @@ const getters = {
 
 const actions = {
     installPlugin({ dispatch, commit }, plugin) {
-        commit(types.INSTALL_PLUGIN, plugin)
-        dispatch('saveCraftData');
+        return new Promise((resolve, reject) => {
+            setTimeout(function() {
+                commit(types.INSTALL_PLUGIN, plugin)
+                dispatch('saveCraftData');
+                resolve();
+            }, 3000);
+
+            // reject();
+        })
     },
 
     getCraftData ({ commit }) {

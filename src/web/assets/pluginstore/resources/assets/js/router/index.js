@@ -5,6 +5,7 @@ import Category from '../Category'
 import UpgradeCraft from '../UpgradeCraft'
 import Developer from '../Developer'
 import FeaturedPlugins from '../FeaturedPlugins'
+import Install from '../Install'
 import InstalledPlugins from '../InstalledPlugins'
 import Tests from '../Tests'
 
@@ -36,6 +37,11 @@ export default new Router({
             path: '/featured/:id',
             name: 'FeaturedPlugins',
             component: FeaturedPlugins,
+        },
+        {
+            path: '/install/:id',
+            name: 'Install',
+            component: Install,
         },
         {
             path: '/installed-plugins',
