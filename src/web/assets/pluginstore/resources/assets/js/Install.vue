@@ -51,8 +51,12 @@
 
 					this.$store.dispatch('installPlugin', { plugin })
 						.then(data => {
-							console.log('plugin installed');
-							this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
+							if(plugin.price === '00.00') {
+                                this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
+							} else {
+                                this.$root.displayNotice(Craft.t('app', 'Plugin installed in trial mode.'));
+							}
+
 							this.$router.push({ path: '/' });
 						})
 						.catch(response => {

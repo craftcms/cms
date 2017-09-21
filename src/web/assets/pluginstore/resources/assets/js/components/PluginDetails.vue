@@ -111,9 +111,8 @@
                 this.$root.openGlobalModal('cart');
             },
             tryPlugin(plugin) {
-                this.$store.dispatch('installPlugin', { plugin });
                 this.$root.closeGlobalModal();
-                this.$root.displayNotice(Craft.t('app', 'Plugin installed in trial mode.'));
+                this.$router.push({ path: '/install/'+plugin.id });
             },
             installPlugin(plugin) {
                 this.$root.closeGlobalModal();
