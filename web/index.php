@@ -16,6 +16,6 @@ if (file_exists(CRAFT_BASE_PATH.'/.env')) {
 }
 
 // Load and run Craft
-define('CRAFT_ENVIRONMENT', getenv('CRAFT_ENVIRONMENT') ?: 'production');
+define('CRAFT_ENVIRONMENT', getenv('ENVIRONMENT') ?: 'production');
 $app = require CRAFT_VENDOR_PATH.'/craftcms/cms/bootstrap/web.php';
 $app->run();
