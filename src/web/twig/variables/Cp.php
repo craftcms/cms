@@ -50,6 +50,16 @@ class Cp extends Component
     }
 
     /**
+     * Returns true if Craft ID is enabled.
+     *
+     * @return string
+     */
+    public function enableCraftId()
+    {
+        return Craft::$app->getPluginStore()->enableCraftId;
+    }
+
+    /**
      * Returns the Craft ID account URL.
      *
      * @return string

@@ -161,7 +161,7 @@
                 <h2>{{ systemName }}</h2>
             </a>
 
-			{% if enableCraftId %}
+			{% if craft.cp.enableCraftId() %}
 			    {% set craftIdAccount = craft.cp.craftIdAccount() %}
             {% else %}
                 {% set craftIdAccount = null %}
@@ -200,7 +200,7 @@
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
                 </ul>
 
-				{% if enableCraftId %}
+				{% if craft.cp.enableCraftId() %}
                     <hr>
 
                     <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
