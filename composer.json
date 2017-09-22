@@ -18,6 +18,15 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
+    "php": ">=7.0.0",
+    "ext-curl": "*",
+    "ext-dom": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*",
+    "ext-pcre": "*",
+    "ext-pdo": "*",
+    "ext-zip": "*",
     "composer/composer": "~1.4.2",
     "craftcms/plugin-installer": "~1.5.0",
     "craftcms/server-check": "~1.0.17",

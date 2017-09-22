@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - `options` arrays passed to `_includes/forms/checkboxGroup.html` and `checkboxSelect.html` can now contain any of the properties supported by `checkbox.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
 - `options` arrays passed to `_includes/forms/radioGroup.html` can now contain any of the properties supported by `radio.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
 - The `limit` property is no longer required by `_includes/forms/elementSelect.html`.
+- Craft’s required PHP version and extensions are now specified in `composer.json`.
 
 ### Fixed
 - Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
