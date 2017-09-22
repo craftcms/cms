@@ -7,6 +7,8 @@ Craft CMS 3.0 Working Changelog
 - Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
 - Added the `Craft.DynamicGenerator` JavaScript class, for creating dynamic input generators.
 - Added `craft\config\DbConfig::updateDsn()`.
+- Added a `setup/db-creds` command that collects all the database credentials, tests them, and saves them to the `.env` file.
+- Added a `setup` command that runs through the `setup/security-key`, `setup/db-creds`, and `install` commands.
 
 ### Changed
 - It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
