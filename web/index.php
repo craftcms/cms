@@ -3,20 +3,19 @@
  * Craft web bootstrap file
  */
 
-// Project root path
-$root = dirname(__DIR__);
+// Set path constants
+define('CRAFT_BASE_PATH', dirname(__DIR__));
+define('CRAFT_VENDOR_PATH', CRAFT_BASE_PATH.'/vendor');
 
-// Composer autoloader
-require_once $root.'/vendor/autoload.php';
+// Load Composer's autoloader
+require_once CRAFT_VENDOR_PATH.'/autoload.php';
 
-// dotenv?
-if (file_exists($root.'/.env')) {
-    $dotenv = new Dotenv\Dotenv($root);
-    $dotenv->load();
+// Load dotenv?
+if (file_exists(CRAFT_BASE_PATH.'/.env')) {
+    (new Dotenv\Dotenv(CRAFT_BASE_PATH))->load();
 }
 
-// Craft
-define('CRAFT_BASE_PATH', $root);
+// Load and run Craft
 define('CRAFT_ENVIRONMENT', getenv('CRAFT_ENVIRONMENT') ?: 'production');
-$app = require $root.'/vendor/craftcms/cms/bootstrap/web.php';
+$app = require CRAFT_VENDOR_PATH.'/craftcms/cms/bootstrap/web.php';
 $app->run();
