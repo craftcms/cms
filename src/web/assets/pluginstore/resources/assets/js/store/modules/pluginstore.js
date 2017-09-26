@@ -69,7 +69,7 @@ const getters = {
     getPluginsByCategory(state, rootState) {
         return categoryId => {
             return state.data.plugins.filter(p => {
-                return p.categories.find(c =>  c == categoryId);
+                return p.categoryIds.find(c =>  c == categoryId);
             })
         }
     }

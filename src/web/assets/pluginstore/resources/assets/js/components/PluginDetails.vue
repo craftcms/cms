@@ -94,7 +94,7 @@
             },
             categories() {
                 return this.$store.getters.getAllCategories().filter(c => {
-                    return this.plugin.categories.find(pc => pc == c.id);
+                    return this.plugin.categoryIds.find(pc => pc == c.id);
                 });
             }
         },

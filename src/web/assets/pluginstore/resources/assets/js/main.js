@@ -96,7 +96,9 @@ window.pluginStoreApp = new Vue({
 
     watch: {
         cartPlugins() {
-            this.$cartButton.html('Cart ('+this.cartPlugins.length+')');
+            if(window.enableCraftId) {
+                this.$cartButton.html('Cart (' + this.cartPlugins.length + ')');
+            }
         },
         showCrumbs(showCrumbs) {
             if(showCrumbs) {
@@ -115,23 +117,28 @@ window.pluginStoreApp = new Vue({
 
         this.$crumbs = $('#crumbs');
 
-        if(!this.showCrumbs) {
-            this.$crumbs.addClass('hidden')
+        if(this.$crumbs) {
+            if(!this.showCrumbs) {
+                this.$crumbs.addClass('hidden')
+            }
+
+            let $a = $('a', this.$crumbs);
+            let $this = this;
+
+            $a.on('click', (e) => {
+                e.preventDefault();
+                $this.$router.push({ path: '/'})
+            });
         }
-
-        let $a = $('a', this.$crumbs);
-        let $this = this;
-
-        $a.on('click', (e) => {
-            e.preventDefault();
-            $this.$router.push({ path: '/'})
-        });
 
 
         // Page title
 
-        this.$pageTitle = $('#page-title h1')
-        this.$pageTitle.html(this.pageTitle)
+        this.$pageTitle = $('#page-title h1');
+
+        if(this.$pageTitle) {
+            this.$pageTitle.html(this.pageTitle)
+        }
 
 
         // Dispatch actions
