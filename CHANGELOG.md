@@ -8,6 +8,9 @@ Craft CMS Changelog
 - Fixed a MySQL error that would occur if you tried to save an element that had a Text field with a length limit and that element was disabled.
 - Fixed a bug where you would get a PHP warning if you submitted a non-numeric value in a Number field when running PHP 7.
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 2.6.2990 - 2017-09-15
 
 ### Changed

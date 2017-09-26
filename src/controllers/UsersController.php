@@ -1199,6 +1199,8 @@ class UsersController extends BaseController
 		}
 		catch (Exception $exception)
 		{
+			// Don't leave the file hanging around in a temp folder in case it was malicious.
+			IOHelper::deleteFile($fullPath);
 			$this->returnErrorJson($exception->getMessage());
 		}
 
