@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where all fields were getting marked as translatable on edit pages. ([#1996](https://github.com/craftcms/cms/issues/1996))
 - Fixed a PHP error that would occur when calling `craft\services\UserGroups::getGroupByHandle()`.
 - Fixed a JavaScript error that occurred if an asset select input was initialized without a `criteria` setting.
+- Fixed a bug where field types, volume types, mail transport types, and widget types weren’t getting listed in alphabetical order.
 
 ## 3.0.0-beta.28 - 2017-09-15
 

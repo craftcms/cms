@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\Controller;
@@ -175,6 +176,9 @@ class FieldsController extends Controller
                 ];
             }
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($fieldTypeOptions, 'label');
 
         // Groups
         // ---------------------------------------------------------------------
