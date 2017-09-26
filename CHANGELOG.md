@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where Craft was allowing multiple tags with the same title to be added if they had leading/trailing whitespace. ([#1997](https://github.com/craftcms/cms/issues/1997))
 - Fixed a MySQL error that would occur if you tried to save an element that had a Text field with a length limit and that element was disabled.
+- Fixed a bug where you would get a PHP warning if you submitted a non-numeric value in a Number field when running PHP 7.
 
 ## 2.6.2990 - 2017-09-15
 
