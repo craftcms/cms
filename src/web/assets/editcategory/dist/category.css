@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 body.ltr #sites { padding: 0 0 0 24px; }
 body.rtl #sites { padding: 0 24px 0 0; }
 

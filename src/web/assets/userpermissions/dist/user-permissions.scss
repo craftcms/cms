@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../shared";
+@import "../../../../../node_modules/craftcms-sass/src/mixins";
 
 .user-permissions { position: relative; }
 .user-permissions h3:first-child { margin-top: 14px !important; }

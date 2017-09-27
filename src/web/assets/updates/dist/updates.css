@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 #content #graphic { display: block; margin: 200px auto 0; }
 
 #content #graphic.error { background-image: url(images/error.png); }

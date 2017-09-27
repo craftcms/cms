@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../shared";
+@import "../../../../../node_modules/craftcms-sass/src/mixins";
 
 div.cp-image div.cp-current-image { border-radius: $paneBorderRadius; width: 100px; height: 100px; background: no-repeat; @include box-shadow(inset 0 0 0 1px $hairlineColorAlpha); }
 div.cp-image div.cp-image-controls { margin-top: 10px; float: none; position: relative;}

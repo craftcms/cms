@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../shared";
+@import "../../../../../node_modules/craftcms-sass/src/mixins";
 
 .widget.craft\\widgets\\craftsupport .front .pane { padding: 0; overflow: hidden; }
 .widget.craft\\widgets\\craftsupport .front .pane > h2 { display: none; }

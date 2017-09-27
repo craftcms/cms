@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 #plugins .plugin-infos { display: table; }
 
 #plugins .plugin-infos .icon, #plugins .plugin-infos .details { display: table-cell; }

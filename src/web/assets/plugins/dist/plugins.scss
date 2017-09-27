@@ -1,6 +1,5 @@
 @charset "UTF-8";
-@import "../../shared";
-
+@import "../../../../../node_modules/craftcms-sass/src/mixins";
 
 #plugins .plugin-infos { display: table; }
 #plugins .plugin-infos .icon,

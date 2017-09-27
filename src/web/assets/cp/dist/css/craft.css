@@ -24,9 +24,6 @@ textarea { resize: none; }
 
 select { margin: 0; }
 
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 @font-face { font-family: 'Craft'; src: url("../fonts/Craft.eot"); src: url("../fonts/Craft.eot?#iefix") format("embedded-opentype"), url("../fonts/Craft.woff") format("woff"), url("../fonts/Craft.ttf") format("truetype"), url("../fonts/Craft.svg#Craft") format("svg"); font-weight: normal; font-style: normal; }
 /* ----------------------------------------
 /*  Basic stuff
@@ -1940,9 +1937,6 @@ body.rtl .categoriesfield .structure ul { margin-right: 12px; }
   .hud .tip-right { background-image: url(../images/hudtip_right_2x.png); background-size: 15px 30px; }
   .hud .tip-bottom { background-image: url(../images/hudtip_bottom_2x.png); background-size: 30px 15px; }
   .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray_2x.png); } }
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 html, body { overflow-x: hidden; }
 
 #alerts { background: #da5a47; padding: 9px 0; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.05); color: #fff; }

@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../shared";
+@import "../../../../../node_modules/craftcms-sass/src/mixins";
 
 #content #graphic { display: block; margin: 200px auto 0; }
 #content #graphic.error { background-image: url(images/error.png); }

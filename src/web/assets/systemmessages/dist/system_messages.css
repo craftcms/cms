@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 .message { position: relative; cursor: pointer; }
 
 body.ltr .message:hover { padding-right: 26px; }
