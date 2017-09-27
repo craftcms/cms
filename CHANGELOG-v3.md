@@ -1,17 +1,21 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.29 (WIP)
 
 ### Added
 - Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
 - Added the `Craft.DynamicGenerator` JavaScript class, for creating dynamic input generators.
+- Added `craft\config\DbConfig::updateDsn()`.
+- Added a `setup/db-creds` command that collects all the database credentials, tests them, and saves them to the `.env` file.
+- Added a `setup` command that runs through the `setup/security-key`, `setup/db-creds`, and `install` commands.
 
 ### Changed
 - It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
 - `options` arrays passed to `_includes/forms/checkboxGroup.html` and `checkboxSelect.html` can now contain any of the properties supported by `checkbox.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
 - `options` arrays passed to `_includes/forms/radioGroup.html` can now contain any of the properties supported by `radio.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
 - The `limit` property is no longer required by `_includes/forms/elementSelect.html`.
+- Craft’s required PHP version and extensions are now specified in `composer.json`.
 
 ### Fixed
 - Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
@@ -19,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where all fields were getting marked as translatable on edit pages. ([#1996](https://github.com/craftcms/cms/issues/1996))
 - Fixed a PHP error that would occur when calling `craft\services\UserGroups::getGroupByHandle()`.
 - Fixed a JavaScript error that occurred if an asset select input was initialized without a `criteria` setting.
+- Fixed a bug where field types, volume types, mail transport types, and widget types weren’t getting listed in alphabetical order.
 
 ## 3.0.0-beta.28 - 2017-09-15
 

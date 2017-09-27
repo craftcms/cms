@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\MailerHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -184,6 +185,9 @@ class SystemSettingsController extends Controller
                 ];
             }
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($transportTypeOptions, 'label');
 
         return $this->renderTemplate('settings/email/_index', [
             'settings' => $settings,

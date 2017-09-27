@@ -258,9 +258,9 @@ return [
                 $schemaClass = craft\db\pgsql\Schema::class;
             }
 
-            /** @var craft\db\Connection $db */
-            $db = Craft::createObject([
+            return Craft::createObject([
                 'class' => craft\db\Connection::class,
+                'driverName' => $dbConfig->driver,
                 'dsn' => $dbConfig->dsn,
                 'username' => $dbConfig->user,
                 'password' => $dbConfig->password,
@@ -274,11 +274,6 @@ return [
                 'commandClass' => \craft\db\Command::class,
                 'attributes' => $dbConfig->attributes,
             ]);
-
-            // Set the Yii driver name from the config setting.
-            $db->setDriverName($dbConfig->driver);
-
-            return $db;
         },
 
         'mailer' => function() {

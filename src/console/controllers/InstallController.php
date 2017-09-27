@@ -85,7 +85,7 @@ class InstallController extends Controller
     public function actionIndex()
     {
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout('Craft is already installed!'.PHP_EOL);
+            $this->stdout('Craft is already installed!'.PHP_EOL, Console::FG_YELLOW);
             return;
         }
 
@@ -118,9 +118,11 @@ class InstallController extends Controller
         $username = $this->username ?: $this->prompt('Username:', ['validator' => [$this, 'validateUsername'], 'default' => 'admin']);
         $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         $password = $this->password ?: $this->_passwordPrompt();
-        $siteName = $this->siteName ?: $this->prompt('Site Name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
+        $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
         $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'validator' => [$this, 'validateSiteUrl']]);
-        $language = $this->language ?: $this->prompt('Site Language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
+        $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
+
+        $this->stdout('Installing Craft...'.PHP_EOL, Console::FG_YELLOW);
 
         $site = new Site([
             'name' => $siteName,
@@ -141,17 +143,17 @@ class InstallController extends Controller
         $migrator = Craft::$app->getMigrator();
 
         if ($migrator->migrateUp($migration) !== false) {
-            $this->stdout($siteName.' was successfully installed.'.PHP_EOL, Console::FG_GREEN);
+            $this->stdout('Success!'.PHP_EOL, Console::FG_GREEN);
 
             // Mark all existing migrations as applied
             foreach ($migrator->getNewMigrations() as $name) {
                 $migrator->addMigrationHistory($name);
             }
         } else {
-            $this->stderr("There was a problem installing {$siteName}.".PHP_EOL, Console::FG_RED);
+            $this->stderr('There was a problem installing Craft.'.PHP_EOL, Console::FG_RED);
         }
     }
-    
+
     /**
      * Installs a plugin
      *
@@ -236,7 +238,7 @@ class InstallController extends Controller
         }
         $this->stdout('Confirm: ');
         if (!($matched = ($password === CliPrompt::hiddenPrompt()))) {
-            $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL);
+            $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL, Console::FG_RED);
             goto top;
         }
         return $password;

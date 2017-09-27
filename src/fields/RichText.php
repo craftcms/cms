@@ -175,14 +175,13 @@ class RichText extends Field
             ];
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings',
-            [
-                'field' => $this,
-                'redactorConfigOptions' => $this->_getCustomConfigOptions('redactor'),
-                'purifierConfigOptions' => $this->_getCustomConfigOptions('htmlpurifier'),
-                'volumeOptions' => $volumeOptions,
-                'transformOptions' => $transformOptions,
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings', [
+            'field' => $this,
+            'redactorConfigOptions' => $this->_getCustomConfigOptions('redactor'),
+            'purifierConfigOptions' => $this->_getCustomConfigOptions('htmlpurifier'),
+            'volumeOptions' => $volumeOptions,
+            'transformOptions' => $transformOptions,
+        ]);
     }
 
     /**

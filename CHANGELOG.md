@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft was allowing multiple tags with the same title to be added if they had leading/trailing whitespace. ([#1997](https://github.com/craftcms/cms/issues/1997))
+
 ## 2.6.2990 - 2017-09-15
 
 ### Changed
