@@ -1178,12 +1178,10 @@ ul.tree,
 .body { position: relative; }
 
 .modal,
-.hud,
-body #redactor-modal { z-index: 100; }
+.hud { z-index: 100; }
 
 .modal,
-.hud .body,
-body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
+.hud .body { border-radius: $paneBorderRadius; background: #fff;
     @include box-shadow(0 25px 100px rgba(0,0,0,0.5));
 }
 
@@ -1226,14 +1224,7 @@ body #redactor-modal { border-radius: $paneBorderRadius; background: #fff;
 .modal-shade,
 .hud-shade { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
 
-.modal-shade,
-body #redactor-modal-overlay { background: rgba(255,255,255,0.75) !important; }
-body #redactor-modal-overlay {
-    filter: alpha(opacity=100);
-    -moz-opacity: 1;
-    opacity: 1;
-}
-
+.modal-shade { background: rgba(255,255,255,0.75) !important; }
 .modal-shade.dark { background: rgba(0,0,0,0.75) !important; }
 
 .modal { position: fixed; width: 66%; height: 66%; min-width: 600px; min-height: 400px; overflow: hidden; }
@@ -1330,23 +1321,19 @@ body #redactor-modal-overlay {
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list,
-.input .redactor-dropdown { @include menu-styles; }
+.ui-timepicker-list { @include menu-styles; }
 
 .ui-datepicker,
 .ui-timepicker-list { padding: 0; }
 
-.menu ul li a,
-.input .redactor-dropdown a { @include menu-option-styles; }
+.menu ul li a { @include menu-option-styles; }
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }
 .menu ul li a:not(.sel):not(.disabled):hover,
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.disabled).hover,
-.menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
-.input .redactor-dropdown a:hover { @include menu-option-active-styles; }
-.input .redactor-dropdown a:hover span { color: $textcolor !important; }
+.menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { @include menu-option-active-styles; }
 .menu ul li a.sel { cursor: default; }
 .menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
@@ -1382,7 +1369,6 @@ body.rtl .tagselect.elementselect .element { float: none !important; display: in
 }
 
 .text:not(.selectize-text),
-.input .redactor-box:not(.redactor-box-fullscreen),
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input { @include text-input-styles; }
@@ -1391,7 +1377,6 @@ body.rtl .tagselect.elementselect .element { float: none !important; display: in
 .text:focus,
 .border-box:focus,
 .border-box.focus,
-.input .redactor-box.focus:not(.redactor-box-fullscreen),
 .selectize-text > .selectize-control > .selectize-input.focus { @include text-input-focussed-styles; }
 
 input.text,
@@ -1500,7 +1485,6 @@ input.checkbox:indeterminate:focus + label:before,
 .text.small { padding: 3px; }
 
 .input.errors > .text,
-.input.errors > div.redactor-box,
 .input.errors > .border-box,
 .text.error { border: 1px solid $errorcolor !important; }
 
@@ -1550,32 +1534,6 @@ input:-ms-input-placeholder { @include placeholder-styles; }
 
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
-
-/* redactor */
-.input .redactor-box,
-.input .redactor-toolbar,
-.input .redactor-box textarea { z-index: auto !important; }
-.input .redactor-box { margin-bottom: 0; }
-.input .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
-.input .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
-.input .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 102 !important; }
-.input .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
-.input .redactor-toolbar li a { color: $textcolor; }
-.input .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
-.input .redactor-toolbar li a:active,
-.input .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
-.input .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
-.input .redactor-dropdown { z-index: 100; }
-.input .redactor-dropdown li { border-bottom: none; background: none; }
-.input .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid $hairlineColor; }
-.input .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
-body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
-body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
-.input .redactor-link-tooltip { z-index: 101; }
-.input .redactor-toolbar { z-index: 102; }
-.input .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
-.input .redactor-layer ul { list-style: disc; }
-.input .redactor-layer ol { @include padding-left(0 !important); }
 
 /**
  * Selects

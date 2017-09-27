@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use craft\fields\RichText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
@@ -22,7 +21,7 @@ class m170414_162429_rich_text_config_setting extends Migration
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
-            ->where(['type' => RichText::class])
+            ->where(['type' => 'craft\\fields\\RichText'])
             ->all($this->db);
 
         // configFile => redactorConfig

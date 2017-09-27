@@ -8,6 +8,15 @@ Craft CMS 3.0 Working Changelog
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 
+### Removed
+- Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
+- Removed `craft\fields\data\RichTextData`.
+- Removed `craft\fields\RichText`.
+- Removed `craft\web\assets\redactor\RedactorAsset`.
+- Removed `craft\web\assets\richtext\RichTextAsset`.
+- Removed `lib/redactor/`.
+- Removed `Craft.RichTextInput` (JS class).
+
 ## 3.0.0-beta.29 (WIP)
 
 ### Added

@@ -35,7 +35,6 @@ use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
 use craft\fields\PositionSelect as PositionSelectField;
 use craft\fields\RadioButtons as RadioButtonsField;
-use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
@@ -396,7 +395,6 @@ class Fields extends Component
             PlainTextField::class,
             PositionSelectField::class,
             RadioButtonsField::class,
-            RichTextField::class,
             TableField::class,
             TagsField::class,
             UrlField::class,

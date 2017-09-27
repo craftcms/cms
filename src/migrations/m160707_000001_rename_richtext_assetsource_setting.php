@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use craft\fields\RichText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
@@ -21,7 +20,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
-            ->where(['type' => RichText::class])
+            ->where(['type' => 'craft\\fields\\RichText'])
             ->all($this->db);
 
         foreach ($fields as $field) {

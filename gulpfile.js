@@ -5,7 +5,6 @@
 // - jquery-touch-events
 // - jquery-ui
 // - qunit
-// - redactor
 
 var es = require('event-stream');
 var gulp = require('gulp');
