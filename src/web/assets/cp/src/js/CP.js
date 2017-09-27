@@ -229,8 +229,8 @@ Craft.CP = Garnish.Base.extend(
             }
 
             if ($.isTouchCapable()) {
-                this.$container.on('focus', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputFocus'));
-                this.$container.on('blur', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputBlur'));
+                this.$container.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
+                this.$container.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
         },
 

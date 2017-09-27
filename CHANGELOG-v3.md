@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 
 ### Removed
+- Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
 - Removed `craft\fields\data\RichTextData`.
 - Removed `craft\fields\RichText`.
