@@ -100,7 +100,6 @@ body.rtl [data-icon-after=structure]:after { content: attr(structurertl); }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
-@mixin h6-styles { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
 h1 { margin-bottom: 24px; font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
@@ -230,8 +229,6 @@ td.right { float: none; @include alignright; }
 .clear { display: block; clear: both; height: 0; }
 
 .fullwidth { width: 100%; }
-
-@mixin token-styles { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 1px 7px; font-size: 12px; line-height: 14px; color: $textcolor; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 
 .token { @include token-styles; }
 .token[data-name='*'] { position: relative; width: 10px; }
@@ -1331,13 +1328,6 @@ body #redactor-modal-overlay {
 /*  Menus
 /* ----------------------------------------*/
 
-@mixin menu-styles { z-index: 100; margin-bottom: 10px; border-radius: $btnBorderRadius; padding: 0 14px; overflow: auto; background: #fff; @include user-select(none);
-    @include box-shadow(0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0,0,0,0.25));
-}
-
-@mixin menu-option-styles { margin: 0 -14px; padding: 10px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
-@mixin menu-option-active-styles { color: $textcolor; background-color: $lightselcolor; }
-
 .menu,
 .ui-datepicker,
 .ui-timepicker-list,
@@ -1389,15 +1379,6 @@ body.rtl .tagselect.elementselect .element { float: none !important; display: in
 
 .shadow-box { border-radius: $paneBorderRadius; border: 1px solid #ccc; overflow: hidden; width: 100%;
     @include box-shadow(0 1px 5px -1px rgba(0, 0, 0, 0.1));
-}
-
-@mixin text-input-styles { border: 1px solid $hairlineColor; border-radius: $btnBorderRadius;
-    @include box-shadow(0 0 5px hsla(205, 100%, 60%, 0));
-    @include box-shadow-transition(100ms);
-}
-
-@mixin text-input-focussed-styles { border-color: $focusglowcolor; outline: none;
-    @include box-shadow(0 0 5px hsl(205, 100%, 75%));
 }
 
 .text:not(.selectize-text),
@@ -1553,8 +1534,6 @@ input.checkbox:indeterminate:focus + label:before,
 .timewrapper { width: 7em; }
 .timewrapper:before { top: calc(50% - 5px); @include left(7px); font-size: 11px; content: 'time'; }
 
-@mixin placeholder-styles { color: $lighttextcolor; }
-
 ::-webkit-input-placeholder { @include placeholder-styles; }
 input:-ms-input-placeholder { @include placeholder-styles; }
 ::-ms-input-placeholder { @include placeholder-styles; }
@@ -1604,24 +1583,6 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: $btn
  * Waiting on this bug to get fixed before Firefox gets our fancy selects:
  * https://bugzilla.mozilla.org/show_bug.cgi?id=649849
  */
-@mixin select-styles { position: relative; border-radius: $btnBorderRadius; white-space: nowrap; }
-@mixin select-container-styles { position: relative;
-    @include linear-gradient(#fff, hsl($hue, 5%, 98%));
-    @include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 0px 3px rgba(0,0,0,0.07));
-    :not(.flex) > & { display: inline-block; }
-};
-@mixin select-arrow-styles { @include icon; position: absolute; z-index: 1; top: calc(50% - 5px); @include right(9px); font-size: 10px; content: 'downangle'; @include user-select(none); pointer-events: none; }
-@mixin select-input-styles { display: block; position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; line-height: 16px; color: $textcolor; background: none;
-    @include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
-    -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
-    -moz-transition: border linear 100ms, box-shadow linear 100ms;
-    -webkit-appearance: none;
-}
-@mixin select-input-fullwidth-styles { min-width: 100%; }
-@mixin select-input-focussed-styles { border-color: $focusglowcolor; outline: none;
-    @include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
-}
-
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
     .select:not(.selectize),
