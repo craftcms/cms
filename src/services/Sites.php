@@ -844,16 +844,29 @@ class Sites extends Component
                 }
             }
 
-            // Is the config overriding the site URL?
-            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
+            // Is the config overriding the site name/URL?
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            if (is_string($siteUrl)) {
-                $this->getPrimarySite()->overrideBaseUrl($siteUrl);
-            } else if (is_array($siteUrl)) {
-                foreach ($siteUrl as $handle => $url) {
+            if (is_string($generalConfig->siteName)) {
+                $this->getPrimarySite()->overrideName($generalConfig->siteName);
+            } else if (is_array($generalConfig->siteName)) {
+                foreach ($generalConfig->siteName as $handle => $name) {
                     $site = $this->getSiteByHandle($handle);
                     if ($site) {
-                        $site->overrideBaseUrl($url);
+                        $site->overrideName($name);
+                    } else {
+                        Craft::warning('Ignored this invalid site handle when applying the siteName config setting: '.$handle, __METHOD__);
+                    }
+                }
+            }
+
+            if (is_string($generalConfig->siteUrl)) {
+                $this->getPrimarySite()->overrideBaseUrl($generalConfig->siteUrl);
+            } else if (is_array($generalConfig->siteUrl)) {
+                foreach ($generalConfig->siteUrl as $handle => $baseUrl) {
+                    $site = $this->getSiteByHandle($handle);
+                    if ($site) {
+                        $site->overrideBaseUrl($baseUrl);
                     } else {
                         Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
                     }
