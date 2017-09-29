@@ -1677,7 +1677,16 @@ class UsersController extends Controller
 
         // Did they upload a new one?
         if ($photo = UploadedFile::getInstanceByName('photo')) {
-            $users->saveUserPhoto($photo->tempName, $user, $photo->name);
+            $fileLocation = Assets::tempFilePath($photo->getExtension());
+            move_uploaded_file($photo->tempName, $fileLocation);
+            try {
+                $users->saveUserPhoto($fileLocation, $user, $photo->name);
+            } catch (\Throwable $e) {
+                if (file_exists($fileLocation)) {
+                    FileHelper::removeFile($fileLocation);
+                }
+                throw $e;
+            }
         }
     }
 
