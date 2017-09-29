@@ -1,4 +1,4 @@
-/*! Craft  - 2017-09-20 */
+/*! Craft  - 2017-09-29 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -2067,6 +2067,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if (this.getSelectedSortAttribute() == 'structure')
 		{
+			if (typeof this.instanceState.collapsedElementIds === 'undefined')
+			{
+				this.instanceState.collapsedElementIds = [];
+			}
+
 			params.collapsedElementIds = this.instanceState.collapsedElementIds;
 		}
 
