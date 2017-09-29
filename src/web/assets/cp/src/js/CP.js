@@ -746,16 +746,21 @@ Craft.CP = Garnish.Base.extend(
             if (Craft.runQueueAutomatically) {
                 Craft.queueActionRequest('queue/run', $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
-                        this.trackJobProgress(false);
+                        this.trackJobProgress(false, true);
                     }
                 }, this));
             }
             else {
-                this.trackJobProgress(false);
+                this.trackJobProgress(false, true);
             }
         },
 
-        trackJobProgress: function(delay) {
+        trackJobProgress: function(delay, force) {
+            if (force && this.trackJobProgressTimeout) {
+                clearTimeout(this.trackJobProgressTimeout);
+                this.trackJobProgressTimeout = null;
+            }
+
             // Ignore if we're already tracking jobs, or the queue is disabled
             if (this.trackJobProgressTimeout || !this.enableQueue) {
                 return;
@@ -1288,7 +1293,7 @@ QueueHUD.Job = Garnish.Base.extend(
 
                     Craft.postActionRequest('queue/retry', {id: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus === 'success') {
-                            Craft.cp.trackJobProgress(false);
+                            Craft.cp.trackJobProgress(false, true);
                         }
                     }, this));
                     break;
@@ -1296,7 +1301,7 @@ QueueHUD.Job = Garnish.Base.extend(
                 case 'release': {
                     Craft.postActionRequest('queue/release', {id: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus === 'success') {
-                            Craft.cp.trackJobProgress(false);
+                            Craft.cp.trackJobProgress(false, true);
                         }
                     }, this));
                 }

@@ -603,6 +603,12 @@ class GeneralConfig extends Object
      */
     public $showBetaUpdates = false;
     /**
+     * @var string|string[] The site name(s). If set, it will take precedence over the Name settings in Settings → Sites → [Site Name].
+     *
+     * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
+     */
+    public $siteName;
+    /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.

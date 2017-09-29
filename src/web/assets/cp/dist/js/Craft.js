@@ -1,4 +1,4 @@
-/*!   - 2017-09-14 */
+/*!   - 2017-09-29 */
 (function($){
 
 /** global: Craft */
@@ -2388,6 +2388,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             params.viewState.sort = this.getSelectedSortDirection();
 
             if (this.getSelectedSortAttribute() === 'structure') {
+                if (typeof this.instanceState.collapsedElementIds === 'undefined') {
+                    this.instanceState.collapsedElementIds = [];
+                }
                 params.collapsedElementIds = this.instanceState.collapsedElementIds;
             }
 
@@ -5496,7 +5499,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 fileuploaddone: $.proxy(this, '_onUploadComplete')
             };
 
-            if (typeof this.settings.criteria.kind !== 'undefined') {
+            if (this.settings.criteria && typeof this.settings.criteria.kind !== 'undefined') {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
@@ -8788,16 +8791,21 @@ Craft.CP = Garnish.Base.extend(
             if (Craft.runQueueAutomatically) {
                 Craft.queueActionRequest('queue/run', $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
-                        this.trackJobProgress(false);
+                        this.trackJobProgress(false, true);
                     }
                 }, this));
             }
             else {
-                this.trackJobProgress(false);
+                this.trackJobProgress(false, true);
             }
         },
 
-        trackJobProgress: function(delay) {
+        trackJobProgress: function(delay, force) {
+            if (force && this.trackJobProgressTimeout) {
+                clearTimeout(this.trackJobProgressTimeout);
+                this.trackJobProgressTimeout = null;
+            }
+
             // Ignore if we're already tracking jobs, or the queue is disabled
             if (this.trackJobProgressTimeout || !this.enableQueue) {
                 return;
@@ -9330,7 +9338,7 @@ QueueHUD.Job = Garnish.Base.extend(
 
                     Craft.postActionRequest('queue/retry', {id: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus === 'success') {
-                            Craft.cp.trackJobProgress(false);
+                            Craft.cp.trackJobProgress(false, true);
                         }
                     }, this));
                     break;
@@ -9338,7 +9346,7 @@ QueueHUD.Job = Garnish.Base.extend(
                 case 'release': {
                     Craft.postActionRequest('queue/release', {id: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus === 'success') {
-                            Craft.cp.trackJobProgress(false);
+                            Craft.cp.trackJobProgress(false, true);
                         }
                     }, this));
                 }
@@ -10026,6 +10034,25 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         defaults: {
             onSubmit: $.noop,
             redirect: null
+        }
+    });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Handle Generator
+ */
+Craft.DynamicGenerator = Craft.BaseInputGenerator.extend(
+    {
+        callback: $.noop,
+
+        init: function(source, target, callback) {
+            this.callback = callback;
+            this.base(source, target);
+        },
+
+        generateTargetValue: function(sourceVal) {
+            return this.callback(sourceVal);
         }
     });
 
@@ -15408,6 +15435,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$spinner = this.$addTagInput.next();
 
             this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
+                var val = this.$addTagInput.val();
+                if (val !== (val = val.trim())) {
+                    this.$addTagInput.val(val).data('garnish-textchange-value', val);
+                }
+
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }

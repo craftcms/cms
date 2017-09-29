@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -79,6 +80,9 @@ class DashboardController extends Controller
                 'selectable' => true,
             ];
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($widgetTypeInfo, 'name');
 
         $view->setNamespace($namespace);
         $variables = [];

@@ -1,6 +1,18 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2991 - 2017-09-29
+
+### Fixed
+- Fixed a bug where Craft was allowing multiple tags with the same title to be added if they had leading/trailing whitespace. ([#1997](https://github.com/craftcms/cms/issues/1997))
+- Fixed a MySQL error that could occur when saving a disabled element with a column value that was too large for its database column.
+- Fixed a PHP warning that could occur when submitting a non-numeric value for a Number field, on servers running PHP 7.
+- Fixed a bug where color inputs were really narrow in Safari 11. ([#2010](https://github.com/craftcms/cms/issues/2010))
+- Fixed some buggy behavior on structured element index views when collapsing/expanding elements, if no elements had been collapsed before.
+
+### Security
+- Fixed an XSS vulnerability.
+
 ## 2.6.2990 - 2017-09-15
 
 ### Changed

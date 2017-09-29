@@ -8,17 +8,16 @@
 
 <div class="checkbox-group">
     {%- for key, option in options %}
-        {%- set optionLabel = (option.label is defined ? option.label : option) %}
-        {%- set optionValue = (option.value is defined ? option.value : key) -%}
+        {%- if option is not iterable %}
+            {%- set option = {label: option, value: key} %}
+        {%- endif %}
         <div>
             {% include "_includes/forms/checkbox" with {
-                label:     optionLabel,
                 id:        (loop.first and id is defined ? id : null),
                 name:      name,
-                value:     optionValue,
-                checked:   (optionValue in values),
+                checked:   (option.value is defined and option.value in values),
                 autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
-            } only %}
+            }|merge(option) only %}
         </div>
     {%- endfor %}
 </div>
