@@ -1680,7 +1680,6 @@ class UsersController extends Controller
             $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $photo->name);
-            FileHelper::removeFile($fileLocation);
         }
     }
 
