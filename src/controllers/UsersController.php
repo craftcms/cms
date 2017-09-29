@@ -1155,27 +1155,28 @@ class UsersController extends Controller
             $this->requirePermission('editUsers');
         }
 
-        $file = UploadedFile::getInstanceByName('photo');
+        if (($file = UploadedFile::getInstanceByName('photo')) === null) {
+            return null;
+        }
 
         try {
-            // Make sure a file was uploaded
-            if ($file) {
-                if ($file->getHasError()) {
-                    throw new UploadFailedException($file->error);
-                }
-
-                $users = Craft::$app->getUsers();
-                $user = $users->getUserById($userId);
-
-                // Move to our own temp location
-                $fileLocation = Assets::tempFilePath($file->getExtension());
-                move_uploaded_file($file->tempName, $fileLocation);
-                $users->saveUserPhoto($fileLocation, $user, $file->name);
-
-                $html = $this->getView()->renderTemplate('users/_photo', ['account' => $user]);
-
-                return $this->asJson(['html' => $html]);
+            if ($file->getHasError()) {
+                throw new UploadFailedException($file->error);
             }
+
+            $users = Craft::$app->getUsers();
+            $user = $users->getUserById($userId);
+
+            // Move to our own temp location
+            $fileLocation = Assets::tempFilePath($file->getExtension());
+            move_uploaded_file($file->tempName, $fileLocation);
+            $users->saveUserPhoto($fileLocation, $user, $file->name);
+
+            $html = $this->getView()->renderTemplate('users/_photo', ['account' => $user]);
+
+            return $this->asJson([
+                'html' => $html,
+            ]);
         } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
@@ -1184,11 +1185,10 @@ class UsersController extends Controller
 
             Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
 
-            return $this->asErrorJson(Craft::t('app',
-                'There was an error uploading your photo: {error}', ['error' => $exception->getMessage()]));
+            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
+                'error' => $exception->getMessage()
+            ]));
         }
-
-        return null;
     }
 
     /**
