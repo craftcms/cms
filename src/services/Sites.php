@@ -10,6 +10,10 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\db\Query;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\GlobalSet;
+use craft\elements\Tag;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
@@ -413,21 +417,27 @@ class Sites extends Component
                     ->execute();
             }
 
-            // Re-save all of the localizable elements
+            // Re-save most localizable element types
+            // (skip entries because they only support specific sites)
+            // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
             $queue = Craft::$app->getQueue();
             $siteId = $this->getPrimarySite()->id;
-            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var Element|string $elementType */
-                if ($elementType::isLocalized()) {
-                    $queue->push(new ResaveElements([
-                        'elementType' => $elementType,
-                        'criteria' => [
-                            'siteId' => $siteId,
-                            'status' => null,
-                            'enabledForSite' => false
-                        ]
-                    ]));
-                }
+            $elementTypes = [
+                Asset::class,
+                Category::class,
+                GlobalSet::class,
+                Tag::class,
+            ];
+
+            foreach ($elementTypes as $elementType) {
+                $queue->push(new ResaveElements([
+                    'elementType' => $elementType,
+                    'criteria' => [
+                        'siteId' => $siteId,
+                        'status' => null,
+                        'enabledForSite' => false
+                    ]
+                ]));
             }
         }
 
