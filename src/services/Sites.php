@@ -847,11 +847,6 @@ class Sites extends Component
             // Is the config overriding the site URL?
             $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 
-            if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
-                $siteUrl = CRAFT_SITE_URL;
-            }
-
             if (is_string($siteUrl)) {
                 $this->getPrimarySite()->overrideBaseUrl($siteUrl);
             } else if (is_array($siteUrl)) {
