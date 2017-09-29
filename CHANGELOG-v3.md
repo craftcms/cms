@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## 3.0.0-beta.29 (WIP)
+## 3.0.0-beta.29 - 2017-09-29
 
 ### Added
 - Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
