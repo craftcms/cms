@@ -516,7 +516,7 @@ class EntriesController extends BaseEntriesController
             $return['id'] = $entry->id;
             $return['title'] = $entry->title;
 
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            if ($request->getIsCpRequest()) {
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
