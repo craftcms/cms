@@ -24,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that would occur when calling `craft\services\UserGroups::getGroupByHandle()`.
 - Fixed a JavaScript error that occurred if an asset select input was initialized without a `criteria` setting.
 - Fixed a bug where field types, volume types, mail transport types, and widget types weren’t getting listed in alphabetical order.
+- Fixed a bug where the queue info in the Control Panel wasn’t refreshing instantly after retrying or cancelling a failed job.
 
 ## 3.0.0-beta.28 - 2017-09-15
 
