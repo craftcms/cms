@@ -399,7 +399,7 @@ body.rtl .buttons > .btn, body.rtl .buttons > .btngroup { margin: 5px 0 0 5px ; 
 
 .btn { display: inline-block; border-radius: 3px; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; cursor: pointer; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; }
 
-.btn[type='color'] { padding: 6px !important; }
+.btn[type='color'] { padding: 6px !important; width: 36px; }
 
 .btn.active { cursor: default; }
 
@@ -556,7 +556,7 @@ body.rtl .color .colorpreview { right: 0; }
 
 .color:not(.disabled):not(.static):hover .colorpreview, .color:not(.disabled):not(.static):active .colorpreview, .color:not(.disabled):not(.static).active .colorpreview { -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05); }
 
-.color:not(.disabled):not(.static):active .colorpreview, .color:not(.disabled):not(.static).active .colorpreview { background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.1)); background-image: -moz-linear-gradient(transparent, rgba(0, 0, 0, 0.1)); background-image: -ms-linear-gradient(transparent, rgba(0, 0, 0, 0.1)); background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.1)); background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.1)); }
+.color:not(.disabled):not(.static):active .colorpreview, .color:not(.disabled):not(.static).active .colorpreview { background-image: -webkit-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1)); background-image: -moz-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1)); background-image: -ms-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1)); background-image: -o-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1)); background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1)); }
 
 .colorpicker { z-index: 101; }
 
@@ -1810,7 +1810,7 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 
 .matrix-configurator .field-settings .items { padding: 24px; }
 
-.matrix-configurator .mc-sidebar > .col-inner-container > .heading, .matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.03)); background-image: -moz-linear-gradient(transparent, rgba(0, 0, 0, 0.03)); background-image: -ms-linear-gradient(transparent, rgba(0, 0, 0, 0.03)); background-image: -o-linear-gradient(transparent, rgba(0, 0, 0, 0.03)); background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.03)); }
+.matrix-configurator .mc-sidebar > .col-inner-container > .heading, .matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); background-image: -webkit-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03)); background-image: -moz-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03)); background-image: -ms-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03)); background-image: -o-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03)); background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.03)); }
 
 /* blocks */
 .matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 4px; border: 1px solid #e3e5e8; background: #fafafa; outline: none; }
