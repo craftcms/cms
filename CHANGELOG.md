@@ -5,8 +5,8 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where Craft was allowing multiple tags with the same title to be added if they had leading/trailing whitespace. ([#1997](https://github.com/craftcms/cms/issues/1997))
-- Fixed a MySQL error that would occur if you tried to save an element that had a Text field with a length limit and that element was disabled.
-- Fixed a bug where you would get a PHP warning if you submitted a non-numeric value in a Number field when running PHP 7.
+- Fixed a MySQL error that could occur when saving a disabled element with a column value that was too large for its database column.
+- Fixed a PHP warning that could occur when submitting a non-numeric value for a Number field, on servers running PHP 7.
 - Fixed a bug where color inputs were really narrow in Safari 11. ([#2010](https://github.com/craftcms/cms/issues/2010))
 
 ### Security
