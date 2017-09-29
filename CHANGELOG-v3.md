@@ -16,6 +16,7 @@ Craft CMS 3.0 Working Changelog
 - `options` arrays passed to `_includes/forms/radioGroup.html` can now contain any of the properties supported by `radio.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
 - The `limit` property is no longer required by `_includes/forms/elementSelect.html`.
 - Craft’s required PHP version and extensions are now specified in `composer.json`.
+- Craft no longer re-saves *all* localizable elements after a new site is created; entries and Matrix blocks are skipped, and plugins that supply custom element types must now re-save their elements manually as well.
 
 ### Fixed
 - Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
@@ -24,6 +25,9 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that would occur when calling `craft\services\UserGroups::getGroupByHandle()`.
 - Fixed a JavaScript error that occurred if an asset select input was initialized without a `criteria` setting.
 - Fixed a bug where field types, volume types, mail transport types, and widget types weren’t getting listed in alphabetical order.
+- Fixed a bug where the queue info in the Control Panel wasn’t refreshing instantly after retrying or cancelling a failed job.
+- Fixed a bug where a queue job to resave all Matrix blocks after creating a new site would fail. ([#2001](https://github.com/craftcms/cms/issues/2001))
+- Fixed a PHP error that occurred when submitting a front-end user profile form with a new user photo. ([#2005](https://github.com/craftcms/cms/issues/2005))
 
 ## 3.0.0-beta.28 - 2017-09-15
 
