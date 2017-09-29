@@ -624,7 +624,7 @@ EOT;
 	 *
 	 * @param int $taskId
 	 *
-	 * @return TaskRecord|null|false
+	 * @return TaskRecord|null
 	 */
 	private function _getTaskRecordById($taskId)
 	{
@@ -638,9 +638,6 @@ EOT;
 			}
 		}
 
-		if ($this->_taskRecordsById[$taskId])
-		{
-			return $this->_taskRecordsById[$taskId];
-		}
+		return $this->_taskRecordsById[$taskId] ?: null;
 	}
 }

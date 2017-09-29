@@ -1004,7 +1004,6 @@ class UserSessionService extends \CWebUser
 	{
 		return !(
 			craft()->request->isGetRequest() &&
-			craft()->request->isCpRequest() &&
 			craft()->request->getParam('dontExtendSession')
 		);
 	}

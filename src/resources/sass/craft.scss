@@ -315,7 +315,7 @@ div.flex > .flex-grow { @include flex-grow(1); }
 	-webkit-appearance: none;
 }
 
-.btn[type='color'] { padding: 6px !important; }
+.btn[type='color'] { padding: 6px !important; width: 36px; }
 
 .btn.active { cursor: default; }
 

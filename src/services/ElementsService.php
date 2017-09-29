@@ -1646,7 +1646,24 @@ class ElementsService extends BaseApplicationComponent
 				$transaction->rollback();
 			}
 
-			throw $e;
+			// Specifically look for a MySQL "data truncation" exception. The use-case
+			// is for a disabled element where validation doesn't run and a text field
+			// is limited in length, but more data is entered than is allowed.
+			if (
+				$e instanceof \CDbException
+				&& isset($e->errorInfo[0])
+				&& $e->errorInfo[0] == 22001
+				&& isset($e->errorInfo[1])
+				&& $e->errorInfo[1] == 1406)
+			{
+				$success = false;
+				craft()->errorHandler->logException($e);
+			}
+			else
+			{
+				throw $e;
+			}
+
 		}
 
 		if ($success)
