@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" n’est pas autorisé dans ce champ.',
+    '"{filename}" is not allowed in this field.' => '“{filename}” n’est pas autorisé dans ce champ.',
     '(blank)' => '(vide)',
     'A fatal error has occurred:' => 'Une erreur fatale est survenue :',
     'A template name cannot contain NUL bytes.' => 'Un nom de template ne peut pas contenir d’octets NUL.',
@@ -58,7 +58,7 @@ return [
     'Are you sure you want to delete this field?' => 'Êtes-vous sûr de vouloir supprimer ce champ ?',
     'Are you sure you want to delete this group and all its fields?' => 'Êtes-vous sûr de vouloir supprimer ce groupe et tous ses champs ?',
     'Are you sure you want to delete this photo?' => 'Êtes-vous sûr de vouloir supprimer cette photo ?',
-    'Are you sure you want to delete “{name}” and all entries that use it?' => 'Êtes-vous sûr de vouloir supprimer “{name}” et toutes les entrées qui l’utilise ?',
+    'Are you sure you want to delete “{name}” and all entries that use it?' => 'Êtes-vous sûr de vouloir supprimer “{name}” et toutes les entrées qui l’utilisent ?',
     'Are you sure you want to delete “{name}” and all its categories?' => 'Êtes-vous sûr de vouloir supprimer “{name}” et toutes ses catégories ?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Êtes-vous sûr de vouloir supprimer “{name}” et toutes ses entrées ?',
     'Are you sure you want to delete “{name}” and all its tags?' => 'Êtes-vous sûr de vouloir supprimer “{name}” et toutes les étiquettes associées ?',
@@ -106,7 +106,7 @@ return [
     'Changing this may result in data loss.' => 'Modifier cela pourrait entraîner une perte de données.',
     'Channels' => 'Canaux',
     'Check again' => 'Nouvelle vérification',
-    'Check your email for instructions to reset your password.' => 'Consultez votre messagerie pour lire les instructions afin de réinitialiser votre mot de passe.',
+    'Check your email for instructions to reset your password.' => 'Consultez votre messagerie pour lire les instructions de réinitialisation de votre mot de passe.',
     'Checkbox' => 'Case à cocher',
     'Checkbox Options' => 'Options de la case à cocher',
     'Checkboxes' => 'Cases à cocher',
