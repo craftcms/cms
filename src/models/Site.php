@@ -51,6 +51,11 @@ class Site extends Model
     public $hasUrls = true;
 
     /**
+     * @var string|null Original name (set if [[name]] was overridden by the config)
+     */
+    public $originalName;
+
+    /**
      * @var string|null Original base URL (set if [[baseUrl]] was overridden by the config)
      */
     public $originalBaseUrl;
@@ -105,6 +110,19 @@ class Site extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name);
+    }
+
+    /**
+     * Overrides the name while keeping track of the original one.
+     *
+     * @param string $name
+     *
+     * @return void
+     */
+    public function overrideName(string $name)
+    {
+        $this->originalName = (string)$this->name;
+        $this->name = $name;
     }
 
     /**

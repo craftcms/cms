@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.28',
+    'version' => '3.0.0-beta.29',
     'schemaVersion' => '3.0.61',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
@@ -261,9 +261,9 @@ return [
                 $schemaClass = craft\db\pgsql\Schema::class;
             }
 
-            /** @var craft\db\Connection $db */
-            $db = Craft::createObject([
+            return Craft::createObject([
                 'class' => craft\db\Connection::class,
+                'driverName' => $dbConfig->driver,
                 'dsn' => $dbConfig->dsn,
                 'username' => $dbConfig->user,
                 'password' => $dbConfig->password,
@@ -277,11 +277,6 @@ return [
                 'commandClass' => \craft\db\Command::class,
                 'attributes' => $dbConfig->attributes,
             ]);
-
-            // Set the Yii driver name from the config setting.
-            $db->setDriverName($dbConfig->driver);
-
-            return $db;
         },
 
         'mailer' => function() {

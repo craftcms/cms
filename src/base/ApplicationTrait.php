@@ -265,15 +265,16 @@ trait ApplicationTrait
     }
 
     /**
-     * Tells Craft that it's installed now.
+     * Sets Craft's record of whether it's installed
+     *
+     * @param bool|null $value
      *
      * @return void
      */
-    public function setIsInstalled()
+    public function setIsInstalled($value = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // If you say so!
-        $this->_isInstalled = true;
+        $this->_isInstalled = $value;
     }
 
     /**

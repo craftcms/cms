@@ -176,7 +176,7 @@ class UrlHelper
 
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+        if ($request->getIsCpRequest()) {
             $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
             $cpUrl = true;
         } else {
