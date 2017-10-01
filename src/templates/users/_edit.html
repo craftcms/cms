@@ -294,10 +294,16 @@
                             </div>
                         </div>
 
-                    {% if account.status == 'locked' and craft.app.config.general.cooldownDuration and account.remainingCooldownTime %}
+                        {% if account.status == 'locked' and craft.app.config.general.cooldownDuration and account.remainingCooldownTime %}
+                            <div class="data">
+                                <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
+                                <p class="value">{{ account.remainingCooldownTime|duration }}</p>
+                            </div>
+                        {% endif %}
+
                         <div class="data">
-                            <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
-                            <p class="value">{{ account.remainingCooldownTime|duration }}</p>
+                            <h5 class="heading">{{ "Registration Date"|t('app') }}</h5>
+                            <p class="value">{{ account.dateCreated|datetime('short') }}</p>
                         </div>
 
                         {% if account.status != 'pending' %}
