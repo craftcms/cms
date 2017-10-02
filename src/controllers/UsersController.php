@@ -1004,11 +1004,9 @@ class UsersController extends Controller
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $imageValidates = true;
         $photo = UploadedFile::getInstanceByName('photo');
 
         if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
-            $imageValidates = false;
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
@@ -1016,7 +1014,9 @@ class UsersController extends Controller
             $user->validateCustomFields = false;
         }
 
-        if (!$imageValidates || !Craft::$app->getElements()->saveElement($user)) {
+        if (!$user->validate(null, false)) {
+            Craft::info('User not saved due to validation error.', __METHOD__);
+
             if ($thisIsPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->addErrors(['password' => $user->getErrors('newPassword')]);
@@ -1038,6 +1038,9 @@ class UsersController extends Controller
 
             return null;
         }
+
+        // Save the user (but no need to re-validate)
+        Craft::$app->getElements()->saveElement($user, false);
 
         // Save their preferences too
         $preferences = [
@@ -1155,27 +1158,28 @@ class UsersController extends Controller
             $this->requirePermission('editUsers');
         }
 
-        $file = UploadedFile::getInstanceByName('photo');
+        if (($file = UploadedFile::getInstanceByName('photo')) === null) {
+            return null;
+        }
 
         try {
-            // Make sure a file was uploaded
-            if ($file) {
-                if ($file->getHasError()) {
-                    throw new UploadFailedException($file->error);
-                }
-
-                $users = Craft::$app->getUsers();
-                $user = $users->getUserById($userId);
-
-                // Move to our own temp location
-                $fileLocation = Assets::tempFilePath($file->getExtension());
-                move_uploaded_file($file->tempName, $fileLocation);
-                $users->saveUserPhoto($fileLocation, $user, $file->name);
-
-                $html = $this->getView()->renderTemplate('users/_photo', ['account' => $user]);
-
-                return $this->asJson(['html' => $html]);
+            if ($file->getHasError()) {
+                throw new UploadFailedException($file->error);
             }
+
+            $users = Craft::$app->getUsers();
+            $user = $users->getUserById($userId);
+
+            // Move to our own temp location
+            $fileLocation = Assets::tempFilePath($file->getExtension());
+            move_uploaded_file($file->tempName, $fileLocation);
+            $users->saveUserPhoto($fileLocation, $user, $file->name);
+
+            $html = $this->getView()->renderTemplate('users/_photo', ['account' => $user]);
+
+            return $this->asJson([
+                'html' => $html,
+            ]);
         } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
@@ -1184,11 +1188,10 @@ class UsersController extends Controller
 
             Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
 
-            return $this->asErrorJson(Craft::t('app',
-                'There was an error uploading your photo: {error}', ['error' => $exception->getMessage()]));
+            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
+                'error' => $exception->getMessage()
+            ]));
         }
-
-        return null;
     }
 
     /**
@@ -1679,7 +1682,14 @@ class UsersController extends Controller
         if ($photo = UploadedFile::getInstanceByName('photo')) {
             $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
-            $users->saveUserPhoto($fileLocation, $user, $photo->name);
+            try {
+                $users->saveUserPhoto($fileLocation, $user, $photo->name);
+            } catch (\Throwable $e) {
+                if (file_exists($fileLocation)) {
+                    FileHelper::removeFile($fileLocation);
+                }
+                throw $e;
+            }
         }
     }
 

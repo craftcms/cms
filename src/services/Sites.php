@@ -844,21 +844,29 @@ class Sites extends Component
                 }
             }
 
-            // Is the config overriding the site URL?
-            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
+            // Is the config overriding the site name/URL?
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
-                $siteUrl = CRAFT_SITE_URL;
-            }
-
-            if (is_string($siteUrl)) {
-                $this->getPrimarySite()->overrideBaseUrl($siteUrl);
-            } else if (is_array($siteUrl)) {
-                foreach ($siteUrl as $handle => $url) {
+            if (is_string($generalConfig->siteName)) {
+                $this->getPrimarySite()->overrideName($generalConfig->siteName);
+            } else if (is_array($generalConfig->siteName)) {
+                foreach ($generalConfig->siteName as $handle => $name) {
                     $site = $this->getSiteByHandle($handle);
                     if ($site) {
-                        $site->overrideBaseUrl($url);
+                        $site->overrideName($name);
+                    } else {
+                        Craft::warning('Ignored this invalid site handle when applying the siteName config setting: '.$handle, __METHOD__);
+                    }
+                }
+            }
+
+            if (is_string($generalConfig->siteUrl)) {
+                $this->getPrimarySite()->overrideBaseUrl($generalConfig->siteUrl);
+            } else if (is_array($generalConfig->siteUrl)) {
+                foreach ($generalConfig->siteUrl as $handle => $baseUrl) {
+                    $site = $this->getSiteByHandle($handle);
+                    if ($site) {
+                        $site->overrideBaseUrl($baseUrl);
                     } else {
                         Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
                     }

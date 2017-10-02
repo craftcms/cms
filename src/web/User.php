@@ -363,7 +363,7 @@ class User extends \yii\web\User
         if (Craft::$app->getIsInstalled() && $this->_validateUserAgentAndIp()) {
             // Prevent the user session from getting extended?
             $request = Craft::$app->getRequest();
-            if ($this->authTimeout !== null && $request->getIsCpRequest() && $request->getParam('dontExtendSession')) {
+            if ($this->authTimeout !== null && $request->getParam('dontExtendSession')) {
                 $this->absoluteAuthTimeout = $this->authTimeout;
                 $this->authTimeout = null;
                 $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;

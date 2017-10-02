@@ -1,14 +1,27 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## 3.0.0-beta.29 (WIP)
+## 3.0.0-beta.30 (WIP)
+
+### Changed
+- Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
+
+### Fixed
+- Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
+- Fixed a bug where Craft was not performing normal user validation when an invalid profile photo was uploaded from a front-end form.
+
+## 3.0.0-beta.29 - 2017-09-29
 
 ### Added
 - Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
 - Added the `Craft.DynamicGenerator` JavaScript class, for creating dynamic input generators.
 - Added `craft\config\DbConfig::updateDsn()`.
+- Added `craft\console\Request::getIsActionRequest()` (always `false`).
+- Added `craft\console\Request::getIsCpRequest()` (always `false`).
+- Added `craft\console\Request::getIsSiteRequest()` (always `false`).
 - Added a `setup/db-creds` command that collects all the database credentials, tests them, and saves them to the `.env` file.
 - Added a `setup` command that runs through the `setup/security-key`, `setup/db-creds`, and `install` commands.
+- Brought back the `siteName` config setting. ([#2003](https://github.com/craftcms/cms/issues/2003))
 
 ### Changed
 - It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
