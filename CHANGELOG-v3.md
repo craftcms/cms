@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.30 (WIP)
+
+### Changed
+- Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
+
 ## 3.0.0-beta.29 - 2017-09-29
 
 ### Added
