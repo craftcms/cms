@@ -1036,11 +1036,9 @@ class UsersController extends Controller
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $imageValidates = true;
         $photo = UploadedFile::getInstanceByName('photo');
 
         if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
-            $imageValidates = false;
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
@@ -1048,7 +1046,9 @@ class UsersController extends Controller
             $user->validateCustomFields = false;
         }
 
-        if (!$imageValidates || !Craft::$app->getElements()->saveElement($user)) {
+        if (!$user->validate(null, false)) {
+            Craft::info('User not saved due to validation error.', __METHOD__);
+
             if ($thisIsPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->addErrors(['password' => $user->getErrors('newPassword')]);
@@ -1070,6 +1070,9 @@ class UsersController extends Controller
 
             return null;
         }
+
+        // Save the user (but no need to re-validate)
+        Craft::$app->getElements()->saveElement($user, false);
 
         // Save their preferences too
         $preferences = [

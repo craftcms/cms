@@ -18,6 +18,15 @@ Craft CMS 3.0 Working Changelog
 - Removed `lib/redactor/`.
 - Removed `Craft.RichTextInput` (JS class).
 
+## 3.0.0-beta.30 (WIP)
+
+### Changed
+- Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
+
+### Fixed
+- Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
+- Fixed a bug where Craft was not performing normal user validation when an invalid profile photo was uploaded from a front-end form.
+
 ## 3.0.0-beta.29 - 2017-09-29
 
 ### Added
