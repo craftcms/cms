@@ -35,11 +35,5 @@
     "post-create-project-cmd": [
       "@php craft setup/welcome"
     ]
-  },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../craft3"
-    }
-  ]
+  }
 }
