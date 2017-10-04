@@ -561,6 +561,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             params.viewState.sort = this.getSelectedSortDirection();
 
             if (this.getSelectedSortAttribute() === 'structure') {
+                if (typeof this.instanceState.collapsedElementIds === 'undefined') {
+                    this.instanceState.collapsedElementIds = [];
+                }
                 params.collapsedElementIds = this.instanceState.collapsedElementIds;
             }
 

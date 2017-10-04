@@ -54,43 +54,37 @@ class RebrandController extends Controller
             return $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
-        // Upload the file and drop it in the temporary folder
-        $file = UploadedFile::getInstanceByName('image');
+        // Grab the uploaded file
+        if (($file = UploadedFile::getInstanceByName('image')) === null) {
+            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo'));
+        }
 
-        try {
-            // Make sure a file was uploaded
-            if ($file) {
-                $filename = Assets::prepareAssetName($file->name, true, true);
+        $filename = Assets::prepareAssetName($file->name, true, true);
 
-                if (!Image::canManipulateAsImage($file->getExtension())) {
-                    throw new BadRequestHttpException(Craft::t('app', 'The uploaded file is not an image'));
-                }
-
-                $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
-
-                if (!is_dir($targetPath)) {
-                    FileHelper::createDirectory($targetPath);
-                } else {
-                    FileHelper::clearDirectory($targetPath);
-                }
-
-                $fileDestination = $targetPath.'/'.$filename;
-
-                move_uploaded_file($file->tempName, $fileDestination);
-
-                $imagesService = Craft::$app->getImages();
-                $imagesService->cleanImage($fileDestination);
-                $imagesService->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
-                $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
-
-                return $this->asJson(['html' => $html]);
-            }
-        } catch (BadRequestHttpException $exception) {
+        if (!Image::canManipulateAsImage($file->getExtension())) {
             return $this->asErrorJson(Craft::t('app', 'The uploaded file is not an image.'));
         }
 
-        return $this->asErrorJson(Craft::t('app',
-            'There was an error uploading your photo'));
+        $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
+
+        if (!is_dir($targetPath)) {
+            FileHelper::createDirectory($targetPath);
+        } else {
+            FileHelper::clearDirectory($targetPath);
+        }
+
+        $fileDestination = $targetPath.'/'.$filename;
+
+        move_uploaded_file($file->tempName, $fileDestination);
+
+        $imagesService = Craft::$app->getImages();
+        $imagesService->cleanImage($fileDestination);
+        $imagesService->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
+        $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
+
+        return $this->asJson([
+            'html' => $html,
+        ]);
     }
 
     /**
@@ -111,6 +105,8 @@ class RebrandController extends Controller
 
         $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
 
-        return $this->asJson(['html' => $html]);
+        return $this->asJson([
+            'html' => $html,
+        ]);
     }
 }

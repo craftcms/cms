@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\volumes\Local;
@@ -115,6 +116,9 @@ class VolumesController extends Controller
                 ];
             }
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($volumeTypeOptions, 'label');
 
         $isNewVolume = !$volume->id;
 

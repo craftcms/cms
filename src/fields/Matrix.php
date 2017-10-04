@@ -233,6 +233,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
         }
 
+        // Sort them by name
+        ArrayHelper::multisort($fieldTypeOptions['new'], 'label');
+
         if (!$this->getIsNew()) {
             foreach ($this->getBlockTypes() as $blockType) {
                 foreach ($blockType->getFields() as $field) {
@@ -249,6 +252,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                                 ];
                             }
                         }
+
+                        // Sort them by name
+                        ArrayHelper::multisort($fieldTypeOptions[$field->id], 'label');
                     }
                 }
             }

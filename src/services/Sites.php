@@ -10,6 +10,10 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\db\Query;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\GlobalSet;
+use craft\elements\Tag;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
@@ -413,21 +417,27 @@ class Sites extends Component
                     ->execute();
             }
 
-            // Re-save all of the localizable elements
+            // Re-save most localizable element types
+            // (skip entries because they only support specific sites)
+            // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
             $queue = Craft::$app->getQueue();
             $siteId = $this->getPrimarySite()->id;
-            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var Element|string $elementType */
-                if ($elementType::isLocalized()) {
-                    $queue->push(new ResaveElements([
-                        'elementType' => $elementType,
-                        'criteria' => [
-                            'siteId' => $siteId,
-                            'status' => null,
-                            'enabledForSite' => false
-                        ]
-                    ]));
-                }
+            $elementTypes = [
+                Asset::class,
+                Category::class,
+                GlobalSet::class,
+                Tag::class,
+            ];
+
+            foreach ($elementTypes as $elementType) {
+                $queue->push(new ResaveElements([
+                    'elementType' => $elementType,
+                    'criteria' => [
+                        'siteId' => $siteId,
+                        'status' => null,
+                        'enabledForSite' => false
+                    ]
+                ]));
             }
         }
 
@@ -834,21 +844,29 @@ class Sites extends Component
                 }
             }
 
-            // Is the config overriding the site URL?
-            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
+            // Is the config overriding the site name/URL?
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
-                $siteUrl = CRAFT_SITE_URL;
-            }
-
-            if (is_string($siteUrl)) {
-                $this->getPrimarySite()->overrideBaseUrl($siteUrl);
-            } else if (is_array($siteUrl)) {
-                foreach ($siteUrl as $handle => $url) {
+            if (is_string($generalConfig->siteName)) {
+                $this->getPrimarySite()->overrideName($generalConfig->siteName);
+            } else if (is_array($generalConfig->siteName)) {
+                foreach ($generalConfig->siteName as $handle => $name) {
                     $site = $this->getSiteByHandle($handle);
                     if ($site) {
-                        $site->overrideBaseUrl($url);
+                        $site->overrideName($name);
+                    } else {
+                        Craft::warning('Ignored this invalid site handle when applying the siteName config setting: '.$handle, __METHOD__);
+                    }
+                }
+            }
+
+            if (is_string($generalConfig->siteUrl)) {
+                $this->getPrimarySite()->overrideBaseUrl($generalConfig->siteUrl);
+            } else if (is_array($generalConfig->siteUrl)) {
+                foreach ($generalConfig->siteUrl as $handle => $baseUrl) {
+                    $site = $this->getSiteByHandle($handle);
+                    if ($site) {
+                        $site->overrideBaseUrl($baseUrl);
                     } else {
                         Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
                     }
