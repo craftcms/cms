@@ -48,12 +48,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 		this.addListener(this.$addTagInput, 'textchange', $.proxy(function()
 		{
-			var val = this.$addTagInput.val();
-			if (val !== (val = val.trim()))
-			{
-				this.$addTagInput.val(val).data('garnish-textchange-value', val);
-			}
-
 			if (this.searchTimeout)
 			{
 				clearTimeout(this.searchTimeout);
