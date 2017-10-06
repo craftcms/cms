@@ -39,7 +39,7 @@ Craft.Pane = Garnish.Base.extend(
                     var $tab = $($tabs[i]),
                         href = $tab.attr('href');
 
-                    if (href && href.charAt(0) == '#') {
+                    if (href && href.charAt(0) === '#') {
                         this.tabs[href] = {
                             $tab: $tab,
                             $target: $(href)
@@ -53,7 +53,7 @@ Craft.Pane = Garnish.Base.extend(
                     }
                 }
 
-                if (document.location.hash && this.tabs[document.location.hash] !== undefined) {
+                if (document.location.hash && typeof this.tabs[document.location.hash] !== 'undefined') {
                     this.tabs[document.location.hash].$tab.trigger('activate');
                 }
                 else if (!this.selectedTab) {
@@ -85,7 +85,7 @@ Craft.Pane = Garnish.Base.extend(
          * Selects a tab.
          */
         selectTab: function(ev) {
-            if (!this.selectedTab || ev.currentTarget != this.tabs[this.selectedTab].$tab[0]) {
+            if (!this.selectedTab || ev.currentTarget !== this.tabs[this.selectedTab].$tab[0]) {
                 // Hide the selected tab
                 this.deselectTab();
 
@@ -148,20 +148,14 @@ Craft.Pane = Garnish.Base.extend(
         },
 
         updateSidebarStyles: function() {
-
             var $pageHeader = $('#page-header');
 
             this.updateSidebarStyles._styles = {};
 
             this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
             this.updateSidebarStyles._pageHeaderHeight = $pageHeader.outerHeight();
-            this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
+            this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0) - this.updateSidebarStyles._pageHeaderHeight;
             this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
-
-            if ($pageHeader.hasClass('fixed')) {
-                this.updateSidebarStyles._paneHeight -= this.updateSidebarStyles._pageHeaderHeight;
-            }
-
             this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
             // Have we scrolled passed the top of the pane?
@@ -169,8 +163,7 @@ Craft.Pane = Garnish.Base.extend(
                 // Set the top position to the difference
                 this.updateSidebarStyles._styles.position = 'fixed';
                 this.updateSidebarStyles._styles.top = (24 + this.updateSidebarStyles._pageHeaderHeight) + 'px';
-            }
-            else {
+            } else {
                 this.updateSidebarStyles._styles.position = 'absolute';
 
                 if (Garnish.$win.width() > 768) {
@@ -187,10 +180,9 @@ Craft.Pane = Garnish.Base.extend(
                 this.updateSidebarStyles._windowHeight
             );
 
-            if (this.updateSidebarStyles._paneHeight > this.updateSidebarStyles._windowHeight) {
+            if(this.updateSidebarStyles._paneHeight > this.updateSidebarStyles._windowHeight) {
                 this.updateSidebarStyles._styles.height = this.updateSidebarStyles._styles.maxHeight;
-            }
-            else {
+            } else {
                 this.updateSidebarStyles._styles.height = this.updateSidebarStyles._paneHeight;
             }
 

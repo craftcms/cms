@@ -10,6 +10,7 @@ namespace craft\image;
 use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
@@ -155,13 +156,13 @@ class Raster extends Image
         // Make sure the image says it's an image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
-        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0) {
+        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0 && strpos($mimeType, 'application/pdf') !== 0) {
             throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => pathinfo($path, PATHINFO_BASENAME)]));
         }
 
         try {
             $this->_image = $this->_instance->open($path);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
         }
 
@@ -226,7 +227,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -336,7 +337,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth, int $targetHeight = null)
+    public function resize(int $targetWidth = null, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -444,6 +445,8 @@ class Raster extends Image
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
                 clearstatcache();
+                App::maxPowerCaptain();
+
                 $originalSize = filesize($this->_imageSourcePath);
                 $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
                 try {
@@ -482,6 +485,9 @@ class Raster extends Image
                 throw new ImageException(Craft::t('app', 'Failed to load the SVG string.'), $e->getCode(), $e);
             }
         }
+
+        // PNG should be the best fit for SVGs.
+        $this->_extension = 'png';
 
         return $this;
     }
@@ -593,9 +599,6 @@ class Raster extends Image
      */
     private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
-        // Give ourselves some extra time.
-        @set_time_limit(30);
-
         if ($step === 0) {
             $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }
@@ -681,15 +684,21 @@ class Raster extends Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-                // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
-                // a valid format: http://www.imagemagick.org/script/formats.php
-                // So 2 channel PNGs get converted to 4 channel.
-                if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                    $format = 'png'.(8 * $pngInfo['channels']);
+
+                if ($this->_imageSourcePath) {
+                    $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
+                    // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+                    // a valid format: http://www.imagemagick.org/script/formats.php
+                    // So 2 channel PNGs get converted to 4 channel.
+                    if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
+                        $format = 'png'.(8 * $pngInfo['channels']);
+                    } else {
+                        $format = 'png32';
+                    }
                 } else {
                     $format = 'png32';
                 }
+
                 $options['png_format'] = $format;
 
                 return $options;

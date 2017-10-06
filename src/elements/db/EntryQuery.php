@@ -13,6 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
@@ -29,8 +30,8 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
  *
  * @method Entry[]|array all($db = null)
- * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth(int $n, Connection $db = null)
+ * @method Entry|array|false one($db = null)
+ * @method Entry|array|false nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -88,7 +89,7 @@ class EntryQuery extends ElementQuery
     {
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = 'live';
+            $config['status'] = ['live'];
         }
 
         parent::__construct($elementType, $config);
@@ -302,8 +303,14 @@ class EntryQuery extends ElementQuery
             $value = $value->format(DateTime::W3C);
         }
 
-        $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '<'.$value;
+        if (!$this->postDate) {
+            $this->postDate = '<'.$value;
+        } else {
+            if (!is_array($this->postDate)) {
+                $this->postDate = [$this->postDate];
+            }
+            $this->postDate[] = '<'.$value;;
+        }
 
         return $this;
     }
@@ -321,8 +328,14 @@ class EntryQuery extends ElementQuery
             $value = $value->format(DateTime::W3C);
         }
 
-        $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '>='.$value;
+        if (!$this->postDate) {
+            $this->postDate = '>='.$value;
+        } else {
+            if (!is_array($this->postDate)) {
+                $this->postDate = [$this->postDate];
+            }
+            $this->postDate[] = '>='.$value;;
+        }
 
         return $this;
     }
@@ -392,7 +405,7 @@ class EntryQuery extends ElementQuery
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
-        if (!$this->orderBy && !$this->structureId && !$this->fixedOrder) {
+        if ($this->orderBy !== null && empty($this->orderBy) && !$this->structureId && !$this->fixedOrder) {
             $this->orderBy = 'postDate desc';
         }
 
@@ -412,7 +425,7 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1'
+                        'elements_sites.enabled' => '1'
                     ],
                     ['<=', 'entries.postDate', $currentTimeDb],
                     [
@@ -426,7 +439,7 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1',
+                        'elements_sites.enabled' => '1',
                     ],
                     ['>', 'entries.postDate', $currentTimeDb]
                 ];
@@ -435,7 +448,7 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1'
+                        'elements_sites.enabled' => '1'
                     ],
                     ['not', ['entries.expiryDate' => null]],
                     ['<=', 'entries.expiryDate', $currentTimeDb]
@@ -514,7 +527,11 @@ class EntryQuery extends ElementQuery
             return;
         }
 
-        $refs = ArrayHelper::toArray($this->ref);
+        $refs = $this->ref;
+        if (!is_array($refs)) {
+            $refs = is_string($refs) ? StringHelper::split($refs) : [$refs];
+        }
+
         $joinSections = false;
         $condition = ['or'];
 
@@ -523,12 +540,12 @@ class EntryQuery extends ElementQuery
 
             if (!empty($parts)) {
                 if (count($parts) == 1) {
-                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
+                    $condition[] = Db::parseParam('elements_sites.slug', $parts[0]);
                 } else {
                     $condition[] = [
                         'and',
                         Db::parseParam('sections.handle', $parts[0]),
-                        Db::parseParam('elements_i18n.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1])
                     ];
                     $joinSections = true;
                 }

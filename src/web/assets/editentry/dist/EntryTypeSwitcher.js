@@ -21,7 +21,7 @@
                 Craft.postActionRequest('entries/switch-entry-type', Craft.cp.$container.serialize(), $.proxy(function(response, textStatus) {
                     this.$spinner.addClass('hidden');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         var fieldsPane = this.$fields.data('pane');
                         fieldsPane.deselectTab();
                         this.$fields.html(response.paneHtml);

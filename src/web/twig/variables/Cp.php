@@ -97,7 +97,7 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle) &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->id) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;
@@ -191,14 +191,10 @@ class Cp extends Component
             'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/routes.svg')),
             'label' => Craft::t('app', 'Routes')
         ];
-
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $settings[$label]['users'] = [
-                'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
-                'label' => Craft::t('app', 'Users')
-            ];
-        }
-
+        $settings[$label]['users'] = [
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
+            'label' => Craft::t('app', 'Users')
+        ];
         $settings[$label]['email'] = [
             'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/envelope.svg')),
             'label' => Craft::t('app', 'Email')
@@ -244,7 +240,7 @@ class Cp extends Component
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/'.$plugin->id,
-                    'iconSvg' => $pluginsService->getPluginIconSvg($plugin->handle),
+                    'iconSvg' => $pluginsService->getPluginIconSvg($plugin->id),
                     'label' => $plugin->name
                 ];
             }

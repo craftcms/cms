@@ -84,41 +84,27 @@ class UserGroups extends Component
      */
     public function getGroupById(int $groupId): UserGroup
     {
-        $groupRecord = UserGroupRecord::findOne($groupId);
+        $result = $this->_createUserGroupsQuery()
+            ->where(['id' => $groupId])
+            ->one();
 
-        if ($groupRecord) {
-            return new UserGroup($groupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-            ]));
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
      * Gets a user group by its handle.
      *
-     * @param int $groupHandle
+     * @param string $groupHandle
      *
      * @return UserGroup
      */
-    public function getGroupByHandle(int $groupHandle): UserGroup
+    public function getGroupByHandle(string $groupHandle): UserGroup
     {
-        $groupRecord = UserGroupRecord::findOne([
-            'handle' => $groupHandle
-        ]);
+        $result = $this->_createUserGroupsQuery()
+            ->where(['handle' => $groupHandle])
+            ->one();
 
-        if ($groupRecord) {
-            return new UserGroup($groupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-            ]));
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
@@ -158,19 +144,20 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('User group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveUserGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('User group not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         $groupRecord = $this->_getGroupRecordById($group->id);
 
@@ -185,10 +172,12 @@ class UserGroups extends Component
         }
 
         // Fire an 'afterSaveUserGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         return true;
     }
@@ -209,18 +198,22 @@ class UserGroups extends Component
         }
 
         // Fire a 'beforeDeleteUserGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%usergroups}}', ['id' => $groupId])
             ->execute();
 
         // Fire an 'afterDeleteUserGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group
+            ]));
+        }
 
         return true;
     }
@@ -261,5 +254,19 @@ class UserGroups extends Component
     private function _noGroupExists(int $groupId)
     {
         throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createUserGroupsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'name',
+                'handle',
+            ])
+            ->from(['{{%usergroups}}']);
     }
 }

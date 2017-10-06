@@ -190,19 +190,20 @@ class AssetTransforms extends Component
      */
     public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool
     {
-        if ($runValidation && !$transform->validate()) {
-            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewTransform = !$transform->id;
 
         // Fire a 'beforeSaveAssetTransform' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform,
-            'isNew' => $isNewTransform,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform,
+                'isNew' => $isNewTransform,
+            ]));
+        }
+
+        if ($runValidation && !$transform->validate()) {
+            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if ($isNewTransform) {
             $transformRecord = new AssetTransformRecord();
@@ -242,10 +243,12 @@ class AssetTransforms extends Component
         }
 
         // Fire an 'afterSaveAssetTransform' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform,
-            'isNew' => $transform,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform,
+                'isNew' => $transform,
+            ]));
+        }
 
         return true;
     }
@@ -262,9 +265,11 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete(
@@ -273,9 +278,11 @@ class AssetTransforms extends Component
             ->execute();
 
         // Fire an 'afterDeleteAssetTransform' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
 
         return true;
     }
@@ -325,21 +332,7 @@ class AssetTransforms extends Component
         }
 
         // Query for the indexes
-        $results = (new Query())
-            ->select([
-                'id',
-                'assetId',
-                'filename',
-                'format',
-                'location',
-                'volumeId',
-                'fileExists',
-                'inProgress',
-                'dateIndexed',
-                'dateCreated',
-                'dateUpdated',
-            ])
-            ->from(['{{%assettransformindex}}'])
+        $results = $this->_createTransformIndexQuery()
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
@@ -434,6 +427,10 @@ class AssetTransforms extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%assettransformindex}}', ['id' => $entry['id']])
                 ->execute();
+
+            // And the file.
+            $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($entry));
+            $asset->getVolume()->deleteFile($transformUri);
         }
 
         // Create a new record
@@ -629,8 +626,8 @@ class AssetTransforms extends Component
      *
      * @param AssetTransform|string|array|null $transform
      *
-     * @throws AssetTransformException if the transform cannot be found by the handle
      * @return AssetTransform|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
     public function normalizeTransform($transform)
     {
@@ -830,32 +827,6 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get a thumb server path by Asset model and size.
-     *
-     * @param Asset $asset
-     * @param int   $size
-     *
-     * @return bool|string
-     */
-    public function getResizedAssetServerPath(Asset $asset, int $size)
-    {
-        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().DIRECTORY_SEPARATOR.$size;
-        FileHelper::createDirectory($thumbFolder);
-        $extension = $this->_getThumbExtension($asset);
-        $thumbPath = $thumbFolder.DIRECTORY_SEPARATOR.$asset->id.'.'.$extension;
-
-        if (!is_file($thumbPath)) {
-            $imageSource = $this->getLocalImageSource($asset);
-
-            Craft::$app->getImages()->loadImage($imageSource, false, $size)
-                ->scaleToFit($size, $size)
-                ->saveAs($thumbPath);
-        }
-
-        return $thumbPath;
-    }
-
-    /**
      * Get a local image source to use for transforms.
      *
      * @param Asset $asset
@@ -925,7 +896,7 @@ class AssetTransforms extends Component
     /**
      * Deletes an image local source if required by config.
      *
-     * @param $imageSource
+     * @param string $imageSource
      *
      * @return void
      */
@@ -970,7 +941,7 @@ class AssetTransforms extends Component
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(pathinfo($source, PATHINFO_EXTENSION))) {
+        if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -1100,7 +1071,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        $file = Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION);
+        $file = Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION);
 
         try {
             FileHelper::removeFile($file);
@@ -1118,33 +1089,19 @@ class AssetTransforms extends Component
      */
     public function deleteResizedAssetVersion(Asset $asset)
     {
-        $thumbFilename = $asset->id.'.'.$this->_getThumbExtension($asset);
         $dirs = [
-            Craft::$app->getPath()->getResizedAssetsPath(),
+            Craft::$app->getPath()->getAssetThumbsPath(),
             Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id
         ];
 
         foreach ($dirs as $dir) {
-            try {
-                $handle = opendir($dir);
-                if ($handle === false) {
-                    Craft::warning("Unable to open directory: $dir", __METHOD__);
-
-                    return;
-                }
-                while (($subDir = readdir($handle)) !== false) {
-                    if ($subDir === '.' || $subDir === '..') {
-                        continue;
-                    }
-                    $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
-                    if (!is_file($path)) {
-                        continue;
-                    }
+            $files = glob($dir.'/[0-9]*/'.$asset->id.'.[a-z]*');
+            foreach ($files as $path) {
+                try {
                     FileHelper::removeFile($path);
+                } catch (ErrorException $e) {
+                    Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
                 }
-                closedir($handle);
-            } catch (ErrorException $e) {
-                Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
             }
         }
     }
@@ -1307,7 +1264,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {
-        if (!Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if (!Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return;
         }
 
@@ -1400,22 +1357,5 @@ class AssetTransforms extends Component
         if (!$volume instanceof LocalVolumeInterface) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
-    }
-
-    /**
-     * Return the thumbnail extension for a asset.
-     *
-     * @param Asset $asset
-     *
-     * @return string
-     */
-    private function _getThumbExtension(Asset $asset): string
-    {
-        // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats(), true)) {
-            return 'jpg';
-        }
-
-        return $asset->getExtension();
     }
 }

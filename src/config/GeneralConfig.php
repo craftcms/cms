@@ -7,8 +7,9 @@
 
 namespace craft\config;
 
-use craft\helpers\ArrayHelper;
+use Craft;
 use craft\helpers\ConfigHelper;
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Object;
 use yii\base\UnknownPropertyException;
@@ -48,11 +49,10 @@ class GeneralConfig extends Object
      */
     public $actionTrigger = 'actions';
     /**
-     * @var string|string[] The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
+     * @var mixed The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getActivateAccountSuccessPath()
      */
@@ -77,7 +77,7 @@ class GeneralConfig extends Object
      *
      * @see extraAllowedFileExtensions
      */
-    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jpeg', 'jpg', 'js', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
+    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
     /**
      * @var bool If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
      * they are treated as the same tag. Note that this
@@ -92,8 +92,8 @@ class GeneralConfig extends Object
      */
     public $autoLoginAfterAccountActivation = false;
     /**
-     * @var bool Whether Craft should run the backup logic when updating. This applies to
-     * both auto and manual updates.
+     * @var bool Whether Craft should create a database backup before running new migrations.
+     * @see backupCommand
      */
     public $backupOnUpdate = true;
     /**
@@ -140,7 +140,7 @@ class GeneralConfig extends Object
      */
     public $cacheElementQueries = true;
     /**
-     * @var int The default length of time Craft will store data, RSS feed, and template caches.
+     * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      *
@@ -158,7 +158,7 @@ class GeneralConfig extends Object
      */
     public $convertFilenamesToAscii = false;
     /**
-     * @var int The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
+     * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
      * failed login attempts.
      *
      * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
@@ -237,7 +237,7 @@ class GeneralConfig extends Object
      */
     public $defaultTemplateExtensions = ['html', 'twig'];
     /**
-     * @var int The default amount of time tokens can be used before expiring.
+     * @var mixed The default amount of time tokens can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -279,7 +279,7 @@ class GeneralConfig extends Object
      */
     public $enableCsrfCookie = true;
     /**
-     * @var int The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+     * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
      * Set to `0` to disable elevated session support.
      *
@@ -331,17 +331,16 @@ class GeneralConfig extends Object
      */
     public $indexTemplateFilenames = ['index'];
     /**
-     * @var int The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
+     * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $invalidLoginWindowDuration = 3600;
     /**
-     * @var string|string[] The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
+     * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
      * resetting user account passwords.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getInvalidUserTokenPath()
      */
@@ -359,19 +358,17 @@ class GeneralConfig extends Object
      */
     public $limitAutoSlugsToAscii = false;
     /**
-     * @var string|string[] The URI Craft should use for user login.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user login.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
-     * @var string|string[] The URI Craft should use for user logout.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user logout.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLogoutPath()
      */
@@ -391,7 +388,9 @@ class GeneralConfig extends Object
      */
     public $maxSlugIncrement = 100;
     /**
-     * @var int The maximum upload file size allowed in bytes.
+     * @var int|string The maximum upload file size allowed.
+     *
+     * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
      */
     public $maxUploadFileSize = 16777216;
     /**
@@ -438,21 +437,33 @@ class GeneralConfig extends Object
      */
     public $phpSessionName = 'CraftSessionId';
     /**
-     * @var string The path that users should be redirected to after logging in from the Control Panel.
+     * @var mixed The path that users should be redirected to after logging in from the Control Panel.
      *
      * This setting will also come into effect if the user visits the CP’s Login page (/admin/login)
      * or the CP’s root URL (/admin) when they are already logged in.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostCpLoginRedirect()
      */
     public $postCpLoginRedirect = 'dashboard';
     /**
-     * @var string The path that users should be redirected to after logging in from the front-end site.
+     * @var mixed The path that users should be redirected to after logging in from the front-end site.
      *
      * This setting will also come into effect if the user visits the Login page (as specified by the loginPath config
      * setting) when they are already logged in.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostLoginRedirect()
      */
     public $postLoginRedirect = '';
     /**
-     * @var string The path that users should be redirected to after logging out from the front-end site.
+     * @var mixed The path that users should be redirected to after logging out from the front-end site.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostLogoutRedirect()
      */
     public $postLogoutRedirect = '';
     /**
@@ -475,7 +486,7 @@ class GeneralConfig extends Object
      */
     public $preventUserEnumeration = false;
     /**
-     * @var int The amount of time to wait before Craft purges pending users from the system that have not activated.
+     * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
      * Note that any content assigned to a pending user will be deleted as well when the given time interval passes.
      *
@@ -485,7 +496,7 @@ class GeneralConfig extends Object
      */
     public $purgePendingUsersDuration = 0;
     /**
-     * @var int The amount of time Craft will remember a username and pre-populate it on the CP login page.
+     * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
      * Set to `0` to disable this feature altogether.
      *
@@ -493,7 +504,7 @@ class GeneralConfig extends Object
      */
     public $rememberUsernameDuration = 31536000;
     /**
-     * @var int The amount of time a user stays logged if “Remember Me” is checked on the login page.
+     * @var mixed The amount of time a user stays logged if “Remember Me” is checked on the login page.
      *
      * Set to `0` to disable the “Remember Me” feature altogether.
      *
@@ -518,10 +529,6 @@ class GeneralConfig extends Object
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
-     * @var string The URI segment Craft should use for resource URLs on the front end.
-     */
-    public $resourceTrigger = 'cpresources';
-    /**
      * @var string|null Craft will use the command line libraries `psql` and `mysql` for restoring a database
      * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
@@ -543,42 +550,49 @@ class GeneralConfig extends Object
      */
     public $restoreCommand;
     /**
-     * @var bool Whether Craft should attempt to restore the backup in the event that there was an error.
-     */
-    public $restoreOnUpdateFailure = true;
-    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      */
     public $rotateImagesOnUploadByExifData = true;
     /**
-     * @var bool Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something
-     * like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+     * @var bool Whether Craft should run pending queue jobs automatically over HTTP requests.
      *
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
      *
-     * If disabled, an alternate task running trigger *must* be set up separately.
+     * If disabled, an alternate queue runner *must* be set up separately.
      */
-    public $runTasksAutomatically = true;
+    public $runQueueAutomatically = true;
+    /**
+     * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
+     *
+     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+     */
+    public $sanitizeSvgUploads = true;
+    /**
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
+     * data in [[\craft\services\Security]].
+     *
+     * This value should be the same across all environments. Note that if this key ever changes, any data that
+     * was encrypted with it will be inaccessible.
+     */
+    public $securityKey;
     /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var string|string[] The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getSetPasswordPath()
      */
     public $setPasswordPath = 'setpassword';
     /**
-     * @var string|string[] The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
+     * @var mixed The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getSetPasswordSuccessPath()
      */
@@ -588,6 +602,12 @@ class GeneralConfig extends Object
      * that you do not use beta releases of Craft in a production environment.
      */
     public $showBetaUpdates = false;
+    /**
+     * @var string|string[] The site name(s). If set, it will take precedence over the Name settings in Settings → Sites → [Site Name].
+     *
+     * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
+     */
+    public $siteName;
     /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
@@ -606,8 +626,10 @@ class GeneralConfig extends Object
      */
     public $suppressTemplateErrors = false;
     /**
-     * @var string|null Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
+     * @var string|array|null Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
+     *
+     * By default the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format `['email@address.com' => 'Name']`.
      */
     public $testToEmailAddress;
     /**
@@ -657,7 +679,7 @@ class GeneralConfig extends Object
      */
     public $useSslOnTokenizedUrls = 'auto';
     /**
-     * @var int The amount of time a user stays logged in.
+     * @var mixed The amount of time a user stays logged in.
      *
      * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined
      * amount of time.
@@ -681,16 +703,7 @@ class GeneralConfig extends Object
      */
     public $useXSendFile = false;
     /**
-     * @var string|null If set, should be a private, random, cryptographically secure key that is used to generate HMAC
-     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-     * If not set, a random one is generated for you. Ultimately saved in `storage/runtime/validation.key`.
-     *
-     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
-     * should be set to the same key across all web servers.
-     */
-    public $validationKey;
-    /**
-     * @var int The amount of time a user verification code can be used before expiring.
+     * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -703,6 +716,33 @@ class GeneralConfig extends Object
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Check for renamed settings
+        $renamedSettings = [
+            'defaultFilePermissions' => 'defaultFileMode',
+            'defaultFolderPermissions' => 'defaultDirMode',
+            'useWriteFileLock' => 'useFileLocks',
+            'backupDbOnUpdate' => 'backupOnUpdate',
+            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+            'activateAccountFailurePath' => 'invalidUserTokenPath',
+            'validationKey' => 'securityKey',
+        ];
+
+        foreach ($renamedSettings as $old => $new) {
+            if (array_key_exists($old, $config)) {
+                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.");
+                $config[$new] = $config[$old];
+                unset($config[$old]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -757,10 +797,10 @@ class GeneralConfig extends Object
 
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
-            $this->allowedFileExtensions = ArrayHelper::toArray($this->allowedFileExtensions);
+            $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);
         }
         if (is_string($this->extraAllowedFileExtensions)) {
-            $this->extraAllowedFileExtensions = ArrayHelper::toArray($this->extraAllowedFileExtensions);
+            $this->extraAllowedFileExtensions = StringHelper::split($this->extraAllowedFileExtensions);
         }
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
@@ -779,6 +819,9 @@ class GeneralConfig extends Object
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
+
+        // Normalize size settings
+        $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
     }
 
     /**
@@ -834,6 +877,43 @@ class GeneralConfig extends Object
     }
 
     /**
+     * Returns the localized Post-CP Login Redirect path.
+     *
+     * @return string
+     * @see postCpLoginRedirect
+     */
+    public function getPostCpLoginRedirect(): string
+    {
+        return ConfigHelper::localizedValue($this->postCpLoginRedirect, null);
+    }
+
+    /**
+     * Returns the localized Post-Login Redirect path.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see postLoginRedirect
+     */
+    public function getPostLoginRedirect(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->postLoginRedirect, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Post-Logout Redirect path.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see postLogoutRedirect
+     */
+    public function getPostLogoutRedirect(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->postLogoutRedirect, $siteHandle);
+    }
+
+    /**
      * Returns the localized Set Password Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
@@ -857,5 +937,15 @@ class GeneralConfig extends Object
     public function getSetPasswordSuccessPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @return bool
+     */
+    public function getBackupOnUpdate(): bool
+    {
+        return ($this->backupOnUpdate && $this->backupCommand !== false);
     }
 }

@@ -109,8 +109,8 @@ class Feeds extends Component
                 }
             }
 
-            $date = $item->getDateCreated()->format('U');
-            $dateUpdated = $item->getDateModified()->format('U');
+            $date = $item->getDateCreated();
+            $dateUpdated = $item->getDateModified();
 
             $return[] = [
                 'authors' => $this->_getItemAuthors($item->getAuthors()),
@@ -119,8 +119,8 @@ class Feeds extends Component
                 // See: https://github.com/zendframework/zendframework/issues/2969
                 // and https://github.com/zendframework/zendframework/pull/3570
                 'contributors' => $this->_getItemAuthors($item->getAuthors()),
-                'date' => $date ? new DateTime('@'.$date) : null,
-                'dateUpdated' => $dateUpdated ? new DateTime('@'.$dateUpdated) : null,
+                'date' => $date ? new DateTime('@'.$date->format('U')) : null,
+                'dateUpdated' => $dateUpdated ? new DateTime('@'.$dateUpdated->format('U')) : null,
                 'permalink' => $item->getPermalink(),
                 'summary' => $item->getDescription(),
                 'title' => $item->getTitle(),

@@ -16,7 +16,7 @@ class m170120_000000_schema_cleanup extends Migration
     public function safeUp()
     {
         if (!MigrationHelper::doesForeignKeyExist('{{%taggroups}}', 'fieldLayoutId')) {
-            $this->addForeignKey($this->db->getForeignKeyName('{{%taggroups}}', 'fieldLayoutId'), '{{%taggroups}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+            $this->addForeignKey(null, '{{%taggroups}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
         }
 
         $this->alterColumn('{{%entryversions}}', 'notes', $this->text());

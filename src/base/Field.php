@@ -17,7 +17,6 @@ use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use Exception;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
 
@@ -118,8 +117,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function __toString()
     {
         try {
-            return Craft::t('site', $this->name);
-        } catch (Exception $e) {
+            return (string)Craft::t('site', $this->name);
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -208,12 +207,13 @@ abstract class Field extends SavableComponent implements FieldInterface
                 ['handle'],
                 UniqueValidator::class,
                 'targetClass' => FieldRecord::class,
-                'targetAttribute' => ['handle', 'context']
+                'targetAttribute' => ['handle', 'context'],
+                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
         ];
 
         // Only validate the ID if it's not a new field
-        if ($this->id !== null && strpos($this->id, 'new') !== 0) {
+        if (!$this->getIsNew()) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
@@ -382,6 +382,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Set the field context if it's not set
+        if (!$this->context) {
+            $this->context = Craft::$app->getContent()->fieldContext;
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         // Trigger a 'beforeElementSave' event
@@ -400,10 +413,12 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Trigger an 'afterElementSave' event
-        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
-            'element' => $element,
-            'isNew' => $isNew,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]));
+        }
     }
 
     /**
@@ -426,9 +441,11 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function afterElementDelete(ElementInterface $element)
     {
         // Trigger an 'afterElementDelete' event
-        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+                'element' => $element,
+            ]));
+        }
     }
 
     // Protected Methods

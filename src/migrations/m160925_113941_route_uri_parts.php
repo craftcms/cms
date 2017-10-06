@@ -20,7 +20,7 @@ class m160925_113941_route_uri_parts extends Migration
         $this->renameColumn('{{%routes}}', 'urlParts', 'uriParts');
         $this->renameColumn('{{%routes}}', 'urlPattern', 'uriPattern');
 
-        $this->createIndex($this->db->getIndexName('{{%routes}}', 'uriPattern', true), '{{%routes}}', 'uriPattern', true);
+        $this->createIndex(null, '{{%routes}}', ['uriPattern'], true);
     }
 
     /**

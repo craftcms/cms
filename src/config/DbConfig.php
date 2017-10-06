@@ -121,7 +121,12 @@ class DbConfig extends Object
         if ($this->url !== null) {
             $url = parse_url($this->url);
             if (isset($url['scheme'])) {
-                $this->driver = $url['scheme'];
+                $scheme = strtolower($url['scheme']);
+                if (in_array($scheme, [self::DRIVER_PGSQL, 'postgres', 'postgresql'], true)) {
+                    $this->driver = self::DRIVER_PGSQL;
+                } else {
+                    $this->driver = self::DRIVER_MYSQL;
+                }
             }
             if (isset($url['user'])) {
                 $this->user = $url['user'];
@@ -175,11 +180,19 @@ class DbConfig extends Object
 
         // Set the DSN
         if ($this->dsn === null || $this->dsn === '') {
-            if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
-                $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
-            } else {
-                $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
-            }
+            $this->updateDsn();
+        }
+    }
+
+    /**
+     * Updates the DSN string based on the config setting values.
+     */
+    public function updateDsn()
+    {
+        if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
+            $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
+        } else {
+            $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
         }
     }
 }

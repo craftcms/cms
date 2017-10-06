@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.13',
-    'schemaVersion' => '3.0.41',
+    'version' => '3.0.0-beta.29',
+    'schemaVersion' => '3.0.61',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -22,6 +22,9 @@ return [
         ],
         'categories' => [
             'class' => craft\services\Categories::class,
+        ],
+        'composer' => [
+            'class' => \craft\services\Composer::class,
         ],
         'content' => [
             'class' => craft\services\Content::class,
@@ -68,6 +71,9 @@ return [
         'plugins' => [
             'class' => craft\services\Plugins::class,
         ],
+        'queue' => [
+            'class' => craft\queue\Queue::class,
+        ],
         'relations' => [
             'class' => craft\services\Relations::class,
         ],
@@ -91,9 +97,6 @@ return [
         ],
         'tags' => [
             'class' => craft\services\Tags::class,
-        ],
-        'tasks' => [
-            'class' => craft\services\Tasks::class,
         ],
         'templateCaches' => [
             'class' => craft\services\TemplateCaches::class,
@@ -127,10 +130,6 @@ return [
             'type' => craft\db\MigrationManager::TYPE_APP,
             'migrationNamespace' => 'craft\migrations',
             'migrationPath' => '@app/migrations',
-        ],
-        'resources' => [
-            'class' => craft\services\Resources::class,
-            'dateParam' => 'd',
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
@@ -198,7 +197,7 @@ return [
                 case 'apc':
                     $config = [
                         'class' => yii\caching\ApcCache::class,
-                        'useApcu' => $configService->getApc()->useApcu,
+                        'useApcu' => true,
                     ];
                     break;
                 case 'db':
@@ -259,9 +258,9 @@ return [
                 $schemaClass = craft\db\pgsql\Schema::class;
             }
 
-            /** @var craft\db\Connection $db */
-            $db = Craft::createObject([
+            return Craft::createObject([
                 'class' => craft\db\Connection::class,
+                'driverName' => $dbConfig->driver,
                 'dsn' => $dbConfig->dsn,
                 'username' => $dbConfig->user,
                 'password' => $dbConfig->password,
@@ -275,11 +274,6 @@ return [
                 'commandClass' => \craft\db\Command::class,
                 'attributes' => $dbConfig->attributes,
             ]);
-
-            // Set the Yii driver name from the config setting.
-            $db->setDriverName($dbConfig->driver);
-
-            return $db;
         },
 
         'mailer' => function() {
@@ -329,7 +323,7 @@ return [
                 $target['logFile'] = '@storage/logs/web.log';
 
                 // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
+                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
                     $target['levels'] = yii\log\Logger::LEVEL_ERROR | yii\log\Logger::LEVEL_WARNING;
                 }
             }

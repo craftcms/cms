@@ -111,10 +111,10 @@ Craft.EditableTable = Garnish.Base.extend(
                 }
 
                 var col = columns[colId],
-                    value = (values[colId] !== undefined ? values[colId] : ''),
+                    value = (typeof values[colId] !== 'undefined' ? values[colId] : ''),
                     $cell;
 
-                if (col.type == 'heading') {
+                if (col.type === 'heading') {
                     $cell = $('<th/>', {
                         'scope': 'row',
                         'class': col['class'],
@@ -228,13 +228,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var textareasByColId = {};
 
             var i = 0;
+            var colId, col;
 
-            for (var colId in this.table.columns) {
+            for (colId in this.table.columns) {
                 if (!this.table.columns.hasOwnProperty(colId)) {
                     continue;
                 }
 
-                var col = this.table.columns[colId];
+                col = this.table.columns[colId];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
                     var $textarea = $('textarea', this.$tds[i]);
@@ -247,13 +248,13 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                         onHeightChange: $.proxy(this, 'onTextareaHeightChange')
                     }));
 
-                    if (col.type == 'singleline' || col.type == 'number') {
+                    if (col.type === 'singleline' || col.type === 'number') {
                         this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
                     }
 
                     textareasByColId[colId] = $textarea;
-                } else if (col.type == 'checkbox' && col.radioMode) {
+                } else if (col.type === 'checkbox' && col.radioMode) {
                     var $checkbox = $('input[type="checkbox"]', this.$tds[i]);
                     if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
                         this.table.radioCheckboxes[colId] = [];
@@ -270,14 +271,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.onTextareaHeightChange();
 
             // Now look for any autopopulate columns
-            for (var colId in this.table.columns) {
+            for (colId in this.table.columns) {
                 if (!this.table.columns.hasOwnProperty(colId)) {
                     continue;
                 }
 
-                var col = this.table.columns[colId];
+                col = this.table.columns[colId];
 
-                if (col.autopopulate && textareasByColId[col.autopopulate] !== undefined && !textareasByColId[colId].val()) {
+                if (col.autopopulate && typeof textareasByColId[col.autopopulate] !== 'undefined' && !textareasByColId[colId].val()) {
                     new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
                 }
             }
@@ -318,8 +319,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
 
             if (!Garnish.isCtrlKeyPressed(ev) && (
-                    (keyCode == Garnish.RETURN_KEY) ||
-                    (ev.data.type == 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
+                    (keyCode === Garnish.RETURN_KEY) ||
+                    (ev.data.type === 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
                 )) {
                 ev.preventDefault();
             }
@@ -328,9 +329,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         validateValue: function(ev) {
             var safeValue;
 
-            if (ev.data.type == 'number') {
+            if (ev.data.type === 'number') {
                 // Only grab the number at the beginning of the value (if any)
-                var match = ev.currentTarget.value.match(/^\s*(-?[\d\.]*)/);
+                var match = ev.currentTarget.value.match(/^\s*(-?[\d\\.]*)/);
 
                 if (match !== null) {
                     safeValue = match[1];

@@ -12,9 +12,9 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             this.$form = $(form);
 
             // Only check specific inputs?
-            if (inputs !== undefined) {
+            if (typeof inputs !== 'undefined') {
                 this.inputs = [];
-                var inputs = $.makeArray(inputs);
+                inputs = $.makeArray(inputs);
 
                 for (var i = 0; i < inputs.length; i++) {
                     var $inputs = $(inputs[i]);
@@ -46,7 +46,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 
                 for (var i = 0; i < this.inputs.length; i++) {
                     // Has this input's value changed?
-                    if (Garnish.getInputPostVal(this.inputs[i].input) != this.inputs[i].val) {
+                    if (Garnish.getInputPostVal(this.inputs[i].input) !== this.inputs[i].val) {
                         inputsChanged = true;
                         break;
                     }

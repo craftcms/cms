@@ -117,7 +117,7 @@ class Assets
      *                                            and clean the filename separately.
      * @param bool   $preventPluginModifications  if set to true, will prevent plugins from modify
      *
-     * @return mixed
+     * @return string
      */
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
     {
@@ -217,7 +217,7 @@ class Assets
                 'assetId' => $asset->id,
                 'folderId' => $newFolderId,
                 'force' => true
-            ];;
+            ];
         }
 
         return $fileTransferList;
@@ -520,6 +520,7 @@ class Assets
                         'mpeg',
                         'mpg',
                         'm1s',
+                        'm2t',
                         'mp2v',
                         'm2v',
                         'm2s',
@@ -577,7 +578,7 @@ class Assets
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
-        if (!$asset || !Image::isImageManipulatable($asset->getExtension())) {
+        if (!$asset || !Image::canManipulateAsImage($asset->getExtension())) {
             return false;
         }
 

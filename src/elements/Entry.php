@@ -477,6 +477,11 @@ class Entry extends Element
     public $newParentId;
 
     /**
+     * @var int|null Revision creator ID
+     */
+    public $revisionCreatorId;
+
+    /**
      * @var string|null Revision notes
      */
     public $revisionNotes;
@@ -542,22 +547,6 @@ class Entry extends Element
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeValidate()
-    {
-        // If validating the slug, make sure the title is in place first
-        $entryType = $this->getType();
-
-        if (!$entryType->hasTitleField) {
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
-        }
-
-
-        return parent::beforeValidate();
     }
 
     /**
@@ -845,12 +834,18 @@ EOD;
             }
         }
 
-        if ($this->getType()->hasTitleField) {
+        // Get the entry type
+        $entryType = $this->getType();
+
+        // Show the Title field?
+        if ($entryType->hasTitleField) {
             $html .= $view->renderTemplate('entries/_titlefield', [
                 'entry' => $this
             ]);
         }
 
+        // Set the field layout ID and render the custom fields
+        $this->fieldLayoutId = $entryType->fieldLayoutId;
         $html .= parent::getEditorHtml();
 
         return $html;
@@ -866,6 +861,13 @@ EOD;
     public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
+        $entryType = $this->getType();
+
+        // Verify that the section supports this site
+        $sectionSiteSettings = $section->getSiteSettings();
+        if (!isset($sectionSiteSettings[$this->siteId])) {
+            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+        }
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
@@ -882,23 +884,22 @@ EOD;
             $this->setParent($parentEntry);
         }
 
-        // Verify that the section supports this site
-        $sectionSiteSettings = $section->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
-        }
-
+        // Section type-specific stuff
         if ($section->type == Section::TYPE_SINGLE) {
-            // Single entries don't have
             $this->authorId = null;
             $this->expiryDate = null;
+        } else if (!$entryType->hasTitleField) {
+            // Set the dynamic title
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
 
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = DateTimeHelper::currentUTCDateTime();
         }
+
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = $entryType->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }
@@ -942,11 +943,6 @@ EOD;
 
             // Update the entry's descendants, who may be using this entry's URI in their own URIs
             Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
-        }
-
-        // Save a new version
-        if ($section->enableVersioning) {
-            Craft::$app->getEntryRevisions()->saveVersion($this);
         }
 
         parent::afterSave($isNew);

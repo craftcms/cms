@@ -3,14 +3,14 @@
 return [
     'dateTimeFormats' => [
         'short' => [
-            'date' => 'dd/MM/yyyy',
+            'date' => 'd/M/yyyy',
             'time' => 'HH:mm',
-            'datetime' => 'dd/MM/yyyy, HH:mm',
+            'datetime' => 'd/M/yyyy, HH:mm',
         ],
         'medium' => [
-            'date' => 'dd MMM y',
+            'date' => 'd MMM y',
             'time' => 'HH:mm:ss',
-            'datetime' => 'dd MMM y, HH:mm:ss',
+            'datetime' => 'd MMM y, HH:mm:ss',
         ],
         'long' => [
             'date' => 'd MMMM y',
@@ -291,6 +291,8 @@ return [
         'as-IN' => 'assamese (India)',
         'asa' => 'asu',
         'asa-TZ' => 'asu (Tanzania)',
+        'ast' => 'asturiano',
+        'ast-ES' => 'asturiano (Spagna)',
         'az' => 'azerbaigiano',
         'az-Cyrl' => 'azerbaigiano (cirillico)',
         'az-Cyrl-AZ' => 'azerbaigiano (cirillico, Azerbaigian)',
@@ -928,6 +930,8 @@ return [
         'yo' => 'yoruba',
         'yo-BJ' => 'yoruba (Benin)',
         'yo-NG' => 'yoruba (Nigeria)',
+        'yue' => 'cantonese',
+        'yue-HK' => 'cantonese (RAS di Hong Kong)',
         'zgh' => 'tamazight del Marocco standard',
         'zgh-MA' => 'tamazight del Marocco standard (Marocco)',
         'zh' => 'cinese',

@@ -20,6 +20,8 @@ use craft\elements\Entry;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineComponentsEvent;
 use yii\di\ServiceLocator;
 
 /**
@@ -37,7 +39,6 @@ use yii\di\ServiceLocator;
  * @property Routes          $routes
  * @property Sections        $sections
  * @property SystemSettings  $systemSettings
- * @property Tasks           $tasks
  * @property UserSession     $session
  * @property I18n            $i18n
  * @property Io              $io
@@ -52,6 +53,30 @@ use yii\di\ServiceLocator;
  */
 class CraftVariable extends ServiceLocator
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the component's init cycle
+     *
+     * This is a good place to register custom behaviors on the component.
+     */
+    const EVENT_INIT = 'init';
+
+    /**
+     * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
+     * @see   __construct()
+     * @deprecated since 3.0.0-beta.23
+     */
+    const EVENT_DEFINE_COMPONENTS = 'defineComponents';
+
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see   behaviors()
+     * @deprecated since 3.0.0-beta.23
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
     // Properties
     // =========================================================================
 
@@ -70,7 +95,7 @@ class CraftVariable extends ServiceLocator
     {
         // Set the core components
         /** @noinspection PhpDeprecationInspection */
-        $config['components'] = [
+        $components = [
             'cp' => Cp::class,
             'io' => Io::class,
             'routes' => Routes::class,
@@ -88,14 +113,13 @@ class CraftVariable extends ServiceLocator
             'request' => Request::class,
             'sections' => Sections::class,
             'systemSettings' => SystemSettings::class,
-            'tasks' => Tasks::class,
             'session' => UserSession::class,
         ];
 
         switch (Craft::$app->getEdition()) {
             case Craft::Pro:
                 /** @noinspection PhpDeprecationInspection */
-                $config['components'] = array_merge($config['components'], [
+                $components = array_merge($components, [
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
@@ -103,7 +127,7 @@ class CraftVariable extends ServiceLocator
             case Craft::Client:
                 /** @noinspection PhpDeprecationInspection */
                 /** @noinspection SuspiciousAssignmentsInspection */
-                $config['components'] = array_merge($config['components'], [
+                $components = array_merge($components, [
                     'rebrand' => Rebrand::class,
 
                     // Deprecated
@@ -112,16 +136,18 @@ class CraftVariable extends ServiceLocator
                 ]);
         }
 
-        // Add plugin components
-        foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
-            if (!isset($config['components'][$handle])) {
-                $component = $plugin->defineTemplateComponent();
-
-                if ($component !== null) {
-                    $config['components'][$handle] = $component;
-                }
-            }
+        // todo: remove all this before 3.0 GA
+        // Let plugins add their own components
+        $event = new DefineComponentsEvent([
+            'components' => $components,
+        ]);
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPONENTS)) {
+            Craft::$app->getDeprecator()->log('CraftVariable::defineComponents', 'The `defineComponents` event on CraftVariable has been deprecated. Use the `init` event to register custom components instead.');
+            $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
         }
+        $components = $event->components;
+
+        $config['components'] = $components;
 
         parent::__construct($config);
     }
@@ -134,6 +160,10 @@ class CraftVariable extends ServiceLocator
         parent::init();
 
         $this->app = Craft::$app;
+
+        if ($this->hasEventHandlers(self::EVENT_INIT)) {
+            $this->trigger(self::EVENT_INIT);
+        }
     }
 
     /**
@@ -149,6 +179,21 @@ class CraftVariable extends ServiceLocator
         }
 
         return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        // todo: remove all this before 3.0 GA
+        // Give plugins a chance to add new properties/methods on here
+        $event = new DefineBehaviorsEvent();
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            Craft::$app->getDeprecator()->log('CraftVariable::defineBehaviors', 'The `defineBehaviors` event on CraftVariable has been deprecated. Use the `init` event to register custom behaviors instead.');
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        }
+        return $event->behaviors;
     }
 
     // General info

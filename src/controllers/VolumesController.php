@@ -11,12 +11,12 @@ use Craft;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
-use Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -95,7 +95,7 @@ class VolumesController extends Controller
             }
         }
 
-        /** @var Volume[] $allVolumeTypes */
+        /** @var string[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there
@@ -116,6 +116,9 @@ class VolumesController extends Controller
                 ];
             }
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($volumeTypeOptions, 'label');
 
         $isNewVolume = !$volume->id;
 
@@ -243,42 +246,5 @@ class VolumesController extends Controller
         Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 
         return $this->asJson(['success' => true]);
-    }
-
-    /**
-     * Load Assets VolumeType data.
-     *
-     * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
-     *
-     * @return Response
-     */
-    public function actionLoadVolumeTypeData(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $request = Craft::$app->getRequest();
-        $volumeType = $request->getRequiredBodyParam('volumeType');
-        $dataType = $request->getRequiredBodyParam('dataType');
-        $params = $request->getBodyParam('params');
-
-        $volumeType = 'craft\volumes\\'.$volumeType;
-
-        if (!class_exists($volumeType)) {
-            return $this->asErrorJson(Craft::t('app', 'The volume type specified does not exist!'));
-        }
-
-        try {
-            $result = call_user_func_array(
-                [
-                    $volumeType,
-                    'load'.ucfirst($dataType)
-                ],
-                $params);
-
-            return $this->asJson($result);
-        } catch (Exception $exception) {
-            return $this->asErrorJson($exception->getMessage());
-        }
     }
 }

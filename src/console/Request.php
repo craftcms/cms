@@ -24,4 +24,34 @@ class Request extends \yii\console\Request
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns whether the Control Panel was requested. (Narrator: It wasn't.)
+     *
+     * @return bool
+     */
+    public function getIsCpRequest(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether the front end site was requested. (Narrator: It wasn't.)
+     *
+     * @return bool
+     */
+    public function getIsSiteRequest(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether a specific controller action was requested. (Narrator: There wasn't.)
+     *
+     * @return bool
+     */
+    public function getIsActionRequest(): bool
+    {
+        return false;
+    }
 }

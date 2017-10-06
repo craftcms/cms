@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
@@ -29,17 +28,7 @@ class Path extends Component
     /**
      * @var
      */
-    private $_appPath;
-
-    /**
-     * @var
-     */
     private $_configPath;
-
-    /**
-     * @var
-     */
-    private $_pluginsPath;
 
     /**
      * @var
@@ -60,28 +49,6 @@ class Path extends Component
     // =========================================================================
 
     /**
-     * Returns the path to the `app/` directory, for manual Craft installs.
-     *
-     * @return string
-     * @throws Exception if Craft was installed via Composer
-     */
-    public function getAppPath(): string
-    {
-        if ($this->_appPath !== null) {
-            return $this->_appPath;
-        }
-
-        // app/ is only a thing for manual installs
-        if (App::isComposerInstall()) {
-            throw new Exception('There is no app/ directory when Craft is installed via Composer.');
-        }
-
-        $basePath = Craft::$app->getBasePath();
-
-        return $this->_appPath = dirname($basePath, 3);
-    }
-
-    /**
      * Returns the path to the `config/` directory.
      *
      * @return string
@@ -100,27 +67,6 @@ class Path extends Component
         }
 
         return $this->_configPath = FileHelper::normalizePath($configPath);
-    }
-
-    /**
-     * Returns the path to the `plugins/` directory.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getPluginsPath(): string
-    {
-        if ($this->_pluginsPath !== null) {
-            return $this->_pluginsPath;
-        }
-
-        $pluginsPath = Craft::getAlias('@plugins');
-
-        if ($pluginsPath === false) {
-            throw new Exception('There was a problem getting the plugins path.');
-        }
-
-        return $this->_pluginsPath = FileHelper::normalizePath($pluginsPath);
     }
 
     /**
@@ -225,19 +171,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/temp/uploads/` directory.
-     *
-     * @return string
-     */
-    public function getTempUploadsPath(): string
-    {
-        $path = $this->getTempPath().DIRECTORY_SEPARATOR.'uploads';
-        FileHelper::createDirectory($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the `storage/runtime/assets/` directory.
      *
      * @return string
@@ -251,24 +184,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/cache/` directory.
-     *
-     * @return string
-     */
-    public function getAssetsCachePath(): string
-    {
-        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'cache';
-        FileHelper::createDirectory($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the `storage/runtime/assets/tempuploads/` directory.
      *
      * @return string
      */
-    public function getAssetsTempVolumePath(): string
+    public function getTempAssetUploadsPath(): string
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads';
         FileHelper::createDirectory($path);
@@ -281,9 +201,9 @@ class Path extends Component
      *
      * @return string
      */
-    public function getAssetsImageSourcePath(): string
+    public function getAssetSourcesPath(): string
     {
-        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'sources';
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'sources';
         FileHelper::createDirectory($path);
 
         return $path;
@@ -303,13 +223,13 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/cache/resized/` directory.
+     * Returns the path to the `storage/runtime/assets/thumbs/` directory.
      *
      * @return string
      */
-    public function getResizedAssetsPath(): string
+    public function getAssetThumbsPath(): string
     {
-        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'resized';
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'thumbs';
         FileHelper::createDirectory($path);
 
         return $path;
@@ -322,7 +242,7 @@ class Path extends Component
      */
     public function getAssetsIconsPath(): string
     {
-        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'icons';
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'icons';
         FileHelper::createDirectory($path);
 
         return $path;
@@ -413,6 +333,19 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/runtime/compiled_classes/` directory.
+     *
+     * @return string
+     */
+    public function getCompiledClassesPath(): string
+    {
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
+        FileHelper::createDirectory($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/runtime/compiled_templates/` directory.
      *
      * @return string
@@ -461,12 +394,12 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to `config/license.key`.
+     * Returns the path to the license key file.
      *
      * @return string
      */
     public function getLicenseKeyPath(): string
     {
-        return $this->getConfigPath().DIRECTORY_SEPARATOR.'license.key';
+        return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath().DIRECTORY_SEPARATOR.'license.key';
     }
 }

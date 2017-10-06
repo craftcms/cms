@@ -66,7 +66,7 @@ class ElementHelper
 
         // Does the URL format even have a {slug} tag?
         if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
-            $testUri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+            $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure it's unique
             if (!self::_isUniqueUri($testUri, $element)) {
@@ -91,7 +91,7 @@ class ElementHelper
             $originalSlug = $element->slug;
             $element->slug = $testSlug;
 
-            $testUri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+            $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure we're not over our max length.
             if (strlen($testUri) > 255) {
@@ -110,10 +110,10 @@ class ElementHelper
                     // Let's try this again.
                     $i--;
                     continue;
-                } else {
-                    // We're screwed, blow things up.
-                    throw new OperationAbortedException('Could not find a unique URI for this element');
                 }
+
+                // We're screwed, blow things up.
+                throw new OperationAbortedException('Could not find a unique URI for this element');
             }
 
             if (self::_isUniqueUri($testUri, $element)) {
@@ -122,12 +122,31 @@ class ElementHelper
                 $element->uri = $testUri;
 
                 return;
-            } else {
-                $element->slug = $originalSlug;
             }
+
+            // Try again...
+            $element->slug = $originalSlug;
         }
 
         throw new OperationAbortedException('Could not find a unique URI for this element');
+    }
+
+    /**
+     * Renders and normalizes a given element URI Format.
+     *
+     * @param string           $uriFormat
+     * @param ElementInterface $element
+     *
+     * @return string
+     */
+    private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
+    {
+        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+
+        // Remove any leading/trailing/double slashes
+        $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
+
+        return $uri;
     }
 
     /**
@@ -142,7 +161,7 @@ class ElementHelper
     {
         /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where([
                 'siteId' => $element->siteId,
                 'uri' => $testUri

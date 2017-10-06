@@ -55,18 +55,60 @@ class ConfigHelper
     }
 
     /**
+     * Normalizes a file size value into the number of bytes it represents.
+     *
+     * Accepted formats;
+     *
+     * - integer (the size in bytes)
+     * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))
+     *
+     * @param int|string $value The size
+     *
+     * @return int|float The size in bytes
+     */
+    public static function sizeInBytes($value)
+    {
+        // See if we can recognize that.
+        if (is_numeric($value) || !preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
+            return (int)$value;
+        }
+
+        $value = (int)$matches[1];
+
+        // Multiply!
+        switch (strtolower($matches[2])) {
+            case 'g':
+                $value *= 1024;
+                // no break
+            case 'm':
+                $value *= 1024;
+                // no break
+            case 'k':
+                $value *= 1024;
+                // no break
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns a localized config setting value.
      *
-     * @param mixed       $value      The config setting value. If it's an array, the item
-     *                                with a key that matches the site handle will be returned,
-     *                                or the first value if that doesn't exist.
+     * @param mixed       $value      The config setting value. This can be specified in one of the following forms:
+     *
+     * - A scalar value or null: represents the desired value directly, and will be returned verbatim.
+     * - An associative array: represents the desired values across all sites, indexed by site handles.
+     *   If a matching site handle isn’t listed, the first value will be returned.
+     * - A PHP callable: either an anonymous function or an array representing a class method (`[$class or $object, $method]`).
+     *   The callable will be passed the site handle if known, and should return the desired config value.
+     *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
      *
      * @return mixed
      */
     public static function localizedValue($value, string $siteHandle = null)
     {
-        if (!is_array($value)) {
+        if (is_scalar($value)) {
             return $value;
         }
 
@@ -76,6 +118,10 @@ class ConfigHelper
 
         if ($siteHandle === null) {
             $siteHandle = Craft::$app->getSites()->currentSite->handle;
+        }
+
+        if (is_callable($value, true)) {
+            return $value($siteHandle);
         }
 
         if (array_key_exists($siteHandle, $value)) {

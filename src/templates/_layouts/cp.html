@@ -33,7 +33,6 @@
     "Enter the name of the folder",
     "Enter your password to continue.",
     "Enter your password to log back in.",
-    "Failed task",
     "Failed",
     "Handle",
     "Heading",
@@ -100,12 +99,18 @@
 ]) %}
 
 
+{# The CP only supports queue components that implement QueueInterface #}
+{% set queue = craft.app.queue %}
 {% js %}
-    Craft.cp.setTaskInfo({{ craft.app.tasks.getTaskInfo()|json_encode|raw }}, false);
-    {% if craft.app.tasks.getIsTaskRunning() %}
-        Craft.cp.trackTaskProgress(true);
-    {% elseif craft.app.tasks.areTasksPending() %}
-        Craft.cp.runPendingTasks();
+    {% if queue is instance of("craft\\queue\\QueueInterface") %}
+        Craft.cp.setJobInfo({{ queue.getJobInfo(100)|json_encode|raw }}, false);
+        {% if queue.getHasReservedJobs() %}
+            Craft.cp.trackJobProgress(true);
+        {% elseif queue.getHasWaitingJobs() %}
+            Craft.cp.runQueue();
+        {% endif %}
+    {% else %}
+        Craft.cp.showQueue = false;
     {% endif %}
 {% endjs %}
 
@@ -122,6 +127,14 @@
         {% endspaceless -%}
     {% endset %}
 {% endif %}
+
+{% set containerAttributes %}
+    {%- block containerAttributes -%}
+        id="container" {% if fullPageForm -%}
+            method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload
+        {%- endif %}
+    {%- endblock -%}
+{% endset %}
 
 
 {% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
@@ -152,8 +165,8 @@
         <nav>
             <ul id="nav">
                 {% for item in craft.cp.nav() %}
-                    {% set hasSubnav = (subnav is defined and subnav) %}
-                    <li id="{{ item.id }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
+                    {% set hasSubnav = (item.subnav is defined and item.subnav) %}
+                    <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
                         <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
                             <span class="icon">
                                 {%- if item.icon is defined -%}
@@ -173,9 +186,9 @@
                                 <span class="badge">{{ item.badgeCount }}</span>
                             {%- endif -%}
                         </a>
-                        {% if item.sel and hasSubnav  %}
+                        {% if item.sel and hasSubnav %}
                             <ul class="subnav">
-                                {% for itemId, item in subnav %}
+                                {% for itemId, item in item.subnav %}
                                     {% set itemIsSelected = (
                                         (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
                                         (selectedSubnavItem is not defined and loop.first)
@@ -218,10 +231,10 @@
     </header>
 
     {% if fullPageForm %}
-        <form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload>
+        <form {{ containerAttributes }}>
             {{ csrfInput() }}
     {% else %}
-        <div id="container">
+        <div {{ containerAttributes }}>
     {% endif %}
 
         <div id="notifications-wrapper">
@@ -350,10 +363,10 @@
             </ul>
         </div>
 
-    {% if not fullPageForm %}
-        </div>
-    {% else %}
+    {% if fullPageForm %}
         </form>
+    {% else %}
+        </div>
     {% endif %}
 {% endblock %}
 

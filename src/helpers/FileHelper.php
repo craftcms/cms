@@ -23,6 +23,14 @@ use yii\base\InvalidParamException;
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static $mimeMagicFile = '@app/config/mimeTypes.php';
+
     // Properties
     // =========================================================================
 
@@ -88,8 +96,8 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $filename the filename to sanitize
      * @param array  $options  options for sanitization. Valid options are:
      *
-     * - asciiOnly: bool, whether only ASCII characters should be allowed. Defaults to false.
-     * - separator: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
+     * - `asciiOnly`: bool, whether only ASCII characters should be allowed. Defaults to false.
+     * - `separator`: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
      *
      * @return string The cleansed filename
      */
@@ -232,11 +240,11 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array  $options  options for file write. Valid options are:
      *
-     * - createDirs: bool, whether to create parent directories if they do
+     * - `createDirs`: bool, whether to create parent directories if they do
      *   not exist. Defaults to true.
-     * - append: bool, whether the contents should be appended to the
+     * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
-     * - lock: bool, whether a file lock should be used. Defaults to the
+     * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
      *
      * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
@@ -308,9 +316,12 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $dir     the directory to be deleted recursively.
      * @param array  $options options for directory remove. Valid options are:
      *
-     * - traverseSymlinks: bool, whether symlinks to the directories should be traversed too.
+     * - `traverseSymlinks`: bool, whether symlinks to the directories should be traversed too.
      *   Defaults to `false`, meaning the content of the symlinked directory would not be deleted.
      *   Only symlink would be removed in that default case.
+     * - `filter`: callback (see [[findFiles()]])
+     * - `except`: array (see [[findFiles()]])
+     * - `only`: array (see [[findFiles()]])
      *
      * @return void
      * @throws InvalidParamException if the dir is invalid
@@ -322,19 +333,27 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new InvalidParamException("The dir argument must be a directory: $dir");
         }
 
-        // Copied from [[removeDirectory()]] minus the root directory removal at the end
+        // Adapted from [[removeDirectory()]], plus addition of filters, and minus the root directory removal at the end
         if (!($handle = opendir($dir))) {
             return;
         }
+
+        if (!isset($options['basePath'])) {
+            $options['basePath'] = realpath($dir);
+            $options = static::normalizeOptions($options);
+        }
+
         while (($file = readdir($handle)) !== false) {
             if ($file === '.' || $file === '..') {
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$file;
-            if (is_dir($path)) {
-                static::removeDirectory($path, $options);
-            } else {
-                static::removeFile($path);
+            if (static::filterPath($path, $options)) {
+                if (is_dir($path)) {
+                    static::removeDirectory($path, $options);
+                } else {
+                    static::removeFile($path);
+                }
             }
         }
         closedir($handle);
@@ -402,7 +421,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 throw new Exception('Unable to release test lock.');
             }
             self::$_useFileLocks = true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
         }
 

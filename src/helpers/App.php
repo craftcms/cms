@@ -24,54 +24,10 @@ class App
     /**
      * @var bool
      */
-    private static $_isComposerInstall;
-
-    /**
-     * @var bool
-     */
-    private static $_isPhpDevServer;
-
-    /**
-     * @var bool
-     */
     private static $_iconv;
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns whether Craft was installed via Composer.
-     *
-     * @return bool
-     */
-    public static function isComposerInstall(): bool
-    {
-        if (self::$_isComposerInstall !== null) {
-            return self::$_isComposerInstall;
-        }
-
-        // If this was installed via a craftcms.com zip, there will be an index.php file
-        // at the root of the vendor directory.
-        return self::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
-    }
-
-    /**
-     * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
-     *
-     * @return bool Whether Craft is running on the PHP Dev Server.
-     */
-    public static function isPhpDevServer(): bool
-    {
-        if (self::$_isPhpDevServer !== null) {
-            return self::$_isPhpDevServer;
-        }
-
-        if (isset($_SERVER['SERVER_SOFTWARE'])) {
-            return self::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
-        }
-
-        return self::$_isPhpDevServer = false;
-    }
 
     /**
      * Returns an array of all known Craft editions’ IDs.
@@ -133,41 +89,6 @@ class App
 
         /** @noinspection TypeUnsafeComparisonInspection */
         return ($value == 1 || strtolower($value) === 'on');
-    }
-
-    /**
-     * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
-     *
-     * @param string $var The PHP config setting to retrieve.
-     *
-     * @return int The size in bytes.
-     * @see http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes
-     */
-    public static function phpConfigValueInBytes(string $var): int
-    {
-        $value = ini_get($var);
-
-        // See if we can recognize that.
-        if (!preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
-            return (int)$value;
-        }
-
-        $value = (int)$matches[1];
-
-        // Multiply!
-        switch (strtolower($matches[2])) {
-            case 'g':
-                $value *= 1024;
-            // no break
-            case 'm':
-                $value *= 1024;
-            // no break
-            case 'k':
-                $value *= 1024;
-            // no break
-        }
-
-        return $value;
     }
 
     /**

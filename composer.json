@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.0.0-beta.13",
+  "version": "3.0.0-beta.29",
   "keywords": [
     "cms",
     "craftcms",
@@ -19,42 +19,44 @@
   },
   "require": {
     "php": ">=7.0.0",
+    "ext-curl": "*",
+    "ext-dom": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-openssl": "*",
     "ext-pcre": "*",
     "ext-pdo": "*",
-    "ext-openssl": "*",
-    "ext-mbstring": "*",
-    "ext-json": "*",
-    "ext-curl": "*",
     "ext-zip": "*",
-    "yiisoft/yii2": "2.0.11.2",
+    "composer/composer": "~1.4.2",
+    "craftcms/plugin-installer": "~1.5.0",
+    "craftcms/server-check": "~1.0.17",
+    "creocoder/yii2-nested-sets": "~0.9.0",
+    "danielstjules/stringy": "~3.0.0",
+    "enshrined/svg-sanitize": "~0.6.0",
+    "guzzlehttp/guzzle": "~6.2.2",
+    "league/flysystem": "~1.0.35",
+    "mikehaertl/php-shellcommand": "~1.2.5",
+    "pixelandtonic/imagine": "0.7.1.1",
+    "seld/cli-prompt": "^1.0",
+    "twig/twig": "~2.3.0",
+    "yiisoft/yii2": "~2.0.12.0",
     "yiisoft/yii2-debug": "2.0.8",
-    "yiisoft/yii2-swiftmailer": "2.0.6",
-    "guzzlehttp/guzzle": "6.2.2",
-    "danielstjules/stringy": "2.3.2",
-    "creocoder/yii2-nested-sets": "0.9.0",
-    "pixelandtonic/imagine": "0.6.3.2",
-    "league/flysystem": "1.0.35",
-    "mikehaertl/php-shellcommand": "1.2.2",
-    "twig/twig": "2.1.0",
-    "zendframework/zend-feed": "2.7.0",
-    "craftcms/server-check": "1.0.12",
-    "bower-asset/d3": "4.6.0.0",
-    "bower-asset/d3-format": "1.0.2.0",
-    "bower-asset/d3-time-format": "2.0.3.0",
-    "bower-asset/element-resize-detector": "1.1.11",
-    "bower-asset/garnishjs": "0.1.17",
-    "bower-asset/jquery.payment": "3.0.0",
-    "bower-asset/picturefill": "3.0.2",
-    "bower-asset/selectize": "0.12.4",
-    "bower-asset/timepicker": "1.11.10.0",
-    "bower-asset/velocity": "1.4.3",
-    "bower-asset/fabric": "1.7.6"
+    "yiisoft/yii2-swiftmailer": "~2.0.6",
+    "yiisoft/yii2-queue": "~2.0.0",
+    "zendframework/zend-feed": "~2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "2.2.9",
-    "codeception/verify": "0.3.3",
-    "codeception/specify": "0.4.6",
-    "codeception/mockery-module": "0.2.2"
+    "codeception/codeception": "~2.3.3",
+    "codeception/mockery-module": "~0.2.2",
+    "codeception/specify": "~0.4.6",
+    "codeception/verify": "~0.3.3"
+  },
+  "provide": {
+    "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",
+    "bower-asset/jquery": "2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
+    "bower-asset/jquery.inputmask": "~3.2.2 | ~3.3.5",
+    "bower-asset/punycode": "1.3.*",
+    "bower-asset/yii2-pjax": "~2.0.1"
   },
   "suggest": {
     "ext-imagick": "Adds support for more image processing formats and options.",
@@ -65,11 +67,5 @@
     "psr-4": {
       "craft\\": "src/"
     }
-  },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://asset-packagist.org"
-    }
-  ]
+  }
 }

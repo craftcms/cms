@@ -10,13 +10,19 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
+use craft\events\RegisterTemplateRootsEvent;
+use craft\helpers\ArrayHelper;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
+use craft\web\View;
+use yii\base\Event;
 use yii\base\Module;
 
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
+ * @property string           $handle   The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -44,29 +50,50 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($id, $parent = null, array $config = [])
     {
-        parent::init();
+        // Set some things early in case there are any settings, and the settings model's
+        // init() method needs to call Craft::t() or Plugin::getInstance().
 
-        // Set this as the global instance of this plugin class
-        static::setInstance($this);
+        $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? $id);
+        $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
 
-        if ($this->t9nCategory === null) {
-            $this->t9nCategory = strtolower($this->handle);
+        if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {
+            $this->setBasePath($basePath);
         }
 
-        // Set up a translation message source for the plugin
+        // Translation category
         $i18n = Craft::$app->getI18n();
-
         /** @noinspection UnSafeIsSetOverArrayInspection */
         if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory.'*'])) {
             $i18n->translations[$this->t9nCategory] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => $this->getBasePath().'/translations',
+                'basePath' => $this->getBasePath().DIRECTORY_SEPARATOR.'translations',
+                'forceTranslation' => true,
                 'allowOverrides' => true,
             ];
         }
+
+        // Base template directory
+        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $e) {
+            if (is_dir($baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates')) {
+                $e->roots[$this->id] = $baseDir;
+            }
+        });
+
+        // Set this as the global instance of this plugin class
+        static::setInstance($this);
+
+        parent::__construct($id, $parent, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): string
+    {
+        return $this->id;
     }
 
     /**
@@ -81,10 +108,12 @@ class Plugin extends Module implements PluginInterface
         $migrator = $this->getMigrator();
 
         // Run the install migration, if there is one
-        $migration = $this->createInstallMigration();
-
-        if ($migration !== null && $migrator->migrateUp($migration) === false) {
-            return false;
+        if (($migration = $this->createInstallMigration()) !== null) {
+            try {
+                $migrator->migrateUp($migration);
+            } catch (MigrationException $e) {
+                return false;
+            }
         }
 
         // Mark all existing migrations as applied
@@ -100,34 +129,18 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update(string $fromVersion)
-    {
-        if ($this->beforeUpdate($fromVersion) === false) {
-            return false;
-        }
-
-        if ($this->getMigrator()->up() === false) {
-            return false;
-        }
-
-        $this->afterUpdate($fromVersion);
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function uninstall()
     {
         if ($this->beforeUninstall() === false) {
             return false;
         }
 
-        $migration = $this->createInstallMigration();
-
-        if ($migration !== null && $this->getMigrator()->migrateDown($migration) === false) {
-            return false;
+        if (($migration = $this->createInstallMigration()) !== null) {
+            try {
+                $this->getMigrator()->migrateDown($migration);
+            } catch (MigrationException $e) {
+                return false;
+            }
         }
 
         $this->afterUninstall();
@@ -164,19 +177,23 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
+        $view = Craft::$app->getView();
+        $namespace = $view->getNamespace();
+        $view->setNamespace('settings');
+        $settingsHtml = $this->settingsHtml();
+        $view->setNamespace($namespace);
+
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
         return $controller->renderTemplate('settings/plugins/_settings', [
             'plugin' => $this,
-            'settingsHtml' => $this->settingsHtml()
+            'settingsHtml' => $settingsHtml
         ]);
     }
 
     /**
-     * Returns the plugin’s migration manager
-     *
-     * @return MigrationManager The plugin’s migration manager
+     * @inheritdoc
      */
     public function getMigrator(): MigrationManager
     {
@@ -200,14 +217,6 @@ class Plugin extends Module implements PluginInterface
             'url' => $this->id,
             'iconSvg' => $iconSvg
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function defineTemplateComponent()
-    {
-        return null;
     }
 
     // Protected Methods
@@ -248,27 +257,6 @@ class Plugin extends Module implements PluginInterface
      * Performs actions after the plugin is installed.
      */
     protected function afterInstall()
-    {
-    }
-
-    /**
-     * Performs actions before the plugin is updated.
-     *
-     * @param string $fromVersion The previously installed version of the plugin.
-     *
-     * @return bool Whether the plugin should be updated
-     */
-    protected function beforeUpdate(string $fromVersion): bool
-    {
-        return true;
-    }
-
-    /**
-     * Performs actions after the plugin is updated.
-     *
-     * @param string $fromVersion The previously installed version of the plugin.
-     */
-    protected function afterUpdate(string $fromVersion)
     {
     }
 

@@ -26,7 +26,6 @@ use yii\web\BadRequestHttpException;
  * @property string $token                  The token submitted with the request, if there is one.
  * @property bool   $isCpRequest            Whether the Control Panel was requested.
  * @property bool   $isSiteRequest          Whether the front end site was requested.
- * @property bool   $isResourceRequest      Whether a resource was requested.
  * @property bool   $isActionRequest        Whether a specific controller action was requested.
  * @property array  $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
  * @property bool   $isLivePreview          Whether this is a Live Preview request.
@@ -70,11 +69,6 @@ class Request extends \yii\web\Request
      * @var bool
      */
     private $_isCpRequest = false;
-
-    /**
-     * @var bool
-     */
-    private $_isResourceRequest = false;
 
     /**
      * @var bool
@@ -127,18 +121,6 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        if (!isset($config['csrfCookie'])) {
-            $config['csrfCookie'] = Craft::cookieConfig([], $this);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
         parent::init();
@@ -149,10 +131,10 @@ class Request extends \yii\web\Request
         $path = $this->getFullPath();
 
         // Get the path segments
-        $this->_segments = array_filter(explode('/', $path), function($value) {
+        $this->_segments = array_values(array_filter(explode('/', $path), function($value) {
             // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
             return $value !== '';
-        });
+        }));
 
         // Is this a CP request?
         $this->_isCpRequest = ($this->getSegment(1) == $generalConfig->cpTrigger);
@@ -194,7 +176,7 @@ class Request extends \yii\web\Request
                 $newPath = $match[1];
 
                 // Reset the segments without the pagination stuff
-                $this->_segments = array_filter(explode('/', $newPath));
+                $this->_segments = array_values(array_filter(explode('/', $newPath)));
             }
         }
 
@@ -322,7 +304,6 @@ class Request extends \yii\web\Request
      * [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger).
      *
      * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
-     * It could instead route to a resource, for example.
      *
      * @return bool Whether the current request should be routed to the Control Panel.
      */
@@ -341,21 +322,6 @@ class Request extends \yii\web\Request
     public function getIsSiteRequest(): bool
     {
         return !$this->_isCpRequest;
-    }
-
-    /**
-     * Returns whether a resource was requested.
-     *
-     * The result depends on whether the first segment in the Craft path matches the
-     * [resource trigger](http://craftcms.com/docs/config-settings#resourceTrigger).
-     *
-     * @return bool Whether the current request should be routed to a resource.
-     */
-    public function getIsResourceRequest(): bool
-    {
-        $this->_checkRequestType();
-
-        return $this->_isResourceRequest;
     }
 
     /**
@@ -652,29 +618,15 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the request’s query string params, without the path parameter.
-     *
-     * @return string[] The query string, without the path parameter
-     */
-    public function getQueryParamsWithoutPath(): array
-    {
-        $queryParams = $this->getQueryParams();
-        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-
-        unset($queryParams[$pathParam]);
-
-        return $queryParams;
-    }
-
-    /**
      * Returns the request’s query string, without the path parameter.
      *
      * @return string The query string.
      */
     public function getQueryStringWithoutPath(): string
     {
-        $queryParams = $this->getQueryParamsWithoutPath();
-
+        parse_str($this->getQueryString(), $queryParams);
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
+        unset($queryParams[$pathParam]);
         return http_build_query($queryParams);
     }
 
@@ -784,11 +736,7 @@ class Request extends \yii\web\Request
                 $token = $this->generateCsrfToken();
             }
 
-            // the mask doesn't need to be very random
-            $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
-            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, self::CSRF_MASK_LENGTH);
-            // The + sign may be decoded as blank space later, which will fail the validation
-            $this->_craftCsrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
+            $this->_craftCsrfToken = Craft::$app->getSecurity()->maskToken($token);
         }
 
         return $this->_craftCsrfToken;
@@ -929,7 +877,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Checks to see if this is an action or resource request.
+     * Checks to see if this is an action request.
      *
      * @return void
      */
@@ -946,45 +894,49 @@ class Request extends \yii\web\Request
         if (!$this->getQueryParam($generalConfig->tokenParam)) {
             $firstSegment = $this->getSegment(1);
 
-            // Is this a resource request?
-            if ($firstSegment === UrlHelper::resourceTrigger()) {
-                $this->_isResourceRequest = true;
+            // Is this an action request?
+            if ($this->_isCpRequest) {
+                $loginPath = 'login';
+                $logoutPath = 'logout';
+                $setPasswordPath = 'setpassword';
+                $updatePath = 'update';
             } else {
-                // Is this an action request?
-                if ($this->_isCpRequest) {
-                    $loginPath = 'login';
-                    $logoutPath = 'logout';
-                    $setPasswordPath = 'setpassword';
+                $loginPath = trim($generalConfig->getLoginPath(), '/');
+                $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                $updatePath = null;
+            }
+
+            if (
+                ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
+                ($actionParam = $this->getParam('action')) !== null ||
+                ($specialPath = in_array($this->_path, [
+                    $loginPath,
+                    $logoutPath,
+                    $setPasswordPath,
+                    $updatePath
+                ], true))
+            ) {
+                $this->_isActionRequest = true;
+
+                /** @noinspection PhpUndefinedVariableInspection */
+                if ($triggerMatch) {
+                    $this->_actionSegments = array_slice($this->_segments, 1);
+                } else if (!empty($actionParam)) {
+                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
                 } else {
-                    $loginPath = trim($generalConfig->getLoginPath(), '/');
-                    $logoutPath = trim($generalConfig->getLogoutPath(), '/');
-                    $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
-                }
-
-                if (
-                    ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
-                    ($actionParam = $this->getParam('action')) !== null ||
-                    ($specialPath = in_array($this->_path, [
-                        $loginPath,
-                        $logoutPath,
-                        $setPasswordPath,
-                    ], true))
-                ) {
-                    $this->_isActionRequest = true;
-
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    if ($triggerMatch) {
-                        $this->_actionSegments = array_slice($this->_segments, 1);
-                    } else if (!empty($actionParam)) {
-                        $this->_actionSegments = array_filter(explode('/', $actionParam));
-                    } else {
-                        if ($this->_path == $loginPath) {
+                    switch ($this->_path) {
+                        case $loginPath:
                             $this->_actionSegments = ['users', 'login'];
-                        } else if ($this->_path == $logoutPath) {
+                            break;
+                        case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
-                        } else {
+                            break;
+                        case $setPasswordPath:
                             $this->_actionSegments = ['users', 'set-password'];
-                        }
+                            break;
+                        case $updatePath:
+                            $this->_actionSegments = ['updater', 'index'];
                     }
                 }
             }
@@ -1072,28 +1024,5 @@ class Request extends \yii\web\Request
     {
         return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
             filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
-    }
-
-    /**
-     * Returns the XOR result of two strings.
-     * If the two strings are of different lengths, the shorter one will be padded to the length of the longer one.
-     *
-     * @param string $token1
-     * @param string $token2
-     *
-     * @return string the XOR result
-     */
-    private function _xorTokens(string $token1, string $token2): string
-    {
-        $n1 = StringHelper::byteLength($token1);
-        $n2 = StringHelper::byteLength($token2);
-
-        if ($n1 > $n2) {
-            $token2 = str_pad($token2, $n1, $token2);
-        } elseif ($n1 < $n2) {
-            $token1 = str_pad($token1, $n2, $n1 === 0 ? ' ' : $token1);
-        }
-
-        return $token1 ^ $token2;
     }
 }

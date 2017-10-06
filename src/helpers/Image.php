@@ -32,10 +32,10 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  int $targetWidth
-     * @param  int $targetHeight
-     * @param  int $sourceWidth
-     * @param  int $sourceHeight
+     * @param  int|float|null $targetWidth
+     * @param  int|float|null $targetHeight
+     * @param  int|float      $sourceWidth
+     * @param  int|float      $sourceHeight
      *
      * @return int[] Array of the width and height.
      */
@@ -59,17 +59,12 @@ class Image
      *
      * @return bool
      */
-    public static function isImageManipulatable(string $extension): bool
+    public static function canManipulateAsImage(string $extension): bool
     {
-        $file = Craft::getAlias('@app/sampleimages/sample.'.strtolower($extension));
+        $formats = Craft::$app->getImages()->getSupportedImageFormats();
+        $formats[] = 'svg';
 
-        try {
-            Craft::$app->getImages()->loadImage($file);
-
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
+        return in_array(strtolower($extension), $formats);
     }
 
     /**
@@ -79,7 +74,7 @@ class Image
      */
     public static function webSafeFormats(): array
     {
-        return ['jpg', 'jpeg', 'gif', 'png', 'svg'];
+        return ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'];
     }
 
     /**
@@ -175,12 +170,7 @@ class Image
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
-        if ($extension === 'svg') {
-            // No cleanup in the classic sense.
-            return;
-        }
-
-        if (static::isImageManipulatable($extension)) {
+        if (static::canManipulateAsImage($extension)) {
             Craft::$app->getImages()->cleanImage($imagePath);
         }
     }
@@ -323,15 +313,15 @@ class Image
             ($matchedWidth = (float)$widthMatch[2]) &&
             ($matchedHeight = (float)$heightMatch[2])
         ) {
-            $width = round(
+            $width = floor(
                 $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])
             );
-            $height = round(
+            $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
         } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = round($viewboxMatch[3]);
-            $height = round($viewboxMatch[4]);
+            $width = floor($viewboxMatch[3]);
+            $height = floor($viewboxMatch[4]);
         } else {
             $width = null;
             $height = null;

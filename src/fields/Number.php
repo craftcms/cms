@@ -129,14 +129,9 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        // Is this a post request?
-        $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsPost() && $this->required) {
-            // Normalize the number and make it look like this is what was posted
-            if ($value !== '') {
-                $value = Localization::normalizeNumber($value);
-            }
+        // Was this submitted with a locale ID?
+        if (isset($value['locale'], $value['value'])) {
+             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
         return $value;
@@ -155,11 +150,12 @@ class Number extends Field implements PreviewableFieldInterface
             $value = number_format($value, $decimals, $decimalSeparator, '');
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-            'name' => $this->handle,
-            'value' => $value,
-            'size' => $this->size
-        ]);
+        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">' .
+            Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+                'name' => $this->handle.'[value]',
+                'value' => $value,
+                'size' => $this->size
+            ]);
     }
 
     /**

@@ -9,8 +9,10 @@ namespace craft\helpers;
 
 use Craft;
 use craft\i18n\Locale;
+use DateInterval;
 use DateTime;
-use yii\helpers\FormatConverter;
+use DateTimeImmutable;
+use DateTimeZone;
 
 /**
  * Class DateTimeHelper
@@ -92,12 +94,7 @@ class DateTimeHelper
      */
     public static function toDateTime($value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true)
     {
-        if ($value instanceof \DateTime) {
-            // Make sure it's a Craft DateTime object
-            if (!($value instanceof DateTime)) {
-                return new DateTime('@'.$value->getTimestamp());
-            }
-
+        if ($value instanceof DateTime) {
             return $value;
         }
 
@@ -121,7 +118,7 @@ class DateTimeHelper
 
             if (!empty($dt['date'])) {
                 $date = $dt['date'];
-                $format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
+                $format = $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
                 // Make sure it's a 4 digit year format.
                 $format = StringHelper::replace($format, 'y', 'Y');
@@ -148,13 +145,13 @@ class DateTimeHelper
                 }
             } else {
                 // Default to the current date
-                $current = new DateTime('now', new \DateTimeZone($timeZone));
+                $current = new DateTime('now', new DateTimeZone($timeZone));
                 $format = 'n/j/Y';
                 $date = $current->format($format);
             }
 
             if (!empty($dt['time'])) {
-                $timePickerPhpFormat = FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
+                $timePickerPhpFormat = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
                 // Replace the localized "AM" and "PM"
                 if (preg_match('/(.*)('.preg_quote($locale->getAMName(), '/').'|'.preg_quote($locale->getPMName(), '/').')(.*)/u', $dt['time'], $matches)) {
                     $dt['time'] = $matches[1].$matches[3];
@@ -233,7 +230,7 @@ class DateTimeHelper
         $dt = DateTime::createFromFormat('!'.$format, $date);
 
         if ($dt !== false && $setToSystemTimeZone) {
-            $dt->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()));
+            $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
         }
 
         return $dt;
@@ -267,7 +264,7 @@ class DateTimeHelper
         // Is it the difference to GMT?
         if (preg_match('/[+\-]\d\d\:?\d\d/', $timeZone, $matches)) {
             $format = strpos($timeZone, ':') !== false ? 'e' : 'O';
-            $dt = \DateTime::createFromFormat($format, $timeZone, new \DateTimeZone('UTC'));
+            $dt = DateTime::createFromFormat($format, $timeZone, new DateTimeZone('UTC'));
 
             if ($dt !== false) {
                 return $dt->format('e');
@@ -276,6 +273,39 @@ class DateTimeHelper
 
         // Dunno
         return false;
+    }
+
+    /**
+     * Returns the timezone abbreviation for a given timezone name.
+     *
+     * @param string $timeZone
+     *
+     * @return string
+     */
+    public static function timeZoneAbbreviation(string $timeZone): string
+    {
+        return (new DateTime())
+            ->setTimezone(new DateTimeZone($timeZone))
+            ->format('T');
+    }
+
+    /**
+     * Returns a given timezone’s offset from UTC (e.g. '+10:00' or '-06:00').
+     *
+     * @param string $timeZone
+     *
+     * @return string
+     */
+    public static function timeZoneOffset(string $timeZone): string
+    {
+        $offset = (new DateTimeZone($timeZone))
+            ->getOffset(new DateTime('now', new DateTimeZone('UTC')));
+
+        // Adapted from http://stackoverflow.com/a/13822928/1688568
+        return sprintf('%s%02d:%02d',
+            $offset < 0 ? '-' : '+',
+            abs($offset) / 3600,
+            abs($offset) / 60 % 60);
     }
 
     /**
@@ -305,7 +335,7 @@ class DateTimeHelper
         $date = static::toDateTime($date);
 
         if ($date !== false) {
-            return $date->format(\DateTime::ATOM);
+            return $date->format(DateTime::ATOM);
         }
 
         return false;
@@ -316,7 +346,7 @@ class DateTimeHelper
      */
     public static function currentUTCDateTime(): DateTime
     {
-        return new DateTime(null, new \DateTimeZone('UTC'));
+        return new DateTime(null, new DateTimeZone('UTC'));
     }
 
     /**
@@ -546,23 +576,23 @@ class DateTimeHelper
      *
      * @param int $seconds
      *
-     * @return \DateInterval
+     * @return DateInterval
      */
-    public static function secondsToInterval(int $seconds): \DateInterval
+    public static function secondsToInterval(int $seconds): DateInterval
     {
-        return new \DateInterval("PT{$seconds}S");
+        return new DateInterval("PT{$seconds}S");
     }
 
     /**
      * Returns the number of seconds that a given DateInterval object spans.
      *
-     * @param \DateInterval $dateInterval
+     * @param DateInterval $dateInterval
      *
      * @return int
      */
-    public static function intervalToSeconds(\DateInterval $dateInterval): int
+    public static function intervalToSeconds(DateInterval $dateInterval): int
     {
-        $reference = new \DateTimeImmutable();
+        $reference = new DateTimeImmutable();
         $endTime = $reference->add($dateInterval);
 
         return $endTime->getTimestamp() - $reference->getTimestamp();
@@ -577,7 +607,7 @@ class DateTimeHelper
      */
     public static function isValidIntervalString(string $intervalString): bool
     {
-        $interval = \DateInterval::createFromDateString($intervalString);
+        $interval = DateInterval::createFromDateString($intervalString);
 
         return $interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0;
     }
@@ -585,12 +615,12 @@ class DateTimeHelper
     /**
      * Returns the interval in a human-friendly string.
      *
-     * @param \DateInterval $dateInterval
-     * @param bool          $showSeconds
+     * @param DateInterval $dateInterval
+     * @param bool         $showSeconds
      *
      * @return string
      */
-    public static function humanDurationFromInterval(\DateInterval $dateInterval, bool $showSeconds = true): string
+    public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
     {
         $timeComponents = [];
 

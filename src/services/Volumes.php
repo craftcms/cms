@@ -92,6 +92,11 @@ class Volumes extends Component
     private $_volumesById;
 
     /**
+     * @var
+     */
+    private $_volumesByHandle;
+
+    /**
      * @var bool
      */
     private $_fetchedAllVolumes = false;
@@ -121,6 +126,7 @@ class Volumes extends Component
         $event = new RegisterComponentTypesEvent([
             'types' => $volumeTypes
         ]);
+
         $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
 
         return $event->types;
@@ -278,6 +284,7 @@ class Volumes extends Component
             /** @var Volume $volume */
             $volume = $this->createVolume($result);
             $this->_volumesById[$volume->id] = $volume;
+            $this->_volumesByHandle[$volume->handle] = $volume;
         }
 
         $this->_fetchedAllVolumes = true;
@@ -314,40 +321,67 @@ class Volumes extends Component
     }
 
     /**
+     * Returns a volumn by its handle.
+     *
+     * @param string $handle
+     *
+     * @return VolumeInterface|null
+     */
+    public function getVolumeByHandle(string $handle)
+    {
+        if ($this->_volumesByHandle !== null && array_key_exists($handle, $this->_volumesByHandle)) {
+            return $this->_volumesByHandle[$handle];
+        }
+
+        if ($this->_fetchedAllVolumes) {
+            return null;
+        }
+
+        $result = $this->_createVolumeQuery()
+            ->where(['handle' => $handle])
+            ->one();
+
+        if (!$result) {
+            return $this->_volumesByHandle[$handle] = null;
+        }
+
+        return $this->_volumesByHandle[$handle] = $this->createVolume($result);
+    }
+
+    /**
      * Saves an asset volume.
      *
      * @param VolumeInterface $volume        the volume to be saved.
      * @param bool            $runValidation Whether the volume should be validated
      *
      * @return bool Whether the field was saved successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
 
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
         /** @var Volume $volume */
-        if ($runValidation && !$volume->validate()) {
-            Craft::info('Volume not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewVolume = $volume->getIsNew();
 
         // Fire a 'beforeSaveVolume' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
-            'volume' => $volume,
-            'isNew' => $isNewVolume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_VOLUME)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
+                'volume' => $volume,
+                'isNew' => $isNewVolume
+            ]));
+        }
+
+        if (!$volume->beforeSave($isNewVolume)) {
+            return false;
+        }
+
+        if ($runValidation && !$volume->validate()) {
+            Craft::info('Volume not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$volume->beforeSave($isNewVolume)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $volumeRecord = $this->_getVolumeRecordById($volume->id);
 
             $volumeRecord->name = $volume->name;
@@ -405,7 +439,7 @@ class Volumes extends Component
             $volume->afterSave($isNewVolume);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -420,10 +454,12 @@ class Volumes extends Component
         }
 
         // Fire an 'afterSaveVolume' event
-        $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
-            'volume' => $volume,
-            'isNew' => $isNewVolume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
+                'volume' => $volume,
+                'isNew' => $isNewVolume
+            ]));
+        }
 
         return true;
     }
@@ -433,7 +469,7 @@ class Volumes extends Component
      *
      * @param array $volumeIds
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return bool
      */
     public function reorderVolumes(array $volumeIds): bool
@@ -448,7 +484,7 @@ class Volumes extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -488,15 +524,20 @@ class Volumes extends Component
 
         // Are they overriding any settings?
         if (!empty($config['handle']) && ($override = $this->getVolumeOverrides($config['handle'])) !== null) {
-            // Apply the settings early so the overrides don't get overridden
-            ComponentHelper::applySettings($config);
-            $config = array_merge($config, $override);
+            // Save a reference to the original config in case the volume type is missing
+            $originalConfig = $config;
+
+            // Merge in the DB settings first, then the config file overrides
+            $config = array_merge(ComponentHelper::mergeSettings($config), $override);
         }
 
         try {
             /** @var Volume $volume */
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (MissingComponentException $e) {
+            // Revert to the original config if it was overridden
+            $config = $originalConfig ?? $config;
+
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
@@ -541,7 +582,7 @@ class Volumes extends Component
      *
      * @param int $volumeId
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return bool
      */
     public function deleteVolumeById(int $volumeId): bool
@@ -560,27 +601,27 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume The volume to delete
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return bool
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {
         /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
-            'volume' => $volume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
+                'volume' => $volume
+            ]));
+        }
+
+        if (!$volume->beforeDelete()) {
+            return false;
+        }
 
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
         try {
-            if (!$volume->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // Delete the assets
             $assets = Asset::find()
                 ->status(null)
@@ -601,16 +642,18 @@ class Volumes extends Component
             $volume->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterDeleteVolume' event
-        $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
-            'volume' => $volume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
+                'volume' => $volume
+            ]));
+        }
 
         return true;
     }

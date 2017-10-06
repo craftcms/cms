@@ -12,6 +12,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\Controller;
 use ErrorException;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -42,6 +43,19 @@ class TemplatesController extends Controller
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        $actionSegments = Craft::$app->getRequest()->getActionSegments();
+        if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
+            throw new ForbiddenHttpException();
+        }
+
+        return parent::beforeAction($action);
+    }
+
+    /**
      * Renders a template.
      *
      * @param string $template
@@ -56,6 +70,11 @@ class TemplatesController extends Controller
         if (!$this->getView()->doesTemplateExist($template)) {
             throw new NotFoundHttpException('Template not found');
         }
+
+        // Merge any additional route params
+        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
+        unset($routeParams['template'], $routeParams['template']);
+        $variables = array_merge($variables, $routeParams);
 
         return $this->renderTemplate($template, $variables);
     }
@@ -109,15 +128,15 @@ class TemplatesController extends Controller
                 }
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
-            } else {
-                return $this->renderTemplate('_special/cantrun', [
-                    'reqCheck' => $reqCheck
-                ]);
             }
-        } else {
-            // Cache the base path.
-            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
+
+            return $this->renderTemplate('_special/cantrun', [
+                'reqCheck' => $reqCheck
+            ]);
         }
+
+        // Cache the base path.
+        Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
 
         return null;
     }

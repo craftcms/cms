@@ -9,7 +9,6 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\ContentBehavior;
-use craft\behaviors\ContentTrait;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -63,7 +62,6 @@ use yii\validators\Validator;
  * @property bool                  $isEditable            Whether the current user can edit the element
  * @property string|null           $cpEditUrl             The element’s CP edit URL
  * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
- * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
  * @property string|null           $status                The element’s status
  * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
  * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
@@ -78,12 +76,13 @@ use yii\validators\Validator;
  * @property Element|null          $nextSibling           The element’s next sibling
  * @property bool                  $hasDescendants        Whether the element has descendants
  * @property int                   $totalDescendants      The total number of descendants that the element has
- * @property string                $title                 The element’s title
+ * @property string|null           $title                 The element’s title
  * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
  * @property string                $contentTable          The name of the table this element’s content is stored in
  * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
  * @property string                $fieldContext          The field context this element’s content uses
+ * @mixin ContentBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -94,7 +93,6 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     use ElementTrait;
-    use ContentTrait;
 
     // Constants
     // =========================================================================
@@ -717,7 +715,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        return $this->title;
+        return $this->title ?: ((string)$this->id ?: static::class);
     }
 
     /**
@@ -804,17 +802,15 @@ abstract class Element extends Component implements ElementInterface
         $names = parent::attributes();
 
         // Include custom field handles
-        $class = new \ReflectionClass(ContentBehavior::class);
-
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            $name = $property->getName();
-
-            if ($name !== 'owner' && !in_array($name, $names, true)) {
-                $names[] = $name;
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                $names[] = $field->handle;
             }
         }
 
-        return $names;
+        // In case there are any field handles that had the same name as an existing property
+        return array_unique($names);
     }
 
     /**
@@ -831,9 +827,13 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (Craft::$app->getIsInstalled()) {
-            foreach ($this->getFieldLayout()->getFields() as $field) {
-                /** @var Field $field */
-                $labels[$field->handle] = Craft::t('site', $field->name);
+            $layout = $this->getFieldLayout();
+
+            if ($layout !== null) {
+                foreach ($layout->getFields() as $field) {
+                    /** @var Field $field */
+                    $labels[$field->handle] = Craft::t('site', $field->name);
+                }
             }
         }
 
@@ -1661,23 +1661,26 @@ abstract class Element extends Component implements ElementInterface
         $html = '';
 
         $fieldLayout = $this->getFieldLayout();
+        $view = Craft::$app->getView();
 
         if ($fieldLayout) {
-            $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
-            Craft::$app->getView()->setNamespace($namespace);
+            $originalNamespace = $view->getNamespace();
+            $namespace = $view->namespaceInputName('fields', $originalNamespace);
+            $view->setNamespace($namespace);
 
             foreach ($fieldLayout->getFields() as $field) {
-                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field', [
+                $fieldHtml = $view->renderTemplate('_includes/field', [
                     'element' => $this,
                     'field' => $field,
                     'required' => $field->required
                 ]);
 
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
+                $html .= $view->namespaceInputs($fieldHtml, 'fields');
             }
 
             Craft::$app->getView()->setNamespace($originalNamespace);
+
+            $html .= '<input type="hidden" name="fieldLayoutId" value="'.$fieldLayout->id.'">';
         }
 
         return $html;
@@ -1718,9 +1721,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
-            'isNew' => $isNew,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
     }
 
     /**
@@ -1753,7 +1758,9 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE);
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE);
+        }
     }
 
     /**
@@ -1776,9 +1783,11 @@ abstract class Element extends Component implements ElementInterface
     public function afterMoveInStructure(int $structureId)
     {
         // Trigger an 'afterMoveInStructure' event
-        $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
-            'structureId' => $structureId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+            $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
+                'structureId' => $structureId,
+            ]));
+        }
     }
 
     // Protected Methods
@@ -1791,7 +1800,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function validateCustomFields(): bool
     {
-        if (!static::hasContent()) {
+        if (!static::hasContent() || !Craft::$app->getIsInstalled()) {
             return false;
         }
 
@@ -1982,7 +1991,7 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (\Exception $e) {
+                                } catch (\Throwable $e) {
                                     $value = $field->normalizeValue(null);
                                 }
                             }
@@ -2043,30 +2052,35 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _getRelativeElement($criteria, int $dir)
     {
-        if ($this->id !== null) {
-            if ($criteria instanceof ElementQueryInterface) {
-                $query = $criteria;
-            } else {
-                $query = static::find()
-                    ->siteId($this->siteId);
+        if ($this->id === null) {
+            return null;
+        }
 
-                if ($criteria) {
-                    Craft::configure($query, $criteria);
-                }
-            }
+        if ($criteria instanceof ElementQueryInterface) {
+            $query = $criteria;
+        } else {
+            $query = static::find()
+                ->siteId($this->siteId);
 
-            /** @var ElementQuery $query */
-            $elementIds = $query->ids();
-            $key = array_search($this->id, $elementIds, false);
-
-            if ($key !== false && isset($elementIds[$key + $dir])) {
-                return static::find()
-                    ->id($elementIds[$key + $dir])
-                    ->siteId($query->siteId)
-                    ->one();
+            if ($criteria) {
+                Craft::configure($query, $criteria);
             }
         }
 
-        return null;
+        /** @var ElementQuery $query */
+        $elementIds = $query->ids();
+        $key = array_search($this->id, $elementIds, false);
+
+        if ($key === false || !isset($elementIds[$key + $dir])) {
+            return null;
+        }
+
+        /** @var Element|false $element */
+        $element = static::find()
+            ->id($elementIds[$key + $dir])
+            ->siteId($query->siteId)
+            ->one();
+
+        return $element !== false ? $element : null;
     }
 }

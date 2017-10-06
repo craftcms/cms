@@ -42,7 +42,7 @@
                     };
 
                     Craft.postActionRequest('fields/save-group', data, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             if (response.success) {
                                 location.href = Craft.getUrl('settings/fields/' + response.group.id);
                             }
@@ -63,14 +63,14 @@
                 var oldName = this.$selectedGroup.text(),
                     newName = this.promptForGroupName(oldName);
 
-                if (newName && newName != oldName) {
+                if (newName && newName !== oldName) {
                     var data = {
                         id: this.$selectedGroup.data('id'),
                         name: newName
                     };
 
                     Craft.postActionRequest('fields/save-group', data, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             if (response.success) {
                                 this.$selectedGroup.text(response.group.name);
                                 Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
@@ -99,7 +99,7 @@
                     };
 
                     Craft.postActionRequest('fields/delete-group', data, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             if (response.success) {
                                 location.href = Craft.getUrl('settings/fields');
                             }

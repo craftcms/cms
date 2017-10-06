@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\ExceptionEvent;
 use yii\base\Exception;
 use yii\base\UserException;
 use yii\log\FileTarget;
@@ -21,6 +22,14 @@ use yii\web\HttpException;
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ExceptionEvent The event that is triggered before handling an exception.
+     */
+    const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
+
     // Properties
     // =========================================================================
 
@@ -37,6 +46,13 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function handleException($exception)
     {
+        // Fire a 'beforeHandleException' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
+            $this->trigger(self::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
+                'exception' => $exception
+            ]));
+        }
+
         // If this is a Twig Runtime exception, use the previous one instead
         if ($exception instanceof \Twig_Error_Runtime && ($previousException = $exception->getPrevious()) !== null) {
             $exception = $previousException;
@@ -49,18 +65,24 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
                 /** @var FileTarget $logTarget */
                 $logTarget = $logDispatcher->targets[0];
-
-                $logPath404 = Craft::getAlias('@storage/logs/web-404s.log');
-
-                if ($logPath404 === false) {
-                    throw new Exception('Could not find the 404 log file path.');
-                }
-
-                $logTarget->logFile = $logPath404;
+                $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
             }
         }
 
         parent::handleException($exception);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleError($code, $message, $file, $line)
+    {
+        // Because: https://bugs.php.net/bug.php?id=74980
+        if (PHP_VERSION_ID >= 70100 && strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
+            return null;
+        }
+
+        return parent::handleError($code, $message, $file, $line);
     }
 
     /**

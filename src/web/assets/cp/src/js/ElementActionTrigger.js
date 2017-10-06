@@ -22,7 +22,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
                 this.$trigger.data('custom-handler', true);
 
                 // Is this a custom trigger?
-                if (this.$trigger.prop('nodeName') == 'FORM') {
+                if (this.$trigger.prop('nodeName') === 'FORM') {
                     this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
                 }
                 else {
@@ -36,7 +36,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
         updateTrigger: function() {
             // Ignore if the last element was just unselected
-            if (Craft.elementIndex.getSelectedElements().length == 0) {
+            if (Craft.elementIndex.getSelectedElements().length === 0) {
                 return;
             }
 
@@ -60,7 +60,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
             if (!this.settings.batch && this.$selectedItems.length > 1) {
                 valid = false;
             }
-            else if (typeof this.settings.validateSelection == 'function') {
+            else if (typeof this.settings.validateSelection === 'function') {
                 valid = this.settings.validateSelection(this.$selectedItems);
             }
 

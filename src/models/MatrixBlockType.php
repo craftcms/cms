@@ -10,24 +10,19 @@ namespace craft\models;
 use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\behaviors\FieldLayoutTrait;
 use craft\elements\MatrixBlock;
 
 /**
  * MatrixBlockType model class.
  *
  * @property bool $isNew Whether this is a new block type
+ * @mixin FieldLayoutBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class MatrixBlockType extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 

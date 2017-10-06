@@ -270,7 +270,7 @@ class CategoriesController extends Controller
         // Parent Category selector variables
         // ---------------------------------------------------------------------
 
-        if ($variables['group']->maxLevels != 1) {
+        if ((int)$variables['group']->maxLevels !== 1) {
             $variables['elementType'] = Category::class;
 
             // Define the parent options criteria
@@ -305,11 +305,11 @@ class CategoriesController extends Controller
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $category->id !== null) {
-                $parentIds = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+                $parentId = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+            }
 
-                if (!empty($parentIds)) {
-                    $parentId = $parentIds[0];
-                }
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {
@@ -340,7 +340,7 @@ class CategoriesController extends Controller
         ];
 
         /** @var Category $ancestor */
-        foreach ($category->getAncestors() as $ancestor) {
+        foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
                 'url' => $ancestor->getCpEditUrl()
@@ -432,7 +432,7 @@ class CategoriesController extends Controller
             // Swap $category with the duplicate
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
         }
@@ -617,7 +617,12 @@ class CategoriesController extends Controller
         // Get the site
         // ---------------------------------------------------------------------
 
-        $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
+        if (Craft::$app->getIsMultiSite()) {
+            // Only use the sites that the user has access to
+            $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
+        } else {
+            $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
+        }
 
         if (!$variables['siteIds']) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');
@@ -762,7 +767,7 @@ class CategoriesController extends Controller
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $parentId = reset($parentId) ?: null;
         }
 
         $category->newParentId = $parentId ?: null;

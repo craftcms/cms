@@ -20,10 +20,10 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Structure;
+use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\tasks\ResaveElements;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -310,17 +310,17 @@ class Sections extends Component
     {
         $siteSettings = (new Query())
             ->select([
-                'sections_i18n.id',
-                'sections_i18n.sectionId',
-                'sections_i18n.siteId',
-                'sections_i18n.enabledByDefault',
-                'sections_i18n.hasUrls',
-                'sections_i18n.uriFormat',
-                'sections_i18n.template',
+                'sections_sites.id',
+                'sections_sites.sectionId',
+                'sections_sites.siteId',
+                'sections_sites.enabledByDefault',
+                'sections_sites.hasUrls',
+                'sections_sites.uriFormat',
+                'sections_sites.template',
             ])
-            ->from(['{{%sections_i18n}} sections_i18n'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
-            ->where(['sections_i18n.sectionId' => $sectionId])
+            ->from(['{{%sections_sites}} sections_sites'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
+            ->where(['sections_sites.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->all();
 
@@ -339,17 +339,26 @@ class Sections extends Component
      *
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveSection(Section $section, bool $runValidation = true): bool
     {
+        $isNewSection = !$section->id;
+
+        // Fire a 'beforeSaveSection' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
+                'section' => $section,
+                'isNew' => $isNewSection
+            ]));
+        }
+
         if ($runValidation && !$section->validate()) {
             Craft::info('Section not saved due to validation error.', __METHOD__);
-
             return false;
         }
 
-        if ($section->id) {
+        if (!$isNewSection) {
             $sectionRecord = SectionRecord::find()
                 ->where(['id' => $section->id])
                 ->with('structure')
@@ -367,10 +376,8 @@ class Sections extends Component
                 'type',
                 'enableVersioning',
             ]));
-            $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
-            $isNewSection = true;
         }
 
         // Main section settings
@@ -386,12 +393,6 @@ class Sections extends Component
         if (empty($allSiteSettings)) {
             throw new Exception('Tried to save a section without any site settings');
         }
-
-        // Fire a 'beforeSaveSection' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
-            'section' => $section,
-            'isNew' => $isNewSection
-        ]));
 
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
@@ -409,7 +410,7 @@ class Sections extends Component
                 }
 
                 // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-                if ($section->maxLevels === 0 || $section->maxLevels === '0') {
+                if ((int)$section->maxLevels === 0) {
                     $section->maxLevels = null;
                 }
 
@@ -540,8 +541,7 @@ class Sections extends Component
                 $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
 
                 if (!empty($siteIds)) {
-                    Craft::$app->getTasks()->queueTask([
-                        'type' => ResaveElements::class,
+                    Craft::$app->getQueue()->push(new ResaveElements([
                         'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
                         'elementType' => Entry::class,
                         'criteria' => [
@@ -551,22 +551,24 @@ class Sections extends Component
                             'enabledForSite' => false,
                             'limit' => null,
                         ]
-                    ]);
+                    ]));
                 }
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterSaveSection' event
-        $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-            'section' => $section,
-            'isNew' => $isNewSection
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
+                'section' => $section,
+                'isNew' => $isNewSection
+            ]));
+        }
 
         return true;
     }
@@ -577,7 +579,7 @@ class Sections extends Component
      * @param int $sectionId
      *
      * @return bool Whether the section was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteSectionById(int $sectionId): bool
     {
@@ -596,14 +598,16 @@ class Sections extends Component
      * @param Section $section
      *
      * @return bool Whether the section was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteSection(Section $section): bool
     {
         // Fire a 'beforeDeleteSection' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
-            'section' => $section
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
+                'section' => $section
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -654,16 +658,18 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterDeleteSection' event
-        $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
-            'section' => $section
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
+                'section' => $section
+            ]));
+        }
 
         return true;
     }
@@ -712,25 +718,16 @@ class Sections extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        $entryTypeRecords = EntryTypeRecord::find()
+        $results = $this->_createEntryTypeQuery()
             ->where(['sectionId' => $sectionId])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        foreach ($entryTypeRecords as $key => $entryTypeRecord) {
-            $entryTypeRecords[$key] = new EntryType($entryTypeRecord->toArray([
-                'id',
-                'sectionId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'hasTitleField',
-                'titleLabel',
-                'titleFormat',
-            ]));
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
         }
 
-        return $entryTypeRecords;
+        return $results;
     }
 
     /**
@@ -750,20 +747,15 @@ class Sections extends Component
             return $this->_entryTypesById[$entryTypeId];
         }
 
-        if (($entryTypeRecord = EntryTypeRecord::findOne($entryTypeId)) === null) {
+        $result = $this->_createEntryTypeQuery()
+            ->where(['id' => $entryTypeId])
+            ->one();
+
+        if (!$result) {
             return $this->_entryTypesById[$entryTypeId] = null;
         }
 
-        return $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
-            'id',
-            'sectionId',
-            'fieldLayoutId',
-            'name',
-            'handle',
-            'hasTitleField',
-            'titleLabel',
-            'titleFormat',
-        ]));
+        return $this->_entryTypesById[$entryTypeId] = new EntryType($result);
     }
 
     /**
@@ -775,26 +767,15 @@ class Sections extends Component
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
-        $entryTypes = [];
+        $results = $this->_createEntryTypeQuery()
+            ->where(['handle' => $entryTypeHandle])
+            ->all();
 
-        $entryTypeRecords = EntryTypeRecord::findAll([
-            'handle' => $entryTypeHandle
-        ]);
-
-        foreach ($entryTypeRecords as $record) {
-            $entryTypes[] = new EntryType($record->toArray([
-                'id',
-                'sectionId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'hasTitleField',
-                'titleLabel',
-                'titleFormat',
-            ]));
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
         }
 
-        return $entryTypes;
+        return $results;
     }
 
     /**
@@ -805,23 +786,24 @@ class Sections extends Component
      *
      * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
-        if ($runValidation && !$entryType->validate()) {
-            Craft::info('Entry type not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewEntryType = !$entryType->id;
 
         // Fire a 'beforeSaveEntryType' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-            'isNew' => $isNewEntryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+                'isNew' => $isNewEntryType,
+            ]));
+        }
+
+        if ($runValidation && !$entryType->validate()) {
+            Craft::info('Entry type not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if ($entryType->id) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
@@ -869,25 +851,26 @@ class Sections extends Component
             $this->_entryTypesById[$entryType->id] = $entryType;
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterSaveEntryType' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-            'isNew' => $isNewEntryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+                'isNew' => $isNewEntryType,
+            ]));
+        }
 
         if (!$isNewEntryType) {
             // Re-save the entries of this type
             $section = $entryType->getSection();
             $siteIds = array_keys($section->getSiteSettings());
 
-            Craft::$app->getTasks()->queueTask([
-                'type' => ResaveElements::class,
+            Craft::$app->getQueue()->push(new ResaveElements([
                 'description' => Craft::t('app', 'Resaving {type} entries', ['type' => $entryType->name]),
                 'elementType' => Entry::class,
                 'criteria' => [
@@ -897,7 +880,7 @@ class Sections extends Component
                     'status' => null,
                     'enabledForSite' => false,
                 ]
-            ]);
+            ]));
         }
 
         return true;
@@ -909,7 +892,7 @@ class Sections extends Component
      * @param array $entryTypeIds
      *
      * @return bool Whether the entry types were reordered successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function reorderEntryTypes(array $entryTypeIds): bool
     {
@@ -923,7 +906,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -938,7 +921,7 @@ class Sections extends Component
      * @param int $entryTypeId
      *
      * @return bool Whether the entry type was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteEntryTypeById(int $entryTypeId): bool
     {
@@ -957,14 +940,16 @@ class Sections extends Component
      * @param EntryType $entryType
      *
      * @return bool Whether the entry type was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
         // Fire a 'beforeSaveEntryType' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -996,16 +981,18 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterDeleteEntryType' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+            ]));
+        }
 
         return true;
     }
@@ -1058,7 +1045,7 @@ class Sections extends Component
                     'typeId',
                     'siteId' => (new Query())
                         ->select('i18n.siteId')
-                        ->from('{{%elements_i18n}} i18n')
+                        ->from('{{%elements_sites}} i18n')
                         ->where('[[i18n.elementId]] = [[e.id]]')
                         ->limit(1)
                 ])
@@ -1174,5 +1161,24 @@ class Sections extends Component
                 Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
             }
         }
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createEntryTypeQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ])
+            ->from(['{{%entrytypes}}']);
     }
 }

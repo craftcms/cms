@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidRouteException;
@@ -50,7 +51,7 @@ class Application extends \yii\web\Application
     /**
      * @event \yii\base\Event The event that is triggered after the application has been initialized
      */
-    const EVENT_AFTER_INIT = 'afterInit';
+    const EVENT_INIT = 'init';
 
     /**
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
@@ -97,9 +98,6 @@ class Application extends \yii\web\Application
      */
     public function handleRequest($request): Response
     {
-        // If this is a resource request, we should respond with the resource ASAP
-        $this->_processResourceRequest();
-
         $headers = $this->getResponse()->getHeaders();
 
         if ($request->getIsCpRequest()) {
@@ -120,12 +118,6 @@ class Application extends \yii\web\Application
             header_remove('X-Powered-By');
         }
 
-        // If the system in is maintenance mode and it's a site request, throw a 503.
-        if ($this->getIsInMaintenanceMode() && $request->getIsSiteRequest()) {
-            $this->_unregisterDebugModule();
-            throw new ServiceUnavailableHttpException();
-        }
-
         // Process install requests
         if (($response = $this->_processInstallRequest($request)) !== null) {
             return $response;
@@ -139,7 +131,7 @@ class Application extends \yii\web\Application
         }
 
         // Makes sure that the uploaded files are compatible with the current database schema
-        if (!$this->getUpdates()->getIsSchemaVersionCompatible()) {
+        if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
@@ -156,7 +148,7 @@ class Application extends \yii\web\Application
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
-        if ($this->getIsUpdating()) {
+        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
@@ -196,7 +188,7 @@ class Application extends \yii\web\Application
                 /** @var Plugin|null $plugin */
                 $plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
-                if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->handle)) {
+                if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->id)) {
                     throw new ForbiddenHttpException();
                 }
             }
@@ -261,24 +253,29 @@ class Application extends \yii\web\Application
 
     /**
      * @inheritdoc
-     *
-     * @todo Remove this whenever Yii is updated with support for asset-packagist.org.
      */
     public function setVendorPath($path)
     {
         parent::setVendorPath($path);
 
         // Override the @bower and @npm aliases if using asset-packagist.org
+        // todo: remove this whenever Yii is updated with support for asset-packagist.org
         $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
         $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
-
         if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);
         }
-
         if (is_dir($altNpmPath)) {
             Craft::setAlias('@npm', $altNpmPath);
         }
+
+        // Override where Yii should find its asset deps
+        $libPath = Craft::getAlias('@lib');
+        Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
+        Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
+        Craft::setAlias('@bower/jquery.inputmask/dist', $libPath.'/jquery.inputmask');
+        Craft::setAlias('@bower/punycode', $libPath.'/punycode');
+        Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
     }
 
     // Private Methods
@@ -294,25 +291,6 @@ class Application extends \yii\web\Application
         if ($debug !== null) {
             $this->getView()->off(View::EVENT_END_BODY,
                 [$debug, 'renderToolbar']);
-        }
-    }
-
-    /**
-     * Processes resource requests.
-     *
-     * @throws HttpException
-     * @return void
-     */
-    private function _processResourceRequest()
-    {
-        $request = $this->getRequest();
-
-        if ($request->getIsResourceRequest()) {
-            // Get the path segments, except for the first one which we already know is "resources"
-            $segs = array_slice(array_merge($request->getSegments()), 1);
-            $uri = implode('/', $segs);
-
-            $this->getResources()->sendResource($uri);
         }
     }
 
@@ -401,6 +379,7 @@ class Application extends \yii\web\Application
         $segments = $request->getActionSegments();
 
         return (
+            $segments === ['app', 'migrate'] ||
             $segments === ['users', 'login'] ||
             $segments === ['users', 'logout'] ||
             $segments === ['users', 'set-password'] ||
@@ -409,7 +388,7 @@ class Application extends \yii\web\Application
             $segments === ['users', 'send-password-reset-email'] ||
             $segments === ['users', 'save-user'] ||
             $segments === ['users', 'get-remaining-session-time'] ||
-            $segments[0] === 'update'
+            $segments[0] === 'updater'
         );
     }
 
@@ -424,19 +403,17 @@ class Application extends \yii\web\Application
      */
     private function _processRequirementsCheck(Request $request)
     {
-        // See if we're in the middle of an update.
-        $update = false;
-
-        if ($request->getSegment(1) === 'updates' && $request->getSegment(2) === 'go') {
-            $update = true;
-        }
-
-        if (($data = $request->getBodyParam('data', null)) !== null && isset($data['handle'])) {
-            $update = true;
-        }
-
         // Only run for CP requests and if we're not in the middle of an update.
-        if ($request->getIsCpRequest() && !$update) {
+        if (
+            $request->getIsCpRequest() &&
+            !(
+                $request->getIsActionRequest() &&
+                (
+                    ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                    $request->getActionSegments() === ['app', 'migrate']
+                )
+            )
+        ) {
             $cachedBasePath = $this->getCache()->get('basePath');
 
             if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {
@@ -462,43 +439,34 @@ class Application extends \yii\web\Application
         // Let all non-action CP requests through.
         if (
             $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == [
-                    'users',
-                    'login'
-                ])
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
-            // If this is a request to actually manually update Craft, do it
-            if ($request->getSegment(1) === 'manualupdate') {
-                return $this->runAction('update/go', [
-                    'handle' => Craft::$app->getRequest()->getSegment(2)
-                ]);
-            }
-
-            if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
+            // Did we skip a breakpoint?
+            if ($this->getUpdates()->getWasCraftBreakpointSkipped()) {
                 $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
                     'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
-                    'targetVersion' => Craft::$app->version,
+                    'targetVersion' => Craft::$app->getVersion(),
                 ]));
-            } else {
-                if (!$request->getIsAjax()) {
-                    if ($request->getPathInfo() !== '') {
-                        $this->getUser()->setReturnUrl($request->getPathInfo());
-                    }
-                }
-
-                // Clear the template caches in case they've been compiled since this release was cut.
-                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
-
-                // Show the manual update notification template
-                return $this->runAction('templates/manual-update-notification');
             }
-        } // We'll also let action requests to UpdateController through as well.
-        else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] === 'update') {
-            $controller = $actionSegs[0];
-            $action = $actionSegs[1] ?? 'index';
 
-            return $this->runAction($controller.'/'.$action);
+            // Clear the template caches in case they've been compiled since this release was cut.
+            FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
+
+            // Show the manual update notification template
+            return $this->runAction('templates/manual-update-notification');
+        }
+
+        // We'll also let update actions go through
+        if (
+            $request->getIsActionRequest() &&
+            (
+                ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                $request->getActionSegments() === ['app', 'migrate']
+            )
+        ) {
+            $action = implode('/', $request->getActionSegments());
+            return $this->runAction($action);
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

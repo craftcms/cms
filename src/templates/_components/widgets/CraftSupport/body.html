@@ -1,66 +1,96 @@
-{% import "_includes/forms" as forms %}
+{% macro screen(widget, showBackupOption, screen, placeholder, resultsIcon, resultsHeading, formAction, submitText) %}
+    {% import "_includes/forms" as forms %}
+    {% set idPrefix = 'cs-'~screen~random() %}
 
-<form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
-    {% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
-
-    {% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@craftcms.com" %}
-        {% set fromEmail = "" %}
-    {% endif %}
-
-    {{ forms.textField({
-        label: "Your Email"|t('app'),
-        class: 'fromEmail',
-        name: 'fromEmail',
-        value: fromEmail,
-        errors: getHelp is defined ? getHelp.getErrors('fromEmail') : ''
-    }) }}
-
-    {{ forms.textareaField({
-        label: "Message"|t('app'),
-        class: 'message',
-        name: 'message',
-        placeholder: "Tell us about your problems."|t('app'),
-        rows: 4
-    }) }}
-
-    <a class="fieldtoggle" data-target="gethelp-more">{{ "More"|t('app') }}</a>
-
-    <div id="gethelp-more" class="hidden">
-        {{ forms.checkboxField({
-            label: "Attach error logs?"|t('app'),
-            class: 'attachLogs',
-            name: 'attachLogs',
-            checked: true
+    <div class="cs-screen cs-screen-2 cs-screen-{{ screen }}" action="{{ formAction }}" method="get" target="_blank">
+        {{ forms.textareaField({
+            first: true,
+            class: 'cs-body-text',
+            placeholder: placeholder|t('app'),
+            rows: 5
         }) }}
+        <div class="cs-search-results-container hidden">
+            <div class="cs-search-icon">{{ resultsIcon|raw }}</div>
+            <h2>{{ resultsHeading }}</h2>
+            <ul class="cs-search-results"></ul>
+        </div>
+        <div class="cs-forms">
+            <form class="cs-search-form" action="{{ formAction }}" method="get" target="_blank">
+                <div class="cs-search-params"></div>
+                <input type="submit" class="btn submit fullwidth disabled" value="{{ submitText }}">
+                <p>{{ "or <a>send to Craft Support</a>"|t('app')|raw }}</p>
+            </form>
+            <form class="cs-support-form hidden" action="{{ actionUrl('dashboard/send-support-request') }}" method="post" target="{{ idPrefix }}-iframe" accept-charset="UTF-8" enctype="multipart/form-data">
+                {{ csrfInput() }}
+                <input type="hidden" name="widgetId" value="{{ widget.id }}">
+                <input class="cs-support-message" type="hidden" name="message" value="">
 
-        {% if showBackupOption %}
-            {{ forms.checkboxField({
-                label: "Attach a database backup?"|t('app'),
-                class: 'attachDbBackup',
-                name: 'attachDbBackup',
-                checked: true,
-            }) }}
-        {% endif %}
+                {% set email = currentUser.email %}
+                {% if email in ['support@pixelandtonic.com', 'support@craftcms.com'] %}
+                    {% set email = '' %}
+                {% endif %}
 
-        {{ forms.checkboxField({
-            name: 'attachTemplates',
-            checked: true,
-            class: 'attachTemplates',
-            label: "Include your template files?"|t('app'),
-        }) }}
+                {{ forms.textField({
+                    first: true,
+                    label: "Your Email"|t('app'),
+                    name: 'fromEmail',
+                    value: email
+                }) }}
 
-        {{ forms.fileField({
-            label: "Attach an additional file?"|t('app'),
-            class: 'attachAdditionalFile',
-            name: 'attachAdditionalFile',
-        }) }}
+                <a class="fieldtoggle" data-target="{{ idPrefix }}-support-more">{{ "More"|t('app') }}</a>
+
+                <div id="{{ idPrefix }}-support-more" class="cs-support-more hidden">
+                    {{ forms.checkboxField({
+                        label: "Attach error logs?"|t('app'),
+                        name: 'attachLogs',
+                        checked: true
+                    }) }}
+
+                    {% if showBackupOption %}
+                        {{ forms.checkboxField({
+                            label: "Attach a database backup?"|t('app'),
+                            name: 'attachDbBackup',
+                            checked: true
+                        }) }}
+                    {% endif %}
+
+                    {{ forms.checkboxField({
+                        name: 'attachTemplates',
+                        checked: true,
+                        label: "Include your template files?"|t('app'),
+                    }) }}
+
+                    {{ forms.fileField({
+                        label: "Attach an additional file?"|t('app'),
+                        class: 'cs-support-attachment',
+                        name: 'attachAdditionalFile',
+                    }) }}
+                </div>
+
+                <input type="submit" class="btn submit fullwidth disabled" value="{{ 'Send'|t('app') }}">
+                <div class="spinner hidden"></div>
+            </form>
+        </div>
+        <iframe id="{{ idPrefix }}-iframe" name="{{ idPrefix }}-iframe" class="hidden"></iframe>
     </div>
+{% endmacro %}
 
-    <div class="buttons last">
-        <input type="submit" class="btn submit" value="{{ 'Send'|t('app') }}">
-        <div class="spinner hidden"></div>
+{% from _self import screen %}
+
+
+<div class="cs-screen cs-screen-home">
+    <div class="cs-opt" data-screen="help">
+        <div class="cs-opt-icon">{{ buoeyIcon|raw }}</div>
+        <h2>{{ "Get help"|t('app') }}</h2>
+        <p>{{ "How-to’s and other questions"|t('app') }}</p>
     </div>
+    <div class="cs-opt" data-screen="feedback">
+        <div class="cs-opt-icon">{{ bullhornIcon|raw }}</div>
+        <h2>{{ "Give feedback"|t('app') }}</h2>
+        <p>{{ "Bug reports and feature requests"|t('app') }}</p>
+    </div>
+</div>
 
-    {% set email %}<a href="mailto:support@craftcms.com">support@craftcms.com</a>{% endset %}
-    <p class="error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t('app', { email: email })|raw }}</p>
-</form>
+{{ screen(widget, showBackupOption, 'help', "Briefly describe your question."|t('app'), seIcon, "Similar questions on Stack Exchange"|t('app'), 'https://craftcms.stackexchange.com/questions/ask', "Ask on Stack Exchange"|t('app')) }}
+
+{{ screen(widget, showBackupOption, 'feedback', "Briefly describe your issue or idea."|t('app'), ghIcon, "Similar issues on GitHub"|t('app'), 'https://github.com/craftcms/cms/issues/new', "Post on GitHub"|t('app')) }}
