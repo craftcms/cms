@@ -151,7 +151,7 @@ class TagsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$search = craft()->request->getPost('search');
+		$search = trim(craft()->request->getPost('search'));
 		$tagGroupId = craft()->request->getPost('tagGroupId');
 		$excludeIds = craft()->request->getPost('excludeIds', array());
 
