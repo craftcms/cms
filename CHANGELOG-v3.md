@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
 - Fixed a bug where Craft was not performing normal user validation when an invalid profile photo was uploaded from a front-end form.
+- Made focal point more visible by darkening the inner shade. ([#1452](https://github.com/craftcms/cms/issues/1452))
 
 ## 3.0.0-beta.29 - 2017-09-29
 
