@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/src/mixins";
+@import "../../../../../lib/craftcms-sass/mixins";
 
 #sites { @include padding(0, 0, 0, 24px); }
 #sites li { position: relative; @include padding(7px, 45px, 7px, 0); }

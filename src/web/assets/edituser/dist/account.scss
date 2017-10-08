@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/src/mixins";
+@import "../../../../../lib/craftcms-sass/mixins";
 
 #action-menubtn { margin: -6px 0; }
 #action-spinner { position: absolute; top: 10px; @include right(0); }

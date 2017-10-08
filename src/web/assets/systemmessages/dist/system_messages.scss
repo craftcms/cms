@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/src/mixins";
+@import "../../../../../lib/craftcms-sass/mixins";
 
 .message { position: relative; cursor: pointer; }
 .message:hover { @include padding-right(26px); }
