@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
 - Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
+- Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
 
 ### Fixed
 - Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
