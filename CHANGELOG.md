@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Changed
 - Reduced the chance of a deadlock occurring on sites that have a high concurrent volume of element writes.
 
+### Fixed
+- Fixed a bug where any plugin that listened to the `onEndRequest` event would be ignored.
+
 ## 2.6.2991 - 2017-09-29
 
 ### Fixed
