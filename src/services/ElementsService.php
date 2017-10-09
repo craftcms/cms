@@ -28,6 +28,11 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private $_searchResults;
 
+	/**
+	 * @var array
+	 */
+	private $_elementCleanup;
+
 	// Public Methods
 	// =========================================================================
 
@@ -1668,24 +1673,14 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($success && !$isNewElement)
 		{
-			// Delete the rows that don't need to be there anymore
+			// Do any element cleanup work onEndRequest outside of transactions to help with deadlocks.
+			craft()->attachEventHandler('onEndRequest', array($this, 'handleRequestEnd'));
 
-			craft()->db->createCommand()->delete('elements_i18n', array('and',
-				'elementId = :elementId',
-				array('not in', 'locale', $localeIds)
-			), array(
-				':elementId' => $element->id
-			));
-
-			if ($elementType->hasContent())
-			{
-				craft()->db->createCommand()->delete($element->getContentTable(), array('and',
-					'elementId = :elementId',
-					array('not in', 'locale', $localeIds)
-				), array(
-					':elementId' => $element->id
-				));
-			}
+			// Save for onEndRequest
+			$this->_elementCleanup['localeIds'] = $localeIds;
+			$this->_elementCleanup['elementId'] = $element->id;
+			$this->_elementCleanup['hasContent'] = $elementType->hasContent();
+			$this->_elementCleanup['contentTable'] = $element->getContentTable();
 		}
 
 		return $success;
@@ -2295,6 +2290,30 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		$this->_placeholderElements[$element->id][$element->locale] = $element;
+	}
+
+	/**
+	 * Perform element clean-up work.
+	 */
+	public function handleRequestEnd()
+	{
+		// Delete the rows that don't need to be there anymore
+		craft()->db->createCommand()->delete('elements_i18n', array('and',
+			'elementId = :elementId',
+			array('not in', 'locale', $this->_elementCleanup['localeIds'])
+		), array(
+			':elementId' => $this->_elementCleanup['elementId']
+		));
+
+		if ($this->_elementCleanup['hasContent'])
+		{
+			craft()->db->createCommand()->delete($this->_elementCleanup['contentTable'], array('and',
+				'elementId = :elementId',
+				array('not in', 'locale', $this->_elementCleanup['localeIds'])
+			), array(
+				':elementId' => $this->_elementCleanup['elementId']
+			));
+		}
 	}
 
 	// Events
