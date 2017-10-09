@@ -9,6 +9,7 @@ namespace craft\db\pgsql;
 
 use Craft;
 use craft\db\TableSchema;
+use craft\helpers\FileHelper;
 use yii\db\Exception;
 
 /**
@@ -145,7 +146,8 @@ class Schema extends \yii\db\pgsql\Schema
             $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
         }
 
-        return 'pg_dump'.
+        return 'PGPASSFILE="'.$this->_createDumpConfigFile().'"'.
+            ' pg_dump'.
             ' --dbname={database}'.
             ' --host={server}'.
             ' --port={port}'.
@@ -345,5 +347,35 @@ ORDER BY i.relname, k';
             ':schemaName' => $table->schemaName,
             ':tableName' => $table->name,
         ])->queryAll();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Creates a temporary PGPASSFILE file based on the DB config settings.
+     *
+     * @return string The path to the pgpass.cfg file
+     */
+    private function _createDumpConfigFile(): string
+    {
+        // We can't use Craft's getTempPath() because on dev environments, the shared
+        // file system may not support chmod 0600 that PGPASSFILE requires (NFS
+        // shares, for instance, depend on the client file modes
+        //$filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'pgpass.cfg';
+        $filePath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'pgpass.cfg';
+
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $contents = $dbConfig->server.':'.
+            $dbConfig->port.':'.
+            $dbConfig->database.':'.
+            $dbConfig->user.':'.
+            $dbConfig->password;
+
+        FileHelper::writeToFile($filePath, $contents);
+        chmod($filePath, 0600);
+        clearstatcache();
+
+        return $filePath;
     }
 }
