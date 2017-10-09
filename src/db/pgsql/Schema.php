@@ -147,10 +147,10 @@ class Schema extends \yii\db\pgsql\Schema
         }
 
         $dbConfig = Craft::$app->getConfig()->getDb();
-        $envCommand = 'PGPASSWORD='.$dbConfig->password;
+        $envCommand = 'PGPASSWORD=\''.$dbConfig->password.'\'';
 
         if (Platform::isWindows()) {
-            $envCommand = 'SET '.$envCommand.'&&';
+            $envCommand = 'set '.$envCommand.'&&';
         } else {
             $envCommand .=' ';
         }
