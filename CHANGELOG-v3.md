@@ -189,7 +189,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
 - Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
 - Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
-- `craft\base\Volume` is now only focussed on things that every volume would need, regardless of whether it will use Flysystem under the hood.
+- `craft\base\Volume` is now only focused on things that every volume would need, regardless of whether it will use Flysystem under the hood.
 - `craft\base\VolumeInterface::createFileByStream()`, `updateFileByStream()`, `deleteFile()`, `renameFile()`, `copyFile()`, `createDir()`, `deleteDir()`, and `renameDir()` no longer require their implementation methods to return a boolean value.
 - `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
 
