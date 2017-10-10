@@ -859,7 +859,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Are we validating custom fields?
-        if ($fieldLayout = $this->getFieldLayout()) {
+        if (static::hasContent() && Craft::$app->getIsInstalled() && $fieldLayout = $this->getFieldLayout()) {
             $fieldsWithColumns = [];
 
             foreach ($fieldLayout->getFields() as $field) {
