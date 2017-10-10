@@ -482,6 +482,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       z-index: 2;
       padding: 20px 24px 13px;
       box-sizing: border-box;
+      width: calc(100vw - #{$sidebarWidth});
       background: $bgColor;
       box-shadow: 0 1px 0 $hairlineColorAlpha;
 
@@ -493,12 +494,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       body.fixed-header.ltr & {
         left: $sidebarWidth;
-        right: 0;
       }
 
       body.fixed-header.rtl & {
         right: $sidebarWidth;
-        left: 0;
       }
 
       body.fixed-header.focused & {
@@ -665,6 +664,14 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     body.rtl & {
       transition: right 250ms ease-in-out;
     }
+
+    body.ltr.showing-nav & {
+      left: 0;
+    }
+
+    body.rtl.showing-nav & {
+      right: 0;
+    }
   }
 
   #main-container {
@@ -674,9 +681,22 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       #header {
         width: 100vw;
 
-        body.fixed-header & {
+        body.ltr.fixed-header & {
           left: 0;
           transition: left 250ms ease-in-out;
+        }
+
+        body.rtl.fixed-header & {
+          right: 0;
+          transition: right 250ms ease-in-out;
+        }
+
+        body.ltr.showing-nav.fixed-header & {
+          left: $sidebarWidth;
+        }
+
+        body.rtl.showing-nav.fixed-header & {
+          right: $sidebarWidth;
         }
       }
 
@@ -688,22 +708,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
   #nav-toggle {
     display: block !important;
-  }
-
-  body.showing-nav {
-    #global-container {
-      left: 0 !important;
-    }
-
-    &.fixed-header {
-      #main-container {
-        #main {
-          #header {
-            left: $sidebarWidth;
-          }
-        }
-      }
-    }
   }
 }
 
@@ -972,12 +976,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     content: 'menu';
     font-size: 16px;
     line-height: 0;
-  }
-}
-
-@media only screen and (max-width: 992px) {
-  #header.fixed {
-    left: 0;
   }
 }
 
