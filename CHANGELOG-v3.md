@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
+- `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
 
 ### Changed
 - The Control Panel has been redesigned for better usability, readability and responsiveness.

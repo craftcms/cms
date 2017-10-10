@@ -1439,15 +1439,8 @@ $.extend($.fn,
                     }
                 }
 
-                var $form;
-
-                // Is this a menu item?
-                if ($btn.data('menu')) {
-                    $form = $btn.data('menu').$anchor.closest('form');
-                }
-                else {
-                    $form = $btn.closest('form');
-                }
+                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.attr('data-action')) {
                     $('<input type="hidden" name="action"/>')
