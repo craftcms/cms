@@ -3189,7 +3189,7 @@ ul.tree,
 .selectize-text > .selectize-control > .selectize-input {
   &.focus,
   &:focus {
-    @include text-input-focussed-styles;
+    @include text-input-focused-styles;
   }
 }
 
@@ -3680,7 +3680,7 @@ input:-ms-input-placeholder {
     @include select-input-fullwidth-styles;
   }
   .select:not(.selectize) select:focus {
-    @include select-input-focussed-styles;
+    @include select-input-focused-styles;
   }
 
   .select:not(.selectize).small:after {
@@ -3753,7 +3753,7 @@ body .selectize-dropdown {
 
 /* shared styles */
 .selectize .selectize-control .selectize-input.focus {
-  @include text-input-focussed-styles;
+  @include text-input-focused-styles;
 }
 
 /* menu styles */

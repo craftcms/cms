@@ -324,7 +324,7 @@ $elementBorderRadius: 2px;
   transition: border linear 50ms;
 }
 
-@mixin text-input-focussed-styles {
+@mixin text-input-focused-styles {
   border-color: $darkHairlineColorAlpha;
   outline: none;
 }
@@ -378,7 +378,7 @@ $elementBorderRadius: 2px;
   min-width: 100%;
 }
 
-@mixin select-input-focussed-styles {
+@mixin select-input-focused-styles {
   outline: none;
   box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
 }
