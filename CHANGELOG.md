@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - Reduced the chance of a deadlock occurring on sites that have a high concurrent volume of element writes.
+- Updated Redactor II to 2.11.
 
 ### Fixed
 - Fixed a bug where any plugin that listened to the `onEndRequest` event would be ignored.
