@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Field;
 use craft\elements\GlobalSet;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -180,10 +181,37 @@ class GlobalsController extends Controller
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
 
+        // Define the content tabs
+        // ---------------------------------------------------------------------
+
+        $tabs = [];
+
+        foreach ($globalSet->getFieldLayout()->getTabs() as $index => $tab) {
+            // Do any of the fields on this tab have errors?
+            $hasErrors = false;
+
+            if ($globalSet->hasErrors()) {
+                foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($globalSet->hasErrors($field->handle)) {
+                        $hasErrors = true;
+                        break;
+                    }
+                }
+            }
+
+            $tabs[] = [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#tab'.($index + 1),
+                'class' => $hasErrors ? 'error' : null
+            ];
+        }
+
         // Render the template!
         return $this->renderTemplate('globals/_edit', compact(
             'editableGlobalSets',
-            'globalSet'
+            'globalSet',
+            'tabs'
         ));
     }
 

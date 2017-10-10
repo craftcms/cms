@@ -1,5 +1,6 @@
 {% extends "_layouts/cp" %}
-{% set title = "Globals"|t('app') %}
+{% set title = globalSet.name|t('site') %}
+{% set fullPageForm = true %}
 
 
 {% block contextMenu %}
@@ -34,25 +35,23 @@
 
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
-        <input type="hidden" name="action" value="globals/save-content">
-        <input type="hidden" name="setId" value="{{ globalSet.id }}">
-        <input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
-        {{ csrfInput() }}
+    <input type="hidden" name="action" value="globals/save-content">
+    <input type="hidden" name="setId" value="{{ globalSet.id }}">
+    <input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
+    {{ csrfInput() }}
 
-        {% if globalSet.getFieldLayout().getFields() | length %}
-            <div>
-                {% include "_includes/fields" with {
-                    fields: globalSet.getFieldLayout().getFields(),
-                    element: globalSet
-                } only %}
-            </div>
-
-            <div class="buttons">
-                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-            </div>
-        {% else %}
-            {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
-        {% endif %}
-    </form>
+    {% if globalSet.getFieldLayout().getFields() | length %}
+        <div>
+            {% for tab in globalSet.getFieldLayout().getTabs() %}
+                <div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
+                    {% include "_includes/fields" with {
+                        fields:  tab.getFields(),
+                        element: globalSet
+                    } only %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
+    {% endif %}
 {% endblock %}
