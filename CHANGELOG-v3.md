@@ -4,13 +4,17 @@ Craft CMS 3.0 Working Changelog
 ## 3.0.0-beta.30 (WIP)
 
 ### Added
-- Added `craft\base\Elements::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
+- Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
 - Added `craft\services\AssetTransforms::getTransformUri()`.
 
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
 - Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
 - Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
+
+### Removed
+- Removed `craft\base\Element::validateCustomFields`.
+- Removed `craft\base\Element::validateCustomFields()`.
 
 ### Fixed
 - Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
