@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\elements\GlobalSet;
 use craft\web\Controller;
@@ -242,6 +243,7 @@ class GlobalsController extends Controller
         }
 
         $globalSet->setFieldValuesFromRequest('fields');
+        $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));

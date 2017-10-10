@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -494,6 +495,10 @@ class EntriesController extends BaseEntriesController
         }
 
         // Save the entry (finally!)
+        if ($entry->enabled && $entry->enabledForSite) {
+            $entry->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (!Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([

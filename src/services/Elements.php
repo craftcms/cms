@@ -518,21 +518,6 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
-            // Specifically look for a MySQL "data truncation" exception. The use-case
-            // is for a disabled element where validation doesn't run and a text field
-            // is limited in length, but more data is entered than is allowed.
-            if (
-                $e instanceof DbException &&
-                isset($e->errorInfo[0]) &&
-                (int)$e->errorInfo[0] === 22001 &&
-                isset($e->errorInfo[1]) &&
-                (int)$e->errorInfo[1] === 1406
-            ) {
-                Craft::$app->getErrorHandler()->logException($e);
-                return false;
-            }
-
             throw $e;
         }
 

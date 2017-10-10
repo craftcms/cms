@@ -30,6 +30,7 @@ Craft CMS 3.0 Working Changelog
 ## 3.0.0-beta.30 (WIP)
 
 ### Added
+- Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
 - Added `craft\services\AssetTransforms::getTransformUri()`.
 
 ### Changed
@@ -37,11 +38,16 @@ Craft CMS 3.0 Working Changelog
 - Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
 - Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
 
+### Removed
+- Removed `craft\base\Element::validateCustomFields`.
+- Removed `craft\base\Element::validateCustomFields()`.
+
 ### Fixed
 - Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
 - Fixed a bug where Craft was not performing normal user validation when an invalid profile photo was uploaded from a front-end form.
 - Fixed a bug where image transform URLs were getting a backslash on Windows servers. ([#2026](https://github.com/craftcms/cms/issues/2026))
 - Fixed a 404 error that occurred when loading the jQuery.payment library in the Control Panel.
+- Fixed a bug where Craft’s bootstrap file was not taking into account the `CRAFT_LICENSE_KEY_PATH` PHP constant when doing folder sanity checks.
 
 ## 3.0.0-beta.29 - 2017-09-29
 
@@ -210,7 +216,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
 - Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
 - Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
-- `craft\base\Volume` is now only focussed on things that every volume would need, regardless of whether it will use Flysystem under the hood.
+- `craft\base\Volume` is now only focused on things that every volume would need, regardless of whether it will use Flysystem under the hood.
 - `craft\base\VolumeInterface::createFileByStream()`, `updateFileByStream()`, `deleteFile()`, `renameFile()`, `copyFile()`, `createDir()`, `deleteDir()`, and `renameDir()` no longer require their implementation methods to return a boolean value.
 - `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
 

@@ -106,22 +106,32 @@ $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-// Validate permissions on config/ and storage/
-$ensureFolderIsReadable($configPath);
+// Validate permissions on the license key file path (default config/) and storage/
+if (defined('CRAFT_LICENSE_KEY_PATH')) {
+    $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
+    $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
+} else {
+    $licensePath = $configPath;
+    $licenseKeyName = 'license.key';
+}
+
+// Make sure the license folder exists.
+if (!is_dir($licensePath) && !file_exists($licensePath)) {
+    $createFolder($licensePath);
+}
+
+$ensureFolderIsReadable($licensePath);
 
 if ($appType === 'web') {
-    $licensePath = $configPath.'/license.key';
+    $licenseFullPath = $licensePath.'/'.$licenseKeyName;
 
-    // If license.key doesn't exist yet, make sure the config folder is readable and we can write a temp one.
-    if (!file_exists($licensePath)) {
-        // Make sure config is at least readable.
-        $ensureFolderIsReadable($configPath);
-
-        // Try and write out a temp license.key file.
-        @file_put_contents($licensePath, 'temp');
+    // If the license key doesn't exist yet, make sure the folder is readable and we can write a temp one.
+    if (!file_exists($licenseFullPath)) {
+        // Try and write out a temp license key file.
+        @file_put_contents($licenseFullPath, 'temp');
 
         // See if it worked.
-        if (!file_exists($licensePath) || (file_exists($licensePath) && file_get_contents($licensePath) !== 'temp')) {
+        if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
             exit($licensePath.' isn\'t writable by PHP. Please fix that.');
         }
     }
