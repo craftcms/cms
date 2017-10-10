@@ -2498,7 +2498,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where the Asset Index page would be unable to perform some file actions after moving a file to a different source or subfolder, until a new source/subfolder had been manually selected.
 - Fixed a bug where drag-n-drop uploading to Assets fields was not working on sites with CSRF protection enabled.
-- Fixed a bug where the First Name field in the Edit User page was getting autofocussed instead of Username.
+- Fixed a bug where the First Name field in the Edit User page was getting auto-focused instead of Username.
 - Fixed a bug where the “Login as user” button would redirect you to the Control Panel even if the user didn’t have permission to access the Control Panel.
 - Fixed a SQL error caused by the Recent Entries widget when using MariaDB.
 - Fixed the positioning of spinners that are floated alongside buttons in the Control Panel for RTL languages.
@@ -2769,7 +2769,7 @@ Craft CMS Changelog
 - Improved the performance of the Update Asset Indexes tool.
 - Improved the performance of the CP’s layout manager.
 - When editing a user, the Command/Ctrl+S shortcut will now keep you on the current user’s edit page after saving them.
-- When editing a user account, the First Name field is now auto-focussed.
+- When editing a user account, the First Name field is now auto-focused.
 - Adjacent checkbox fields that have instructional text now get a little spacing between them.
 - The System Status and Site URL fields in General Settings now show warnings if their values are being overridden in `craft/config/general.php`.
 - Asset transforms will now be generated in a web-safe image format if the source image is not.
@@ -2834,7 +2834,7 @@ Craft CMS Changelog
 - Fixed a bug where front-end Login page requests were redirecting users with CP access to the CP Dashboard if they were already logged in, rather than the site’s homepage.
 - Fixed a bug where users that logged in with “Remember Me” checked would get a basically-pointless “rememberMe” cookie that would want to stick around for the next several decades if we had let it.
 - Fixed a bug where user identity cookies were not retaining their HTTP-only status.
-- Fixed a bug where the “Username or Email” input would be auto-focussed after clicking “Forget your password?” on the CP’s Login page when using a mobile device.
+- Fixed a bug where the “Username or Email” input would be auto-focused after clicking “Forget your password?” on the CP’s Login page when using a mobile device.
 - Fixed a bug where browsers would still get user session cookies after they had been logged out due to [requireMatchingUserAgentForSession](http://buildwithcraft.com/docs/config-settings#requireMatchingUserAgentForSession) config setting enforcement.
 - Fixed a bug where existing users who changed their email address would get the wrong verification email message.
 - Fixed a bug where past versions of Singles weren’t showing their version notes.
@@ -3943,7 +3943,7 @@ Craft CMS Changelog
 - Fixed a bug where Lightswitch inputs were inconsistently posting values of `y` and `on`.
 - Fixed a bug where Rich Text fields weren’t stripping out inline styles from `<a>` tags.
 - Fixed a bug where Craft wasn’t HTML-encoding titles on the entry index page.
-- Fixed a FOUC bug with Firefox on pages with an autofocussed input.
+- Fixed a FOUC bug with Firefox on pages with an auto-focused input.
 
 ## 1.3.2422 - 2013-11-15
 
@@ -4863,7 +4863,7 @@ Craft CMS Changelog
 - Updated Redactor to 9.0, dramatically improving the HTML output of Rich Text fields.
 - Most forms in the CP now support typing Command/Ctrl+S to submit them.
 - CP modals are now dismissable by pressing the ESC key.
-- When clicking the `lock` button to change a user’s email or password, the current password field is now auto-focussed.
+- When clicking the `lock` button to change a user’s email or password, the current password field is now auto-focused.
 - Added a confirmation dialog when uninstalling a plugin.
 - Beefed up the templating options for [Checkboxes](http://docs.buildwithcraft.com/diving-in/fields/types/checkboxes.html), [Dropdown](http://docs.buildwithcraft.com/diving-in/fields/types/dropdown.html), [Multi-select](http://docs.buildwithcraft.com/diving-in/fields/types/multiselect.html), and [Radio Buttons](http://docs.buildwithcraft.com/diving-in/fields/types/radio-buttons.html) fields, adding the ability to loop through all options, output option labels, and determine whether specific options are selected.
 - When submitting entry/user/asset content on the front-end, any fields that are omitted from the POST data entirely will retain their previous values.
