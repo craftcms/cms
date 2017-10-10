@@ -33,8 +33,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
 #global-sidebar {
   flex: 0 0 $sidebarWidth;
-  @include light-on-dark-text;
-  background: $sidebarBgColor;
   z-index: 100;
   position: relative;
 
@@ -51,6 +49,8 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     height: 100vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    @include light-on-dark-text;
+    background: $sidebarBgColor;
   }
 
   #devmode {
