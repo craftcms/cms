@@ -32,7 +32,7 @@
 	"Process My Order",
 ]) %}
 
-{% set extraPageHeaderHtml %}
+{% block actionButton %}
 	{% if enableCraftId %}
 		<a id="cart-button">Cart (0)</a>
 		{#
@@ -40,7 +40,7 @@
 		<a id="reset-cart-button">Reset cart</a>
 		#}
 	{% endif %}
-{% endset %}
+{% endblock %}
 
 {% set content %}
 

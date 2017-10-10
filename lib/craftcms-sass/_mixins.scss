@@ -1,27 +1,24 @@
 $hue: 212;
 
-$headerBgColor: hsl($hue, 20%, 25%);
 $subnavBgColor: hsl($hue, 20%, 30%);
-$bgcolor: hsl($hue, 10%, 93%);
+$bgColor: hsl($hue, 10%, 93%);
 $lightBgColor: #fafafa;
 
-$headerLinkHoverColor: rgba(0, 0, 0, 0.1);
-$headerLinkActiveColor: rgba(0, 0, 0, 0.2);
-$sidebarLinkHoverBgColor: hsl($hue, 20%, 95%);
+$textColor: hsl($hue, 20%, 20%);
+$mediumDarkTextColor: hsl($hue, 15%, 40%);
+$mediumTextColor: hsl($hue, 10%, 60%);
+$lightTextColor: hsl($hue, 10%, 75%);
+$linkColor: hsl($hue, 90%, 50%);
 
-$textcolor: hsl($hue, 20%, 20%);
-$mediumdarktextcolor: hsl($hue, 15%, 40%);
-$mediumtextcolor: hsl($hue, 10%, 60%);
-$lighttextcolor: hsl($hue, 10%, 75%);
-$linkcolor: hsl($hue, 90%, 50%);
 $hairlineColor: hsl($hue, 10%, 90%);
 $hairlineColorAlpha: hsla(240, 100%, 4%, 0.1);
-$blurglowcolor: hsla($hue, 70%, 70%, 0);
-$focusglowcolor: hsl($hue, 70%, 70%);
-$lightselcolor: hsl($hue, 10%, 85%);
-$darkselcolor: hsl($hue, 10%, 50%);
+$mediumHairlineColorAlpha: hsla(240, 100%, 4%, 0.2);
+$darkHairlineColorAlpha: hsla(240, 100%, 4%, 0.4);
 
-$submitcolor: #da5a47;
+$lightSelColor: hsl($hue, 10%, 85%);
+$darkSelColor: hsl($hue, 10%, 50%);
+
+$submitColor: #da5a47;
 $submitHoverColor: #bf503f;
 $submitActiveColor: #8c3b2e;
 
@@ -29,14 +26,16 @@ $secondarySubmitColor: hsl($hue, 10%, 60%);
 $secondarySubmitHoverColor: hsl($hue, 10%, 50%);
 $secondarySubmitActiveColor: hsl($hue, 10%, 40%);
 
-$errorcolor: #da5a47;
-$warningcolor: #e78640;
-$successcolor: #00b007;
-$noticecolor: #5286d9;
+$errorColor: #da5a47;
+$warningColor: #e78640;
+$successColor: #00b007;
+$noticeColor: #5286d9;
 
-$btnBorderRadius: 3px;
-$paneBorderRadius: 4px;
-$elementBorderRadius: 3px;
+$btnBorderRadius: 2px;
+$textBorderRadius: 0;
+$paneBorderRadius: 0;
+$menuBorderRadius: 2px;
+$elementBorderRadius: 2px;
 
 @mixin sans-serif-font {
   font-family: "Helvetica Neue", HelveticaNeue, sans-serif;
@@ -44,168 +43,13 @@ $elementBorderRadius: 3px;
 
 // Flexbox stuff
 
-@mixin display-flex {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-}
-
-@mixin flex-direction($value) {
-  @if $value == column {
-    -webkit-box-orient: vertical;
-  } @else {
-    -webkit-box-orient: horizontal;
-  }
-
-  -ms-flex-direction: $value;
-  flex-direction: $value;
-}
-
-@mixin align-items($value) {
-  @if $value == flex-start {
-    -ms-flex-align: start;
-  } @else if $value == flex-end {
-    -ms-flex-align: end;
-  } @else {
-    -ms-flex-align: $value;
-  }
-
-  align-items: $value;
-}
-
-@mixin justify-content($value) {
-  @if $value == flex-start {
-    -ms-flex-pack: start;
-  } @else if $value == flex-end {
-    -ms-flex-pack: end;
-  } @else if $value == space-between {
-    -ms-flex-align: justify;
-  } @else if $value == center {
-    -ms-flex-align: center;
-  }
-
-  justify-content: $value;
-}
-
-@mixin flex-wrap($value) {
-  @if $value == nowrap {
-    -ms-flex-wrap: none;
-  } @else {
-    -ms-flex-wrap: $value;
-  }
-
-  flex-wrap: $value;
-}
-
-@mixin flex-grow($value) {
-  flex-grow: $value;
-  -ms-flex: $value;
-}
-
 // Other
-
-@mixin animation-iteration-count($count) {
-  -webkit-animation-iteration-count: $count;
-  -moz-animation-iteration-count: $count;
-  animation-iteration-count: $count;
-}
-
-@mixin animation-duration($time) {
-  -webkit-animation-duration: $time;
-  -moz-animation-duration: $time;
-  animation-duration: $time;
-}
-
-@mixin animation-name($name) {
-  -webkit-animation-name: $name;
-  -moz-animation-name: $name;
-  animation-name: $name;
-}
-
-@mixin animation-timing-function($func) {
-  -webkit-animation-timing-function: $func;
-  -moz-animation-timing-function: $func;
-  animation-timing-function: $func;
-}
-
-@mixin backface-visibility($value) {
-  -webkit-backface-visibility: $value;
-  backface-visibility: $value;
-}
-
-@mixin box-shadow($params...) {
-  -webkit-box-shadow: $params;
-  -moz-box-shadow: $params;
-  box-shadow: $params;
-}
-
-@mixin box-shadow-transition($time) {
-  -webkit-transition: -webkit-box-shadow linear $time;
-  -moz-transition: box-shadow linear $time;
-}
-
-@mixin box-sizing($value) {
-  -webkit-box-sizing: $value;
-  -moz-box-sizing: $value;
-  box-sizing: $value;
-}
-
-@mixin linear-gradient($params...) {
-  background-image: -webkit-linear-gradient($params);
-  background-image: -moz-linear-gradient($params);
-  background-image: -ms-linear-gradient($params);
-  background-image: -o-linear-gradient($params);
-  background-image: linear-gradient($params);
-}
-
-@mixin radial-gradient($params...) {
-  background-image: -webkit-radial-gradient($params);
-  background-image: -moz-radial-gradient($params);
-  background-image: -ms-radial-gradient($params);
-  background-image: -o-radial-gradient($params);
-  background-image: radial-gradient($params);
-}
 
 @mixin svg-mask($color) {
   rect, circle, ellipse, line, polyline, polygon, path, text {
     fill: $color;
     stroke-width: 0;
   }
-}
-
-@mixin transform($params...) {
-  -webkit-transform: $params;
-  -moz-transform: $params;
-  -ms-transform: $params;
-  -o-transform: $params;
-  transform: $params;
-}
-
-@mixin filter($params...) {
-  -webkit-filter: $params;
-  filter: $params;
-}
-
-@mixin transition($params...) {
-  -webkit-transition: $params;
-  -moz-transition: $params;
-  -ms-transition: $params;
-  transition: $params;
-}
-
-@mixin user-select($value) {
-  -webkit-user-select: $value;
-  -moz-user-select: $value;
-  -ms-user-select: $value;
-}
-
-@mixin perspective($value) {
-  -webkit-perspective: $value;
-  -moz-perspective: $value;
-  -ms-perspective: $value;
-  perspective: $value;
 }
 
 @mixin icon {
@@ -231,7 +75,7 @@ $elementBorderRadius: 3px;
   font-style: normal;
   vertical-align: middle;
   word-wrap: normal !important;
-  @include user-select(none);
+  user-select: none;
 }
 
 @mixin clearafter {
@@ -244,7 +88,7 @@ $elementBorderRadius: 3px;
 
 @mixin pane {
   background: #fff;
-  @include box-shadow(0 0 0 1px $hairlineColor);
+  box-shadow: 0 0 0 1px $hairlineColor;
 }
 
 @mixin light-on-dark-text() {
@@ -252,7 +96,7 @@ $elementBorderRadius: 3px;
   // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 // RTL stuff
@@ -434,7 +278,7 @@ $elementBorderRadius: 3px;
   margin: 14px 0 3px;
   font-size: 10px;
   line-height: 1.2;
-  color: $lighttextcolor;
+  color: $lightTextColor;
   text-transform: uppercase;
   font-weight: bold;
 }
@@ -446,68 +290,64 @@ $elementBorderRadius: 3px;
   padding: 1px 7px;
   font-size: 12px;
   line-height: 14px;
-  color: $textcolor;
+  color: $textColor;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
   background: #ddd;
 }
 
 @mixin menu-styles {
   z-index: 100;
-  margin-bottom: 10px;
-  border-radius: $btnBorderRadius;
+  border-radius: $menuBorderRadius;
   padding: 0 14px;
   overflow: auto;
   background: #fff;
-  @include user-select(none);
-  @include box-shadow(0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0, 0, 0, 0.25));
+  user-select: none;
+  box-shadow: 0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0, 0, 0, 0.25);
 }
 
 @mixin menu-option-styles {
   margin: 0 -14px;
   padding: 10px 14px;
-  color: $textcolor;
+  color: $textColor;
   text-decoration: none;
   white-space: nowrap;
 }
 
 @mixin menu-option-active-styles {
-  color: $textcolor;
-  background-color: $lightselcolor;
+  color: $textColor;
+  background-color: $lightSelColor;
 }
 
 @mixin text-input-styles {
-  border: 1px solid $hairlineColor;
-  border-radius: $btnBorderRadius;
-  @include box-shadow(0 0 5px hsla(205, 100%, 60%, 0));
-  @include box-shadow-transition(100ms);
+  border: 1px solid $hairlineColorAlpha;
+  border-radius: $textBorderRadius;
+  transition: border linear 50ms;
 }
 
 @mixin text-input-focussed-styles {
-  border-color: $focusglowcolor;
+  border-color: $darkHairlineColorAlpha;
   outline: none;
-  @include box-shadow(0 0 5px hsl(205, 100%, 75%));
 }
 
 @mixin placeholder-styles {
-  color: $lighttextcolor;
+  color: $lightTextColor;
 }
 
 @mixin select-styles {
   position: relative;
-  border-radius: $btnBorderRadius;
+  border-radius: $menuBorderRadius;
   white-space: nowrap;
 }
 
 @mixin select-container-styles {
   position: relative;
-  @include linear-gradient(#fff, hsl($hue, 5%, 98%));
-  @include box-shadow(inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07));
+  background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
   :not(.flex) > & {
     display: inline-block;
   }
 }
 
-;
 @mixin select-arrow-styles {
   @include icon;
   position: absolute;
@@ -516,23 +356,22 @@ $elementBorderRadius: 3px;
   @include right(9px);
   font-size: 10px;
   content: 'downangle';
-  @include user-select(none);
+  user-select: none;
   pointer-events: none;
 }
 
 @mixin select-input-styles {
   display: block;
   position: relative;
-  border: 0;
+  border: none;
   @include padding(7px, 22px, 7px, 10px);
   font-size: 13px;
   line-height: 16px;
-  color: $textcolor;
+  color: $textColor;
   background: none;
-  @include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
-  -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
-  -moz-transition: border linear 100ms, box-shadow linear 100ms;
-  -webkit-appearance: none;
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+  transition: box-shadow linear 50ms;
+  appearance: none;
 }
 
 @mixin select-input-fullwidth-styles {
@@ -540,7 +379,6 @@ $elementBorderRadius: 3px;
 }
 
 @mixin select-input-focussed-styles {
-  border-color: $focusglowcolor;
   outline: none;
-  @include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+  box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
 }

@@ -8,6 +8,14 @@ Craft CMS 3.0 Working Changelog
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 
+### Changed
+- The Control Panel has been redesigned for better usability, readability and responsiveness.
+- Control Panel templates can now easily add UI elements to the page header, via new `contextMenu` and `actionButton` blocks.
+- Control Panel templates can now have a details pane, via the new `details` block.
+- The “Delete” button on entry and category edit pages has been moved to the Save button menu.
+- The site selection on entry and category edit pages has been moved to the context menu in the page header.
+- The icons on date/time inputs now behave like placeholder text; they can be clicked on to focus the input, and they become hidden when the input has a value. ([#1730](https://github.com/craftcms/cms/issues/1730))
+
 ### Removed
 - Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.

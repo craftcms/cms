@@ -2,16 +2,21 @@
 {% set title = "Globals"|t('app') %}
 
 
-{% block pageTitle %}
-    {{ parent() }}
-
+{% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
-        <div class="select">
-            <select onchange="document.location.href='{{ url('globals/{site}/'~globalSet.handle) }}'.replace('{site}', this.value);">
+        <div class="btn menubtn" data-icon="world">{{ globalSet.getSite().name|t('site') }}</div>
+        <div class="menu">
+            <ul class="padded">
                 {% for site in craft.app.sites.getEditableSites() %}
-                    <option value="{{ site.handle }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                    <li>
+                        {% if site.id == globalSet.siteId %}
+                            <a class="sel">{{ site.name|t('site') }}</a>
+                        {% else %}
+                            <a href="{{ url("globals/#{site.handle}/#{globalSet.handle}") }}">{{ site.name|t('site') }}</a>
+                        {% endif %}
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
         </div>
     {% endif %}
 {% endblock %}

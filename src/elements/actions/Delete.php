@@ -40,7 +40,7 @@ class Delete extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Delete…');
+        return Craft::t('app', 'Delete');
     }
 
     /**

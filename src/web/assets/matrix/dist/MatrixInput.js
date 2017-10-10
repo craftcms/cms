@@ -234,7 +234,7 @@
                     '</ul>' +
                     '<hr class="padded"/>' +
                     '<ul class="padded">' +
-                    '<li><a data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
+                    '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
                     '</ul>' +
                     '</div>' +
                     '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '" role="button"></a> ' +

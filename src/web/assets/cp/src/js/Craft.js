@@ -1036,7 +1036,6 @@ $.extend(Craft,
          */
         initUiElements: function($container) {
             $('.grid', $container).grid();
-            $('.pane', $container).pane();
             $('.info', $container).infoicon();
             $('.checkbox-select', $container).checkboxselect();
             $('.fieldtoggle', $container).fieldtoggle();
@@ -1348,14 +1347,6 @@ $.extend($.fn,
         infoicon: function() {
             return this.each(function() {
                 new Craft.InfoIcon(this);
-            });
-        },
-
-        pane: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pane')) {
-                    new Craft.Pane(this);
-                }
             });
         },
 

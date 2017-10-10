@@ -7,8 +7,10 @@
         name: (name ? name~'[date]'),
         autocomplete: false,
         size: 10,
+        placeholder: ' ',
         value: (value ? value|date('short') : '')
     } -%}
+    <div data-icon="date"></div>
     {% if name -%}
         <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
     {%- endif -%}

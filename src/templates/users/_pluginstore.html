@@ -1,6 +1,6 @@
-<div class="pane">
+<div class="meta">
 
-	<h2 class="first">{{ 'Craft ID account'|t('app') }}</h2>
+	<h2 class="first">{{ 'Craft ID'|t('app') }}</h2>
 
 	{% if not craftIdAccount %}
 		<form method="post">
@@ -9,19 +9,16 @@
 			<input type="hidden" name="action" value="plugin-store/connect">
 			<input type="hidden" name="redirect" value="{{ (account.getIsCurrent() ? 'myaccount' : 'users/{id}')|hash }}">
 
-			<p>{{ 'Retrieve your existing plugin licenses and purchase new ones by connecting with your Craft ID.'|t('app') }}</p>
+			<p>{{ 'Connect your Craft ID account to improve your experience.'|t('app') }}</p>
 
 			{% if craftIdError %}
 				<p class="error">{{ craftIdError }}</p>
 			{% endif %}
 
-			<div class="buttons">
 				<input type="submit" class="btn submit" value="{{ 'Connect'|t('app') }}">
-			</div>
-
-			{% if not craft.app.request.isSecureConnection %}
-				<div class="ssl-status light"><i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i> {{ "Your connection is insecure"|t('app') }}</div>
-			{% endif %}
+                {% if not craft.app.request.isSecureConnection %}
+					<p class="ssl-status light"><i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i> {{ "Your connection is insecure"|t('app') }}</p>
+                {% endif %}
 		</form>
 	{% else %}
 

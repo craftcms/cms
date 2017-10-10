@@ -134,7 +134,7 @@ window.pluginStoreApp = new Vue({
 
         // Page title
 
-        this.$pageTitle = $('#page-title h1');
+        this.$pageTitle = $('#header').find('h1');
 
         if(this.$pageTitle) {
             this.$pageTitle.html(this.pageTitle)

@@ -34,14 +34,12 @@
 {% endif %}
 
 
-{% set extraPageHeaderHtml %}
+{% block actionButton %}
     {% if groups %}
-        <div class="buttons right">
-            {% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
-            <a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t('app') }}</a>
-        </div>
+        {% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
+        <a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t('app') }}</a>
     {% endif %}
-{% endset %}
+{% endblock %}
 
 
 {% block sidebar %}

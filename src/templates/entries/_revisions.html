@@ -1,9 +1,35 @@
-{% set drafts = craft.app.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.siteId) %}
-{% set baseUrl = 'entries/'~entry.getSection().handle~'/'~entry.id~(entry.slug ? '-'~entry.slug)~'/' %}
+{% import "_includes/forms" as forms %}
 
-<div id="revision-btn" class="btn menubtn">{{ revisionLabel }}</div>
+{% set drafts = entry.id ? craft.app.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.siteId) : [] %}
+{% set baseUrl = "entries/#{sectionHandle}/#{craft.app.request.getSegment(3)}/" %}
+{% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
+{% set params = parentIdParam ? { parentId: parentIdParam } : null %}
+
+<div id="revision-btn" class="btn menubtn"{% if showSites %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
 
 <div class="menu">
+    {% if showSites %}
+        <ul class="padded">
+            {% for siteId in siteIds %}
+                {% set site = craft.app.sites.getSiteById(siteId) %}
+                {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+                <li>
+                    {% if siteId == entry.siteId %}
+                        <a class="sel">
+                            <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                        </a>
+                    {% else %}
+                        {% set url = url(baseUrl~site.handle, params) %}
+                        <a href="{{ url }}">
+                            <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                        </a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <hr>
+    {% endif %}
+
     <ul class="padded">
         {% set currentVersionEditTime = currentVersionEditTime ?? entry.dateUpdated %}
         <li><a{% if className(entry) == 'craft\\elements\\Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}

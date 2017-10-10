@@ -16,8 +16,8 @@
 {% endif %}
 
 {% if not meta %}
-<div class="grid" data-cols="2" data-mode="pct">
-    <div class="item" data-colspan="1">
+<div class="flex">
+    <div class="flex-grow">
 {% endif %}
         {{ forms.textField({
             label: "First Name"|t('app'),
@@ -29,7 +29,7 @@
         }) }}
 {% if not meta %}
     </div>
-    <div class="item" data-colspan="1">
+    <div class="flex-grow">
 {% endif %}
         {{ forms.textField({
             label: "Last Name"|t('app'),

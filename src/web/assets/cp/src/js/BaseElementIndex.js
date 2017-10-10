@@ -113,7 +113,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
             this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
             this.$sidebar = this.$container.find('.sidebar:first');
-            this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
+            this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
 
             // Hide sidebar if needed
@@ -282,7 +282,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.children('nav').children('ul');
+            return this.$sidebar.find('nav ul');
         },
 
         get $sources() {
@@ -361,7 +361,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         updateFixedToolbar: function() {
-            this.updateFixedToolbar._pageHeaderHeight = $('#page-header').outerHeight();
+            this.updateFixedToolbar._pageHeaderHeight = $('#header').outerHeight();
 
             if (!this.toolbarOffset) {
                 this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
@@ -1112,7 +1112,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 var $extraHeadersContainer = $('#extra-headers');
 
                 if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
+                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
                 }
 
                 var $container = $extraHeadersContainer.find('> .buttons:first');
@@ -1524,8 +1524,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $btn = $('<div class="btn menubtn" data-icon="settings" title="' + Craft.t('app', 'Actions') + '"/>').appendTo($menuTrigger);
 
                 var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
-                    $safeList = this._createMenuTriggerList(safeMenuActions),
-                    $destructiveList = this._createMenuTriggerList(destructiveMenuActions);
+                    $safeList = this._createMenuTriggerList(safeMenuActions, false),
+                    $destructiveList = this._createMenuTriggerList(destructiveMenuActions, true);
 
                 if ($safeList) {
                     $safeList.appendTo($menu);
@@ -1560,7 +1560,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
         },
 
-        _createMenuTriggerList: function(actions) {
+        _createMenuTriggerList: function(actions, destructive) {
             if (actions && actions.length) {
                 var $ul = $('<ul/>');
 
@@ -1568,6 +1568,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     var actionClass = actions[i].type;
                     $('<li/>').append($('<a/>', {
                         id: Craft.formatInputId(actionClass) + '-actiontrigger',
+                        'class': (destructive ? 'error' : null),
                         'data-action': actionClass,
                         text: actions[i].name
                     })).appendTo($ul);

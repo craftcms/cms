@@ -200,15 +200,14 @@ class Asset extends Element
             );
 
             $userSessionService = Craft::$app->getUser();
+            $canDeleteAndSave = (
+                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id) &&
+                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
+            );
 
             // Rename File
-            if (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)
-                &&
-                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
-            ) {
+            if ($canDeleteAndSave) {
                 $actions[] = RenameFile::class;
-                $actions[] = EditImage::class;
             }
 
             // Replace File
@@ -223,6 +222,11 @@ class Asset extends Element
                     'elementType' => static::class,
                 ]
             );
+
+            // Edit Image
+            if ($canDeleteAndSave) {
+                $actions[] = EditImage::class;
+            }
 
             // Delete
             if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)) {

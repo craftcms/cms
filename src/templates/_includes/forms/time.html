@@ -9,8 +9,10 @@
         name: (name ? name~'[time]'),
         autocomplete: false,
         size: 10,
+        placeholder: ' ',
         value: (value ? value|time('short') : '')
     } -%}
+    <div data-icon="time"></div>
     {% if name -%}
         <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
     {%- endif -%}

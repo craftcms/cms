@@ -7,11 +7,11 @@
 
 {% set docsUrl = 'http://craftcms.com/docs/sections-and-entries#sections' %}
 
-{% set extraPageHeaderHtml %}
-    <div id="newsectioncontainer" class="buttons right">
+{% block actionButton %}
+    <div id="newsectioncontainer">
         <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
     </div>
-{% endset %}
+{% endblock %}
 
 
 {% block content %}

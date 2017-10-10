@@ -27,17 +27,6 @@ class EditImage extends ElementAction
      */
     public $label;
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
-    {
-        return true;
-    }
-
     // Public Methods
     // =========================================================================
 

@@ -5,11 +5,11 @@ module.exports = function(grunt) {
         watch: {
             sass: {
                 files: ['lib/craftcms-sass/_mixins.scss', 'src/web/assets/**/*.scss', '!src/web/assets/pluginstore/**/*.scss'],
-                tasks: 'sass'
+                tasks: 'css'
             },
             cpjs: {
                 files: ['src/web/assets/cp/src/js/*.js'],
-                tasks: ['concat', 'uglify:cpjs'],
+                tasks: ['concat', 'uglify:cpjs']
             },
             otherjs: {
                 files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js', '!src/web/assets/pluginstore/**/*.js'],
@@ -40,19 +40,36 @@ module.exports = function(grunt) {
                 ext: '.css'
             }
         },
+        postcss: {
+            options: {
+                map: true,
+                processors: [
+                    require('autoprefixer')({browsers: 'last 2 versions'})
+                ]
+            },
+            dist: {
+                expand: true,
+                cwd: 'src/web/assets',
+                src: [
+                    '**/*.css',
+                    '!pluginstore/**/*.css'
+                ],
+                dest: 'src/web/assets'
+            }
+        },
         concat: {
             cpjs: {
                 options: {
                     banner: '/*! <%= pkg.name %> <%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n' +
                     '(function($){\n\n',
-                    footer: '\n})(jQuery);\n',
+                    footer: '\n})(jQuery);\n'
                 },
                 src: [
                     'src/web/assets/cp/src/js/Craft.js',
                     'src/web/assets/cp/src/js/Base*.js',
                     'src/web/assets/cp/src/js/*.js',
                     '!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)',
-                    '!src/web/assets/pluginstore/**/*.js',
+                    '!src/web/assets/pluginstore/**/*.js'
                 ],
                 dest: 'src/web/assets/cp/dist/js/Craft.js'
             }
@@ -98,7 +115,7 @@ module.exports = function(grunt) {
                 'src/web/assets/**/*.js',
                 '!src/web/assets/**/*.min.js',
                 '!src/web/assets/cp/dist/js/Craft.js',
-                '!src/web/assets/pluginstore/**/*.js',
+                '!src/web/assets/pluginstore/**/*.js'
             ],
             afterconcat: [
                 'src/web/assets/cp/dist/js/Craft.js'
@@ -108,11 +125,14 @@ module.exports = function(grunt) {
 
     //Load NPM tasks
     grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
-    grunt.registerTask('default', ['sass', 'jshint:beforeconcat', 'concat', 'jshint:afterconcat', 'uglify']);
+    grunt.registerTask('css', ['sass', 'postcss']);
+    grunt.registerTask('js', ['jshint:beforeconcat', 'concat', 'jshint:afterconcat', 'uglify']);
+    grunt.registerTask('default', ['css', 'js']);
 };

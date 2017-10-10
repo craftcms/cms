@@ -10,11 +10,9 @@
     "Delete {site}"
 ]) %}
 
-{% set extraPageHeaderHtml %}
-    <div class="buttons right">
-        <a href="{{ url('settings/sites/new') }}" class="btn submit add icon">{{ "New site"|t('app') }}</a>
-    </div>
-{% endset %}
+{% block actionButton %}
+    <a href="{{ url('settings/sites/new') }}" class="btn submit add icon">{{ "New site"|t('app') }}</a>
+{% endblock %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
