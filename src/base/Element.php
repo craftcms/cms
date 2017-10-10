@@ -850,7 +850,6 @@ abstract class Element extends Component implements ElementInterface
                 ['id', 'contentId', 'root', 'lft', 'rgt', 'level'],
                 'number',
                 'integerOnly' => true,
-                'on' => self::SCENARIO_DEFAULT
             ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
