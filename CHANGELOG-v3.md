@@ -20,12 +20,19 @@ Craft CMS 3.0 Working Changelog
 
 ## 3.0.0-beta.30 (WIP)
 
+### Added
+- Added `craft\services\AssetTransforms::getTransformUri()`.
+
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
+- Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
+- Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
 
 ### Fixed
 - Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
 - Fixed a bug where Craft was not performing normal user validation when an invalid profile photo was uploaded from a front-end form.
+- Fixed a bug where image transform URLs were getting a backslash on Windows servers. ([#2026](https://github.com/craftcms/cms/issues/2026))
+- Fixed a 404 error that occurred when loading the jQuery.payment library in the Control Panel.
 
 ## 3.0.0-beta.29 - 2017-09-29
 

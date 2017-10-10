@@ -794,8 +794,7 @@ class AssetTransforms extends Component
         $baseUrl = $volume->getRootUrl();
         $appendix = AssetsHelper::urlAppendix($volume, $asset);
 
-        return $baseUrl.$asset->getFolder()->path.$this->getTransformSubpath($asset,
-                $transformIndexModel).$appendix;
+        return $baseUrl.$asset->getFolder()->path.$this->getTransformUri($asset, $transformIndexModel).$appendix;
     }
 
     /**
@@ -1046,7 +1045,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Get a transform subpath used by the Transform Index for the Asset.
+     * Returns the path to a transform, relative to the asset's folder.
      *
      * @param Asset               $asset
      * @param AssetTransformIndex $index
@@ -1056,6 +1055,25 @@ class AssetTransforms extends Component
     public function getTransformSubpath(Asset $asset, AssetTransformIndex $index): string
     {
         return $this->getTransformSubfolder($asset, $index).DIRECTORY_SEPARATOR.$this->getTransformFilename($asset, $index);
+    }
+
+    /**
+     * Returns the URI for a transform, relative to the asset's folder.
+     *
+     * @param Asset               $asset
+     * @param AssetTransformIndex $index
+     *
+     * @return string
+     */
+    public function getTransformUri(Asset $asset, AssetTransformIndex $index): string
+    {
+        $uri = $this->getTransformSubpath($asset, $index);
+
+        if (DIRECTORY_SEPARATOR !== '/') {
+            $uri = str_replace(DIRECTORY_SEPARATOR, '/', $uri);
+        }
+
+        return $uri;
     }
 
     /**
