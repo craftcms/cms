@@ -108,6 +108,7 @@ abstract class Element extends Component implements ElementInterface
     // -------------------------------------------------------------------------
 
     const SCENARIO_ESSENTIALS = 'essentials';
+    const SCENARIO_LIVE = 'live';
 
     // Events
     // -------------------------------------------------------------------------
@@ -654,13 +655,6 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
-     * @var bool|null Whether custom fields rules should be included when validating the element.
-     *
-     * Any value besides `true` or `false` will be treated as "auto", meaning that custom fields will only be validated if the element is enabled.
-     */
-    public $validateCustomFields;
-
-    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -845,35 +839,34 @@ abstract class Element extends Component implements ElementInterface
      */
     public function rules()
     {
+        $mainScenarios = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
+
         $rules = [
-            [
-                ['id', 'contentId', 'root', 'lft', 'rgt', 'level'],
-                'number',
-                'integerOnly' => true,
-            ],
-            [['siteId'], SiteIdValidator::class],
-            [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
+            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => $mainScenarios],
+            [['siteId'], SiteIdValidator::class, 'on' => $mainScenarios],
+            [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => $mainScenarios],
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'string', 'max' => 255];
-            $rules[] = [['title'], 'required'];
+            $rules[] = [['title'], 'string', 'max' => 255, 'on' => $mainScenarios];
+            $rules[] = [['title'], 'required', 'on' => $mainScenarios];
         }
 
         if (static::hasUris()) {
-            $rules[] = [['slug'], SlugValidator::class];
-            $rules[] = [['slug'], 'string', 'max' => 255];
-            $rules[] = [['uri'], ElementUriValidator::class];
+            $rules[] = [['slug'], SlugValidator::class, 'on' => $mainScenarios];
+            $rules[] = [['slug'], 'string', 'max' => 255, 'on' => $mainScenarios];
+            $rules[] = [['uri'], ElementUriValidator::class, 'on' => $mainScenarios];
         }
 
         // Are we validating custom fields?
-        if ($this->validateCustomFields() && ($fieldLayout = $this->getFieldLayout())) {
+        if ($fieldLayout = $this->getFieldLayout()) {
             $fieldsWithColumns = [];
 
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 if ($field->required) {
-                    $rules[] = [[$field->handle], 'required', 'isEmpty' => [$field, 'isEmpty']];
+                    // Only validate required custom fields on the LIVE scenario
+                    $rules[] = [[$field->handle], 'required', 'isEmpty' => [$field, 'isEmpty'], 'on' => self::SCENARIO_LIVE];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -886,7 +879,7 @@ abstract class Element extends Component implements ElementInterface
                     } else {
                         if (is_string($rule)) {
                             // "Validator" syntax
-                            $rule = [$field->handle, $rule];
+                            $rule = [$field->handle, $rule, 'on' => $mainScenarios];
                         }
 
                         if (is_array($rule) && isset($rule[0])) {
@@ -909,9 +902,14 @@ abstract class Element extends Component implements ElementInterface
                                 ];
                             }
 
-                            // Set isEmpty to the field's isEmpty() method by default
+                            // Set 'isEmpty' to the field's isEmpty() method by default
                             if (!array_key_exists('isEmpty', $rule)) {
                                 $rule['isEmpty'] = [$field, 'isEmpty'];
+                            }
+
+                            // Set 'on' to the main scenarios by default
+                            if (!array_key_exists('on', $rule)) {
+                                $rule['on'] = $mainScenarios;
                             }
 
                             $rules[] = $rule;
@@ -923,7 +921,7 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize'];
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => $mainScenarios];
             }
         }
 
@@ -1791,28 +1789,6 @@ abstract class Element extends Component implements ElementInterface
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * Returns whether custom fields should be validated.
-     *
-     * @return bool
-     */
-    protected function validateCustomFields(): bool
-    {
-        if (!static::hasContent() || !Craft::$app->getIsInstalled()) {
-            return false;
-        }
-
-        if ($this->validateCustomFields === true) {
-            return true;
-        }
-
-        if ($this->validateCustomFields !== false && $this->enabled && $this->enabledForSite) {
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * Normalizes a field’s value.

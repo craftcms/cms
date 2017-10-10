@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
@@ -1010,8 +1011,9 @@ class UsersController extends Controller
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
-        if ($thisIsPublicRegistration) {
-            $user->validateCustomFields = false;
+        // Don't validate required custom fields if it's public registration
+        if (!$thisIsPublicRegistration) {
+            $user->setScenario(Element::SCENARIO_LIVE);
         }
 
         if (!$user->validate(null, false)) {

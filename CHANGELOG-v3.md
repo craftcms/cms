@@ -4,6 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## 3.0.0-beta.30 (WIP)
 
 ### Added
+- Added `craft\base\Elements::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
 - Added `craft\services\AssetTransforms::getTransformUri()`.
 
 ### Changed

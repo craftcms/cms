@@ -441,6 +441,10 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
+        if ($category->enabled && $category->enabledForSite) {
+            $category->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (!Craft::$app->getElements()->saveElement($category)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
