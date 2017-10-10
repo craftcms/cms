@@ -19,29 +19,6 @@
     {% include 'users/_photo' with {account: account} only %}
 {% endset %}
 
-{% set saveUserButtons %}
-    <div class="buttons">
-        {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-            <input type="submit" class="btn submit"
-                   value="{{ 'Save'|t('app') }}">
-        {% else %}
-            <div class="btngroup">
-                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                <div class="btn submit menubtn"></div>
-                <div class="menu">
-                    <ul>
-                        <li><a class="formsubmit" data-redirect="{{ (isNewAccount ? 'users/{id}' : account.getCpEditUrl())|hash }}">
-                                {{ forms.optionShortcutLabel('S') }}
-                                {{ "Save and continue editing"|t('app') }}
-                            </a></li>
-                        <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
-                    </ul>
-                </div>
-            </div>
-        {% endif %}
-    </div>
-{% endset %}
-
 {% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
 
 {% set hiddenInputs %}
@@ -52,6 +29,28 @@
 {% endset %}
 
 {% hook "cp.users.edit" %}
+
+{% block actionButton %}
+    {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
+        <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>
+    {% else %}
+        <div class="btngroup">
+            <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>
+            <div class="btn submit menubtn" data-form="userform"></div>
+            <div class="menu">
+                <ul>
+                    <li>
+                        <a class="formsubmit" data-redirect="{{ (isNewAccount ? 'users/{id}' : account.getCpEditUrl())|hash }}">
+                            {{ forms.optionShortcutLabel('S') }}
+                            {{ "Save and continue editing"|t('app') }}
+                        </a>
+                    </li>
+                    <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
 
 {% block content %}
     <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
@@ -159,8 +158,6 @@
                     checked: account.getPreference('enableDebugToolbarForCp')
                 }) }}
             {% endif %}
-
-            {{ saveUserButtons }}
         </div>
 
         {% if not isNewAccount or CraftEdition == CraftPro %}
@@ -178,8 +175,6 @@
                     fields: craft.app.fields.getLayoutByType('craft\\elements\\User').getFields(),
                     element: account
                 } only %}
-
-                {{ saveUserButtons }}
             </div>
         {% endif %}
 
@@ -242,10 +237,10 @@
                     } only %}
                 </div>
 
-                {{ saveUserButtons }}
-
             </div>
         {% endif %}
+
+        <input type="submit" class="hidden">
     </form>
 {% endblock %}
 

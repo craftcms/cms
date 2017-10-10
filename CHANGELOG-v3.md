@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - The site selection on entry and category edit pages has been moved to the context menu in the page header.
 - The icons on date/time inputs now behave like placeholder text; they can be clicked on to focus the input, and they become hidden when the input has a value. ([#1730](https://github.com/craftcms/cms/issues/1730))
 - Global sets’ field layouts can now have multiple tabs. ([#1196](https://github.com/craftcms/cms/issues/1196))
+- Edit User pages’ Save buttons are now positioned in the page header, like similar pages.
 
 ### Removed
 - Removed `craft\events\RegisterRedactorPluginEvent`.
