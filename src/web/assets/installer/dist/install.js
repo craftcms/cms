@@ -77,10 +77,9 @@
                 if (textStatus === 'success' && response.success) {
                     this.$currentScreen.find('h1:first').text(Craft.t('app', 'All done!'));
 
-                    var $buttons = $('<div class="buttons"/>'),
-                        $go = $('<div class="btn big submit">' + Craft.t('app', 'Go to Craft CMS') + '</div>').appendTo($buttons);
+                    var $go = $('<div class="btn big submit">' + Craft.t('app', 'Go to Craft CMS') + '</div>');
 
-                    $('#spinner').replaceWith($buttons);
+                    $('#spinner').replaceWith($go);
 
                     this.addListener($go, 'click', function() {
                         this.showScreen(30, null, 1000);
