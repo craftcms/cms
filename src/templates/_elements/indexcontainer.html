@@ -35,24 +35,7 @@
                 </div>
             {% endif %}
             {% if showSiteMenu %}
-                {% set editableSites = craft.app.sites.getEditableSites() %}
-                {% if editableSites|length %}
-                    {% if craft.app.sites.currentSite.id in craft.app.sites.getEditableSiteIds() %}
-                        {% set initialSite = craft.app.sites.currentSite %}
-                    {% else %}
-                        {% set initialSite = editableSites|first %}
-                    {% endif %}
-                    <div>
-                        <div class="btn menubtn sitemenubtn">{{ initialSite ? initialSite.name|t('site') }}</div>
-                        <div class="menu">
-                            <ul class="padded">
-                                {% for site in editableSites %}
-                                    <li><a{% if initialSite and site.id == initialSite.id %} class="sel"{% endif %} data-site-id="{{ site.id }}">{{ site.name|t('site') }}</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                {% endif %}
+                {% include "_elements/sitemenu" %}
             {% endif %}
             <div class="flex-grow texticon search icon clearable">
                 {{ text({

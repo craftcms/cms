@@ -163,6 +163,16 @@ class Section extends Model
     }
 
     /**
+     * Returns the site IDs that are enabled for the section.
+     *
+     * @return int[]
+     */
+    public function getSiteIds(): array
+    {
+        return array_keys($this->getSiteSettings());
+    }
+
+    /**
      * Adds site-specific errors to the model.
      *
      * @param array $errors

@@ -1,4 +1,4 @@
-/*!   - 2017-10-10 */
+/*!   - 2017-10-11 */
 (function($){
 
 /** global: Craft */
@@ -1918,7 +1918,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar = this.$container.find('.toolbar:first');
             this.$toolbarFlexContainer = this.$toolbar.children('.flex');
             this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
-            this.$siteMenuBtn = this.$toolbarFlexContainer.find('.sitemenubtn:first');
+            this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
             this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
             this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
             this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
@@ -1976,7 +1976,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 if ($option.length) {
-                    this.siteId = $option.data('site-id');
+                    this._setSite($option.data('site-id'));
                 }
                 else {
                     // No site options -- they must not have any site permissions
@@ -2001,7 +2001,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
             else if (this.settings.criteria && this.settings.criteria.siteId) {
-                this.siteId = this.settings.criteria.siteId;
+                this._setSite(this.settings.criteria.siteId);
             }
 
             // Initialize the search input
@@ -3079,12 +3079,54 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.siteMenu.$options.removeClass('sel');
             var $option = $(ev.selectedOption).addClass('sel');
             this.$siteMenuBtn.html($option.html());
+            this._setSite($option.data('site-id'));
+        },
 
-            this.siteId = $option.data('site-id');
+        _setSite: function(siteId) {
+            this.siteId = siteId;
+
+            // Hide any sources that aren't available for this site
+            var $firstVisibleSource;
+            var $source;
+            var selectNewSource = false;
+
+            for (var i = 0; i < this.$sources.length; i++) {
+                $source = this.$sources.eq(i);
+                if (typeof $source.data('sites') === 'undefined' || $source.data('sites').toString().split(',').indexOf(siteId.toString()) !== -1) {
+                    $source.parent().removeClass('hidden');
+                    if (!$firstVisibleSource) {
+                        $firstVisibleSource = $source;
+                    }
+                } else {
+                    $source.parent().addClass('hidden');
+
+                    // Is this the currently selected source?
+                    if (this.$source && this.$source.get(0) == $source.get(0)) {
+                        selectNewSource = true;
+                    }
+                }
+            }
+
+            if (selectNewSource) {
+                this.selectSource($firstVisibleSource);
+            }
+
+            // Hide any empty-nester headings
+            var $headings = this.getSourceContainer().children('.heading');
+            var $heading;
+
+            for (i = 0; i < $headings.length; i++) {
+                $heading = $headings.eq(i);
+                if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
+                    $heading.removeClass('hidden');
+                } else {
+                    $heading.addClass('hidden');
+                }
+            }
 
             if (this.initialized) {
                 // Remember this site for later
-                Craft.setLocalStorage('BaseElementIndex.siteId', this.siteId);
+                Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
 
                 // Update the elements
                 this.updateElements();

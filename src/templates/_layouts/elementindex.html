@@ -10,6 +10,19 @@
 {% set sources = craft.app.elementIndexes.getSources(elementType, 'index') %}
 {% set customizableSources = (sources is not empty and context == 'index' and currentUser.admin) %}
 
+{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
+{% if showSiteMenu == 'auto' %}
+    {% set showSiteMenu = elementInstance.isLocalized() %}
+{% endif %}
+
+
+{% block contextMenu %}
+    {% if showSiteMenu %}
+        {% include "_elements/sitemenu" %}
+    {% endif %}
+{% endblock %}
+
+
 {% block sidebar %}
     {% if sources is not empty %}
         <nav>
@@ -26,7 +39,9 @@
 
 {% block content %}
     <div class="elementindex">
-        {% include "_elements/indexcontainer" %}
+        {% include "_elements/indexcontainer" with {
+            showSiteMenu: false
+        } %}
     </div>
 {% endblock %}
 

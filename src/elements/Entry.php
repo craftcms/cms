@@ -187,9 +187,11 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:'.$section->id,
                         'label' => Craft::t('site', $section->name),
+                        'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
                             'handle' => $section->handle

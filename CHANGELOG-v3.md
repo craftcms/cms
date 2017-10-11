@@ -8,6 +8,8 @@ Craft CMS 3.0 Working Changelog
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
+- Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
+- Added `craft\models\Section::getSiteIds()`.
 
 ### Changed
 - The Control Panel has been redesigned for better usability, readability and responsiveness.
@@ -18,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 - The icons on date/time inputs now behave like placeholder text; they can be clicked on to focus the input, and they become hidden when the input has a value. ([#1730](https://github.com/craftcms/cms/issues/1730))
 - Global sets’ field layouts can now have multiple tabs. ([#1196](https://github.com/craftcms/cms/issues/1196))
 - Edit User pages’ Save buttons are now positioned in the page header, like similar pages.
+- Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
 
 ### Removed
 - Removed `craft\events\RegisterRedactorPluginEvent`.
