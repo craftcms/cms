@@ -946,7 +946,7 @@ Craft CMS Changelog
 ### Added
 - Added [eager-loading support](https://craftcms.com/docs/templating/eager-loading-elements) for elements.
 - Admins can now choose which permissions the Client account has when running Craft Client.
-- Added a “Default Entry Status” setting to Channel and Structure settings for non-localized sites. (It was already possible to set default entry statuses on a per-local basis for localized sites.)
+- Added a “Default Entry Status” setting to Channel and Structure settings for non-localized sites. ([#911](https://github.com/craftcms/cms/issues/911))
 - Added a “New Users” Dashboard widget that shows a chart of recently-created user accounts.
 - Added a “Download file” action to asset indexes.
 - Added a new “Assets in this source have public URLs” setting to asset sources, which when disabled, making it possible to define private asset sources.
