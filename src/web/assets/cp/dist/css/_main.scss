@@ -1149,7 +1149,6 @@ ul.icons li a:hover {
 .buttons .spinner {
   display: block;
   @include floatleft;
-  margin-top: 5px;
 }
 
 .buttons .btn + .spinner,
@@ -1158,8 +1157,7 @@ ul.icons li a:hover {
 }
 
 .buttons.right .btn + .spinner {
-  @include margin-left(-5px);
-  @include margin-right(-19px);
+  @include margin-right(-24px);
 }
 
 /* small buttons */
@@ -2456,7 +2454,7 @@ ul.tree,
     }
 
     &.has-errors {
-      border: 1px solid $errorColor;
+      border: 1px solid $errorColor !important;
       padding-left: 23px;
       padding-right: 23px;
 

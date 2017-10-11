@@ -482,17 +482,15 @@ body.rtl .menubtn:empty { padding-left: 8px; }
 body.ltr .btn + .spinner { margin-left: 7px; }
 body.rtl .btn + .spinner { margin-right: 7px; }
 
-.buttons .spinner { display: block; margin-top: 5px; }
+.buttons .spinner { display: block; }
 body.ltr .buttons .spinner { float: left; }
 body.rtl .buttons .spinner { float: right; }
 
 body.ltr .buttons .btn + .spinner, body.ltr .buttons .btngroup + .spinner { margin-left: 0; }
 body.rtl .buttons .btn + .spinner, body.rtl .buttons .btngroup + .spinner { margin-right: 0; }
 
-body.ltr .buttons.right .btn + .spinner { margin-left: -5px; }
-body.rtl .buttons.right .btn + .spinner { margin-right: -5px; }
-body.ltr .buttons.right .btn + .spinner { margin-right: -19px; }
-body.rtl .buttons.right .btn + .spinner { margin-left: -19px; }
+body.ltr .buttons.right .btn + .spinner { margin-right: -24px; }
+body.rtl .buttons.right .btn + .spinner { margin-left: -24px; }
 
 /* small buttons */
 .btngroup.small .btn, .btn.small { padding: 0 7px !important; font-size: 12px; line-height: 22px; }
@@ -1018,7 +1016,7 @@ body.rtl .elementselect .progress-shade { right: 0; }
 .meta > .field > .input, .meta .data > .value { width: calc(100% - 112px); }
 .meta > .field { -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; }
 .meta > .field.has-focus { z-index: 1; -webkit-box-shadow: 0 0 5px #33aaff; box-shadow: 0 0 5px #33aaff; }
-.meta > .field.has-errors { border: 1px solid #da5a47; padding-left: 23px; padding-right: 23px; }
+.meta > .field.has-errors { border: 1px solid #da5a47 !important; padding-left: 23px; padding-right: 23px; }
 .meta > .field.has-errors + .field { border-top: none; }
 .meta > .field:first-child { border-top-left-radius: 0; border-top-right-radius: 0; }
 .meta > .field:last-child { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
@@ -1411,7 +1409,7 @@ input:-ms-input-placeholder { color: #b9bfc6; }
   .select:not(.selectize):after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; position: absolute; z-index: 1; top: calc(50% - 5px); font-size: 10px; content: 'downangle'; user-select: none; pointer-events: none; }
   body.ltr .select:not(.selectize):after { right: 9px; }
   body.rtl .select:not(.selectize):after { left: 9px; }
-  .select:not(.selectize) select { display: block; position: relative; border: none; font-size: 13px; line-height: 16px; color: #29323d; background: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); -webkit-transition: -webkit-box-shadow linear 50ms; transition: -webkit-box-shadow linear 50ms; transition: box-shadow linear 50ms; transition: box-shadow linear 50ms, -webkit-box-shadow linear 50ms; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+  .select:not(.selectize) select { display: block; position: relative; border: none; font-size: 14px; line-height: 18px; color: #29323d; background: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); -webkit-transition: -webkit-box-shadow linear 50ms; transition: -webkit-box-shadow linear 50ms; transition: box-shadow linear 50ms; transition: box-shadow linear 50ms, -webkit-box-shadow linear 50ms; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
   body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px; }
   body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
   .select:not(.selectize).fullwidth select { min-width: 100%; }
@@ -1435,7 +1433,7 @@ body .selectize-dropdown { border: none; }
 body.ltr .selectize.select .selectize-control:after { right: 9px; }
 body.rtl .selectize.select .selectize-control:after { left: 9px; }
 
-.selectize.select .selectize-control .selectize-input { display: block; position: relative; border: none; font-size: 13px; line-height: 16px; color: #29323d; background: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); -webkit-transition: -webkit-box-shadow linear 50ms; transition: -webkit-box-shadow linear 50ms; transition: box-shadow linear 50ms; transition: box-shadow linear 50ms, -webkit-box-shadow linear 50ms; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+.selectize.select .selectize-control .selectize-input { display: block; position: relative; border: none; font-size: 14px; line-height: 18px; color: #29323d; background: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); -webkit-transition: -webkit-box-shadow linear 50ms; transition: -webkit-box-shadow linear 50ms; transition: box-shadow linear 50ms; transition: box-shadow linear 50ms, -webkit-box-shadow linear 50ms; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 body.ltr .selectize.select .selectize-control .selectize-input { padding: 7px 22px 7px 10px; }
 body.rtl .selectize.select .selectize-control .selectize-input { padding: 7px 10px 7px 22px; }
 
