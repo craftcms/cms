@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where image transform URLs were getting a backslash on Windows servers. ([#2026](https://github.com/craftcms/cms/issues/2026))
 - Fixed a 404 error that occurred when loading the jQuery.payment library in the Control Panel.
 - Fixed a bug where Craft’s bootstrap file was not taking into account the `CRAFT_LICENSE_KEY_PATH` PHP constant when doing folder sanity checks.
+- Fixed a bug where the Password field in the installer wizard wasn’t displaying validation errors.
 
 ## 3.0.0-beta.29 - 2017-09-29
 
