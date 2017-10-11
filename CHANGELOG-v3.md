@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
 - Added `craft\console\Request::getIsLivePreview()` (always `false`). ([#2020](https://github.com/craftcms/cms/pull/2020))
 - Added `craft\services\AssetTransforms::getTransformUri()`.
+- The installer now creates a “Common” field group.
 
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
