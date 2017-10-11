@@ -509,10 +509,13 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         margin-top: 0;
         display: inline;
         white-space: nowrap;
-        @include margin-right(7px);
         color: $submitColor;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        &:not(:last-child) {
+          @include margin-right(24px !important);
+        }
       }
 
       #extra-headers {
