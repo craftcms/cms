@@ -2,9 +2,9 @@ build:
   nodes:
     analysis:
       project_setup:
-        override: true
+        override: ['true']
       tests:
-        override: php-scrutinizer-run
+        override: ['php-scrutinizer-run']
     craft-tests:
       project_setup:
         before:
