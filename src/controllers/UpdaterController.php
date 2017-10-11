@@ -17,7 +17,6 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use yii\base\Exception as YiiException;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -519,7 +518,7 @@ class UpdaterController extends Controller
             // Make sure we can find composer.json
             try {
                 Craft::$app->getComposer()->getJsonPath();
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return [
                     'error' => Craft::t('app', 'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
                     'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
