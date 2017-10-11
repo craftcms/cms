@@ -13,6 +13,7 @@ use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Mailer;
 use craft\mail\transportadapters\Php;
+use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
 
@@ -1018,6 +1019,11 @@ class Install extends Migration
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo " done\n";
+
+        // Add the "Common" field group
+        Craft::$app->getFields()->saveGroup(new FieldGroup([
+            'name' => 'Common',
+        ]));
 
         // Add the default site
         Craft::$app->getSites()->saveSite($this->site);
