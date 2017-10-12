@@ -11,22 +11,16 @@ use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
 
 /**
- * Class Site record.
+ * SiteGroup record.
  *
- * @property int       $id        ID
- * @property int       $groupId   Group ID
- * @property string    $name      Name
- * @property string    $handle    Handle
- * @property string    $language  Language
- * @property bool      $hasUrls   Has URLs
- * @property bool      $baseUrl   Base URL
- * @property int       $sortOrder Sort order
- * @property SiteGroup $group     Group
+ * @property int    $id    ID
+ * @property string $name  Name
+ * @property Site[] $sites Sites
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Site extends ActiveRecord
+class SiteGroup extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
@@ -38,16 +32,16 @@ class Site extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%sites}}';
+        return '{{%sitegroups}}';
     }
 
     /**
-     * Returns the site’s group.
+     * Returns the site group’s sites.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup(): ActiveQueryInterface
+    public function getSites(): ActiveQueryInterface
     {
-        return $this->hasOne(SiteGroup::class, ['id' => 'siteId']);
+        return $this->hasMany(Site::class, ['siteId' => 'id']);
     }
 }

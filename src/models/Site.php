@@ -13,6 +13,7 @@ use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * Site model class.
@@ -29,6 +30,11 @@ class Site extends Model
      * @var int|null ID
      */
     public $id;
+
+    /**
+     * @var int|null Group ID
+     */
+    public $groupId;
 
     /**
      * @var string|null Name
@@ -87,8 +93,8 @@ class Site extends Model
     public function rules()
     {
         $rules = [
-            [['name', 'handle', 'language'], 'required'],
-            [['id'], 'number', 'integerOnly' => true],
+            [['groupId', 'name', 'handle', 'language'], 'required'],
+            [['id', 'groupId'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
@@ -110,6 +116,25 @@ class Site extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name);
+    }
+
+    /**
+     * Returns the site's group
+     *
+     * @return SiteGroup
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
+     */
+    public function getGroup(): SiteGroup
+    {
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Site is missing its group ID');
+        }
+
+        if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid site group ID: '.$this->groupId);
+        }
+
+        return $group;
     }
 
     /**

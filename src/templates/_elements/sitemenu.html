@@ -1,16 +1,23 @@
-{% set editableSites = craft.app.sites.getEditableSites() %}
-{% if editableSites|length %}
-    {% if craft.app.sites.currentSite.id in craft.app.sites.getEditableSiteIds() %}
-        {% set initialSite = craft.app.sites.currentSite %}
-    {% else %}
-        {% set initialSite = editableSites|first %}
+{% set siteIds = siteIds ?? craft.app.sites.getEditableSiteIds() %}
+{% if siteIds|length %}
+    {% if selectedSiteId is not defined %}
+        {% if craft.app.sites.currentSite.id in siteIds %}
+            {% set selectedSiteId = craft.app.sites.currentSite.id %}
+        {% else %}
+            {% set selectedSiteId = siteIds|first %}
+        {% endif %}
     {% endif %}
     <div>
-        <div class="btn menubtn sitemenubtn" data-icon="world">{{ initialSite ? initialSite.name|t('site') }}</div>
+        <div class="btn menubtn sitemenubtn" data-icon="world">{{ selectedSiteId ? craft.app.sites.getSiteById(selectedSiteId).name|t('site') }}</div>
         <div class="menu">
             <ul class="padded">
-                {% for site in editableSites %}
-                    <li><a{% if initialSite and site.id == initialSite.id %} class="sel"{% endif %} data-site-id="{{ site.id }}">{{ site.name|t('site') }}</a></li>
+                {% for siteId in siteIds %}
+                    {% set site = craft.app.sites.getSiteById(siteId) %}
+                    {% set url = urlFormat is defined ? url(urlFormat|replace({
+                        '{id}': siteId,
+                        '{handle}': site.handle
+                    })) %}
+                    <li><a{% if selectedSiteId and siteId == selectedSiteId %} class="sel"{% endif %} data-site-id="{{ siteId }}"{% if url %} href="{{ url }}"{% endif %}>{{ site.name|t('site') }}</a></li>
                 {% endfor %}
             </ul>
         </div>

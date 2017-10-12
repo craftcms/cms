@@ -5,11 +5,29 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
+- Added the concept of “Site Groups”. ([#1668](https://github.com/craftcms/cms/issues/1668))
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
+- Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
+- Added `craft\controllers\SitesController::actionSaveGroup()`.
+- Added `craft\controllers\SitesController::actionDeleteGroup()`.
+- Added `craft\errors\SiteGroupNotFoundException`.
+- Added `craft\events\SiteGroupEvent`.
 - Added `craft\models\Section::getSiteIds()`.
+- Added `craft\models\Site::groupId`.
+- Added `craft\models\Site::getGroup()`.
+- Added `craft\models\SiteGroup`.
+- Added `craft\records\Site::getGroup()`.
+- Added `carft\records\SiteGroup`.
+- Added `craft\services\Sites::getAllGroups()`.
+- Added `craft\services\Sites::getGroupById()`.
+- Added `craft\services\Sites::saveGroup()`.
+- Added `craft\services\Sites::deleteGroupById()`.
+- Added `craft\services\Sites::deleteGroup()`.
+- Added `craft\services\Sites::getSitesByGroupId()`.
+
 
 ### Changed
 - The Control Panel has been redesigned for better usability, readability and responsiveness.

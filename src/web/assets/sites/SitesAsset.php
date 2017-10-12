@@ -27,7 +27,7 @@ class SitesAsset extends AssetBundle
         ];
 
         $this->js = [
-            'SiteAdminTable'.$this->dotJs(),
+            'sites'.$this->dotJs(),
         ];
 
         parent::init();

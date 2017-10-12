@@ -538,12 +538,20 @@ class Install extends Migration
         ]);
         $this->createTable('{{%sites}}', [
             'id' => $this->primaryKey(),
+            'groupId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'language' => $this->string(12)->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(false)->notNull(),
             'baseUrl' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%sitegroups}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -835,6 +843,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%shunnedmessages}}', ['userId', 'message'], true);
         $this->createIndex(null, '{{%sites}}', ['handle'], true);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
+        $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
         $this->createIndex(null, '{{%structureelements}}', ['structureId', 'elementId'], true);
         $this->createIndex(null, '{{%structureelements}}', ['root'], false);
         $this->createIndex(null, '{{%structureelements}}', ['lft'], false);
@@ -976,6 +985,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%sections_sites}}', ['sectionId'], '{{%sections}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%sessions}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%shunnedmessages}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%sites}}', ['groupId'], '{{%sitegroups}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%structureelements}}', ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%structureelements}}', ['structureId'], '{{%structures}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%taggroups}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);

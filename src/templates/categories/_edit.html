@@ -28,22 +28,12 @@
 {% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
         {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
-        <div class="btn menubtn" data-icon="world">{{ category.getSite().name|t('site') }}</div>
-        <div class="menu">
-            <ul class="padded">
-                {% for siteId in siteIds %}
-                    {% set site = craft.app.sites.getSiteById(siteId) %}
-                    <li>
-                        {% if site.id == category.siteId %}
-                            <a class="sel">{{ site.name|t('site') }}</a>
-                        {% else %}
-                            {% set url = url("categories/#{groupHandle}/#{craft.app.request.getSegment(3)}/#{site.handle}", (parentIdParam ? { parentId: parentIdParam })) -%}
-                            <a href="{{ url }}">{{ site.name|t('site') }}</a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+        {% set urlFormat = url("categories/#{groupHandle}/#{craft.app.request.getSegment(3)}/{handle}", (parentIdParam ? { parentId: parentIdParam })) %}
+        {% include "_elements/sitemenu" with {
+            siteIds: siteIds,
+            selectedSiteId: category.siteId,
+            urlFormat: urlFormat
+        } only %}
     {% endif %}
 {% endblock %}
 

@@ -8,8 +8,17 @@
 {% block content %}
     <input type="hidden" name="action" value="sites/save-site">
     {{ redirectInput('settings/sites') }}
-
     {% if site.id %}<input type="hidden" name="siteId" value="{{ site.id }}">{% endif %}
+
+    {{ forms.selectField({
+        first: true,
+        label: "Group"|t('app'),
+        instructions: "Which group should this site belong to?"|t('app'),
+        id: 'group',
+        name: 'group',
+        options: groupOptions,
+        value: groupId
+    }) }}
 
     <div id="categorygroup-settings">
         {{ forms.textField({

@@ -5,20 +5,10 @@
 
 {% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
-        <div class="btn menubtn" data-icon="world">{{ globalSet.getSite().name|t('site') }}</div>
-        <div class="menu">
-            <ul class="padded">
-                {% for site in craft.app.sites.getEditableSites() %}
-                    <li>
-                        {% if site.id == globalSet.siteId %}
-                            <a class="sel">{{ site.name|t('site') }}</a>
-                        {% else %}
-                            <a href="{{ url("globals/#{site.handle}/#{globalSet.handle}") }}">{{ site.name|t('site') }}</a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+        {% include "_elements/sitemenu" with {
+            selectedSiteId: globalSet.siteId,
+            urlFormat: "globals/{handle}/#{globalSet.handle}"
+        } %}
     {% endif %}
 {% endblock %}
 
