@@ -143,12 +143,11 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         min-width: 0;
 
         .photo-container {
-          flex: 0 0 0;
           @include margin-right(14px);
         }
 
         h2 {
-          //flex: 1 0 0;
+          flex: 1;
           padding: 0;
           margin: 0;
           word-break: normal;
