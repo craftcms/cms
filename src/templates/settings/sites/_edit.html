@@ -63,6 +63,18 @@
             warning: languageWarning ?? null
         }) }}
 
+        {% if craft.app.isMultiSite or not site.id %}
+            {{ forms.lightswitchField({
+                label: "Is this the primary site?"|t('app'),
+                instructions: "The primary site will be loaded by default on the front end."|t('app'),
+                id: 'primary',
+                name: 'primary',
+                on: site.primary
+            }) }}
+        {% else %}
+            <input type="hidden" name="primary" value="1">
+        {% endif %}
+
         <hr>
 
         {{ forms.checkboxField({

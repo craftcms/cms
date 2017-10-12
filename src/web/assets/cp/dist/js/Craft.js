@@ -1,4 +1,4 @@
-/*!   - 2017-10-11 */
+/*!   - 2017-10-12 */
 (function($){
 
 /** global: Craft */
@@ -4646,7 +4646,7 @@ Craft.AdminTable = Garnish.Base.extend(
                 });
             }
 
-            this.$deleteBtns = this.$table.find('.delete');
+            this.$deleteBtns = this.$table.find('.delete:not(.disabled)');
             this.addListener(this.$deleteBtns, 'click', 'handleDeleteBtnClick');
 
             this.updateUI();

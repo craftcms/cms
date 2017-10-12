@@ -22,6 +22,7 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\queue\jobs\ResaveElements;
@@ -434,12 +435,16 @@ class Sites extends Component
     public function getSitesByGroupId(int $groupId): array
     {
         $sites = [];
+        $sortOrders = [];
 
         foreach ($this->getAllSites() as $site) {
             if ($site->groupId == $groupId) {
                 $sites[] = $site;
+                $sortOrders[] = (int)$site->sortOrder;
             }
         }
+
+        array_multisort($sortOrders, SORT_NUMERIC, $sites);
 
         return $sites;
     }
@@ -589,6 +594,15 @@ class Sites extends Component
         $siteRecord->hasUrls = $site->hasUrls;
         $siteRecord->baseUrl = $site->baseUrl;
 
+        if ($isNewSite) {
+            if (!Craft::$app->getIsInstalled()) {
+                $siteRecord->primary = $site->primary = true;
+            } else {
+                // Even if this will be the new primary site, let _processNewPrimarySite() be the one to set this
+                $siteRecord->primary = false;
+            }
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Is the event giving us the go-ahead?
@@ -608,6 +622,15 @@ class Sites extends Component
             $transaction->rollBack();
 
             throw $e;
+        }
+
+        // Did the primary site just change?
+        if ($site->primary && Craft::$app->getIsInstalled()) {
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+
+            if ($site->id != $oldPrimarySiteId) {
+                $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
+            }
         }
 
         if (Craft::$app->getIsInstalled() && $isNewSite) {
@@ -710,14 +733,6 @@ class Sites extends Component
             throw $e;
         }
 
-        // Did the primary site just change?
-        $oldPrimarySiteId = $this->getPrimarySite()->id;
-        $newPrimarySiteId = $siteIds[0];
-
-        if ($newPrimarySiteId != $oldPrimarySiteId) {
-            $this->_processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId);
-        }
-
         if ($this->hasEventHandlers(self::EVENT_AFTER_REORDER_SITES)) {
             $this->trigger(self::EVENT_AFTER_REORDER_SITES, new ReorderSitesEvent([
                 'siteIds' => $siteIds,
@@ -754,10 +769,16 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
      * @return bool Whether the site was deleted successfully
+     * @throws Exception if $site is the primary site
      * @throws \Throwable if reasons
      */
     public function deleteSite(Site $site, int $transferContentTo = null): bool
     {
+        // Make sure this isn't the primary site
+        if ($site->id === $this->_primarySite->id) {
+            throw new Exception('You cannot delete the primary site.');
+        }
+
         // Fire a 'beforeDeleteSite' event
         $event = new DeleteSiteEvent([
             'site' => $site,
@@ -938,22 +959,6 @@ class Sites extends Component
             }
         }
 
-        $oldPrimarySiteId = $this->getPrimarySite()->id;
-
-        // Is the primary site ID getting deleted?
-        if ($oldPrimarySiteId === $site->id) {
-            $newPrimarySiteId = $this->_createSiteQuery()
-                ->select('id')
-                ->offset(1)
-                ->scalar();
-
-            if (!$newPrimarySiteId || $oldPrimarySiteId == $newPrimarySiteId) {
-                throw new Exception('Deleting the only site is not permitted');
-            }
-
-            $this->_processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId);
-        }
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $affectedRows = Craft::$app->getDb()->createCommand()
@@ -1014,7 +1019,7 @@ class Sites extends Component
                     $this->_sitesById[$site->id] = $site;
                     $this->_sitesByHandle[$site->handle] = $site;
 
-                    if ($i == 0) {
+                    if ($site->primary) {
                         $this->_primarySite = $site;
                     }
                 }
@@ -1130,9 +1135,9 @@ class Sites extends Component
     private function _createSiteQuery(): Query
     {
         return (new Query())
-            ->select(['id', 'groupId', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])
+            ->select(['id', 'groupId', 'name', 'handle', 'language', 'primary', 'hasUrls', 'baseUrl', 'sortOrder'])
             ->from(['{{%sites}}'])
-            ->orderBy(['sortOrder' => SORT_ASC]);
+            ->orderBy(['name' => SORT_ASC]);
     }
 
     /**
@@ -1163,61 +1168,82 @@ class Sites extends Component
      *
      * @param int $oldPrimarySiteId
      * @param int $newPrimarySiteId
+     *
+     * @throws \Throwable
      */
     private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)
     {
-        // Set the new primary site
-        $this->_primarySite = $this->getSiteById($newPrimarySiteId);
-
         App::maxPowerCaptain();
 
-        // Update all of the non-localized elements
-        $nonLocalizedElementTypes = [];
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var Element|string $elementType */
-            if (!$elementType::isLocalized()) {
-                $nonLocalizedElementTypes[] = $elementType;
+        try {
+            $db->createCommand()
+                ->update('{{%sites}}', ['primary' => false], ['id' => $oldPrimarySiteId])
+                ->execute();
+
+
+            $db->createCommand()
+                ->update('{{%sites}}', ['primary' => true], ['id' => $newPrimarySiteId])
+                ->execute();
+
+            // Update all of the non-localized elements
+            $nonLocalizedElementTypes = [];
+
+            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+                /** @var Element|string $elementType */
+                if (!$elementType::isLocalized()) {
+                    $nonLocalizedElementTypes[] = $elementType;
+                }
             }
+
+            if (!empty($nonLocalizedElementTypes)) {
+                $elementIds = (new Query())
+                    ->select(['id'])
+                    ->from(['{{%elements}}'])
+                    ->where(['type' => $nonLocalizedElementTypes])
+                    ->column();
+
+                if (!empty($elementIds)) {
+                    // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
+                    // these elements that don't currently use the old primary site ID
+                    $deleteCondition = [
+                        'and',
+                        ['elementId' => $elementIds],
+                        ['not', ['siteId' => $oldPrimarySiteId]]
+                    ];
+
+                    $db->createCommand()
+                        ->delete('{{%elements_sites}}', $deleteCondition)
+                        ->execute();
+                    $db->createCommand()
+                        ->delete('{{%content}}', $deleteCondition)
+                        ->execute();
+
+                    // Now swap the sites
+                    $updateColumns = ['siteId' => $newPrimarySiteId];
+                    $updateCondition = ['elementId' => $elementIds];
+
+                    $db->createCommand()
+                        ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
+                        ->execute();
+                    $db->createCommand()
+                        ->update('{{%content}}', $updateColumns, $updateCondition)
+                        ->execute();
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        if (!empty($nonLocalizedElementTypes)) {
-            $elementIds = (new Query())
-                ->select(['id'])
-                ->from(['{{%elements}}'])
-                ->where(['type' => $nonLocalizedElementTypes])
-                ->column();
-
-            if (!empty($elementIds)) {
-                // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
-                // these elements that don't currently use the old primary site ID
-                $deleteCondition = [
-                    'and',
-                    ['elementId' => $elementIds],
-                    ['not', ['siteId' => $oldPrimarySiteId]]
-                ];
-
-                $db = Craft::$app->getDb();
-
-                $db->createCommand()
-                    ->delete('{{%elements_sites}}', $deleteCondition)
-                    ->execute();
-                $db->createCommand()
-                    ->delete('{{%content}}', $deleteCondition)
-                    ->execute();
-
-                // Now swap the sites
-                $updateColumns = ['siteId' => $newPrimarySiteId];
-                $updateCondition = ['elementId' => $elementIds];
-
-                $db->createCommand()
-                    ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
-                    ->execute();
-                $db->createCommand()
-                    ->update('{{%content}}', $updateColumns, $updateCondition)
-                    ->execute();
-            }
-        }
+        // Set the new primary site
+        $this->_primarySite->primary = false;
+        $this->_primarySite = $this->getSiteById($newPrimarySiteId);
+        $this->_primarySite->primary = true;
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {

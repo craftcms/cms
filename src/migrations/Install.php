@@ -16,6 +16,7 @@ use craft\mail\transportadapters\Php;
 use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
+use craft\models\SiteGroup;
 
 /**
  * Installation Migration
@@ -539,6 +540,7 @@ class Install extends Migration
         $this->createTable('{{%sites}}', [
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
+            'primary' => $this->boolean()->notNull(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'language' => $this->string(12)->notNull(),
@@ -1035,7 +1037,16 @@ class Install extends Migration
             'name' => 'Common',
         ]));
 
+        // Add the initial site group
+        $sitesService = Craft::$app->getSites();
+        $siteGroup = new SiteGroup([
+            'name' => $this->site->name,
+        ]);
+        $sitesService->saveGroup($siteGroup);
+
         // Add the default site
+        $this->site->groupId = $siteGroup->id;
+        $this->site->primary = true;
         Craft::$app->getSites()->saveSite($this->site);
     }
 }

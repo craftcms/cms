@@ -3046,6 +3046,12 @@ ul.tree,
   display: none;
   position: absolute;
 
+  h6 {
+    &:first-child {
+      margin-top: 14px !important;
+    }
+  }
+
   ul {
     &.padded {
       li {

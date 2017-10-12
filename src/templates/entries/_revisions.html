@@ -9,24 +9,31 @@
 
 <div class="menu">
     {% if showSites %}
-        <ul class="padded">
-            {% for siteId in siteIds %}
-                {% set site = craft.app.sites.getSiteById(siteId) %}
-                {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
-                <li>
-                    {% if siteId == entry.siteId %}
-                        <a class="sel">
-                            <div class="status {{ status }}"></div>{{ site.name|t('site') }}
-                        </a>
-                    {% else %}
-                        {% set url = url(baseUrl~site.handle, params) %}
-                        <a href="{{ url }}">
-                            <div class="status {{ status }}"></div>{{ site.name|t('site') }}
-                        </a>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
+        {% set siteGroups = craft.app.sites.getAllGroups() %}
+        {% for group in siteGroups %}
+            {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}
+            {% if groupSiteIds %}
+                {% if siteGroups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
+                <ul class="padded">
+                    {% for siteId in groupSiteIds %}
+                        {% set site = craft.app.sites.getSiteById(siteId) %}
+                        {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+                        <li>
+                            {% if siteId == entry.siteId %}
+                                <a class="sel">
+                                    <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                                </a>
+                            {% else %}
+                                {% set url = url(baseUrl~site.handle, params) %}
+                                <a href="{{ url }}">
+                                    <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
         <hr>
     {% endif %}
 

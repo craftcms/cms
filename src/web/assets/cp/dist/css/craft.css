@@ -1187,6 +1187,7 @@ body.rtl .deleteusermodal .buttons .spinner { margin-right: -4px; }
 .ui-datepicker, .ui-timepicker-list { padding: 0; }
 
 .menu { display: none; position: absolute; }
+.menu h6:first-child { margin-top: 14px !important; }
 body.ltr .menu ul.padded li a { padding-left: 24px; }
 body.rtl .menu ul.padded li a { padding-right: 24px; }
 .menu ul.padded li a[data-icon]:before, .menu ul.padded li a.icon:before, .menu ul.padded li a.sel:before { font-size: 14px; color: #b9bfc6; }

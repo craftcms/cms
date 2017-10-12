@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\ArrayHelper;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
 
@@ -67,5 +68,15 @@ class SiteGroup extends Model
     public function getSites(): array
     {
         return Craft::$app->getSites()->getSitesByGroupId($this->id);
+    }
+
+    /**
+     * Returns the group’s site IDs.
+     *
+     * @return int[]
+     */
+    public function getSiteIds(): array
+    {
+        return ArrayHelper::getColumn($this->getSites(), 'id');
     }
 }

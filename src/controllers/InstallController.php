@@ -128,7 +128,7 @@ class InstallController extends Controller
         $site->language = $request->getBodyParam('siteLanguage');
         $return = [];
 
-        if ($site->validate()) {
+        if ($site->validate(['name', 'handle', 'baseUrl', 'language'])) {
             $return['validates'] = true;
         } else {
             $return['errors'] = $site->getErrors();

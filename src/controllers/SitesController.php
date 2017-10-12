@@ -267,6 +267,7 @@ class SitesController extends Controller
         $site->name = $request->getBodyParam('name');
         $site->handle = $request->getBodyParam('handle');
         $site->language = $request->getBodyParam('language');
+        $site->primary = (bool)$request->getBodyParam('primary');
         $site->hasUrls = (bool)$request->getBodyParam('hasUrls');
         $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
 

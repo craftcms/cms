@@ -52,6 +52,11 @@ class Site extends Model
     public $language;
 
     /**
+     * @var bool Primary site?
+     */
+    public $primary = false;
+
+    /**
      * @var bool Has URLs
      */
     public $hasUrls = true;
@@ -70,6 +75,11 @@ class Site extends Model
      * @var string|null Base URL
      */
     public $baseUrl;
+
+    /**
+     * @var int Sort order
+     */
+    public $sortOrder = 1;
 
     // Public Methods
     // =========================================================================
