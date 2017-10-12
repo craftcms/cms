@@ -11,6 +11,8 @@ use Craft;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
@@ -88,6 +90,26 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return parent::createDirectory($path, $mode, $recursive);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function removeDirectory($dir, $options = [])
+    {
+        try {
+            parent::removeDirectory($dir, $options);
+        } catch (ErrorException $e) {
+            // Try Symfony's thing as a fallback
+            $fs = new Filesystem();
+
+            try {
+                $fs->remove($dir);
+            } catch (IOException $e2) {
+                // throw the original exception instead
+                throw $e;
+            }
+        }
     }
 
     /**
