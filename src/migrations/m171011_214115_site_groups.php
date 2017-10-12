@@ -26,7 +26,6 @@ class m171011_214115_site_groups extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
-        $this->addForeignKey(null, '{{%sites}}', ['groupId'], '{{%sitegroups}}', ['id'], 'CASCADE', null);
 
         // Create the first site group
         $name = (new Query())
@@ -52,6 +51,9 @@ class m171011_214115_site_groups extends Migration
         } else {
             $this->alterColumn('{{%sites}}', 'groupId', $this->integer()->notNull());
         }
+
+        // Set the foreign key
+        $this->addForeignKey(null, '{{%sites}}', ['groupId'], '{{%sitegroups}}', ['id'], 'CASCADE', null);
     }
 
     /**
