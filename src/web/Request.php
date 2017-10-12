@@ -910,7 +910,7 @@ class Request extends \yii\web\Request
             if (
                 ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
                 ($actionParam = $this->getParam('action')) !== null ||
-                ($specialPath = in_array($this->_path, [
+                (in_array($this->_path, [
                     $loginPath,
                     $logoutPath,
                     $setPasswordPath,

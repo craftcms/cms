@@ -186,7 +186,7 @@ class Application extends \yii\web\Application
 
             if ($firstSeg !== null) {
                 /** @var Plugin|null $plugin */
-                $plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
+                $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
                 if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->id)) {
                     throw new ForbiddenHttpException();

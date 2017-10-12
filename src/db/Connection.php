@@ -416,7 +416,6 @@ class Connection extends \yii\db\Connection
      * Creates a shell command set to the given string
      *
      * @param string $command The command to be executed
-
      *
      * @return ShellCommand
      */

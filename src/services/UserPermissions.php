@@ -161,7 +161,7 @@ class UserPermissions extends Component
 
         $globalSets = Craft::$app->getGlobals()->getAllSets();
 
-        if ($globalSets) {
+        if (!empty($globalSets)) {
             $permissions[Craft::t('app', 'Global Sets')] = $this->_getGlobalSetPermissions($globalSets);
         }
 
@@ -170,7 +170,7 @@ class UserPermissions extends Component
 
         $categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
-        if ($categoryGroups) {
+        if (!empty($categoryGroups)) {
             $permissions[Craft::t('app', 'Categories')] = $this->_getCategoryGroupPermissions($categoryGroups);
         }
 

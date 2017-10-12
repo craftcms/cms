@@ -380,7 +380,7 @@ class Elements extends Component
 
         // Make sure the element actually supports the site it's being saved in
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+        if (array_search($element->siteId, $supportedSiteIds, false) === false) {
             throw new Exception('Attempting to save an element in an unsupported site.');
         }
 
@@ -396,7 +396,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error.', __METHOD__);
+            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
 
             return false;
         }
@@ -552,7 +552,7 @@ class Elements extends Component
 
         // Make sure the element actually supports its own site ID
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+        if (array_search($element->siteId, $supportedSiteIds, false) === false) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
