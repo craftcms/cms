@@ -68,7 +68,7 @@ class TemplatesController extends Controller
     {
         // Does that template exist?
         if (!$this->getView()->doesTemplateExist($template)) {
-            throw new NotFoundHttpException('Template not found');
+            throw new NotFoundHttpException('Template ' . $template . ' not found');
         }
 
         // Merge any additional route params
