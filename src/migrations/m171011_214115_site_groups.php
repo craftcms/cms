@@ -47,7 +47,7 @@ class m171011_214115_site_groups extends Migration
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres
             // (see https://github.com/yiisoft/yii2/issues/12077)
-            $this->execute('alter table "sites" alter column "groupId" set not null');
+            $this->execute('alter table {{%sites}} alter column [[groupId]] set not null');
         } else {
             $this->alterColumn('{{%sites}}', 'groupId', $this->integer()->notNull());
         }
