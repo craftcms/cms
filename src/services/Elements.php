@@ -396,7 +396,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error.', __METHOD__);
+            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
 
             return false;
         }
