@@ -89,7 +89,7 @@
             },
 
             promptForGroupName: function(oldName) {
-                return prompt(Craft.t('app', 'What do you want to name your group?'), oldName);
+                return prompt(Craft.t('app', 'What do you want to name the group?'), oldName);
             },
 
             deleteSelectedGroup: function() {
