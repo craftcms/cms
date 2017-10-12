@@ -266,7 +266,7 @@ class Fields extends Component
     {
         $isNewGroup = !$group->id;
 
-        // Fire a 'beforeSaveFieldLayout' event
+        // Fire a 'beforeSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -288,7 +288,7 @@ class Fields extends Component
             $group->id = $groupRecord->id;
         }
 
-        // Fire an 'afterSaveFieldLayout' event
+        // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
