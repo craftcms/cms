@@ -103,6 +103,7 @@ class AssetTransformsController extends Controller
         $transform->mode = $request->getBodyParam('mode');
         $transform->position = $request->getBodyParam('position');
         $transform->quality = $request->getBodyParam('quality');
+        $transform->interlace = $request->getBodyParam('interlace');
         $transform->format = $request->getBodyParam('format');
 
         if (empty($transform->format)) {

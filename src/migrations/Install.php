@@ -173,6 +173,7 @@ class Install extends Migration
             'height' => $this->integer()->unsigned(),
             'format' => $this->string(),
             'quality' => $this->integer(),
+            'interlace' => $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'),
             'dimensionChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

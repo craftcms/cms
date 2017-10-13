@@ -11,10 +11,12 @@ Craft CMS 3.0 Working Changelog
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
 - Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
+- Added interlace setting to Asset Transforms ([#1487]https://github.com/craftcms/cms/issues/1487)
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
 - Added `craft\errors\SiteGroupNotFoundException`.
 - Added `craft\events\SiteGroupEvent`.
+- Added `craft\image\Raster::setInterlace()`.
 - Added `craft\models\Section::getSiteIds()`.
 - Added `craft\models\Site::groupId`.
 - Added `craft\models\Site::getGroup()`.

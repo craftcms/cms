@@ -20,6 +20,7 @@ use craft\db\ActiveRecord;
  * @property int       $height              Height
  * @property int       $width               Width
  * @property string    $format              Format
+ * @property string    $interlace           Interlace
  * @property int       $quality             Quality
  * @property \DateTime $dimensionChangeTime Dimension change time
  *

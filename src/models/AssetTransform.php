@@ -73,6 +73,11 @@ class AssetTransform extends Model
     public $position = 'center-center';
 
     /**
+     * @var string Position
+     */
+    public $interlace = 'none';
+
+    /**
      * @var int|null Quality
      */
     public $quality;
@@ -113,6 +118,16 @@ class AssetTransform extends Model
                     'bottom-left',
                     'bottom-center',
                     'bottom-right',
+                ],
+            ],
+            [
+                ['interlace'],
+                'in',
+                'range' => [
+                    'none',
+                    'line',
+                    'plane',
+                    'partition',
                 ],
             ],
             [

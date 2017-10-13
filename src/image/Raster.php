@@ -433,6 +433,20 @@ class Raster extends Image
     }
 
     /**
+     * Sets the interlace setting.
+     *
+     * @param string $interlace
+     *
+     * @return static Self reference
+     */
+    public function setInterlace(string $interlace)
+    {
+        $this->_image->interlace($interlace);
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function saveAs(string $targetPath, bool $autoQuality = false): bool
