@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2992 - 2017-10-13
 
 ### Changed
 - Reduced the chance of a deadlock occurring on sites that have a high concurrent volume of element writes.
