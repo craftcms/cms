@@ -9,6 +9,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where any plugin that listened to the `onEndRequest` event would be ignored.
+- Fixed a bug where assets uploaded to an Assets field by a front-end form would not get related to the element being saved if `setContentFromPost()` was called more than once. ([#2018](https://github.com/craftcms/cms/issues/2018))
 
 ## 2.6.2991 - 2017-09-29
 
