@@ -1,15 +1,17 @@
 {% import "_includes/forms" as forms %}
 
+{% set useEmailAsUsername = craft.config.useEmailAsUsername %}
+
 
 <div id="account" class="modal">
 	<h1>{{ "Create your account"|t }}</h1>
 
 	<form id="accountform" accept-charset="UTF-8">
 		{{ getCsrfInput() }}
-		{% if not craft.config.useEmailAsUsername %}
-			{{ forms.textField({ label: "Username"|t, id: 'username', maxlength: 255 }) }}
+		{% if not useEmailAsUsername %}
+			{{ forms.textField({ first: true, label: "Username"|t, id: 'username', maxlength: 255 }) }}
 		{% endif %}
-		{{ forms.textField({ label: "Email"|t, id: 'email', maxlength: 255 }) }}
+		{{ forms.textField({ first: useEmailAsUsername, label: "Email"|t, id: 'email', maxlength: 255 }) }}
 		{{ forms.passwordField({ label: "Password"|t, id: 'password' }) }}
 
 		<div class="buttons">

@@ -162,7 +162,7 @@
   z-index: auto; }
 
 .redactor-link-tooltip {
-  z-index: 99; }
+  z-index: 1050; }
 
 .redactor-toolbar {
   z-index: 100; }
@@ -237,6 +237,20 @@
   position: absolute;
   left: -3000px; }
 
+.redactor-toolbar-box {
+  position: relative; }
+  .redactor-toolbar-box .re-button-tooltip {
+    display: none;
+    position: absolute;
+    white-space: nowrap;
+    z-index: 101;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 2px;
+    padding: 3px 8px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-family: Consolas, Menlo, Monaco, "Courier New", monospace; }
+
 .redactor-toolbar {
   position: relative;
   padding: 0 !important;
@@ -277,7 +291,7 @@
   background: #000; }
 
 .redactor-toolbar.redactor-toolbar-external {
-  z-index: 999;
+  z-index: 100;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: none; }
 
@@ -352,19 +366,6 @@
   .redactor-toolbar li a.re-button-icon {
     padding: 16px;
     font-size: 16px; }
-  .redactor-air li a .re-button-tooltip,
-  .redactor-toolbar li a .re-button-tooltip {
-    display: none;
-    position: absolute;
-    white-space: nowrap;
-    left: 50%;
-    bottom: -18px;
-    background: rgba(0, 0, 0, 0.9);
-    border-radius: 2px;
-    padding: 3px 8px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 12px;
-    font-family: Consolas, Menlo, Monaco, "Courier New", monospace; }
 
 .redactor-toolbar li a {
   border-right: 1px solid rgba(0, 0, 0, 0.05); }

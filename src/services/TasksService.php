@@ -565,9 +565,6 @@ class TasksService extends BaseApplicationComponent
 	 */
 	public function handleRequestEnd()
 	{
-		// Make sure a future call to craft()->end() dosen't trigger this a second time
-		craft()->detachEventHandler('onEndRequest', array($this, '_onEndRequest'));
-
 		// Make sure nothing has been output to the browser yet, and there's no pending response body
  		if (!headers_sent() && !ob_get_length())
  		{

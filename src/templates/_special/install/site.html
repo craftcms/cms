@@ -6,7 +6,7 @@
 
 	<form id="siteform" accept-charset="UTF-8">
 		{{ getCsrfInput() }}
-		{{ forms.textField({ label: "Site Name"|t, id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
+		{{ forms.textField({ first: true, label: "Site Name"|t, id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
 		{{ forms.textField({ label: "Site URL"|t, id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 
 		{% set localeInput %}

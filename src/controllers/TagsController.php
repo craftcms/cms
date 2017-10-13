@@ -232,7 +232,7 @@ class TagsController extends BaseController
 
 		$tag = new TagModel();
 		$tag->groupId = craft()->request->getRequiredPost('groupId');
-		$tag->getContent()->title = trim(craft()->request->getRequiredPost('title'));
+		$tag->getContent()->title = craft()->request->getRequiredPost('title');
 
 		if (craft()->tags->saveTag($tag))
 		{
