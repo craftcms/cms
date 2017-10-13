@@ -26,6 +26,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft’s bootstrap file was not taking into account the `CRAFT_LICENSE_KEY_PATH` PHP constant when doing folder sanity checks.
 - Fixed a bug where the Password field in the installer wizard wasn’t displaying validation errors.
 - Fixed a JavaScript error that occurred after running the Find and Replace utility, preventing the Control Panel from immediately tracking the job’s progress. ([#2030](https://github.com/craftcms/cms/issues/2030))
+- Fixed a bug where Craft would consider PDF to be a manipulatable image which is not desired behaviour. ([#1938](https://github.com/craftcms/cms/issues/1938))
 
 ## 3.0.0-beta.29 - 2017-09-29
 

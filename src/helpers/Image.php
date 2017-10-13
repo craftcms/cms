@@ -62,7 +62,12 @@ class Image
     public static function canManipulateAsImage(string $extension): bool
     {
         $formats = Craft::$app->getImages()->getSupportedImageFormats();
-        $formats[] = 'svg';
+
+        $alwaysManipulatable = ['svg'];
+        $neverManipulatable = ['pdf'];
+
+        $formats = array_merge($formats, $alwaysManipulatable);
+        $formats = array_diff($formats, $neverManipulatable);
 
         return in_array(strtolower($extension), $formats);
     }
