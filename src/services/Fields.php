@@ -33,7 +33,6 @@ use craft\fields\MissingField;
 use craft\fields\MultiSelect as MultiSelectField;
 use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
-use craft\fields\PositionSelect as PositionSelectField;
 use craft\fields\RadioButtons as RadioButtonsField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
@@ -393,7 +392,6 @@ class Fields extends Component
             MultiSelectField::class,
             NumberField::class,
             PlainTextField::class,
-            PositionSelectField::class,
             RadioButtonsField::class,
             TableField::class,
             TagsField::class,
