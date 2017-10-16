@@ -27,6 +27,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Password field in the installer wizard wasn’t displaying validation errors.
 - Fixed a JavaScript error that occurred after running the Find and Replace utility, preventing the Control Panel from immediately tracking the job’s progress. ([#2030](https://github.com/craftcms/cms/issues/2030))
 - Fixed a bug where Craft would consider PDF to be a manipulatable image which is not desired behaviour. ([#1938](https://github.com/craftcms/cms/issues/1938))
+- Fixed a bug where the self-updater wouldn’t work on environments without a `HOME` or `COMPOSER_HOME` environment variable set. ([#2019](https://github.com/craftcms/cms/issues/2019))
 
 ## 3.0.0-beta.29 - 2017-09-29
 
