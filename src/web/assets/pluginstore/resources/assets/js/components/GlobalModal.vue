@@ -3,9 +3,7 @@
         <div ref="globalmodal" class="globalmodal modal">
             <div class="globalmodalcontent">
                 <template v-if="modalStep === 'plugin-details'">
-                    <div class="body">
-                        <plugin-details :plugin="plugin"></plugin-details>
-                    </div>
+                    <plugin-details :plugin="plugin"></plugin-details>
                 </template>
 
                 <template v-else-if="modalStep === 'cart'">

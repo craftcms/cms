@@ -250,6 +250,7 @@ ul.categories li a img {
 .plugin-details-header {
   display: -webkit-box;
   display: flex;
+  padding: 24px;
 }
 
 .plugin-details-header .plugin-icon-large {
@@ -262,7 +263,6 @@ ul.categories li a img {
   display: flex;
   border-bottom: 1px solid #eee;
   padding-bottom: 24px;
-  margin-bottom: 24px;
 }
 
 .plugin-details-header .description {
@@ -289,16 +289,29 @@ ul.categories li a img {
   display: -webkit-box;
   display: flex;
   overflow: auto;
+  padding: 24px;
 }
 
 .plugin-details-body .plugin-description {
   -webkit-box-flex: 1;
   flex-grow: 1;
+  min-width: 0;
+}
+
+.plugin-details-body .plugin-description img {
+  max-width: 100%;
+}
+
+.plugin-details-body .plugin-description pre {
+  background: #eee;
+  padding: 24px;
+  overflow: auto;
 }
 
 .plugin-details-body .plugin-sidebar {
+  -webkit-box-flex: 0;
+  flex: 0 0 260px;
   width: 260px;
-  flex-shrink: 0;
   margin-left: 24px;
 }
 
