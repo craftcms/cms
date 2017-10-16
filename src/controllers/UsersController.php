@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
@@ -734,12 +735,33 @@ class UsersController extends Controller
             ]
         ];
 
-        // No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-        if (!$isNewUser || ($edition === Craft::Pro && $user->getFieldLayout()->getFields())) {
-            $tabs['profile'] = [
-                'label' => Craft::t('app', 'Profile'),
-                'url' => '#profile',
-            ];
+        // Only show custom fields if it's Craft Pro
+        if ($edition === Craft::Pro) {
+            foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
+                // Skip if the tab doesn't have any fields
+                if (empty($tab->getFields())) {
+                    continue;
+                }
+
+                // Do any of the fields on this tab have errors?
+                $hasErrors = false;
+
+                if ($user->hasErrors()) {
+                    foreach ($tab->getFields() as $field) {
+                        /** @var Field $field */
+                        if ($user->hasErrors($field->handle)) {
+                            $hasErrors = true;
+                            break;
+                        }
+                    }
+                }
+
+                $tabs['profile'.$index] = [
+                    'label' => Craft::t('site', $tab->name),
+                    'url' => '#profile'.($index + 1),
+                    'class' => $hasErrors ? 'error' : null
+                ];
+            }
         }
 
         // Show the permission tab for the users that can change them on Craft Client+ editions (unless

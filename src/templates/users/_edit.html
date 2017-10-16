@@ -15,10 +15,6 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
-{% set photoInput %}
-    {% include 'users/_photo' with {user: user} only %}
-{% endset %}
-
 {% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
 
 {% set hiddenInputs %}
@@ -60,6 +56,14 @@
 
         <div id="account">
             {% include "users/_accountfields" %}
+
+            {% if not isNewUser %}
+                {{ forms.field({
+                    label: "Photo"|t('app')
+                }, include('users/_photo', {user: user}, with_context = false)) }}
+            {% endif %}
+
+            <hr>
 
             {% if isNewUser %}
 
@@ -134,6 +138,8 @@
             {% endif %}
 
             {% if user.getIsCurrent() %}
+                <hr>
+
                 {{ forms.selectField({
                     label: "Week Start Day"|t('app'),
                     id: 'weekStartDay',
@@ -141,41 +147,34 @@
                     options: craft.app.locale.getWeekDayNames(),
                     value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                 }) }}
-            {% endif %}
 
-            {% if user.admin %}
-                {{ forms.checkboxField({
-                    label: "Show the debug toolbar on the front end"|t('app'),
-                    name: 'enableDebugToolbarForSite',
-                    id: 'enableDebugToolbarForSite',
-                    checked: user.getPreference('enableDebugToolbarForSite')
-                }) }}
+                {% if user.admin %}
+                    {{ forms.checkboxField({
+                        label: "Show the debug toolbar on the front end"|t('app'),
+                        name: 'enableDebugToolbarForSite',
+                        id: 'enableDebugToolbarForSite',
+                        checked: user.getPreference('enableDebugToolbarForSite')
+                    }) }}
 
-                {{ forms.checkboxField({
-                    label: "Show the debug toolbar on the Control Panel"|t('app'),
-                    name: 'enableDebugToolbarForCp',
-                    id: 'enableDebugToolbarForCp',
-                    checked: user.getPreference('enableDebugToolbarForCp')
-                }) }}
+                    {{ forms.checkboxField({
+                        label: "Show the debug toolbar on the Control Panel"|t('app'),
+                        name: 'enableDebugToolbarForCp',
+                        id: 'enableDebugToolbarForCp',
+                        checked: user.getPreference('enableDebugToolbarForCp')
+                    }) }}
+                {% endif %}
             {% endif %}
         </div>
 
-        {% if not isNewUser or CraftEdition == CraftPro %}
-            <div id="profile" class="hidden">
-                {% if not isNewUser %}
-                    {{ forms.field({
-                        label: "Photo"|t('app')
-                    }, photoInput) }}
-
-                    <hr>
-
-                {% endif %}
-
-                {% include "_includes/fields" with {
-                    fields: craft.app.fields.getLayoutByType('craft\\elements\\User').getFields(),
-                    element: user
-                } only %}
-            </div>
+        {% if CraftEdition == CraftPro %}
+            {% for tab in user.getFieldLayout().getTabs() %}
+                <div id="profile{{ loop.index }}" class="hidden">
+                    {% include "_includes/fields" with {
+                        fields:  tab.getFields(),
+                        element: user
+                    } only %}
+                </div>
+            {% endfor %}
         {% endif %}
 
         {% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}
