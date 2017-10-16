@@ -786,29 +786,25 @@ class UsersController extends Controller
 
 
         // Craft ID account
-
         $craftIdToken = Craft::$app->getPluginStore()->getToken();
 
-        if($craftIdToken && $craftIdToken->hasExpired()) {
+        if ($craftIdToken && $craftIdToken->hasExpired()) {
             $craftIdToken = null;
         }
 
         try {
             $client = Craft::$app->getPluginStore()->getClient();
 
-            if($craftIdToken)
-            {
+            if ($craftIdToken) {
                 $craftIdAccountResponse = $client->request('GET', 'account');
                 $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
 
-                if(isset($craftIdAccount['error'])) {
+                if (isset($craftIdAccount['error'])) {
                     $craftIdError = $craftIdAccount['error'];
                     $craftIdAccount = null;
                 }
             }
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             $craftIdError = $e->getMessage();
         }
 
