@@ -34,7 +34,7 @@
 
         <div class="plugin-details-body">
             <div class="plugin-description">
-                <div v-html="description"></div>
+                <div v-html="longDescription"></div>
 
                 <div class="screenshots">
                     <img v-for="screenshot in plugin.screenshots" :src="screenshot" />
@@ -81,9 +81,9 @@
                 isInCart: 'isInCart',
                 isInstalled: 'isInstalled',
             }),
-            description() {
-                if(this.plugin.description && this.plugin.description.length > 0) {
-                    return marked(this.plugin.description, { sanitize: true });
+            longDescription() {
+                if(this.plugin.longDescription && this.plugin.longDescription.length > 0) {
+                    return marked(this.plugin.longDescription, { sanitize: true });
                 }
             },
             developerUrl() {
