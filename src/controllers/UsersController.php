@@ -1207,7 +1207,9 @@ class UsersController extends Controller
             move_uploaded_file($file->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $file->name);
 
-            $html = $this->getView()->renderTemplate('users/_photo', ['account' => $user]);
+            $html = $this->getView()->renderTemplate('users/_photo', [
+                'user' => $user
+            ]);
 
             return $this->asJson([
                 'html' => $html,
@@ -1250,11 +1252,9 @@ class UsersController extends Controller
         $user->photoId = null;
         Craft::$app->getElements()->saveElement($user, false);
 
-        $html = $this->getView()->renderTemplate('users/_photo',
-            [
-                'account' => $user
-            ]
-        );
+        $html = $this->getView()->renderTemplate('users/_photo', [
+            'user' => $user
+        ]);
 
         return $this->asJson(['html' => $html]);
     }
