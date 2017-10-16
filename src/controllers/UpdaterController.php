@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
-use Composer\Util\Platform;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
