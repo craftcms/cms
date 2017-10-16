@@ -48,6 +48,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
 - Removed `craft\fields\data\RichTextData`.
+- Removed `craft\fields\PositionSelect`.
 - Removed `craft\fields\RichText`.
 - Removed `craft\web\assets\redactor\RedactorAsset`.
 - Removed `craft\web\assets\richtext\RichTextAsset`.
