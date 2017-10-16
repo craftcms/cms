@@ -583,13 +583,13 @@ class UsersController extends Controller
 
         /** @var User $user */
 
-        $isNewAccount = !$user->id;
+        $isNewUser = !$user->id;
 
         // Make sure they have permission to edit this user
         // ---------------------------------------------------------------------
 
         if (!$user->getIsCurrent()) {
-            if ($isNewAccount) {
+            if ($isNewUser) {
                 $this->requirePermission('registerUsers');
             } else {
                 $this->requirePermission('editUsers');
@@ -604,7 +604,7 @@ class UsersController extends Controller
         $destructiveActions = [];
         $miscActions = [];
 
-        if ($edition >= Craft::Client && !$isNewAccount) {
+        if ($edition >= Craft::Client && !$isNewUser) {
             switch ($user->getStatus()) {
                 case User::STATUS_PENDING:
                     $statusLabel = Craft::t('app', 'Unverified');
@@ -710,7 +710,7 @@ class UsersController extends Controller
         // Set the appropriate page title
         // ---------------------------------------------------------------------
 
-        if (!$isNewAccount) {
+        if (!$isNewUser) {
             if ($user->getIsCurrent()) {
                 $title = Craft::t('app', 'My Account');
             } else {
@@ -734,7 +734,7 @@ class UsersController extends Controller
         ];
 
         // No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-        if (!$isNewAccount || ($edition === Craft::Pro && $user->getFieldLayout()->getFields())) {
+        if (!$isNewUser || ($edition === Craft::Pro && $user->getFieldLayout()->getFields())) {
             $tabs['profile'] = [
                 'label' => Craft::t('app', 'Profile'),
                 'url' => '#profile',
@@ -784,7 +784,7 @@ class UsersController extends Controller
             }
         }
 
-        
+
         // Craft ID account
 
         $craftIdToken = Craft::$app->getPluginStore()->getToken();
@@ -811,7 +811,7 @@ class UsersController extends Controller
         {
             $craftIdError = $e->getMessage();
         }
-        
+
 
         // Load the resources and render the page
         // ---------------------------------------------------------------------
@@ -831,8 +831,8 @@ class UsersController extends Controller
         ]);
 
         return $this->renderTemplate('users/_edit', [
-            'account' => $user,
-            'isNewAccount' => $isNewAccount,
+            'user' => $user,
+            'isNewUser' => $isNewUser,
             'statusLabel' => $statusLabel ?? null,
             'actions' => $actions,
             'title' => $title,

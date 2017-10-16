@@ -7,7 +7,7 @@
 			{{ csrfInput() }}
 
 			<input type="hidden" name="action" value="plugin-store/connect">
-			<input type="hidden" name="redirect" value="{{ (account.getIsCurrent() ? 'myaccount' : 'users/{id}')|hash }}">
+			<input type="hidden" name="redirect" value="{{ (user.getIsCurrent() ? 'myaccount' : 'users/{id}')|hash }}">
 
 			<p>{{ 'Connect your Craft ID account to improve your experience.'|t('app') }}</p>
 
@@ -35,7 +35,7 @@
 				{{ csrfInput() }}
 
 				<input type="hidden" name="action" value="plugin-store/disconnect">
-				<input type="hidden" name="redirect" value="{{ (account.getIsCurrent() ? 'myaccount' : 'users/{id}')|hash }}">
+				<input type="hidden" name="redirect" value="{{ (user.getIsCurrent() ? 'myaccount' : 'users/{id}')|hash }}">
 
 				<p>{{ 'Retrieve your existing plugin licenses and purchase new ones by connecting with your Craft ID.'|t('app') }}</p>
 
