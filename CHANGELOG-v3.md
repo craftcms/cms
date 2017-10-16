@@ -42,6 +42,7 @@ Craft CMS 3.0 Working Changelog
 - Global sets’ field layouts can now have multiple tabs. ([#1196](https://github.com/craftcms/cms/issues/1196))
 - Edit User pages’ Save buttons are now positioned in the page header, like similar pages.
 - Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
+- Fields on multi-site installs can now be translated per site group.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
 
 ### Removed

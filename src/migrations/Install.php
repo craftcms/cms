@@ -362,7 +362,7 @@ class Install extends Migration
             'handle' => $this->string(64)->notNull(),
             'context' => $this->string()->notNull()->defaultValue('global'),
             'instructions' => $this->text(),
-            'translationMethod' => $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none'),
+            'translationMethod' => $this->string()->notNull()->defaultValue('none'),
             'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
             'settings' => $this->text(),
