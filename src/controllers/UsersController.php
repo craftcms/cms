@@ -599,6 +599,7 @@ class UsersController extends Controller
         // Determine which actions should be available
         // ---------------------------------------------------------------------
 
+        $statusLabel = null;
         $statusActions = [];
         $sessionActions = [];
         $destructiveActions = [];
@@ -784,8 +785,9 @@ class UsersController extends Controller
             }
         }
 
-
         // Craft ID account
+        $craftIdAccount = null;
+        $craftIdError = null;
         $craftIdToken = Craft::$app->getPluginStore()->getToken();
 
         if ($craftIdToken && $craftIdToken->hasExpired()) {
@@ -826,18 +828,18 @@ class UsersController extends Controller
             'Please enter your password.',
         ]);
 
-        return $this->renderTemplate('users/_edit', [
-            'user' => $user,
-            'isNewUser' => $isNewUser,
-            'statusLabel' => $statusLabel ?? null,
-            'actions' => $actions,
-            'title' => $title,
-            'tabs' => $tabs,
-            'selectedTab' => $selectedTab,
-            'craftIdAccount' => (isset($craftIdAccount) ? $craftIdAccount : null),
-            'craftIdError' => (isset($craftIdError) ? $craftIdError : null),
-            'craftIdToken' => $craftIdToken
-        ]);
+        return $this->renderTemplate('users/_edit', compact(
+            'user',
+            'isNewUser',
+            'statusLabel',
+            'actions',
+            'title',
+            'tabs',
+            'selectedTab',
+            'craftIdAccount',
+            'craftIdError',
+            'craftIdToken'
+        ));
     }
 
     /**
