@@ -38,15 +38,28 @@ class UploadedFile extends \CUploadedFile
 	 * Returns an instance of the specified uploaded file.  The name can be a plain string or a string like an array
 	 * element (e.g. 'Post[imageFile]', or 'Post[0][imageFile]').
 	 *
-	 * @param string $name The name of the file input field.
+	 * @param string $name                 The name of the file input field.
+	 * @param bool   $ensureTempFileExists Whether to only return the instance if its temp files still exists.
 	 *
-	 * @return UploadedFile|null The instance of the uploaded file. null is returned if no file is uploaded for the
-	 *                           specified name.
+	 * @return \CUploadedFile|null The instance of the uploaded file. null is returned if no file is uploaded for the
+	 *                             specified name.
 	 */
-	public static function getInstanceByName($name)
+	public static function getInstanceByName($name, $ensureTempFileExists = true)
 	{
 		$name = static::_normalizeName($name);
-		return parent::getInstanceByName($name);
+		$instance = parent::getInstanceByName($name);
+
+		if ($instance === null)
+		{
+			return null;
+		}
+
+		if ($ensureTempFileExists && !is_uploaded_file($instance->getTempName()))
+		{
+			return null;
+		}
+
+		return $instance;
 	}
 
 	/**
@@ -57,12 +70,13 @@ class UploadedFile extends \CUploadedFile
 	 *
 	 * @param string $name                  The name of the array of files
 	 * @param bool   $lookForSingleInstance If set to true, will look for a single instance of the given name.
+	 * @param bool   $ensureTempFilesExist  Whether only instances whose temp files still exist should be returned.
 	 *
-	 * @return UploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
-	 *                        found. Please note that this array will contain all files from all subarrays regardless
-	 *                        how deeply nested they are.
+	 * @return \CUploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
+	 *                          found. Please note that this array will contain all files from all subarrays regardless
+	 *                          how deeply nested they are.
 	 */
-	public static function getInstancesByName($name, $lookForSingleInstance = true)
+	public static function getInstancesByName($name, $lookForSingleInstance = true, $ensureTempFilesExist = true)
 	{
 		$name = static::_normalizeName($name);
 		$instances = parent::getInstancesByName($name);
@@ -75,6 +89,18 @@ class UploadedFile extends \CUploadedFile
 			{
 				$instances[] = $singleInstance;
 			}
+		}
+
+		if ($ensureTempFilesExist)
+		{
+			array_filter($instances, function($instance)
+			{
+				/** @var \CUploadedFile $instance */
+				return is_uploaded_file($instance->getTempName());
+			});
+
+			// Reset the keys
+			$instances = array_values($instances);
 		}
 
 		return $instances;

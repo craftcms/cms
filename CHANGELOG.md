@@ -3,8 +3,13 @@ Craft CMS Changelog
 
 ## 2.6.2993 (WIP)
 
+### Changed
+- Added a `$ensureTempFileExists` argument to `UploadedFile::getInstanceByName()`, which will cause the method to return `null` if the matching file had already been moved out of its temp location (defaults to `true`).
+- Added a `$ensureTempFilesExist` argument to `UploadedFile::getInstancesByName()`, which will filter out any files that have already been moved out of their temp locations (defaults to `true`).
+
 ### Fixed
 - Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
+- Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end.
 
 ## 2.6.2992 - 2017-10-13
 
