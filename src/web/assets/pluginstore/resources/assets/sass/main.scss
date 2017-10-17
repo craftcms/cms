@@ -1,6 +1,15 @@
 @charset "UTF-8";
 @import "../../../../../../../lib/craftcms-sass/mixins";
 
+$sidebarWidth: 225px;
+$detailsWidth: 350px;
+$minFullUiWidth: 1224px;
+$minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+
+#main-container {
+  position: relative;
+}
+
 .stripe-card-form {
   margin-bottom: 24px;
 }
@@ -16,19 +25,20 @@
   border-color: #da5a47;
 }
 
+
 /* Grids */
 
-.cssgrid-wrapper {
+.ps-grid-wrapper {
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 40px;
 }
 
-.cssgrid-wrapper.has-sidebar {
-  grid-template-columns: 3fr 1fr;
+.ps-grid-wrapper.has-sidebar {
+  grid-template-columns: 1fr 3fr;
 }
 
-.cssgrid-plugins {
+.ps-grid-plugins {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -37,14 +47,49 @@
   margin-bottom: 20px;
 }
 
-.cssgrid-plugins-4 {
+.ps-grid-plugins-4 {
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
-.cssgrid-box {
+.ps-grid-box {
   background-color: #fff;
   overflow: hidden;
 }
+
+@media only screen and (max-width: $minFullUiWidth - 1px) {
+  .ps-grid-plugins-4 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+// Rearrange #main-content to flow vertically at < 999
+@media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+  .ps-grid-wrapper.has-sidebar {
+    grid-template-columns: 1fr;
+  }
+  .ps-grid-plugins {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ps-grid-plugins-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media only screen and (max-width: 673px) {
+  .ps-grid-plugins {
+    grid-gap: 10px;
+  }
+
+  .ps-grid-plugins {
+    grid-template-columns: 1fr;
+  }
+  .ps-grid-plugins-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Install */
 
 #thank-you {
   width: 320px;
@@ -97,10 +142,15 @@ only screen and (min-resolution: 1.5dppx) {
   }
 }
 
+
 /* Index Page */
 
-ul.categories li:first-child a {
-  border-top: 1px solid #eee;
+ul.categories li {
+  position: relative;
+}
+
+ul.categories li:hover+li:before {
+  border-color: transparent;
 }
 
 ul.categories li a {
@@ -108,12 +158,34 @@ ul.categories li a {
   position: relative;
   padding: 10px;
   padding-left: 31px;
-  border-bottom: 1px solid #eee;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+}
+
+ul.categories li:before {
+  position: absolute;
+  border-top: 1px solid #eee;
+  content: '';
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+ul.categories li:last-child:after {
+  position: absolute;
+  border-top: 1px solid #eee;
+  content: '';
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 ul.categories li a:hover {
-  background-color: #fafafa;
+  /*background-color: #fafafa;*/
   text-decoration: none;
+  z-index: 1;
+  background: #fafafa;
+  border-color: #eee;
 }
 
 ul.categories li a img {
@@ -122,6 +194,99 @@ ul.categories li a img {
   left: 0;
   width: 24px;
 }
+
+.category-selector-btn {
+  display: none;
+  background: $lightBgColor;
+  border: 1px solid $hairlineColor;
+  padding: 10px 20px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  position: relative;
+  color: $secondarySubmitColor;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.category-selector-btn:before {
+    @include icon;
+    position: absolute;
+    top: calc(50% - 10px);
+    right: 0;
+    font-size: 16px;
+    width: 43px;
+    line-height: 20px;
+    content: 'downangle';
+}
+
+.category-selector {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #fff;
+  z-index: 1000;
+  width: 100vw;
+  height:100vh;
+  box-sizing: border-box;
+}
+
+.category-selector .category-selector-header a {
+  padding: 14px 24px;
+  display: block;
+  color: #000;
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+}
+
+.category-selector .category-selector-header a:hover {
+  text-decoration: none;
+}
+
+.category-selector .category-selector-body {
+  overflow: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.category-selector .category-selector-body ul.categories li:first-child a {
+  border-top: 0;
+}
+
+.category-selector .category-selector-body ul.categories li:first-child:before {
+  display: none;
+}
+
+.category-selector .category-selector-body ul.categories li:before,
+.category-selector .category-selector-body ul.categories li:after {
+  left: 1rem;
+  right: 1rem;
+}
+
+.category-selector .category-selector-body ul.categories li a {
+  padding-left: 55px;
+}
+.category-selector .category-selector-body ul.categories li a img {
+  left: 24px;
+}
+
+@media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+  .category-selector-btn {
+    display: block;
+  }
+
+  .category-selector {
+    display: flex;
+  }
+
+  .categories-wrapper {
+    display: none;
+  }
+}
+
 
 /* Cart */
 
@@ -140,11 +305,13 @@ ul.categories li a img {
   width: 100px;
 }
 
+
 /* CreditCard */
 
 .credit-card {
   margin: 24px 0;
 }
+
 
 /* GlobalModal */
 
@@ -153,7 +320,6 @@ ul.categories li a img {
   max-height: 650px;
 }
 
-/*.globalmodal .globalmodalcontent { position: relative; height: calc(100% - 72px); }*/
 .globalmodal .globalmodalcontent {
   position: relative;
   height: 100%;
@@ -196,6 +362,7 @@ ul.categories li a img {
   right: 0;
 }
 
+
 /* PluginCard */
 
 .plugin-card {
@@ -204,6 +371,12 @@ ul.categories li a img {
   border: 1px solid #E3E5E8;
   border-radius: 5px;
   height: 100px;
+}
+
+@media only screen and (max-width: 673px) {
+  .plugin-card {
+    height: 60px;
+  }
 }
 
 .plugin-card:hover {
@@ -235,6 +408,7 @@ ul.categories li a img {
   height: 32px;
   border-radius: 4px;
 }
+
 
 /* PluginDetails */
 
@@ -340,6 +514,7 @@ ul.categories li a img {
   width: 100%;
   margin-bottom: 24px;
 }
+
 
 /* PluginSearch */
 
