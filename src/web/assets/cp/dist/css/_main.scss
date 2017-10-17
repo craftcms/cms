@@ -260,7 +260,7 @@ h2[data-icon]:before {
 
 /* horizontal rule */
 hr {
-  margin: 14px 0;
+  margin: 24px 0;
   border: none;
   border-top: 1px solid $hairlineColor;
   height: 0;
@@ -2422,6 +2422,9 @@ ul.tree,
     flex-wrap: wrap;
     margin: 0 !important;
 
+    padding-left: 24px;
+    padding-right: 24px;
+
     &:not(:first-child) {
       padding-top: 8px;
     }
@@ -2434,6 +2437,12 @@ ul.tree,
       flex: 0 0 105px;
       margin-bottom: 0;
       line-height: 18px;
+    }
+
+    & > .input {
+      .flex {
+        flex-wrap: nowrap;
+      }
     }
   }
 
@@ -3410,9 +3419,9 @@ div.checkbox:before {
   height: 12px;
   content: '.';
   font-size: 0;
-  border-radius: 2px;
+  border-radius: 1px;
   background: #fff;
-  box-shadow: inset 0 0 0 1px $mediumHairlineColorAlpha;
+  box-shadow: 0 0 0 1px $mediumHairlineColorAlpha;
 }
 
 input.checkbox:disabled + label,
@@ -3426,7 +3435,6 @@ div.checkbox.checked:before,
 .sel div.checkbox:before,
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
-  background: $bgColor;
   @include icon;
   line-height: 12px;
 }
@@ -3454,7 +3462,7 @@ div.checkbox.indeterminate:before {
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
   outline: none;
-  box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha;
+  box-shadow: 0 0 0 1px $darkHairlineColorAlpha;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {

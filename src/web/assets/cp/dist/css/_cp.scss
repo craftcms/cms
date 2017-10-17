@@ -616,9 +616,15 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
             background: rgba(0, 0, 0, 0.05);
           }
 
-          & > .field > .heading > label,
-          & > .data > .heading {
-            color: hsl($hue, 15%, 38%);
+          & > .field,
+          & > .data {
+            padding-left: 0;
+            padding-right: 0;
+
+            & > .heading > label,
+            & > .heading {
+              color: hsl($hue, 15%, 38%);
+            }
           }
 
           .text::placeholder,
@@ -633,9 +639,8 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
 
         hr {
-          margin-left: -24px;
-          margin-right: -24px;
-          border-top-color: $hairlineColorAlpha;
+          margin: 0 -24px;
+          border-top-color: $mediumHairlineColorAlpha;
         }
 
         .spinner {

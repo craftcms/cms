@@ -275,6 +275,7 @@
         </div><!-- #settings -->
 
         {% if entry.id %}
+            <hr>
             <div class="meta read-only">
                 <div class="data">
                     <h5 class="heading">{{ "Created at"|t('app') }}</h5>
@@ -298,10 +299,8 @@
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.details" %}
 
-    {% if (
-        not isDraft and not isVersion and canSave and
-        section.enableVersioning
-    ) %}
+    {% if not isDraft and not isVersion and canSave and section.enableVersioning %}
+        <hr>
         <div class="meta">
             <textarea id="revision-notes" name="revisionNotes" class="text fullwidth" placeholder="{{ 'Notes about your changes'|t('app') }}" autocomplete="off"></textarea>
         </div>

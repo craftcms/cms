@@ -128,7 +128,7 @@ body.ltr h2[data-icon]:before { margin: -4px 6px 0 0 ; }
 body.rtl h2[data-icon]:before { margin: -4px 0 0 6px ; }
 
 /* horizontal rule */
-hr { margin: 14px 0; border: none; border-top: 1px solid #e3e5e8; height: 0; color: transparent; }
+hr { margin: 24px 0; border: none; border-top: 1px solid #e3e5e8; height: 0; color: transparent; }
 
 .pane hr { margin: 24px -24px; }
 
@@ -1009,10 +1009,11 @@ body.rtl .elementselect .progress-shade { right: 0; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
-.meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; }
+.meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; padding-left: 24px; padding-right: 24px; }
 .meta > .field:not(:first-child), .meta > .data:not(:first-child) { padding-top: 8px; }
 .meta > .field:not(:last-child), .meta > .data:not(:last-child) { padding-bottom: 8px; }
 .meta > .field > .heading, .meta > .data > .heading { -webkit-box-flex: 0; -ms-flex: 0 0 105px; flex: 0 0 105px; margin-bottom: 0; line-height: 18px; }
+.meta > .field > .input .flex, .meta > .data > .input .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; }
 .meta > .field > .heading > label, .meta > .data > .heading { color: #8f98a3; }
 .meta > .field > .input, .meta .data > .value { width: calc(100% - 112px); }
 .meta > .field { -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; }
@@ -1308,13 +1309,13 @@ body.rtl input.checkbox + label:empty, body.rtl div.checkbox:empty { padding-rig
 input.checkbox + label:empty:after, div.checkbox:empty:after { content: '.'; font-size: 0; }
 
 /* fixes a RTL bug */
-input.checkbox + label:before, div.checkbox:before { display: block; position: absolute; top: 2px; width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.2); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.2); }
+input.checkbox + label:before, div.checkbox:before { display: block; position: absolute; top: 2px; width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 1px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.2); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.2); }
 body.ltr input.checkbox + label:before, body.ltr div.checkbox:before { left: 0; }
 body.rtl input.checkbox + label:before, body.rtl div.checkbox:before { right: 0; }
 
 input.checkbox:disabled + label, div.checkbox.disabled:before, div.checkbox.disabled + label { opacity: 0.25; }
 
-input.checkbox:checked + label:before, div.checkbox.checked:before, .sel div.checkbox:before, input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before { background: #ebedef; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; line-height: 12px; }
+input.checkbox:checked + label:before, div.checkbox.checked:before, .sel div.checkbox:before, input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; line-height: 12px; }
 
 input.checkbox:checked:not(:indeterminate) + label:before, div.checkbox.checked:not(.indeterminate):before, .sel div.checkbox:not(.indeterminate):before { content: 'check'; font-size: 13px; }
 body.ltr input.checkbox:checked:not(:indeterminate) + label:before, body.ltr div.checkbox.checked:not(.indeterminate):before, body.ltr .sel div.checkbox:not(.indeterminate):before { text-indent: 1px; }
@@ -1322,7 +1323,7 @@ body.rtl input.checkbox:checked:not(:indeterminate) + label:before, body.rtl div
 
 input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align: center; }
 
-input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.4); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.4); }
+input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.4); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.4); }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
 
@@ -1819,13 +1820,14 @@ body.rtl #main-container #main #main-content #details { -webkit-box-shadow: inse
 #main-container #main #main-content #details .fixed-container { width: 350px; }
 #main-container #main #main-content #details .meta { padding: 24px; }
 #main-container #main #main-content #details .meta.read-only { background: rgba(0, 0, 0, 0.05); }
-#main-container #main #main-content #details .meta > .field > .heading > label, #main-container #main #main-content #details .meta > .data > .heading { color: #52606f; }
+#main-container #main #main-content #details .meta > .field, #main-container #main #main-content #details .meta > .data { padding-left: 0; padding-right: 0; }
+#main-container #main #main-content #details .meta > .field > .heading > label, #main-container #main #main-content #details .meta > .field > .heading, #main-container #main #main-content #details .meta > .data > .heading > label, #main-container #main #main-content #details .meta > .data > .heading { color: #52606f; }
 #main-container #main #main-content #details .meta .text::-webkit-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text:-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text::placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 body.ltr #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 0 0 -8px ; }
 body.rtl #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
-#main-container #main #main-content #details hr { margin-left: -24px; margin-right: -24px; border-top-color: rgba(0, 0, 20, 0.1); }
+#main-container #main #main-content #details hr { margin: 0 -24px; border-top-color: rgba(0, 0, 20, 0.2); }
 #main-container #main #main-content #details .spinner { background-image: url(../images/spinner_details.gif); }
 #main-container #main #main-content > .grid:only-child { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 
