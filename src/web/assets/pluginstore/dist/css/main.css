@@ -136,13 +136,25 @@
   }
 }
 
-/* Index Page */
+/* Categories */
 ul.categories li {
   position: relative;
 }
 
-ul.categories li:hover + li:before {
-  border-color: transparent;
+ul.categories li:before, ul.categories li:last-child:after {
+  position: absolute;
+  border-top: 1px solid #eee;
+  content: '';
+  left: 0;
+  right: 0;
+}
+
+ul.categories li:before {
+  top: 0;
+}
+
+ul.categories li:last-child:after {
+  bottom: 0;
 }
 
 ul.categories li a {
@@ -154,32 +166,6 @@ ul.categories li a {
   border-bottom: 1px solid transparent;
 }
 
-ul.categories li:before {
-  position: absolute;
-  border-top: 1px solid #eee;
-  content: '';
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-ul.categories li:last-child:after {
-  position: absolute;
-  border-top: 1px solid #eee;
-  content: '';
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-ul.categories li a:hover {
-  /*background-color: #fafafa;*/
-  text-decoration: none;
-  z-index: 1;
-  background: #fafafa;
-  border-color: #eee;
-}
-
 ul.categories li a img {
   position: absolute;
   top: 7px;
@@ -187,6 +173,18 @@ ul.categories li a img {
   width: 24px;
 }
 
+ul.categories li a:hover {
+  text-decoration: none;
+  z-index: 1;
+  background: #fafafa;
+  border-color: #eee;
+}
+
+ul.categories li:hover + li:before {
+  border-color: transparent;
+}
+
+/* Category Selector */
 .category-selector-btn {
   display: none;
   background: #fafafa;
@@ -196,10 +194,6 @@ ul.categories li a img {
   margin-bottom: 24px;
   position: relative;
   color: #8f98a3;
-}
-
-.category-selector-btn:hover {
-  text-decoration: none;
 }
 
 .category-selector-btn:before {
@@ -233,6 +227,10 @@ ul.categories li a img {
   width: 43px;
   line-height: 20px;
   content: 'downangle';
+}
+
+.category-selector-btn:hover {
+  text-decoration: none;
 }
 
 .category-selector {
@@ -276,8 +274,7 @@ ul.categories li a img {
   display: none;
 }
 
-.category-selector .category-selector-body ul.categories li:before,
-.category-selector .category-selector-body ul.categories li:after {
+.category-selector .category-selector-body ul.categories li:before, .category-selector .category-selector-body ul.categories li:after {
   left: 1rem;
   right: 1rem;
 }

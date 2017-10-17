@@ -143,57 +143,59 @@ only screen and (min-resolution: 1.5dppx) {
 }
 
 
-/* Index Page */
+/* Categories */
 
-ul.categories li {
-  position: relative;
+ul.categories {
+  li {
+    position: relative;
+
+    &:before,
+    &:last-child:after {
+      position: absolute;
+      border-top: 1px solid #eee;
+      content: '';
+      left: 0;
+      right: 0;
+    }
+
+    &:before {
+      top: 0;
+    }
+
+    &:last-child:after {
+      bottom: 0;
+    }
+
+    a {
+      display: block;
+      position: relative;
+      padding: 10px;
+      padding-left: 31px;
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid transparent;
+
+      img {
+        position: absolute;
+        top: 7px;
+        left: 0;
+        width: 24px;
+      }
+
+      &:hover {
+        text-decoration: none;
+        z-index: 1;
+        background: #fafafa;
+        border-color: #eee;
+      }
+    }
+  }
+
+  li:hover+li:before {
+    border-color: transparent;
+  }
 }
 
-ul.categories li:hover+li:before {
-  border-color: transparent;
-}
-
-ul.categories li a {
-  display: block;
-  position: relative;
-  padding: 10px;
-  padding-left: 31px;
-  border-top: 1px solid transparent;
-  border-bottom: 1px solid transparent;
-}
-
-ul.categories li:before {
-  position: absolute;
-  border-top: 1px solid #eee;
-  content: '';
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-ul.categories li:last-child:after {
-  position: absolute;
-  border-top: 1px solid #eee;
-  content: '';
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-ul.categories li a:hover {
-  /*background-color: #fafafa;*/
-  text-decoration: none;
-  z-index: 1;
-  background: #fafafa;
-  border-color: #eee;
-}
-
-ul.categories li a img {
-  position: absolute;
-  top: 7px;
-  left: 0;
-  width: 24px;
-}
+/* Category Selector */
 
 .category-selector-btn {
   display: none;
@@ -205,12 +207,7 @@ ul.categories li a img {
   position: relative;
   color: $secondarySubmitColor;
 
-  &:hover {
-    text-decoration: none;
-  }
-}
-
-.category-selector-btn:before {
+  &:before {
     @include icon;
     position: absolute;
     top: calc(50% - 10px);
@@ -219,6 +216,11 @@ ul.categories li a img {
     width: 43px;
     line-height: 20px;
     content: 'downangle';
+  }
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 .category-selector {
@@ -232,45 +234,52 @@ ul.categories li a img {
   width: 100vw;
   height:100vh;
   box-sizing: border-box;
-}
 
-.category-selector .category-selector-header a {
-  padding: 14px 24px;
-  display: block;
-  color: #000;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-}
+  .category-selector-header {
+    a {
+      padding: 14px 24px;
+      display: block;
+      color: #000;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
 
-.category-selector .category-selector-header a:hover {
-  text-decoration: none;
-}
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
 
-.category-selector .category-selector-body {
-  overflow: auto;
-  height: 100%;
-  box-sizing: border-box;
-}
+  .category-selector-body {
+    overflow: auto;
+    height: 100%;
+    box-sizing: border-box;
 
-.category-selector .category-selector-body ul.categories li:first-child a {
-  border-top: 0;
-}
+    ul.categories {
+      li {
+        &:first-child a {
+          border-top: 0;
+        }
 
-.category-selector .category-selector-body ul.categories li:first-child:before {
-  display: none;
-}
+        &:first-child:before {
+          display: none;
+        }
 
-.category-selector .category-selector-body ul.categories li:before,
-.category-selector .category-selector-body ul.categories li:after {
-  left: 1rem;
-  right: 1rem;
-}
+        &:before,
+        &:after {
+          left: 1rem;
+          right: 1rem;
+        }
 
-.category-selector .category-selector-body ul.categories li a {
-  padding-left: 55px;
-}
-.category-selector .category-selector-body ul.categories li a img {
-  left: 24px;
+        a {
+          padding-left: 55px;
+
+          img {
+            left: 24px;
+          }
+        }
+      }
+    }
+  }
 }
 
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
