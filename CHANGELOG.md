@@ -12,6 +12,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
 - Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end. ([#2018](https://github.com/craftcms/cms/issues/2018))
+- Fixed a bug where a Craft Client account could not completely an upgrade to Craft Pro.
 
 ## 2.6.2992 - 2017-10-13
 
