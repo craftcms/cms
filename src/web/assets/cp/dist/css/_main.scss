@@ -2175,10 +2175,14 @@ table.editable tbody tr td.code textarea::placeholder {
 table.editable + .btn.add {
   display: block;
   border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
-  border: 1px dashed rgba(0, 0, 0, 0.2);
-  border-top: none;
+  border: 1px dashed $darkHairlineColorAlpha;
+  border-top-width: 0;
   background: none;
   box-shadow: none;
+
+  &:focus {
+    border-style: solid;
+  }
 }
 
 .border-box + .buttons,
