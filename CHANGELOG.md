@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2993 (WIP)
+
+### Fixed
+- Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
+
 ## 2.6.2992 - 2017-10-13
 
 ### Changed
