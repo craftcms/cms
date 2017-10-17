@@ -8,11 +8,13 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\console\Request::getIsLivePreview()` (always `false`). ([#2020](https://github.com/craftcms/cms/pull/2020))
 - Added `craft\services\AssetTransforms::getTransformUri()`.
 - The installer now creates a “Common” field group.
+- It's now possible to specify subpath for uploaded user photos. ([#1575](https://github.com/craftcms/cms/issues/1575))
 
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
 - Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
 - Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
+- Renamed `craft\services\Assets::ensureFolderByFullPathAndVolumeId()` to `craft\services\Assets::ensureFolderByFullPathAndVolume()`.
 
 ### Removed
 - Removed `craft\base\Element::validateCustomFields`.

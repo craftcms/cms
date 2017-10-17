@@ -521,7 +521,7 @@ class Assets extends BaseRelationField
 
         if ($subpath === '') {
             // Get the root folder in the source
-            $folder = $rootFolder;
+            $folderId = $rootFolder->id;
         } else {
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
@@ -560,49 +560,14 @@ class Assets extends BaseRelationField
                     throw new InvalidSubpathException($subpath);
                 }
 
-                // Start at the root, and, go over each folder in the path and create it if it's missing.
-                $parentFolder = $rootFolder;
-
-                $segments = explode('/', $subpath);
-                foreach ($segments as $segment) {
-                    $folder = $assetsService->findFolder([
-                        'parentId' => $parentFolder->id,
-                        'name' => $segment
-                    ]);
-
-                    // Create it if it doesn't exist
-                    if (!$folder) {
-                        $folder = $this->_createSubfolder($parentFolder, $segment);
-                    }
-
-                    // In case there's another segment after this...
-                    $parentFolder = $folder;
-                }
+                $volume = Craft::$app ->getVolumes()->getVolumeById($volumeId);
+                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            } else {
+                $folderId = $folder->id;
             }
         }
 
-        return $folder->id;
-    }
-
-    /**
-     * Create a subfolder within a folder with the given name.
-     *
-     * @param VolumeFolder $currentFolder
-     * @param string       $folderName
-     *
-     * @return VolumeFolder The new subfolder
-     */
-    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName): VolumeFolder
-    {
-        $newFolder = new VolumeFolder();
-        $newFolder->parentId = $currentFolder->id;
-        $newFolder->name = $folderName;
-        $newFolder->volumeId = $currentFolder->volumeId;
-        $newFolder->path = ltrim(rtrim($currentFolder->path, '/').'/'.$folderName, '/').'/';
-
-        Craft::$app->getAssets()->createFolder($newFolder, true);
-
-        return $newFolder;
+        return $folderId;
     }
 
     /**
