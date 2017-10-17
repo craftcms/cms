@@ -16,7 +16,7 @@ Vue.filter('currency', currency)
 Vue.filter('t', t)
 
 window.pluginStoreApp = new Vue({
-    el: '#main',
+    el: '#main-content',
     router,
     store,
 
