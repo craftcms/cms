@@ -458,6 +458,13 @@ return array(
 	'preserveImageColorProfiles' => true,
 
 	/**
+	 * Whether the EXIF data should be preserved when manipulating images.
+	 *
+	 * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared. This will only have effect if Imagick is in use.
+	 */
+	'preserveExifData' => false,
+
+	/**
 	 * When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
 	 * you get distinct messages saying if the username/email didn't exist or the email was successfully sent and to check
 	 * your email for further instructions. This can allow for username/email enumeration based on the response. If set

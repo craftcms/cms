@@ -3,8 +3,10 @@ Craft CMS Changelog
 
 ## 2.6.2993 (WIP)
 
+### Added
+- Added the [preserveExifData](https://craftcms.com/docs/config-settings#preserveExifData) config setting, which determines whether EXIF data should be discarded when transforming an image. (`false` by default).
+
 ### Changed
-- Added a `$ensureTempFileExists` argument to `UploadedFile::getInstanceByName()`, which will cause the method to return `null` if the matching file had already been moved out of its temp location (defaults to `true`).
 - Added a `$ensureTempFilesExist` argument to `UploadedFile::getInstancesByName()`, which will filter out any files that have already been moved out of their temp locations (defaults to `true`).
 
 ### Fixed
