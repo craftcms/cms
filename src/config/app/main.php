@@ -187,6 +187,7 @@ return [
                 'baseUrl' => $generalConfig->resourceBaseUrl,
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
+                'appendTimestamp' => true,
             ];
 
             return Craft::createObject($config);

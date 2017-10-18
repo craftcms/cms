@@ -626,7 +626,7 @@ class Assets extends Component
                 FileHelper::writeToFile($path, $svg);
             }
 
-            return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+            return Craft::$app->getAssetManager()->getPublishedUrl($dir, true, $name);
         }
 
         // Make the thumb a JPG if the image format isn't safe for web
@@ -653,7 +653,7 @@ class Assets extends Component
         }
 
         // Publish the thumb directory (if necessary) and return the thumb's published URL
-        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true, $name);
     }
 
     /**
