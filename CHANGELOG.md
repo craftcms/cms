@@ -4,7 +4,7 @@ Craft CMS Changelog
 ## 2.6.2994 (WIP)
 
 ### Added
-- Added `HttpRequestService::isSpecialActionRequest()`.
+- Added `HttpRequestService::isSingleActionRequest()`.
 
 ### Fixed
 - Fixed a bug where it was possible for logged-out users to access offline sites.
