@@ -36,7 +36,7 @@
     "guzzlehttp/guzzle": "~6.2.2",
     "league/flysystem": "~1.0.35",
     "mikehaertl/php-shellcommand": "~1.2.5",
-    "pixelandtonic/imagine": "0.7.1.1",
+    "pixelandtonic/imagine": "0.7.1.2",
     "seld/cli-prompt": "^1.0",
     "twig/twig": "~2.3.0",
     "yiisoft/yii2": "~2.0.12.0",
