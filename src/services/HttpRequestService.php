@@ -1564,23 +1564,14 @@ class HttpRequestService extends \CHttpRequest
 				$verifyEmailPath = 'verifyemail';
 
 				if (
+					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath))) ||
 					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
-					($actionParam = $this->getParam('action')) !== null ||
-					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath)))
+					($actionParam = $this->getParam('action')) !== null
 				)
 				{
 					$this->_isActionRequest = true;
 
-					if ($triggerMatch)
-					{
-						$this->_actionSegments = array_slice($this->_segments, 1);
-					}
-					else if ($actionParam)
-					{
-						$actionParam = $this->decodePathInfo($actionParam);
-						$this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-					}
-					else
+					if ($specialPath)
 					{
 						$this->_isSpecialActionRequest = true;
 
@@ -1600,6 +1591,15 @@ class HttpRequestService extends \CHttpRequest
 						{
 							$this->_actionSegments = array('users', 'setpassword');
 						}
+					}
+					else if ($triggerMatch)
+					{
+						$this->_actionSegments = array_slice($this->_segments, 1);
+					}
+					else
+					{
+						$actionParam = $this->decodePathInfo($actionParam);
+						$this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
 					}
 				}
 			}
