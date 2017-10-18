@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## 2.6.2993 (WIP)
+## 2.6.2993 - 2017-10-18
 
 ### Added
 - Added the [preserveExifData](https://craftcms.com/docs/config-settings#preserveExifData) config setting, which determines whether EXIF data should be discarded when transforming an image (defaults to `false`).
