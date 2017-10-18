@@ -680,8 +680,7 @@ class CategoriesController extends Controller
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($variables['category']->hasErrors($field->handle)) {
-                        $hasErrors = true;
+                    if ($hasErrors = $variables['category']->hasErrors($field->handle)) {
                         break;
                     }
                 }
