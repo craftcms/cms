@@ -449,6 +449,13 @@ return array(
 	 */
 	'postLoginRedirect' => '',
 
+    /**
+     * Whether the EXIF data should be preserved when manipulating images.
+     *
+     * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared. This will only have effect if Imagick is in use.
+     */
+    'preserveExifData' => false,
+
 	/**
 	 * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
 	 *
@@ -456,13 +463,6 @@ return array(
 	 * an incorrect gamma value, which causes the images to become very dark. This will only have effect if Imagick is in use.
 	 */
 	'preserveImageColorProfiles' => true,
-
-	/**
-	 * Whether the EXIF data should be preserved when manipulating images.
-	 *
-	 * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared. This will only have effect if Imagick is in use.
-	 */
-	'preserveExifData' => false,
 
 	/**
 	 * When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
