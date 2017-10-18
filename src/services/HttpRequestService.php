@@ -51,6 +51,11 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * @var bool
 	 */
+	private $_isSpecialActionRequest = false;
+
+	/**
+	 * @var bool
+	 */
 	private $_checkedRequestType = false;
 
 	/**
@@ -329,6 +334,16 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$this->_checkRequestType();
 		return $this->_isActionRequest;
+	}
+
+	/**
+	 * Returns whether the current request is a special-case action request (login, logout,
+	 * verifyEmail or setPassword).
+	 */
+	public function isSpecialActionRequest()
+	{
+		$this->_checkRequestType();
+		return $this->_isSpecialActionRequest;
 	}
 
 	/**
@@ -1567,6 +1582,8 @@ class HttpRequestService extends \CHttpRequest
 					}
 					else
 					{
+						$this->_isSpecialActionRequest = true;
+
 						if ($this->_path == $loginPath)
 						{
 							$this->_actionSegments = array('users', 'login');
