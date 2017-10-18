@@ -348,7 +348,7 @@ class UrlManager extends \yii\web\UrlManager
             }
 
             if ($route !== false) {
-                if ($rule->params) {
+                if ($rule instanceof \craft\web\UrlRule && $rule->params) {
                     $this->setRouteParams($rule->params);
                 }
 
