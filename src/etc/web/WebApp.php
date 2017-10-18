@@ -1018,13 +1018,13 @@ class WebApp extends \CWebApplication
 			}
 
 			$actionSegs = $this->request->getActionSegments();
-			$isSpecial = $this->request->isSpecialActionRequest();
+			$singleAction = $this->request->isSingleActionRequest();
 
 			if ($actionSegs && (
-				($actionSegs == array('users', 'login') && $isSpecial) ||
-				($actionSegs == array('users', 'logout') && $isSpecial) ||
-				($actionSegs == array('users', 'verifyemail') && $isSpecial) ||
-				($actionSegs == array('users', 'setpassword') && $isSpecial) ||
+				($actionSegs == array('users', 'login') && $singleAction) ||
+				($actionSegs == array('users', 'logout') && $singleAction) ||
+				($actionSegs == array('users', 'verifyemail') && $singleAction) ||
+				($actionSegs == array('users', 'setpassword') && $singleAction) ||
 				$actionSegs == array('users', 'forgotpassword') ||
 				$actionSegs == array('users', 'sendPasswordResetEmail') ||
 				$actionSegs[0] == 'update'
