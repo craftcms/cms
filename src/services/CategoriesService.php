@@ -903,7 +903,12 @@ class CategoriesService extends BaseApplicationComponent
 				))
 				{
 					// Merge in all of the entry's ancestors
-					$ancestorIds = $category->getAncestors()->ids();
+					$ancestorIds = $category
+                        ->getAncestors()
+					    ->status(null)
+                        ->localeEnabled(false)
+                        ->ids();
+
 					$completeIds = array_merge($completeIds, $ancestorIds);
 				}
 
