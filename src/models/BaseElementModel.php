@@ -893,15 +893,8 @@ abstract class BaseElementModel extends BaseModel
 						$this->setRawPostContent($handle, $value);
 					}
 					// Were any files uploaded for this field?
-					else if (!empty($this->_contentPostLocation) && ($file = UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle)))
+					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
 					{
-						// Make sure the file hasn't already been handled
-						/** @var UploadedFile $file */
-						if (!is_uploaded_file($file->getTempName()))
-						{
-							continue;
-						}
-
 						$value = null;
 					}
 					else

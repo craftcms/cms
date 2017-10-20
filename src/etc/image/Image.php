@@ -366,7 +366,7 @@ class Image extends BaseImage
 		{
 			if (craft()->images->isImagick())
 			{
-				$this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), (bool) craft()->config->get('preserveImageColorProfiles'), $this->_quality);
+				$this->_image->smartResize(new \Imagine\Image\Box($targetWidth, $targetHeight), (bool) craft()->config->get('preserveImageColorProfiles'), (bool) craft()->config->get('preserveExifData'), $this->_quality);
 			}
 			else
 			{

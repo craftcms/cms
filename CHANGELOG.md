@@ -1,6 +1,29 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2994 (WIP)
+
+### Added
+- Added `HttpRequestService::isSingleActionRequest()`.
+
+### Fixed
+- Fixed a bug where it was possible for logged-out users to access offline sites.
+
+## 2.6.2993 - 2017-10-18
+
+### Added
+- Added the [preserveExifData](https://craftcms.com/docs/config-settings#preserveExifData) config setting, which determines whether EXIF data should be discarded when transforming an image (defaults to `false`).
+
+### Changed
+- Client accounts are now allowed to access the edition upgrade modal.
+- Added an `$ensureTempFileExists` argument to `UploadedFile::getInstanceByName()`, which will cause the method to return `null` if the matching file had already been moved out of its temp location (defaults to `true`).
+- Added an `$ensureTempFilesExist` argument to `UploadedFile::getInstancesByName()`, which will filter out any files that have already been moved out of their temp locations (defaults to `true`).
+
+### Fixed
+- Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
+- Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end. ([#2018](https://github.com/craftcms/cms/issues/2018))
+- Fixed a bug where `HttpRequestService::getQueryStringWithoutPath()` wasn’t including duplicate param names in the returned string. ([#2041](https://github.com/craftcms/cms/issues/2041))
+
 ## 2.6.2992 - 2017-10-13
 
 ### Changed
