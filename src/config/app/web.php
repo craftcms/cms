@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'class' => \craft\web\Application::class,
     'components' => [
         'request' => function() {
             $generalConfig = Craft::$app->getConfig()->getGeneral();

@@ -7,6 +7,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
 - Added `craft\console\Request::getIsLivePreview()` (always `false`). ([#2020](https://github.com/craftcms/cms/pull/2020))
 - Added `craft\services\AssetTransforms::getTransformUri()`.
+- Added `craft\web\Application::ensureResourcePathExists()`.
+- Added `craft\web\Application::debugBootstrap()`.
 - The installer now creates a “Common” field group.
 - It's now possible to specify subpath for uploaded user photos. ([#1575](https://github.com/craftcms/cms/issues/1575))
 - Added the `preserveExifData` config setting, `false` by default and requries Imagick. ([#2034](https://github.com/craftcms/cms/issues/2034))
@@ -16,6 +18,7 @@ Craft CMS 3.0 Working Changelog
 - Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
 - Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
 - Renamed `craft\services\Assets::ensureFolderByFullPathAndVolumeId()` to `craft\services\Assets::ensureFolderByFullPathAndVolume()`.
+- It is now possible for application configs returned by `config/app.php` to override the application class, via a `'class'` key.
 
 ### Removed
 - Removed `craft\base\Element::validateCustomFields`.
