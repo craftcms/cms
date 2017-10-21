@@ -64,12 +64,18 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
 - Added `craft\console\Request::getIsLivePreview()` (always `false`). ([#2020](https://github.com/craftcms/cms/pull/2020))
 - Added `craft\services\AssetTransforms::getTransformUri()`.
+- Added `craft\web\Application::ensureResourcePathExists()`.
+- Added `craft\web\Application::debugBootstrap()`.
 - The installer now creates a “Common” field group.
+- It's now possible to specify subpath for uploaded user photos. ([#1575](https://github.com/craftcms/cms/issues/1575))
+- Added the `preserveExifData` config setting, `false` by default and requries Imagick. ([#2034](https://github.com/craftcms/cms/issues/2034))
 
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
 - Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
 - Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
+- Renamed `craft\services\Assets::ensureFolderByFullPathAndVolumeId()` to `craft\services\Assets::ensureFolderByFullPathAndVolume()`.
+- It is now possible for application configs returned by `config/app.php` to override the application class, via a `'class'` key.
 
 ### Removed
 - Removed `craft\base\Element::validateCustomFields`.
@@ -85,6 +91,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a JavaScript error that occurred after running the Find and Replace utility, preventing the Control Panel from immediately tracking the job’s progress. ([#2030](https://github.com/craftcms/cms/issues/2030))
 - Fixed a bug where Craft would consider PDF to be a manipulatable image which is not desired behaviour. ([#1938](https://github.com/craftcms/cms/issues/1938))
 - Fixed a bug where the self-updater wouldn’t work on environments without a `HOME` or `COMPOSER_HOME` environment variable set. ([#2019](https://github.com/craftcms/cms/issues/2019))
+- Fixed a PHP error if any of the URL rules weren’t an instance of `craft\web\UrlRule`. ([#2042](https://github.com/craftcms/cms/pull/2042))
 
 ## 3.0.0-beta.29 - 2017-09-29
 

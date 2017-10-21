@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\ImageException;
+use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\UserEvent;
@@ -400,16 +401,26 @@ class Users extends Component
                 'The volume set for user photo storage is not valid.'));
         }
 
+        $subpath = (string) Craft::$app->getSystemSettings()->getSetting('users', 'photoSubpath');
+
+        if ($subpath) {
+            try {
+                $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
+            } catch (\Throwable $e) {
+                throw new InvalidSubpathException($subpath);
+            }
+        }
+
         /** @var Volume $volume */
-        $assets = Craft::$app->getAssets();
+        $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
         if ($user->photoId) {
             // No longer a new file.
-            $assets->replaceAssetFile($assets->getAssetById($user->photoId), $fileLocation, $filenameToUse);
+            $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
-            $folderId = $volumes->ensureTopFolder($volume);
-            $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
+            $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $filenameToUse = $assetsService->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
