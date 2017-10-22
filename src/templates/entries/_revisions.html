@@ -34,43 +34,48 @@
                 </ul>
             {% endif %}
         {% endfor %}
+    {% endif %}
+
+    {% if showSites and entry.id %}
         <hr>
     {% endif %}
 
-    <ul class="padded">
-        {% set currentVersionEditTime = currentVersionEditTime ?? entry.dateUpdated %}
-        <li><a{% if className(entry) == 'craft\\elements\\Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
-            <span class="light">
-                {{ currentVersionEditTime|timestamp('short') }}
-                {%- if currentVersionCreator is defined %}, {{ currentVersionCreator }}{% endif %}
-            </span>
-        </a></li>
-    </ul>
-
-    {% if drafts %}
-        <h6>{{ "Drafts"|t('app') }}</h6>
+    {% if entry.id %}
         <ul class="padded">
-            {% for draft in drafts %}
-                <li><a{% if className(entry) == 'craft\\models\\EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
-                    {{ draft.name|t('site') }}
-                    <span class="light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
-                </a></li>
-            {% endfor %}
+            {% set currentVersionEditTime = currentVersionEditTime ?? entry.dateUpdated %}
+            <li><a{% if className(entry) == 'craft\\elements\\Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
+                <span class="light">
+                    {{ currentVersionEditTime|timestamp('short') }}
+                    {%- if currentVersionCreator is defined %}, {{ currentVersionCreator }}{% endif %}
+                </span>
+            </a></li>
         </ul>
-    {% endif %}
 
-    {% if section.enableVersioning %}
-        {% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId) %}
-        {% if versions %}
-            <h6>{{ "Recent Versions"|t('app') }}</h6>
+        {% if drafts %}
+            <h6>{{ "Drafts"|t('app') }}</h6>
             <ul class="padded">
-                {% for version in versions %}
-                    <li><a{% if className(entry) == 'craft\\models\\EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
-                        {{ "Version {num}"|t('app', { num: version.num }) }}
-                        <span class="light">{{ version.dateCreated|timestamp('short') }}, {{ version.creator }}</span>
+                {% for draft in drafts %}
+                    <li><a{% if className(entry) == 'craft\\models\\EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
+                        {{ draft.name|t('site') }}
+                        <span class="light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
                     </a></li>
                 {% endfor %}
             </ul>
+        {% endif %}
+
+        {% if section.enableVersioning %}
+            {% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId) %}
+            {% if versions %}
+                <h6>{{ "Recent Versions"|t('app') }}</h6>
+                <ul class="padded">
+                    {% for version in versions %}
+                        <li><a{% if className(entry) == 'craft\\models\\EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
+                            {{ "Version {num}"|t('app', { num: version.num }) }}
+                            <span class="light">{{ version.dateCreated|timestamp('short') }}, {{ version.creator }}</span>
+                        </a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         {% endif %}
     {% endif %}
 </div>
