@@ -234,6 +234,21 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function getMimeType($file, $magicFile = null, $checkExtension = true)
+    {
+        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+
+        // Be forgiving of SVG files, etc., that don't have an XML declaration
+        if ($checkExtension && $mimeType === 'text/plain') {
+            return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
+        }
+
+        return $mimeType;
+    }
+
+    /**
      * Writes contents to a file.
      *
      * @param string $file     the file path
