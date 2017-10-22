@@ -121,6 +121,8 @@ class Plugin extends Module implements PluginInterface
             $migrator->addMigrationHistory($name);
         }
 
+        $this->isInstalled = true;
+
         $this->afterInstall();
 
         return null;

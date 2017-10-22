@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
+- Added `craft\base\PluginTrait::$isInstalled`, which will be set to `true` or `false` depending on whether the plugin is currently installed.
 - Added `craft\console\Request::getIsLivePreview()` (always `false`). ([#2020](https://github.com/craftcms/cms/pull/2020))
 - Added `craft\services\AssetTransforms::getTransformUri()`.
 - Added `craft\web\Application::ensureResourcePathExists()`.
