@@ -1,6 +1,7 @@
 {% import "_includes/forms" as forms %}
 
-<div id="site" class="modal">
+<div id="site" class="screen hidden">
+    <div class="icon">{{ worldIcon|raw }}</div>
     <h1>{{ "Setup your site"|t('app') }}</h1>
 
     <form id="siteform" accept-charset="UTF-8">
@@ -25,6 +26,4 @@
             </div>
         </div>
     </form>
-
-    {% include "_special/install/dots" with {dot: 2} %}
 </div>

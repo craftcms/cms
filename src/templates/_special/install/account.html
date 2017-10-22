@@ -2,7 +2,8 @@
 
 {% set useEmailAsUsername = craft.app.config.general.useEmailAsUsername %}
 
-<div id="account" class="modal">
+<div id="account" class="screen hidden">
+    <div class="icon">{{ userIcon|raw }}</div>
     <h1>{{ "Create your account"|t('app') }}</h1>
 
     <form id="accountform" accept-charset="UTF-8">
@@ -19,6 +20,4 @@
             </div>
         </div>
     </form>
-
-    {% include "_special/install/dots" with {dot: 1} %}
 </div>

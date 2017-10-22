@@ -50,7 +50,7 @@ class InstallController extends Controller
     {
         // Return a 404 if Craft is already installed
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
-            throw new BadRequestHttpException('Craft CMS is already installed');
+            throw new BadRequestHttpException('Craft is already installed');
         }
     }
 
@@ -71,13 +71,21 @@ class InstallController extends Controller
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
 
-        $vars = [];
-        $vars['defaultSystemName'] = implode(' ', array_map('ucfirst', $words));
-        $vars['defaultSiteUrl'] = 'http://'.$server;
-
         $this->getView()->registerAssetBundle(InstallerAsset::class);
 
-        return $this->renderTemplate('_special/install', $vars);
+        $defaultSystemName = implode(' ', array_map('ucfirst', $words));
+        $defaultSiteUrl = 'http://'.$server;
+
+        $iconsPath = Craft::getAlias('@app/icons');
+        $userIcon = file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'user.svg');
+        $worldIcon = file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'world.svg');
+
+        return $this->renderTemplate('_special/install', compact(
+            'defaultSystemName',
+            'defaultSiteUrl',
+            'userIcon',
+            'worldIcon'
+        ));
     }
 
     /**
