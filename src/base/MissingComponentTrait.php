@@ -31,6 +31,11 @@ trait MissingComponentTrait
      */
     public $errorMessage;
 
+    /**
+     * @var mixed The custom settings associated with the component, if it is savable
+     */
+    public $settings;
+
     // Public methods
     // =========================================================================
 
