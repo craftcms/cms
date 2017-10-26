@@ -189,7 +189,9 @@ class DbConfig extends Object
      */
     public function updateDsn()
     {
-        if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
+        if (!$this->database) {
+            $this->dsn = null;
+        } else if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
             $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
         } else {
             $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
