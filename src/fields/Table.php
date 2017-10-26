@@ -225,7 +225,7 @@ class Table extends Field
             }
         }
 
-        return parent::serializeValue($value, $element);
+        return $value;
     }
 
     /**
