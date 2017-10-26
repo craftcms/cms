@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "9983949149a665dbf880e7c37faab54a",
+    "content-hash": "8a64006f0accc8dc233e0c35c973abd7",
     "packages": [
         {
             "name": "enshrined/svg-sanitize",
@@ -202,16 +202,16 @@
         },
         {
             "name": "pclzip/pclzip",
-            "version": "2.8.2",
+            "version": "2.8.2.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/ivanlanin/pclzip.git",
-                "reference": "19dd1de9d3f5fc4d7d70175b4c344dee329f45fd"
+                "url": "https://github.com/pixelandtonic/pclzip.git",
+                "reference": "0452225342eef35355cce4639f5e8c6efaecfe98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ivanlanin/pclzip/zipball/19dd1de9d3f5fc4d7d70175b4c344dee329f45fd",
-                "reference": "19dd1de9d3f5fc4d7d70175b4c344dee329f45fd",
+                "url": "https://api.github.com/repos/pixelandtonic/pclzip/zipball/0452225342eef35355cce4639f5e8c6efaecfe98",
+                "reference": "0452225342eef35355cce4639f5e8c6efaecfe98",
                 "shasum": ""
             },
             "type": "library",
@@ -220,7 +220,6 @@
                     "pclzip.lib.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-2.1"
             ],
@@ -235,7 +234,10 @@
                 "php",
                 "zip"
             ],
-            "time": "2014-06-05T11:42:24+00:00"
+            "support": {
+                "source": "https://github.com/pixelandtonic/pclzip/tree/2.8.2.1"
+            },
+            "time": "2017-10-26T22:46:58+00:00"
         },
         {
             "name": "phpmailer/phpmailer",
@@ -299,16 +301,16 @@
         },
         {
             "name": "pixelandtonic/imagine",
-            "version": "v0.7.1.1",
+            "version": "v0.7.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine.git",
-                "reference": "e124b3e6ff8ea371a5b08a0e51e023f879693efc"
+                "reference": "a741a7f47fb5a11584dd2029373138423f6e234f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/Imagine/zipball/e124b3e6ff8ea371a5b08a0e51e023f879693efc",
-                "reference": "e124b3e6ff8ea371a5b08a0e51e023f879693efc",
+                "url": "https://api.github.com/repos/pixelandtonic/Imagine/zipball/a741a7f47fb5a11584dd2029373138423f6e234f",
+                "reference": "a741a7f47fb5a11584dd2029373138423f6e234f",
                 "shasum": ""
             },
             "require": {
@@ -353,7 +355,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2017-06-02T21:08:52+00:00"
+            "time": "2017-10-17T12:44:49+00:00"
         },
         {
             "name": "simplepie/simplepie",
@@ -413,16 +415,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.27",
+            "version": "v2.8.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "1377400fd641d7d1935981546aaef780ecd5bf6d"
+                "reference": "7fe089232554357efb8d4af65ce209fc6e5a2186"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/1377400fd641d7d1935981546aaef780ecd5bf6d",
-                "reference": "1377400fd641d7d1935981546aaef780ecd5bf6d",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/7fe089232554357efb8d4af65ce209fc6e5a2186",
+                "reference": "7fe089232554357efb8d4af65ce209fc6e5a2186",
                 "shasum": ""
             },
             "require": {
@@ -469,7 +471,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2017-06-02T07:47:27+00:00"
+            "time": "2017-10-01T21:00:16+00:00"
         },
         {
             "name": "twig/twig",
@@ -799,16 +801,16 @@
         },
         {
             "name": "phpdocumentor/reflection-common",
-            "version": "1.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/ReflectionCommon.git",
-                "reference": "144c307535e82c8fdcaacbcfc1d6d8eeb896687c"
+                "reference": "21bdeb5f65d7ebf9f43b1b25d404f87deab5bfb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/144c307535e82c8fdcaacbcfc1d6d8eeb896687c",
-                "reference": "144c307535e82c8fdcaacbcfc1d6d8eeb896687c",
+                "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/21bdeb5f65d7ebf9f43b1b25d404f87deab5bfb6",
+                "reference": "21bdeb5f65d7ebf9f43b1b25d404f87deab5bfb6",
                 "shasum": ""
             },
             "require": {
@@ -849,7 +851,7 @@
                 "reflection",
                 "static analysis"
             ],
-            "time": "2015-12-27T11:43:31+00:00"
+            "time": "2017-09-11T18:02:19+00:00"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -1756,16 +1758,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.3.8",
+            "version": "v3.3.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "1d8c2a99c80862bdc3af94c1781bf70f86bccac0"
+                "reference": "8c7bf1e7d5d6b05a690b715729cb4cd0c0a99c46"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/1d8c2a99c80862bdc3af94c1781bf70f86bccac0",
-                "reference": "1d8c2a99c80862bdc3af94c1781bf70f86bccac0",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/8c7bf1e7d5d6b05a690b715729cb4cd0c0a99c46",
+                "reference": "8c7bf1e7d5d6b05a690b715729cb4cd0c0a99c46",
                 "shasum": ""
             },
             "require": {
@@ -1807,7 +1809,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-29T21:54:42+00:00"
+            "time": "2017-10-05T14:43:42+00:00"
         },
         {
             "name": "webmozart/assert",
