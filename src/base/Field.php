@@ -11,12 +11,14 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\FieldElementEvent;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
 
@@ -337,7 +339,22 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function serializeValue($value, ElementInterface $element = null)
     {
-        return Db::prepareValueForDb($value);
+        // If the object explicitly defines its savable value, use that
+        if ($value instanceof Serializable) {
+            return $value->serialize();
+        }
+
+        // If it's "arrayable", convert to array
+        if ($value instanceof Arrayable) {
+            return $value->toArray();
+        }
+
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+            return Db::prepareDateForDb($value);
+        }
+
+        return $value;
     }
 
     /**

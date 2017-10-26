@@ -980,7 +980,7 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
-        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+        $value = Db::prepareValueForDb($field->serializeValue($this->getFieldValue($attribute), $this));
 
         // Ignore empty values
         if ($value === null || $value === '') {
