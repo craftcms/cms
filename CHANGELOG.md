@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Added
 - Added `HttpRequestService::isSingleActionRequest()`.
 
+### Changed
+- Bumped Imagine to v.0.7.1.3 which also keeps IPTC data for images, if keeping EXIF data.
+
 ### Fixed
 - Fixed a bug where it was possible for logged-out users to access offline sites.
 
