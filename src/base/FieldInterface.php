@@ -265,6 +265,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      *
+     * Whatever this returns should be something [[normalizeValue()]] can handle.
+     *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
