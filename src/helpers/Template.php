@@ -15,6 +15,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
 use yii\base\Object;
+use Twig_Error_Runtime;
 
 /**
  * Class Template
@@ -70,8 +71,12 @@ class Template
         if ($object instanceof \DateTime && ($value = self::_dateTimeAttribute($object, $item, $type)) !== false) {
             return $value;
         }
-
-        return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+        
+        try {
+            return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+        } catch (\Exception $e) {
+            throw new Twig_Error_Runtime("$item is not a known method.", -1, $source);
+        }
     }
 
     /**
