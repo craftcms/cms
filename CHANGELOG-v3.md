@@ -41,6 +41,8 @@ Craft CMS 3.0 Working Changelog
 - Users’ field layouts can now have multiple tabs. ([#892](https://github.com/craftcms/cms/issues/892))
 - Global sets’ field layouts can now have multiple tabs. ([#1196](https://github.com/craftcms/cms/issues/1196))
 - Edit User pages’ Save buttons are now positioned in the page header, like similar pages.
+- The Language, Week Start Day, and Debug Toolbar settings have been moved to a new “Preferences” tab on the My Account page.
+- Users’ Langauge preference is now visible for single-site installs, and now shows all supported application languages; not just the site language(s). ([#847](https://github.com/craftcms/cms/issues/847))
 - Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
 - Fields on multi-site installs can now be translated per site group.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.

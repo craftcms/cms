@@ -116,54 +116,6 @@
                 {% endif %}
 
             {% endif %}
-
-            {% if craft.app.getIsMultiSite() %}
-                {% set languageInput %}
-                    <div class="select">
-                        <select id="preferred-language" name="preferredLanguage">
-                            {% set allSiteLanguages = craft.app.i18n.getSiteLocaleIds %}
-                            {% set userLanguage = user.getPreferredLanguage() ?: (user.getIsCurrent() ? craft.app.language : allSiteLanguages[0]) %}
-
-                            {% for language in allSiteLanguages %}
-                                <option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ craft.app.i18n.getLocaleById(language).getDisplayName(craft.app.language) }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                {% endset %}
-
-                {{ forms.field({
-                    id: 'preferred-language',
-                    label: "Preferred Language"|t('app')
-                }, languageInput) }}
-            {% endif %}
-
-            {% if user.getIsCurrent() %}
-                <hr>
-
-                {{ forms.selectField({
-                    label: "Week Start Day"|t('app'),
-                    id: 'weekStartDay',
-                    name: 'weekStartDay',
-                    options: craft.app.locale.getWeekDayNames(),
-                    value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
-                }) }}
-
-                {% if user.admin %}
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the front end"|t('app'),
-                        name: 'enableDebugToolbarForSite',
-                        id: 'enableDebugToolbarForSite',
-                        checked: user.getPreference('enableDebugToolbarForSite')
-                    }) }}
-
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the Control Panel"|t('app'),
-                        name: 'enableDebugToolbarForCp',
-                        id: 'enableDebugToolbarForCp',
-                        checked: user.getPreference('enableDebugToolbarForCp')
-                    }) }}
-                {% endif %}
-            {% endif %}
         </div>
 
         {% if CraftEdition == CraftPro %}
@@ -236,6 +188,54 @@
                     } only %}
                 </div>
 
+            </div>
+        {% endif %}
+
+        {% if user.getIsCurrent() %}
+            <div id="prefs" class="hidden">
+                {% set languageInput %}
+                    <div class="select">
+                        <select id="language" name="preferredLanguage">
+                            {% set allAppLanguages = craft.app.i18n.getAppLocaleIds %}
+                            {% set userLanguage = user.getPreferredLanguage() ?: (user.getIsCurrent() ? craft.app.language : allAppLanguages[0]) %}
+
+                            {% for language in allAppLanguages %}
+                                <option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ craft.app.i18n.getLocaleById(language).getDisplayName() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endset %}
+
+                {{ forms.field({
+                    id: 'language',
+                    label: "Language"|t('app')
+                }, languageInput) }}
+
+                {{ forms.selectField({
+                    label: "Week Start Day"|t('app'),
+                    id: 'weekStartDay',
+                    name: 'weekStartDay',
+                    options: craft.app.locale.getWeekDayNames(),
+                    value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
+                }) }}
+
+                {% if user.admin %}
+                    <hr>
+
+                    {{ forms.checkboxField({
+                        label: "Show the debug toolbar on the front end"|t('app'),
+                        name: 'enableDebugToolbarForSite',
+                        id: 'enableDebugToolbarForSite',
+                        checked: user.getPreference('enableDebugToolbarForSite')
+                    }) }}
+
+                    {{ forms.checkboxField({
+                        label: "Show the debug toolbar on the Control Panel"|t('app'),
+                        name: 'enableDebugToolbarForCp',
+                        id: 'enableDebugToolbarForCp',
+                        checked: user.getPreference('enableDebugToolbarForCp')
+                    }) }}
+                {% endif %}
             </div>
         {% endif %}
 

@@ -1126,7 +1126,7 @@ class User extends Element implements IdentityInterface
         $language = $this->getPreference('language');
 
         // Make sure it's valid
-        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
+        if ($language !== null && in_array($language, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
             return $language;
         }
 

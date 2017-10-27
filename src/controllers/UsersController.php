@@ -775,6 +775,15 @@ class UsersController extends Controller
             ];
         }
 
+        // Show the preferences tab if it's the current user
+        $isCurrent = $user->getIsCurrent();
+        if ($isCurrent) {
+            $tabs['prefs'] = [
+                'label' => Craft::t('app', 'Preferences'),
+                'url' => '#prefs',
+            ];
+        }
+
         // Just one tab looks awkward, so just don't show them at all then.
         if (count($tabs) == 1) {
             $tabs = [];
@@ -838,7 +847,7 @@ class UsersController extends Controller
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($user->getIsCurrent() ? 'true' : 'false');
+        $isCurrentJs = ($isCurrent ? 'true' : 'false');
         $settingsJs = Json::encode([
             'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
