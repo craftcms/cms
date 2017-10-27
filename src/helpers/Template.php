@@ -143,9 +143,11 @@ class Template
         $paginateVariable->totalPages = $totalPages;
 
         // Copy the criteria, set the offset, and get the elements
-        $query = clone $query;
+
+        $originalOffset = $query->offset;
         $query->offset = (int)$offset;
         $elements = $query->all();
+        $query->offset = $originalOffset;
 
         return [$paginateVariable, $elements];
     }
