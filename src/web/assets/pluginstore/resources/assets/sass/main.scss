@@ -458,12 +458,12 @@ ul.categories {
   .plugin-details-body {
     flex-grow: 1;
     display: flex;
-    overflow: auto;
-    padding: 24px;
 
     .plugin-description {
       flex-grow: 1;
       min-width: 0;
+      padding: 24px;
+      overflow: auto;
 
       img {
         max-width: 100%;
@@ -479,10 +479,11 @@ ul.categories {
     .plugin-sidebar {
       flex: 0 0 260px;
       width: 260px;
-      margin-left: 24px;
+      background: #fafafa;
+      border-left: 1px solid #eee;
 
       .plugin-meta {
-        border: 1px solid #eee;
+        /*border: 1px solid #eee;*/
         border-radius: 4px;
         padding: 24px;
 

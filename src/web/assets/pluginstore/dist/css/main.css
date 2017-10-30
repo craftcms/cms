@@ -467,14 +467,14 @@ ul.categories li:hover + li:before {
   flex-grow: 1;
   display: -webkit-box;
   display: flex;
-  overflow: auto;
-  padding: 24px;
 }
 
 .plugin-details .plugin-details-body .plugin-description {
   -webkit-box-flex: 1;
   flex-grow: 1;
   min-width: 0;
+  padding: 24px;
+  overflow: auto;
 }
 
 .plugin-details .plugin-details-body .plugin-description img {
@@ -491,11 +491,12 @@ ul.categories li:hover + li:before {
   -webkit-box-flex: 0;
   flex: 0 0 260px;
   width: 260px;
-  margin-left: 24px;
+  background: #fafafa;
+  border-left: 1px solid #eee;
 }
 
 .plugin-details .plugin-details-body .plugin-sidebar .plugin-meta {
-  border: 1px solid #eee;
+  /*border: 1px solid #eee;*/
   border-radius: 4px;
   padding: 24px;
 }
