@@ -14,7 +14,6 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 
