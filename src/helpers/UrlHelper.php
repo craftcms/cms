@@ -465,7 +465,7 @@ class UrlHelper
 			{
 				$url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-				if (craft()->request->isSiteRequest() && craft()->config->get('addTrailingSlashesToUrls'))
+				if (!$cpUrl && craft()->config->get('addTrailingSlashesToUrls'))
 				{
 					$url .= '/';
 				}

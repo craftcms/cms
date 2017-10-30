@@ -12,6 +12,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where it was possible for logged-out users to access offline sites.
 - Fixed a bug where server that did not have ZipArchive installed and were running PHP 7.1 would get a PHP error when using PclZip.
+- Fixed a bug where front-end URLs that were generated in the Control Panel were not getting trailing slashes if the `addTrailingSlashesToUrls` config setting was enabled.
 
 ## 2.6.2993 - 2017-10-18
 
