@@ -657,7 +657,9 @@ class Categories extends Component
             ) {
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
-                $ancestorQuery = $category->getAncestors();
+                $ancestorQuery = $category->getAncestors()
+                    ->status(null)
+                    ->enabledForSite(false);
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);
