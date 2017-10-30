@@ -97,6 +97,8 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error if any of the URL rules weren’t an instance of `craft\web\UrlRule`. ([#2042](https://github.com/craftcms/cms/pull/2042))
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` was returning `'text/plain'` for `.svg` files that didn’t have an XML declaration.
 - Fixed an error that occurred if the database credentials were set correctly but no database had been selected yet.
+- Fixed a bug where calls to undefined methods within Twig templates were A) not supressing the UnknownMethodException when Dev Mode was disabled; and B) not showing the appropriate template line when Dev Mode was disabled. ([#2066](https://github.com/craftcms/cms/pull/2066))
+- Fixed a bug where custom element query conditions were getting ignored when `{% paginate %}` tags fetched the current page’s elements. ([#2051](https://github.com/craftcms/cms/issues/2051))
 
 ## 3.0.0-beta.29 - 2017-09-29
 
