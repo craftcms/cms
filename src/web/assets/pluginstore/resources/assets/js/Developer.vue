@@ -41,7 +41,7 @@
 
             this.$store.dispatch('getDeveloper', developerId)
                 .then(developer => {
-                    this.$root.pageTitle = developer.developerName;
+                    this.$root.pageTitle = developer.fullName;
                     this.$root.loading = false;
                 })
                 .catch(response => {
