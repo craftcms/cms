@@ -76,6 +76,10 @@ class ElementRelationParamParser
             $relatedToParam = [$relatedToParam];
         }
 
+        if (!isset($relatedToParam[0])) {
+            return false;
+        }
+
         $conditions = [];
 
         if ($relatedToParam[0] === 'and' || $relatedToParam[0] === 'or') {
