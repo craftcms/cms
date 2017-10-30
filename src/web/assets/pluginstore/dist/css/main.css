@@ -432,43 +432,37 @@ ul.categories li:hover + li:before {
   flex-direction: column;
 }
 
-.plugin-details-header {
-  display: -webkit-box;
-  display: flex;
-  padding: 24px;
-}
-
-.plugin-details-header .plugin-icon-large {
-  margin-right: 14px;
-}
-
-.plugin-details-header {
+.plugin-details .plugin-details-header {
   flex-shrink: 0;
   display: -webkit-box;
   display: flex;
   border-bottom: 1px solid #eee;
-  padding-bottom: 24px;
+  padding: 24px;
 }
 
-.plugin-details-header .description {
+.plugin-details .plugin-details-header .plugin-icon-large {
+  margin-right: 14px;
+}
+
+.plugin-details .plugin-details-header .description {
   -webkit-box-flex: 1;
   flex-grow: 1;
   margin-left: 14px;
 }
 
-.plugin-details-header .description h2 {
+.plugin-details .plugin-details-header .description h2 {
   margin-bottom: 10px;
 }
 
-.plugin-details-header .description p {
+.plugin-details .plugin-details-header .description p {
   margin: 0.4em 0;
 }
 
-.plugin-details-header .buttons {
+.plugin-details .plugin-details-header .buttons {
   margin-top: 0;
 }
 
-.plugin-details-body {
+.plugin-details .plugin-details-body {
   -webkit-box-flex: 1;
   flex-grow: 1;
   display: -webkit-box;
@@ -477,61 +471,61 @@ ul.categories li:hover + li:before {
   padding: 24px;
 }
 
-.plugin-details-body .plugin-description {
+.plugin-details .plugin-details-body .plugin-description {
   -webkit-box-flex: 1;
   flex-grow: 1;
   min-width: 0;
 }
 
-.plugin-details-body .plugin-description img {
+.plugin-details .plugin-details-body .plugin-description img {
   max-width: 100%;
 }
 
-.plugin-details-body .plugin-description pre {
+.plugin-details .plugin-details-body .plugin-description pre {
   background: #eee;
   padding: 24px;
   overflow: auto;
 }
 
-.plugin-details-body .plugin-sidebar {
+.plugin-details .plugin-details-body .plugin-sidebar {
   -webkit-box-flex: 0;
   flex: 0 0 260px;
   width: 260px;
   margin-left: 24px;
 }
 
-.plugin-details-body .plugin-sidebar .plugin-meta {
+.plugin-details .plugin-details-body .plugin-sidebar .plugin-meta {
   border: 1px solid #eee;
   border-radius: 4px;
   padding: 24px;
 }
 
-.plugin-details-body .plugin-sidebar .plugin-meta ul li {
+.plugin-details .plugin-details-body .plugin-sidebar .plugin-meta ul li {
   display: -webkit-box;
   display: flex;
   border-bottom: 1px solid #eee;
   padding: 7px 0;
 }
 
-.plugin-details-body .plugin-sidebar .plugin-meta ul li:last-child {
+.plugin-details .plugin-details-body .plugin-sidebar .plugin-meta ul li:last-child {
   border-bottom: 0;
 }
 
-.plugin-details-body .plugin-sidebar .plugin-meta ul li span,
-.plugin-details-body .plugin-sidebar .plugin-meta ul li strong {
+.plugin-details .plugin-details-body .plugin-sidebar .plugin-meta ul li span,
+.plugin-details .plugin-details-body .plugin-sidebar .plugin-meta ul li strong {
   -webkit-box-flex: 1;
   flex-grow: 1;
 }
 
-.plugin-details-body .plugin-sidebar .plugin-meta ul li strong {
+.plugin-details .plugin-details-body .plugin-sidebar .plugin-meta ul li strong {
   text-align: right;
 }
 
-.plugin-details-body .screenshots {
+.plugin-details .plugin-details-body .screenshots {
   margin-top: 24px;
 }
 
-.plugin-details-body .screenshots img {
+.plugin-details .plugin-details-body .screenshots img {
   width: 100%;
   margin-bottom: 24px;
 }
