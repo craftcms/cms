@@ -493,6 +493,7 @@ ul.categories li:hover + li:before {
   width: 260px;
   background: #fafafa;
   border-left: 1px solid #eee;
+  overflow: auto;
 }
 
 .plugin-details .plugin-details-body .plugin-sidebar .plugin-meta {
