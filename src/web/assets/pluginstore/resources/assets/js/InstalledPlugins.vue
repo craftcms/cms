@@ -21,8 +21,13 @@
         },
 
         created() {
+            this.$root.crumbs = [
+                {
+                    label: "Plugin Store",
+                    path: '/',
+                }
+            ];
             this.$root.pageTitle = 'Installed Plugins';
-            this.$root.showCrumbs = true;
         },
     }
 </script>

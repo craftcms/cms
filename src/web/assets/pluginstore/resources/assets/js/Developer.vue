@@ -28,7 +28,12 @@
         },
 
         created () {
-            this.$root.showCrumbs = true;
+            this.$root.crumbs = [
+                {
+                    label: "Plugin Store",
+                    path: '/',
+                }
+            ];
             
             let developerId = this.$route.params.id;
 

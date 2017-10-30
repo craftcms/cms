@@ -28,7 +28,7 @@ window.pluginStoreApp = new Vue({
       return {
           $crumbs: null,
           $pageTitle: null,
-          showCrumbs: false,
+          crumbs: null,
           pageTitle: 'Plugin Store',
           plugin: null,
           modalStep: null,
@@ -91,7 +91,7 @@ window.pluginStoreApp = new Vue({
             }
 
             this.$store.dispatch('updateCraftId', { craftId });
-        }
+        },
     },
 
     watch: {
@@ -100,13 +100,39 @@ window.pluginStoreApp = new Vue({
                 this.$cartButton.html('Cart (' + this.cartPlugins.length + ')');
             }
         },
-        showCrumbs(showCrumbs) {
-            if(showCrumbs) {
-                this.$crumbs.removeClass('hidden');
-            } else {
-                this.$crumbs.addClass('hidden');
+
+        crumbs(crumbs) {
+            // Remove existing crumbs
+
+            $('nav', this.$crumbs).remove();
+
+
+            if(crumbs && crumbs.length > 0) {
+                // Create new crumbs
+
+                let crumbsNav = $('<nav></nav>');
+                let crumbsUl = $('<ul></ul>').appendTo(crumbsNav);
+                let crumbsLi = $('<li></li>').appendTo(crumbsUl);
+
+
+                // Add crumb items
+
+                let $this = this;
+
+                for (let i = 0; i < crumbs.length; i++) {
+                    let item = crumbs[i];
+                    let link = $('<a href="#" data-path="'+item.path+'">'+item.label+'</a>').appendTo(crumbsLi);
+
+                    link.on('click', (e) => {
+                        e.preventDefault();
+                        $this.$router.push({ path: item.path })
+                    });
+                }
+
+                crumbsNav.appendTo(this.$crumbs);
             }
         },
+
         pageTitle(pageTitle) {
             this.$pageTitle.html(pageTitle);
         }
@@ -116,20 +142,6 @@ window.pluginStoreApp = new Vue({
         // Crumbs
 
         this.$crumbs = $('#crumbs');
-
-        if(this.$crumbs) {
-            if(!this.showCrumbs) {
-                this.$crumbs.addClass('hidden')
-            }
-
-            let $a = $('a', this.$crumbs);
-            let $this = this;
-
-            $a.on('click', (e) => {
-                e.preventDefault();
-                $this.$router.push({ path: '/'})
-            });
-        }
 
 
         // Page title

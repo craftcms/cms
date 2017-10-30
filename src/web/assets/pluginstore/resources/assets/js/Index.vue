@@ -118,7 +118,7 @@
         },
 
         mounted() {
-            this.$root.showCrumbs = false;
+            this.$root.crumbs = null;
         }
     }
 </script>

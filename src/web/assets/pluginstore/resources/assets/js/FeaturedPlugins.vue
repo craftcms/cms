@@ -32,7 +32,12 @@
         },
 
         created () {
-            this.$root.showCrumbs = true;
+            this.$root.crumbs = [
+                {
+                    label: "Plugin Store",
+                    path: '/',
+                }
+            ];
         },
     }
 </script>

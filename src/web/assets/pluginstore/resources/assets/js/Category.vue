@@ -43,7 +43,12 @@
         },
 
         created() {
-            this.$root.showCrumbs = true;
+            this.$root.crumbs = [
+                {
+                    label: "Plugin Store",
+                    path: '/',
+                }
+            ];
 
             this.categoryId = this.$route.params.id;
         },

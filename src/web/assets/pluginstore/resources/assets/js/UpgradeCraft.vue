@@ -162,7 +162,12 @@
         },
 
         created () {
-            this.$root.showCrumbs = true;
+            this.$root.crumbs = [
+                {
+                    label: "Plugin Store",
+                    path: '/',
+                }
+            ];
             this.$root.pageTitle = 'Upgrade Craft CMS';
         },
     }
