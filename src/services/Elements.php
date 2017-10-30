@@ -40,6 +40,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
+use yii\web\Response;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -490,35 +491,35 @@ class Elements extends Component
                 }
             }
 
-            // Delete the rows that don't need to be there anymore
-            if (!$isNewElement) {
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Delete the rows that don't need to be there anymore
+        if (!$isNewElement) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%elements_sites}}',
+                    [
+                        'and',
+                        ['elementId' => $element->id],
+                        ['not', ['siteId' => $supportedSiteIds]]
+                    ])
+                ->execute();
+
+            if ($element::hasContent()) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%elements_sites}}',
+                        $element->getContentTable(),
                         [
                             'and',
                             ['elementId' => $element->id],
                             ['not', ['siteId' => $supportedSiteIds]]
                         ])
                     ->execute();
-
-                if ($element::hasContent()) {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete(
-                            $element->getContentTable(),
-                            [
-                                'and',
-                                ['elementId' => $element->id],
-                                ['not', ['siteId' => $supportedSiteIds]]
-                            ])
-                        ->execute();
-                }
             }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
         }
 
         // Delete any caches involving this element. (Even do this for new elements, since they

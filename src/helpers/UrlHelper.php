@@ -419,7 +419,7 @@ class UrlHelper
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && $generalConfig->addTrailingSlashesToUrls) {
+                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls) {
                     $url .= '/';
                 }
             } else {

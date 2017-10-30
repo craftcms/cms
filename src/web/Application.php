@@ -598,14 +598,15 @@ class Application extends \yii\web\Application
             }
 
             $actionSegs = $request->getActionSegments();
+            $singleAction = $request->getIsSingleActionRequest();
 
             if ($actionSegs && (
-                    $actionSegs === ['users', 'login'] ||
-                    $actionSegs === ['users', 'logout'] ||
+                    ($actionSegs === ['users', 'login'] && $singleAction) ||
+                    ($actionSegs === ['users', 'logout'] && $singleAction) ||
+                    ($actionSegs === ['users', 'verify-email'] && $singleAction) ||
+                    ($actionSegs === ['users', 'set-password'] && $singleAction) ||
                     $actionSegs === ['users', 'forgot-password'] ||
                     $actionSegs === ['users', 'send-password-reset-email'] ||
-                    $actionSegs === ['users', 'set-password'] ||
-                    $actionSegs === ['users', 'verify-email'] ||
                     $actionSegs[0] === 'update'
                 )
             ) {
