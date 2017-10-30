@@ -52,8 +52,10 @@
                 <template v-if="pluginStoreData.featuredPlugins">
                     <template v-for="featuredPlugin in pluginStoreData.featuredPlugins">
                         <router-link class="right" :to="'/featured/'+featuredPlugin.id">See all</router-link>
-                        <h2>{{ featuredPlugin.title }}</h2>
-                        <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins.slice(0, featuredPlugin.limit))"></plugin-grid>
+                        <div>
+                            <h2>{{ featuredPlugin.title }}</h2>
+                            <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins.slice(0, featuredPlugin.limit))"></plugin-grid>
+                        </div>
                     </template>
                 </template>
 
