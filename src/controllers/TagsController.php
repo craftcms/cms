@@ -182,7 +182,6 @@ class TagsController extends BaseController
 			$search = StringHelper::normalizeKeywords($search);
 		}
 
-
 		foreach ($tags as $tag)
 		{
 			$return[] = array(
