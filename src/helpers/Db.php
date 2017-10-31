@@ -654,9 +654,9 @@ class Db
     /**
      * Normalizes “empty” values.
      *
-     * @param string &$value The param value.
+     * @param string|null &$value The param value.
      */
-    private static function _normalizeEmptyValue(string &$value)
+    private static function _normalizeEmptyValue(string &$value = null)
     {
         if ($value === null) {
             $value = ':empty:';

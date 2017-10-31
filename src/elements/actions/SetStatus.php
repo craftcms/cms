@@ -91,6 +91,7 @@ class SetStatus extends ElementAction
             if ($enabled) {
                 // Also enable for this site
                 $element->enabled = $element->enabledForSite = true;
+                $element->setScenario(Element::SCENARIO_LIVE);
             } else {
                 $element->enabled = false;
             }

@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
@@ -1004,19 +1005,20 @@ class UsersController extends Controller
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $imageValidates = true;
         $photo = UploadedFile::getInstanceByName('photo');
 
         if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
-            $imageValidates = false;
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
-        if ($thisIsPublicRegistration) {
-            $user->validateCustomFields = false;
+        // Don't validate required custom fields if it's public registration
+        if (!$thisIsPublicRegistration) {
+            $user->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$imageValidates || !Craft::$app->getElements()->saveElement($user)) {
+        if (!$user->validate(null, false)) {
+            Craft::info('User not saved due to validation error.', __METHOD__);
+
             if ($thisIsPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->addErrors(['password' => $user->getErrors('newPassword')]);
@@ -1038,6 +1040,9 @@ class UsersController extends Controller
 
             return null;
         }
+
+        // Save the user (but no need to re-validate)
+        Craft::$app->getElements()->saveElement($user, false);
 
         // Save their preferences too
         $preferences = [

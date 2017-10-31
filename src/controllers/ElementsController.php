@@ -122,6 +122,10 @@ class ElementsController extends BaseElementsController
         $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
+        if ($element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,

@@ -323,6 +323,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        /** @var MatrixBlockQuery $value */
+        $serialized = [];
+
+        foreach ($value->all() as $block) {
+            $serialized[$block->id] = [
+                'type' => $block->getType()->handle,
+                'enabled' => $block->enabled,
+                'collapsed' => $block->collapsed,
+                'fields' => $block->getSerializedFieldValues(),
+            ];
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */

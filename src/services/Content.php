@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
 use craft\events\ElementContentEvent;
+use craft\helpers\Db;
 use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
@@ -182,7 +183,7 @@ class Content extends Component
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
                     $column = $this->fieldColumnPrefix.$field->handle;
-                    $values[$column] = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                    $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
             }
         }

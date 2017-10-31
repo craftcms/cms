@@ -309,7 +309,7 @@ class EntryQuery extends ElementQuery
             if (!is_array($this->postDate)) {
                 $this->postDate = [$this->postDate];
             }
-            $this->postDate[] = '<'.$value;;
+            $this->postDate[] = '<'.$value;
         }
 
         return $this;
@@ -334,7 +334,7 @@ class EntryQuery extends ElementQuery
             if (!is_array($this->postDate)) {
                 $this->postDate = [$this->postDate];
             }
-            $this->postDate[] = '>='.$value;;
+            $this->postDate[] = '>='.$value;
         }
 
         return $this;

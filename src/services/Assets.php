@@ -8,12 +8,15 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
+use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
 use craft\errors\ImageException;
@@ -744,54 +747,62 @@ class Assets extends Component
     }
 
     /**
-     * Ensure a folder entry exists in the DB for the full path and return it's id.
+     * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
-     * @param string $fullPath The path to ensure the folder exists at.
-     * @param int    $volumeId
+     * @param string $fullPath   The path to ensure the folder exists at.
+     * @param Volume $volume
+     * @param bool   $justRecord If set to false, will also make sure the physical folder exists on Volume.
      *
      * @return int
+     * @throws VolumeException If the volume cannot be found.
      */
-    public function ensureFolderByFullPathAndVolumeId(string $fullPath, int $volumeId): int
+    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): int
     {
-        $parameters = new FolderCriteria([
-            'path' => $fullPath,
-            'volumeId' => $volumeId
-        ]);
+        $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
+        $folderId = $parentId;
 
-        if (($folderModel = $this->findFolder($parameters)) !== null) {
-            return $folderModel->id;
+        if ($fullPath)
+        {
+            // If we don't have a folder matching these, create a new one
+            $parts = explode('/', trim($fullPath, '/'));
+
+            // creep up the folder path
+            $path = '';
+
+            while (($part = array_shift($parts)) !== null) {
+                $path .= $part.'/';
+
+                $parameters = new FolderCriteria([
+                    'path' => $path,
+                    'volumeId' => $volume->id
+                ]);
+
+                // Create the record for current segment if needed.
+                if (($folderModel = $this->findFolder($parameters)) === null) {
+                    $folderModel = new VolumeFolder();
+                    $folderModel->volumeId = $volume->id;
+                    $folderModel->parentId = $parentId;
+                    $folderModel->name = $part;
+                    $folderModel->path = $path;
+                    $this->storeFolderRecord($folderModel);
+                }
+
+                // Ensure a physical folder exists, if needed.
+                if (!$justRecord) {
+                    try {
+                        $volume->createDir($path);
+                    } catch (VolumeObjectExistsException $exception) {
+                        // Already there. Good.
+                    }
+                }
+
+                // Set the variables for next iteration.
+                $folderId = $folderModel->id;
+                $parentId = $folderId;
+            }
         }
 
-        // If we don't have a folder matching these, create a new one
-        $parts = explode('/', rtrim($fullPath, '/'));
-        $folderName = array_pop($parts);
-
-        if (empty($parts)) {
-            // Looking for a top level folder, apparently.
-            $parameters->path = '';
-            $parameters->parentId = ':empty:';
-        } else {
-            $parameters->path = implode('/', $parts).'/';
-        }
-
-        // Look up the parent folder
-        $parentFolder = $this->findFolder($parameters);
-
-        if ($parentFolder === null) {
-            $parentId = ':empty:';
-        } else {
-            $parentId = $parentFolder->id;
-        }
-
-        $folderModel = new VolumeFolder();
-        $folderModel->volumeId = $volumeId;
-        $folderModel->parentId = $parentId;
-        $folderModel->name = $folderName;
-        $folderModel->path = $fullPath;
-
-        $this->storeFolderRecord($folderModel);
-
-        return $folderModel->id;
+        return $folderId;
     }
 
     /**

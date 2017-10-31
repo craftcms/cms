@@ -298,6 +298,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        /** @var ElementQueryInterface $value */
+        return $value->ids();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */

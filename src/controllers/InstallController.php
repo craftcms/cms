@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
@@ -99,7 +100,11 @@ class InstallController extends Controller
         if ($user->validate()) {
             $return['validates'] = true;
         } else {
-            $return['errors'] = $user->getErrors();
+            $errors = $user->getErrors();
+            if (isset($errors['newPassword'])) {
+                $errors['password'] = ArrayHelper::remove($errors, 'newPassword');
+            }
+            $return['errors'] = $errors;
         }
 
         return $this->asJson($return);

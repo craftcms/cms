@@ -54,4 +54,22 @@ class Request extends \yii\console\Request
     {
         return false;
     }
+
+    /**
+     * Returns whether the current request is solely an action request. (Narrator: It isn't.)
+     */
+    public function getIsSingleActionRequest()
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether this is a Live Preview request. (Narrator: It isn't.)
+     *
+     * @return bool Whether this is a Live Preview request.
+     */
+    public function getIsLivePreview(): bool
+    {
+        return false;
+    }
 }

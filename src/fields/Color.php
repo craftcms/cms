@@ -66,14 +66,15 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        if ($value) {
-            return Html::encodeParams('<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
-                [
-                    'bgColor' => $value
-                ]);
+        if (!$value) {
+            return '';
         }
 
-        return null;
+        return Html::encodeParams(
+            '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
+            [
+                'bgColor' => $value
+            ]);
     }
 
     /**
@@ -81,11 +82,11 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if ($value && $value !== '#000000') {
-            return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.
-                '<div class="colorhex code">'.$value.'</div>';
+        if (!$value || $value === '#000000') {
+            return '';
         }
 
-        return '';
+        return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.
+            '<div class="colorhex code">'.$value.'</div>';
     }
 }
