@@ -1,6 +1,23 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2995 (WIP)
+
+## 2.6.2994 - 2017-10-31
+
+### Added
+- Added `HttpRequestService::isSingleActionRequest()`.
+
+### Changed
+- Updated Imagine to 0.7.1.3, which now preserves image IPTC data when preserving EXIF data.
+
+### Fixed
+- Fixed a bug where it was possible for logged-out users to access offline sites.
+- Fixed a bug where front-end URLs that were generated in the Control Panel were not getting trailing slashes if the `addTrailingSlashesToUrls` config setting was enabled.
+- Fixed a bug where some element rows might have not been deleted when they should have, if multiple elements were saved in a single request.
+- Fixed a PHP error that occurred when updating Craft on environments running PHP 7.1 and where ZipArchive wasn’t installed.
+- Fixed a PHP 7.1 compatibility issue when uploading some JPEGs while preserving EXIF data, on environments using GD.
+
 ## 2.6.2993 - 2017-10-18
 
 ### Added

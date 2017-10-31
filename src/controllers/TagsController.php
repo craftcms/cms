@@ -182,7 +182,6 @@ class TagsController extends BaseController
 			$search = StringHelper::normalizeKeywords($search);
 		}
 
-
 		foreach ($tags as $tag)
 		{
 			$return[] = array(
@@ -232,7 +231,7 @@ class TagsController extends BaseController
 
 		$tag = new TagModel();
 		$tag->groupId = craft()->request->getRequiredPost('groupId');
-		$tag->getContent()->title = craft()->request->getRequiredPost('title');
+		$tag->getContent()->title = trim(craft()->request->getRequiredPost('title'));
 
 		if (craft()->tags->saveTag($tag))
 		{

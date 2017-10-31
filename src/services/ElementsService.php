@@ -31,7 +31,12 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * @var array
 	 */
-	private $_elementCleanup;
+	private $_elementCleanup = array();
+
+	/**
+	 * @var
+	 */
+	private $_listeningForRequestEnd = false;
 
 	// Public Methods
 	// =========================================================================
@@ -1674,13 +1679,18 @@ class ElementsService extends BaseApplicationComponent
 		if ($success && !$isNewElement)
 		{
 			// Do any element cleanup work onEndRequest outside of transactions to help with deadlocks.
-			craft()->attachEventHandler('onEndRequest', array($this, 'handleRequestEnd'));
+			$this->_elementCleanup[] = array(
+				'localeIds' => $localeIds,
+				'elementId' => $element->id,
+				'hasContent' => $elementType->hasContent(),
+				'contentTable' => $element->getContentTable(),
+			);
 
-			// Save for onEndRequest
-			$this->_elementCleanup['localeIds'] = $localeIds;
-			$this->_elementCleanup['elementId'] = $element->id;
-			$this->_elementCleanup['hasContent'] = $elementType->hasContent();
-			$this->_elementCleanup['contentTable'] = $element->getContentTable();
+			if (!$this->_listeningForRequestEnd)
+			{
+				craft()->attachEventHandler('onEndRequest', array($this, 'handleRequestEnd'));
+				$this->_listeningForRequestEnd = true;
+			}
 		}
 
 		return $success;
@@ -2297,22 +2307,21 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	public function handleRequestEnd()
 	{
-		// Delete the rows that don't need to be there anymore
-		craft()->db->createCommand()->delete('elements_i18n', array('and',
-			'elementId = :elementId',
-			array('not in', 'locale', $this->_elementCleanup['localeIds'])
-		), array(
-			':elementId' => $this->_elementCleanup['elementId']
-		));
-
-		if ($this->_elementCleanup['hasContent'])
+		while (($info = array_shift($this->_elementCleanup)) !== null)
 		{
-			craft()->db->createCommand()->delete($this->_elementCleanup['contentTable'], array('and',
-				'elementId = :elementId',
-				array('not in', 'locale', $this->_elementCleanup['localeIds'])
-			), array(
-				':elementId' => $this->_elementCleanup['elementId']
-			));
+			// Delete the rows that don't need to be there anymore
+			craft()->db->createCommand()->delete(
+				'elements_i18n',
+				array('and', 'elementId = :elementId', array('not in', 'locale', $info['localeIds'])),
+				array(':elementId' => $info['elementId']));
+
+			if ($info['hasContent'])
+			{
+				craft()->db->createCommand()->delete(
+					$info['contentTable'],
+					array('and', 'elementId = :elementId', array('not in', 'locale', $info['localeIds'])),
+					array(':elementId' => $info['elementId']));
+			}
 		}
 	}
 
