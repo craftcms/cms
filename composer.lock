@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ea349b355636b55f5fc2451f7c5d492e",
+    "content-hash": "5a8368b64152b6247008113c23613d3c",
     "packages": [
         {
             "name": "enshrined/svg-sanitize",
@@ -147,16 +147,16 @@
         },
         {
             "name": "lsolesen/pel",
-            "version": "0.9.4.4",
+            "version": "0.9.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/pel.git",
-                "reference": "708aafa111893e5c88178022b859b442cf251a46"
+                "reference": "b1d1fdffd650b3a3a57ebcbfdf2377fa952e7d88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/pel/zipball/708aafa111893e5c88178022b859b442cf251a46",
-                "reference": "708aafa111893e5c88178022b859b442cf251a46",
+                "url": "https://api.github.com/repos/pixelandtonic/pel/zipball/b1d1fdffd650b3a3a57ebcbfdf2377fa952e7d88",
+                "reference": "b1d1fdffd650b3a3a57ebcbfdf2377fa952e7d88",
                 "shasum": ""
             },
             "require": {
@@ -196,9 +196,9 @@
                 "image"
             ],
             "support": {
-                "source": "https://github.com/pixelandtonic/pel/tree/0.9.4.4"
+                "source": "https://github.com/pixelandtonic/pel/tree/0.9.4.5"
             },
-            "time": "2017-10-31T15:54:44+00:00"
+            "time": "2017-10-31T16:44:08+00:00"
         },
         {
             "name": "pclzip/pclzip",
