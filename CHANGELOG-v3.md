@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## 3.0.0-beta.30 (WIP)
+## 3.0.0-beta.30 - 2017-10-31
 
 ### Added
 - Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
