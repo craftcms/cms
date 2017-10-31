@@ -10,6 +10,9 @@ Craft CMS Changelog
 - Bumped Imagine to v.0.7.1.3 which also keeps IPTC data for images, if keeping EXIF data.
 
 ### Fixed
+- Fixed a PHP 7.1 compatibility when uploading some JPGs while preserving EXIF data when using GD.
+
+### Fixed
 - Fixed a bug where it was possible for logged-out users to access offline sites.
 - Fixed a bug where server that did not have ZipArchive installed and were running PHP 7.1 would get a PHP error when using PclZip.
 - Fixed a bug where front-end URLs that were generated in the Control Panel were not getting trailing slashes if the `addTrailingSlashesToUrls` config setting was enabled.
