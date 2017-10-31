@@ -27,8 +27,8 @@
 }
 
 .ps-grid-wrapper.has-sidebar {
-  -ms-grid-columns: 1fr 3fr;
-  grid-template-columns: 1fr 3fr;
+  -ms-grid-columns: 1fr 4fr;
+  grid-template-columns: 1fr 4fr;
 }
 
 .ps-grid-plugins {
