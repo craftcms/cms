@@ -603,6 +603,22 @@ class Assets extends Component
      */
     public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
     {
+        // Maybe a plugin wants to do something here
+        $event = new GetAssetUrlEvent([
+            'transform' => new AssetTransform([
+                'width' => $size,
+                'height' => $size,
+                'mode' => 'fit',
+            ]),
+            'asset' => $asset,
+        ]);
+        $this->trigger(self::EVENT_GET_ASSET_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         $ext = $asset->getExtension();
 
         // If it's not an image, return a generic file extension icon
