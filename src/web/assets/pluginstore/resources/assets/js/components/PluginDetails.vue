@@ -51,8 +51,9 @@
                         <li>
                             <span>{{ "Categories"|t('app') }}</span>
                             <strong>
-                                <template v-for="category in categories">
-                                    {{ category.title }}
+                                <template v-for="category, key in categories">
+                                    <a @click="viewCategory(category)">{{ category.title }}</a>
+                                    <template v-if="key < (categories.length - 1)">, </template>
                                 </template>
                             </strong>
                         </li>
@@ -119,6 +120,11 @@
                 this.$root.closeGlobalModal();
                 this.$root.pageTitle = plugin.developerName;
                 this.$router.push({ path: '/developer/'+plugin.developerId})
+            },
+            viewCategory(category) {
+                this.$root.closeGlobalModal();
+                this.$root.pageTitle = category.name;
+                this.$router.push({ path: '/categories/'+category.id})
             }
         },
     }
