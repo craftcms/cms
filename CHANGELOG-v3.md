@@ -3,6 +3,10 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2076](https://github.com/craftcms/cms/pull/2076))
+- Added `craft\events\GetAssetThumbUrlEvent`.
+
 ### Fixed
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
 
