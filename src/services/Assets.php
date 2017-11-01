@@ -21,6 +21,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -67,6 +68,11 @@ class Assets extends Component
      * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
+
+    /**
+     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     */
+    const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
     // Properties
     // =========================================================================
@@ -601,6 +607,19 @@ class Assets extends Component
      */
     public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
     {
+        // Maybe a plugin wants to do something here
+        $event = new GetAssetThumbUrlEvent([
+            'asset' => $asset,
+            'size' => $size,
+            'generate' => $generate,
+        ]);
+        $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         $ext = $asset->getExtension();
 
         // If it's not an image, return a generic file extension icon
