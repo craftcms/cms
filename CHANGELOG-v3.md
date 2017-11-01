@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
+- Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
 
 ## 3.0.0-beta.30 - 2017-10-31
 
