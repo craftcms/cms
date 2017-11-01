@@ -1,7 +1,9 @@
 Craft CMS Changelog
 ===================
 
-## 2.6.2994 (WIP)
+## 2.6.2995 (WIP)
+
+## 2.6.2994 - 2017-10-31
 
 ### Added
 - Added `HttpRequestService::isSingleActionRequest()`.
