@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - The installer now creates a “Common” field group.
 - It's now possible to specify subpath for uploaded user photos. ([#1575](https://github.com/craftcms/cms/issues/1575))
 - Added the `preserveExifData` config setting, `false` by default and requries Imagick. ([#2034](https://github.com/craftcms/cms/issues/2034))
+- Added `craft\events\GetAssetThumbUrlEvent` which plugins can use to modify the URL of an Asset thumbnail being fetched.
 
 ### Changed
 - Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
