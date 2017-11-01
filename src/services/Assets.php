@@ -9,14 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Volume;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
-use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
 use craft\errors\ImageException;
@@ -66,7 +64,7 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
@@ -761,8 +759,7 @@ class Assets extends Component
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
-        if ($fullPath)
-        {
+        if ($fullPath) {
             // If we don't have a folder matching these, create a new one
             $parts = explode('/', trim($fullPath, '/'));
 
