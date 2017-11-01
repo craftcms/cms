@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
-- Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2076](https://github.com/craftcms/cms/pull/2076))
+- Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
 
 ### Fixed
