@@ -52,5 +52,11 @@
 
             this.categoryId = this.$route.params.id;
         },
+
+        watch: {
+            '$route.params.id': function (id) {
+                this.categoryId = id;
+            }
+        },
     }
 </script>
