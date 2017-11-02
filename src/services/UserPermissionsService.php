@@ -528,7 +528,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * @param array $groupPermissions  Permissions the user is already assigned to via their group, if we're saving a
 	 *                                 user's permissions.
 	 *
-	 * @return array $filteredPermissions The permissions we'll actually let them save.
+	 * @return array The permissions we'll actually let them save.
 	 */
 	private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = array())
 	{
