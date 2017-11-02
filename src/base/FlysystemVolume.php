@@ -92,7 +92,7 @@ abstract class FlysystemVolume extends Volume
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
-            $success = $this->filesystem()->updateStream($path, $stream, $config);;
+            $success = $this->filesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $e) {
             throw new VolumeObjectNotFoundException($e->getMessage(), 0, $e);
         }

@@ -252,17 +252,17 @@ class TagsController extends Controller
         $tag->groupId = $group->id;
         $tag->fieldLayoutId = $group->fieldLayoutId;
         $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
-        $tag->validateCustomFields = false;
 
-        if (Craft::$app->getElements()->saveElement($tag)) {
-            return $this->asJson([
-                'success' => true,
-                'id' => $tag->id
-            ]);
-        } else {
+        // Don't validate required custom fields
+        if (!Craft::$app->getElements()->saveElement($tag)) {
             return $this->asJson([
                 'success' => false
             ]);
         }
+
+        return $this->asJson([
+            'success' => true,
+            'id' => $tag->id
+        ]);
     }
 }

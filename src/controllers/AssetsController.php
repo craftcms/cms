@@ -219,6 +219,7 @@ class AssetsController extends Controller
                     $volume = $sourceAsset->getVolume();
                     $volume->deleteFile(rtrim($sourceAsset->folderPath, '/').'/'.$targetFilename);
                     $sourceAsset->newFilename = $targetFilename;
+                    // Don't validate required custom fields
                     Craft::$app->getElements()->saveElement($sourceAsset);
                     $assetId = $sourceAsset->id;
                 }
@@ -744,6 +745,7 @@ class AssetsController extends Controller
                 $newAsset->volumeId = $folder->volumeId;
                 $newAsset->focalPoint = $focal;
 
+                // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
             }
         } catch (\Throwable $exception) {

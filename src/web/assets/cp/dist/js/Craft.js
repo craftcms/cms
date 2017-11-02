@@ -1,4 +1,4 @@
-/*!   - 2017-09-29 */
+/*!   - 2017-10-30 */
 (function($){
 
 /** global: Craft */
@@ -15435,11 +15435,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$spinner = this.$addTagInput.next();
 
             this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
-                var val = this.$addTagInput.val();
-                if (val !== (val = val.trim())) {
-                    this.$addTagInput.val(val).data('garnish-textchange-value', val);
-                }
-
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }

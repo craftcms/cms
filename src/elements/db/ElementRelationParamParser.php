@@ -14,7 +14,6 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 
@@ -75,6 +74,10 @@ class ElementRelationParamParser
 
         if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
             $relatedToParam = [$relatedToParam];
+        }
+
+        if (!isset($relatedToParam[0])) {
+            return false;
         }
 
         $conditions = [];

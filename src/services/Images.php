@@ -359,9 +359,9 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return array
+     * @return array|null
      */
-    public function getExifData(string $filePath): array
+    public function getExifData(string $filePath)
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;

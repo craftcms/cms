@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
 use craft\elements\Entry;
@@ -258,6 +259,10 @@ class EntryRevisions extends Component
             ]));
         }
 
+        if ($draft->enabled && $draft->enabledForSite) {
+            $draft->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if ($runValidation && !$draft->validate()) {
             Craft::info('Draft not published due to validation error.', __METHOD__);
             return false;
@@ -448,6 +453,10 @@ class EntryRevisions extends Component
             $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
                 'version' => $version,
             ]));
+        }
+
+        if ($version->enabled && $version->enabledForSite) {
+            $version->setScenario(Element::SCENARIO_LIVE);
         }
 
         if ($runValidation && !$version->validate()) {

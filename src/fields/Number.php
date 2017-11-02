@@ -131,7 +131,7 @@ class Number extends Field implements PreviewableFieldInterface
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
-             $value = Localization::normalizeNumber($value['value'], $value['locale']);
+            $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
         return $value;
