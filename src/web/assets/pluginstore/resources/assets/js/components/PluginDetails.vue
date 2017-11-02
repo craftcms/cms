@@ -37,7 +37,7 @@
                 <div v-html="longDescription"></div>
 
                 <div class="screenshots">
-                    <img v-for="screenshot in plugin.screenshots" :src="screenshot" />
+                    <img v-for="screenshotUrl in plugin.screenshotUrls" :src="screenshotUrl" />
                 </div>
             </div>
 
