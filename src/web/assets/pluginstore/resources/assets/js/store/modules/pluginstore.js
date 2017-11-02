@@ -72,7 +72,19 @@ const getters = {
                 return p.categoryIds.find(c =>  c == categoryId);
             })
         }
-    }
+    },
+
+    getCraftClientPluginId(state) {
+        return () => {
+            return state.data.craftClientPluginId;
+        };
+    },
+
+    getCraftProPluginId(state) {
+        return () => {
+            return state.data.craftProPluginId;
+        };
+    },
 };
 
 const actions = {
