@@ -1427,7 +1427,7 @@ class Elements extends Component
 
         if (empty($matches[3]) || !isset($element->{$matches[3]})) {
             // Default to the URL
-            return $element->getUrl();
+            return (string)$element->getUrl();
         }
 
         try {

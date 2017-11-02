@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
 - Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
 - Fixed a PHP error that occurred when loading the French app translation messages.
+- Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
 
 ## 3.0.0-beta.30 - 2017-10-31
 
