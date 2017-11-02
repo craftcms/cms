@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
 - Fixed a PHP error that occurred when loading the French app translation messages.
 - Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
+- Fixed a bug where the `install` console command wasn’t validating the password length.
 
 ## 3.0.0-beta.30 - 2017-10-31
 
