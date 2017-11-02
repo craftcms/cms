@@ -1806,14 +1806,25 @@ class UsersController extends BaseController
 				if (is_array($permissions))
 				{
 					// See if there are any new permissions in here
+					$hasNewPermissions = false;
+
 					foreach ($permissions as $permission)
 					{
 						if (!$user->can($permission))
 						{
-							// Yep. This will require an elevated session
-							$this->requireElevatedSession();
-							break;
+							$hasNewPermissions = true;
+
+							// Make sure the current user even has permission to grant it
+							if (!craft()->userSession->checkPermission($permission))
+							{
+								throw new HttpException(403, "Your account doesn't have permission to grant the {$permission} permission to a user.");
+							}
 						}
+					}
+
+					if ($hasNewPermissions)
+					{
+						$this->requireElevatedSession();
 					}
 
 					craft()->userPermissions->saveUserPermissions($user->id, $permissions);

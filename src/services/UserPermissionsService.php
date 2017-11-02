@@ -180,6 +180,30 @@ class UserPermissionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the permissions that the current user is allowed to assign to another user.
+	 *
+	 * @param UserModel|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+	 *
+	 * @return array
+	 */
+	public function getAssignablePermissions(UserModel $user = null)
+	{
+		$allowedPermissions = array();
+
+		foreach ($this->getAllPermissions() as $category => $permissions)
+		{
+			$filteredPermissions = $this->_filterUnassignablePermissions($permissions, $user);
+
+			if (!empty($filteredPermissions))
+			{
+				$allowedPermissions[$category] = $filteredPermissions;
+			}
+		}
+
+		return $allowedPermissions;
+	}
+
+	/**
 	 * Returns all of a given user group's permissions.
 	 *
 	 * @param int $groupId
@@ -519,6 +543,40 @@ class UserPermissionsService extends BaseApplicationComponent
 				)
 			)
 		);
+	}
+
+	/**
+	 * Filters out any permissions that aren't assignable by the current user.
+	 *
+	 * @param array          $permissions The original permissions
+	 * @param UserModel|null $user        The recipient of the permissions. If set, their current permissions will be included as well.
+	 *
+	 * @return array The filtered permissions
+	 */
+	private function _filterUnassignablePermissions($permissions, UserModel $user = null)
+	{
+		$currentUser = craft()->userSession->getUser();
+		if (!$currentUser && !$user)
+		{
+			return array();
+		}
+
+		$allowedPermissions = array();
+
+		foreach ($permissions as $name => $data)
+		{
+			if ($currentUser->can($name) || ($user && $user->can($name)))
+			{
+				if (isset($data['nested']))
+				{
+					$data['nested'] = $this->_filterUnassignablePermissions($data['nested'], $user);
+				}
+
+				$allowedPermissions[$name] = $data;
+			}
+		}
+
+		return $allowedPermissions;
 	}
 
 	/**

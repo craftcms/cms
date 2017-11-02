@@ -3,6 +3,12 @@ Craft CMS Changelog
 
 ## 2.6.2995 (WIP)
 
+### Added
+- Added `UserPermissionsService::getAssignablePermissions()`.
+
+### Changed
+- Users are no longer allowed to grant new permissions to user accounts that they don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
+
 ## 2.6.2994 - 2017-10-31
 
 ### Added

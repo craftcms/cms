@@ -50,7 +50,8 @@
 {% endmacro %}
 
 
-{% for category, catPermissions in craft.userPermissions.getAllPermissions() %}
+{% set user = userOrGroup and userOrGroup.classHandle == 'User' ? userOrGroup : null %}
+{% for category, catPermissions in craft.userPermissions.getAssignablePermissions(user) %}
 	<div class="user-permissions">
 		<h3>{{ category }}</h3>
 		<div class="select-all"></div>
