@@ -87,8 +87,7 @@ class Composer extends Component
             $installer = Installer::create($io, $composer)
                 ->setPreferDist()
                 ->setSkipSuggest()
-                ->setUpdate()
-                ->setUpdateWhitelist(array_keys($requirements));
+                ->setUpdate();
 
             $status = $installer->run();
         } catch (\Throwable $exception) {

@@ -237,6 +237,10 @@ class InstallController extends Controller
             $this->stdout('Invalid input.'.PHP_EOL);
             goto top;
         }
+        if (!$this->validatePassword($password, $error)) {
+            Console::output($error);
+            goto top;
+        }
         $this->stdout('Confirm: ');
         if (!($matched = ($password === CliPrompt::hiddenPrompt()))) {
             $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL, Console::FG_RED);

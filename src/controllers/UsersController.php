@@ -1812,12 +1812,22 @@ class UsersController extends Controller
 
                 if (is_array($permissions)) {
                     // See if there are any new permissions in here
+                    $hasNewPermissions = false;
+                    $authService = Craft::$app->getUser();
+
                     foreach ($permissions as $permission) {
                         if (!$user->can($permission)) {
-                            // Yep. This will require an elevated session
-                            $this->requireElevatedSession();
-                            break;
+                            $hasNewPermissions = true;
+
+                            // Make sure the current user even has permission to grant it
+                            if (!$authService->checkPermission($permission)) {
+                                throw new ForbiddenHttpException("Your account doesn't have permission to grant the {$permission} permission to a user.");
+                            }
                         }
+                    }
+
+                    if ($hasNewPermissions) {
+                        $this->requireElevatedSession();
                     }
 
                     Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);

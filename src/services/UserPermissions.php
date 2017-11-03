@@ -13,6 +13,7 @@ use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\models\CategoryGroup;
 use craft\models\Section;
@@ -199,6 +200,28 @@ class UserPermissions extends Component
         $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
 
         return $event->permissions;
+    }
+
+    /**
+     * Returns the permissions that the current user is allowed to assign to another user.
+     *
+     * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+     *
+     * @return array
+     */
+    public function getAssignablePermissions(User $user = null): array
+    {
+        $allowedPermissions = [];
+
+        foreach ($this->getAllPermissions() as $category => $permissions) {
+            $filteredPermissions = $this->_filterUnassignablePermissions($permissions, $user);
+
+            if (!empty($filteredPermissions)) {
+                $allowedPermissions[$category] = $filteredPermissions;
+            }
+        }
+
+        return $allowedPermissions;
     }
 
     /**
@@ -559,6 +582,36 @@ class UserPermissions extends Component
         }
 
         return $permissions;
+    }
+
+    /**
+     * Filters out any permissions that aren't assignable by the current user.
+     *
+     * @param array     $permissions The original permissions
+     * @param User|null $user        The recipient of the permissions. If set, their current permissions will be included as well.
+     *
+     * @return array The filtered permissions
+     */
+    private function _filterUnassignablePermissions(array $permissions, User $user = null)
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser && !$user) {
+            return [];
+        }
+
+        $allowedPermissions = [];
+
+        foreach ($permissions as $name => $data) {
+            if ($currentUser->can($name) || ($user && $user->can($name))) {
+                if (isset($data['nested'])) {
+                    $data['nested'] = $this->_filterUnassignablePermissions($data['nested'], $user);
+                }
+
+                $allowedPermissions[$name] = $data;
+            }
+        }
+
+        return $allowedPermissions;
     }
 
     /**

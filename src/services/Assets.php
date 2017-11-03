@@ -9,20 +9,19 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Volume;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
-use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
 use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -66,9 +65,14 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
+
+    /**
+     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     */
+    const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
     // Properties
     // =========================================================================
@@ -603,6 +607,19 @@ class Assets extends Component
      */
     public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
     {
+        // Maybe a plugin wants to do something here
+        $event = new GetAssetThumbUrlEvent([
+            'asset' => $asset,
+            'size' => $size,
+            'generate' => $generate,
+        ]);
+        $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         $ext = $asset->getExtension();
 
         // If it's not an image, return a generic file extension icon
@@ -761,8 +778,7 @@ class Assets extends Component
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
-        if ($fullPath)
-        {
+        if ($fullPath) {
             // If we don't have a folder matching these, create a new one
             $parts = explode('/', trim($fullPath, '/'));
 
