@@ -16,11 +16,11 @@ use craft\config\MemCacheConfig;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -79,10 +79,11 @@ class Config extends Component
      *
      * @param string $category The config category
      *
-     * @return Object The config settings
+     * @return BaseObject The config settings
      * @throws InvalidParamException if $category is invalid
+     * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
-    public function getConfigSettings(string $category): Object
+    public function getConfigSettings(string $category): BaseObject
     {
         if (isset($this->_configSettings[$category])) {
             return $this->_configSettings[$category];

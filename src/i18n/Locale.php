@@ -12,10 +12,10 @@ use craft\helpers\Localization;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
 use yii\helpers\FormatConverter;
 
 /**
@@ -26,7 +26,7 @@ use yii\helpers\FormatConverter;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Locale extends Object
+class Locale extends BaseObject
 {
     // Constants
     // =========================================================================

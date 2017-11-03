@@ -14,7 +14,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\base\UnknownMethodException;
 
 /**
@@ -54,7 +54,7 @@ class Template
 
         if (
             $type !== \Twig_Template::METHOD_CALL &&
-            $object instanceof Object &&
+            $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
             return $isDefinedTest ? true : $object->$item;

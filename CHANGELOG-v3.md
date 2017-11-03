@@ -67,6 +67,13 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
+- Updated Yii to 2.0.13.
+- Updated D3 to 4.11.0.
+- Updated Fabric to 1.7.19.
+- Updated Inputmask to 3.3.10.
+- Updated jQuery to 3.2.1.
+- Updated Timepicker to 1.11.12.
+- Updated yii2-pjax to 2.0.7.
 
 ### Fixed
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
@@ -74,6 +81,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when loading the French app translation messages.
 - Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
 - Fixed a bug where the `install` console command wasn’t validating the password length.
+- Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
 
 ## 3.0.0-beta.30 - 2017-10-31
 

@@ -7,7 +7,7 @@
 
 namespace craft\config;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * DbCache config class
@@ -15,7 +15,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbCacheConfig extends Object
+class DbCacheConfig extends BaseObject
 {
     // Properties
     // =========================================================================

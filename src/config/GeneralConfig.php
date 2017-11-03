@@ -10,8 +10,8 @@ namespace craft\config;
 use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -20,7 +20,7 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GeneralConfig extends Object
+class GeneralConfig extends BaseObject
 {
     // Constants
     // =========================================================================

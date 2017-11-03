@@ -7,7 +7,7 @@
 
 namespace craft\config;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\caching\MemCache;
 
 /**
@@ -16,7 +16,7 @@ use yii\caching\MemCache;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MemCacheConfig extends Object
+class MemCacheConfig extends BaseObject
 {
     // Properties
     // =========================================================================

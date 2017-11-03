@@ -277,7 +277,7 @@ class Application extends \yii\web\Application
         $libPath = Craft::getAlias('@lib');
         Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
-        Craft::setAlias('@bower/jquery.inputmask/dist', $libPath.'/jquery.inputmask');
+        Craft::setAlias('@bower/inputmask/dist', $libPath.'/inputmask');
         Craft::setAlias('@bower/punycode', $libPath.'/punycode');
         Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
     }
