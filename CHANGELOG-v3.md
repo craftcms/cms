@@ -45,7 +45,6 @@ Craft CMS 3.0 Working Changelog
 - Users’ Langauge preference is now visible for single-site installs, and now shows all supported application languages; not just the site language(s). ([#847](https://github.com/craftcms/cms/issues/847))
 - Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
 - Fields on multi-site installs can now be translated per site group.
-- `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
 - Resource file URLs now have a timestamp appended to them, preventing browsers from loading cached versions when the files change.
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
 
