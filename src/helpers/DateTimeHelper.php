@@ -284,7 +284,7 @@ class DateTimeHelper
 	public static function wasYesterday($date)
 	{
 		$date = new DateTime('@'.$date);
-		$yesterday = new DateTime('@'.strtotime('yesterday'));
+		$yesterday = new DateTime('yesterday', new \DateTimeZone(craft()->getTimeZone()));
 
 		return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
 	}
