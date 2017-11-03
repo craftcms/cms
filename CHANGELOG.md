@@ -9,6 +9,9 @@ Craft CMS Changelog
 ### Changed
 - Users are no longer allowed to grant new permissions to user accounts that they don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
 
+### Fixed
+- Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))
+
 ## 2.6.2994 - 2017-10-31
 
 ### Added
