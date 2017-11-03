@@ -7,6 +7,9 @@ Craft CMS 3.0 Working Changelog
 - Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
 
+### Changed
+- `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
+
 ### Fixed
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
 - Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
