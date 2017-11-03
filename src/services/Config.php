@@ -81,6 +81,7 @@ class Config extends Component
      *
      * @return Object The config settings
      * @throws InvalidParamException if $category is invalid
+     * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
     public function getConfigSettings(string $category): Object
     {
