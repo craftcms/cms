@@ -664,6 +664,7 @@ class AssetsController extends Controller
             $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
             $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
             $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
+            $imageChanged = $imageCropped || $imageRotated || $imageFlipped;
 
             $imageCopy = $asset->getCopyOfFile();
 
@@ -723,7 +724,7 @@ class AssetsController extends Controller
                 $image->crop($x, $x + $width, $y, $y + $height);
             }
 
-            if ($imageCropped || $imageRotated || $imageFlipped) {
+            if ($imageChanged) {
                 $image->saveAs($imageCopy);
             }
 
@@ -731,7 +732,7 @@ class AssetsController extends Controller
                 $asset->focalPoint = $focal;
 
                 // Only replace file if it changed, otherwise just save changed focal points
-                if ($imageCropped || $imageRotated || $imageFlipped) {
+                if ($imageChanged) {
                     $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
                 } else if($focal) {
                     Craft::$app->getElements()->saveElement($asset);
