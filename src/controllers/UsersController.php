@@ -796,11 +796,6 @@ class UsersController extends Controller
         ]);
         $this->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
 
-        $this->getView()->registerTranslations('app', [
-            'Please enter your current password.',
-            'Please enter your password.',
-        ]);
-
         return $this->renderTemplate('users/_edit', [
             'account' => $user,
             'isNewAccount' => $isNewAccount,
