@@ -81,6 +81,9 @@ Craft CMS 3.0 Working Changelog
 - Updated jQuery to 3.2.1.
 - Updated Timepicker to 1.11.12.
 - Updated yii2-pjax to 2.0.7.
+
+### Removed
+- Removed the “RSS caches” option from the Clear Caches utility. (RSS feeds are cached using Craft’s data caching now.)
 - Removed `craft\web\View::getTranslations()`.
 - Removed the `getTranslations()` template function.
 
