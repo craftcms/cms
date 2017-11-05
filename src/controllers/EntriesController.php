@@ -354,11 +354,6 @@ class EntriesController extends BaseEntriesController
         $variables['fullPageForm'] = true;
         $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
-        // Include translations
-        $this->getView()->registerTranslations('app', [
-            'Live Preview',
-        ]);
-
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
     }

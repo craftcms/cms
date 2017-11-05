@@ -62,10 +62,12 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added PHP 7.2 compatibility.
 - Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
 
 ### Changed
+- Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
 - Updated Yii to 2.0.13.
 - Updated D3 to 4.11.0.
@@ -74,6 +76,8 @@ Craft CMS 3.0 Working Changelog
 - Updated jQuery to 3.2.1.
 - Updated Timepicker to 1.11.12.
 - Updated yii2-pjax to 2.0.7.
+- Removed `craft\web\View::getTranslations()`.
+- Removed the `getTranslations()` template function.
 
 ### Fixed
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
@@ -82,6 +86,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
 - Fixed a bug where the `install` console command wasn’t validating the password length.
 - Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
+- Fixed a bug where image editor strings were not getting translated.
 
 ## 3.0.0-beta.30 - 2017-10-31
 
