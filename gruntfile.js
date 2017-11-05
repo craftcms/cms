@@ -94,10 +94,6 @@ module.exports = function(grunt) {
                     return dest + '/' + src;
                 },
                 ext: '.min.js'
-            },
-            colorpickerjs: {
-                src: 'lib/colorpicker/js/colorpicker.js',
-                dest: 'lib/colorpicker/js/colorpicker.min.js'
             }
         },
         jshint: {

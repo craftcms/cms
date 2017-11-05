@@ -47,13 +47,30 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function normalizeValue($value, ElementInterface $element = null)
     {
-        // Default to black, so the JS-based color picker is consistent with Chrome
-        if (!$value) {
-            $value = '#000000';
+        if (!$value || $value === '#') {
+            return null;
         }
 
+        $value = strtolower($value);
+
+        if ($value[0] !== '#') {
+            $value = '#'.$value;
+        }
+
+        if (strlen($value) === 4) {
+            $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
+        }
+
+        return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getInputHtml($value, ElementInterface $element = null): string
+    {
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'name' => $this->handle,

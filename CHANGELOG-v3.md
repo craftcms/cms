@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Sites::deleteGroupById()`.
 - Added `craft\services\Sites::deleteGroup()`.
 - Added `craft\services\Sites::getSitesByGroupId()`.
+- Added `Craft.ColorInput` (JS class).
 
 
 ### Changed
@@ -47,6 +48,8 @@ Craft CMS 3.0 Working Changelog
 - Fields on multi-site installs can now be translated per site group.
 - Resource file URLs now have a timestamp appended to them, preventing browsers from loading cached versions when the files change.
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
+- Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
+- Color inputs can now be left blank.
 
 ### Removed
 - Removed `craft\events\RegisterRedactorPluginEvent`.
@@ -56,7 +59,9 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\fields\RichText`.
 - Removed `craft\web\assets\redactor\RedactorAsset`.
 - Removed `craft\web\assets\richtext\RichTextAsset`.
+- Removed `lib/colorpicker/`.
 - Removed `lib/redactor/`.
+- Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
 
 ## Unreleased
