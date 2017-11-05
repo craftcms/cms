@@ -21,6 +21,13 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed the “RSS caches” option from the Clear Caches utility. (RSS feeds are cached using Craft’s data caching now.)
+- Removed the `cacheMethod` config setting. To use a different cache method, override the `cache` application component from `config/app.php`. ([#2053](https://github.com/craftcms/cms/issues/2053))
+- Removed `craft\config\DbCacheConfig`.
+- Removed `craft\config\FileCacheConfig`.
+- Removed `craft\config\MemCacheConfig`.
+- Removed `craft\services\Cache::getDbCache()`.
+- Removed `craft\services\Cache::getFileCache()`.
+- Removed `craft\services\Cache::getMemCache()`.
 - Removed `craft\web\View::getTranslations()`.
 - Removed the `getTranslations()` template function.
 
