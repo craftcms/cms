@@ -28,6 +28,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
 - Fixed a bug where the `install` console command wasn’t validating the password length.
 - Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
+- Fixed a bug where image editor strings were not getting translated.
 
 ## 3.0.0-beta.30 - 2017-10-31
 
