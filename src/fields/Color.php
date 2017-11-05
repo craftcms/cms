@@ -82,11 +82,9 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if (!$value || $value === '#000000') {
-            return '';
-        }
+        $style = $value ? " style='background-color: {$value};'" : '';
 
-        return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.
-            '<div class="colorhex code">'.$value.'</div>';
+        return "<div class='color small static'><div class='colorpreview'{$style}></div></div>".
+            "<div class='colorhex code'>{$value}</div>";
     }
 }
