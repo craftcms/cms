@@ -634,7 +634,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
             new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
-            new \Twig_SimpleFunction('getTranslations', [$this, 'getTranslations']),
         ];
     }
 
@@ -836,16 +835,5 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $this->view->endBody();
 
         return TemplateHelper::raw(ob_get_clean());
-    }
-
-    /**
-     * @deprecated in Craft 3.0. Use craft.app.view.getTranslations() instead.
-     * @return string A JSON-encoded array of source/translation message mappings.
-     */
-    public function getTranslations()
-    {
-        Craft::$app->getDeprecator()->log('getTranslations', 'getTranslations() has been deprecated. Use view.getTranslations() instead.');
-
-        return Json::encode($this->view->getTranslations());
     }
 }

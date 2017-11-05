@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\GetAssetThumbUrlEvent`.
 
 ### Changed
+- Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
 - Updated Yii to 2.0.13.
 - Updated D3 to 4.11.0.
@@ -17,6 +18,8 @@ Craft CMS 3.0 Working Changelog
 - Updated jQuery to 3.2.1.
 - Updated Timepicker to 1.11.12.
 - Updated yii2-pjax to 2.0.7.
+- Removed `craft\web\View::getTranslations()`.
+- Removed the `getTranslations()` template function.
 
 ### Fixed
 - Fixed an issue where `photoSubpath` user setting was missing a default value.
