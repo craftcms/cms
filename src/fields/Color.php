@@ -69,6 +69,16 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function getElementValidationRules(): array
+    {
+        return [
+            ['match', 'pattern' => '/^#[0-9a-f]{6}$/', 'message' => Craft::t('app', '{attribute} isn’t a valid hex color value.')],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
