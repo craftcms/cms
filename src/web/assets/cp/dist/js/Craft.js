@@ -3226,7 +3226,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Batch actions setup
             // -------------------------------------------------------------
 
-            if (this.settings.context === 'index' && response.actions && response.actions.length) {
+            if (response.actions && response.actions.length) {
                 this.actions = response.actions;
                 this.actionsHeadHtml = response.actionsHeadHtml;
                 this.actionsFootHtml = response.actionsFootHtml;
@@ -3292,7 +3292,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
-                checkboxMode: (this.settings.context === 'index' && this.actions),
+                checkboxMode: !!this.actions,
                 onSelectionChange: $.proxy(this, '_handleSelectionChange')
             });
 
