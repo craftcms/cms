@@ -34,6 +34,14 @@ class Color extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Color');
     }
 
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string|null The default color hex
+     */
+    public $defaultColor;
+
     // Public Methods
     // =========================================================================
 
@@ -43,6 +51,28 @@ class Color extends Field implements PreviewableFieldInterface
     public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING.'(7)';
+    }
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms.html', 'colorField', [
+            [
+                'label' => Craft::t('app', 'Default Color'),
+                'id' => 'default-color',
+                'name' => 'defaultColor',
+                'value' => $this->defaultColor,
+                'errors' => $this->getErrors('defaultColor'),
+            ]
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['defaultColor'], ColorValidator::class];
+        return $rules;
     }
 
     /**
@@ -82,6 +112,11 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        // If this is a new entry, look for any default options
+        if ($this->isFresh($element)) {
+            $value = $this->defaultColor;
+        }
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'name' => $this->handle,
