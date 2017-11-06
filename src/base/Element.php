@@ -839,17 +839,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function rules()
     {
-        $mainScenarios = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
-
         $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => $mainScenarios],
+            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]],
             [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]],
-            [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => $mainScenarios],
+            [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]],
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'string', 'max' => 255, 'on' => $mainScenarios];
-            $rules[] = [['title'], 'required', 'on' => $mainScenarios];
+            $rules[] = [['title'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
         if (static::hasUris()) {
@@ -879,7 +877,7 @@ abstract class Element extends Component implements ElementInterface
                     } else {
                         if (is_string($rule)) {
                             // "Validator" syntax
-                            $rule = [$field->handle, $rule, 'on' => $mainScenarios];
+                            $rule = [$field->handle, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
                         }
 
                         if (is_array($rule) && isset($rule[0])) {
@@ -909,7 +907,7 @@ abstract class Element extends Component implements ElementInterface
 
                             // Set 'on' to the main scenarios by default
                             if (!array_key_exists('on', $rule)) {
-                                $rule['on'] = $mainScenarios;
+                                $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
                             }
 
                             $rules[] = $rule;
@@ -921,7 +919,7 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => $mainScenarios];
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             }
         }
 
