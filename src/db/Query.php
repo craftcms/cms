@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use Craft;
+use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
