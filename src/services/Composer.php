@@ -14,7 +14,9 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Composer\Util\Platform;
 use Craft;
+use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -72,6 +74,9 @@ class Composer extends Component
         $wd = getcwd();
         chdir(dirname($jsonPath));
 
+        // Ensure there's a home var
+        $this->_ensureHomeVar();
+
         try {
             // Update composer.json
             $sortPackages = Factory::create($io, $jsonPath)->getConfig()->get('sort-packages');
@@ -82,8 +87,7 @@ class Composer extends Component
             $installer = Installer::create($io, $composer)
                 ->setPreferDist()
                 ->setSkipSuggest()
-                ->setUpdate()
-                ->setUpdateWhitelist(array_keys($requirements));
+                ->setUpdate();
 
             $status = $installer->run();
         } catch (\Throwable $exception) {
@@ -123,6 +127,9 @@ class Composer extends Component
         // Set the working directory to the composer.json dir, in case there are any relative repo paths
         $wd = getcwd();
         chdir(dirname($jsonPath));
+
+        // Ensure there's a home var
+        $this->_ensureHomeVar();
 
         try {
             $jsonFile = new JsonFile($jsonPath);
@@ -187,6 +194,9 @@ class Composer extends Component
         $wd = getcwd();
         chdir(dirname($jsonPath));
 
+        // Ensure there's a home var
+        $this->_ensureHomeVar();
+
         try {
             $composer = Factory::create($io, $jsonPath);
 
@@ -213,6 +223,26 @@ class Composer extends Component
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.
+     */
+    protected function _ensureHomeVar()
+    {
+        if (getenv('COMPOSER_HOME') !== false) {
+            return;
+        }
+
+        $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
+        if (getenv($alt) !== false) {
+            return;
+        }
+
+        // Just define one ourselves
+        $path = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'composer';
+        FileHelper::createDirectory($path);
+        putenv("COMPOSER_HOME={$path}");
+    }
 
     /**
      * Updates the composer.json file with new requirements

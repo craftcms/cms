@@ -40,6 +40,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
+use yii\web\Response;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -380,7 +381,7 @@ class Elements extends Component
 
         // Make sure the element actually supports the site it's being saved in
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to save an element in an unsupported site.');
         }
 
@@ -396,7 +397,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error.', __METHOD__);
+            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
 
             return false;
         }
@@ -490,50 +491,35 @@ class Elements extends Component
                 }
             }
 
-            // Delete the rows that don't need to be there anymore
-            if (!$isNewElement) {
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Delete the rows that don't need to be there anymore
+        if (!$isNewElement) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%elements_sites}}',
+                    [
+                        'and',
+                        ['elementId' => $element->id],
+                        ['not', ['siteId' => $supportedSiteIds]]
+                    ])
+                ->execute();
+
+            if ($element::hasContent()) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%elements_sites}}',
+                        $element->getContentTable(),
                         [
                             'and',
                             ['elementId' => $element->id],
                             ['not', ['siteId' => $supportedSiteIds]]
                         ])
                     ->execute();
-
-                if ($element::hasContent()) {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete(
-                            $element->getContentTable(),
-                            [
-                                'and',
-                                ['elementId' => $element->id],
-                                ['not', ['siteId' => $supportedSiteIds]]
-                            ])
-                        ->execute();
-                }
             }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            // Specifically look for a MySQL "data truncation" exception. The use-case
-            // is for a disabled element where validation doesn't run and a text field
-            // is limited in length, but more data is entered than is allowed.
-            if (
-                $e instanceof DbException &&
-                isset($e->errorInfo[0]) &&
-                (int)$e->errorInfo[0] === 22001 &&
-                isset($e->errorInfo[1]) &&
-                (int)$e->errorInfo[1] === 1406
-            ) {
-                Craft::$app->getErrorHandler()->logException($e);
-                return false;
-            }
-
-            throw $e;
         }
 
         // Delete any caches involving this element. (Even do this for new elements, since they
@@ -567,7 +553,7 @@ class Elements extends Component
 
         // Make sure the element actually supports its own site ID
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
@@ -1441,7 +1427,7 @@ class Elements extends Component
 
         if (empty($matches[3]) || !isset($element->{$matches[3]})) {
             // Default to the URL
-            return $element->getUrl();
+            return (string)$element->getUrl();
         }
 
         try {

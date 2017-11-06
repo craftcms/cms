@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.29',
+    'version' => '3.0.0-beta.30',
     'schemaVersion' => '3.0.61',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
@@ -142,7 +142,8 @@ return [
                     'requireEmailVerification' => true,
                     'allowPublicRegistration' => false,
                     'defaultGroup' => null,
-                    'photoVolumeId' => null
+                    'photoVolumeId' => null,
+                    'photoSubpath' => ''
                 ],
             ]
         ],
@@ -190,61 +191,15 @@ return [
         },
 
         'cache' => function() {
-            $configService = Craft::$app->getConfig();
-            $generalConfig = $configService->getGeneral();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            switch ($generalConfig->cacheMethod) {
-                case 'apc':
-                    $config = [
-                        'class' => yii\caching\ApcCache::class,
-                        'useApcu' => true,
-                    ];
-                    break;
-                case 'db':
-                    $dbCacheConfig = $configService->getDbCache();
-                    $config = [
-                        'class' => yii\caching\DbCache::class,
-                        'gcProbability' => $dbCacheConfig->gcProbability,
-                        'cacheTable' => '{{%'.$dbCacheConfig->cacheTableName.'}}',
-                    ];
-                    break;
-                case 'file':
-                    $fileCacheConfig = $configService->getFileCache();
-                    $config = [
-                        'class' => \yii\caching\FileCache::class,
-                        'cachePath' => $fileCacheConfig->cachePath,
-                        'gcProbability' => $fileCacheConfig->gcProbability,
-                        'fileMode' => $generalConfig->defaultFileMode,
-                        'dirMode' => $generalConfig->defaultDirMode,
-                    ];
-                    break;
-                case 'memcache':
-                    $config = [
-                        'class' => yii\caching\MemCache::class,
-                        'servers' => $configService->getMemCache()->servers,
-                        'useMemcached' => true,
-                    ];
-                    break;
-                case 'wincache':
-                    $config = [
-                        'class' => yii\caching\WinCache::class,
-                    ];
-                    break;
-                case 'xcache':
-                    $config = [
-                        'class' => yii\caching\XCache::class,
-                    ];
-                    break;
-                case 'zenddata':
-                    $config = [
-                        'class' => yii\caching\ZendDataCache::class,
-                    ];
-                    break;
-                default:
-                    throw new yii\base\InvalidConfigException('Unsupported cacheMethod config setting value: '.$generalConfig->cacheMethod);
-            }
-
-            $config['defaultDuration'] = $generalConfig->cacheDuration;
+            $config = [
+                'class' => \yii\caching\FileCache::class,
+                'cachePath' => Craft::$app->getPath()->getCachePath(),
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+                'defaultDuration' => $generalConfig->cacheDuration,
+            ];
 
             return Craft::createObject($config);
         },

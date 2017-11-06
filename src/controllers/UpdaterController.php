@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
-use Composer\Util\Platform;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
@@ -17,7 +16,6 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use yii\base\Exception as YiiException;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -120,12 +118,6 @@ class UpdaterController extends Controller
         // Load the updater JS
         $view = $this->getView();
         $view->registerAssetBundle(UpdaterAsset::class);
-        $view->registerTranslations('app', [
-            'A fatal error has occurred:',
-            'Status:',
-            'Response:',
-            'Send for help',
-        ]);
 
         $state = $this->_initialState();
         $state['data'] = $this->_getHashedData();
@@ -519,7 +511,7 @@ class UpdaterController extends Controller
             // Make sure we can find composer.json
             try {
                 Craft::$app->getComposer()->getJsonPath();
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return [
                     'error' => Craft::t('app', 'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
                     'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
@@ -527,19 +519,6 @@ class UpdaterController extends Controller
                         $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
                     ]
                 ];
-            }
-
-            // Make sure COMPOSER_HOME/APPDATA/HOME is defined
-            if (!getenv('COMPOSER_HOME')) {
-                $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-                if (!getenv($alt)) {
-                    return [
-                        'error' => Craft::t('app', 'The {alt} or COMPOSER_HOME environment variable must be set for Composer to run correctly.', ['alt' => $alt]),
-                        'options' => [
-                            $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
-                        ]
-                    ];
-                }
             }
         }
 

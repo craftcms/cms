@@ -204,21 +204,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ');'
         );
 
-        $view->registerTranslations('app', [
-            'Are you sure you want to delete this block type?',
-            'Are you sure you want to delete this field?',
-            'Field Type',
-            'How you’ll refer to this block type in the templates.',
-            'This field is required',
-            'Translation Method',
-            'Not translatable',
-            'Translate for each language',
-            'Translate for each site',
-            'Custom…',
-            'Translation Key Format',
-            'What this block type will be called in the CP.',
-        ]);
-
         $fieldsService = Craft::$app->getFields();
         $fieldTypeOptions = [];
 
@@ -323,6 +308,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        /** @var MatrixBlockQuery $value */
+        $serialized = [];
+
+        foreach ($value->all() as $block) {
+            $serialized[$block->id] = [
+                'type' => $block->getType()->handle,
+                'enabled' => $block->enabled,
+                'collapsed' => $block->collapsed,
+                'fields' => $block->getSerializedFieldValues(),
+            ];
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
@@ -371,18 +376,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
             ($this->maxBlocks ?: 'null').
             ');');
-
-        Craft::$app->getView()->registerTranslations('app', [
-            'Actions',
-            'Add a block',
-            'Add {type} above',
-            'Are you sure you want to delete the selected blocks?',
-            'Collapse',
-            'Disable',
-            'Disabled',
-            'Enable',
-            'Expand',
-        ]);
 
         /** @var Element $element */
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {

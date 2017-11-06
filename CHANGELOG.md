@@ -1,10 +1,62 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2995 (WIP)
+
+### Added
+- Added `UserPermissionsService::getAssignablePermissions()`.
+
+### Changed
+- Users are no longer allowed to grant new permissions to user accounts that they don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
+
+### Fixed
+- Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))
+- Fixed a bug where the autocomplete menu in Tags fields would sometimes not go away.
+
+## 2.6.2994 - 2017-10-31
+
+### Added
+- Added `HttpRequestService::isSingleActionRequest()`.
+
+### Changed
+- Updated Imagine to 0.7.1.3, which now preserves image IPTC data when preserving EXIF data. ([#2034](https://github.com/craftcms/cms/issues/2034))
+
+### Fixed
+- Fixed a bug where it was possible for logged-out users to access offline sites.
+- Fixed a bug where front-end URLs that were generated in the Control Panel were not getting trailing slashes if the `addTrailingSlashesToUrls` config setting was enabled.
+- Fixed a bug where some element rows might have not been deleted when they should have, if multiple elements were saved in a single request.
+- Fixed a PHP error that occurred when updating Craft on environments running PHP 7.1 and where ZipArchive wasn’t installed.
+- Fixed a PHP 7.1 compatibility issue when uploading some JPEGs while preserving EXIF data, on environments using GD.
+
+## 2.6.2993 - 2017-10-18
+
+### Added
+- Added the [preserveExifData](https://craftcms.com/docs/config-settings#preserveExifData) config setting, which determines whether EXIF data should be discarded when transforming an image (defaults to `false`).
+
+### Changed
+- Client accounts are now allowed to access the edition upgrade modal.
+- Added an `$ensureTempFileExists` argument to `UploadedFile::getInstanceByName()`, which will cause the method to return `null` if the matching file had already been moved out of its temp location (defaults to `true`).
+- Added an `$ensureTempFilesExist` argument to `UploadedFile::getInstancesByName()`, which will filter out any files that have already been moved out of their temp locations (defaults to `true`).
+
+### Fixed
+- Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
+- Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end. ([#2018](https://github.com/craftcms/cms/issues/2018))
+- Fixed a bug where `HttpRequestService::getQueryStringWithoutPath()` wasn’t including duplicate param names in the returned string. ([#2041](https://github.com/craftcms/cms/issues/2041))
+
+## 2.6.2992 - 2017-10-13
+
+### Changed
+- Reduced the chance of a deadlock occurring on sites that have a high concurrent volume of element writes.
+- Updated Redactor II to 2.11.
+
+### Fixed
+- Fixed a bug where any plugin that listened to the `onEndRequest` event would be ignored.
+- Fixed a bug where assets uploaded to an Assets field by a front-end form would not get related to the element being saved if `setContentFromPost()` was called more than once. ([#2018](https://github.com/craftcms/cms/issues/2018))
+- Fixed a bug where it was not possible to create tags with multiple words. ([#2036](https://github.com/craftcms/cms/issues/2036))
+
 ## 2.6.2991 - 2017-09-29
 
 ### Fixed
-- Fixed a bug where Craft was allowing multiple tags with the same title to be added if they had leading/trailing whitespace. ([#1997](https://github.com/craftcms/cms/issues/1997))
 - Fixed a MySQL error that could occur when saving a disabled element with a column value that was too large for its database column.
 - Fixed a PHP warning that could occur when submitting a non-numeric value for a Number field, on servers running PHP 7.
 - Fixed a bug where color inputs were really narrow in Safari 11. ([#2010](https://github.com/craftcms/cms/issues/2010))
@@ -938,7 +990,7 @@ Craft CMS Changelog
 ### Added
 - Added [eager-loading support](https://craftcms.com/docs/templating/eager-loading-elements) for elements.
 - Admins can now choose which permissions the Client account has when running Craft Client.
-- Added a “Default Entry Status” setting to Channel and Structure settings for non-localized sites. (It was already possible to set default entry statuses on a per-local basis for localized sites.)
+- Added a “Default Entry Status” setting to Channel and Structure settings for non-localized sites. ([#911](https://github.com/craftcms/cms/issues/911))
 - Added a “New Users” Dashboard widget that shows a chart of recently-created user accounts.
 - Added a “Download file” action to asset indexes.
 - Added a new “Assets in this source have public URLs” setting to asset sources, which when disabled, making it possible to define private asset sources.
@@ -2490,7 +2542,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where the Asset Index page would be unable to perform some file actions after moving a file to a different source or subfolder, until a new source/subfolder had been manually selected.
 - Fixed a bug where drag-n-drop uploading to Assets fields was not working on sites with CSRF protection enabled.
-- Fixed a bug where the First Name field in the Edit User page was getting autofocussed instead of Username.
+- Fixed a bug where the First Name field in the Edit User page was getting auto-focused instead of Username.
 - Fixed a bug where the “Login as user” button would redirect you to the Control Panel even if the user didn’t have permission to access the Control Panel.
 - Fixed a SQL error caused by the Recent Entries widget when using MariaDB.
 - Fixed the positioning of spinners that are floated alongside buttons in the Control Panel for RTL languages.
@@ -2761,7 +2813,7 @@ Craft CMS Changelog
 - Improved the performance of the Update Asset Indexes tool.
 - Improved the performance of the CP’s layout manager.
 - When editing a user, the Command/Ctrl+S shortcut will now keep you on the current user’s edit page after saving them.
-- When editing a user account, the First Name field is now auto-focussed.
+- When editing a user account, the First Name field is now auto-focused.
 - Adjacent checkbox fields that have instructional text now get a little spacing between them.
 - The System Status and Site URL fields in General Settings now show warnings if their values are being overridden in `craft/config/general.php`.
 - Asset transforms will now be generated in a web-safe image format if the source image is not.
@@ -2826,7 +2878,7 @@ Craft CMS Changelog
 - Fixed a bug where front-end Login page requests were redirecting users with CP access to the CP Dashboard if they were already logged in, rather than the site’s homepage.
 - Fixed a bug where users that logged in with “Remember Me” checked would get a basically-pointless “rememberMe” cookie that would want to stick around for the next several decades if we had let it.
 - Fixed a bug where user identity cookies were not retaining their HTTP-only status.
-- Fixed a bug where the “Username or Email” input would be auto-focussed after clicking “Forget your password?” on the CP’s Login page when using a mobile device.
+- Fixed a bug where the “Username or Email” input would be auto-focused after clicking “Forget your password?” on the CP’s Login page when using a mobile device.
 - Fixed a bug where browsers would still get user session cookies after they had been logged out due to [requireMatchingUserAgentForSession](http://buildwithcraft.com/docs/config-settings#requireMatchingUserAgentForSession) config setting enforcement.
 - Fixed a bug where existing users who changed their email address would get the wrong verification email message.
 - Fixed a bug where past versions of Singles weren’t showing their version notes.
@@ -3935,7 +3987,7 @@ Craft CMS Changelog
 - Fixed a bug where Lightswitch inputs were inconsistently posting values of `y` and `on`.
 - Fixed a bug where Rich Text fields weren’t stripping out inline styles from `<a>` tags.
 - Fixed a bug where Craft wasn’t HTML-encoding titles on the entry index page.
-- Fixed a FOUC bug with Firefox on pages with an autofocussed input.
+- Fixed a FOUC bug with Firefox on pages with an auto-focused input.
 
 ## 1.3.2422 - 2013-11-15
 
@@ -4855,7 +4907,7 @@ Craft CMS Changelog
 - Updated Redactor to 9.0, dramatically improving the HTML output of Rich Text fields.
 - Most forms in the CP now support typing Command/Ctrl+S to submit them.
 - CP modals are now dismissable by pressing the ESC key.
-- When clicking the `lock` button to change a user’s email or password, the current password field is now auto-focussed.
+- When clicking the `lock` button to change a user’s email or password, the current password field is now auto-focused.
 - Added a confirmation dialog when uninstalling a plugin.
 - Beefed up the templating options for [Checkboxes](http://docs.buildwithcraft.com/diving-in/fields/types/checkboxes.html), [Dropdown](http://docs.buildwithcraft.com/diving-in/fields/types/dropdown.html), [Multi-select](http://docs.buildwithcraft.com/diving-in/fields/types/multiselect.html), and [Radio Buttons](http://docs.buildwithcraft.com/diving-in/fields/types/radio-buttons.html) fields, adding the ability to loop through all options, output option labels, and determine whether specific options are selected.
 - When submitting entry/user/asset content on the front-end, any fields that are omitted from the POST data entirely will retain their previous values.

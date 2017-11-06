@@ -1,5 +1,4 @@
-Craft CMS License Agreement
-===========================
+# Craft CMS License Agreement
 
 Version 2.0.1, last updated on June 3, 2016
 
@@ -7,8 +6,7 @@ This license agreement (the “License Agreement”) is a legal agreement betwee
 
 Please read the license terms below. If you do not agree to all of the terms and conditions of this License, then do not download, install, use, copy, or distribute Craft.
 
-Terms and Conditions
---------------------
+## Terms and Conditions
 
 ### 1. Your Acceptance of this License Agreement
 

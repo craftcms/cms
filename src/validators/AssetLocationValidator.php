@@ -114,7 +114,7 @@ class AssetLocationValidator extends Validator
         }
 
         // Get the folder
-        if (($folder = Craft::$app->getAssets()->getFolderById($folderId)) === null) {
+        if (Craft::$app->getAssets()->getFolderById($folderId) === null) {
             throw new InvalidConfigException('Invalid folder ID: '.$folderId);
         }
 

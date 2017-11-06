@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Craft;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
@@ -30,7 +31,7 @@ class Component
      *
      * @return ComponentInterface The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
-     * @throws MissingComponentException if the class specified by $config doesn’t exist
+     * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
     public static function createComponent($config, string $instanceOf = null): ComponentInterface
     {
@@ -58,6 +59,15 @@ class Component
 
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
+        }
+
+        // If it comes from a plugin, make sure the plugin is installed
+        $pluginsService = Craft::$app->getPlugins();
+        $pluginHandle = $pluginsService->getPluginHandleByClass($class);
+        if ($pluginHandle !== null && $pluginsService->getPlugin($pluginHandle) === null) {
+            $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
+            $pluginName = $pluginInfo['name'] ?? $pluginHandle;
+            throw new MissingComponentException("Component class '{$class}' belongs to an uninstalled plugin ('{$pluginName}').");
         }
 
         $config = self::mergeSettings($config);

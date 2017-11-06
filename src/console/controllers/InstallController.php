@@ -13,6 +13,7 @@ use craft\errors\InvalidPluginException;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
+use yii\base\Exception;
 use yii\console\Controller;
 use yii\helpers\Console;
 
@@ -234,6 +235,10 @@ class InstallController extends Controller
         $this->stdout('Password: ');
         if (($password = CliPrompt::hiddenPrompt()) === '') {
             $this->stdout('Invalid input.'.PHP_EOL);
+            goto top;
+        }
+        if (!$this->validatePassword($password, $error)) {
+            Console::output($error);
             goto top;
         }
         $this->stdout('Confirm: ');

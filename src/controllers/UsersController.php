@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
@@ -795,11 +796,6 @@ class UsersController extends Controller
         ]);
         $this->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
 
-        $this->getView()->registerTranslations('app', [
-            'Please enter your current password.',
-            'Please enter your password.',
-        ]);
-
         return $this->renderTemplate('users/_edit', [
             'account' => $user,
             'isNewAccount' => $isNewAccount,
@@ -1010,8 +1006,9 @@ class UsersController extends Controller
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
-        if ($thisIsPublicRegistration) {
-            $user->validateCustomFields = false;
+        // Don't validate required custom fields if it's public registration
+        if (!$thisIsPublicRegistration) {
+            $user->setScenario(Element::SCENARIO_LIVE);
         }
 
         if (!$user->validate(null, false)) {
@@ -1750,12 +1747,22 @@ class UsersController extends Controller
 
                 if (is_array($permissions)) {
                     // See if there are any new permissions in here
+                    $hasNewPermissions = false;
+                    $authService = Craft::$app->getUser();
+
                     foreach ($permissions as $permission) {
                         if (!$user->can($permission)) {
-                            // Yep. This will require an elevated session
-                            $this->requireElevatedSession();
-                            break;
+                            $hasNewPermissions = true;
+
+                            // Make sure the current user even has permission to grant it
+                            if (!$authService->checkPermission($permission)) {
+                                throw new ForbiddenHttpException("Your account doesn't have permission to grant the {$permission} permission to a user.");
+                            }
                         }
+                    }
+
+                    if ($hasNewPermissions) {
+                        $this->requireElevatedSession();
                     }
 
                     Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);

@@ -164,7 +164,7 @@ class User extends Element implements IdentityInterface
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
 
-            if ($groups) {
+            if (!empty($groups)) {
                 $sources[] = ['heading' => Craft::t('app', 'Groups')];
 
                 foreach ($groups as $group) {

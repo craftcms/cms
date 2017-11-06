@@ -308,7 +308,7 @@ class AssetQuery extends ElementQuery
                 $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
             }
 
-            Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $this->withTransforms);
+            Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
         }
 
         return $elements;

@@ -1,4 +1,21 @@
 build:
+  nodes:
+    analysis:
+      project_setup:
+        override: ['true']
+      tests:
+        override: ['php-scrutinizer-run']
+    craft-tests:
+      project_setup:
+        before:
+          - mysql -e "CREATE DATABASE craft3test CHARACTER SET = 'utf8' COLLATE = 'utf8_unicode_ci'"
+      tests:
+        override:
+          -
+            command: './vendor/bin/codecept run unit --coverage --coverage-xml --coverage-html'
+            coverage:
+              file: 'tests/_output/coverage.xml'
+              format: 'clover'
   environment:
     timezone: UTC
     php:
@@ -6,13 +23,4 @@ build:
       ini:
         date.timezone: 'US/Pacific'
         memory_limit: '-1'
-  project_setup:
-    before:
-      - mysql -e "CREATE DATABASE craft3test CHARACTER SET = 'utf8' COLLATE = 'utf8_unicode_ci'"
-  tests:
-    override:
-      -
-        command: './vendor/bin/codecept run unit --coverage --coverage-xml --coverage-html'
-        coverage:
-          file: 'tests/_output/coverage.xml'
-          format: 'clover'
+

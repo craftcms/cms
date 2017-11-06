@@ -665,18 +665,6 @@ class RichText extends Field
             }
         }
 
-        $view->registerTranslations('app', [
-            'Insert image',
-            'Insert URL',
-            'Choose image',
-            'Link',
-            'Link to an entry',
-            'Insert link',
-            'Unlink',
-            'Link to an asset',
-            'Link to a category',
-        ]);
-
         // Check to see if the Redactor has been translated into the current site
         if (Craft::$app->language != Craft::$app->sourceLanguage) {
             // First try to include the actual target language

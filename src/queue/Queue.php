@@ -304,7 +304,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         $this->_executingJobId = null;
 
-        if ($givingUp = parent::handleError($id, $job, $ttr, $attempt, $error)) {
+        if (parent::handleError($id, $job, $ttr, $attempt, $error)) {
             // Log the exception
             Craft::$app->getErrorHandler()->logException($error);
 

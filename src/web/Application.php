@@ -14,7 +14,9 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\debug\Module as DebugModule;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -82,6 +84,8 @@ class Application extends \yii\web\Application
         parent::init();
 
         $this->_init();
+        $this->ensureResourcePathExists();
+        $this->debugBootstrap();
     }
 
     /**
@@ -186,7 +190,7 @@ class Application extends \yii\web\Application
 
             if ($firstSeg !== null) {
                 /** @var Plugin|null $plugin */
-                $plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
+                $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
                 if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->id)) {
                     throw new ForbiddenHttpException();
@@ -273,9 +277,61 @@ class Application extends \yii\web\Application
         $libPath = Craft::getAlias('@lib');
         Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
-        Craft::setAlias('@bower/jquery.inputmask/dist', $libPath.'/jquery.inputmask');
+        Craft::setAlias('@bower/inputmask/dist', $libPath.'/inputmask');
         Craft::setAlias('@bower/punycode', $libPath.'/punycode');
         Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Ensures that the resources folder exists and is writable.
+     *
+     * @throws InvalidConfigException
+     */
+    protected function ensureResourcePathExists()
+    {
+        $resourceBasePath = Craft::getAlias($this->getConfig()->getGeneral()->resourceBasePath);
+        @FileHelper::createDirectory($resourceBasePath);
+
+        if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
+            throw new InvalidConfigException($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP.');
+        }
+    }
+
+    /**
+     * Bootstraps the Debug Toolbar if necessary.
+     */
+    protected function debugBootstrap()
+    {
+        $session = $this->getSession();
+
+        if (!$session->getHasSessionId() && !$session->getIsActive()) {
+            return;
+        }
+
+        $isCpRequest = $this->getRequest()->getIsCpRequest();
+
+        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
+        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
+
+        if (!$enableDebugToolbarForCp && !$enableDebugToolbarForSite) {
+            return;
+        }
+
+        // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
+        if (!$isCpRequest) {
+            DebugModule::setYiiLogo("data:image/svg+xml;utf8,<svg width='30px' height='30px' viewBox='0 0 30 30' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g fill='#DA5B47'><path d='M21.5549104,8.56198524 C21.6709104,8.6498314 21.7812181,8.74275447 21.8889104,8.83706217 L23.6315258,7.47013909 L23.6858335,7.39952371 C23.4189104,7.12998524 23.132295,6.87506217 22.8224489,6.64075447 C18.8236796,3.62275447 12.7813719,4.88598524 9.32737193,9.46275447 C5.87321809,14.0393699 6.31475655,20.195216 10.3135258,23.2138314 C13.578295,25.6779852 18.2047565,25.287216 21.6732181,22.5699852 L21.6693719,22.5630622 L20.0107565,21.2621391 C17.4407565,22.9144468 14.252295,23.0333699 11.9458335,21.2927545 C8.87414116,18.9746006 8.53506424,14.245216 11.188295,10.7293699 C13.8419873,7.21398524 18.4832181,6.24367755 21.5549104,8.56198524'></path></g></svg>");
+        }
+
+        if (($isCpRequest && !$enableDebugToolbarForCp) || (!$isCpRequest && !$enableDebugToolbarForSite)) {
+            return;
+        }
+
+        /** @var DebugModule $module */
+        $module = $this->getModule('debug');
+        $module->bootstrap($this);
     }
 
     // Private Methods
@@ -542,14 +598,15 @@ class Application extends \yii\web\Application
             }
 
             $actionSegs = $request->getActionSegments();
+            $singleAction = $request->getIsSingleActionRequest();
 
             if ($actionSegs && (
-                    $actionSegs === ['users', 'login'] ||
-                    $actionSegs === ['users', 'logout'] ||
+                    ($actionSegs === ['users', 'login'] && $singleAction) ||
+                    ($actionSegs === ['users', 'logout'] && $singleAction) ||
+                    ($actionSegs === ['users', 'verify-email'] && $singleAction) ||
+                    ($actionSegs === ['users', 'set-password'] && $singleAction) ||
                     $actionSegs === ['users', 'forgot-password'] ||
                     $actionSegs === ['users', 'send-password-reset-email'] ||
-                    $actionSegs === ['users', 'set-password'] ||
-                    $actionSegs === ['users', 'verify-email'] ||
                     $actionSegs[0] === 'update'
                 )
             ) {

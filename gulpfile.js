@@ -23,7 +23,7 @@ var jsDeps = [
     { srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: libPath+'element-resize-detector' },
     { srcGlob: 'node_modules/fabric/dist/fabric.js', dest: libPath+'fabric' },
     { srcGlob: 'node_modules/garnishjs/dist/garnish.js', dest: libPath+'garnishjs' },
-    { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'jquery.inputmask' },
+    { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'inputmask' },
     { srcGlob: 'node_modules/jquery/dist/jquery.js', dest: libPath+'jquery' },
     { srcGlob: 'node_modules/jquery.payment/lib/jquery.payment.js', dest: libPath+'jquery.payment' },
     { srcGlob: 'node_modules/picturefill/dist/picturefill.js', dest: libPath+'picturefill' },
