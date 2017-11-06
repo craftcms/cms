@@ -11,7 +11,8 @@
     <input type="hidden" name="{{ name }}" value="">
 {% endif -%}
 
-<div class="{{ class }}">
+<div class="{{ class }}"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <select multiple
             {%- if id is defined %} id="{{ id }}"{% endif %}
             {%- if name is defined and name %} name="{{ name }}[]"{% endif %}

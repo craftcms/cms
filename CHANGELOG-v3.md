@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
 - Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
 - Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
+- Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
 - Added `craft\errors\SiteGroupNotFoundException`.
@@ -56,6 +57,7 @@ Craft CMS 3.0 Working Changelog
 - Color inputs can now be left blank.
 
 ### Removed
+- The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
 - Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
 - Removed `craft\fields\data\RichTextData`.

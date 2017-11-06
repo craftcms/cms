@@ -2,7 +2,8 @@
 
 {% set id = id ?? 'color'~random() %}
 
-<div class="flex">
+<div class="flex"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <div class="color static">
         <div class="colorpreview"
             {%- if value %} style="background-color: {{ value }};"{% endif -%}

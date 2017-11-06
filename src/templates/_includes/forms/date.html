@@ -2,7 +2,8 @@
 {% set name = name is defined ? name -%}
 {% set value = value is defined ? value -%}
 
-<div class="datewrapper">
+<div class="datewrapper"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- include "_includes/forms/text" with {
         name: (name ? name~'[date]'),
         autocomplete: false,
