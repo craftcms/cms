@@ -78,6 +78,7 @@ Craft CMS 3.0 Working Changelog
 - Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
 - `craft\helpers\Component::createComponent()` will now throw a `MissingComponentException` if the component belongs to a plugin that’s not installed.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
+- `craft\db\Query::one()` and `scalar()` now explicitly add `LIMIT 1` to the SQL statement.
 - Updated Yii to 2.0.13.
 - Updated D3 to 4.11.0.
 - Updated Fabric to 1.7.19.
@@ -108,6 +109,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
 - Fixed a bug where image editor strings were not getting translated.
 - Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
+- Fixed a bug where the image editor was re-saving images even if the only thing that changed was the focal point. ([#2089](https://github.com/craftcms/cms/pull/2089))
 
 ## 3.0.0-beta.30 - 2017-10-31
 
