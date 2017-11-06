@@ -43,6 +43,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
 - Fixed a bug where image editor strings were not getting translated.
 - Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
+- Fixed a bug where images were being re-saved even only if their focal point had changed. ([#2089](https://github.com/craftcms/cms/pull/2089))
 
 ## 3.0.0-beta.30 - 2017-10-31
 
