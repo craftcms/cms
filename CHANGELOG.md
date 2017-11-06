@@ -11,6 +11,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))
+- Fixed a bug where the autocomplete menu in Tags fields would sometimes not go away.
 
 ## 2.6.2994 - 2017-10-31
 
