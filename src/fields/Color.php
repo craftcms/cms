@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\fields\data\ColorData;
 use craft\helpers\Html;
 use craft\validators\ColorValidator;
 use yii\db\Schema;
@@ -80,6 +81,10 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value instanceof ColorData) {
+            return $value;
+        }
+
         if (!$value || $value === '#') {
             return null;
         }
@@ -94,7 +99,7 @@ class Color extends Field implements PreviewableFieldInterface
             $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
         }
 
-        return $value;
+        return new ColorData($value);
     }
 
     /**
@@ -112,15 +117,16 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var ColorData|null $value */
         // If this is a new entry, look for any default options
-        if ($this->isFresh($element)) {
-            $value = $this->defaultColor;
+        if ($this->isFresh($element) && $this->defaultColor) {
+            $value = new ColorData($this->defaultColor);
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'name' => $this->handle,
-            'value' => $value,
+            'value' => $value->getHex(),
         ]);
     }
 
@@ -129,6 +135,7 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
+        /** @var ColorData|null $value */
         if (!$value) {
             return '';
         }
@@ -136,7 +143,7 @@ class Color extends Field implements PreviewableFieldInterface
         return Html::encodeParams(
             '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
             [
-                'bgColor' => $value
+                'bgColor' => $value->getHex()
             ]);
     }
 
@@ -145,9 +152,12 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        $style = $value ? " style='background-color: {$value};'" : '';
+        /** @var ColorData|null $value */
+        if (!$value) {
+            return '<div class="color small static"><div class="colorpreview"></div></div>';
+        }
 
-        return "<div class='color small static'><div class='colorpreview'{$style}></div></div>".
-            "<div class='colorhex code'>{$value}</div>";
+        return "<div class='color small static'><div class='colorpreview' style='background-color: {$value->getHex()};'></div></div>".
+            "<div class='colorhex code'>{$value->getHex()}</div>";
     }
 }
