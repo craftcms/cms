@@ -50,15 +50,15 @@ class Component
 
         // Validate the class
         if (!class_exists($class)) {
-            throw new MissingComponentException("Unable to find component class '$class'.");
+            throw new MissingComponentException("Unable to find component class '{$class}'.");
         }
 
         if (!is_subclass_of($class, ComponentInterface::class)) {
-            throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
+            throw new InvalidConfigException("Component class '{$class}' does not implement ComponentInterface.");
         }
 
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
-            throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
+            throw new InvalidConfigException("Component class '{$class}' is not an instance of '{$instanceOf}'.");
         }
 
         // If it comes from a plugin, make sure the plugin is installed
@@ -67,7 +67,7 @@ class Component
         if ($pluginHandle !== null && $pluginsService->getPlugin($pluginHandle) === null) {
             $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
             $pluginName = $pluginInfo['name'] ?? $pluginHandle;
-            throw new MissingComponentException("Component class '{$class}' belongs to an uninstalled plugin ('{$pluginName}').");
+            throw new MissingComponentException("Component class '{$class}' belongs to an uninstalled plugin ({$pluginName}).");
         }
 
         $config = self::mergeSettings($config);
