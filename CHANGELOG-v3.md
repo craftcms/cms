@@ -45,6 +45,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where image editor strings were not getting translated.
 - Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
 - Fixed a bug where the image editor was re-saving images even if the only thing that changed was the focal point. ([#2089](https://github.com/craftcms/cms/pull/2089))
+- Fixed a PHP error that occurred when duplicating an entry in a section that has URLs.
 
 ## 3.0.0-beta.30 - 2017-10-31
 

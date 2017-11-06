@@ -843,7 +843,7 @@ abstract class Element extends Component implements ElementInterface
 
         $rules = [
             [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => $mainScenarios],
-            [['siteId'], SiteIdValidator::class, 'on' => $mainScenarios],
+            [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => $mainScenarios],
         ];
 
@@ -853,9 +853,9 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if (static::hasUris()) {
-            $rules[] = [['slug'], SlugValidator::class, 'on' => $mainScenarios];
-            $rules[] = [['slug'], 'string', 'max' => 255, 'on' => $mainScenarios];
-            $rules[] = [['uri'], ElementUriValidator::class, 'on' => $mainScenarios];
+            $rules[] = [['slug'], SlugValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [['slug'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
 
         // Are we validating custom fields?
@@ -926,17 +926,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function scenarios()
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_ESSENTIALS] = ['siteId', 'slug', 'uri'];
-
-        return $scenarios;
     }
 
     /**
