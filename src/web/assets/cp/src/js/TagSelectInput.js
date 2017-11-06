@@ -119,6 +119,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 };
 
                 Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus) {
+                    // Just in case
+                    if (this.searchMenu) {
+                        this.killSearchMenu();
+                    }
+
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
