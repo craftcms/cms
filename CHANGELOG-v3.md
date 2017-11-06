@@ -70,9 +70,11 @@ Craft CMS 3.0 Working Changelog
 - Added PHP 7.2 compatibility.
 - Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
+- Added `craft\services\Plugins::getPluginHandleByClass()`.
 
 ### Changed
 - Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
+- `craft\helpers\Component::createComponent()` will now throw a `MissingComponentException` if the component belongs to a plugin that’s not installed.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
 - Updated Yii to 2.0.13.
 - Updated D3 to 4.11.0.
@@ -84,6 +86,14 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed the “RSS caches” option from the Clear Caches utility. (RSS feeds are cached using Craft’s data caching now.)
+- Removed the `cacheMethod` config setting. To use a different cache method, override the `cache` application component from `config/app.php`. ([#2053](https://github.com/craftcms/cms/issues/2053))
+- Removed `craft\config\DbCacheConfig`.
+- Removed `craft\config\FileCacheConfig`.
+- Removed `craft\config\MemCacheConfig`.
+- Removed `craft\services\Cache::getDbCache()`.
+- Removed `craft\services\Cache::getFileCache()`.
+- Removed `craft\services\Cache::getMemCache()`.
+- Removed `craft\services\Plugins::getPluginByClass()`.
 - Removed `craft\web\View::getTranslations()`.
 - Removed the `getTranslations()` template function.
 
@@ -95,6 +105,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the `install` console command wasn’t validating the password length.
 - Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
 - Fixed a bug where image editor strings were not getting translated.
+- Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
 
 ## 3.0.0-beta.30 - 2017-10-31
 

@@ -8,11 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\config\DbCacheConfig;
 use craft\config\DbConfig;
-use craft\config\FileCacheConfig;
 use craft\config\GeneralConfig;
-use craft\config\MemCacheConfig;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -28,11 +25,8 @@ use yii\base\InvalidParamException;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property DbConfig        $db        the DB config settings
- * @property DbCacheConfig   $dbCache   the DB Cache config settings
- * @property FileCacheConfig $fileCache the file cache config settings
- * @property GeneralConfig   $general   the general config settings
- * @property MemCacheConfig  $memCache  the Memcached config settings
+ * @property DbConfig      $db        the DB config settings
+ * @property GeneralConfig $general   the general config settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -43,10 +37,7 @@ class Config extends Component
     // =========================================================================
 
     const CATEGORY_DB = 'db';
-    const CATEGORY_DBCACHE = 'dbcache';
-    const CATEGORY_FILECACHE = 'filecache';
     const CATEGORY_GENERAL = 'general';
-    const CATEGORY_MEMCACHE = 'memcache';
 
     // Properties
     // =========================================================================
@@ -93,17 +84,8 @@ class Config extends Component
             case self::CATEGORY_DB:
                 $class = DbConfig::class;
                 break;
-            case self::CATEGORY_DBCACHE:
-                $class = DbCacheConfig::class;
-                break;
-            case self::CATEGORY_FILECACHE:
-                $class = FileCacheConfig::class;
-                break;
             case self::CATEGORY_GENERAL:
                 $class = GeneralConfig::class;
-                break;
-            case self::CATEGORY_MEMCACHE:
-                $class = MemCacheConfig::class;
                 break;
             default:
                 throw new InvalidParamException('Invalid config category: '.$category);
@@ -151,26 +133,6 @@ class Config extends Component
     }
 
     /**
-     * Returns the DB cache config settings.
-     *
-     * @return DbCacheConfig
-     */
-    public function getDbCache(): DbCacheConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_DBCACHE);
-    }
-
-    /**
-     * Returns the file cache config settings.
-     *
-     * @return FileCacheConfig
-     */
-    public function getFileCache(): FileCacheConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_FILECACHE);
-    }
-
-    /**
      * Returns the general config settings.
      *
      * @return GeneralConfig
@@ -178,16 +140,6 @@ class Config extends Component
     public function getGeneral(): GeneralConfig
     {
         return $this->getConfigSettings(self::CATEGORY_GENERAL);
-    }
-
-    /**
-     * Returns the Memcached config settings.
-     *
-     * @return MemCacheConfig
-     */
-    public function getMemCache(): MemCacheConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
     }
 
     /**

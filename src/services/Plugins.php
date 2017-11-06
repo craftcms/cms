@@ -21,7 +21,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\db\Exception;
 use yii\helpers\Inflector;
@@ -107,6 +106,11 @@ class Plugins extends Component
      */
     private $_installedPluginInfo;
 
+    /**
+     * @var string[] Cache for [[getPluginHandleByClass()]]
+     */
+    private $_classPluginHandles = [];
+
     // Public Methods
     // =========================================================================
 
@@ -125,6 +129,10 @@ class Plugins extends Component
 
             foreach ($plugins as $packageName => $plugin) {
                 $plugin['packageName'] = $packageName;
+                // Normalize the base path (and find the actual path, not a possibly-symlinked path)
+                if (isset($plugin['basePath'])) {
+                    $plugin['basePath'] = FileHelper::normalizePath(realpath($plugin['basePath']));
+                }
                 $handle = $this->_normalizeHandle(ArrayHelper::remove($plugin, 'handle'));
                 $this->_composerPluginInfo[$handle] = $plugin;
             }
@@ -258,31 +266,35 @@ class Plugins extends Component
     }
 
     /**
-     * Returns the plugin that contains the given class, if any.
+     * Returns the plugin handle that contains the given class, if any.
+     *
+     * The plugin may not actually be installed.
      *
      * @param string $class
      *
-     * @return PluginInterface|null The plugin, or null if it can’t be determined.
+     * @return string|null The plugin handle, or null if it can’t be determined
      */
-    public function getPluginByClass(string $class)
+    public function getPluginHandleByClass(string $class)
     {
+        if (array_key_exists($class, $this->_classPluginHandles)) {
+            return $this->_classPluginHandles[$class];
+        }
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = dirname((new \ReflectionClass($class))->getFileName()).'/';
+            $classPath = FileHelper::normalizePath(dirname((new \ReflectionClass($class))->getFileName())).DIRECTORY_SEPARATOR;
         } catch (\ReflectionException $e) {
-            return null;
+            return $this->_classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
-        foreach ($this->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
-            if (StringHelper::startsWith($classPath, $plugin->getBasePath().'/')) {
-                return $plugin;
+        foreach ($this->_composerPluginInfo as $handle => $info) {
+            if (isset($info['basePath']) && strpos($classPath, $info['basePath'].DIRECTORY_SEPARATOR) === 0) {
+                return $this->_classPluginHandles[$class] = $handle;
             }
         }
 
-        return null;
+        return $this->_classPluginHandles[$class] = null;
     }
 
     /**
@@ -538,6 +550,18 @@ class Plugins extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Returns the Composer-supplied info for a given plugin.
+     *
+     * @param string $handle The plugin handle
+     *
+     * @return array|null The plugin info, if there is any
+     */
+    public function getComposerPluginInfo(string $handle)
+    {
+        return $this->_composerPluginInfo[$handle] ?? null;
     }
 
     /**
