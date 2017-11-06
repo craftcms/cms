@@ -83,6 +83,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\Component::createComponent()` will now throw a `MissingComponentException` if the component belongs to a plugin that’s not installed.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
 - `craft\db\Query::one()` and `scalar()` now explicitly add `LIMIT 1` to the SQL statement.
+- It’s now possible to create element indexes with batch actions on non-index pages. ([#1479](https://github.com/craftcms/cms/issues/1479))
 - Updated Yii to 2.0.13.
 - Updated D3 to 4.11.0.
 - Updated Fabric to 1.7.19.
