@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Sites::deleteGroupById()`.
 - Added `craft\services\Sites::deleteGroup()`.
 - Added `craft\services\Sites::getSitesByGroupId()`.
+- Added `craft\validators\ColorValidator`.
 - Added `Craft.ColorInput` (JS class).
 
 

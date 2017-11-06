@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Html;
+use craft\validators\ColorValidator;
 use yii\db\Schema;
 
 /**
@@ -72,7 +73,7 @@ class Color extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
-            ['match', 'pattern' => '/^#[0-9a-f]{6}$/', 'message' => Craft::t('app', '{attribute} isn’t a valid hex color value.')],
+            ColorValidator::class,
         ];
     }
 
