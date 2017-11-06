@@ -13,7 +13,7 @@ Craft CMS 3.0 Working Changelog
 - Color fields now return a `craft\fields\data\ColorData` object, with `hex`, `rgb`, `red`, `green`, `blue`, `r`, `g`, `b`, and `luma` properties.
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
 - Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
-- Added interlace setting to Asset Transforms ([#1487]https://github.com/craftcms/cms/issues/1487)
+- Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
 - Added `craft\errors\SiteGroupNotFoundException`.
