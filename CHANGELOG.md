@@ -4,10 +4,12 @@ Craft CMS Changelog
 ## 2.6.2995 (WIP)
 
 ### Added
+- Added `UserGroupsService::getAssignableGroups()`.
 - Added `UserPermissionsService::getAssignablePermissions()`.
 
 ### Changed
-- Users are no longer allowed to grant new permissions to user accounts that they don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
+- The “Assign user groups and permissions” permission has now been split into “Assign user permissions” and “Assign user groups”, and the latter now has nested permissions for each of the user groups. ([#2087](https://github.com/craftcms/cms/issues/2087))
+- Users with the “Assign user permissions” permission are no longer allowed to grant new permissions to user accounts that they themselves don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
 
 ### Fixed
 - Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))

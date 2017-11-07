@@ -23,12 +23,41 @@ class UserGroupsService extends BaseApplicationComponent
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return UserGroupModel[]
 	 */
 	public function getAllGroups($indexBy = null)
 	{
 		$groupRecords = UserGroupRecord::model()->ordered()->findAll();
 		return UserGroupModel::populateModels($groupRecords, $indexBy);
+	}
+
+	/**
+	 * Returns the user groups that the current user is allowed to assign to another user.
+	 *
+	 * @param UserModel|null $user The recipient of the user groups. If set, their current groups will be included as well.
+	 *
+	 * @return UserGroupModel[]
+	 */
+	public function getAssignableGroups(UserModel $user = null)
+	{
+		$currentUser = craft()->userSession->getUser();
+		if (!$currentUser && !$user)
+		{
+			return array();
+		}
+
+		$assignableGroups = array();
+
+		foreach ($this->getAllGroups() as $group)
+		{
+			$permission = 'assignUserGroup:'.$group->id;
+			if (($currentUser && $currentUser->can($permission)) || ($user && $user->can($permission)))
+			{
+				$assignableGroups[] = $group;
+			}
+		}
+
+		return $assignableGroups;
 	}
 
 	/**

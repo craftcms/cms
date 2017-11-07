@@ -75,15 +75,12 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
-			$permissions[Craft::t('Users')] = array(
+			$userPermissions = array(
 				'editUsers' => array(
 					'label' => Craft::t('Edit users'),
 					'nested' => array(
 						'registerUsers' => array(
 							'label' => Craft::t('Register users')
-						),
-						'assignUserPermissions' => array(
-							'label' => Craft::t('Assign user groups and permissions')
 						),
 						'administrateUsers' => array(
 							'label' => Craft::t('Administrate users'),
@@ -93,12 +90,27 @@ class UserPermissionsService extends BaseApplicationComponent
 								),
 							),
 						),
+						'assignUserPermissions' => array(
+							'label' => Craft::t('Assign user permissions')
+						),
+						'assignUserGroups' => array(
+							'label' => Craft::t('Assign user groups')
+						)
 					),
 				),
 				'deleteUsers' => array(
 					'label' => Craft::t('Delete users')
 				),
 			);
+
+			foreach (craft()->userGroups->getAllGroups() as $userGroup)
+			{
+				$userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->id] = array(
+					'label' => Craft::t('Assign users to “{group}”', array('group' => $userGroup->name))
+				);
+			}
+
+			$permissions[Craft::t('Users')] = $userPermissions;
 		}
 
 		// Locales
@@ -561,22 +573,22 @@ class UserPermissionsService extends BaseApplicationComponent
 			return array();
 		}
 
-		$allowedPermissions = array();
+		$assignablePermissions = array();
 
 		foreach ($permissions as $name => $data)
 		{
-			if ($currentUser->can($name) || ($user && $user->can($name)))
+			if (($currentUser && $currentUser->can($name)) || ($user && $user->can($name)))
 			{
 				if (isset($data['nested']))
 				{
 					$data['nested'] = $this->_filterUnassignablePermissions($data['nested'], $user);
 				}
 
-				$allowedPermissions[$name] = $data;
+				$assignablePermissions[$name] = $data;
 			}
 		}
 
-		return $allowedPermissions;
+		return $assignablePermissions;
 	}
 
 	/**

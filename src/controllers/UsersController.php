@@ -1748,87 +1748,93 @@ class UsersController extends BaseController
 	 */
 	private function _processUserGroupsPermissions(UserModel $user)
 	{
-		// Make sure there are assignUserPermissions
-		if (craft()->userSession->checkPermission('assignUserPermissions'))
+		if (craft()->getEdition() >= Craft::Client && craft()->userSession->checkPermission('assignUserPermissions'))
 		{
-			// Only Craft Pro has user groups
-			if (craft()->getEdition() == Craft::Pro)
+			// Save any user permissions
+			if ($user->admin)
 			{
-				// Save any user groups
-				$groupIds = craft()->request->getPost('groups');
-
-				if ($groupIds !== null)
-				{
-					if (is_array($groupIds))
-					{
-						// See if there are any new groups in here
-						$oldGroupIds = array();
-
-						foreach ($user->getGroups() as $group)
-						{
-							$oldGroupIds[] = $group->id;
-						}
-
-						foreach ($groupIds as $groupId)
-						{
-							if (!in_array($groupId, $oldGroupIds))
-							{
-								// Yep. This will require an elevated session
-								$this->requireElevatedSession();
-								break;
-							}
-						}
-					}
-
-					craft()->userGroups->assignUserToGroups($user->id, $groupIds);
-				}
+				$permissions = array();
 			}
-
-			// Craft Client+ has user permissions.
-			if (craft()->getEdition() >= Craft::Client)
+			else
 			{
-				// Save any user permissions
-				if ($user->admin)
+				$permissions = craft()->request->getPost('permissions');
+
+				// it will be an empty string if no permissions were assigned during user saving.
+				if ($permissions === '')
 				{
 					$permissions = array();
 				}
-				else
-				{
-					$permissions = craft()->request->getPost('permissions');
+			}
 
-					// it will be an empty string if no permissions were assigned during user saving.
-					if ($permissions === '')
+			if (is_array($permissions))
+			{
+				// See if there are any new permissions in here
+				$hasNewPermissions = false;
+
+				foreach ($permissions as $permission)
+				{
+					if (!$user->can($permission))
 					{
-						$permissions = array();
+						$hasNewPermissions = true;
+
+						// Make sure the current user even has permission to assign it
+						if (!craft()->userSession->checkPermission($permission))
+						{
+							throw new HttpException(403, "Your account doesn't have permission to assign the {$permission} permission to a user.");
+						}
 					}
 				}
 
-				if (is_array($permissions))
+				if ($hasNewPermissions)
 				{
-					// See if there are any new permissions in here
-					$hasNewPermissions = false;
+					$this->requireElevatedSession();
+				}
 
-					foreach ($permissions as $permission)
+				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			}
+		}
+
+		// Only Craft Pro has user groups
+		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('assignUserGroups'))
+		{
+			// Save any user groups
+			$groupIds = craft()->request->getPost('groups');
+
+			if ($groupIds !== null)
+			{
+				if (is_array($groupIds))
+				{
+					// See if there are any new groups in here
+					$oldGroupIds = array();
+
+					foreach ($user->getGroups() as $group)
 					{
-						if (!$user->can($permission))
-						{
-							$hasNewPermissions = true;
+						$oldGroupIds[] = $group->id;
+					}
 
-							// Make sure the current user even has permission to grant it
-							if (!craft()->userSession->checkPermission($permission))
+					$hasNewGroups = false;
+
+					foreach ($groupIds as $groupId)
+					{
+						if (!in_array($groupId, $oldGroupIds))
+						{
+							$hasNewGroups = true;
+
+							// Make sure the current user even has permission to assign it
+							if (!craft()->userSession->checkPermission('assignUserGroup:'.$groupId))
 							{
-								throw new HttpException(403, "Your account doesn't have permission to grant the {$permission} permission to a user.");
+								throw new HttpException(403, "Your account doesn't have permission to assign user group {$groupId} to a user.");
 							}
 						}
 					}
 
-					if ($hasNewPermissions)
+					if ($hasNewGroups)
 					{
 						$this->requireElevatedSession();
 					}
-
-					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 				}
+
+				craft()->userGroups->assignUserToGroups($user->id, $groupIds);
 			}
 		}
 	}
