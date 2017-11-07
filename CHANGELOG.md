@@ -14,6 +14,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))
 - Fixed a bug where the autocomplete menu in Tags fields would sometimes not go away.
+- Fixed a bug where Craft would mistake `users/sendPasswordResetEmail` requests for `users/login` requests, if the Forgot Password form was submitted from the same path as the `loginPath` config setting.
 
 ## 2.6.2994 - 2017-10-31
 

@@ -92,6 +92,25 @@ class UsersController extends BaseController
 				}
 			}
 		}
+
+		// Make sure that either the site is offline or they are specifically
+		// requesting the login path
+		if (!craft()->isSystemOn())
+		{
+			if (craft()->request->isCpRequest())
+			{
+				$loginPath = craft()->config->getCpLoginPath();
+			}
+			else
+			{
+				$loginPath = trim(craft()->config->getLocalized('loginPath'), '/');
+			}
+
+			if (craft()->request->getPath() !== $loginPath)
+			{
+				throw new HttpException(503);
+			}
+		}
 	}
 
 	/**
