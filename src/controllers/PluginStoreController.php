@@ -106,7 +106,9 @@ class PluginStoreController extends Controller
         $client = Craft::createGuzzleClient();
 
         try {
-            $client->request('GET', Craft::$app->getPluginStore()->craftIdEndpoint.'/oauth/revoke', ['query' => ['accessToken' => $token->accessToken]]);
+            $url = Craft::$app->getPluginStore()->craftIdEndpoint.'/oauth/revoke';
+            $options = ['query' => ['accessToken' => $token->accessToken]];
+            $client->request('GET', $url, $options);
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from CraftCMS.dev.'));
         } catch(\Exception $e) {
             Craft::error('Couldn’t revoke token: '.$e->getMessage());
