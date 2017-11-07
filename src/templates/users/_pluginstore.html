@@ -22,12 +22,10 @@
 		</form>
 	{% else %}
 
-		{% set craftIdAccountData = craftIdAccount.data|first %}
-
 		<ul>
-			<li><strong>User Identifier:</strong> {{ craftIdAccountData.id }}</li>
-			<li><strong>Name:</strong> {{ craftIdAccountData.name }}</li>
-			<li><strong>Email:</strong> {{ craftIdAccountData.email }}</li>
+			<li><strong>User Identifier:</strong> {{ craftIdAccount.id }}</li>
+			<li><strong>Name:</strong> {{ craftIdAccount.name }}</li>
+			<li><strong>Email:</strong> {{ craftIdAccount.email }}</li>
 		</ul>
 
 		<div class="buttons">
@@ -36,8 +34,6 @@
 
 				<input type="hidden" name="action" value="plugin-store/disconnect">
 				<input type="hidden" name="redirect" value="{{ (user.getIsCurrent() ? 'myaccount' : 'users/{id}')|hash }}">
-
-				<p>{{ 'Retrieve your existing plugin licenses and purchase new ones by connecting with your Craft ID.'|t('app') }}</p>
 
 				{% if craftIdError %}
 					<p class="error">{{ craftIdError }}</p>
