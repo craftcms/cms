@@ -109,7 +109,7 @@ class PluginStoreController extends Controller
             $client->request('GET', Craft::$app->getPluginStore()->craftIdEndpoint.'/oauth/revoke', ['query' => ['accessToken' => $token->accessToken]]);
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from CraftCMS.dev.'));
         } catch(\Exception $e) {
-            Craft::error('Couldn’t revoke token.');
+            Craft::error('Couldn’t revoke token: '.$e->getMessage());
             Craft::$app->getSession()->setError(Craft::t('app', 'Disconnected from CraftCMS.dev with errors, check the logs.'));
         }
 
