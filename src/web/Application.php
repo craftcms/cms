@@ -601,7 +601,7 @@ class Application extends \yii\web\Application
             $singleAction = $request->getIsSingleActionRequest();
 
             if ($actionSegs && (
-                    ($actionSegs === ['users', 'login'] && $singleAction) ||
+                    $actionSegs === ['users', 'login'] ||
                     ($actionSegs === ['users', 'logout'] && $singleAction) ||
                     ($actionSegs === ['users', 'verify-email'] && $singleAction) ||
                     ($actionSegs === ['users', 'set-password'] && $singleAction) ||
