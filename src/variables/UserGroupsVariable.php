@@ -23,11 +23,23 @@ class UserGroupsVariable
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return UserGroupModel[]
 	 */
 	public function getAllGroups($indexBy = null)
 	{
 		return craft()->userGroups->getAllGroups($indexBy);
+	}
+
+	/**
+	 * Returns the user groups that the current user is allowed to assign to another user.
+	 *
+	 * @param UserModel|null $user The recipient of the user groups. If set, their current groups will be included as well.
+	 *
+	 * @return UserGroupModel[]
+	 */
+	public function getAssignableGroups(UserModel $user = null)
+	{
+		return craft()->userGroups->getAssignableGroups($user);
 	}
 
 	/**

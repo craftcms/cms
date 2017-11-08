@@ -29,6 +29,18 @@ class UserPermissionsVariable
 	}
 
 	/**
+	 * Returns the permissions that the current user is allowed to assign to another user.
+	 *
+	 * @param UserModel|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+	 *
+	 * @return array
+	 */
+	public function getAssignablePermissions(UserModel $user = null)
+	{
+		return craft()->userPermissions->getAssignablePermissions($user);
+	}
+
+	/**
 	 * Returns all of the group permissions a given user has.
 	 *
 	 * @param int $userId

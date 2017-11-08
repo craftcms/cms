@@ -1562,15 +1562,26 @@ class HttpRequestService extends \CHttpRequest
 
 				$verifyEmailPath = 'verifyemail';
 
-				if (
-					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath))) ||
-					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
-					($actionParam = $this->getParam('action')) !== null
-				)
+				$hasActionParam = ($actionParam = $this->getParam('action')) !== null;
+				$hasTriggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1);
+				$hasSpecialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath));
+
+				if ($hasActionParam || $hasTriggerMatch || $hasSpecialPath)
 				{
 					$this->_isActionRequest = true;
 
-					if ($specialPath)
+					if ($hasActionParam)
+					{
+						$actionParam = $this->decodePathInfo($actionParam);
+						$this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
+						$this->_isSingleActionRequest = empty($this->_path);
+					}
+					else if ($hasTriggerMatch)
+					{
+						$this->_actionSegments = array_slice($this->_segments, 1);
+						$this->_isSingleActionRequest = true;
+					}
+					else
 					{
 						$this->_isSingleActionRequest = true;
 
@@ -1590,17 +1601,6 @@ class HttpRequestService extends \CHttpRequest
 						{
 							$this->_actionSegments = array('users', 'setpassword');
 						}
-					}
-					else if ($triggerMatch)
-					{
-						$this->_actionSegments = array_slice($this->_segments, 1);
-						$this->_isSingleActionRequest = true;
-					}
-					else
-					{
-						$actionParam = $this->decodePathInfo($actionParam);
-						$this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-						$this->_isSingleActionRequest = empty($this->_path);
 					}
 				}
 			}

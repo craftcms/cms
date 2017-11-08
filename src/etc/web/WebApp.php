@@ -1021,7 +1021,7 @@ class WebApp extends \CWebApplication
 			$singleAction = $this->request->isSingleActionRequest();
 
 			if ($actionSegs && (
-				($actionSegs == array('users', 'login') && $singleAction) ||
+				($actionSegs == array('users', 'login')) ||
 				($actionSegs == array('users', 'logout') && $singleAction) ||
 				($actionSegs == array('users', 'verifyemail') && $singleAction) ||
 				($actionSegs == array('users', 'setpassword') && $singleAction) ||
