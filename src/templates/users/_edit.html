@@ -184,7 +184,7 @@
 						{% if CraftEdition == CraftPro %}
 							<h2>{{ "User Groups"|t }}</h2>
 
-							{% set assignableGroups = craft.userGroups.getAssignableGroups() %}
+							{% set assignableGroups = craft.userGroups.getAssignableGroups(account) %}
 							{% set currentGroupIds = account.getGroups('id')|keys %}
 
 							{% set userGroupsInput %}
