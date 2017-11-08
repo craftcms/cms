@@ -46,6 +46,12 @@ class UserGroupsService extends BaseApplicationComponent
 			return array();
 		}
 
+		// If either user is an admin, all groups are fair game
+		if (($currentUser && $currentUser->admin) || ($user && $user->admin))
+		{
+			return $this->getAllGroups();
+		}
+
 		$assignableGroups = array();
 
 		foreach ($this->getAllGroups() as $group)

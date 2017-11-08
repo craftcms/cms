@@ -200,6 +200,12 @@ class UserPermissionsService extends BaseApplicationComponent
 	 */
 	public function getAssignablePermissions(UserModel $user = null)
 	{
+		// If either user is an admin, all permissions are fair game
+		if (craft()->userSession->isAdmin() || ($user && $user->admin))
+		{
+			return $this->getAllPermissions();
+		}
+
 		$allowedPermissions = array();
 
 		foreach ($this->getAllPermissions() as $category => $permissions)
