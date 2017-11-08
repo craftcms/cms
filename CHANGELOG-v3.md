@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a segmentation fault that occurred on fresh installs.
+
 ## 3.0.0-beta.31 - 2017-11-08
 
 ### Added
