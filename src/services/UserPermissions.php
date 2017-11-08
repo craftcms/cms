@@ -100,15 +100,12 @@ class UserPermissions extends Component
         // ---------------------------------------------------------------------
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $permissions[Craft::t('app', 'Users')] = [
+            $userPermissions = [
                 'editUsers' => [
                     'label' => Craft::t('app', 'Edit users'),
                     'nested' => [
                         'registerUsers' => [
                             'label' => Craft::t('app', 'Register users')
-                        ],
-                        'assignUserPermissions' => [
-                            'label' => Craft::t('app', 'Assign user groups and permissions')
                         ],
                         'administrateUsers' => [
                             'label' => Craft::t('app', 'Administrate users'),
@@ -117,13 +114,29 @@ class UserPermissions extends Component
                                     'label' => Craft::t('app', 'Change users’ emails')
                                 ]
                             ]
-                        ]
+                        ],
+                        'assignUserPermissions' => [
+                            'label' => Craft::t('app', 'Assign user permissions')
+                        ],
+                        'assignUserGroups' => [
+                            'label' => Craft::t('app', 'Assign user groups')
+                        ],
                     ],
                 ],
                 'deleteUsers' => [
                     'label' => Craft::t('app', 'Delete users')
                 ],
             ];
+
+            foreach (Craft::$app->getUserGroups()->getAllGroups() as $userGroup) {
+                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->id] = [
+                    'label' => Craft::t('app', 'Assign users to “{group}”', [
+                        'group' => Craft::t('site', $userGroup->name)
+                    ])
+                ];
+            }
+
+            $permissions[Craft::t('app', 'Users')] = $userPermissions;
         }
 
         // Sites
@@ -211,6 +224,11 @@ class UserPermissions extends Component
      */
     public function getAssignablePermissions(User $user = null): array
     {
+        // If either user is an admin, all permissions are fair game
+        if (Craft::$app->getUser()->getIsAdmin() || ($user !== null && $user->admin)) {
+            return $this->getAllPermissions();
+        }
+
         $allowedPermissions = [];
 
         foreach ($this->getAllPermissions() as $category => $permissions) {
@@ -592,26 +610,26 @@ class UserPermissions extends Component
      *
      * @return array The filtered permissions
      */
-    private function _filterUnassignablePermissions(array $permissions, User $user = null)
+    private function _filterUnassignablePermissions(array $permissions, User $user = null): array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser && !$user) {
             return [];
         }
 
-        $allowedPermissions = [];
+        $assignablePermissions = [];
 
         foreach ($permissions as $name => $data) {
-            if ($currentUser->can($name) || ($user && $user->can($name))) {
+            if (($currentUser !== null && $currentUser->can($name)) || ($user !== null && $user->can($name))) {
                 if (isset($data['nested'])) {
                     $data['nested'] = $this->_filterUnassignablePermissions($data['nested'], $user);
                 }
 
-                $allowedPermissions[$name] = $data;
+                $assignablePermissions[$name] = $data;
             }
         }
 
-        return $allowedPermissions;
+        return $assignablePermissions;
     }
 
     /**
