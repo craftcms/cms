@@ -70,7 +70,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
 
-## Unreleased
+## 3.0.0-beta.31 - 2017-11-08
 
 ### Added
 - Added PHP 7.2 compatibility.
@@ -106,7 +106,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `getTranslations()` template function.
 
 ### Fixed
-- Fixed an issue where `photoSubpath` user setting was missing a default value.
+- Fixed an issue where `photoSubpath` user setting was missing a default value. ([#2095](https://github.com/craftcms/cms/issues/2095))
 - Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
 - Fixed a PHP error that occurred when loading the French app translation messages.
 - Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
