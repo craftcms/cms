@@ -40,7 +40,7 @@
                                 };
 
                                 Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus) {
-                                        if(textStatus == 'success')
+                                        if(textStatus === 'success')
                                         {
                                             if (response && response.error) {
                                                 alert(response.error);

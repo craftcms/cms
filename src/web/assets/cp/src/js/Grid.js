@@ -38,7 +38,7 @@ Craft.Grid = Garnish.Base.extend(
 
             this.setSettings(settings, Craft.Grid.defaults);
 
-            if (this.settings.mode == 'pct') {
+            if (this.settings.mode === 'pct') {
                 this.sizeUnit = '%';
             }
             else {
@@ -114,7 +114,7 @@ Craft.Grid = Garnish.Base.extend(
             this.refreshCols._.scrollHeight = this.$container[0].scrollHeight;
             this.$container[0].style.height = this.refreshCols._.oldHeight;
 
-            if (this.refreshCols._.scrollHeight == 0) {
+            if (this.refreshCols._.scrollHeight === 0) {
                 this.completeRefreshCols();
                 return;
             }
@@ -130,7 +130,7 @@ Craft.Grid = Garnish.Base.extend(
                 }
             }
 
-            if (this.refreshCols._.totalCols == 0) {
+            if (this.refreshCols._.totalCols === 0) {
                 this.refreshCols._.totalCols = 1;
             }
 
@@ -145,7 +145,7 @@ Craft.Grid = Garnish.Base.extend(
             // Temporarily stop listening to container resizes
             this.removeListener(this.$container, 'resize');
 
-            if (this.settings.fillMode == 'grid') {
+            if (this.settings.fillMode === 'grid') {
                 this.refreshCols._.itemIndex = 0;
 
                 while (this.refreshCols._.itemIndex < this.items.length) {
@@ -184,7 +184,7 @@ Craft.Grid = Garnish.Base.extend(
                 this.removeListener(this.$items, 'resize');
 
                 // If there's only one column, sneak out early
-                if (this.totalCols == 1) {
+                if (this.totalCols === 1) {
                     this.$container.height('auto');
                     this.$items
                         .show()
@@ -198,7 +198,7 @@ Craft.Grid = Garnish.Base.extend(
                 else {
                     this.$items.css('position', 'absolute');
 
-                    if (this.settings.mode == 'pct') {
+                    if (this.settings.mode === 'pct') {
                         this.colPctWidth = (100 / this.totalCols);
                     }
 
@@ -222,8 +222,8 @@ Craft.Grid = Garnish.Base.extend(
                         this.itemHeightsByColspan[this.refreshCols._.item] = {};
 
                         this.refreshCols._.$item = this.items[this.refreshCols._.item].show();
-                        this.refreshCols._.positionRight = (this.refreshCols._.$item.data('position') == 'right');
-                        this.refreshCols._.positionLeft = (this.refreshCols._.$item.data('position') == 'left');
+                        this.refreshCols._.positionRight = (this.refreshCols._.$item.data('position') === 'right');
+                        this.refreshCols._.positionLeft = (this.refreshCols._.$item.data('position') === 'left');
                         this.refreshCols._.minColspan = (this.refreshCols._.$item.data('colspan') ? this.refreshCols._.$item.data('colspan') : (this.refreshCols._.$item.data('min-colspan') ? this.refreshCols._.$item.data('min-colspan') : 1));
                         this.refreshCols._.maxColspan = (this.refreshCols._.$item.data('colspan') ? this.refreshCols._.$item.data('colspan') : (this.refreshCols._.$item.data('max-colspan') ? this.refreshCols._.$item.data('max-colspan') : this.totalCols));
 
@@ -290,7 +290,7 @@ Craft.Grid = Garnish.Base.extend(
 
                     // Filter out the ones that aren't using as many columns as they could be
                     for (this.refreshCols._.i = this.layouts.length - 1; this.refreshCols._.i >= 0; this.refreshCols._.i--) {
-                        if (this.refreshCols._.layoutTotalCols[this.refreshCols._.i] != this.refreshCols._.highestTotalCols) {
+                        if (this.refreshCols._.layoutTotalCols[this.refreshCols._.i] !== this.refreshCols._.highestTotalCols) {
                             this.layouts.splice(this.refreshCols._.i, 1);
                         }
                     }
@@ -307,7 +307,7 @@ Craft.Grid = Garnish.Base.extend(
                     this.refreshCols._.emptySpaces = [];
 
                     for (this.refreshCols._.i = 0; this.refreshCols._.i < this.refreshCols._.layoutHeights.length; this.refreshCols._.i++) {
-                        if (this.refreshCols._.layoutHeights[this.refreshCols._.i] == this.refreshCols._.shortestHeight) {
+                        if (this.refreshCols._.layoutHeights[this.refreshCols._.i] === this.refreshCols._.shortestHeight) {
                             this.refreshCols._.shortestLayouts.push(this.layouts[this.refreshCols._.i]);
 
                             // Now get its total empty space, including any trailing empty space
@@ -328,7 +328,7 @@ Craft.Grid = Garnish.Base.extend(
                     this.refreshCols._.totalEmptyCols = 0;
 
                     for (this.refreshCols._.i = this.layout.colHeights.length - 1; this.refreshCols._.i >= 0; this.refreshCols._.i--) {
-                        if (this.layout.colHeights[this.refreshCols._.i] == 0) {
+                        if (this.layout.colHeights[this.refreshCols._.i] === 0) {
                             this.refreshCols._.totalEmptyCols++;
                         }
                         else {
@@ -338,7 +338,7 @@ Craft.Grid = Garnish.Base.extend(
 
                     this.leftPadding = this.getItemWidth(this.refreshCols._.totalEmptyCols) / 2;
 
-                    if (this.settings.mode == 'fixed') {
+                    if (this.settings.mode === 'fixed') {
                         this.leftPadding += (this.$container.width() - (this.settings.minColWidth * this.totalCols)) / 2;
                     }
 
@@ -387,7 +387,7 @@ Craft.Grid = Garnish.Base.extend(
 
         completeRefreshCols: function() {
             // Delete the internal variable object
-            if (this.refreshCols._ !== undefined) {
+            if (typeof this.refreshCols._ !== 'undefined') {
                 delete this.refreshCols._;
             }
 
@@ -405,7 +405,7 @@ Craft.Grid = Garnish.Base.extend(
         },
 
         getItemWidth: function(colspan) {
-            if (this.settings.mode == 'pct') {
+            if (this.settings.mode === 'pct') {
                 return (this.colPctWidth * colspan);
             }
             else {
@@ -421,7 +421,7 @@ Craft.Grid = Garnish.Base.extend(
             this.isSimpleLayout._ = {};
 
             for (this.isSimpleLayout._.i = 0; this.isSimpleLayout._.i < this.layout.positions.length; this.isSimpleLayout._.i++) {
-                if (this.layout.positions[this.isSimpleLayout._.i] != 0) {
+                if (this.layout.positions[this.isSimpleLayout._.i] !== 0) {
                     delete this.isSimpleLayout._;
                     return false;
                 }
@@ -479,11 +479,11 @@ Craft.Grid = Garnish.Base.extend(
 
             this.onItemResize._.item = $.inArray(ev.currentTarget, this.$items);
 
-            if (this.onItemResize._.item != -1) {
+            if (this.onItemResize._.item !== -1) {
                 // Update the height and reposition the items
                 this.onItemResize._.newHeight = this.items[this.onItemResize._.item].outerHeight();
 
-                if (this.onItemResize._.newHeight != this.itemHeightsByColspan[this.onItemResize._.item][this.layout.colspans[this.onItemResize._.item]]) {
+                if (this.onItemResize._.newHeight !== this.itemHeightsByColspan[this.onItemResize._.item][this.layout.colspans[this.onItemResize._.item]]) {
                     this.itemHeightsByColspan[this.onItemResize._.item][this.layout.colspans[this.onItemResize._.item]] = this.onItemResize._.newHeight;
                     this.positionItems(false);
                 }
@@ -570,7 +570,7 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
                 }
 
                 // If this is the last item, create the layout
-                if (item == this.grid.items.length - 1) {
+                if (item === this.grid.items.length - 1) {
                     this.grid.layouts.push({
                         positions: this._.positions,
                         colspans: this._.colspans,

@@ -30,14 +30,16 @@
                 if (!this.hud) {
                     var $hudBody = $('<div/>');
 
+                    var $field, $inputContainer;
+
                     // Add the Name field
-                    var $field = $('<div class="field"><div class="heading"><label for="draft-name">' + Craft.t('app', 'Draft Name') + '</label></div></div>').appendTo($hudBody),
-                        $inputContainer = $('<div class="input"/>').appendTo($field);
+                    $field = $('<div class="field"><div class="heading"><label for="draft-name">' + Craft.t('app', 'Draft Name') + '</label></div></div>').appendTo($hudBody);
+                    $inputContainer = $('<div class="input"/>').appendTo($field);
                     this.$nameInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.draftName);
 
                     // Add the Notes field
-                    var $field = $('<div class="field"><div class="heading"><label for="draft-notes">' + Craft.t('app', 'Notes') + '</label></div></div>').appendTo($hudBody),
-                        $inputContainer = $('<div class="input"/>').appendTo($field);
+                    $field = $('<div class="field"><div class="heading"><label for="draft-notes">' + Craft.t('app', 'Notes') + '</label></div></div>').appendTo($hudBody);
+                    $inputContainer = $('<div class="input"/>').appendTo($field);
                     this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
 
                     // Add the button
@@ -85,14 +87,14 @@
             },
 
             onNotesKeydown: function(ev) {
-                if (ev.keyCode == Garnish.RETURN_KEY) {
+                if (ev.keyCode === Garnish.RETURN_KEY) {
                     ev.preventDefault();
                     this.hud.submit();
                 }
             },
 
             hasAnythingChanged: function() {
-                return (this.$nameInput.val() != this.draftName || this.$notesInput.val() != this.draftNotes);
+                return (this.$nameInput.val() !== this.draftName || this.$notesInput.val() !== this.draftNotes);
             },
 
             checkValues: function() {
@@ -131,7 +133,7 @@
                     this.$saveBtn.removeClass('active');
                     this.$spinner.addClass('hidden');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             this.$revisionBtn.text(data.name);
                             this.$revisionBtn.data('menubtn').menu.$options.filter('.sel').text(data.name);

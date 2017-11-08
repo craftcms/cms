@@ -10,7 +10,6 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
@@ -20,18 +19,14 @@ use craft\validators\UniqueValidator;
 /**
  * CategoryGroup model.
  *
+ * @property CategoryGroup_SiteSettings[] $siteSettings Site-specific settings
+ * @mixin FieldLayoutBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- *
- * @property CategoryGroup_SiteSettings[] $siteSettings Site-specific settings
  */
 class CategoryGroup extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 

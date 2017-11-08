@@ -46,10 +46,12 @@ class Cp
             return $alerts;
         }
 
-        if (Craft::$app->getUpdates()->getIsUpdateInfoCached() || $fetch) {
+        $updatesService = Craft::$app->getUpdates();
+
+        if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
             // relying on cached Elliott info
-            $update = Craft::$app->getUpdates()->getUpdates();
+            $updatesService->getUpdates();
 
             // Get the license key status
             $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
@@ -66,24 +68,30 @@ class Cp
             }
 
             if (
-                $path !== 'updates' &&
-                $user->can('performUpdates') &&
-                !empty($update->app->releases) &&
-                Craft::$app->getUpdates()->criticalCraftUpdateAvailable($update->app->releases)
+                $path !== 'utilities/updates' &&
+                $user->can('utility:updates') &&
+                $updatesService->getIsCriticalUpdateAvailable()
             ) {
-                $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                    ' <a class="go nowrap" href="'.UrlHelper::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                $alerts[] = Craft::t('app', 'A critical update is available.').
+                    ' <a class="go nowrap" href="'.UrlHelper::url('utilities/updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
             }
 
             // Domain mismatch?
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
 
-                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',
-                    [
-                        'file' => 'config/license.key',
-                        'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-                    ]);
+                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                // If the license key path starts with the root project path, trim the project path off
+                $rootPath = Craft::getAlias('@root');
+                if (strpos($keyPath, $rootPath.'/') === 0) {
+                    $keyPath = substr($keyPath, strlen($rootPath)+1);
+                }
+
+                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                    'file' => $keyPath,
+                    'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
+                ]);
 
                 // Can they actually do something about it?
                 if ($user->admin) {

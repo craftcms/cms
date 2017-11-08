@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Craft;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
@@ -30,7 +31,7 @@ class Component
      *
      * @return ComponentInterface The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
-     * @throws MissingComponentException if the class specified by $config doesn’t exist
+     * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
     public static function createComponent($config, string $instanceOf = null): ComponentInterface
     {
@@ -39,8 +40,6 @@ class Component
             $class = $config;
             $config = [];
         } else {
-            $config = ArrayHelper::toArray($config);
-
             if (empty($config['type'])) {
                 throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.Json::encode($config));
             }
@@ -62,25 +61,38 @@ class Component
             throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 
-        self::applySettings($config);
+        // If it comes from a plugin, make sure the plugin is installed
+        $pluginsService = Craft::$app->getPlugins();
+        $pluginHandle = $pluginsService->getPluginHandleByClass($class);
+        if ($pluginHandle !== null && $pluginsService->getPlugin($pluginHandle) === null) {
+            $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
+            $pluginName = $pluginInfo['name'] ?? $pluginHandle;
+            throw new MissingComponentException("Component class '{$class}' belongs to an uninstalled plugin ('{$pluginName}').");
+        }
+
+        $config = self::mergeSettings($config);
 
         // Instantiate and return
         return new $class($config);
     }
 
     /**
-     * Extracts settings from a given component config, and merges them in.
+     * Extracts settings from a given component config, and returns a new config array wiith the settings merged in.
      *
      * @param array $config
+     *
+     * @return array
      */
-    public static function applySettings(array &$config)
+    public static function mergeSettings(array $config): array
     {
-        if (($settings = ArrayHelper::remove($config, 'settings')) !== null) {
-            if (is_string($settings)) {
-                $settings = Json::decode($settings);
-            }
-
-            $config = array_merge($config, $settings);
+        if (($settings = ArrayHelper::remove($config, 'settings')) === null) {
+            return $config;
         }
+
+        if (is_string($settings)) {
+            $settings = Json::decode($settings);
+        }
+
+        return array_merge($config, $settings);
     }
 }

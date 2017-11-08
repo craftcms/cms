@@ -142,12 +142,7 @@ class QuickPost extends Widget
     public function getBodyHtml()
     {
         $view = Craft::$app->getView();
-
         $view->registerAssetBundle(QuickPostAsset::class);
-        $view->registerTranslations('app', [
-            'Entry saved.',
-            'Couldn’t save entry.',
-        ]);
 
         $section = $this->_getSection();
 

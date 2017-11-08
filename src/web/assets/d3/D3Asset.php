@@ -23,10 +23,10 @@ class D3Asset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@bower/d3';
+        $this->sourcePath = '@lib/d3';
 
         $this->js = [
-            'd3'.$this->dotJs(),
+            'd3.js',
         ];
 
         parent::init();
@@ -39,9 +39,7 @@ class D3Asset extends AssetBundle
     {
         parent::registerAssetFiles($view);
 
-
         // Figure out which D3 i18n script to load
-
         $language = Craft::$app->language;
 
         if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'], true)) {
@@ -76,15 +74,12 @@ class D3Asset extends AssetBundle
             }
         }
 
-
         // Retrieve locale files
-
-        $formatLocalePath = Craft::getAlias('@bower')."/d3-format/locale/{$d3Language}.json";
-        $timeFormatLocalePath = Craft::getAlias('@bower')."/d3-time-format/locale/{$d3Language}.json";
-
+        $libPath = Craft::getAlias('@lib');
+        $formatLocalePath = $libPath."/d3-format/{$d3Language}.json";
+        $timeFormatLocalePath = $libPath."/d3-time-format/{$d3Language}.json";
 
         // Add locale definition JS variables
-
         $js = 'window.d3FormatLocaleDefinition = '.file_get_contents($formatLocalePath).';';
         $js .= 'window.d3TimeFormatLocaleDefinition = '.file_get_contents($timeFormatLocalePath).';';
         $js .= 'window.d3Formats = '.Json::encode(ChartHelper::formats()).';';

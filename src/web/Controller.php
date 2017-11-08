@@ -55,19 +55,19 @@ abstract class Controller extends \yii\web\Controller
      */
     public function beforeAction($action)
     {
-        if (parent::beforeAction($action)) {
-            // Enforce $allowAnonymous
-            if (
-                (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
-                $this->allowAnonymous === false
-            ) {
-                $this->requireLogin();
-            }
-
-            return true;
+        if (!parent::beforeAction($action)) {
+            return false;
         }
 
-        return false;
+        // Enforce $allowAnonymous
+        if (
+            (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
+            $this->allowAnonymous === false
+        ) {
+            $this->requireLogin();
+        }
+
+        return true;
     }
 
     /**

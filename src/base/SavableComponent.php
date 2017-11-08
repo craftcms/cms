@@ -137,9 +137,11 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     public function afterSave(bool $isNew)
     {
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
-            'isNew' => $isNew,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
     }
 
     /**
@@ -160,6 +162,8 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     public function afterDelete()
     {
         // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE);
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE);
+        }
     }
 }
