@@ -93,7 +93,7 @@ Craft.PasswordInput = Garnish.Base.extend(
         },
 
         onKeyDown: function(ev) {
-            if (ev.keyCode == Garnish.ALT_KEY && this.$currentInput.val()) {
+            if (ev.keyCode === Garnish.ALT_KEY && this.$currentInput.val()) {
                 this.showPassword();
                 this.$showPasswordToggle.hide();
                 this.addListener(this.$textInput, 'keyup', 'onKeyUp');
@@ -103,7 +103,7 @@ Craft.PasswordInput = Garnish.Base.extend(
         onKeyUp: function(ev) {
             ev.preventDefault();
 
-            if (ev.keyCode == Garnish.ALT_KEY) {
+            if (ev.keyCode === Garnish.ALT_KEY) {
                 this.hidePassword();
                 this.$showPasswordToggle.show();
             }

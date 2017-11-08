@@ -122,6 +122,10 @@ class ElementsController extends BaseElementsController
         $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
+        if ($element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,
@@ -207,10 +211,10 @@ class ElementsController extends BaseElementsController
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', array('element' => $element));
+        $html = $view->renderTemplate('_elements/element', ['element' => $element]);
         $headHtml = $view->getHeadHtml();
 
-        return $this->asJson(array('html' => $html, 'headHtml' => $headHtml));
+        return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
     }
 
     // Private Methods

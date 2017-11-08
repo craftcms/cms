@@ -61,7 +61,15 @@ class Image
      */
     public static function canManipulateAsImage(string $extension): bool
     {
-        return in_array(StringHelper::toLowerCase($extension), Craft::$app->getImages()->getSupportedImageFormats(), true);
+        $formats = Craft::$app->getImages()->getSupportedImageFormats();
+
+        $alwaysManipulatable = ['svg'];
+        $neverManipulatable = ['pdf'];
+
+        $formats = array_merge($formats, $alwaysManipulatable);
+        $formats = array_diff($formats, $neverManipulatable);
+
+        return in_array(strtolower($extension), $formats);
     }
 
     /**
@@ -310,15 +318,15 @@ class Image
             ($matchedWidth = (float)$widthMatch[2]) &&
             ($matchedHeight = (float)$heightMatch[2])
         ) {
-            $width = round(
+            $width = floor(
                 $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])
             );
-            $height = round(
+            $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
         } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = round($viewboxMatch[3]);
-            $height = round($viewboxMatch[4]);
+            $width = floor($viewboxMatch[3]);
+            $height = floor($viewboxMatch[4]);
         } else {
             $width = null;
             $height = null;

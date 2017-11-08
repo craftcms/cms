@@ -1,12 +1,12 @@
 <?php
 
-namespace tests\functional;
+namespace tests\acceptance;
 
-use FunctionalTester;
+use AcceptanceTester;
 
 class LoginCest
 {
-    public function checkOpen(FunctionalTester $I)
+    public function checkOpen(AcceptanceTester $I)
     {
 //        $I->amOnPage(Yii::$app->homeUrl);
 //        $I->see('My Company');

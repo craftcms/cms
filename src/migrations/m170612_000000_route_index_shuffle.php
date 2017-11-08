@@ -19,7 +19,7 @@ class m170612_000000_route_index_shuffle extends Migration
         MigrationHelper::dropIndexIfExists('{{%routes}}', ['uriPattern'], true, $this);
 
         echo "    > Creating `routes` index on the routes table.\n";
-        $this->createIndex(null, '{{%routes}}', 'uriPattern');
+        $this->createIndex(null, '{{%routes}}', ['uriPattern']);
 
         return true;
     }

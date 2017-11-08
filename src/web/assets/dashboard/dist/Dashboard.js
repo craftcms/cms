@@ -33,7 +33,7 @@
 
             getTypeInfo: function(type, property, defaultValue) {
                 if (property) {
-                    if (this.widgetTypes[type][property] === undefined) {
+                    if (typeof this.widgetTypes[type][property] === 'undefined') {
                         return defaultValue;
                     }
                     else {
@@ -110,7 +110,7 @@
                     };
 
                     Craft.postActionRequest('dashboard/create-widget', data, function(response, textStatus) {
-                        if (textStatus == 'success' && response.success) {
+                        if (textStatus === 'success' && response.success) {
                             $container.removeClass('loading');
                             widget.update(response);
                         }
@@ -162,7 +162,7 @@
                         reorderAction: 'dashboard/reorder-user-widgets',
                         deleteAction: 'dashboard/delete-user-widget',
                         onReorderItems: $.proxy(function(ids) {
-                            var lastWidget;
+                            var lastWidget = null;
 
                             for (var i = 0; i < ids.length; i++) {
                                 var widget = this.widgets[ids[i]];
@@ -338,7 +338,7 @@
                 Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
                     this.$settingsSpinner.addClass('hidden');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (this.$settingsErrorList) {
                             this.$settingsErrorList.remove();
                             this.$settingsErrorList = null;
@@ -465,7 +465,7 @@
             getManagerRowLabel: function() {
                 var typeName = this.getTypeInfo('name');
 
-                return this.title + (this.title != typeName ? ' <span class="light">(' + typeName + ')</span>' : '');
+                return this.title + (this.title !== typeName ? ' <span class="light">(' + typeName + ')</span>' : '');
             },
 
             destroy: function() {
@@ -515,7 +515,7 @@
 
             handleGridRefresh: function() {
                 // Have the number of columns changed?
-                if (this.totalGridCols != (this.totalGridCols = window.dashboard.grid.totalCols)) {
+                if (this.totalGridCols !== (this.totalGridCols = window.dashboard.grid.totalCols)) {
                     // Remove the current buttons
                     if (this.$colspanButtons) {
                         this.$colspanButtons.remove();
@@ -539,12 +539,12 @@
                         cssClass = 'active';
                     }
 
-                    if (i == currentColspan) {
+                    if (i === currentColspan) {
                         cssClass += (cssClass ? ' ' : '') + 'last';
                     }
 
                     $('<a/>', {
-                        title: (i == 1 ? Craft.t('app', '1 column') : Craft.t('app', '{num} columns', {num: i})),
+                        title: (i === 1 ? Craft.t('app', '1 column') : Craft.t('app', '{num} columns', {num: i})),
                         role: 'button',
                         'class': cssClass,
                         data: {colspan: i}
@@ -560,7 +560,7 @@
                     $button.nextAll().removeClass('highlight');
                 });
 
-                this.addListener(this.$colspanButtons, 'mouseout', function(ev) {
+                this.addListener(this.$colspanButtons, 'mouseout', function() {
                     this.$colspanButtons.removeClass('highlight');
                 });
 
@@ -587,7 +587,7 @@
                 };
 
                 Craft.postActionRequest('dashboard/change-widget-colspan', data, function(response, textStatus) {
-                    if (textStatus == 'success' && response.success) {
+                    if (textStatus === 'success' && response.success) {
                         Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
                     }
                     else {

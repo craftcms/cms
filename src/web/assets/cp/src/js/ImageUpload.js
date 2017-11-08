@@ -27,7 +27,7 @@ Craft.ImageUpload = Garnish.Base.extend(
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
-            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
+            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                 // Add the CSRF token
                 options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
@@ -51,7 +51,7 @@ Craft.ImageUpload = Garnish.Base.extend(
                 if (confirm(Craft.t('app', 'Are you sure you want to delete this image?'))) {
                     $(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
                     Craft.postActionRequest(this.settings.deleteAction, this.settings.postParameters, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             this.refreshImage(response);
                         }
                     }, this));
@@ -103,7 +103,7 @@ Craft.ImageUpload = Garnish.Base.extend(
                 this.progressBar.hideProgressBar();
                 this.$container.removeClass('uploading');
             }
-        },
+        }
     },
     {
         defaults: {

@@ -19,7 +19,6 @@ class m161122_185500_no_craft_app extends Migration
             '{{%elements}}',
             '{{%fieldlayouts}}',
             '{{%fields}}',
-            '{{%tasks}}',
             '{{%templatecachequeries}}',
             '{{%volumes}}',
             '{{%widgets}}',

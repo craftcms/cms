@@ -3,8 +3,9 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Query;
 use craft\helpers\MigrationHelper;
-use yii\db\Expression;
+use yii\helpers\Inflector;
 
 /**
  * m150403_184247_plugins_table_changes migration.
@@ -20,21 +21,25 @@ class m150403_184247_plugins_table_changes extends Migration
     public function safeUp()
     {
         if ($this->db->columnExists('{{%plugins}}', 'class')) {
+            MigrationHelper::dropIndexIfExists('{{%plugins}}', ['class'], true, $this);
             MigrationHelper::renameColumn('{{%plugins}}', 'class', 'handle', $this);
         }
 
-        $this->update('{{%plugins}}', [
-            'handle' => new Expression('LOWER(`handle`)')
-        ]);
+        // Kebab-case the plugin handles
+        $plugins = (new Query())
+            ->select(['id', 'handle'])
+            ->from(['{{%plugins}}'])
+            ->all();
 
-        MigrationHelper::dropIndexIfExists('{{%plugins}}', ['handle'], true, $this);
+        foreach ($plugins as $plugin) {
+            $newHandle = Inflector::camel2id($plugin['handle']);
 
-        $this->createIndex(
-            $this->db->getIndexName('{{%plugins}}', 'handle', true),
-            '{{%plugins}}',
-            'handle',
-            true
-        );
+            if ($newHandle !== $plugin['handle']) {
+                $this->update('{{%plugins}}', ['handle' => $newHandle], ['id' => $plugin['id']]);
+            }
+        }
+
+        $this->createIndex(null, '{{%plugins}}', ['handle'], true);
     }
 
     /**

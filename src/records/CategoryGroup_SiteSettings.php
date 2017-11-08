@@ -37,7 +37,7 @@ class CategoryGroup_SiteSettings extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%categorygroups_i18n}}';
+        return '{{%categorygroups_sites}}';
     }
 
     /**

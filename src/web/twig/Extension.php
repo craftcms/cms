@@ -14,7 +14,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\Template;
+use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\web\twig\nodevisitors\EventTagAdder;
@@ -148,6 +148,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
+            new \Twig_SimpleFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
             new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
@@ -192,6 +193,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getTests()
     {
         return [
+            new \Twig_SimpleTest('instance of', function($obj, $class) {
+                return $obj instanceof $class;
+            }),
             new \Twig_SimpleTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
@@ -201,7 +205,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Translates the given message.
      *
-     * @param string      $message  The message to be translated.
+     * @param mixed       $message  The message to be translated.
      * @param string|null $category the message category.
      * @param array|null  $params   The parameters that will be used to replace the corresponding placeholders in the message.
      * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
@@ -209,7 +213,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string the translated message.
      */
-    public function translateFilter(string $message, $category = null, $params = null, $language = null): string
+    public function translateFilter($message, $category = null, $params = null, $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -228,7 +232,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         try {
-            return Craft::t($category, $message, $params, $language);
+            return Craft::t($category, (string)$message, $params, $language);
         } catch (InvalidConfigException $e) {
             return $message;
         }
@@ -371,7 +375,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         $str = Craft::$app->getElements()->parseRefs($str);
 
-        return Template::raw($str);
+        return TemplateHelper::raw($str);
     }
 
     /**
@@ -599,7 +603,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $html = Markdown::process($markdown, $flavor);
         }
 
-        return Template::raw($html);
+        return TemplateHelper::raw($html);
     }
 
     /**
@@ -619,7 +623,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
-            new \Twig_SimpleFunction('resourceUrl', [UrlHelper::class, 'resourceUrl']),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new \Twig_SimpleFunction('url', [UrlHelper::class, 'url']),
@@ -631,7 +634,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
             new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
-            new \Twig_SimpleFunction('getTranslations', [$this, 'getTranslations']),
         ];
     }
 
@@ -645,7 +647,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if ($generalConfig->enableCsrfProtection === true) {
-            return Template::raw('<input type="hidden" name="'.$generalConfig->csrfTokenName.'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+            return TemplateHelper::raw('<input type="hidden" name="'.$generalConfig->csrfTokenName.'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
         }
 
         return null;
@@ -660,7 +662,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function redirectInputFunction(string $url): \Twig_Markup
     {
-        return Template::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+        return TemplateHelper::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
     }
 
     /**
@@ -741,14 +743,16 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         $globals['craft'] = new CraftVariable();
 
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
         } else {
             $globals['currentUser'] = null;
         }
 
+        $templateMode = $this->view->getTemplateMode();
+
         // CP-only variables
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+        if ($templateMode === View::TEMPLATE_MODE_CP) {
             $globals['CraftEdition'] = Craft::$app->getEdition();
             $globals['CraftPersonal'] = Craft::Personal;
             $globals['CraftClient'] = Craft::Client;
@@ -756,15 +760,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         // Only set these things when Craft is installed and not being updated
-        if ($isInstalled && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['systemName'] = Craft::$app->getInfo()->name;
             $site = Craft::$app->getSites()->currentSite;
             $globals['currentSite'] = $site;
             $globals['siteName'] = $site->name;
             $globals['siteUrl'] = $site->baseUrl;
 
-            // Global sets (front end only)
-            if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
+            // Global sets (site templates only)
+            if ($templateMode === View::TEMPLATE_MODE_SITE) {
                 foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
                     $globals[$globalSet->handle] = $globalSet;
                 }
@@ -815,7 +819,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         ob_implicit_flush(false);
         $this->view->head();
 
-        return Template::raw(ob_get_clean());
+        return TemplateHelper::raw(ob_get_clean());
     }
 
     /**
@@ -830,17 +834,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         ob_implicit_flush(false);
         $this->view->endBody();
 
-        return Template::raw(ob_get_clean());
-    }
-
-    /**
-     * @deprecated in Craft 3.0. Use craft.app.view.getTranslations() instead.
-     * @return string A JSON-encoded array of source/translation message mappings.
-     */
-    public function getTranslations()
-    {
-        Craft::$app->getDeprecator()->log('getTranslations', 'getTranslations() has been deprecated. Use view.getTranslations() instead.');
-
-        return Json::encode($this->view->getTranslations());
+        return TemplateHelper::raw(ob_get_clean());
     }
 }

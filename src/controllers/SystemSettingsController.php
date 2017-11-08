@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\MailerHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -185,6 +186,9 @@ class SystemSettingsController extends Controller
             }
         }
 
+        // Sort them by name
+        ArrayHelper::multisort($transportTypeOptions, 'label');
+
         return $this->renderTemplate('settings/email/_index', [
             'settings' => $settings,
             'adapter' => $adapter,
@@ -247,15 +251,15 @@ class SystemSettingsController extends Controller
             $mailer = MailerHelper::createMailer($settings);
 
             // Compose the settings list as HTML
-            $includedSettings = [];
+            $settingsList = '';
 
             foreach (['fromEmail', 'fromName', 'template'] as $name) {
                 if (!empty($settings->$name)) {
-                    $includedSettings[] = '<strong>'.$settings->getAttributeLabel($name).':</strong> '.$settings->$name;
+                    $settingsList .= '- **'.$settings->getAttributeLabel($name).':** '.$settings->$name."\n";
                 }
             }
 
-            $includedSettings[] = '<strong>'.Craft::t('app', 'Transport Type').':</strong> '.$adapter::displayName();
+            $settingsList .= '- **'.Craft::t('app', 'Transport Type').':** '.$adapter::displayName()."\n";
 
             $security = Craft::$app->getSecurity();
 
@@ -263,18 +267,23 @@ class SystemSettingsController extends Controller
                 if (!empty($adapter->$name)) {
                     $label = $adapter->getAttributeLabel($name);
                     $value = $security->redactIfSensitive($name, $adapter->$name);
-                    $includedSettings[] = '<strong>'.$label.':</strong> '.$value;
+                    $settingsList .= "- **{$label}:** {$value}\n";
                 }
             }
 
-            $settingsHtml = implode('<br/>', $includedSettings);
-
             // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => Template::raw($settingsHtml)])
+                ->composeFromKey('test_email', ['settings' => $settingsList])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
-            if ($message->send()) {
+            try {
+                $emailSent = $message->send();
+            } catch (\Throwable $e) {
+                Craft::$app->getErrorHandler()->logException($e);
+                $emailSent = false;
+            }
+
+            if ($emailSent) {
                 Craft::$app->getSession()->setNotice(Craft::t('app', 'Email sent successfully! Check your inbox.'));
             } else {
                 Craft::$app->getSession()->setError(Craft::t('app', 'There was an error testing your email settings.'));

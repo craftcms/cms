@@ -129,7 +129,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
                 oldName = $labelSpan.text(),
                 newName = prompt(Craft.t('app', 'Give your tab a name.'), oldName);
 
-            if (newName && newName != oldName) {
+            if (newName && newName !== oldName) {
                 $labelSpan.text(newName);
                 $tab.find('.id-input').attr('name', this.getFieldInputName(newName));
             }
@@ -318,7 +318,7 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend(
          * Tests if an item is within the tab container.
          */
         isItemInTabContainer: function($item) {
-            return (this.getItemContainer($item)[0] == this.designer.$tabContainer[0]);
+            return (this.getItemContainer($item)[0] === this.designer.$tabContainer[0]);
         },
 
         /**
@@ -367,10 +367,10 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend(
                 // Is there a new closest item?
                 this.onDrag._closestItem = this.getClosestItem();
 
-                if (this.onDrag._closestItem != this.$insertion[0]) {
+                if (this.onDrag._closestItem !== this.$insertion[0]) {
                     if (this.showingInsertion &&
                         ($.inArray(this.$insertion[0], this.$items) < $.inArray(this.onDrag._closestItem, this.$items)) &&
-                        ($.inArray(this.onDrag._closestItem, this.$caboose) == -1)
+                        ($.inArray(this.onDrag._closestItem, this.$caboose) === -1)
                     ) {
                         this.$insertion.insertAfter(this.onDrag._closestItem);
                     }
@@ -601,7 +601,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
                 this.$draggee.css({visibility: 'inherit', display: 'field'}).addClass('hidden');
 
                 // Hide the group too?
-                if (this.$draggee.siblings(':not(.hidden)').length == 0) {
+                if (this.$draggee.siblings(':not(.hidden)').length === 0) {
                     var $group = this.$draggee.parent().parent();
                     $group.addClass('hidden');
                     this.designer.unusedFieldGrid.removeItems($group);

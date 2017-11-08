@@ -8,8 +8,8 @@ The following is a set of guidelines for contributing to Craft CMS and its first
 #### Table of Contents
 
 - [What to Know Before You Contribute](#what-to-know-before-you-contribute)
-  - [Craft isn’t FOSS](#craft-isnt-foss)
-  - [Code of Conduct](#code-of-conduct)
+- [Craft isn’t FOSS](#craft-isnt-foss)
+- [Code of Conduct](#code-of-conduct)
 - [Security Disclosures](#security-disclosures)
 - [Bug Reports & Feature Requests](#bug-reports--feature-requests)
 - [Documentation Edits](#documentation-edits)
@@ -34,7 +34,7 @@ Please take a couple minutes to read through Craft’s [code of conduct](https:/
 
 ## Security Disclosures
 
-If you discover a security vulnerability, please report it directly to [support@craftcms.com][support]. We will review and respond privately via email.
+If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/cms/wiki/Security-Policy), then report the issue directly to [support@craftcms.com][support]. We will review and respond privately via email.
 
 ## Bug Reports & Feature Requests
 

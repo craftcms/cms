@@ -64,7 +64,7 @@
                     this.blockTypes[id] = new BlockType(this, $item);
 
                     // Is this a new block type?
-                    var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+                    var newMatch = (typeof id === 'string' && id.match(/new(\d+)/));
 
                     if (newMatch && newMatch[1] > this.totalNewBlockTypes) {
                         this.totalNewBlockTypes = parseInt(newMatch[1]);
@@ -93,7 +93,7 @@
 
             getFieldTypeInfo: function(type) {
                 for (var i = 0; i < this.fieldTypeInfo.length; i++) {
-                    if (this.fieldTypeInfo[i].type == type) {
+                    if (this.fieldTypeInfo[i].type === type) {
                         return this.fieldTypeInfo[i];
                     }
                 }
@@ -218,8 +218,8 @@
             },
 
             show: function(name, handle, errors) {
-                this.$nameInput.val(typeof name == 'string' ? name : '');
-                this.$handleInput.val(typeof handle == 'string' ? handle : '');
+                this.$nameInput.val(typeof name === 'string' ? name : '');
+                this.$handleInput.val(typeof handle === 'string' ? handle : '');
 
                 if (!handle) {
                     this.handleGenerator.startListening();
@@ -228,7 +228,7 @@
                     this.handleGenerator.stopListening();
                 }
 
-                if (name === undefined) {
+                if (typeof name === 'undefined') {
                     this.$deleteBtn.addClass('hidden');
                     this.$submitBtn.val(Craft.t('app', 'Create'));
                 }
@@ -340,7 +340,7 @@
                     this.fields[id] = new Field(this.configurator, this, $fieldItem);
 
                     // Is this a new field?
-                    var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+                    var newMatch = (typeof id === 'string' && id.match(/new(\d+)/));
 
                     if (newMatch && newMatch[1] > this.totalNewFields) {
                         this.totalNewFields = parseInt(newMatch[1]);
@@ -367,7 +367,7 @@
             },
 
             select: function() {
-                if (this.configurator.selectedBlockType == this) {
+                if (this.configurator.selectedBlockType === this) {
                     return;
                 }
 
@@ -522,7 +522,7 @@
             },
 
             select: function() {
-                if (this.blockType.selectedField == this) {
+                if (this.blockType.selectedField === this) {
                     return;
                 }
 
@@ -584,7 +584,7 @@
                 this.selectedFieldType = type;
                 this.$typeSelect.val(type);
 
-                var firstTime = (this.initializedFieldTypeSettings[type] === undefined),
+                var firstTime = (typeof this.initializedFieldTypeSettings[type] === 'undefined'),
                     $body,
                     footHtml;
 
@@ -613,7 +613,7 @@
             },
 
             getParsedFieldTypeHtml: function(html) {
-                if (typeof html == 'string') {
+                if (typeof html === 'string') {
                     html = html.replace(/__BLOCK_TYPE__/g, this.blockType.id);
                     html = html.replace(/__FIELD__/g, this.id);
                 }

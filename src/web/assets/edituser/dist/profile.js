@@ -12,7 +12,7 @@
         uploadParamName: 'photo',
 
         onAfterRefreshImage: function(response) {
-            if (response.html !== undefined) {
+            if (typeof response.html !== 'undefined') {
                 if (typeof changeSidebarPicture !== 'undefined' && changeSidebarPicture) {
                     $('#user-photo').find('> img').replaceWith($('#current-photo').find('> img').clone());
                 }

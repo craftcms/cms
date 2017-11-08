@@ -20,8 +20,8 @@
             loading: false,
 
             init: function() {
-                this.$form = $('#login-form'),
-                    this.$loginNameInput = $('#loginName');
+                this.$form = $('#login-form');
+                this.$loginNameInput = $('#loginName');
                 this.$loginFields = $('#login-fields');
                 this.$passwordPaneItem = this.$loginFields.children();
                 this.$passwordInput = $('#password');
@@ -124,7 +124,7 @@
                 };
 
                 Craft.postActionRequest('users/send-password-reset-email', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             new MessageSentModal();
                         }
@@ -146,7 +146,7 @@
                 };
 
                 Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             window.location.href = response.returnUrl;
                         }

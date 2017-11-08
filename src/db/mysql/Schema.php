@@ -136,7 +136,23 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(): string
     {
-        return 'mysqldump'.
+        $defaultTableIgnoreList = [
+            '{{%assetindexdata}}',
+            '{{%assettransformindex}}',
+            '{{%cache}}',
+            '{{%sessions}}',
+            '{{%templatecaches}}',
+            '{{%templatecachecriteria}}',
+            '{{%templatecacheelements}}',
+        ];
+
+        $dbSchema = Craft::$app->getDb()->getSchema();
+
+        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
+            $defaultTableIgnoreList[$key] = ' --ignore-table={database}.'.$dbSchema->getRawTableName($ignoreTable);
+        }
+
+        $defaultArgs =
             ' --defaults-extra-file='.$this->_createDumpConfigFile().
             ' --add-drop-table'.
             ' --comments'.
@@ -145,9 +161,23 @@ class Schema extends \yii\db\mysql\Schema
             ' --no-autocommit'.
             ' --routines'.
             ' --set-charset'.
-            ' --triggers'.
+            ' --triggers';
+
+        $schemaDump = 'mysqldump'.
+            $defaultArgs.
+            ' --single-transaction'.
+            ' --no-data'.
             ' --result-file={file}'.
             ' {database}';
+
+        $dataDump = 'mysqldump'.
+            $defaultArgs.
+            ' --no-create-info'.
+            implode('', $defaultTableIgnoreList).
+            ' {database}'.
+            ' >> {file}';
+
+        return $schemaDump.' && '.$dataDump;
     }
 
     /**
