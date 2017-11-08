@@ -72,6 +72,7 @@ class CraftSupport extends Widget
         }
 
         $view = Craft::$app->getView();
+        $view->registerAssetBundle(CraftSupportAsset::class);
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
@@ -95,11 +96,6 @@ class CraftSupport extends Widget
 
         $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
         $view->registerJs($js);
-
-        $view->registerAssetBundle(CraftSupportAsset::class);
-        $view->registerTranslations('app', [
-            'Message sent successfully.',
-        ]);
 
         $iconsDir = Craft::getAlias('@app/icons');
 

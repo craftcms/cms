@@ -14,6 +14,7 @@ use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
+use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
 use craft\web\twig\Environment;
@@ -151,11 +152,6 @@ class View extends \yii\web\View
      * @see registerScript()
      */
     public $_scripts;
-
-    /**
-     * @var array
-     */
-    private $_translations = [];
 
     /**
      * @var
@@ -920,7 +916,12 @@ class View extends \yii\web\View
     }
 
     /**
-     * Prepares translations for inclusion in the template, to be used by the JS.
+     * Translates messages for a given translation category, so they will be
+     * available for `Craft.t()` calls in the Control Panel.
+     *
+     * Note this should always be called *before* any JavaScript is registered
+     * that will need to use the translations, unless the JavaScript is
+     * registered at [[self::POS_READY]].
      *
      * @param string   $category The category the messages are in
      * @param string[] $messages The messages to be translated
@@ -929,34 +930,30 @@ class View extends \yii\web\View
      */
     public function registerTranslations(string $category, array $messages)
     {
-        foreach ($messages as $message) {
-            if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
-                $translation = Craft::t($category, $message);
+        $jsCategory = Json::encode($category);
+        $js = '';
 
-                if ($translation != $message) {
-                    $this->_translations[$category][$message] = $translation;
-                } else {
-                    $this->_translations[$category][$message] = null;
-                }
+        foreach ($messages as $message) {
+            $translation = Craft::t($category, $message);
+            if ($translation !== $message) {
+                $jsMessage = Json::encode($message);
+                $jsTranslation = Json::encode($translation);
+                $js .= ($js !== '' ? "\n" : '')."Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
             }
         }
-    }
 
-    /**
-     * Returns the translations prepared for inclusion by registerTranslations(), in JSON, and flushes out the
-     * translations queue.
-     *
-     * @return array Source/translation message mappings.
-     *
-     * @todo Add a $json param that determines whether the returned array should be JSON-encoded (defaults to true).
-     */
-    public function getTranslations()
-    {
-        // Prune out any empty translations
-        $translations = array_filter(array_map('array_filter', $this->_translations));
-        $this->_translations = [];
+        if ($js === '') {
+            return;
+        }
 
-        return $translations;
+        $js = <<<JS
+if (typeof Craft.translations[{$jsCategory}] === 'undefined') {
+    Craft.translations[{$jsCategory}] = {};
+}
+{$js}
+JS;
+
+        $this->registerJs($js, self::POS_END);
     }
 
     /**

@@ -8,8 +8,8 @@
 namespace craft\config;
 
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 
 /**
  * DB config class
@@ -17,7 +17,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbConfig extends Object
+class DbConfig extends BaseObject
 {
     // Constants
     // =========================================================================

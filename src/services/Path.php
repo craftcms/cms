@@ -381,13 +381,7 @@ class Path extends Component
      */
     public function getCachePath(): string
     {
-        $path = Craft::$app->getConfig()->getFileCache()->cachePath;
-        $path = FileHelper::normalizePath(Craft::getAlias($path));
-
-        if (!$path) {
-            $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
-        }
-
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
         FileHelper::createDirectory($path);
 
         return $path;

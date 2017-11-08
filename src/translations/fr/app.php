@@ -1208,7 +1208,7 @@ return [
     'Years' => 'Années',
     'Yesterday' => 'Hier',
     'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.' => 'Vous pouvez laisser ce champ à blanc si vous utilisez une instance EC2 avec une assignation de rôle IAM applicable.',
-    'You can save custom {name} configs as {ext} files in {path}.' => 'Vous pouvez enregistrer des configurations de {name} personnalisées en tant que fichiers {ext} dans le chemin {path}.'
+    'You can save custom {name} configs as {ext} files in {path}.' => 'Vous pouvez enregistrer des configurations de {name} personnalisées en tant que fichiers {ext} dans le chemin {path}.',
     'You cannot access the CP while the system is offline with that account.' => 'Avec ce compte utilisateur, vous ne pouvez pas accéder au Panneau de Contrôle quand le système est hors ligne.',
     'You cannot access the CP with that account.' => 'Vous ne pouvez pas accéder au Panneau de Contrôle avec ce compte utilisateur.',
     'You cannot access the site while the system is offline with that account.' => 'Vous ne pouvez pas accéder au site avec ce compte lorsque le système est hors ligne.',
@@ -1238,36 +1238,36 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Votre système n’est pas paramétré pour enregistrer le contenu du site “{site}”.',
     'YY' => 'AA',
     'Zip/postal' => 'Code postal',
-    
+
     'account_activation_body' => 'Bonjour {{user.friendlyName}},
 
 Merci d’avoir créé un compte sur {{siteName}} ! Afin d’activer ce compte, merci de cliquer sur le lien suivant :
 
 {{link}}
 
-Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',    
+Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',
     'forgot_password_body' => 'Bonjour {{user.friendlyName}},
 
 Pour réinitialiser votre mot de passe pour {{siteName}}, merci de cliquer sur le lien suivant :
 
 {{link}}
 
-Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',    
+Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',
     'test_email_body' => 'Bonjour {{user.friendlyName}},
 
 Félicitations ! Craft a réussi à envoyer un email.
 
 Voici les paramètres que vous avez utilisés :
 
-{{ settings }}',    
+{{ settings }}',
     'verify_new_email_body' => 'Bonjour {{user.friendlyName}},
 
 Merci de vérifier votre nouvelle adresse email en cliquant sur le lien suivant :
 
 {{link}}
 
-Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',    
+Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',
     'Failed to save the Asset:
 ' => 'Enregistrement impossible de la ressource :
-',    
+',
 ];

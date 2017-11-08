@@ -10,8 +10,8 @@ namespace craft\config;
 use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -20,21 +20,13 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GeneralConfig extends Object
+class GeneralConfig extends BaseObject
 {
     // Constants
     // =========================================================================
 
     const AUTO_UPDATE_MINOR_ONLY = 'minor-only';
     const AUTO_UPDATE_PATCH_ONLY = 'patch-only';
-
-    const CACHE_METHOD_APC = 'apc';
-    const CACHE_METHOD_DB = 'db';
-    const CACHE_METHOD_FILE = 'file';
-    const CACHE_METHOD_MEMCACHE = 'memcache';
-    const CACHE_METHOD_WINCACHE = 'wincache';
-    const CACHE_METHOD_XCACHE = 'xcache';
-    const CACHE_METHOD_ZENDDATA = 'zenddata';
 
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
@@ -147,11 +139,6 @@ class GeneralConfig extends Object
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $cacheDuration = 86400;
-    /**
-     * @var mixed The caching method that Craft should use.  Valid values are 'apc', 'db', 'file', 'memcache' (Memcached),
-     * 'wincache', 'xcache', and 'zenddata'.
-     */
-    public $cacheMethod = self::CACHE_METHOD_FILE;
     /**
      * @var bool If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
      * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
@@ -795,11 +782,6 @@ class GeneralConfig extends Object
         // Validate allowAutoUpdates
         if (!in_array($this->allowAutoUpdates, [true, false, self::AUTO_UPDATE_MINOR_ONLY, self::AUTO_UPDATE_PATCH_ONLY], true)) {
             throw new InvalidConfigException('Unsupported allowAutoUpdates value: '.$this->allowAutoUpdates);
-        }
-
-        // Validate cacheMethod
-        if (!in_array($this->cacheMethod, [self::CACHE_METHOD_APC, self::CACHE_METHOD_DB, self::CACHE_METHOD_FILE, self::CACHE_METHOD_MEMCACHE, self::CACHE_METHOD_WINCACHE, self::CACHE_METHOD_XCACHE, self::CACHE_METHOD_ZENDDATA], true)) {
-            throw new InvalidConfigException('Unsupported cacheMethod value: '.$this->cacheMethod);
         }
 
         // Merge extraAllowedFileExtensions into allowedFileExtensions
