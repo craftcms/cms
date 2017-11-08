@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\elements\GlobalSet;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -214,6 +215,7 @@ class GlobalsController extends Controller
         }
 
         $globalSet->setFieldValuesFromRequest('fields');
+        $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));

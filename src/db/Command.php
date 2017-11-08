@@ -209,4 +209,19 @@ class Command extends \yii\db\Command
 
         return $this->setSql($sql);
     }
+
+    /**
+     * Creates a SQL statement for renaming a DB sequence.
+     *
+     * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
+     * @param string $newName the new sequence name. The name will be properly quoted by the method.
+     *
+     * @return Command the command object itself
+     */
+    public function renameSequence(string $oldName, string $newName): Command
+    {
+        $sql = $this->db->getQueryBuilder()->renameSequence($oldName, $newName);
+
+        return $this->setSql($sql);
+    }
 }

@@ -161,7 +161,7 @@ class ElementHelper
     {
         /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where([
                 'siteId' => $element->siteId,
                 'uri' => $testUri

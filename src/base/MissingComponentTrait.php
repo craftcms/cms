@@ -36,7 +36,7 @@ trait MissingComponentTrait
      */
     public $settings;
 
-    // Properties
+    // Public methods
     // =========================================================================
 
     /**

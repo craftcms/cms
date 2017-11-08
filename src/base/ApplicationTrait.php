@@ -22,11 +22,13 @@ use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
+use craft\queue\QueueInterface;
 use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
 use yii\mutex\FileMutex;
+use yii\queue\db\Queue;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
@@ -40,6 +42,7 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
  * @property bool                            $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
  * @property \craft\services\Categories      $categories         The categories service
+ * @property \craft\services\Composer        $composer           The Composer service
  * @property \craft\services\Config          $config             The config service
  * @property \craft\services\Content         $content            The content service
  * @property \craft\db\MigrationManager      $contentMigrator    The content migration manager
@@ -58,10 +61,9 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
  * @property \craft\services\Images          $images             The images service
- * @property bool                            $sInMaintenanceMode Whether the system is in maintenance mode
+ * @property bool                            $sInMaintenanceMode Whether someone is currently performing a system update
  * @property bool                            $isInstalled        Whether Craft is installed
  * @property bool                            $sMultiSite         Whether this site has multiple sites
- * @property bool                            $isUpdating         Whether Craft is in the middle of updating itself
  * @property bool                            $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\i18n\Locale              $locale             The Locale object for the target language
  * @property \craft\mail\Mailer              $mailer             The mailer component
@@ -69,8 +71,8 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
  * @property \craft\services\Path            $path               The path service
  * @property \craft\services\Plugins         $plugins            The plugins service
+ * @property Queue|QueueInterface            $queue              The job queue
  * @property \craft\services\Relations       $relations          The relations service
- * @property \craft\services\Resources       $resources          The resources service
  * @property \craft\services\Routes          $routes             The routes service
  * @property \craft\services\Search          $search             The search service
  * @property Security                        $security           The security component
@@ -80,7 +82,6 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\SystemMessages  $systemMessages     The system email messages service
  * @property \craft\services\SystemSettings  $systemSettings     The system settings service
  * @property \craft\services\Tags            $tags               The tags service
- * @property \craft\services\Tasks           $tasks              The tasks service
  * @property \craft\services\TemplateCaches  $templateCaches     The template caches service
  * @property \craft\services\Tokens          $tokens             The tokens service
  * @property \craft\services\Updates         $updates            The updates service
@@ -187,16 +188,15 @@ trait ApplicationTrait
 
                 // Is it set to "auto"?
                 if ($language === 'auto') {
-                    // Place this within a try/catch in case userSession is being fussy.
+                    // If the user is logged in *and* has a primary language set, use that
                     try {
-                        // If the user is logged in *and* has a primary language set, use that
                         $user = $this->getUser()->getIdentity();
-
-                        if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
-                            return $preferredLanguage;
-                        }
                     } catch (\Exception $e) {
-                        Craft::error('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
+                        $user = null;
+                    }
+
+                    if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
+                        return $preferredLanguage;
                     }
 
                     // Is there a default CP language?
@@ -227,7 +227,7 @@ trait ApplicationTrait
                 }
             }
 
-            if (!$this->getIsUpdating()) {
+            if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
                 // Use the primary site's language by default
                 return $this->getSites()->getPrimarySite()->language;
             }
@@ -260,51 +260,20 @@ trait ApplicationTrait
             return false;
         }
 
-        return $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
+        return $this->_isInstalled = (bool)($this->getDb()->tableExists('{{%info}}', false));
     }
 
     /**
-     * Tells Craft that it's installed now.
+     * Sets Craft's record of whether it's installed
+     *
+     * @param bool|null $value
      *
      * @return void
      */
-    public function setIsInstalled()
+    public function setIsInstalled($value = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // If you say so!
-        $this->_isInstalled = true;
-    }
-
-    /**
-     * Returns whether Craft is in the middle of updating itself.
-     *
-     * @return bool
-     */
-    public function getIsUpdating(): bool
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return true;
-        }
-
-        $request = $this->getRequest();
-
-        if ($this->getIsInMaintenanceMode() && $request->getIsCpRequest()) {
-            return true;
-        }
-
-        if (!$request->getIsConsoleRequest()) {
-            $actionSegments = $request->getActionSegments();
-
-            if (
-                $actionSegments === ['update', 'cleanUp'] ||
-                $actionSegments === ['update', 'rollback']
-            ) {
-                return true;
-            }
-        }
-
-        return false;
+        $this->_isInstalled = $value;
     }
 
     /**
@@ -405,18 +374,19 @@ trait ApplicationTrait
         $oldEdition = $info->edition;
         $info->edition = $edition;
 
-        $success = $this->saveInfo($info);
-
-        if ($success === true && !$this->getRequest()->getIsConsoleRequest()) {
-            // Fire an 'afterEditionChange' event
-            $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE,
-                new EditionChangeEvent([
-                    'oldEdition' => $oldEdition,
-                    'newEdition' => $edition
-                ]));
+        if (!$this->saveInfo($info)) {
+            return false;
         }
 
-        return $success;
+        // Fire an 'afterEditionChange' event
+        if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
+            $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
+                'oldEdition' => $oldEdition,
+                'newEdition' => $edition
+            ]));
+        }
+
+        return true;
     }
 
     /**
@@ -449,8 +419,8 @@ trait ApplicationTrait
     public function getCanUpgradeEdition(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Only admins can upgrade Craft
-        if ($this->getUser()->getIsAdmin()) {
+        // Only admin & client accounts can upgrade Craft
+        if ($this->getUser()->getIsAdmin() || Craft::$app->getEdition() === Craft::Client) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
@@ -504,9 +474,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the system is in maintenance mode.
+     * Returns whether someone is currently performing a system update.
      *
      * @return bool
+     * @see enableMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function getIsInMaintenanceMode(): bool
     {
@@ -518,6 +490,8 @@ trait ApplicationTrait
      * Enables Maintenance Mode.
      *
      * @return bool
+     * @see getIsInMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function enableMaintenanceMode(): bool
     {
@@ -529,6 +503,8 @@ trait ApplicationTrait
      * Disables Maintenance Mode.
      *
      * @return bool
+     * @see getIsInMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function disableMaintenanceMode(): bool
     {
@@ -649,9 +625,9 @@ trait ApplicationTrait
     /**
      * Returns the Yii framework version.
      *
-     * @return mixed
+     * @return string
      */
-    public function getYiiVersion()
+    public function getYiiVersion(): string
     {
         return \Yii::getVersion();
     }
@@ -722,6 +698,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('categories');
+    }
+
+    /**
+     * Returns the Composer service.
+     *
+     * @return \craft\services\Composer The Composer service
+     */
+    public function getComposer()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('composer');
     }
 
     /**
@@ -967,6 +954,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the queue service.
+     *
+     * @return Queue|QueueInterface The queue service
+     */
+    public function getQueue()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('queue');
+    }
+
+    /**
      * Returns the relations service.
      *
      * @return \craft\services\Relations The relations service
@@ -975,17 +973,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('relations');
-    }
-
-    /**
-     * Returns the resources service.
-     *
-     * @return \craft\services\Resources The resources service
-     */
-    public function getResources()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('resources');
     }
 
     /**
@@ -1063,17 +1050,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('tags');
-    }
-
-    /**
-     * Returns the tasks service.
-     *
-     * @return \craft\services\Tasks The tasks service
-     */
-    public function getTasks()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('tasks');
     }
 
     /**
@@ -1188,7 +1164,9 @@ trait ApplicationTrait
         $this->_setLanguage();
 
         // Fire an 'afterInit' event
-        $this->trigger(WebApplication::EVENT_AFTER_INIT);
+        if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
+            $this->trigger(WebApplication::EVENT_INIT);
+        }
     }
 
     /**
@@ -1240,8 +1218,10 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
+        if ((bool)$info->maintenance === $value) {
+            return true;
+        }
         $info->maintenance = $value;
-
         return $this->saveInfo($info);
     }
 

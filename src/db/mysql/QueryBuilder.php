@@ -9,6 +9,7 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\Connection;
+use yii\base\NotSupportedException;
 use yii\db\Expression;
 
 /**
@@ -21,6 +22,17 @@ use yii\db\Expression;
  */
 class QueryBuilder extends \yii\db\mysql\QueryBuilder
 {
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Use LONGBLOB for "binary" columns rather than BLOB
+        $this->typeMap[Schema::TYPE_BINARY] = 'longblob';
+    }
+
     /**
      * @inheritdoc
      *
@@ -43,6 +55,20 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         }
 
         return parent::createTable($table, $columns, $options);
+    }
+
+    /**
+     * Builds a SQL statement for renaming a DB sequence.
+     *
+     * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
+     * @param string $newName the new sequence name. The name will be properly quoted by the method.
+     *
+     * @return string the SQL statement for renaming a DB table.
+     * @throws NotSupportedException
+     */
+    public function renameSequence(string $oldName, string $newName): string
+    {
+        throw new NotSupportedException($this->db->getDriverName().' does not support renaming sequences.');
     }
 
     /**

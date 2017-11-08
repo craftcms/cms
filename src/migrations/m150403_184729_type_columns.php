@@ -108,9 +108,6 @@ class m150403_184729_type_columns extends Migration
         $this->update('{{%assetsources}}',
             ['type' => 'craft\volumes\AwsS3'],
             ['type' => 'craft\volumes\S3']);
-
-        // Just delete all pending tasks
-        $this->delete('{{%tasks}}');
     }
 
     /**

@@ -93,16 +93,4 @@ class Config
 
         return Craft::$app->getConfig()->getGeneral()->omitScriptNameInUrls;
     }
-
-    /**
-     * Returns the CP resource trigger word.
-     *
-     * @return string
-     */
-    public function getResourceTrigger(): string
-    {
-        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.general.resourceTrigger instead.');
-
-        return Craft::$app->getConfig()->getGeneral()->resourceTrigger;
-    }
 }

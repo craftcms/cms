@@ -22,8 +22,7 @@ return [
         'route' => 'users/edit-user',
         'defaults' => ['userId' => 'current']
     ],
-    'updates' => 'update/index',
-    'updates/go/<handle:[^/]*>' => 'update/go',
+    'update' => 'updater',
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',
@@ -40,7 +39,7 @@ return [
     'settings/general' => 'system-settings/general-settings',
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
-    'settings/plugins/<pluginId>' => 'plugins/edit-plugin-settings',
+    'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',
     'settings/routes' => [
         'template' => 'settings/routes',
         'variables' => [

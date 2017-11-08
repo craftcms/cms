@@ -51,7 +51,7 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             // Load the preview over SSL if the current request is
-            if (document.location.protocol == 'https:') {
+            if (document.location.protocol === 'https:') {
                 this.previewUrl = this.previewUrl.replace(/^http:/, 'https:');
             }
 
@@ -229,7 +229,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 
                 this.addListener(Garnish.$bod, 'keyup', function(ev) {
-                    if (ev.keyCode == Garnish.ESC_KEY) {
+                    if (ev.keyCode === Garnish.ESC_KEY) {
                         this.exit();
                     }
                 });
@@ -253,8 +253,6 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             this.moveFieldsBack();
-
-            var windowWidth = Garnish.$win.width();
 
             this.$shade.delay(200).velocity('fadeOut');
 
@@ -344,7 +342,7 @@ Craft.LivePreview = Garnish.Base.extend(
             }
         },
 
-        handleSuccess: function(data, textStatus, jqXHR) {
+        handleSuccess: function(data) {
             var html = data +
                 '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
 
@@ -359,7 +357,7 @@ Craft.LivePreview = Garnish.Base.extend(
             this.onResponse();
         },
 
-        handleError: function(jqXHR, textStatus, errorThrown) {
+        handleError: function() {
             this.onResponse();
         },
 
@@ -391,7 +389,7 @@ Craft.LivePreview = Garnish.Base.extend(
         },
 
         _onDrag: function() {
-            if (Craft.orientation == 'ltr') {
+            if (Craft.orientation === 'ltr') {
                 this.editorWidth = this.dragStartEditorWidth + this.dragger.mouseDistX;
             }
             else {

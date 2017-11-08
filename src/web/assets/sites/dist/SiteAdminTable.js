@@ -68,7 +68,7 @@
                 }
 
                 Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         this._deleting = false;
                         this.enable();
                         this.confirmDeleteModal.hide();
@@ -111,7 +111,7 @@
                     $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons);
 
                 this.$deleteActionRadios = $body.find('input[type=radio]');
-                this.$transferSelect = $('#transferselect > select');
+                this.$transferSelect = $('#transferselect').find('> select');
                 this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Delete {site}', {site: name}) + '" />').appendTo($buttons);
                 this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 

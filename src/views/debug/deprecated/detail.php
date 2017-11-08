@@ -21,21 +21,20 @@ $logs = $panel->data;
     <p>No deprecation errors were logged on this request.</p>
 <?php else: ?>
     <div class="table-responsive">
-        <table class="table table-condensed table-bordered table-striped table-hover"
-               style="table-layout: fixed;">
+        <table class="table table-condensed table-bordered table-striped table-hover" style="table-layout: fixed;">
             <thead>
             <tr>
-                <th style="nowrap">Error Message</th>
-                <th>Origin</th>
+                <th style="nowrap"><?= Craft::t('app', 'Message') ?></th>
+                <th><?= Craft::t('app', 'Origin') ?></th>
+                <th><?= Craft::t('app', 'Stack Trace') ?></th>
             </tr>
             </thead>
             <tbody>
             <?php foreach ($logs as $log): ?>
                 <tr>
                     <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
-                    <td><?= htmlentities($log->getOrigin(), null, 'UTF-8') ?> –
-                        <a href="<?= $panel->getUrl().'&trace='.$log->id ?>">StackTrace</a>
-                    </td>
+                    <td><code><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')).($log->line ? ':'.$log->line : '') ?></code></td>
+                    <td><a href="<?= $panel->getUrl().'&trace='.$log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\db\MigrationManager;
 use craft\web\twig\variables\Cp;
 
 /**
@@ -23,6 +24,20 @@ interface PluginInterface
     // =========================================================================
 
     /**
+     * Returns the plugin’s handle (really just an alias of [[\yii\base\Module::id]]).
+     *
+     * @return string The plugin’s handle
+     */
+    public function getHandle(): string;
+
+    /**
+     * Returns the plugin’s current version.
+     *
+     * @return string The plugin’s current version
+     */
+    public function getVersion();
+
+    /**
      * Installs the plugin.
      *
      * @return void|false Return `false` to indicate the installation failed.
@@ -31,22 +46,19 @@ interface PluginInterface
     public function install();
 
     /**
-     * Updates the plugin.
-     *
-     * @param string $fromVersion The previously installed version of the plugin.
-     *
-     * @return void|false Return `false` to indicate the update failed.
-     * All other return values mean the update was successful.
-     */
-    public function update(string $fromVersion);
-
-    /**
      * Uninstalls the plugin.
      *
      * @return void|false Return `false` to indicate the uninstallation failed.
      * All other return values mean the uninstallation was successful.
      */
     public function uninstall();
+
+    /**
+     * Returns the plugin’s migration manager
+     *
+     * @return MigrationManager The plugin’s migration manager
+     */
+    public function getMigrator(): MigrationManager;
 
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
@@ -77,12 +89,4 @@ interface PluginInterface
      * @see Cp::nav()
      */
     public function getCpNavItem();
-
-    /**
-     * Returns the component definition that should be registered on the [[\craft\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
-     *
-     * @return mixed|null The component definition to be registered.
-     * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
-     */
-    public function defineTemplateComponent();
 }

@@ -23,7 +23,7 @@ class GarnishAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@bower/garnishjs/dist';
+        $this->sourcePath = '@lib/garnishjs';
 
         $this->depends = [
             ElementResizeDetectorAsset::class,
@@ -33,7 +33,7 @@ class GarnishAsset extends AssetBundle
         ];
 
         $this->js = [
-            'garnish'.$this->dotJs(),
+            'garnish.js',
         ];
 
         parent::init();

@@ -8,8 +8,8 @@
 namespace craft\config;
 
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 
 /**
  * DB config class
@@ -17,7 +17,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbConfig extends Object
+class DbConfig extends BaseObject
 {
     // Constants
     // =========================================================================
@@ -180,11 +180,21 @@ class DbConfig extends Object
 
         // Set the DSN
         if ($this->dsn === null || $this->dsn === '') {
-            if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
-                $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
-            } else {
-                $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
-            }
+            $this->updateDsn();
+        }
+    }
+
+    /**
+     * Updates the DSN string based on the config setting values.
+     */
+    public function updateDsn()
+    {
+        if (!$this->database) {
+            $this->dsn = null;
+        } else if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
+            $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
+        } else {
+            $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
         }
     }
 }

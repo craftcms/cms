@@ -1,22 +1,9 @@
 {% extends "_layouts/message" %}
-{% set title = "Update Craft CMS"|t('app') %}
-
-{% set handle = 'craft' %}
-{% set name = 'Craft CMS' %}
-
-{% if not craft.app.updates.getIsCraftDbMigrationNeeded() %}
-    {% set plugin = craft.app.updates.getPluginsThatNeedDbUpdate()|first %}
-
-    {% if plugin %}
-        {% set handle = plugin.handle %}
-        {% set name = plugin.name %}
-    {% endif %}
-{% endif %}
-
+{% set title = "Complete the Update"|t('app') %}
 
 {% block message %}
-    <p>{{ "To complete the {name} update, some changes must be made to your database."|t('app', { name: name }) }}</p>
+    <p>{{ "To complete the update, some changes must be made to your database."|t('app') }}</p>
     <div class="buttons">
-        <a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t('app') }}</a>
+        <a class="btn submit" href="{{ url('update', { return: craft.app.request.getPathInfo() }) }}">{{ "Finish up"|t('app') }}</a>
     </div>
 {% endblock %}
