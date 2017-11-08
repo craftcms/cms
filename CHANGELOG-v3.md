@@ -4,7 +4,6 @@ Craft CMS 3.0 Working Changelog
 ## 3.0.0-beta.31 - 2017-11-08
 
 ### Added
-- Added PHP 7.2 compatibility.
 - Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
 - Added `craft\services\Plugins::getPluginHandleByClass()`.
