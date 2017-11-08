@@ -26,6 +26,11 @@ use yii\base\Exception;
  */
 class EtTransport
 {
+    // Constants
+    // =========================================================================
+
+    const CACHE_DURATION = 86400;
+
     // Properties
     // =========================================================================
 
@@ -63,7 +68,7 @@ class EtTransport
             'requestIp' => Craft::$app->getRequest()->getUserIP(),
             'requestTime' => DateTimeHelper::currentTimeStamp(),
             'requestPort' => Craft::$app->getRequest()->getPort(),
-            'localVersion' => Craft::$app->version,
+            'localVersion' => Craft::$app->getVersion(),
             'localEdition' => Craft::$app->getEdition(),
             'userEmail' => $userEmail,
             'showBeta' => Craft::$app->getConfig()->getGeneral()->showBetaUpdates,
@@ -111,10 +116,12 @@ class EtTransport
 
         try {
             $missingLicenseKey = empty($this->_model->licenseKey);
-
-            // No config/license.key file and we can't write to the config folder. Don't even make the call home.
-            if ($missingLicenseKey && !$this->_isConfigFolderWritable()) {
-                throw new EtException('Craft needs to be able to write to your config/ folder and it can’t.', 10001);
+            if ($missingLicenseKey) {
+                $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
+                if (!FileHelper::isWritable($licenseKeyPath)) {
+                    // No license key file and we can't write to its path. Don't even make the call home.
+                    throw new EtException("Craft needs to be able to write to {$licenseKeyPath} and it can't.", 10001);
+                }
             }
 
             if (!Craft::$app->getCache()->get('etConnectFailure')) {
@@ -163,12 +170,12 @@ class EtTransport
                             }
 
                             // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
-                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-                            $cacheService->set('licensedEdition', $etModel->licensedEdition);
-                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus, self::CACHE_DURATION);
+                            $cacheService->set('licensedEdition', $etModel->licensedEdition, self::CACHE_DURATION);
+                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0, self::CACHE_DURATION);
 
                             if ($etModel->licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                                $cacheService->set('licensedDomain', $etModel->licensedDomain);
+                                $cacheService->set('licensedDomain', $etModel->licensedDomain, self::CACHE_DURATION);
                             }
 
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {
@@ -177,7 +184,7 @@ class EtTransport
                                 foreach ($etModel->pluginLicenseKeyStatuses as $packageName => $licenseKeyStatus) {
                                     if ($plugin = $pluginsService->getPluginByPackageName($packageName)) {
                                         /** @var Plugin $plugin */
-                                        $pluginsService->setPluginLicenseKeyStatus($plugin->handle, $licenseKeyStatus);
+                                        $pluginsService->setPluginLicenseKeyStatus($plugin->id, $licenseKeyStatus);
                                     }
                                 }
                             }
@@ -214,7 +221,7 @@ class EtTransport
             }
 
             throw $e;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             // Cache the failure for 5 minutes so we don't try again.
@@ -257,7 +264,7 @@ class EtTransport
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->handle);
+            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->id);
         }
 
         return $pluginLicenseKeys;
@@ -274,12 +281,13 @@ class EtTransport
         // Make sure the key file does not exist first, or if it exists it is a temp key file.
         // ET should never overwrite a valid license key.
         if ($this->_getLicenseKey() !== null) {
-            throw new Exception('Cannot overwrite an existing valid license.key file.');
+            throw new Exception('Cannot overwrite an existing valid license key file.');
         }
 
         // Make sure we can write to the file
-        if (!$this->_isConfigFolderWritable()) {
-            throw new EtException('Craft needs to be able to write to your config/ folder and it can’t.', 10001);
+        $path = Craft::$app->getPath()->getLicenseKeyPath();
+        if (!FileHelper::isWritable($path)) {
+            throw new EtException("Craft needs to be able to write to {$path} and it can't.", 10001);
         }
 
         // Format the license key into lines of 50 chars
@@ -289,16 +297,8 @@ class EtTransport
             $formattedKey .= $segment.PHP_EOL;
         }
 
-        FileHelper::writeToFile(Craft::$app->getPath()->getLicenseKeyPath(), $formattedKey);
+        FileHelper::writeToFile($path, $formattedKey);
 
         return true;
-    }
-
-    /**
-     * @return bool
-     */
-    private function _isConfigFolderWritable(): bool
-    {
-        return FileHelper::isWritable(Craft::$app->getPath()->getConfigPath());
     }
 }

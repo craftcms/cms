@@ -66,7 +66,7 @@
                         this.$errorList.children().remove();
                     }
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
                             callback(response);
@@ -103,7 +103,7 @@
                 this.initForm($newForm);
 
                 // Are there any Recent Entries widgets to notify?
-                if (Craft.RecentEntriesWidget !== undefined) {
+                if (typeof Craft.RecentEntriesWidget !== 'undefined') {
                     for (var i = 0; i < Craft.RecentEntriesWidget.instances.length; i++) {
                         var widget = Craft.RecentEntriesWidget.instances[i];
                         if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId) {

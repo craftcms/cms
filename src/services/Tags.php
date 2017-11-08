@@ -188,23 +188,24 @@ class Tags extends Component
      *
      * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
-        if ($runValidation && !$tagGroup->validate()) {
-            Craft::info('Tag group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewTagGroup = !$tagGroup->id;
 
         // Fire a 'beforeSaveGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup,
-            'isNew' => $isNewTagGroup
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup,
+                'isNew' => $isNewTagGroup
+            ]));
+        }
+
+        if ($runValidation && !$tagGroup->validate()) {
+            Craft::info('Tag group not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if (!$isNewTagGroup) {
             $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
@@ -240,17 +241,19 @@ class Tags extends Component
             $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterSaveGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup,
-            'isNew' => $isNewTagGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup,
+                'isNew' => $isNewTagGroup,
+            ]));
+        }
 
         return true;
     }
@@ -261,7 +264,7 @@ class Tags extends Component
      * @param int $tagGroupId
      *
      * @return bool Whether the tag group was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteTagGroupById(int $tagGroupId): bool
     {
@@ -276,9 +279,11 @@ class Tags extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -309,16 +314,18 @@ class Tags extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterSaveGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup
+            ]));
+        }
 
         return true;
     }

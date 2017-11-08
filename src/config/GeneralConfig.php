@@ -7,10 +7,11 @@
 
 namespace craft\config;
 
-use craft\helpers\ArrayHelper;
+use Craft;
 use craft\helpers\ConfigHelper;
+use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -19,21 +20,13 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GeneralConfig extends Object
+class GeneralConfig extends BaseObject
 {
     // Constants
     // =========================================================================
 
     const AUTO_UPDATE_MINOR_ONLY = 'minor-only';
     const AUTO_UPDATE_PATCH_ONLY = 'patch-only';
-
-    const CACHE_METHOD_APC = 'apc';
-    const CACHE_METHOD_DB = 'db';
-    const CACHE_METHOD_FILE = 'file';
-    const CACHE_METHOD_MEMCACHE = 'memcache';
-    const CACHE_METHOD_WINCACHE = 'wincache';
-    const CACHE_METHOD_XCACHE = 'xcache';
-    const CACHE_METHOD_ZENDDATA = 'zenddata';
 
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
@@ -76,7 +69,7 @@ class GeneralConfig extends Object
      *
      * @see extraAllowedFileExtensions
      */
-    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jpeg', 'jpg', 'js', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
+    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
     /**
      * @var bool If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
      * they are treated as the same tag. Note that this
@@ -91,8 +84,8 @@ class GeneralConfig extends Object
      */
     public $autoLoginAfterAccountActivation = false;
     /**
-     * @var bool Whether Craft should run the backup logic when updating. This applies to
-     * both auto and manual updates.
+     * @var bool Whether Craft should create a database backup before running new migrations.
+     * @see backupCommand
      */
     public $backupOnUpdate = true;
     /**
@@ -146,11 +139,6 @@ class GeneralConfig extends Object
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $cacheDuration = 86400;
-    /**
-     * @var mixed The caching method that Craft should use.  Valid values are 'apc', 'db', 'file', 'memcache' (Memcached),
-     * 'wincache', 'xcache', and 'zenddata'.
-     */
-    public $cacheMethod = self::CACHE_METHOD_FILE;
     /**
      * @var bool If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
      * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
@@ -466,6 +454,13 @@ class GeneralConfig extends Object
      */
     public $postLogoutRedirect = '';
     /**
+     * @var bool Whether the EXIF data should be preserved when manipulating images.
+     *
+     * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared.
+     * This will only have effect if Imagick is in use.
+     */
+    public $preserveExifData = false;
+    /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
      * Setting this to false will reduce the image size a little bit, but on some Imagick versions can cause images to be saved with
@@ -528,10 +523,6 @@ class GeneralConfig extends Object
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
-     * @var string The URI segment Craft should use for resource URLs on the front end.
-     */
-    public $resourceTrigger = 'cpresources';
-    /**
      * @var string|null Craft will use the command line libraries `psql` and `mysql` for restoring a database
      * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
@@ -553,29 +544,32 @@ class GeneralConfig extends Object
      */
     public $restoreCommand;
     /**
-     * @var bool Whether Craft should attempt to restore the backup in the event that there was an error.
-     */
-    public $restoreOnUpdateFailure = true;
-    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      */
     public $rotateImagesOnUploadByExifData = true;
     /**
-     * @var bool Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something
-     * like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+     * @var bool Whether Craft should run pending queue jobs automatically over HTTP requests.
      *
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
      *
-     * If disabled, an alternate task running trigger *must* be set up separately.
+     * If disabled, an alternate queue runner *must* be set up separately.
      */
-    public $runTasksAutomatically = true;
+    public $runQueueAutomatically = true;
     /**
      * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
      *
      * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
      */
     public $sanitizeSvgUploads = true;
+    /**
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
+     * data in [[\craft\services\Security]].
+     *
+     * This value should be the same across all environments. Note that if this key ever changes, any data that
+     * was encrypted with it will be inaccessible.
+     */
+    public $securityKey;
     /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
@@ -602,6 +596,12 @@ class GeneralConfig extends Object
      * that you do not use beta releases of Craft in a production environment.
      */
     public $showBetaUpdates = false;
+    /**
+     * @var string|string[] The site name(s). If set, it will take precedence over the Name settings in Settings → Sites → [Site Name].
+     *
+     * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
+     */
+    public $siteName;
     /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
@@ -697,15 +697,6 @@ class GeneralConfig extends Object
      */
     public $useXSendFile = false;
     /**
-     * @var string|null If set, should be a private, random, cryptographically secure key that is used to generate HMAC
-     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-     * If not set, a random one is generated for you. Ultimately saved in `storage/runtime/validation.key`.
-     *
-     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
-     * should be set to the same key across all web servers.
-     */
-    public $validationKey;
-    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
@@ -719,6 +710,33 @@ class GeneralConfig extends Object
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Check for renamed settings
+        $renamedSettings = [
+            'defaultFilePermissions' => 'defaultFileMode',
+            'defaultFolderPermissions' => 'defaultDirMode',
+            'useWriteFileLock' => 'useFileLocks',
+            'backupDbOnUpdate' => 'backupOnUpdate',
+            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+            'activateAccountFailurePath' => 'invalidUserTokenPath',
+            'validationKey' => 'securityKey',
+        ];
+
+        foreach ($renamedSettings as $old => $new) {
+            if (array_key_exists($old, $config)) {
+                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.");
+                $config[$new] = $config[$old];
+                unset($config[$old]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -766,17 +784,12 @@ class GeneralConfig extends Object
             throw new InvalidConfigException('Unsupported allowAutoUpdates value: '.$this->allowAutoUpdates);
         }
 
-        // Validate cacheMethod
-        if (!in_array($this->cacheMethod, [self::CACHE_METHOD_APC, self::CACHE_METHOD_DB, self::CACHE_METHOD_FILE, self::CACHE_METHOD_MEMCACHE, self::CACHE_METHOD_WINCACHE, self::CACHE_METHOD_XCACHE, self::CACHE_METHOD_ZENDDATA], true)) {
-            throw new InvalidConfigException('Unsupported cacheMethod value: '.$this->cacheMethod);
-        }
-
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
-            $this->allowedFileExtensions = ArrayHelper::toArray($this->allowedFileExtensions);
+            $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);
         }
         if (is_string($this->extraAllowedFileExtensions)) {
-            $this->extraAllowedFileExtensions = ArrayHelper::toArray($this->extraAllowedFileExtensions);
+            $this->extraAllowedFileExtensions = StringHelper::split($this->extraAllowedFileExtensions);
         }
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
@@ -913,5 +926,15 @@ class GeneralConfig extends Object
     public function getSetPasswordSuccessPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @return bool
+     */
+    public function getBackupOnUpdate(): bool
+    {
+        return ($this->backupOnUpdate && $this->backupCommand !== false);
     }
 }

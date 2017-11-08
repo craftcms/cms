@@ -69,15 +69,17 @@
                     columns = columnsTableData,
                     defaults = defaultsTableData;
 
-                for (var i = 0; i < this.columnsTableInputPath.length; i++) {
-                    var key = this.columnsTableInputPath[i];
+                var i, key;
+
+                for (i = 0; i < this.columnsTableInputPath.length; i++) {
+                    key = this.columnsTableInputPath[i];
                     columns = columns[key];
                 }
 
-                for (var i = 0; i < this.defaultsTableInputPath.length; i++) {
-                    var key = this.defaultsTableInputPath[i];
+                for (i = 0; i < this.defaultsTableInputPath.length; i++) {
+                    key = this.defaultsTableInputPath[i];
 
-                    if (defaults[key] === undefined) {
+                    if (typeof defaults[key] === 'undefined') {
                         defaults = {};
                         break;
                     }

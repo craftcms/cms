@@ -4,9 +4,10 @@ namespace craft\volumes;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\base\FlysystemVolume;
 use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
@@ -23,7 +24,7 @@ use League\Flysystem\FileNotFoundException;
  * @package    craft.app.volumes
  * @since      3.0
  */
-class Local extends Volume implements LocalVolumeInterface
+class Local extends FlysystemVolume implements LocalVolumeInterface
 {
     // Static
     // =========================================================================
@@ -99,17 +100,18 @@ class Local extends Volume implements LocalVolumeInterface
         return rtrim($this->url, '/').'/';
     }
 
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName): bool
+    public function renameDir(string $path, string $newName)
     {
         $parentDir = dirname($path);
         $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;
 
         try {
-            return $this->filesystem()->rename($path, $newPath);
+            if (!$this->filesystem()->rename($path, $newPath)) {
+                throw new VolumeException('Couldn’t rename '.$path);
+            }
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {

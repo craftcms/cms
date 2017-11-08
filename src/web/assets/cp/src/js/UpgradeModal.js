@@ -51,16 +51,16 @@ Craft.UpgradeModal = Garnish.Modal.extend(
         formattedCouponPrice: null,
 
         init: function(settings) {
-            this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod),
+            this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod);
 
-                this.base(this.$container, $.extend({
-                    resizable: true
-                }, settings));
+            this.base(this.$container, $.extend({
+                resizable: true
+            }, settings));
 
             Craft.postActionRequest('app/get-upgrade-modal', $.proxy(function(response, textStatus) {
                 this.$container.removeClass('loading');
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     if (response.success) {
                         this.stripePublicKey = response.stripePublicKey;
                         this.editions = response.editions;
@@ -173,7 +173,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
                     else {
                         this.$couponSpinner.addClass('hidden');
 
-                        if (textStatus == 'success' && response.success) {
+                        if (textStatus === 'success' && response.success) {
                             this.couponPrice = response.couponPrice;
                             this.formattedCouponPrice = response.formattedCouponPrice;
                             this.updateCheckoutUi();
@@ -282,7 +282,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
             };
 
             Craft.postActionRequest('app/test-upgrade', data, $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     var width = this.getWidth();
 
                     this.$compareScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function() {
@@ -421,7 +421,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
         onPurchaseUpgrade: function(response, textStatus) {
             this.onPurchaseResponse();
 
-            if (textStatus == 'success') {
+            if (textStatus === 'success') {
                 if (response.success) {
                     var width = this.getWidth();
 
@@ -432,8 +432,10 @@ Craft.UpgradeModal = Garnish.Modal.extend(
                     this.onUpgrade();
                 }
                 else {
+                    var errorText;
+
                     if (response.errors) {
-                        var errorText = '';
+                        errorText = '';
 
                         for (var i in response.errors) {
                             if (!response.errors.hasOwnProperty(i)) {
@@ -450,7 +452,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
                         this.showError(errorText);
                     }
                     else {
-                        var errorText = Craft.t('app', 'An unknown error occurred.');
+                        errorText = Craft.t('app', 'An unknown error occurred.');
                     }
 
                     Garnish.shake(this.$checkoutForm, 'left');

@@ -49,7 +49,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                 this.modal.enableSelectBtn();
                 this.modal.hideFooterSpinner();
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     var $newInput = $(response.html),
                         $newElementsContainer = $newInput.children('.elements');
 
@@ -57,18 +57,21 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                     this.$elementsContainer = $newElementsContainer;
                     this.resetElements();
 
+                    var filteredElements = [];
+
                     for (var i = 0; i < elements.length; i++) {
                         var element = elements[i],
                             $element = this.getElementById(element.id);
 
                         if ($element) {
                             this.animateElementIntoPlace(element.$element, $element);
+                            filteredElements.push(element);
                         }
                     }
 
                     this.updateDisabledElementsInModal();
                     this.modal.hide();
-                    this.onSelectElements();
+                    this.onSelectElements(filteredElements);
                 }
             }, this));
         },
@@ -90,12 +93,12 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
             var callback;
 
             // Is this the last one?
-            if (i == $allCategories.length - 1) {
+            if (i === $allCategories.length - 1) {
                 callback = $.proxy(function() {
                     var $li = $allCategories.first().parent().parent(),
                         $ul = $li.parent();
 
-                    if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length) {
+                    if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
                         $li.remove();
                     }
                     else {
@@ -108,7 +111,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                 this.animateElementAway($allCategories.eq(i), callback);
             }, this);
 
-            if (i == 0) {
+            if (i === 0) {
                 func();
             }
             else {

@@ -59,7 +59,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
             this.base();
 
             this.addListener(Garnish.$doc, 'keydown', function(ev) {
-                if (ev.keyCode == Garnish.ESC_KEY) {
+                if (ev.keyCode === Garnish.ESC_KEY) {
                     this.cancelDrag();
                 }
             });
@@ -98,7 +98,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
                 this._.targetYMidpoint = this._.targetOffset.top + (this._.targetHeight / 2);
                 this._.targetYDiff = Math.abs(this.mouseY - this._.targetYMidpoint);
 
-                if (this._.i == 0 || (this.mouseY >= this._.targetOffset.top + 5 && this._.targetYDiff < this._.closestTargetYDiff)) {
+                if (this._.i === 0 || (this.mouseY >= this._.targetOffset.top + 5 && this._.targetYDiff < this._.closestTargetYDiff)) {
                     this._.$closestTarget = this._.$target;
                     this._.closestTargetPos = this._.i;
                     this._.closestTargetYDiff = this._.targetYDiff;
@@ -116,7 +116,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
             }
 
             // Are we hovering above the first row?
-            if (this._.closestTargetPos == 0 && this.mouseY < this._.closestTargetOffset.top + 5) {
+            if (this._.closestTargetPos === 0 && this.mouseY < this._.closestTargetOffset.top + 5) {
                 this.$insertion.prependTo(this.structure.$container);
             }
             else {
@@ -193,7 +193,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
                         // Determine which <li> to position the insertion after
                         this._.draggeeX = this.mouseX - this.targetItemMouseDiffX;
 
-                        if (Craft.orientation == 'rtl') {
+                        if (Craft.orientation === 'rtl') {
                             this._.draggeeX += this.$helperLi.width();
                         }
 
@@ -206,7 +206,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
                             this._.$parentLi = $(this._.$parentLis[this._.i]);
                             this._.parentLiX = this._.$parentLi.offset().left;
 
-                            if (Craft.orientation == 'rtl') {
+                            if (Craft.orientation === 'rtl') {
                                 this._.parentLiX += this._.$parentLi.width();
                             }
 
@@ -263,7 +263,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
                     // Make sure the insertion isn't right next to the draggee
                     var $closestSiblings = this.$insertion.next().add(this.$insertion.prev());
 
-                    if ($.inArray(this.$draggee[0], $closestSiblings) == -1) {
+                    if ($.inArray(this.$draggee[0], $closestSiblings) === -1) {
                         this.$insertion.replaceWith(this.$draggee);
                         moved = true;
                     }
@@ -276,7 +276,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
                     var $ul = this._.$closestTargetLi.children('ul');
 
                     // Make sure this is a different parent than the draggee's
-                    if (!$draggeeParent || !$ul.length || $ul[0] != $draggeeParent[0]) {
+                    if (!$draggeeParent || !$ul.length || $ul[0] !== $draggeeParent[0]) {
                         if (!$ul.length) {
                             var $toggle = $('<div class="toggle" title="' + Craft.t('app', 'Show/hide children') + '"/>').prependTo(this._.$closestTarget);
                             this.structure.initToggle($toggle);
@@ -307,15 +307,17 @@ Craft.StructureDrag = Garnish.Drag.extend(
                     // Has the level changed?
                     var newLevel = this.$draggee.parentsUntil(this.structure.$container, 'li').length + 1;
 
+                    var animateCss;
+
                     if (newLevel != this.$draggee.data('level')) {
                         // Correct the helper's padding if moving to/from level 1
                         if (this.$draggee.data('level') == 1) {
-                            var animateCss = {};
+                            animateCss = {};
                             animateCss['padding-' + Craft.left] = 38;
                             this.$helperLi.velocity(animateCss, 'fast');
                         }
                         else if (newLevel == 1) {
-                            var animateCss = {};
+                            animateCss = {};
                             animateCss['padding-' + Craft.left] = Craft.Structure.baseIndent;
                             this.$helperLi.velocity(animateCss, 'fast');
                         }
@@ -335,7 +337,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
                     };
 
                     Craft.postActionRequest('structures/move-element', data, function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
                         }
 

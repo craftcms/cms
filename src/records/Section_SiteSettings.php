@@ -38,7 +38,7 @@ class Section_SiteSettings extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%sections_i18n}}';
+        return '{{%sections_sites}}';
     }
 
     /**

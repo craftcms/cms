@@ -13,6 +13,7 @@ use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\elements\User;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\models\CategoryGroup;
 use craft\models\Section;
@@ -87,7 +88,7 @@ class UserPermissions extends Component
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
             if ($plugin->hasCpSection) {
-                $general['accessCp']['nested']['accessPlugin-'.$plugin->handle] = [
+                $general['accessCp']['nested']['accessPlugin-'.$plugin->id] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
@@ -99,15 +100,12 @@ class UserPermissions extends Component
         // ---------------------------------------------------------------------
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $permissions[Craft::t('app', 'Users')] = [
+            $userPermissions = [
                 'editUsers' => [
                     'label' => Craft::t('app', 'Edit users'),
                     'nested' => [
                         'registerUsers' => [
                             'label' => Craft::t('app', 'Register users')
-                        ],
-                        'assignUserPermissions' => [
-                            'label' => Craft::t('app', 'Assign user groups and permissions')
                         ],
                         'administrateUsers' => [
                             'label' => Craft::t('app', 'Administrate users'),
@@ -116,13 +114,29 @@ class UserPermissions extends Component
                                     'label' => Craft::t('app', 'Change users’ emails')
                                 ]
                             ]
-                        ]
+                        ],
+                        'assignUserPermissions' => [
+                            'label' => Craft::t('app', 'Assign user permissions')
+                        ],
+                        'assignUserGroups' => [
+                            'label' => Craft::t('app', 'Assign user groups')
+                        ],
                     ],
                 ],
                 'deleteUsers' => [
                     'label' => Craft::t('app', 'Delete users')
                 ],
             ];
+
+            foreach (Craft::$app->getUserGroups()->getAllGroups() as $userGroup) {
+                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->id] = [
+                    'label' => Craft::t('app', 'Assign users to “{group}”', [
+                        'group' => Craft::t('site', $userGroup->name)
+                    ])
+                ];
+            }
+
+            $permissions[Craft::t('app', 'Users')] = $userPermissions;
         }
 
         // Sites
@@ -161,7 +175,7 @@ class UserPermissions extends Component
 
         $globalSets = Craft::$app->getGlobals()->getAllSets();
 
-        if ($globalSets) {
+        if (!empty($globalSets)) {
             $permissions[Craft::t('app', 'Global Sets')] = $this->_getGlobalSetPermissions($globalSets);
         }
 
@@ -170,7 +184,7 @@ class UserPermissions extends Component
 
         $categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
-        if ($categoryGroups) {
+        if (!empty($categoryGroups)) {
             $permissions[Craft::t('app', 'Categories')] = $this->_getCategoryGroupPermissions($categoryGroups);
         }
 
@@ -202,6 +216,33 @@ class UserPermissions extends Component
     }
 
     /**
+     * Returns the permissions that the current user is allowed to assign to another user.
+     *
+     * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+     *
+     * @return array
+     */
+    public function getAssignablePermissions(User $user = null): array
+    {
+        // If either user is an admin, all permissions are fair game
+        if (Craft::$app->getUser()->getIsAdmin() || ($user !== null && $user->admin)) {
+            return $this->getAllPermissions();
+        }
+
+        $allowedPermissions = [];
+
+        foreach ($this->getAllPermissions() as $category => $permissions) {
+            $filteredPermissions = $this->_filterUnassignablePermissions($permissions, $user);
+
+            if (!empty($filteredPermissions)) {
+                $allowedPermissions[$category] = $filteredPermissions;
+            }
+        }
+
+        return $allowedPermissions;
+    }
+
+    /**
      * Returns all of a given user group's permissions.
      *
      * @param int $groupId
@@ -212,6 +253,7 @@ class UserPermissions extends Component
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
             $groupPermissions = $this->_createUserPermissionsQuery()
+                ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
 
@@ -231,6 +273,7 @@ class UserPermissions extends Component
     public function getGroupPermissionsByUserId(int $userId): array
     {
         return $this->_createUserPermissionsQuery()
+            ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
             ->innerJoin('{{%usergroups_users}} g_u', '[[g_u.groupId]] = [[p_g.groupId]]')
             ->where(['g_u.userId' => $userId])
             ->column();
@@ -309,6 +352,7 @@ class UserPermissions extends Component
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
             $userPermissions = $this->_createUserPermissionsQuery()
+                ->innerJoin('{{%userpermissions_users}} p_u', '[[p_u.permissionId]] = [[p.id]]')
                 ->where(['p_u.userId' => $userId])
                 ->column();
 
@@ -559,6 +603,36 @@ class UserPermissions extends Component
     }
 
     /**
+     * Filters out any permissions that aren't assignable by the current user.
+     *
+     * @param array     $permissions The original permissions
+     * @param User|null $user        The recipient of the permissions. If set, their current permissions will be included as well.
+     *
+     * @return array The filtered permissions
+     */
+    private function _filterUnassignablePermissions(array $permissions, User $user = null): array
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser && !$user) {
+            return [];
+        }
+
+        $assignablePermissions = [];
+
+        foreach ($permissions as $name => $data) {
+            if (($currentUser !== null && $currentUser->can($name)) || ($user !== null && $user->can($name))) {
+                if (isset($data['nested'])) {
+                    $data['nested'] = $this->_filterUnassignablePermissions($data['nested'], $user);
+                }
+
+                $assignablePermissions[$name] = $data;
+            }
+        }
+
+        return $assignablePermissions;
+    }
+
+    /**
      * Filters out any orphaned permissions.
      *
      * @param array $postedPermissions The posted permissions.
@@ -649,7 +723,6 @@ class UserPermissions extends Component
     {
         return (new Query())
             ->select(['p.name'])
-            ->from(['{{%userpermissions}} p'])
-            ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]');
+            ->from(['{{%userpermissions}} p']);
     }
 }
