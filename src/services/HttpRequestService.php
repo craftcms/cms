@@ -1566,7 +1566,7 @@ class HttpRequestService extends \CHttpRequest
 				$hasTriggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1);
 				$hasSpecialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath));
 
-				if ($hasSpecialPath || $hasTriggerMatch || $hasActionParam)
+				if ($hasActionParam || $hasTriggerMatch || $hasSpecialPath)
 				{
 					$this->_isActionRequest = true;
 
