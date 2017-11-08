@@ -603,10 +603,10 @@ class UsersController extends BaseController
 					if (craft()->userSession->isAdmin())
 					{
 						// If they already have a password (like from a front-end user registration), no
-						// need to show the Copy Password Reset URL option
+						// need to show the "Copy activation URL" option
 						if (!$variables['account']->password)
 						{
-							$statusActions[] = ['id' => 'copy-passwordreset-url', 'label' => Craft::t('Copy activation URL')];
+							$statusActions[] = array('id' => 'copy-passwordreset-url', 'label' => Craft::t('Copy activation URL'));
 						}
 
 						$statusActions[] = array('action' => 'users/activateUser', 'label' => Craft::t('Activate account'));
