@@ -1,9 +1,9 @@
 Craft CMS Changelog
 ===================
 
-## 2.6.2996 (WIP)
+## 2.6.2997 (WIP)
 
-## 2.6.2995 - 2017-11-08
+## 2.6.2996 - 2017-11-08
 
 ### Added
 - Added `UserGroupsService::getAssignableGroups()`.
