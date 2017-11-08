@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.31 - 2017-11-08
 
 ### Added
 - Added PHP 7.2 compatibility.
