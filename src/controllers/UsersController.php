@@ -1770,6 +1770,7 @@ class UsersController extends BaseController
 	 * @param UserModel $user
 	 *
 	 * @return null
+	 * @throws HttpException if the user account doesn't have permission to assign the attempted permissions/groups
 	 */
 	private function _processUserGroupsPermissions(UserModel $user)
 	{
