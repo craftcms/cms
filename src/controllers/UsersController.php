@@ -93,7 +93,7 @@ class UsersController extends BaseController
 			}
 		}
 
-		// Make sure that either the site is offline or they are specifically
+		// Make sure that either the site is online or they are specifically
 		// requesting the login path
 		if (!craft()->isSystemOn())
 		{
