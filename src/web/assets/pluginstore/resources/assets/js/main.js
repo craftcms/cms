@@ -31,6 +31,7 @@ window.pluginStoreApp = new Vue({
           crumbs: null,
           pageTitle: 'Plugin Store',
           plugin: null,
+          pluginId: null,
           modalStep: null,
           pluginStoreDataLoading: true,
           pluginStoreDataLoaded: false,
@@ -56,6 +57,7 @@ window.pluginStoreApp = new Vue({
         },
         showPlugin(plugin) {
             this.plugin = plugin;
+            this.pluginId = plugin.id;
             this.openGlobalModal('plugin-details');
         },
         openGlobalModal(modalStep) {

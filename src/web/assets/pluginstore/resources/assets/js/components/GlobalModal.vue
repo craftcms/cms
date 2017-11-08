@@ -3,7 +3,7 @@
         <div ref="globalmodal" class="globalmodal modal">
             <div class="globalmodalcontent">
                 <template v-if="modalStep === 'plugin-details'">
-                    <plugin-details :plugin="plugin"></plugin-details>
+                    <plugin-details :pluginId="pluginId"></plugin-details>
                 </template>
 
                 <template v-else-if="modalStep === 'cart'">
@@ -44,7 +44,7 @@
     import ThankYou from './ThankYou';
 
     export default {
-        props: ['plugin', 'show'],
+        props: ['pluginId', 'show'],
 
         components: {
             PluginDetails,

@@ -3,6 +3,7 @@ import * as types from '../mutation-types'
 
 const state = {
     data: {},
+    plugin: null,
 }
 
 const getters = {
@@ -97,12 +98,27 @@ const actions = {
                 reject(response);
             })
         })
-    }
+    },
+
+    getPluginDetails({ commit }, pluginId) {
+        return new Promise((resolve, reject) => {
+            api.getPluginDetails(pluginId, data => {
+                commit(types.RECEIVE_PLUGIN_DETAILS, { data })
+                resolve(data);
+            }, response => {
+                reject(response);
+            })
+        })
+    },
 }
 
 const mutations = {
     [types.RECEIVE_PLUGIN_STORE_DATA] (state, { data }) {
         state.data = data
+    },
+    [types.RECEIVE_PLUGIN_DETAILS] (state, { data }) {
+        console.log('mutation', data);
+        state.plugin = data
     },
 }
 

@@ -14,14 +14,12 @@
 <script>
 
     import PluginCard from './PluginCard';
-    import PluginDetails from './PluginDetails';
 
     export default {
         props: ['plugins', 'columns'],
 
         components: {
             PluginCard,
-            PluginDetails,
         },
 
         data () {

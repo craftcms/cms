@@ -46,6 +46,20 @@ export default {
             });
     },
 
+    getPluginDetails(pluginId, cb, errorCb) {
+        let body = { enableCraftId: window.enableCraftId };
+        let options = { emulateJSON: true };
+
+        Vue.http.post(window.craftApiEndpoint+'/plugin/'+pluginId, body, options)
+            .then(data => {
+                let pluginDetails = data.body;
+                return cb(pluginDetails);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
+    },
+
     getCraftData(cb, cbError) {
         Vue.http.get(Craft.getActionUrl('plugin-store/craft-data'))
             .then(data => {
