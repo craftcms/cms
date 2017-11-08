@@ -75,6 +75,14 @@ const getters = {
         }
     },
 
+    getPluginsByDeveloperId(state, rootState) {
+        return developerId => {
+            if(state.data.plugins) {
+                return state.data.plugins.filter(p => p.developerId == developerId)
+            }
+        }
+    },
+
     getCraftClientPluginId(state) {
         return () => {
             return state.data.craftClientPluginId;
