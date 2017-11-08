@@ -10,7 +10,6 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\behaviors\FieldLayoutTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
 use craft\helpers\UrlHelper;
@@ -21,16 +20,13 @@ use craft\validators\UniqueValidator;
 /**
  * GlobalSet represents a global set element.
  *
+ * @mixin FieldLayoutBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class GlobalSet extends Element
 {
-    // Traits
-    // =========================================================================
-
-    use FieldLayoutTrait;
-
     // Static
     // =========================================================================
 

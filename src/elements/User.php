@@ -31,7 +31,9 @@ use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
+use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
 
 /**
@@ -162,7 +164,7 @@ class User extends Element implements IdentityInterface
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
 
-            if ($groups) {
+            if (!empty($groups)) {
                 $sources[] = ['heading' => Craft::t('app', 'Groups')];
 
                 foreach ($groups as $group) {
@@ -548,7 +550,7 @@ class User extends Element implements IdentityInterface
     {
         try {
             return $this->getName();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -589,6 +591,8 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class
             ];
+
+            $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
 
         if ($this->id !== null && $this->passwordResetRequired) {
@@ -613,6 +617,28 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Validates the unverifiedEmail value is unique.
+     *
+     * @param string          $attribute
+     * @param array|null      $params
+     * @param InlineValidator $validator
+     */
+    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
+    {
+        $query = User::find()
+            ->where(['email' => $this->unverifiedEmail])
+            ->status(null);
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
+            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'), $params);
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     public function scenarios()
@@ -631,7 +657,6 @@ class User extends Element implements IdentityInterface
     {
         return Craft::$app->getFields()->getLayoutByType(static::class);
     }
-
 
     /**
      * @inheritdoc
@@ -698,7 +723,12 @@ class User extends Element implements IdentityInterface
                 break;
             case self::STATUS_ACTIVE:
                 // Validate the password
-                if (!Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
+                try {
+                    $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+                } catch (InvalidParamException $e) {
+                    $valid = false;
+                }
+                if (!$valid) {
                     Craft::$app->getUsers()->handleInvalidLogin($this);
                     // Was that one bad password too many?
                     if ($this->locked) {
@@ -924,9 +954,7 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return UrlHelper::resourceUrl('resized/'.$this->photoId.'/'.$size, [
-                Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
-            ]);
+            return Craft::$app->getAssets()->getThumbUrl($photo, $size, false);
         }
 
         return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true).'/images/user.svg';
@@ -1207,6 +1235,17 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = Craft::$app->getFields()->getLayoutByType(static::class)->id;
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew)
@@ -1318,7 +1357,7 @@ class User extends Element implements IdentityInterface
                 ->addSelect([
                     'siteId' => (new Query())
                         ->select('i18n.siteId')
-                        ->from('{{%elements_i18n}} i18n')
+                        ->from('{{%elements_sites}} i18n')
                         ->where('[[i18n.elementId]] = [[e.id]]')
                         ->limit(1)
                 ])

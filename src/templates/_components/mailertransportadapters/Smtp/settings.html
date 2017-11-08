@@ -5,6 +5,7 @@
     id: 'host',
     name: 'host',
     value: adapter.host,
+    required: true,
     errors: adapter.getErrors('host')
 }) }}
 
@@ -14,6 +15,7 @@
     name: 'port',
     value: adapter.port,
     size: 4,
+    required: true,
     errors: adapter.getErrors('port')
 }) }}
 
@@ -62,5 +64,6 @@
     name: 'timeout',
     value: adapter.timeout,
     size: 2,
+    required: true,
     errors: adapter.getErrors('timeout')
 }) }}

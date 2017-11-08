@@ -72,11 +72,12 @@ class CraftSupport extends Widget
         }
 
         $view = Craft::$app->getView();
+        $view->registerAssetBundle(CraftSupportAsset::class);
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $plugins .= "\n    - ".$plugin->name.' '.$plugin->version;
+            $plugins .= "\n    - ".$plugin->name.' '.$plugin->getVersion();
         }
 
         $db = Craft::$app->getDb();
@@ -87,19 +88,14 @@ class CraftSupport extends Widget
         }
 
         $envInfoJs = Json::encode([
-            'Craft version' => Craft::$app->version.' ('.Craft::$app->getEditionName().')',
-            'PHP version' => PHP_VERSION,
-            'Database driver & version' => $driver.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION),
+            'Craft version' => Craft::$app->getVersion().' ('.Craft::$app->getEditionName().')',
+            'PHP version' => str_replace('~', '\~', PHP_VERSION),
+            'Database driver & version' => $driver.' '.str_replace('~', '\~', $db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION)),
             'Plugins & versions' => $plugins,
         ]);
 
         $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
         $view->registerJs($js);
-
-        $view->registerAssetBundle(CraftSupportAsset::class);
-        $view->registerTranslations('app', [
-            'Message sent successfully.',
-        ]);
 
         $iconsDir = Craft::getAlias('@app/icons');
 

@@ -10,7 +10,6 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
@@ -20,16 +19,13 @@ use craft\validators\UniqueValidator;
 /**
  * EntryType model class.
  *
+ * @mixin FieldLayoutBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class EntryType extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 

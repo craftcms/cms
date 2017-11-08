@@ -32,8 +32,6 @@ class Globals extends Component
 
     /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from getting saved.
      */
     const EVENT_BEFORE_SAVE_GLOBAL_SET = 'beforeSaveGlobalSet';
 
@@ -239,24 +237,25 @@ class Globals extends Component
      *
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveSet(GlobalSet $globalSet, bool $runValidation = true): bool
     {
-        $globalSet->validateCustomFields = false;
-        if ($runValidation && !$globalSet->validate()) {
-            Craft::info('Global set not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewSet = !$globalSet->id;
 
         // Fire a 'beforeSaveGlobalSet' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, new GlobalSetEvent([
-            'globalSet' => $globalSet,
-            'isNew' => $isNewSet,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GLOBAL_SET)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $globalSet,
+                'isNew' => $isNewSet,
+            ]));
+        }
+
+        // Don't validate required custom fields
+        if ($runValidation && !$globalSet->validate()) {
+            Craft::info('Global set not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if (!$isNewSet) {
             $globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
@@ -281,7 +280,7 @@ class Globals extends Component
             $globalSetRecord->fieldLayoutId = $fieldLayout->id;
 
             // Save the global set
-            if (!Craft::$app->getElements()->saveElement($globalSet)) {
+            if (!Craft::$app->getElements()->saveElement($globalSet, false)) {
                 throw new Exception('Couldn’t save the global set.');
             }
 
@@ -293,17 +292,19 @@ class Globals extends Component
             $globalSetRecord->save(false);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterSaveGlobalSet' event
-        $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
-            'globalSet' => $globalSet,
-            'isNew' => $isNewSet
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $globalSet,
+                'isNew' => $isNewSet
+            ]));
+        }
 
         return true;
     }

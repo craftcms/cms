@@ -106,10 +106,6 @@ class SectionsController extends Controller
             $typeOptions[$type] = Craft::t('app', ucfirst($type));
         }
 
-        if (empty($typeOptions)) {
-            throw new BadRequestHttpException('Craft Client or Pro Edition is required to create any additional sections');
-        }
-
         if (!$section->type) {
             $section->type = Section::TYPE_CHANNEL;
         }

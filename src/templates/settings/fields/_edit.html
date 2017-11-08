@@ -106,7 +106,7 @@
 
     <hr>
 
-    {% for type in allFieldTypes %}
+    {% for type in allowedFieldTypes %}
         {% set isCurrent = (type == className(field)) %}
         <div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
             {% namespace 'types['~type~']' %}

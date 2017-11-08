@@ -176,6 +176,17 @@ class Tag extends Element
 
     /**
      * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew)

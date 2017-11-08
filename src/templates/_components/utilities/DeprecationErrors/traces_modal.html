@@ -6,18 +6,16 @@
     <tbody>
         {% for trace in log.traces %}
             <tr>
-                <th class="thin light centeralign">{{ loop.revindex }}</th>
+                <th class="thin light topalign">{{ loop.revindex }}</th>
                 <td>
                     {% if loop.first %}
                         <strong>Deprecation error:</strong> {{ log.message }}
-                    {% elseif trace.template is defined and trace.template %}
-                        <strong>Template:</strong> {{ trace.template }}{% if trace.templateLine is defined and trace.templateLine %} ({{ trace.templateLine }}){% endif %}
                     {% else %}
-                        {{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})
+                        <span class="code">{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</span>
                     {% endif %}
 
                     {% if trace.file %}
-                        <br><span class="light">Called from {{ trace.file|replace('/', '/<wbr>')|raw }} ({{ trace.line }})</span>
+                        <br><span class="light">Called from <span class="code">{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</span></span>
                     {% endif %}
                 </td>
             </tr>

@@ -87,13 +87,13 @@
                 };
 
                 // If CSRF protection isn't enabled, these won't be defined.
-                if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
+                if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                     // Add the CSRF token
                     data[Craft.csrfTokenName] = Craft.csrfTokenValue;
                 }
 
                 Craft.postActionRequest('system-messages/get-message-modal', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (!this.$container) {
                             var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.body + '</form>').appendTo(Garnish.$bod);
                             this.setContainer($container);
@@ -165,10 +165,10 @@
                     this.$spinner.hide();
                     this.loading = false;
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             // Only update the page if we're editing the current language's message
-                            if (data.language == Craft.language) {
+                            if (data.language === Craft.language) {
                                 this.message.updateHtmlFromModal();
                             }
 

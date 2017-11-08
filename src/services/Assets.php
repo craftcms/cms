@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -20,6 +21,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -33,8 +35,8 @@ use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
+use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use yii\base\Component;
 use yii\base\InvalidParamException;
@@ -63,9 +65,14 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
+
+    /**
+     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     */
+    const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
     // Properties
     // =========================================================================
@@ -74,6 +81,11 @@ class Assets extends Component
      * @var
      */
     private $_foldersById;
+
+    /**
+     * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
+     */
+    private $_queuedGeneratePendingTransformsJob = false;
 
     // Public Methods
     // =========================================================================
@@ -136,13 +148,14 @@ class Assets extends Component
             Image::cleanImageByPath($pathOnServer);
         }
 
-        $event = new ReplaceAssetEvent([
-            'asset' => $asset,
-            'replaceWith' => $pathOnServer,
-            'filename' => $filename
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+        // Fire a 'beforeReplaceFile' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'replaceWith' => $pathOnServer,
+                'filename' => $filename
+            ]));
+        }
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
@@ -151,12 +164,13 @@ class Assets extends Component
 
         Craft::$app->getElements()->saveElement($asset);
 
-        $event = new ReplaceAssetEvent([
-            'asset' => $asset,
-            'filename' => $filename
-        ]);
-
-        $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
+        // Fire an 'afterReplaceFile' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REPLACE_ASSET)) {
+            $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'filename' => $filename
+            ]));
+        }
     }
 
     /**
@@ -524,23 +538,21 @@ class Assets extends Component
     // File and folder managing
     // -------------------------------------------------------------------------
 
-
     /**
-     * Get URL for a file.
+     * Returns the URL for an asset, possibly with a given transform applied.
      *
      * @param Asset                            $asset
      * @param AssetTransform|string|array|null $transform
      *
-     * @return string
+     * @return string|null
      */
-    public function getUrlForAsset(Asset $asset, $transform = null): string
+    public function getAssetUrl(Asset $asset, $transform = null)
     {
         // Maybe a plugin wants to do something here
         $event = new GetAssetUrlEvent([
             'transform' => $transform,
             'asset' => $asset,
         ]);
-
         $this->trigger(self::EVENT_GET_ASSET_URL, $event);
 
         // If a plugin set the url, we'll just use that.
@@ -560,30 +572,108 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
-        } else {
-            if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
-                try {
-                    return $assetTransforms->ensureTransformUrlByIndexModel($index);
-                } catch (ImageException $exception) {
-                    Craft::warning($exception->getMessage(), __METHOD__);
-                    $assetTransforms->deleteTransformIndex($index->id);
+        }
 
-                    return UrlHelper::resourceUrl('404');
-                }
-            } else {
-                // Queue up a new Generate Pending Transforms task, if there isn't one already
-                $tasks = Craft::$app->getTasks();
-
-                if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
-                    $tasks->createTask(GeneratePendingTransforms::class);
-                }
-
-                // Return the temporary transform URL
-                return UrlHelper::resourceUrl('transforms/'.$index->id);
+        if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
+            try {
+                return $assetTransforms->ensureTransformUrlByIndexModel($index);
+            } catch (ImageException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
+                $assetTransforms->deleteTransformIndex($index->id);
+                return null;
             }
         }
+
+        // Queue up a new Generate Pending Transforms job
+        if (!$this->_queuedGeneratePendingTransformsJob) {
+            Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+            $this->_queuedGeneratePendingTransformsJob = true;
+        }
+
+        // Return the temporary transform URL
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
+    }
+
+    /**
+     * Returns the CP thumbnail URL for a given asset.
+     *
+     * @param Asset $asset
+     * @param int   $size
+     * @param bool  $generate Whether the thumbnail should be generated if it doesn't exist yet.
+     *
+     * @return string
+     * @see Asset::getThumbUrl()
+     */
+    public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
+    {
+        // Maybe a plugin wants to do something here
+        $event = new GetAssetThumbUrlEvent([
+            'asset' => $asset,
+            'size' => $size,
+            'generate' => $generate,
+        ]);
+        $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
+        $ext = $asset->getExtension();
+
+        // If it's not an image, return a generic file extension icon
+        if (!Image::canManipulateAsImage($ext)) {
+            $dir = Craft::$app->getPath()->getAssetsIconsPath();
+            $name = strtolower($ext).'.svg';
+            $path = $dir.DIRECTORY_SEPARATOR.$name;
+
+            if (!file_exists($path)) {
+                $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
+                $extLength = strlen($ext);
+                if ($extLength <= 3) {
+                    $textSize = '26';
+                } else if ($extLength === 4) {
+                    $textSize = '22';
+                } else {
+                    if ($extLength > 5) {
+                        $ext = substr($ext, 0, 4).'…';
+                    }
+                    $textSize = '18';
+                }
+                $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">".strtoupper($ext).'</text>';
+                $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+                FileHelper::writeToFile($path, $svg);
+            }
+
+            return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+        }
+
+        // Make the thumb a JPG if the image format isn't safe for web
+        $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
+        $dir = Craft::$app->getPath()->getAssetThumbsPath().DIRECTORY_SEPARATOR.$asset->id;
+        $name = "thumb-{$size}x{$size}.{$ext}";
+        $path = $dir.DIRECTORY_SEPARATOR.$name;
+
+        if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
+            // If we're not ready to generate it yet, return the thumb generation URL instead
+            if (!$generate) {
+                return UrlHelper::actionUrl('assets/generate-thumb', [
+                    'uid' => $asset->uid,
+                    'size' => $size,
+                ]);
+            }
+
+            // Generate the thumb
+            FileHelper::createDirectory($dir);
+            $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
+            Craft::$app->getImages()->loadImage($imageSource, false, $size)
+                ->scaleToFit($size, $size)
+                ->saveAs($path);
+        }
+
+        // Publish the thumb directory (if necessary) and return the thumb's published URL
+        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
     }
 
     /**
@@ -674,54 +764,61 @@ class Assets extends Component
     }
 
     /**
-     * Ensure a folder entry exists in the DB for the full path and return it's id.
+     * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
-     * @param string $fullPath The path to ensure the folder exists at.
-     * @param int    $volumeId
+     * @param string $fullPath   The path to ensure the folder exists at.
+     * @param Volume $volume
+     * @param bool   $justRecord If set to false, will also make sure the physical folder exists on Volume.
      *
      * @return int
+     * @throws VolumeException If the volume cannot be found.
      */
-    public function ensureFolderByFullPathAndVolumeId(string $fullPath, int $volumeId): int
+    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): int
     {
-        $parameters = new FolderCriteria([
-            'path' => $fullPath,
-            'volumeId' => $volumeId
-        ]);
+        $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
+        $folderId = $parentId;
 
-        if (($folderModel = $this->findFolder($parameters)) !== null) {
-            return $folderModel->id;
+        if ($fullPath) {
+            // If we don't have a folder matching these, create a new one
+            $parts = explode('/', trim($fullPath, '/'));
+
+            // creep up the folder path
+            $path = '';
+
+            while (($part = array_shift($parts)) !== null) {
+                $path .= $part.'/';
+
+                $parameters = new FolderCriteria([
+                    'path' => $path,
+                    'volumeId' => $volume->id
+                ]);
+
+                // Create the record for current segment if needed.
+                if (($folderModel = $this->findFolder($parameters)) === null) {
+                    $folderModel = new VolumeFolder();
+                    $folderModel->volumeId = $volume->id;
+                    $folderModel->parentId = $parentId;
+                    $folderModel->name = $part;
+                    $folderModel->path = $path;
+                    $this->storeFolderRecord($folderModel);
+                }
+
+                // Ensure a physical folder exists, if needed.
+                if (!$justRecord) {
+                    try {
+                        $volume->createDir($path);
+                    } catch (VolumeObjectExistsException $exception) {
+                        // Already there. Good.
+                    }
+                }
+
+                // Set the variables for next iteration.
+                $folderId = $folderModel->id;
+                $parentId = $folderId;
+            }
         }
 
-        // If we don't have a folder matching these, create a new one
-        $parts = explode('/', rtrim($fullPath, '/'));
-        $folderName = array_pop($parts);
-
-        if (empty($parts)) {
-            // Looking for a top level folder, apparently.
-            $parameters->path = '';
-            $parameters->parentId = ':empty:';
-        } else {
-            $parameters->path = implode('/', $parts).'/';
-        }
-
-        // Look up the parent folder
-        $parentFolder = $this->findFolder($parameters);
-
-        if ($parentFolder === null) {
-            $parentId = ':empty:';
-        } else {
-            $parentId = $parentFolder->id;
-        }
-
-        $folderModel = new VolumeFolder();
-        $folderModel->volumeId = $volumeId;
-        $folderModel->parentId = $parentId;
-        $folderModel->name = $folderName;
-        $folderModel->path = $fullPath;
-
-        $this->storeFolderRecord($folderModel);
-
-        return $folderModel->id;
+        return $folderId;
     }
 
     /**
@@ -800,7 +897,7 @@ class Assets extends Component
             $this->storeFolderRecord($folder);
         }
 
-        FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
+        FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$folderName);
 
         /**
          * @var VolumeFolder $folder ;

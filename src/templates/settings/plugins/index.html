@@ -19,11 +19,11 @@
         <table id="plugins" class="data fullwidth collapsible">
             <thead>
                 <th scope="col">{{ "Plugin"|t('app') }}</th>
+                <th scope="col">{{ "Settings"|t('app') }}</th>
                 <th scope="col">{{ "Developer"|t('app') }}</th>
                 <th scope="col">{{ "Documentation"|t('app') }}</th>
-                <th scope="col">{{ "Status"|t('app') }}</th>
-                <td class="thin"></td>
-                <th class="thin"></th>
+                <th scope="col thin">{{ "Status"|t('app') }}</th>
+                <th scope="col"></th>
             </thead>
             <tbody>
                 {% for handle, config in info %}
@@ -42,47 +42,36 @@
                                 </div>
                             </div>
                         </th>
-                        <td data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
-                        <td data-title="{{ 'Documentation'|t('app') }}">
-                            {% if config.documentationUrl %}
-                                <a href="{{ config.documentationUrl }}" title="{{ "{name} Documentation"|t('app', {name: config.name}) }}" target="_blank">{{ "View Documentation"|t('app') }}</a>
+                        <td data-title="{{ 'Settings'|t('app') }}">
+                            {% if config.hasCpSettings %}
+                                <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span> {{ "Settings"|t('app') }}</a>
                             {% else %}
                                 <span class="light">—</span>
                             {% endif %}
                         </td>
-                        <td class="status-cell" data-title="{{ 'Status'|t('app') }}">
+                        <td data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
+                        <td data-title="{{ 'Documentation'|t('app') }}">
+                            {% if config.documentationUrl %}
+                                <a href="{{ config.documentationUrl }}" title="{{ "{name} Documentation"|t('app', {name: config.name}) }}" target="_blank">{{ "Documentation"|t('app') }}</a>
+                            {% else %}
+                                <span class="light">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="status-cell thin" data-title="{{ 'Status'|t('app') }}">
                             {% if config.isInstalled %}
-                                <form method="post" accept-charset="UTF-8">
-                                    <input type="hidden" name="pluginHandle" value="{{ handle }}">
-                                    {{ csrfInput() }}
-                                    {% if config.isEnabled %}
-                                        <span class="status on"></span> {{ "Enabled"|t('app') }} 
-                                        {% if not config.isComposerInstall %}
-                                            <input type="button" value="{{ 'Disable'|t('app') }}" class="btn small formsubmit" data-action="plugins/disable-plugin">
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="status off"></span> {{ "Disabled"|t('app') }} 
-                                        <input type="button" value="{{ 'Enable'|t('app') }}" class="btn small formsubmit" data-action="plugins/enable-plugin">
-                                    {% endif %}
-                                </form>
+                                <span class="status enabled"></span> {{ "Installed"|t('app') }}
                             {% else %}
                                 <span class="status"></span> <span class="light">{{ "Not installed"|t('app') }}</span>
                             {% endif %}
                         </td>
-                        <td>
-                            {% if config.hasCpSettings %}
-                                <a href="{{ url('settings/plugins/'~config.moduleId) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
-                            {% endif %}
-                        </td>
-                        <td class="thin rightalign nowrap">
+                        <td class="centeralign thin" data-title="{{ 'Action'|t('app') }}">
                             <form method="post" accept-charset="UTF-8">
                                 <input type="hidden" name="pluginHandle" value="{{ handle }}">
                                 {{ csrfInput() }}
-
                                 {% if config.isInstalled %}
-                                    <div class="btn small fullwidth formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</div>
+                                    <div class="btn small formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</div>
                                 {% else %}
-                                    <div class="btn small fullwidth formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</div>
+                                    <div class="btn small formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</div>
                                 {% endif %}
                             </form>
                         </td>
