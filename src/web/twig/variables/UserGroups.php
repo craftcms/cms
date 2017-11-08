@@ -30,7 +30,7 @@ class UserGroups
      *
      * @param string|null $indexBy
      *
-     * @return array
+     * @return UserGroup[]
      */
     public function getAllGroups(string $indexBy = null): array
     {

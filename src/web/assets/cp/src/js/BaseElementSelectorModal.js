@@ -169,12 +169,12 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                 sources: this.settings.sources
             };
 
-            if (this.settings.showSiteMenu !== null && this.settings.showSiteMenu != 'auto') {
+            if (this.settings.showSiteMenu !== null && this.settings.showSiteMenu !== 'auto') {
                 data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
             }
 
             Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     this.$body.html(response.html);
 
                     if (this.$body.has('.sidebar:not(.hidden)').length) {

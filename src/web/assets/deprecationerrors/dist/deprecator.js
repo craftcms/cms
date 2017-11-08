@@ -48,7 +48,7 @@
                 Craft.postActionRequest('utilities/get-deprecation-error-traces-modal', data, $.proxy(function(response, textStatus) {
                     this.tracesModal.$container.removeClass('loading');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         this.$tracesModalBody.html(response.html);
                     }
                 }, this));

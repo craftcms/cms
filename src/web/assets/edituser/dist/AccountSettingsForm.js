@@ -41,7 +41,7 @@
                 Craft.postActionRequest('users/get-password-reset-url', data, $.proxy(function(response, textStatus) {
                     this.$actionSpinner.addClass('hidden');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         var message = Craft.t('app', '{ctrl}C to copy.', {
                             ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
                         });

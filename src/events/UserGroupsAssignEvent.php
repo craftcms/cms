@@ -24,7 +24,7 @@ class UserGroupsAssignEvent extends CancelableEvent
     public $userId;
 
     /**
-     * @var int[]|null The user group IDs being assigned to the user
+     * @var int[] The user group IDs being assigned to the user
      */
     public $groupIds;
 }

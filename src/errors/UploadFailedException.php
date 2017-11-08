@@ -44,7 +44,7 @@ class UploadFailedException extends FileException
                 $message = Craft::t('app', 'There was a problem with writing the file to the disk.');
                 break;
             default:
-                $message = Craft::t('app', 'There was a problem with uploading the file..');
+                $message = Craft::t('app', 'There was a problem with uploading the file.');
         }
 
         parent::__construct($message);

@@ -162,7 +162,7 @@ class Raster extends Image
 
         try {
             $this->_image = $this->_instance->open($path);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
         }
 
@@ -361,11 +361,13 @@ class Raster extends Image
             $this->_image = $gif;
         } else {
             if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
-                $this->_image->smartResize(new Box($targetWidth,
-                    $targetHeight), false, $this->_quality);
+                $config = Craft::$app->getConfig()->getGeneral();
+                $keepImageProfiles = $config->preserveImageColorProfiles;
+                $keepExifData = $config->preserveExifData;
+
+                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, $keepExifData, $this->_quality);
             } else {
-                $this->_image->resize(new Box($targetWidth,
-                    $targetHeight), $this->_getResizeFilter());
+                $this->_image->resize(new Box($targetWidth, $targetHeight), $this->_getResizeFilter());
             }
 
             if (Craft::$app->getImages()->getIsImagick()) {

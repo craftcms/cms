@@ -37,7 +37,7 @@ class Element_SiteSettings extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%elements_i18n}}';
+        return '{{%elements_sites}}';
     }
 
     /**

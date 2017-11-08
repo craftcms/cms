@@ -5,30 +5,29 @@
         {
             $graphic: null,
             $status: null,
-            errorDetails: null,
+            error: null,
             data: null,
 
             init: function(data) {
                 this.$graphic = $('#graphic');
                 this.$status = $('#status');
-
-                if (!data || !data.handle) {
-                    this.showError(Craft.t('app', 'Unable to determine what to update.'));
-                    return;
-                }
-
-                this.data = data;
-
-                this.postActionRequest('update/prepare');
             },
 
-            updateStatus: function(html) {
-                this.$status.html(html);
+            parseStatus: function(status) {
+                return '<p>' + Craft.escapeHtml(status).split('\n\n').join('</p><p>') + '</p>';
             },
 
-            showError: function(msg) {
+            showStatus: function(status) {
+                this.$status.html(this.parseStatus(status));
+            },
+
+            showError: function(error) {
                 this.$graphic.addClass('error');
-                this.updateStatus('<p>' + msg + '</p>');
+                this.showStatus(error);
+            },
+
+            showErrorDetails: function(details) {
+                $('<div/>', {id: 'error', 'class': 'code', html: this.parseStatus(details)}).appendTo(this.$status);
             },
 
             postActionRequest: function(action) {
@@ -36,117 +35,114 @@
                     data: this.data
                 };
 
-                Craft.postActionRequest(action, data, $.proxy(function(response, textStatus, jqXHR) {
-                    if (textStatus == 'success') {
-                        this.processResponse(response);
+                Craft.postActionRequest('updater/' + action, data, $.proxy(function(response, textStatus, jqXHR) {
+                    if (textStatus === 'success') {
+                        this.setState(response);
+                    } else {
+                        this.handleFatalError(jqXHR);
                     }
-                    else {
-                        this.showFatalError(jqXHR);
-                    }
-
                 }, this), {
                     complete: $.noop
                 });
             },
 
-            processResponse: function(response) {
-                if (response.data) {
-                    this.data = response.data;
+            setState: function(state) {
+                this.$graphic.removeClass('error');
+
+                // Data probably won't be set if this is coming from an option
+                if (state.data) {
+                    this.data = state.data;
                 }
 
-                if (response.errorDetails) {
-                    this.errorDetails = response.errorDetails;
+                if (state.status) {
+                    this.showStatus(state.status);
+                } else if (state.error) {
+                    this.showError(state.error);
+                    if (state.errorDetails) {
+                        this.showErrorDetails(state.errorDetails);
+                    }
                 }
 
-                if (response.nextStatus) {
-                    this.updateStatus('<p>' + response.nextStatus + '</p>');
-                }
-
-                if (response.junction) {
-                    this.showJunction(response.junction);
-                }
-
-                if (response.nextAction) {
-                    this.postActionRequest(response.nextAction);
-                }
-
-                if (response.finished) {
-                    this.onFinish(response.returnUrl, !!response.rollBack);
+                if (state.nextAction) {
+                    this.postActionRequest(state.nextAction);
+                } else if (state.options) {
+                    this.showOptions(state);
+                } else if (state.finished) {
+                    this.onFinish(state.returnUrl);
                 }
             },
 
-            showJunction: function(options) {
-                this.$graphic.addClass('error');
-                var $buttonContainer = $('<div id="junction-buttons"/>').appendTo(this.$status);
+            showOptions: function(state) {
+                var $buttonContainer = $('<div/>', {id: 'options', 'class': 'buttons'}).appendTo(this.$status);
 
-                for (var i = 0; i < options.length; i++) {
-                    var option = options[i],
-                        $button = $('<div/>', {
+                for (var i = 0; i < state.options.length; i++) {
+                    var option = state.options[i],
+                        $button = $('<a/>', {
                             'class': 'btn big',
                             text: option.label
                         }).appendTo($buttonContainer);
 
-                    this.addListener($button, 'click', option, 'onJunctionSelection');
+                    if (option.submit) {
+                        $button.addClass('submit');
+                    }
+
+                    if (option.email) {
+                        $button.attr('href', this.getEmailLink(state, option));
+                    } else {
+                        this.addListener($button, 'click', option, 'onOptionSelect');
+                    }
                 }
             },
 
-            onJunctionSelection: function(ev) {
-                this.$graphic.removeClass('error');
-                this.processResponse(ev.data);
+            getEmailLink: function(state, option) {
+                var link = 'mailto:' + option.email +
+                    '?subject=' + encodeURIComponent(option.subject || 'Craft update failure');
+
+                var body = 'Describe what happened here.';
+                if (state.errorDetails) {
+                    body += '\n\n-----------------------------------------------------------\n\n' + state.errorDetails;
+                }
+                link += '&body=' + encodeURIComponent(body);
+
+                return link;
             },
 
-            showFatalError: function(jqXHR) {
-                this.$graphic.addClass('error');
-                var statusHtml =
-                    '<p>' + Craft.t('app', 'A fatal error has occurred:') + '</p>' +
-                    '<div id="error" class="code">' +
-                    '<p><strong class="code">' + Craft.t('app', 'Status:') + '</strong> ' + Craft.escapeHtml(jqXHR.statusText) + '</p>' +
-                    '<p><strong class="code">' + Craft.t('app', 'Response:') + '</strong> ' + Craft.escapeHtml(jqXHR.responseText) + '</p>' +
-                    '</div>' +
-                    '<a class="btn submit big" href="mailto:support@craftcms.com' +
-                    '?subject=' + encodeURIComponent('Craft update failure') +
-                    '&body=' + encodeURIComponent(
-                        'Describe what happened here.\n\n' +
-                        '-----------------------------------------------------------\n\n' +
-                        'Status: ' + jqXHR.statusText + '\n\n' +
-                        'Response: ' + jqXHR.responseText
-                    ) +
-                    '">' +
-                    Craft.t('app', 'Send for help') +
-                    '</a>';
-
-                this.updateStatus(statusHtml);
+            onOptionSelect: function(ev) {
+                this.setState(ev.data);
             },
 
-            onFinish: function(returnUrl, rollBack) {
-                if (this.errorDetails) {
-                    this.$graphic.addClass('error');
-                    var errorText = Craft.t('app', 'Craft CMS was unable to install this update :(') + '<br /><p>';
+            onFinish: function(returnUrl) {
+                this.$graphic.addClass('success');
 
-                    if (rollBack) {
-                        errorText += Craft.t('app', 'The site has been restored to the state it was in before the attempted update.') + '</p><br /><p>';
+                // Redirect in a moment
+                setTimeout(function() {
+                    if (returnUrl) {
+                        window.location = Craft.getUrl(returnUrl);
                     }
                     else {
-                        errorText += Craft.t('app', 'No files have been updated and the database has not been touched.') + '</p><br /><p>';
+                        window.location = Craft.getUrl('dashboard');
                     }
+                }, 750);
+            },
 
-                    errorText += this.errorDetails + '</p>';
-                    this.updateStatus('<p>' + errorText + '</p>');
-                }
-                else {
-                    this.updateStatus('<p>' + Craft.t('app', 'All done!') + '</p>');
-                    this.$graphic.addClass('success');
+            handleFatalError: function(jqXHR) {
+                var details = Craft.t('app', 'Status:') + ' ' + jqXHR.statusText + '\n\n' +
+                    Craft.t('app', 'Response:') + ' ' + jqXHR.responseText + '\n\n';
 
-                    // Redirect to the Dashboard in half a second
-                    setTimeout(function() {
-                        if (returnUrl) {
-                            window.location = Craft.getUrl(returnUrl);
+                this.setState({
+                    error: Craft.t('app', 'A fatal error has occurred:'),
+                    errorDetails: details,
+                    options: [
+                        {
+                            label: Craft.t('app', 'Send for help'),
+                            submit: true,
+                            email: 'support@craftcms.com'
                         }
-                        else {
-                            window.location = Craft.getUrl('dashboard');
-                        }
-                    }, 500);
-                }
+                    ]
+                });
+
+                // Tell Craft to disable maintenance mode
+                Craft.postActionRequest('updater/finish', {data: this.data});
             }
         });
 })(jQuery);

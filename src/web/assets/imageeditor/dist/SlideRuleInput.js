@@ -28,11 +28,11 @@ SlideRuleInput = Garnish.Base.extend({
         for (var i = this.graduationsMin; i <= this.graduationsMax; i++) {
             var $li = $('<li class="graduation" data-graduation="' + i + '"><div class="label">' + i + '</div></li>').appendTo(this.$graduationsUl);
 
-            if ((i % 5) == 0) {
+            if ((i % 5) === 0) {
                 $li.addClass('main-graduation');
             }
 
-            if (i == 0) {
+            if (i === 0) {
                 $li.addClass('selected');
             }
         }
@@ -122,7 +122,7 @@ SlideRuleInput = Garnish.Base.extend({
         this.value = value;
     },
 
-    _handleTapEnd: function(ev, touch) {
+    _handleTapEnd: function(ev) {
         if (this.dragging) {
             ev.preventDefault();
             this.dragging = false;
@@ -145,19 +145,19 @@ SlideRuleInput = Garnish.Base.extend({
     },
 
     onStart: function() {
-        if (typeof this.settings.onChange == "function") {
+        if (typeof this.settings.onChange === 'function') {
             this.settings.onStart(this);
         }
     },
 
     onChange: function() {
-        if (typeof this.settings.onChange == "function") {
+        if (typeof this.settings.onChange === 'function') {
             this.settings.onChange(this);
         }
     },
 
     onEnd: function() {
-        if (typeof this.settings.onChange == "function") {
+        if (typeof this.settings.onChange === 'function') {
             this.settings.onEnd(this);
         }
     },

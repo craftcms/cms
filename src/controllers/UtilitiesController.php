@@ -14,8 +14,10 @@ use craft\base\Field;
 use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
-use craft\tasks\FindAndReplace as FindAndReplaceTask;
+use craft\helpers\Path;
+use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
@@ -341,7 +343,7 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
@@ -371,7 +373,7 @@ class UtilitiesController extends Controller
 
         try {
             $backupPath = Craft::$app->getDb()->backup();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new Exception('Could not create backup: '.$e->getMessage());
         }
 
@@ -422,7 +424,7 @@ class UtilitiesController extends Controller
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
 
-        if (!is_file($filePath)) {
+        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
             throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
                 'filename' => $filename
             ]));
@@ -444,11 +446,10 @@ class UtilitiesController extends Controller
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => FindAndReplaceTask::class,
+            Craft::$app->getQueue()->push(new FindAndReplace([
                 'find' => $params['find'],
-                'replace' => $params['replace']
-            ]);
+                'replace' => $params['replace'],
+            ]));
         }
 
         return $this->asJson([
@@ -547,9 +548,10 @@ class UtilitiesController extends Controller
 
         $migrator = Craft::$app->getContentMigrator();
 
-        if ($migrator->up(0)) {
+        try {
+            $migrator->up();
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
-        } else {
+        } catch (MigrationException $e) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 

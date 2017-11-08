@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
 use craft\events\ElementContentEvent;
+use craft\helpers\Db;
 use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
@@ -162,9 +163,11 @@ class Content extends Component
         $this->fieldContext = $element->getFieldContext();
 
         // Fire a 'beforeSaveContent' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
-            'element' => $element
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_CONTENT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
+                'element' => $element
+            ]));
+        }
 
         // Prepare the data to be saved
         $values = [
@@ -180,7 +183,7 @@ class Content extends Component
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
                     $column = $this->fieldColumnPrefix.$field->handle;
-                    $values[$column] = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                    $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
             }
         }
@@ -204,9 +207,11 @@ class Content extends Component
         }
 
         // Fire an 'afterSaveContent' event
-        $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
-            'element' => $element
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
+                'element' => $element
+            ]));
+        }
 
         $this->contentTable = $originalContentTable;
         $this->fieldColumnPrefix = $originalFieldColumnPrefix;

@@ -27,7 +27,7 @@ class DownloadAssetFile extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Download Asset file');
+        return Craft::t('app', 'Download file');
     }
 
     /**

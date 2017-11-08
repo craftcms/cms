@@ -76,7 +76,7 @@
                             name: 'email',
                             value: account.email,
                             required: true,
-                            errors: account.getErrors('email')
+                            errors: account.getErrors('email')|merge(account.getErrors('unverifiedEmail'))
                         }) }}
 
                         {% if requireEmailVerification and currentUser.admin %}
@@ -96,7 +96,7 @@
                             name: 'email',
                             value: account.email,
                             required: true,
-                            errors: account.getErrors('email')
+                            errors: account.getErrors('email')|merge(account.getErrors('unverifiedEmail'))
                         }) }}
 
                         {% if account.getIsCurrent() %}
@@ -194,21 +194,21 @@
                         {% if CraftEdition == CraftPro %}
                             <h2>{{ "User Groups"|t('app') }}</h2>
 
-                            {% set allGroups = craft.app.userGroups.getAllGroups() %}
-                            {% set userGroupIds = account.getGroups()|column('id') %}
+                            {% set assignableGroups = craft.app.userGroups.getAssignableGroups(account) %}
+                            {% set currentGroupIds = account.getGroups()|column('id') %}
 
                             {% set userGroupsInput %}
                                 <input type="hidden" name="groups" value="">
 
-                                {% if allGroups %}
+                                {% if assignableGroups %}
                                     <ul>
-                                        {% for group in allGroups %}
+                                        {% for group in assignableGroups %}
                                             <li>
                                                 {{ forms.checkbox({
                                                     label: group.name|t('site')|e,
                                                     name: 'groups[]',
                                                     value: group.id,
-                                                    checked: (group.id in userGroupIds)
+                                                    checked: (group.id in currentGroupIds)
                                                 }) }}
                                             </li>
                                         {% endfor %}
@@ -293,10 +293,10 @@
                         </div>
                     </div>
 
-                    {% if account.status == 'locked' and craft.app.config.general.cooldownDuration %}
+                    {% if account.status == 'locked' and craft.app.config.general.cooldownDuration and account.remainingCooldownTime %}
                         <div class="data">
                             <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
-                            <p class="value">{{ account.remainingCooldownTime.humanDuration }}</p>
+                            <p class="value">{{ account.remainingCooldownTime|duration }}</p>
                         </div>
                     {% endif %}
 

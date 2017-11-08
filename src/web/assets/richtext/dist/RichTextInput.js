@@ -68,13 +68,13 @@
                         if ((index = $.inArray(oldListButtons[i], this.redactorConfig.buttons)) !== -1) {
                             this.redactorConfig.buttons.splice(index, 1);
 
-                            if (lowestListButtonIndex === undefined || index < lowestListButtonIndex) {
+                            if (typeof lowestListButtonIndex === 'undefined' || index < lowestListButtonIndex) {
                                 lowestListButtonIndex = index;
                             }
                         }
                     }
 
-                    if (lowestListButtonIndex !== undefined) {
+                    if (typeof lowestListButtonIndex !== 'undefined') {
                         this.redactorConfig.buttons.splice(lowestListButtonIndex, 0, 'lists');
                     }
                 }
@@ -88,7 +88,7 @@
 
                 this.initRedactor();
 
-                if (Craft.livePreview !== undefined) {
+                if (typeof Craft.livePreview !== 'undefined') {
                     // There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
                     Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function() {
                         this.redactor.core.destroy();
@@ -179,7 +179,7 @@
                                 observe: {
                                     element: 'a',
                                     in: {
-                                        title: this.redactor.lang.get('link-edit'),
+                                        title: this.redactor.lang.get('link-edit')
                                     },
                                     out: {
                                         title: this.redactor.lang.get('link-insert')
@@ -209,7 +209,7 @@
             onImageButtonClick: function() {
                 this.redactor.selection.save();
 
-                if (this.assetSelectionModal === undefined) {
+                if (typeof this.assetSelectionModal === 'undefined') {
                     this.assetSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
                         storageKey: 'RichTextFieldType.ChooseImage',
                         multiSelect: true,
@@ -223,7 +223,7 @@
                                         url = asset.url + '#asset:' + asset.id;
 
                                     if (transform) {
-                                        url += ':' + transform;
+                                        url += ':transform:' + transform;
                                     }
 
                                     this.redactor.insert.node($('<figure><img src="' + url + '" /></figure>')[0]);
@@ -244,7 +244,7 @@
             onFileButtonClick: function() {
                 this.redactor.selection.save();
 
-                if (this.assetLinkSelectionModal === undefined) {
+                if (typeof this.assetLinkSelectionModal === 'undefined') {
                     this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
                         storageKey: 'RichTextFieldType.LinkToAsset',
                         sources: this.volumes,
@@ -272,7 +272,7 @@
             onLinkOptionClick: function(key) {
                 this.redactor.selection.save();
 
-                if (this.linkOptionModals[key] === undefined) {
+                if (typeof this.linkOptionModals[key] === 'undefined') {
                     var settings = this.linkOptions[key];
 
                     this.linkOptionModals[key] = Craft.createElementSelectorModal(settings.elementType, {
@@ -309,7 +309,7 @@
             },
 
             leaveFullscreetOnSaveShortcut: function() {
-                if (this.redactor.fullscreen !== undefined && typeof this.redactor.fullscreen.disable == 'function') {
+                if (typeof this.redactor.fullscreen !== 'undefined' && typeof this.redactor.fullscreen.disable === 'function') {
                     Craft.cp.on('beforeSaveShortcut', $.proxy(function() {
                         if (this.redactor.fullscreen.isOpen) {
                             this.redactor.fullscreen.disable();

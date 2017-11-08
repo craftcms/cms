@@ -11,6 +11,8 @@ use Craft;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
@@ -23,6 +25,14 @@ use yii\base\InvalidParamException;
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static $mimeMagicFile = '@app/config/mimeTypes.php';
+
     // Properties
     // =========================================================================
 
@@ -80,6 +90,26 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return parent::createDirectory($path, $mode, $recursive);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function removeDirectory($dir, $options = [])
+    {
+        try {
+            parent::removeDirectory($dir, $options);
+        } catch (ErrorException $e) {
+            // Try Symfony's thing as a fallback
+            $fs = new Filesystem();
+
+            try {
+                $fs->remove($dir);
+            } catch (IOException $e2) {
+                // throw the original exception instead
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -223,6 +253,21 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getMimeType($file, $magicFile = null, $checkExtension = true)
+    {
+        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+
+        // Be forgiving of SVG files, etc., that don't have an XML declaration
+        if ($checkExtension && $mimeType === 'text/plain') {
+            return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
+        }
+
+        return $mimeType;
     }
 
     /**
@@ -413,7 +458,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 throw new Exception('Unable to release test lock.');
             }
             self::$_useFileLocks = true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
         }
 

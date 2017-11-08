@@ -68,7 +68,7 @@ class m160912_230520_require_entry_type_id extends Migration
         // Make typeId required
         MigrationHelper::dropForeignKeyIfExists('{{%entries}}', ['typeId'], $this);
         $this->alterColumn('{{%entries}}', 'typeId', $this->integer()->notNull());
-        $this->addForeignKey(null, '{{%entries}}', 'typeId', '{{%entrytypes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey(null, '{{%entries}}', ['typeId'], '{{%entrytypes}}', ['id'], 'CASCADE', null);
     }
 
     /**

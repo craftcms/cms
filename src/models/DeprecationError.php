@@ -54,26 +54,6 @@ class DeprecationError extends Model
     public $line;
 
     /**
-     * @var string|null Class
-     */
-    public $class;
-
-    /**
-     * @var string|null Method
-     */
-    public $method;
-
-    /**
-     * @var string|null Template
-     */
-    public $template;
-
-    /**
-     * @var int|null Template line
-     */
-    public $templateLine;
-
-    /**
      * @var string|null Message
      */
     public $message;
@@ -115,32 +95,8 @@ class DeprecationError extends Model
     public function rules()
     {
         return [
-            [['id', 'line', 'templateLine'], 'number', 'integerOnly' => true],
+            [['id', 'line'], 'number', 'integerOnly' => true],
             [['lastOccurrence'], DateTimeValidator::class],
         ];
-    }
-
-    /**
-     * Returns a simple indication of the origin of the deprecation error.
-     *
-     * @return string
-     */
-    public function getOrigin(): string
-    {
-        if ($this->template) {
-            $file = $this->template;
-
-            if (strpos($file, 'string:') === 0) {
-                $file = substr($file, 7);
-                $line = null;
-            } else {
-                $line = $this->templateLine;
-            }
-        } else {
-            $file = $this->file;
-            $line = $this->line;
-        }
-
-        return $file.($line ? " ({$line})" : '');
     }
 }
