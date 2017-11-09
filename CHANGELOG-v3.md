@@ -1,16 +1,61 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.33 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
+
+## 3.0.0-beta.32 - 2017-11-08
+
+### Fixed
+- Fixed a segmentation fault that occurred on fresh installs.
+
+## 3.0.0-beta.31 - 2017-11-08
 
 ### Added
 - Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
+- Added `craft\services\Plugins::getPluginHandleByClass()`.
+
+### Changed
+- Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
+- `craft\helpers\Component::createComponent()` will now throw a `MissingComponentException` if the component belongs to a plugin that’s not installed.
+- `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
+- `craft\db\Query::one()` and `scalar()` now explicitly add `LIMIT 1` to the SQL statement.
+- It’s now possible to create element indexes with batch actions on non-index pages. ([#1479](https://github.com/craftcms/cms/issues/1479))
+- Updated Yii to 2.0.13.
+- Updated D3 to 4.11.0.
+- Updated Fabric to 1.7.19.
+- Updated Inputmask to 3.3.10.
+- Updated jQuery to 3.2.1.
+- Updated Timepicker to 1.11.12.
+- Updated yii2-pjax to 2.0.7.
+
+### Removed
+- Removed the “RSS caches” option from the Clear Caches utility. (RSS feeds are cached using Craft’s data caching now.)
+- Removed the `cacheMethod` config setting. To use a different cache method, override the `cache` application component from `config/app.php`. ([#2053](https://github.com/craftcms/cms/issues/2053))
+- Removed `craft\config\DbCacheConfig`.
+- Removed `craft\config\FileCacheConfig`.
+- Removed `craft\config\MemCacheConfig`.
+- Removed `craft\services\Cache::getDbCache()`.
+- Removed `craft\services\Cache::getFileCache()`.
+- Removed `craft\services\Cache::getMemCache()`.
+- Removed `craft\services\Plugins::getPluginByClass()`.
+- Removed `craft\web\View::getTranslations()`.
+- Removed the `getTranslations()` template function.
 
 ### Fixed
-- Fixed an issue where `photoSubpath` user setting was missing a default value.
+- Fixed an issue where `photoSubpath` user setting was missing a default value. ([#2095](https://github.com/craftcms/cms/issues/2095))
 - Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
 - Fixed a PHP error that occurred when loading the French app translation messages.
+- Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
+- Fixed a bug where the `install` console command wasn’t validating the password length.
+- Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
+- Fixed a bug where image editor strings were not getting translated.
+- Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
+- Fixed a bug where the image editor was re-saving images even if the only thing that changed was the focal point. ([#2089](https://github.com/craftcms/cms/pull/2089))
+- Fixed a PHP error that occurred when duplicating an entry in a section that has URLs.
 
 ## 3.0.0-beta.30 - 2017-10-31
 

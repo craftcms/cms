@@ -1,7 +1,26 @@
 Craft CMS Changelog
 ===================
 
-## 2.6.2995 (WIP)
+## 2.6.2997 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
+
+## 2.6.2996 - 2017-11-08
+
+### Added
+- Added `UserGroupsService::getAssignableGroups()`.
+- Added `UserPermissionsService::getAssignablePermissions()`.
+
+### Changed
+- The “Assign user groups and permissions” permission has now been split into “Assign user permissions” and “Assign user groups”, and the latter now has nested permissions for each of the user groups. ([#2087](https://github.com/craftcms/cms/issues/2087))
+- Users with the “Assign user permissions” permission are no longer allowed to grant new permissions to user accounts that they themselves don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
+- If a user is not yet activated, but they have a password set on the account, then admins will no longer see the “Copy Activation URL” user administration option.
+
+### Fixed
+- Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))
+- Fixed a bug where the autocomplete menu in Tags fields would sometimes not go away.
+- Fixed a bug where Craft would mistake `users/sendPasswordResetEmail` requests for `users/login` requests, if the Forgot Password form was submitted from the same path as the `loginPath` config setting.
 
 ## 2.6.2994 - 2017-10-31
 

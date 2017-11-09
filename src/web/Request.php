@@ -928,15 +928,25 @@ class Request extends \yii\web\Request
                 $updatePath = null;
             }
 
-            if (
-                ($specialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true)) ||
-                ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
-                ($actionParam = $this->getParam('action')) !== null
-            ) {
+            $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
+            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
+            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true);
+
+            if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
 
-                /** @noinspection PhpUndefinedVariableInspection */
-                if ($specialPath) {
+                // Important we check in this specific order:
+                // 1) /actions/some/action
+                // 2) any/uri?action=some/action
+                // 3) special/uri
+
+                if ($hasTriggerMatch) {
+                    $this->_actionSegments = array_slice($this->_segments, 1);
+                    $this->_isSingleActionRequest = true;
+                } else if ($hasActionParam) {
+                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
+                    $this->_isSingleActionRequest = empty($this->_path);
+                } else {
                     switch ($this->_path) {
                         case $loginPath:
                             $this->_actionSegments = ['users', 'login'];
@@ -952,12 +962,6 @@ class Request extends \yii\web\Request
                             break;
                     }
                     $this->_isSingleActionRequest = true;
-                } else if ($triggerMatch) {
-                    $this->_actionSegments = array_slice($this->_segments, 1);
-                    $this->_isSingleActionRequest = true;
-                } else {
-                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-                    $this->_isSingleActionRequest = empty($this->_path);
                 }
             }
         }

@@ -579,7 +579,7 @@ class AssetsController extends Controller
             $focal = $asset->getFocalPoint();
         }
 
-        $html = Craft::$app->getView()->renderTemplate('_special/image_editor');
+        $html = $this->getView()->renderTemplate('_special/image_editor');
 
         return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }
@@ -668,6 +668,7 @@ class AssetsController extends Controller
             $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
             $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
             $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
+            $imageChanged = $imageCropped || $imageRotated || $imageFlipped;
 
             $imageCopy = $asset->getCopyOfFile();
 
@@ -727,13 +728,19 @@ class AssetsController extends Controller
                 $image->crop($x, $x + $width, $y, $y + $height);
             }
 
-            if ($imageCropped || $imageRotated || $imageFlipped) {
+            if ($imageChanged) {
                 $image->saveAs($imageCopy);
             }
 
             if ($replace) {
                 $asset->focalPoint = $focal;
-                $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+
+                // Only replace file if it changed, otherwise just save changed focal points
+                if ($imageChanged) {
+                    $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+                } else if($focal) {
+                    Craft::$app->getElements()->saveElement($asset);
+                }
             } else {
                 $newAsset = new Asset();
                 $newAsset->avoidFilenameConflicts = true;

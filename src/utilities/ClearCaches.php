@@ -106,11 +106,6 @@ class ClearCaches extends Utility
                 }
             ],
             [
-                'key' => 'rss',
-                'label' => Craft::t('app', 'RSS caches'),
-                'action' => $pathService->getCachePath(),
-            ],
-            [
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
                 'action' => $pathService->getCompiledTemplatesPath(),

@@ -118,12 +118,6 @@ class UpdaterController extends Controller
         // Load the updater JS
         $view = $this->getView();
         $view->registerAssetBundle(UpdaterAsset::class);
-        $view->registerTranslations('app', [
-            'A fatal error has occurred:',
-            'Status:',
-            'Response:',
-            'Send for help',
-        ]);
 
         $state = $this->_initialState();
         $state['data'] = $this->_getHashedData();

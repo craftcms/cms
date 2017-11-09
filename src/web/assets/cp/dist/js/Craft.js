@@ -1,4 +1,4 @@
-/*!   - 2017-10-30 */
+/*!   - 2017-11-06 */
 (function($){
 
 /** global: Craft */
@@ -3226,7 +3226,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Batch actions setup
             // -------------------------------------------------------------
 
-            if (this.settings.context === 'index' && response.actions && response.actions.length) {
+            if (response.actions && response.actions.length) {
                 this.actions = response.actions;
                 this.actionsHeadHtml = response.actionsHeadHtml;
                 this.actionsFootHtml = response.actionsFootHtml;
@@ -3292,7 +3292,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
-                checkboxMode: (this.settings.context === 'index' && this.actions),
+                checkboxMode: !!this.actions,
                 onSelectionChange: $.proxy(this, '_handleSelectionChange')
             });
 
@@ -15510,6 +15510,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 };
 
                 Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus) {
+                    // Just in case
+                    if (this.searchMenu) {
+                        this.killSearchMenu();
+                    }
+
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
