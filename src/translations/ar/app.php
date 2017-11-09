@@ -1282,5 +1282,9 @@ return [
     'OK' => 'OK',
     'Could not load the image editor.' => 'Could not load the image editor.',
     'Assign users to “{group}”' => 'Assign users to “{group}”',
-    'Update asset indexes' => 'Update asset indexes'
+    'Update asset indexes' => 'Update asset indexes',
+    'Resaving all localizable elements' => 'Resaving all localizable elements',
+    'Updating children' => 'Updating children',
+    'Working in Matrix field “{field}”' => 'Working in Matrix field “{field}”',
+    'Resaving all elements' => 'Resaving all elements'
 ];
