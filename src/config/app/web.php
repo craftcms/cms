@@ -1,18 +1,23 @@
 <?php
 
 return [
+    'class' => \craft\web\Application::class,
     'components' => [
         'request' => function() {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            return Craft::createObject([
+            /** @var craft\web\Request $request */
+            $request = Craft::createObject([
                 'class' => craft\web\Request::class,
                 'enableCookieValidation' => true,
-                'cookieValidationKey' => Craft::$app->getSecurity()->getValidationKey(),
+                'cookieValidationKey' => $generalConfig->securityKey,
                 'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
                 'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
                 'csrfParam' => $generalConfig->csrfTokenName,
             ]);
+
+            $request->csrfCookie = Craft::cookieConfig([], $request);
+            return $request;
         },
         'response' => [
             'class' => craft\web\Response::class,

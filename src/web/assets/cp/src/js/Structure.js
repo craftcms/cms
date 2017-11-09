@@ -33,7 +33,7 @@ Craft.Structure = Garnish.Base.extend(
                 $.extend(this.state, Craft.getLocalStorage(this.settings.storageKey, {}));
             }
 
-            if (this.state.collapsedElementIds === undefined) {
+            if (typeof this.state.collapsedElementIds === 'undefined') {
                 this.state.collapsedElementIds = [];
             }
 
@@ -44,7 +44,7 @@ Craft.Structure = Garnish.Base.extend(
                     $li = $row.parent(),
                     $toggle = $('<div class="toggle" title="' + Craft.t('app', 'Show/hide children') + '"/>').prependTo($row);
 
-                if ($.inArray($row.children('.element').data('id'), this.state.collapsedElementIds) != -1) {
+                if ($.inArray($row.children('.element').data('id'), this.state.collapsedElementIds) !== -1) {
                     $li.addClass('collapsed');
                 }
 
@@ -69,14 +69,14 @@ Craft.Structure = Garnish.Base.extend(
                 if ($li.hasClass('collapsed')) {
                     $li.removeClass('collapsed');
 
-                    if (viewStateKey != -1) {
+                    if (viewStateKey !== -1) {
                         this.state.collapsedElementIds.splice(viewStateKey, 1);
                     }
                 }
                 else {
                     $li.addClass('collapsed');
 
-                    if (viewStateKey == -1) {
+                    if (viewStateKey === -1) {
                         this.state.collapsedElementIds.push(elementId);
                     }
                 }
@@ -97,8 +97,9 @@ Craft.Structure = Garnish.Base.extend(
 
             if (!$btn.data('menubtn')) {
                 var elementId = $btn.parent().children('.element').data('id'),
-                    newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId=' + elementId),
-                    $menu = $('<div class="menu"><ul><li><a href="' + newChildUrl + '">' + Craft.t('app', 'New child') + '</a></li></ul></div>').insertAfter($btn);
+                    newChildUrl = Craft.getUrl(this.settings.newChildUrl, 'parentId=' + elementId);
+
+                $('<div class="menu"><ul><li><a href="' + newChildUrl + '">' + Craft.t('app', 'New child') + '</a></li></ul></div>').insertAfter($btn);
 
                 var menuBtn = new Garnish.MenuBtn($btn);
                 menuBtn.showMenu();
@@ -145,7 +146,7 @@ Craft.Structure = Garnish.Base.extend(
             $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', $.proxy(function() {
                 $li.remove();
 
-                if ($parentUl !== undefined) {
+                if (typeof $parentUl !== 'undefined') {
                     this._removeUl($parentUl);
                 }
             }, this));

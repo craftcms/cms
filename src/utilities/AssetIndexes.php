@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\base\Volume;
+use craft\helpers\Html;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 
 /**
@@ -58,7 +59,7 @@ class AssetIndexes extends Utility
 
         foreach ($volumes as $volume) {
             $sourceOptions[] = [
-                'label' => $volume->name,
+                'label' => Html::encode($volume->name),
                 'value' => $volume->id
             ];
         }

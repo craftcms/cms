@@ -85,10 +85,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.$buttons = $('<div class="buttons right"/>').appendTo(this.$footer);
             this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
-            this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
+            this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Save') + '</div>').appendTo(this.$buttons);
 
             if (this.settings.allowSavingAsNew) {
-                this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
+                this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as a new asset') + '</div>').appendTo(this.$buttons);
                 this.addListener(this.$saveBtn, 'activate', this.saveImage.bind(this));
             }
 
@@ -119,7 +119,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         loadEditor: function(data) {
 
             if (!data.html) {
-                alert(Craft.t('Could not load the Asset image editor.', 'app'));
+                alert(Craft.t('Could not load the image editor.', 'app'));
             }
 
             this.$body.html(data.html);
@@ -142,7 +142,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.$croppingCanvas = $('#cropping-canvas', this.$editorContainer);
             this.$croppingCanvas.width(this.editorWidth);
             this.$croppingCanvas.height(this.editorHeight);
-            
+
             this.canvas.enableRetinaScaling = true;
             this.renderImage = function() {
                 Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
@@ -296,8 +296,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.$spinnerCanvas.css({
                     left: ((this.$spinnerCanvas.parent().width()/2)-(this.$spinnerCanvas.width()/2))+'px',
                     top: ((this.$spinnerCanvas.parent().height()/2)-(this.$spinnerCanvas.height()/2))+'px'
-                })
-
+                });
             }
 
             // If image is already loaded, make sure it looks pretty.
@@ -422,7 +421,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
 
             this.focalPoint = new fabric.Group([
-                new fabric.Circle({radius: 8, fill: 'rgba(0,0,0,0.2)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
+                new fabric.Circle({radius: 8, fill: 'rgba(0,0,0,0.5)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
                 new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'})
             ], {
                 originX: 'center',
@@ -832,7 +831,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this.animationInProgress = false;
                         if (this.focalPoint) {
                             this._adjustFocalPointByAngle(degrees);
-                            this.straighten(this.straighteningInput)
+                            this.straighten(this.straighteningInput);
                             this.canvas.add(this.focalPoint);
                         } else {
                             this._resetFocalPointPosition();
@@ -2249,10 +2248,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param [offsetY]
          */
         _getRectangleVertices: function(rectangle, offsetX, offsetY) {
-            if (typeof offsetX === typeof undefined) {
+            if (typeof offsetX === 'undefined') {
                 offsetX = 0;
             }
-            if (typeof offsetY === typeof undefined) {
+            if (typeof offsetY === 'undefined') {
                 offsetY = 0;
             }
 

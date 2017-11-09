@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\User;
 use craft\errors\UserGroupNotFoundException;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
@@ -76,6 +77,36 @@ class UserGroups extends Component
     }
 
     /**
+     * Returns the user groups that the current user is allowed to assign to another user.
+     *
+     * @param User|null $user The recipient of the user groups. If set, their current groups will be included as well.
+     *
+     * @return UserGroup[]
+     */
+    public function getAssignableGroups(User $user = null): array
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser && !$user) {
+            return [];
+        }
+
+        // If either user is an admin, all groups are fair game
+        if (($currentUser !== null && $currentUser->admin) || ($user !== null && $user->admin)) {
+            return $this->getAllGroups();
+        }
+
+        $assignableGroups = [];
+
+        foreach ($this->getAllGroups() as $group) {
+            if (($currentUser !== null && $currentUser->can('assignUserGroup:'.$group->id)) || ($user !== null && $user->isInGroup($group))) {
+                $assignableGroups[] = $group;
+            }
+        }
+
+        return $assignableGroups;
+    }
+
+    /**
      * Gets a user group by its ID.
      *
      * @param int $groupId
@@ -88,31 +119,23 @@ class UserGroups extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if ($result) {
-            return new UserGroup($result);
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
      * Gets a user group by its handle.
      *
-     * @param int $groupHandle
+     * @param string $groupHandle
      *
      * @return UserGroup
      */
-    public function getGroupByHandle(int $groupHandle): UserGroup
+    public function getGroupByHandle(string $groupHandle): UserGroup
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['handle' => $groupHandle])
             ->one();
 
-        if ($result) {
-            return new UserGroup($result);
-        }
-
-        return null;
+        return $result ? new UserGroup($result) : null;
     }
 
     /**
@@ -152,19 +175,20 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('User group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveUserGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('User group not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         $groupRecord = $this->_getGroupRecordById($group->id);
 
@@ -179,10 +203,12 @@ class UserGroups extends Component
         }
 
         // Fire an 'afterSaveUserGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         return true;
     }
@@ -203,18 +229,22 @@ class UserGroups extends Component
         }
 
         // Fire a 'beforeDeleteUserGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%usergroups}}', ['id' => $groupId])
             ->execute();
 
         // Fire an 'afterDeleteUserGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group
+            ]));
+        }
 
         return true;
     }

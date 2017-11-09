@@ -107,7 +107,7 @@ class Images extends Component
     public function getSupportedImageFormats(): array
     {
         if ($this->getIsImagick()) {
-            return array_map([StringHelper::class, 'toLowerCase'], Imagick::queryFormats());
+            return array_map('strtolower', Imagick::queryFormats());
         }
 
         $output = [];
@@ -115,8 +115,12 @@ class Images extends Component
             IMG_JPG => ['jpg', 'jpeg'],
             IMG_GIF => ['gif'],
             IMG_PNG => ['png'],
-            IMG_WEBP => ['webp']
         ];
+
+        // IMG_WEBP was added in PHP 7.0.10
+        if (defined('IMG_WEBP')) {
+            $map[IMG_WEBP] = ['webp'];
+        }
 
         foreach ($map as $key => $extensions) {
             if (imagetypes() & $key) {
@@ -256,7 +260,7 @@ class Images extends Component
     }
 
     /**
-     * Cleans an image by it's path, clearing embedded potentially malicious embedded code.
+     * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
      *
@@ -292,7 +296,7 @@ class Images extends Component
             }
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), __METHOD__);
         }
 
@@ -355,9 +359,9 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return array
+     * @return array|null
      */
-    public function getExifData(string $filePath): array
+    public function getExifData(string $filePath)
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;

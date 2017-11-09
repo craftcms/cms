@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.19',
-    'schemaVersion' => '3.0.43',
+    'version' => '3.0.0-beta.32',
+    'schemaVersion' => '3.0.62',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -22,6 +22,9 @@ return [
         ],
         'categories' => [
             'class' => craft\services\Categories::class,
+        ],
+        'composer' => [
+            'class' => \craft\services\Composer::class,
         ],
         'content' => [
             'class' => craft\services\Content::class,
@@ -68,6 +71,9 @@ return [
         'plugins' => [
             'class' => craft\services\Plugins::class,
         ],
+        'queue' => [
+            'class' => craft\queue\Queue::class,
+        ],
         'relations' => [
             'class' => craft\services\Relations::class,
         ],
@@ -91,9 +97,6 @@ return [
         ],
         'tags' => [
             'class' => craft\services\Tags::class,
-        ],
-        'tasks' => [
-            'class' => craft\services\Tasks::class,
         ],
         'templateCaches' => [
             'class' => craft\services\TemplateCaches::class,
@@ -128,10 +131,6 @@ return [
             'migrationNamespace' => 'craft\migrations',
             'migrationPath' => '@app/migrations',
         ],
-        'resources' => [
-            'class' => craft\services\Resources::class,
-            'dateParam' => 'd',
-        ],
         'sites' => [
             'class' => craft\services\Sites::class,
             'currentSite' => null,
@@ -143,7 +142,8 @@ return [
                     'requireEmailVerification' => true,
                     'allowPublicRegistration' => false,
                     'defaultGroup' => null,
-                    'photoVolumeId' => null
+                    'photoVolumeId' => null,
+                    'photoSubpath' => ''
                 ],
             ]
         ],
@@ -191,61 +191,15 @@ return [
         },
 
         'cache' => function() {
-            $configService = Craft::$app->getConfig();
-            $generalConfig = $configService->getGeneral();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            switch ($generalConfig->cacheMethod) {
-                case 'apc':
-                    $config = [
-                        'class' => yii\caching\ApcCache::class,
-                        'useApcu' => $configService->getApc()->useApcu,
-                    ];
-                    break;
-                case 'db':
-                    $dbCacheConfig = $configService->getDbCache();
-                    $config = [
-                        'class' => yii\caching\DbCache::class,
-                        'gcProbability' => $dbCacheConfig->gcProbability,
-                        'cacheTable' => '{{%'.$dbCacheConfig->cacheTableName.'}}',
-                    ];
-                    break;
-                case 'file':
-                    $fileCacheConfig = $configService->getFileCache();
-                    $config = [
-                        'class' => \yii\caching\FileCache::class,
-                        'cachePath' => $fileCacheConfig->cachePath,
-                        'gcProbability' => $fileCacheConfig->gcProbability,
-                        'fileMode' => $generalConfig->defaultFileMode,
-                        'dirMode' => $generalConfig->defaultDirMode,
-                    ];
-                    break;
-                case 'memcache':
-                    $config = [
-                        'class' => yii\caching\MemCache::class,
-                        'servers' => $configService->getMemCache()->servers,
-                        'useMemcached' => true,
-                    ];
-                    break;
-                case 'wincache':
-                    $config = [
-                        'class' => yii\caching\WinCache::class,
-                    ];
-                    break;
-                case 'xcache':
-                    $config = [
-                        'class' => yii\caching\XCache::class,
-                    ];
-                    break;
-                case 'zenddata':
-                    $config = [
-                        'class' => yii\caching\ZendDataCache::class,
-                    ];
-                    break;
-                default:
-                    throw new yii\base\InvalidConfigException('Unsupported cacheMethod config setting value: '.$generalConfig->cacheMethod);
-            }
-
-            $config['defaultDuration'] = $generalConfig->cacheDuration;
+            $config = [
+                'class' => \yii\caching\FileCache::class,
+                'cachePath' => Craft::$app->getPath()->getCachePath(),
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+                'defaultDuration' => $generalConfig->cacheDuration,
+            ];
 
             return Craft::createObject($config);
         },
@@ -259,9 +213,9 @@ return [
                 $schemaClass = craft\db\pgsql\Schema::class;
             }
 
-            /** @var craft\db\Connection $db */
-            $db = Craft::createObject([
+            return Craft::createObject([
                 'class' => craft\db\Connection::class,
+                'driverName' => $dbConfig->driver,
                 'dsn' => $dbConfig->dsn,
                 'username' => $dbConfig->user,
                 'password' => $dbConfig->password,
@@ -275,11 +229,6 @@ return [
                 'commandClass' => \craft\db\Command::class,
                 'attributes' => $dbConfig->attributes,
             ]);
-
-            // Set the Yii driver name from the config setting.
-            $db->setDriverName($dbConfig->driver);
-
-            return $db;
         },
 
         'mailer' => function() {
@@ -329,7 +278,7 @@ return [
                 $target['logFile'] = '@storage/logs/web.log';
 
                 // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
+                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
                     $target['levels'] = yii\log\Logger::LEVEL_ERROR | yii\log\Logger::LEVEL_WARNING;
                 }
             }

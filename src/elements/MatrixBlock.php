@@ -67,6 +67,14 @@ class MatrixBlock extends Element
 
     /**
      * @inheritdoc
+     */
+    public static function hasStatuses(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
      *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
@@ -349,6 +357,17 @@ class MatrixBlock extends Element
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = $this->getType()->fieldLayoutId;
+
+        return parent::beforeSave($isNew);
+    }
 
     /**
      * @inheritdoc

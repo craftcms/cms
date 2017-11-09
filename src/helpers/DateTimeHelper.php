@@ -13,7 +13,6 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
-use yii\helpers\FormatConverter;
 
 /**
  * Class DateTimeHelper
@@ -480,7 +479,7 @@ class DateTimeHelper
     public static function isYesterday($date): bool
     {
         $date = self::toDateTime($date);
-        $yesterday = new DateTime('@'.strtotime('yesterday'));
+        $yesterday = new DateTime('yesterday', new DateTimeZone(Craft::$app->getTimeZone()));
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
     }

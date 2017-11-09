@@ -1,6 +1,6 @@
 {% if logs %}
     <div class="buttons first">
-        <div id="clearall" class="btn submit">{{ "Clear All"|t('app') }}</div>
+        <div id="clearall" class="btn submit">{{ "Clear all"|t('app') }}</div>
     </div>
 {% endif %}
 
@@ -14,8 +14,8 @@
                 <tr>
                     <th>{{ "Message"|t('app') }}</th>
                     <th>{{ "Origin"|t('app') }}</th>
-                    <th class="centeralign">{{ "Last Occurrence"|t('app') }}</th>
-                    <th class="thin nowrap centeralign">{{ "Stack Trace"|t('app') }}</th>
+                    <th class="nowrap">{{ "Last Occurrence"|t('app') }}</th>
+                    <th class="nowrap">{{ "Stack Trace"|t('app') }}</th>
                     <th class="thin"></th>
                 </tr>
             </thead>
@@ -23,10 +23,14 @@
             {% for log in logs %}
                 <tr data-id="{{ log.id }}">
                     <td>{{ log.message|raw }}</td>
-                    <td>{{ log.getOrigin()|replace('/', '/<wbr>')|raw }}</td>
-                    <td class="centeralign">{{ log.lastOccurrence|date('short') }}</td>
-                    {#<td class="centeralign">{{ log.lastOccurrence.localeDate() }}</td>#}
-                    <td class="thin nowrap centeralign viewtraces"><a role="button">{{ "View"|t('app') }}</a></td>
+                    <td class="code">
+                        {{- log.file|e|replace('/', '/<wbr>')|raw }}
+                        {%- if log.line -%}
+                            :{{ log.line }}
+                        {%- endif -%}
+                    </td>
+                    <td>{{ log.lastOccurrence|timestamp }}</td>
+                    <td class="nowrap viewtraces"><a role="button">{{ "Stack Trace"|t('app') }}</a></td>
                     <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
                 </tr>
             {% endfor %}

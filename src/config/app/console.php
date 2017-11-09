@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'class' => \craft\console\Application::class,
+    'bootstrap' => [
+        'queue',
+    ],
     'components' => [
         'request' => craft\console\Request::class,
         'user' => craft\console\User::class,

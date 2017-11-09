@@ -24,31 +24,10 @@ class App
     /**
      * @var bool
      */
-    private static $_isComposerInstall;
-
-    /**
-     * @var bool
-     */
     private static $_iconv;
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns whether Craft was installed via Composer.
-     *
-     * @return bool
-     */
-    public static function isComposerInstall(): bool
-    {
-        if (self::$_isComposerInstall !== null) {
-            return self::$_isComposerInstall;
-        }
-
-        // If this was installed via a craftcms.com zip, there will be an index.php file
-        // at the root of the vendor directory.
-        return self::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
-    }
 
     /**
      * Returns an array of all known Craft editions’ IDs.

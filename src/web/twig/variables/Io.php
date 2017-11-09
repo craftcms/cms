@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\App as AppHelper;
 use craft\helpers\Assets;
 use craft\helpers\ConfigHelper;
 

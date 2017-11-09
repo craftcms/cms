@@ -74,7 +74,7 @@
             },
 
             allDone: function(response, textStatus) {
-                if (textStatus == 'success' && response.success) {
+                if (textStatus === 'success' && response.success) {
                     this.$currentScreen.find('h1:first').text(Craft.t('app', 'All done!'));
 
                     var $buttons = $('<div class="buttons"/>'),
@@ -158,7 +158,7 @@
                     this.loading = false;
                     $submitBtn.removeClass('sel loading');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.validates) {
                             callback();
                         }
