@@ -5,7 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Created an `oauthtokens` database table.
-- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency.
+- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency. ([#1481](https://github.com/craftcms/cms/issues/1481))
 
 ### Fixed
 - Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
