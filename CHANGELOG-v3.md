@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
+
 ## 3.0.0-beta.33 - 2017-11-08
 
 ### Fixed
