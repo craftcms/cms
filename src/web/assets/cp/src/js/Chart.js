@@ -21,17 +21,19 @@ Craft.charts.DataTable = Garnish.Base.extend(
             rows = data.rows;
 
             rows.forEach($.proxy(function(d) {
-                $.each(d, function(cellIndex, cell) {
+                $.each(d, function(cellIndex) {
                     var column = columns[cellIndex];
+
+                    var parseTime;
 
                     switch (column.type) {
                         case 'date':
-                            var parseTime = d3.timeParse("%Y-%m-%d");
+                            parseTime = d3.timeParse("%Y-%m-%d");
                             d[cellIndex] = parseTime(d[cellIndex]);
                             break;
 
                         case 'datetime':
-                            var parseTime = d3.timeParse("%Y-%m-%d %H:00:00");
+                            parseTime = d3.timeParse("%Y-%m-%d %H:00:00");
                             d[cellIndex] = parseTime(d[cellIndex]);
                             break;
 
@@ -89,7 +91,7 @@ Craft.charts.Tip = Garnish.Base.extend(
 
         hide: function() {
             this.$tip.css("display", 'none');
-        },
+        }
     });
 
 // ---------------------------------------------------------------------
@@ -133,7 +135,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         },
 
         setSettings: function(settings, defaults) {
-            var baseSettings = (this.settings === undefined ? {} : this.settings);
+            var baseSettings = (typeof this.settings === 'undefined' ? {} : this.settings);
             this.settings = $.extend(true, {}, baseSettings, defaults, settings);
         },
 
@@ -196,7 +198,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             },
             margin: {top: 0, right: 0, bottom: 0, left: 0},
             chartClass: null,
-            colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
+            colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"]
         }
     });
 
@@ -235,7 +237,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var svg = {
                 width: this.width + (margin.left + margin.right),
                 height: this.height + (margin.top + margin.bottom),
-                translateX: (this.orientation != 'rtl' ? (margin.left) : (margin.right)),
+                translateX: (this.orientation !== 'rtl' ? (margin.left) : (margin.right)),
                 translateY: margin.top
             };
 
@@ -274,9 +276,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             var y = this.getY();
             var yTicks = 2;
+            var yAxis;
 
-            if (this.orientation != 'rtl') {
-                var yAxis = d3.axisLeft(y)
+            if (this.orientation !== 'rtl') {
+                yAxis = d3.axisLeft(y)
                     .tickFormat(this.getYFormatter())
                     .tickValues(this.getYTickValues())
                     .ticks(yTicks);
@@ -285,7 +288,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .attr("class", "y ticks-axis")
                     .call(yAxis);
             } else {
-                var yAxis = d3.axisRight(y)
+                yAxis = d3.axisRight(y)
                     .tickFormat(this.getYFormatter())
                     .tickValues(this.getYTickValues())
                     .ticks(yTicks);
@@ -315,15 +318,16 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             if (this.settings.yAxis.showAxis) {
                 var y = this.getY();
                 var chartPadding = 0;
+                var yAxis;
 
-                if (this.orientation == 'rtl') {
-                    var yAxis = d3.axisLeft(y).ticks(0);
+                if (this.orientation === 'rtl') {
+                    yAxis = d3.axisLeft(y).ticks(0);
                     this.drawingArea.append("g")
                         .attr("class", "y axis")
                         .attr("transform", "translate(" + (this.width - chartPadding) + ", 0)")
                         .call(yAxis);
                 } else {
-                    var yAxis = d3.axisRight(y).ticks(0);
+                    yAxis = d3.axisRight(y).ticks(0);
                     this.drawingArea.append("g")
                         .attr("class", "y axis")
                         .attr("transform", "translate(" + chartPadding + ", 0)")
@@ -498,7 +502,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                         var top = (y(d[1]) + offset);
                         var left;
 
-                        if (this.orientation != 'rtl') {
+                        if (this.orientation !== 'rtl') {
                             left = (x(d[0]) + margin.left + offset);
 
                             var calcLeft = (this.$chart.offset().left + left + this.tip.$tip.width());
@@ -517,7 +521,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
                         var position = {
                             top: top,
-                            left: left,
+                            left: left
                         };
 
                         this.tip.setPosition(position);
@@ -578,7 +582,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             var xDomain = [xDomainMin, xDomainMax];
 
-            if (this.orientation == 'rtl') {
+            if (this.orientation === 'rtl') {
                 xDomain = [xDomainMax, xDomainMin];
             }
 
@@ -610,7 +614,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         getXFormatter: function() {
             var formatter;
 
-            if (this.settings.xAxis.formatter != $.noop) {
+            if (this.settings.xAxis.formatter !== $.noop) {
                 formatter = this.settings.xAxis.formatter(this);
             } else {
                 formatter = Craft.charts.utils.getTimeFormatter(this.timeFormatLocale, this.settings);
@@ -622,7 +626,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         getYFormatter: function() {
             var formatter;
 
-            if (this.settings.yAxis.formatter != $.noop) {
+            if (this.settings.yAxis.formatter !== $.noop) {
                 formatter = this.settings.yAxis.formatter(this);
             } else {
                 formatter = Craft.charts.utils.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type, this.settings);
@@ -645,7 +649,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             } else {
                 return [0, maxValue];
             }
-        },
+        }
     },
     {
         defaults: {
@@ -679,7 +683,7 @@ Craft.charts.utils = {
         var duration = {
             hours: (Math.floor(secondsNum / 3600)),
             minutes: (Math.floor((secondsNum - (duration.hours * 3600)) / 60)),
-            seconds: (secondsNum - (duration.hours * 3600) - (duration.minutes * 60)),
+            seconds: (secondsNum - (duration.hours * 3600) - (duration.minutes * 60))
         };
 
         if (duration.hours < 10) {

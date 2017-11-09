@@ -15,7 +15,6 @@ $craftPath = __DIR__.'/_craft';
 
 $configPath = realpath($craftPath.'/config');
 $contentMigrationsPath = realpath($craftPath.'/migrations');
-$pluginsPath = realpath($craftPath.'/plugins');
 $storagePath = realpath($craftPath.'/storage');
 $templatesPath = realpath($craftPath.'/templates');
 $translationsPath = realpath($craftPath.'/translations');
@@ -36,13 +35,16 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 
 // Load the files
 $srcPath = dirname(__DIR__).'/src';
+$libPath = dirname(__DIR__).'/lib';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
 // Set aliases
+
+Craft::setAlias('@lib', $libPath);
+Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
-Craft::setAlias('@plugins', $pluginsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);

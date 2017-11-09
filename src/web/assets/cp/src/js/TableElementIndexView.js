@@ -29,8 +29,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
             // Create the Structure Table Sorter
             if (
-                this.elementIndex.settings.context == 'index' &&
-                this.elementIndex.getSelectedSortAttribute() == 'structure' &&
+                this.elementIndex.settings.context === 'index' &&
+                this.elementIndex.getSelectedSortAttribute() === 'structure' &&
                 Garnish.hasAttr(this.$table, 'data-structure-id')
             ) {
                 this.structureTableSort = new Craft.StructureTableSorter(this, this.getAllElements(), {
@@ -42,7 +42,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
             }
 
             // Handle expand/collapse toggles for Structures
-            if (this.elementIndex.getSelectedSortAttribute() == 'structure') {
+            if (this.elementIndex.getSelectedSortAttribute() === 'structure') {
                 this.addListener(this.$elementContainer, 'click', function(ev) {
                     var $target = $(ev.target);
 
@@ -64,7 +64,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     attr = $header.attr('data-attribute');
 
                 // Is this the selected sort attribute?
-                if (attr == selectedSortAttr) {
+                if (attr === selectedSortAttr) {
                     this.$selectedSortHeader = $header;
                     var selectedSortDir = this.elementIndex.getSelectedSortDirection();
 
@@ -229,7 +229,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     id = $row.data('id'),
                     index = $.inArray(id, this.elementIndex.instanceState.collapsedElementIds);
 
-                if (index != -1) {
+                if (index !== -1) {
                     this.elementIndex.instanceState.collapsedElementIds.splice(index, 1);
                     this.elementIndex.setInstanceState('collapsedElementIds', this.elementIndex.instanceState.collapsedElementIds);
 
@@ -246,12 +246,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                             return;
                         }
 
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             var $newElements = $(response.html);
 
                             // Are there more descendants we didn't get in this batch?
                             var totalVisible = (this._totalVisible + $newElements.length),
-                                morePending = (this.settings.batchSize && $newElements.length == this.settings.batchSize);
+                                morePending = (this.settings.batchSize && $newElements.length === this.settings.batchSize);
 
                             if (morePending) {
                                 // Remove all the elements after it
@@ -327,7 +327,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
             // Reverse the sort direction
             var selectedSortDir = this.elementIndex.getSelectedSortDirection(),
-                newSortDir = (selectedSortDir == 'asc' ? 'desc' : 'asc');
+                newSortDir = (selectedSortDir === 'asc' ? 'desc' : 'asc');
 
             this.elementIndex.setSortDirection(newSortDir);
             this._handleSortHeaderClick(ev, $header);

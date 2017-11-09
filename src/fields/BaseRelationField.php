@@ -18,7 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
-use craft\tasks\LocalizeRelations;
+use craft\queue\jobs\LocalizeRelations;
 use craft\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
@@ -298,6 +298,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        /** @var ElementQueryInterface $value */
+        return $value->ids();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
@@ -334,7 +343,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        /** @var Element $element */
+        /** @var Element|null $element */
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
         }
@@ -365,23 +374,23 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        /** @var ElementQuery $value */
-        if (count($value)) {
-            $html = '<div class="elementselect"><div class="elements">';
+        $value = $value->all();
 
-            foreach ($value as $relatedElement) {
-                $html .= Craft::$app->getView()->renderTemplate('_elements/element',
-                    [
-                        'element' => $relatedElement
-                    ]);
-            }
-
-            $html .= '</div></div>';
-
-            return $html;
+        if (empty($value)) {
+            return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
         }
 
-        return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
+        $html = '<div class="elementselect"><div class="elements">';
+
+        foreach ($value as $relatedElement) {
+            $html .= Craft::$app->getView()->renderTemplate('_elements/element', [
+                'element' => $relatedElement
+            ]);
+        }
+
+        $html .= '</div></div>';
+
+        return $html;
     }
 
     /**
@@ -460,7 +469,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $this->_makeExistingRelationsTranslatable = false;
 
-        if ($this->id && $this->localizeRelations) {
+        if (!$this->getIsNew() && $this->localizeRelations) {
             /** @var Field $existingField */
             $existingField = Craft::$app->getFields()->getFieldById($this->id);
 
@@ -478,10 +487,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function afterSave(bool $isNew)
     {
         if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::class,
+            Craft::$app->getQueue()->push(new LocalizeRelations([
                 'fieldId' => $this->id,
-            ]);
+            ]));
         }
 
         parent::afterSave($isNew);
@@ -491,15 +499,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @inheritdoc
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
-
-        /** @var ElementQuery $value */    {
+    {
+        /** @var ElementQuery $value */
         $value = $element->getFieldValue($this->handle);
 
         // $id will be set if we're saving new relations
         if ($value->id !== null) {
             $targetIds = $value->id ?: [];
         } else {
-            $targetIds = $value->ids();
+            $targetIds = $value
+                ->status(null)
+                ->enabledForSite(false)
+                ->ids();
         }
 
         /** @var int|int[]|false|null $targetIds */
@@ -553,14 +564,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $showTargetSite = !empty($this->targetSiteId);
 
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
-            [
                 [
-                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
-                    'name' => 'useTargetSite',
-                    'checked' => $showTargetSite,
-                    'toggle' => 'target-site-container'
-                ]
-            ]) .
+                    [
+                        'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
+                        'name' => 'useTargetSite',
+                        'checked' => $showTargetSite,
+                        'toggle' => 'target-site-container'
+                    ]
+                ]).
             '<div id="target-site-container"'.(!$showTargetSite ? ' class="hidden"' : '').'>';
 
         $siteOptions = [];
@@ -633,14 +644,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         if ($value instanceof ElementQueryInterface) {
-            $value
+            $value = $value
                 ->status(null)
-                ->enabledForSite(false);
+                ->enabledForSite(false)
+                ->all();
         } else if (!is_array($value)) {
-            /** @var Element $class */
-            $class = static::elementType();
-            $value = $class::find()
-                ->id(false);
+            $value = [];
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();

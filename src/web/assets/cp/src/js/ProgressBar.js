@@ -71,7 +71,7 @@ Craft.ProgressBar = Garnish.Base.extend(
         },
 
         setProgressPercentage: function(percentage, animate) {
-            if (percentage == 0) {
+            if (percentage === 0) {
                 this.$progressBar.addClass('pending');
             }
             else {

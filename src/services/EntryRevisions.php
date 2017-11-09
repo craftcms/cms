@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
 use craft\elements\Entry;
@@ -111,10 +112,11 @@ class EntryRevisions extends Component
      *
      * @param int      $entryId
      * @param int|null $siteId
+     * @param bool     $withContent Whether the field content should be included on the drafts
      *
      * @return EntryDraft[]
      */
-    public function getDraftsByEntryId(int $entryId, int $siteId = null): array
+    public function getDraftsByEntryId(int $entryId, int $siteId = null, bool $withContent = false): array
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -134,8 +136,9 @@ class EntryRevisions extends Component
         foreach ($results as $result) {
             $result['data'] = Json::decode($result['data']);
 
-            // Don't initialize the content
-            unset($result['data']['fields']);
+            if (!$withContent) {
+                unset($result['data']['fields']);
+            }
 
             $draft = new EntryDraft($result);
             $this->_configureRevisionWithEntryProperties($draft, $entry);
@@ -181,12 +184,6 @@ class EntryRevisions extends Component
      */
     public function saveDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
-        if ($runValidation && !$draft->validate()) {
-            Craft::info('Draft not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewDraft = !$draft->draftId;
 
         if (!$draft->name && $draft->id) {
@@ -201,10 +198,17 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforeSaveDraft' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, new DraftEvent([
-            'draft' => $draft,
-            'isNew' => $isNewDraft,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, new DraftEvent([
+                'draft' => $draft,
+                'isNew' => $isNewDraft,
+            ]));
+        }
+
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         $draftRecord = $this->_getDraftRecord($draft);
         $draftRecord->name = $draft->name;
@@ -218,10 +222,12 @@ class EntryRevisions extends Component
         }
 
         // Fire an 'afterSaveDraft' event
-        $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-            'draft' => $draft,
-            'isNew' => $isNewDraft,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+                'draft' => $draft,
+                'isNew' => $isNewDraft,
+            ]));
+        }
 
         return true;
     }
@@ -241,22 +247,26 @@ class EntryRevisions extends Component
             $draft->title = $draft->getSection()->name;
         }
 
-        if ($runValidation && !$draft->validate()) {
-            Craft::info('Draft not published due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         // Set the version notes
         if (!$draft->revisionNotes) {
-            $draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.',
-                ['name' => $draft->name]);
+            $draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.', ['name' => $draft->name]);
         }
 
         // Fire a 'beforePublishDraft' event
-        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
+
+        if ($draft->enabled && $draft->enabledForSite) {
+            $draft->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not published due to validation error.', __METHOD__);
+            return false;
+        }
 
         // Save the entry without re-running validation on it
         Craft::$app->getElements()->saveElement($draft, false);
@@ -265,9 +275,11 @@ class EntryRevisions extends Component
         $this->deleteDraft($draft);
 
         // Fire an 'afterPublishDraft' event
-        $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         return true;
     }
@@ -282,17 +294,21 @@ class EntryRevisions extends Component
     public function deleteDraft(EntryDraft $draft): bool
     {
         // Fire a 'beforeDeleteDraft' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         // Delete it
         $this->_getDraftRecord($draft)->delete();
 
         // Fire an 'afterDeleteDraft' event
-        $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         return true;
     }
@@ -324,16 +340,36 @@ class EntryRevisions extends Component
     }
 
     /**
+     * Returns whether an entry has any versions stored.
+     *
+     * @param int      $entryId        The entry ID to search for
+     * @param int|null $siteId         The site ID to search for
+     *
+     * @return bool
+     */
+    public function doesEntryHaveVersions(int $entryId, int $siteId = null): bool
+    {
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        }
+
+        return $this->_getRevisionsQuery()
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
+            ->exists();
+    }
+
+    /**
      * Returns versions by an entry ID.
      *
      * @param int      $entryId        The entry ID to search for.
-     * @param int      $siteId         The site ID to search for.
+     * @param int|null $siteId         The site ID to search for.
      * @param int|null $limit          The limit on the number of versions to retrieve.
      * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
+     * @param bool     $withContent    Whether the field content should be included on the versions
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false): array
+    public function getVersionsByEntryId(int $entryId, int $siteId = null, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
     {
         if (!$siteId) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -355,8 +391,9 @@ class EntryRevisions extends Component
         foreach ($results as $result) {
             $result['data'] = Json::decode($result['data']);
 
-            // Don't initialize the content
-            unset($result['data']['fields']);
+            if (!$withContent) {
+                unset($result['data']['fields']);
+            }
 
             $version = new EntryVersion($result);
             $this->_configureRevisionWithEntryProperties($version, $entry);
@@ -384,7 +421,7 @@ class EntryRevisions extends Component
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
         $versionRecord->sectionId = $entry->sectionId;
-        $versionRecord->creatorId = Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
+        $versionRecord->creatorId = $entry->revisionCreatorId ?? Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
         $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
         $versionRecord->data = $this->_getRevisionData($entry);
@@ -408,28 +445,34 @@ class EntryRevisions extends Component
             $version->title = $version->getSection()->name;
         }
 
-        if ($runValidation && !$version->validate()) {
-            Craft::info('Entry not reverted due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         // Set the version notes
-        $version->revisionNotes = Craft::t('app', 'Reverted version {num}.',
-            ['num' => $version->num]);
+        $version->revisionNotes = Craft::t('app', 'Reverted version {num}.', ['num' => $version->num]);
 
         // Fire a 'beforeRevertEntryToVersion' event
-        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
-            'version' => $version,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION)) {
+            $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+                'version' => $version,
+            ]));
+        }
+
+        if ($version->enabled && $version->enabledForSite) {
+            $version->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        if ($runValidation && !$version->validate()) {
+            Craft::info('Entry not reverted due to validation error.', __METHOD__);
+            return false;
+        }
 
         // Revert the entry without re-running validation on it
         Craft::$app->getElements()->saveElement($version, false);
 
         // Fire an 'afterRevertEntryToVersion' event
-        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new VersionEvent([
-            'version' => $version,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION)) {
+            $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+                'version' => $version,
+            ]));
+        }
 
         return true;
     }

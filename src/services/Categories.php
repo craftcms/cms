@@ -274,49 +274,47 @@ class Categories extends Component
      *
      * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Category group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewCategoryGroup = !$group->id;
 
         // Fire a 'beforeSaveGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group,
-            'isNew' => $isNewCategoryGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
+            ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Category group not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if (!$isNewCategoryGroup) {
-
-            $result = (new Query())
-                ->select([
-                    'id',
-                    'structureId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                ])
-                ->from(['{{%categorygroups}}'])
+            $groupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $group->id])
                 ->one();
 
-            if (!$result) {
+            if (!$groupRecord) {
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            $oldCategoryGroup = new CategoryGroup($result);
+            $oldCategoryGroup = new CategoryGroup($groupRecord->toArray([
+                'id',
+                'structureId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+            ]));
         } else {
             $groupRecord = new CategoryGroupRecord();
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-        if ($group->maxLevels === 0) {
+        if ((int)$group->maxLevels === 0) {
             $group->maxLevels = null;
         }
 
@@ -444,7 +442,7 @@ class Categories extends Component
                     if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 ['uri' => null],
                                 [
                                     'elementId' => $categoryIds,
@@ -474,17 +472,19 @@ class Categories extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterSaveGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group,
-            'isNew' => $isNewCategoryGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
+            ]));
+        }
 
         return true;
     }
@@ -495,7 +495,7 @@ class Categories extends Component
      * @param int $groupId
      *
      * @return bool Whether the category group was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteGroupById(int $groupId): bool
     {
@@ -510,9 +510,11 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -545,16 +547,18 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterDeleteGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group
+            ]));
+        }
 
         return true;
     }
@@ -653,7 +657,9 @@ class Categories extends Component
             ) {
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
-                $ancestorQuery = $category->getAncestors();
+                $ancestorQuery = $category->getAncestors()
+                    ->status(null)
+                    ->enabledForSite(false);
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);

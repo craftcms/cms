@@ -9,11 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\DeprecationError;
-use craft\web\twig\Template;
 use yii\base\Component;
 
 /**
@@ -63,68 +63,45 @@ class Deprecator extends Component
             return false;
         }
 
-        $request = Craft::$app->getRequest();
-
-        $log = new DeprecationError();
-
-        $log->key = $key;
-        $log->message = $message;
-        $log->lastOccurrence = new \DateTime();
-        $log->template = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() ? Craft::$app->getView()->getRenderingTemplate() : null);
-
-        // Everything else requires the stack trace
-        $this->_populateLogWithStackTraceData($log);
-
-        $index = $log->key.'-'.$log->fingerprint;
+        // Get the debug backtrace
+        $traces = debug_backtrace();
+        list($file, $line) = $this->_findOrigin($traces);
+        $fingerprint = $file.($line ? ':'.$line : '');
+        $index = $key.'-'.$fingerprint;
 
         // Don't log the same key/fingerprint twice in the same request
-        if (!isset($this->_requestLogs[$index])) {
-            $db = Craft::$app->getDb();
+        if (isset($this->_requestLogs[$index])) {
+            return true;
+        }
 
-            $values = [
-                'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
-                'file' => $log->file,
-                'line' => $log->line,
-                'class' => $log->class,
-                'method' => $log->method,
-                'template' => $log->template,
-                'templateLine' => $log->templateLine,
-                'message' => $log->message,
-                'traces' => Json::encode($log->traces),
-            ];
+        $log = $this->_requestLogs[$index] = new DeprecationError([
+            'key' => $key,
+            'fingerprint' => $fingerprint,
+            'lastOccurrence' => new \DateTime(),
+            'file' => $file,
+            'line' => $line,
+            'message' => $message,
+            'traces' => $this->_cleanTraces($traces)
+        ]);
 
-            // Do we already have this one logged?
-            $existingId = (new Query())
-                ->select(['id'])
-                ->from([self::$_tableName])
-                ->where([
+        $db = Craft::$app->getDb();
+        $db->createCommand()
+            ->upsert(
+                self::$_tableName,
+                [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
+                ],
+                [
+                    'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
+                    'file' => $log->file,
+                    'line' => $log->line,
+                    'message' => $log->message,
+                    'traces' => Json::encode($log->traces),
                 ])
-                ->scalar();
+            ->execute();
 
-            if ($existingId === false) {
-                $db->createCommand()
-                    ->insert(
-                        self::$_tableName,
-                        array_merge($values, [
-                            'key' => $log->key,
-                            'fingerprint' => $log->fingerprint
-                        ]))
-                    ->execute();
-                $log->id = $db->getLastInsertID(self::$_tableName);
-            } else {
-                $db->createCommand()
-                    ->update(
-                        self::$_tableName,
-                        $values,
-                        ['id' => $existingId])
-                    ->execute();
-                $log->id = (int)$existingId;
-            }
-
-            $this->_requestLogs[$key] = $log;
-        }
+        $log->id = $db->getLastInsertID();
 
         return true;
     }
@@ -246,10 +223,6 @@ class Deprecator extends Component
                 'lastOccurrence',
                 'file',
                 'line',
-                'class',
-                'method',
-                'template',
-                'templateLine',
                 'message',
                 'traces',
             ])
@@ -257,40 +230,88 @@ class Deprecator extends Component
     }
 
     /**
-     * Populates a DeprecationError with data pulled from the PHP stack trace.
+     * Returns the file and line number that should be associated with the error.
      *
-     * @param DeprecationError $log
+     * @param array $traces debug_backtrace() results leading up to [[log()]]
      *
-     * @return void
+     * @return array [file, line]
      */
-    private function _populateLogWithStackTraceData(DeprecationError $log)
+    private function _findOrigin(array $traces): array
     {
-        // Get the stack trace, but skip the first one, since it's just the call to this private function
-        $traces = debug_backtrace();
-        array_shift($traces);
-
-        // Set the basic stuff
-        $log->file = $traces[0]['file'];
-        $log->line = $traces[0]['line'];
-        $log->class = !empty($traces[1]['class']) ? $traces[1]['class'] : null;
-        $log->method = !empty($traces[1]['function']) ? $traces[1]['function'] : null;
-
-        $request = Craft::$app->getRequest();
-        $isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getView()->getIsRenderingTemplate());
-
-        if ($isTemplateRendering) {
-            // We'll figure out the line number later
-            $log->fingerprint = $log->template;
-
-            $foundTemplate = false;
-        } else {
-            $log->fingerprint = $log->class.($log->class && $log->line ? ':'.$log->line : '');
+        // Should we be treating this as as template deprecation log?
+        if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
+            // came through twig_get_attribute()
+            $templateTrace = 3;
+        } else if ($this->_isTemplateAttributeCall($traces, 4)) {
+            // came through Template::attribute()
+            $templateTrace = 4;
+        } else if ($this->_isTemplateAttributeCall($traces, 2)) {
+            // special case for "deprecated" date functions the Template helper pretends still exist
+            $templateTrace = 2;
+        } else if (isset($traces[1]['class'], $traces[1]['function']) && $traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') {
+            // special case for deprecated looping through element queries
+            $templateTrace = 1;
         }
 
+        if (isset($templateTrace)) {
+            $templateCodeLine = $traces[$templateTrace]['line'] ?? null;
+            $template = $traces[$templateTrace + 1]['object'] ?? null;
+
+            if ($template instanceof \Twig_Template) {
+                $templateName = $template->getTemplateName();
+                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $line = $this->_findTemplateLine($template, $templateCodeLine);
+                return [$file, $line];
+            }
+        }
+
+        // Did this go through Component::__get()?
+        if (isset($traces[2]['class'], $traces[2]['function']) && $traces[2]['class'] === Component::class && $traces[2]['function'] === '__get') {
+            $t = 3;
+        } else {
+            $t = 1;
+        }
+
+        $file = $traces[$t]['file'] ?? '';
+        $line = $traces[$t]['line'] ?? null;
+
+        return [$file, $line];
+    }
+
+    /**
+     * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
+     *
+     * @param array $traces debug_backtrace() results leading up to [[log()]]
+     * @param int   $index  The trace index to check
+     *
+     * @return bool
+     */
+    private function _isTemplateAttributeCall(array $traces, int $index): bool
+    {
+        if (!isset($traces[$index])) {
+            return false;
+        }
+        $t = $traces[$index];
+        return (
+            isset($t['class'], $t['function']) &&
+            $t['class'] === \craft\helpers\Template::class &&
+            $t['function'] === 'attribute'
+        );
+    }
+
+    /**
+     * Returns a simplified version of the stack trace.
+     *
+     * @param array $traces debug_backtrace() results leading up to [[log()]]
+     *
+     * @return array
+     */
+    private function _cleanTraces(array $traces): array
+    {
         $logTraces = [];
 
-        foreach ($traces as $trace) {
-            $logTrace = [
+        foreach ($traces as $i => $trace) {
+            $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
                 'file' => !empty($trace['file']) ? $trace['file'] : null,
                 'line' => !empty($trace['line']) ? $trace['line'] : null,
@@ -298,38 +319,33 @@ class Deprecator extends Component
                 'method' => !empty($trace['function']) ? $trace['function'] : null,
                 'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
             ];
-
-            // Is this a template?
-            /** @noinspection PhpInternalEntityUsedInspection */
-            if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'], 'compiled_templates')) {
-                /** @var Template $template */
-                $template = $trace['object'];
-
-                // Get the original (uncompiled) template name.
-                $logTrace['template'] = $template->getTemplateName();
-
-                // Guess the line number
-                foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
-                    if ($codeLine <= $trace['line']) {
-                        $logTrace['templateLine'] = $templateLine;
-
-                        // Save that to the main log info too?
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        if ($isTemplateRendering && !$foundTemplate) {
-                            $log->templateLine = $templateLine;
-                            $log->fingerprint .= ':'.$templateLine;
-                            $foundTemplate = true;
-                        }
-
-                        break;
-                    }
-                }
-            }
-
-            $logTraces[] = $logTrace;
         }
 
-        $log->traces = $logTraces;
+        return $logTraces;
+    }
+
+    /**
+     * Returns the Twig template that should be associated with the deprecation error, if any.
+     *
+     * @param \Twig_Template $template
+     * @param int|null       $actualCodeLine
+     *
+     * @return int|null
+     */
+    private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
+    {
+        if ($actualCodeLine === null) {
+            return null;
+        }
+
+        // getDebugInfo() goes upward, so the first code line that's <= the trace line will be the match
+        foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
+            if ($codeLine <= $actualCodeLine) {
+                return $templateLine;
+            }
+        }
+
+        return null;
     }
 
     /**

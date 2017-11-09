@@ -37,8 +37,8 @@ abstract class Model extends \yii\base\Model
     }
 
     /**
-	 * Returns the names of any attributes that should hold [[\DateTime]] values.
-	 *
+     * Returns the names of any attributes that should hold [[\DateTime]] values.
+     *
      * @return string[]
      * @see init()
      * @see fields()

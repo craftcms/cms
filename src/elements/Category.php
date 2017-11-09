@@ -404,6 +404,9 @@ class Category extends Element
             $this->setParent($parentCategory);
         }
 
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
+
         return parent::beforeSave($isNew);
     }
 

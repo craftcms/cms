@@ -45,7 +45,9 @@
 
                 this.blockTypesByHandle = {};
 
-                for (var i = 0; i < this.blockTypes.length; i++) {
+                var i;
+
+                for (i = 0; i < this.blockTypes.length; i++) {
                     var blockType = this.blockTypes[i];
                     this.blockTypesByHandle[blockType.handle] = blockType;
                 }
@@ -81,12 +83,12 @@
                     checkboxMode: true
                 });
 
-                for (var i = 0; i < $blocks.length; i++) {
+                for (i = 0; i < $blocks.length; i++) {
                     var $block = $($blocks[i]),
-                        id = $block.data('id');
+                        blockId = $block.data('id');
 
                     // Is this a new block?
-                    var newMatch = (typeof id == 'string' && id.match(/new(\d+)/));
+                    var newMatch = (typeof blockId === 'string' && blockId.match(/new(\d+)/));
 
                     if (newMatch && newMatch[1] > this.totalNewBlocks) {
                         this.totalNewBlocks = parseInt(newMatch[1]);
@@ -94,7 +96,7 @@
 
                     var block = new MatrixBlock(this, $block);
 
-                    if (block.id && $.inArray('' + block.id, collapsedBlocks) != -1) {
+                    if (block.id && $.inArray('' + block.id, collapsedBlocks) !== -1) {
                         block.collapse();
                     }
                 }
@@ -164,12 +166,14 @@
             },
 
             updateAddBlockBtn: function() {
+                var i, block;
+
                 if (this.canAddMoreBlocks()) {
                     this.$addBlockBtnGroup.removeClass('disabled');
                     this.$addBlockMenuBtn.removeClass('disabled');
 
-                    for (var i = 0; i < this.blockSelect.$items.length; i++) {
-                        var block = this.blockSelect.$items.eq(i).data('block');
+                    for (i = 0; i < this.blockSelect.$items.length; i++) {
+                        block = this.blockSelect.$items.eq(i).data('block');
 
                         if (block) {
                             block.$actionMenu.find('a[data-action=add]').parent().removeClass('disabled');
@@ -180,8 +184,8 @@
                     this.$addBlockBtnGroup.addClass('disabled');
                     this.$addBlockMenuBtn.addClass('disabled');
 
-                    for (var i = 0; i < this.blockSelect.$items.length; i++) {
-                        var block = this.blockSelect.$items.eq(i).data('block');
+                    for (i = 0; i < this.blockSelect.$items.length; i++) {
+                        block = this.blockSelect.$items.eq(i).data('block');
 
                         if (block) {
                             block.$actionMenu.find('a[data-action=add]').parent().addClass('disabled');
@@ -200,7 +204,7 @@
                 var id = 'new' + this.totalNewBlocks;
 
                 var html =
-                    '<div class="matrixblock" data-id="' + id + '">' +
+                    '<div class="matrixblock" data-id="' + id + '" data-type="' + type + '">' +
                     '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][type]" value="' + type + '"/>' +
                     '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][enabled]" value="1"/>' +
                     '<div class="titlebar">' +
@@ -274,7 +278,7 @@
 
             getBlockTypeByHandle: function(handle) {
                 for (var i = 0; i < this.blockTypes.length; i++) {
-                    if (this.blockTypes[i].handle == handle) {
+                    if (this.blockTypes[i].handle === handle) {
                         return this.blockTypes[i];
                     }
                 }
@@ -314,7 +318,7 @@
             },
 
             getParsedBlockHtml: function(html, id) {
-                if (typeof html == 'string') {
+                if (typeof html === 'string') {
                     return html.replace(/__BLOCK__/g, id);
                 }
                 else {
@@ -326,7 +330,7 @@
             collapsedBlockStorageKey: 'Craft-' + Craft.systemUid + '.MatrixInput.collapsedBlocks',
 
             getCollapsedBlockIds: function() {
-                if (typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] == 'string') {
+                if (typeof localStorage[Craft.MatrixInput.collapsedBlockStorageKey] === 'string') {
                     return Craft.filterArray(localStorage[Craft.MatrixInput.collapsedBlockStorageKey].split(','));
                 }
                 else {
@@ -342,7 +346,7 @@
                 if (typeof Storage !== 'undefined') {
                     var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
 
-                    if ($.inArray('' + id, collapsedBlocks) == -1) {
+                    if ($.inArray('' + id, collapsedBlocks) === -1) {
                         collapsedBlocks.push(id);
                         Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
                     }
@@ -354,7 +358,7 @@
                     var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
                         collapsedBlocksIndex = $.inArray('' + id, collapsedBlocks);
 
-                    if (collapsedBlocksIndex != -1) {
+                    if (collapsedBlocksIndex !== -1) {
                         collapsedBlocks.splice(collapsedBlocksIndex, 1);
                         Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
                     }
@@ -388,7 +392,7 @@
                 this.$container.data('block', this);
 
                 this.id = this.$container.data('id');
-                this.isNew = (!this.id || (typeof this.id == 'string' && this.id.substr(0, 3) == 'new'));
+                this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substr(0, 3) === 'new'));
 
                 var $menuBtn = this.$container.find('> .actions > .settings'),
                     menuBtn = new Garnish.MenuBtn($menuBtn);
@@ -543,7 +547,7 @@
                     var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
                         collapsedBlocksIndex = $.inArray('' + this.id, collapsedBlocks);
 
-                    if (collapsedBlocksIndex != -1) {
+                    if (collapsedBlocksIndex !== -1) {
                         collapsedBlocks.splice(collapsedBlocksIndex, 1);
                         Craft.MatrixInput.setCollapsedBlockIds(collapsedBlocks);
                     }

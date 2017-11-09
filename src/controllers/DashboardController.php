@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -80,6 +81,9 @@ class DashboardController extends Controller
             ];
         }
 
+        // Sort them by name
+        ArrayHelper::multisort($widgetTypeInfo, 'name');
+
         $view->setNamespace($namespace);
         $variables = [];
 
@@ -125,14 +129,6 @@ class DashboardController extends Controller
         $view->registerAssetBundle(DashboardAsset::class);
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
-        $view->registerTranslations('app', [
-            '1 column',
-            '{num} columns',
-            '{type} Settings',
-            'Widget saved.',
-            'Couldn’t save widget.',
-            'You don’t have any widgets yet.',
-        ]);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
@@ -329,7 +325,7 @@ class DashboardController extends Controller
         // Add some extra info about this install
         $message = $getHelpModel->message."\n\n".
             "------------------------------\n\n".
-            'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version;
+            'Craft '.Craft::$app->getEditionName().' '.Craft::$app->getVersion();
 
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
@@ -399,7 +395,7 @@ class DashboardController extends Controller
                 // for debugging.
                 try {
                     Craft::$app->getDb()->backup();
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $noteError = "\n\nError backing up database: ".$e->getMessage();
                     $requestParamDefaults['tNote'] .= $noteError;
                     $requestParams['tNote'] .= $noteError;
@@ -452,7 +448,7 @@ class DashboardController extends Controller
             $requestParams['File1_sFilename'] = 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
             $requestParams['File1_sFileMimeType'] = 'application/zip';
             $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
 
             // There was a problem zipping, so reset the params and just send the email without the attachment.
@@ -471,7 +467,7 @@ class DashboardController extends Controller
 
         try {
             $guzzleClient->post('https://support.pixelandtonic.com/api/index.php', $requestParams);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,

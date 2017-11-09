@@ -7,6 +7,7 @@
 
 namespace craft\db\pgsql;
 
+use Composer\Util\Platform;
 use Craft;
 use craft\db\TableSchema;
 use yii\db\Exception;
@@ -129,16 +130,42 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand()
     {
-        return 'pg_dump'.
+        $defaultTableIgnoreList = [
+            '{{%assetindexdata}}',
+            '{{%assettransformindex}}',
+            '{{%cache}}',
+            '{{%sessions}}',
+            '{{%templatecaches}}',
+            '{{%templatecachecriteria}}',
+            '{{%templatecacheelements}}',
+        ];
+
+        $dbSchema = Craft::$app->getDb()->getSchema();
+
+        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
+            $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
+        }
+
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $envCommand = 'PGPASSWORD='.$dbConfig->password;
+
+        if (Platform::isWindows()) {
+            $envCommand = 'set '.$envCommand.'&&';
+        } else {
+            $envCommand .=' ';
+        }
+
+        return $envCommand.
+            'pg_dump'.
             ' --dbname={database}'.
             ' --host={server}'.
             ' --port={port}'.
             ' --username={user}'.
-            ' --no-password'.
             ' --if-exists'.
             ' --clean'.
             ' --file={file}'.
-            ' --schema={schema}';
+            ' --schema={schema}'.
+            implode('', $defaultTableIgnoreList);
     }
 
     /**

@@ -440,7 +440,7 @@ class Et extends Component
             $plugin = $pluginsService->getPluginByPackageName($packageName);
             if ($plugin) {
                 /** @var Plugin $plugin */
-                $pluginsService->setPluginLicenseKey($plugin->handle, null);
+                $pluginsService->setPluginLicenseKey($plugin->id, null);
             }
         }
 

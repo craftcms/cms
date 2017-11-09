@@ -37,13 +37,19 @@ class Localization
      * locale uses something else.
      *
      * @param mixed $number The number that should be normalized.
+     * @param string|null $localeId The locale ID that the number is set in
      *
      * @return mixed The normalized number.
      */
-    public static function normalizeNumber($number)
+    public static function normalizeNumber($number, string $localeId = null)
     {
         if (is_string($number)) {
-            $locale = Craft::$app->getLocale();
+            if ($localeId !== null && $localeId !== Craft::$app->language) {
+                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
+            } else {
+                $locale = Craft::$app->getLocale();
+            }
+
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
             $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 

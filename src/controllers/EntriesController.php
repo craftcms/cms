@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -129,7 +130,7 @@ class EntriesController extends BaseEntriesController
 
         if (
             $section->type === Section::TYPE_STRUCTURE &&
-            $section->maxLevels !== 1
+            (int)$section->maxLevels !== 1
         ) {
             $variables['elementType'] = Entry::class;
 
@@ -168,12 +169,12 @@ class EntriesController extends BaseEntriesController
                 if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
                 } else {
-                    $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
-
-                    if (!empty($parentIds)) {
-                        $parentId = $parentIds[0];
-                    }
+                    $parentId = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
                 }
+            }
+
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {
@@ -247,7 +248,7 @@ class EntriesController extends BaseEntriesController
 
             if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
-                foreach ($entry->getAncestors() as $ancestor) {
+                foreach ($entry->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
                         'url' => $ancestor->getCpEditUrl()
@@ -347,11 +348,6 @@ class EntriesController extends BaseEntriesController
         // Full page form variables
         $variables['fullPageForm'] = true;
         $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
-
-        // Include translations
-        $this->getView()->registerTranslations('app', [
-            'Live Preview',
-        ]);
 
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
@@ -460,7 +456,7 @@ class EntriesController extends BaseEntriesController
         if ($duplicate) {
             try {
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -477,7 +473,20 @@ class EntriesController extends BaseEntriesController
             }
         }
 
+        // Make sure the entry has at least one version if the section has versioning enabled
+        $revisionsService = Craft::$app->getEntryRevisions();
+        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
+            $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
+            $currentEntry->revisionCreatorId = $entry->authorId;
+            $currentEntry->revisionNotes = 'Revision from '.Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
+            $revisionsService->saveVersion($currentEntry);
+        }
+
         // Save the entry (finally!)
+        if ($entry->enabled && $entry->enabledForSite) {
+            $entry->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (!Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -495,6 +504,11 @@ class EntriesController extends BaseEntriesController
             return null;
         }
 
+        // Should we save a new version?
+        if ($entry->getSection()->enableVersioning) {
+            $revisionsService->saveVersion($entry);
+        }
+
         if ($request->getAcceptsJson()) {
             $return = [];
 
@@ -502,7 +516,7 @@ class EntriesController extends BaseEntriesController
             $return['id'] = $entry->id;
             $return['title'] = $entry->title;
 
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            if ($request->getIsCpRequest()) {
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
@@ -896,7 +910,7 @@ class EntriesController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $parentId = reset($parentId) ?: null;
         }
 
         $entry->newParentId = $parentId ?: null;

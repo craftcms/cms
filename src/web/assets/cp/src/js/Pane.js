@@ -39,7 +39,7 @@ Craft.Pane = Garnish.Base.extend(
                     var $tab = $($tabs[i]),
                         href = $tab.attr('href');
 
-                    if (href && href.charAt(0) == '#') {
+                    if (href && href.charAt(0) === '#') {
                         this.tabs[href] = {
                             $tab: $tab,
                             $target: $(href)
@@ -53,7 +53,7 @@ Craft.Pane = Garnish.Base.extend(
                     }
                 }
 
-                if (document.location.hash && this.tabs[document.location.hash] !== undefined) {
+                if (document.location.hash && typeof this.tabs[document.location.hash] !== 'undefined') {
                     this.tabs[document.location.hash].$tab.trigger('activate');
                 }
                 else if (!this.selectedTab) {
@@ -85,7 +85,7 @@ Craft.Pane = Garnish.Base.extend(
          * Selects a tab.
          */
         selectTab: function(ev) {
-            if (!this.selectedTab || ev.currentTarget != this.tabs[this.selectedTab].$tab[0]) {
+            if (!this.selectedTab || ev.currentTarget !== this.tabs[this.selectedTab].$tab[0]) {
                 // Hide the selected tab
                 this.deselectTab();
 
