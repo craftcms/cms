@@ -544,3 +544,30 @@ ul.categories {
   position: static !important; /* #container hack required for modal overlays */
 }
 
+/* Developer */
+
+.developer-card {
+  text-align:center;
+
+  .avatar {
+    width: 150px;
+    height: 150px;
+    background: #eee;
+    display: inline-block;
+    border-radius: 100%;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+
+  ul.links {
+    margin-top: 24px;
+    
+    li {
+      margin-bottom: 1em;
+      
+      a {
+        display: block;
+      }
+    }
+  }
+}

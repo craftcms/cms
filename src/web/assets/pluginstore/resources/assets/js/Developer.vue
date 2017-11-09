@@ -1,13 +1,30 @@
 <template>
     <div>
-        <ul>
-            <li>{{ developer.location }}</li>
-            <!--<li>{{ developer.plugins.length }} plugins</li>-->
-        </ul>
 
-        <hr>
+        <div class="ps-grid-wrapper has-sidebar">
+            <div class="ps-grid-sidebar">
+                <div class="developer-card">
 
-        <plugin-index :plugins="plugins"></plugin-index>
+                    <div class="avatar"></div>
+
+                    <ul>
+                        <li><strong>{{ developer.developerName }}</strong></li>
+                        <li>{{ developer.location }}</li>
+                    </ul>
+
+                    <ul class="links">
+                        <li><a class="btn" :href="developer.developerUrl">Website</a></li>
+                        <li><a class="btn" :href="developer.developerUrl">Contact</a></li>
+                        <!--<li>{{ developer.plugins.length }} plugins</li>-->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ps-grid-main">
+                <plugin-index :plugins="plugins"></plugin-index>
+            </div>
+        </div>
+
     </div>
 
 </template>

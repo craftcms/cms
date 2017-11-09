@@ -550,4 +550,31 @@ ul.categories li:hover + li:before {
   /* #container hack required for modal overlays */
 }
 
+/* Developer */
+.developer-card {
+  text-align: center;
+}
+
+.developer-card .avatar {
+  width: 150px;
+  height: 150px;
+  background: #eee;
+  display: inline-block;
+  border-radius: 100%;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.developer-card ul.links {
+  margin-top: 24px;
+}
+
+.developer-card ul.links li {
+  margin-bottom: 1em;
+}
+
+.developer-card ul.links li a {
+  display: block;
+}
+
 /*# sourceMappingURL=main.css.map */
