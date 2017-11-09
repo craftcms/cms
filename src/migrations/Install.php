@@ -424,6 +424,19 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable('{{%oauth_tokens}}', [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'provider' => $this->string()->notNull(),
+            'accessToken' => $this->text()->notNull(),
+            'tokenType' => $this->string(),
+            'expiresIn' => $this->integer(),
+            'expiryDate' => $this->dateTime(),
+            'refreshToken' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
         $this->createTable('{{%plugins}}', [
             'id' => $this->primaryKey(),
             'handle' => $this->string()->notNull(),
@@ -791,6 +804,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%matrixblocktypes}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%migrations}}', ['pluginId'], false);
         $this->createIndex(null, '{{%migrations}}', ['type', 'pluginId'], false);
+        $this->createIndex(null, '{{%oauth_tokens}}', ['provider', 'userId'], false);
         $this->createIndex(null, '{{%plugins}}', ['handle'], true);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'delay']);
@@ -940,6 +954,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%matrixblocktypes}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%matrixblocktypes}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%migrations}}', ['pluginId'], '{{%plugins}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%oauth_tokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['fieldId'], '{{%fields}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['sourceId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['sourceSiteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');

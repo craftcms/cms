@@ -1,5 +1,15 @@
-Craft CMS 3.0 Working Changelog
-===============================
+# Craft CMS 3.0 Working Changelog
+
+
+## 3.0.0-beta.34 - 2017-11-09
+
+### Added
+- Added the `trustedHosts`, `secureHeaders`, `ipHeaders`, and `secureProtocolHeaders` config settings, which map to the `yii\web\Request` properties of the same names. They should be used to fix SSL detection for environments where an `X-Forwarded-Proto` HTTP header is used to forward SSL status to the web server. See [Trusted Proxies and Headers](http://www.yiiframework.com/doc-2.0/guide-runtime-requests.html#trusted-proxies) in Yii’s documentation for an explanation of these properties.
+- Created an `oauthtokens` database table.
+- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency. ([#1481](https://github.com/craftcms/cms/issues/1481))
+
+### Fixed
+- Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
 
 ## 3.0.0-beta.33 - 2017-11-08
 
