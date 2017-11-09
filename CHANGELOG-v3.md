@@ -1,6 +1,11 @@
 # Craft CMS 3.0 Working Changelog
 
 
+## Unreleased
+
+### Changed
+- The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
+
 ## 3.0.0-beta.34 - 2017-11-09
 
 ### Added
