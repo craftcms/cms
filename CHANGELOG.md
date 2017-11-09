@@ -1,7 +1,10 @@
 Craft CMS Changelog
 ===================
 
-## 2.6.2997 (WIP)
+## 2.6.2997 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
 
 ## 2.6.2996 - 2017-11-08
 
