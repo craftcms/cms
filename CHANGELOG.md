@@ -1,5 +1,5 @@
-Craft CMS Changelog
-===================
+# Craft CMS Changelog
+
 
 ## 2.6.2997 - 2017-11-08
 
