@@ -6,6 +6,9 @@
 ### Changed
 - The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
 
+### Fixed
+- Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
+
 ## 3.0.0-beta.34 - 2017-11-09
 
 ### Added
