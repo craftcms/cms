@@ -138,7 +138,10 @@ class Path extends Component
         $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
 
         if (!is_file($gitignorePath)) {
-            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n");
+            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
+                // Prevent a segfault if this is called recursively
+                'lock' => false,
+            ]);
         }
 
         return $path;
