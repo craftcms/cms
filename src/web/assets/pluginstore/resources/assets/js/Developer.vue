@@ -5,7 +5,9 @@
             <div class="ps-grid-sidebar">
                 <div class="developer-card">
 
-                    <div class="avatar"></div>
+                    <div class="avatar">
+                        <img :src="developer.photoUrl" />
+                    </div>
 
                     <ul>
                         <li><strong>{{ developer.developerName }}</strong></li>

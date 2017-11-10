@@ -550,17 +550,22 @@ ul.categories {
   text-align:center;
 
   .avatar {
-    width: 150px;
-    height: 150px;
-    background: #eee;
-    display: inline-block;
+    width: 120px;
+    height: 120px;
     border-radius: 100%;
+    background: #fafafa;
+    display: inline-block;
     margin-top: 24px;
     margin-bottom: 12px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+    }
   }
 
   ul.links {
-    margin-top: 24px;
+    margin-top: 36px;
     
     li {
       margin-bottom: 1em;

@@ -556,17 +556,22 @@ ul.categories li:hover + li:before {
 }
 
 .developer-card .avatar {
-  width: 150px;
-  height: 150px;
-  background: #eee;
-  display: inline-block;
+  width: 120px;
+  height: 120px;
   border-radius: 100%;
+  background: #fafafa;
+  display: inline-block;
   margin-top: 24px;
   margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.developer-card .avatar img {
+  width: 100%;
 }
 
 .developer-card ul.links {
-  margin-top: 24px;
+  margin-top: 36px;
 }
 
 .developer-card ul.links li {
