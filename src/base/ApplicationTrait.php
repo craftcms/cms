@@ -144,11 +144,6 @@ trait ApplicationTrait
     private $_isDbConfigValid;
 
     /**
-     * @var bool|null
-     */
-    private $_isDbConnectionValid;
-
-    /**
      * @var bool
      */
     private $_gettingLanguage = false;
@@ -634,23 +629,19 @@ trait ApplicationTrait
     }
 
     /**
-     * Don't even think of moving this check into Connection->init().
+     * Returns whether the DB connection settings are valid.
      *
      * @return bool
+     * @internal Don't even think of moving this check into Connection->init().
      */
-    public function getIsDbConnectionValid(): bool
+    public function getIsDbConnectionValid(bool $recheck = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isDbConnectionValid !== null) {
-            return $this->_isDbConnectionValid;
-        }
-
         try {
             $this->getDb()->open();
-
-            return $this->_isDbConnectionValid = true;
+            return true;
         } catch (DbConnectException $e) {
-            return $this->_isDbConnectionValid = false;
+            return false;
         }
     }
 
