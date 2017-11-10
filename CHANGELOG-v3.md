@@ -1,5 +1,33 @@
-Craft CMS 3.0 Working Changelog
-===============================
+# Craft CMS 3.0 Working Changelog
+
+
+## Unreleased
+
+### Changed
+- The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
+
+### Fixed
+- Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
+
+## 3.0.0-beta.34 - 2017-11-09
+
+### Added
+- Added the `trustedHosts`, `secureHeaders`, `ipHeaders`, and `secureProtocolHeaders` config settings, which map to the `yii\web\Request` properties of the same names. They should be used to fix SSL detection for environments where an `X-Forwarded-Proto` HTTP header is used to forward SSL status to the web server. See [Trusted Proxies and Headers](http://www.yiiframework.com/doc-2.0/guide-runtime-requests.html#trusted-proxies) in Yii’s documentation for an explanation of these properties.
+- Created an `oauthtokens` database table.
+- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency. ([#1481](https://github.com/craftcms/cms/issues/1481))
+
+### Fixed
+- Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
+
+## 3.0.0-beta.33 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
+
+## 3.0.0-beta.32 - 2017-11-08
+
+### Fixed
+- Fixed a segmentation fault that occurred on fresh installs.
 
 ## 3.0.0-rc.1 (WIP)
 
@@ -9,13 +37,17 @@ Craft CMS 3.0 Working Changelog
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
+- Added the “Default Color” setting to Color fields. ([#949](https://github.com/craftcms/cms/issues/949))
+- Color fields now return a `craft\fields\data\ColorData` object, with `hex`, `rgb`, `red`, `green`, `blue`, `r`, `g`, `b`, and `luma` properties.
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
 - Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
-- Added interlace setting to Asset Transforms ([#1487]https://github.com/craftcms/cms/issues/1487)
+- Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
+- Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
 - Added `craft\errors\SiteGroupNotFoundException`.
 - Added `craft\events\SiteGroupEvent`.
+- Added `craft\fields\data\ColorData`.
 - Added `craft\image\Raster::setInterlace()`.
 - Added `craft\models\Section::getSiteIds()`.
 - Added `craft\models\Site::groupId`.
@@ -29,6 +61,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Sites::deleteGroupById()`.
 - Added `craft\services\Sites::deleteGroup()`.
 - Added `craft\services\Sites::getSitesByGroupId()`.
+- Added `craft\validators\ColorValidator`.
+- Added `Craft.ColorInput` (JS class).
 
 
 ### Changed
@@ -47,8 +81,11 @@ Craft CMS 3.0 Working Changelog
 - Fields on multi-site installs can now be translated per site group.
 - Resource file URLs now have a timestamp appended to them, preventing browsers from loading cached versions when the files change.
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
+- Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
+- Color inputs can now be left blank.
 
 ### Removed
+- The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
 - Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
 - Removed `craft\fields\data\RichTextData`.
@@ -56,24 +93,56 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\fields\RichText`.
 - Removed `craft\web\assets\redactor\RedactorAsset`.
 - Removed `craft\web\assets\richtext\RichTextAsset`.
+- Removed `lib/colorpicker/`.
 - Removed `lib/redactor/`.
+- Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
 
-## Unreleased
+## 3.0.0-beta.31 - 2017-11-08
 
 ### Added
 - Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
 - Added `craft\events\GetAssetThumbUrlEvent`.
+- Added `craft\services\Plugins::getPluginHandleByClass()`.
 
 ### Changed
+- Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
+- `craft\helpers\Component::createComponent()` will now throw a `MissingComponentException` if the component belongs to a plugin that’s not installed.
 - `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
+- `craft\db\Query::one()` and `scalar()` now explicitly add `LIMIT 1` to the SQL statement.
+- It’s now possible to create element indexes with batch actions on non-index pages. ([#1479](https://github.com/craftcms/cms/issues/1479))
+- Updated Yii to 2.0.13.
+- Updated D3 to 4.11.0.
+- Updated Fabric to 1.7.19.
+- Updated Inputmask to 3.3.10.
+- Updated jQuery to 3.2.1.
+- Updated Timepicker to 1.11.12.
+- Updated yii2-pjax to 2.0.7.
+
+### Removed
+- Removed the “RSS caches” option from the Clear Caches utility. (RSS feeds are cached using Craft’s data caching now.)
+- Removed the `cacheMethod` config setting. To use a different cache method, override the `cache` application component from `config/app.php`. ([#2053](https://github.com/craftcms/cms/issues/2053))
+- Removed `craft\config\DbCacheConfig`.
+- Removed `craft\config\FileCacheConfig`.
+- Removed `craft\config\MemCacheConfig`.
+- Removed `craft\services\Cache::getDbCache()`.
+- Removed `craft\services\Cache::getFileCache()`.
+- Removed `craft\services\Cache::getMemCache()`.
+- Removed `craft\services\Plugins::getPluginByClass()`.
+- Removed `craft\web\View::getTranslations()`.
+- Removed the `getTranslations()` template function.
 
 ### Fixed
-- Fixed an issue where `photoSubpath` user setting was missing a default value.
+- Fixed an issue where `photoSubpath` user setting was missing a default value. ([#2095](https://github.com/craftcms/cms/issues/2095))
 - Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
 - Fixed a PHP error that occurred when loading the French app translation messages.
 - Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
 - Fixed a bug where the `install` console command wasn’t validating the password length.
+- Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
+- Fixed a bug where image editor strings were not getting translated.
+- Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
+- Fixed a bug where the image editor was re-saving images even if the only thing that changed was the focal point. ([#2089](https://github.com/craftcms/cms/pull/2089))
+- Fixed a PHP error that occurred when duplicating an entry in a section that has URLs.
 
 ## 3.0.0-beta.30 - 2017-10-31
 

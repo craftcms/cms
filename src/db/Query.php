@@ -2,12 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db;
 
-use Craft;
+use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -127,11 +127,15 @@ class Query extends \yii\db\Query
      */
     public function one($db = null)
     {
+        $limit = $this->limit;
+        $this->limit = 1;
         try {
-            return parent::one($db);
+            $result = parent::one($db);
         } catch (QueryAbortedException $e) {
-            return false;
+            $result = false;
         }
+        $this->limit = $limit;
+        return $result;
     }
 
     /**
@@ -139,11 +143,15 @@ class Query extends \yii\db\Query
      */
     public function scalar($db = null)
     {
+        $limit = $this->limit;
+        $this->limit = 1;
         try {
-            return parent::scalar($db);
+            $result = parent::scalar($db);
         } catch (QueryAbortedException $e) {
-            return false;
+            $result = false;
         }
+        $this->limit = $limit;
+        return $result;
     }
 
     /**

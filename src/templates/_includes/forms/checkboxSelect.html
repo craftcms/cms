@@ -8,7 +8,8 @@
     {%- set allChecked = (values == allValue) %}
 {%- endif %}
 
-<div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}">
+<div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- if showAllOption %}
         <div>
             {% include "_includes/forms/checkbox" with {

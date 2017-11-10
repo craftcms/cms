@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -142,12 +142,7 @@ class QuickPost extends Widget
     public function getBodyHtml()
     {
         $view = Craft::$app->getView();
-
         $view->registerAssetBundle(QuickPostAsset::class);
-        $view->registerTranslations('app', [
-            'Entry saved.',
-            'Couldn’t save entry.',
-        ]);
 
         $section = $this->_getSection();
 

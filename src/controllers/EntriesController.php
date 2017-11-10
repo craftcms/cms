@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -353,11 +353,6 @@ class EntriesController extends BaseEntriesController
         // Full page form variables
         $variables['fullPageForm'] = true;
         $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
-
-        // Include translations
-        $this->getView()->registerTranslations('app', [
-            'Live Preview',
-        ]);
 
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);

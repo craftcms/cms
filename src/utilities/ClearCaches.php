@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
@@ -104,11 +104,6 @@ class ClearCaches extends Utility
                     FileHelper::clearDirectory($pathService->getAssetThumbsPath());
                     FileHelper::clearDirectory($pathService->getAssetsIconsPath());
                 }
-            ],
-            [
-                'key' => 'rss',
-                'label' => Craft::t('app', 'RSS caches'),
-                'action' => $pathService->getCachePath(),
             ],
             [
                 'key' => 'compiled-templates',

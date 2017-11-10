@@ -2,12 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Job is the base class for classes representing jobs in terms of objects.
@@ -15,7 +15,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class BaseJob extends Object implements JobInterface
+abstract class BaseJob extends BaseObject implements JobInterface
 {
     // Properties
     // =========================================================================

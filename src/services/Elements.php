@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -381,7 +381,7 @@ class Elements extends Component
 
         // Make sure the element actually supports the site it's being saved in
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (array_search($element->siteId, $supportedSiteIds, false) === false) {
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to save an element in an unsupported site.');
         }
 
@@ -553,7 +553,7 @@ class Elements extends Component
 
         // Make sure the element actually supports its own site ID
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (array_search($element->siteId, $supportedSiteIds, false) === false) {
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 

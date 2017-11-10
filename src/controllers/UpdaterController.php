@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -118,12 +118,6 @@ class UpdaterController extends Controller
         // Load the updater JS
         $view = $this->getView();
         $view->registerAssetBundle(UpdaterAsset::class);
-        $view->registerTranslations('app', [
-            'A fatal error has occurred:',
-            'Status:',
-            'Response:',
-            'Send for help',
-        ]);
 
         $state = $this->_initialState();
         $state['data'] = $this->_getHashedData();
