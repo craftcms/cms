@@ -4,7 +4,7 @@
  *
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 // Check for this early because Craft uses it before the requirements checker gets a chance to run.
