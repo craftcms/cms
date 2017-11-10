@@ -33,7 +33,7 @@
                 new Garnish.Modal($('#install-modal').removeClass('hidden'), {
                     shadeClass: ''
                 });
-                this.showScreen(1);
+                this.showScreen(Craft.Installer.SCREEN_ACCOUNT);
                 this.$accountSubmitBtn = $('#accountsubmit');
                 this.addListener(this.$accountSubmitBtn, 'activate', 'validateAccount');
                 this.addListener($('#accountform'), 'submit', 'validateAccount');
@@ -47,7 +47,7 @@
             },
 
             showSiteScreen: function() {
-                this.showScreen(2);
+                this.showScreen(Craft.Installer.SCREEN_SITE);
                 this.$siteSubmitBtn = $('#sitesubmit');
                 this.addListener(this.$siteSubmitBtn, 'activate', 'validateSite');
                 this.addListener($('#siteform'), 'submit', 'validateSite');
@@ -61,7 +61,7 @@
             },
 
             showInstallScreen: function() {
-                this.showScreen(3);
+                this.showScreen(Craft.Installer.SCREEN_INSTALL);
 
                 var inputs = ['username', 'email', 'password', 'systemName', 'siteUrl', 'siteLanguage'];
                 var data = {};
@@ -187,6 +187,10 @@
                 this.$currentScreen.find('input[type=text]:first').focus();
             }
 
+        }, {
+            SCREEN_ACCOUNT: 1,
+            SCREEN_SITE: 2,
+            SCREEN_INSTALL: 3
         });
 
     Garnish.$win.on('load', function() {
