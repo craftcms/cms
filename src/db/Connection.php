@@ -10,6 +10,10 @@ namespace craft\db;
 use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
+use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
+use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
+use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
@@ -24,11 +28,11 @@ use yii\db\Exception as DbException;
 /**
  * @inheritdoc
  *
- * @property mysql\QueryBuilder|pgsql\QueryBuilder $queryBuilder The query builder for the current DB connection.
- * @property mysql\Schema|pgsql\Schema             $schema       The schema information for the database opened by this connection.
+ * @property MysqlQueryBuilder|PgsqlQueryBuilder $queryBuilder The query builder for the current DB connection.
+ * @property MysqlSchema|PgsqlSchema             $schema       The schema information for the database opened by this connection.
  *
- * @method mysql\QueryBuilder|pgsql\QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
- * @method mysql\Schema|pgsql\Schema getSchema() Returns the schema information for the database opened by this connection.
+ * @method MysqlQueryBuilder|PgsqlQueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method MysqlSchema|PgsqlSchema getSchema() Returns the schema information for the database opened by this connection.
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  *
