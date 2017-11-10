@@ -244,19 +244,10 @@ trait ApplicationTrait
             return $this->_isInstalled;
         }
 
-        try {
-            // Initialize the DB connection
-            $this->getDb();
-
-            // If the db config isn't valid, then we'll assume it's not installed.
-            if (!$this->getIsDbConnectionValid()) {
-                return false;
-            }
-        } catch (DbConnectException $e) {
-            return false;
-        }
-
-        return $this->_isInstalled = (bool)($this->getDb()->tableExists('{{%info}}', false));
+        return $this->_isInstalled = (
+            $this->getIsDbConnectionValid() &&
+            $this->getDb()->tableExists('{{%info}}', false)
+        );
     }
 
     /**
