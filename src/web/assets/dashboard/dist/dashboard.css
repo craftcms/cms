@@ -1,3 +1,5 @@
+#content { background: none !important; }
+
 /* widgets */
 .widget { position: relative; -webkit-perspective: 1000; perspective: 1000; -webkit-transition: opacity linear 200ms, -webkit-transform linear 200ms; transition: opacity linear 200ms, -webkit-transform linear 200ms; transition: opacity linear 200ms, transform linear 200ms; transition: opacity linear 200ms, transform linear 200ms, -webkit-transform linear 200ms; }
 
