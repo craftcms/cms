@@ -72,15 +72,17 @@ class InstallController extends Controller
             return $response;
         }
 
-        // See if we should be showing the DB screen
-        $showDbScreen = (
-            !Craft::$app->getIsDbConnectionValid() &&
-            $this->_canControlDbConfig()
-        );
-
-        // If not, make sure we can connect
-        if (!$showDbScreen) {
+        // Can we establish a DB connection?
+        try {
             Craft::$app->getDb()->open();
+            $showDbScreen = false;
+        } catch (DbConnectException $e) {
+            // Can we control the settings?
+            if ($this->_canControlDbConfig()) {
+                $showDbScreen = true;
+            } else {
+                throw $e;
+            }
         }
 
         $this->getView()->registerAssetBundle(InstallerAsset::class);
