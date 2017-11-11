@@ -35,7 +35,6 @@ body {
   padding: 0;
 
   #screens {
-
     &,
     .screen {
       width: 100%;
@@ -61,6 +60,18 @@ body {
         margin-bottom: 35px;
         text-align: center;
         position: relative;
+      }
+
+      form {
+        width: 50%;
+        float: right;
+
+        .select {
+          &,
+          select {
+            width: 100%;
+          }
+        }
       }
     }
   }
@@ -131,25 +142,12 @@ input.hidden {
   top: 100px;
 }
 
-#account,
-#site {
-  background: #fff no-repeat 0 100%;
-}
+#license {
+  padding: 70px 105px !important;
+  overflow-y: scroll;
 
-#accountform,
-#siteform {
-  width: 50%;
-  float: right;
-}
-
-#site {
-  #siteform {
-    .select {
-      &,
-      select {
-        width: 100%;
-      }
-    }
+  .centeralign {
+    margin-top: 35px;
   }
 }
 
