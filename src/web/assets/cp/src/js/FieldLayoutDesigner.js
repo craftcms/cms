@@ -230,7 +230,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         gridSettings: {
             itemSelector: '.fld-tab:not(.hidden)',
             minColWidth: 240,
-            percentageWidths: false,
             fillMode: 'grid',
             snapToGrid: 30
         },
