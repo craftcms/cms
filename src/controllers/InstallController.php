@@ -73,7 +73,10 @@ class InstallController extends Controller
         }
 
         // See if we should be showing the DB screen
-        $showDbScreen = $this->_canControlDbConfig();
+        $showDbScreen = (
+            !Craft::$app->getIsDbConnectionValid() &&
+            $this->_canControlDbConfig()
+        );
 
         // If not, make sure we can connect
         if (!$showDbScreen) {

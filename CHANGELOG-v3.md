@@ -7,7 +7,7 @@
 - Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
 - Added the concept of “Site Groups”. ([#1668](https://github.com/craftcms/cms/issues/1668))
 - Added the Craft License to the web-based setup wizard.
-- Added a “Connect the database” screen to the web-based setup wizard, which will show up if Craft determines that a `.env` file is present, and `config/db.php` is basing its values on environment variables via `getenv()`.
+- Added a “Connect the database” screen to the web-based setup wizard, which will show up if a database connection can’t already be established, and Craft determines that it can control the DB connection settings via the `.env` file.
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
