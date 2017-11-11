@@ -28,6 +28,8 @@
 - Added `craft\models\SiteGroup`.
 - Added `craft\records\Site::getGroup()`.
 - Added `craft\records\SiteGroup`.
+- Added `craft\services\Config::getDotEnvPath()`.
+- Added `craft\services\Config::setEnvVar()`.
 - Added `craft\services\Sites::getAllGroups()`.
 - Added `craft\services\Sites::getGroupById()`.
 - Added `craft\services\Sites::saveGroup()`.
