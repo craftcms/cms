@@ -17,6 +17,7 @@
 - Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
+- Added `craft\db\Connection::createFromConfig()`.
 - Added `craft\errors\SiteGroupNotFoundException`.
 - Added `craft\events\SiteGroupEvent`.
 - Added `craft\fields\data\ColorData`.

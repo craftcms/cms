@@ -195,29 +195,7 @@ return [
 
         'db' => function() {
             $dbConfig = Craft::$app->getConfig()->getDb();
-
-            if ($dbConfig->driver === \craft\config\DbConfig::DRIVER_MYSQL) {
-                $schemaClass = craft\db\mysql\Schema::class;
-            } else {
-                $schemaClass = craft\db\pgsql\Schema::class;
-            }
-
-            return Craft::createObject([
-                'class' => craft\db\Connection::class,
-                'driverName' => $dbConfig->driver,
-                'dsn' => $dbConfig->dsn,
-                'username' => $dbConfig->user,
-                'password' => $dbConfig->password,
-                'charset' => $dbConfig->charset,
-                'tablePrefix' => $dbConfig->tablePrefix,
-                'schemaMap' => [
-                    $dbConfig->driver => [
-                        'class' => $schemaClass,
-                    ]
-                ],
-                'commandClass' => \craft\db\Command::class,
-                'attributes' => $dbConfig->attributes,
-            ]);
+            return craft\db\Connection::createFromConfig($dbConfig);
         },
 
         'mailer' => function() {

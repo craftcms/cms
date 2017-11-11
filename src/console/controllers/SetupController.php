@@ -161,28 +161,7 @@ EOD;
         // Test the DB connection
         $this->stdout('Testing database credentials... ', Console::FG_YELLOW);
         $dbConfig->updateDsn();
-        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
-            $schemaClass = \craft\db\mysql\Schema::class;
-        } else {
-            $schemaClass = \craft\db\pgsql\Schema::class;
-        }
-        /** @var Connection $db */
-        $db = Craft::createObject([
-            'class' => Connection::class,
-            'driverName' => $dbConfig->driver,
-            'dsn' => $dbConfig->dsn,
-            'username' => $dbConfig->user,
-            'password' => $dbConfig->password,
-            'charset' => $dbConfig->charset,
-            'tablePrefix' => $dbConfig->tablePrefix,
-            'schemaMap' => [
-                $dbConfig->driver => [
-                    'class' => $schemaClass,
-                ]
-            ],
-            'commandClass' => \craft\db\Command::class,
-            'attributes' => $dbConfig->attributes,
-        ]);
+        $db = Connection::createFromConfig($dbConfig);
 
         try {
             $db->open();

@@ -64,6 +64,42 @@ class Connection extends \yii\db\Connection
      */
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
+    // Static
+    // =========================================================================
+
+    /**
+     * Creates a new Connection instance based off the given DbConfig object.
+     *
+     * @param DbConfig $config
+     *
+     * @return static
+     */
+    public static function createFromConfig(DbConfig $config): Connection
+    {
+        if ($config->driver === DbConfig::DRIVER_MYSQL) {
+            $schemaClass = MysqlSchema::class;
+        } else {
+            $schemaClass = PgsqlSchema::class;
+        }
+
+        return Craft::createObject([
+            'class' => static::class,
+            'driverName' => $config->driver,
+            'dsn' => $config->dsn,
+            'username' => $config->user,
+            'password' => $config->password,
+            'charset' => $config->charset,
+            'tablePrefix' => $config->tablePrefix,
+            'schemaMap' => [
+                $config->driver => [
+                    'class' => $schemaClass,
+                ]
+            ],
+            'commandClass' => Command::class,
+            'attributes' => $config->attributes,
+        ]);
+    }
+
     // Public Methods
     // =========================================================================
 
