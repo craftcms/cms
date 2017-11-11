@@ -27,7 +27,7 @@
 - Added `craft\models\Site::getGroup()`.
 - Added `craft\models\SiteGroup`.
 - Added `craft\records\Site::getGroup()`.
-- Added `carft\records\SiteGroup`.
+- Added `craft\records\SiteGroup`.
 - Added `craft\services\Sites::getAllGroups()`.
 - Added `craft\services\Sites::getGroupById()`.
 - Added `craft\services\Sites::saveGroup()`.
