@@ -146,6 +146,19 @@ input.hidden {
   padding: 70px 105px !important;
   overflow-y: scroll;
 
+  .license {
+    &,
+    h1 {
+      font-family: Menlo, monospace;
+      font-size: 13px;
+      line-height: 25px;
+    }
+
+    h1 {
+      font-weight: bold;
+    }
+  }
+
   .centeralign {
     margin-top: 35px;
   }

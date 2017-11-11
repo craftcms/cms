@@ -37,6 +37,8 @@ body.rtl .buttons .btn:after { content: 'larr'; }
 input.hidden { position: absolute; top: 100px; }
 
 #license { padding: 70px 105px !important; overflow-y: scroll; }
+#license .license, #license .license h1 { font-family: Menlo, monospace; font-size: 13px; line-height: 25px; }
+#license .license h1 { font-weight: bold; }
 #license .centeralign { margin-top: 35px; }
 
 #installing { text-align: center; }
