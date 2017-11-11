@@ -58,13 +58,14 @@ $fldGuideColor: #f4f3fb;
   }
 
   .newtabbtn-container {
-    @include margin(0, 0, 61px, 0);
+    @include margin(0, 0, 60px, 0);
     display: flex;
     flex-direction: row;
 
     .btn.add {
       border: 1px solid $fldChalkColor;
-      padding: 6px 10px 5px;
+      padding: 5px 10px;
+      height: 31px;
       color: $fldChalkColor;
       background: transparent;
       box-shadow: none;
@@ -134,7 +135,7 @@ $fldGuideColor: #f4f3fb;
   .tab {
     @include floatleft;
     margin: -1px 0;
-    padding: 8px 12px 3px;
+    padding: 5px 12px 4px;
     border-bottom-color: $fldGuideColor;
     color: $fldChalkColor;
 
@@ -153,7 +154,7 @@ $fldGuideColor: #f4f3fb;
 }
 
 .fld-field {
-  padding: 7px 8px 4px;
+  padding: 6px 8px 3px;
   cursor: move;
 
   & + .fld-field {

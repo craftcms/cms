@@ -2086,9 +2086,9 @@ body.ltr .fieldlayoutform .unusedfields { margin: 30px 0 -30px -30px ; }
 body.rtl .fieldlayoutform .unusedfields { margin: 30px -30px -30px 0 ; }
 .fieldlayoutform .fld-tabs:after, .fieldlayoutform .unusedfields:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 .fieldlayoutform .newtabbtn-container { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; }
-body.ltr .fieldlayoutform .newtabbtn-container { margin: 0 0 61px 0 ; }
-body.rtl .fieldlayoutform .newtabbtn-container { margin: 0 0 61px 0 ; }
-.fieldlayoutform .newtabbtn-container .btn.add { border: 1px solid #2f1fb5; padding: 6px 10px 5px; color: #2f1fb5; background: transparent; -webkit-box-shadow: none; box-shadow: none; }
+body.ltr .fieldlayoutform .newtabbtn-container { margin: 0 0 60px 0 ; }
+body.rtl .fieldlayoutform .newtabbtn-container { margin: 0 0 60px 0 ; }
+.fieldlayoutform .newtabbtn-container .btn.add { border: 1px solid #2f1fb5; padding: 5px 10px; height: 31px; color: #2f1fb5; background: transparent; -webkit-box-shadow: none; box-shadow: none; }
 .fieldlayoutform .newtabbtn-container .btn.add:before { margin-top: -2px; }
 .fieldlayoutform .newtabbtn-container h3 { line-height: 30px; }
 body.ltr .fieldlayoutform .newtabbtn-container h3 { margin: 0 0 0 30px ; }
@@ -2115,7 +2115,7 @@ body.rtl .fld-tab .icon, body.rtl .fld-field .icon { margin-right: 5px; }
 
 .fld-tab .tabs { padding: 0 10px; }
 .fld-tab .tabs:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
-.fld-tab .tabs .tab { margin: -1px 0; padding: 8px 12px 3px; border-bottom-color: #f4f3fb; color: #2f1fb5; }
+.fld-tab .tabs .tab { margin: -1px 0; padding: 5px 12px 4px; border-bottom-color: #f4f3fb; color: #2f1fb5; }
 body.ltr .fld-tab .tabs .tab { float: left; }
 body.rtl .fld-tab .tabs .tab { float: right; }
 .fld-tab .tabs .tab.draggable { cursor: move; }
@@ -2124,7 +2124,7 @@ body.rtl .fld-tab .tabs .tab { float: right; }
 
 .fld-tab-caboose { min-height: 31px; }
 
-.fld-field { padding: 7px 8px 4px; cursor: move; }
+.fld-field { padding: 6px 8px 3px; cursor: move; }
 .fld-field + .fld-field { margin-top: 7px; }
 .fld-field.fld-required span:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; color: #2f1fb5; content: 'asterisk'; font-size: 8px; }
 body.ltr .fld-field.fld-required span:after { margin: -2px 0 0 5px ; }
