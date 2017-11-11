@@ -1717,9 +1717,11 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar #id > a { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; padding: 0 14px; }
 #global-sidebar #id > a:focus { background: none; }
 #global-sidebar #id > a:hover { background-color: transparent; }
-#global-sidebar #id > a.system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; padding: 14px; min-width: 0; }
-body.ltr #global-sidebar #id > a.system-name .photo-container { margin-right: 14px; }
-body.rtl #global-sidebar #id > a.system-name .photo-container { margin-left: 14px; }
+#global-sidebar #id > a.system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; min-width: 0; }
+body.ltr #global-sidebar #id > a.system-name { padding: 14px 0 14px 14px; }
+body.rtl #global-sidebar #id > a.system-name { padding: 14px 14px 14px 0; }
+body.ltr #global-sidebar #id > a.system-name .photo-container { margin-right: 10px; }
+body.rtl #global-sidebar #id > a.system-name .photo-container { margin-left: 10px; }
 #global-sidebar #id > a.system-name h2 { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; }
 #global-sidebar nav { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #global-sidebar #job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
