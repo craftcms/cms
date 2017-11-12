@@ -1,39 +1,13 @@
 # Craft CMS 3.0 Working Changelog
 
 
-## Unreleased
-
-### Changed
-- The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
-
-### Fixed
-- Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
-
-## 3.0.0-beta.34 - 2017-11-09
-
-### Added
-- Added the `trustedHosts`, `secureHeaders`, `ipHeaders`, and `secureProtocolHeaders` config settings, which map to the `yii\web\Request` properties of the same names. They should be used to fix SSL detection for environments where an `X-Forwarded-Proto` HTTP header is used to forward SSL status to the web server. See [Trusted Proxies and Headers](http://www.yiiframework.com/doc-2.0/guide-runtime-requests.html#trusted-proxies) in Yii’s documentation for an explanation of these properties.
-- Created an `oauthtokens` database table.
-- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency. ([#1481](https://github.com/craftcms/cms/issues/1481))
-
-### Fixed
-- Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
-
-## 3.0.0-beta.33 - 2017-11-08
-
-### Fixed
-- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
-
-## 3.0.0-beta.32 - 2017-11-08
-
-### Fixed
-- Fixed a segmentation fault that occurred on fresh installs.
-
 ## 3.0.0-rc.1 (WIP)
 
 ### Added
 - Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
 - Added the concept of “Site Groups”. ([#1668](https://github.com/craftcms/cms/issues/1668))
+- Added the Craft License to the web-based setup wizard.
+- Added a “Connect the database” screen to the web-based setup wizard, which will show up if a database connection can’t already be established, and Craft determines that it can control the DB connection settings via the `.env` file.
 - Added the OAuth 2.0 Client library.
 - Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
@@ -45,6 +19,7 @@
 - Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
+- Added `craft\db\Connection::createFromConfig()`.
 - Added `craft\errors\SiteGroupNotFoundException`.
 - Added `craft\events\SiteGroupEvent`.
 - Added `craft\fields\data\ColorData`.
@@ -54,7 +29,9 @@
 - Added `craft\models\Site::getGroup()`.
 - Added `craft\models\SiteGroup`.
 - Added `craft\records\Site::getGroup()`.
-- Added `carft\records\SiteGroup`.
+- Added `craft\records\SiteGroup`.
+- Added `craft\services\Config::getDotEnvPath()`.
+- Added `craft\services\Config::setEnvVar()`.
 - Added `craft\services\Sites::getAllGroups()`.
 - Added `craft\services\Sites::getGroupById()`.
 - Added `craft\services\Sites::saveGroup()`.
@@ -83,6 +60,7 @@
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
 - Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
 - Color inputs can now be left blank.
+- `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
 
 ### Removed
 - The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
@@ -97,6 +75,34 @@
 - Removed `lib/redactor/`.
 - Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
+
+## Unreleased
+
+### Changed
+- The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
+
+### Fixed
+- Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
+
+## 3.0.0-beta.34 - 2017-11-09
+
+### Added
+- Added the `trustedHosts`, `secureHeaders`, `ipHeaders`, and `secureProtocolHeaders` config settings, which map to the `yii\web\Request` properties of the same names. They should be used to fix SSL detection for environments where an `X-Forwarded-Proto` HTTP header is used to forward SSL status to the web server. See [Trusted Proxies and Headers](http://www.yiiframework.com/doc-2.0/guide-runtime-requests.html#trusted-proxies) in Yii’s documentation for an explanation of these properties.
+- Created an `oauthtokens` database table.
+- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency. ([#1481](https://github.com/craftcms/cms/issues/1481))
+
+### Fixed
+- Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
+
+## 3.0.0-beta.33 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
+
+## 3.0.0-beta.32 - 2017-11-08
+
+### Fixed
+- Fixed a segmentation fault that occurred on fresh installs.
 
 ## 3.0.0-beta.31 - 2017-11-08
 

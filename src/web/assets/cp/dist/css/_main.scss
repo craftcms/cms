@@ -3499,6 +3499,7 @@ input.checkbox:focus + label:before,
 
 .input.errors > .text,
 .input.errors > .border-box,
+.input.errors > .passwordwrapper > .text,
 .text.error {
   border: 1px solid $errorColor !important;
 }

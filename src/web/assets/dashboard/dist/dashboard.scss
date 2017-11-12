@@ -1,6 +1,10 @@
 @charset "UTF-8";
 @import "../../../../../lib/craftcms-sass/mixins";
 
+#content {
+  background: none !important;
+}
+
 /* widgets */
 .widget {
   position: relative;
