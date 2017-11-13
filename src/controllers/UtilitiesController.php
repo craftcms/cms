@@ -513,8 +513,7 @@ class UtilitiesController extends Controller
                     /** @var Element $element */
                     Craft::$app->getSearch()->indexElementAttributes($element);
 
-                    if ($class::hasContent()) {
-                        $fieldLayout = $element->getFieldLayout();
+                    if ($class::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
                         $keywords = [];
 
                         foreach ($fieldLayout->getFields() as $field) {
