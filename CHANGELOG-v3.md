@@ -80,6 +80,7 @@
 
 ### Changed
 - The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
+- `craft\elements\db\ElementQuery::one()` and `nth()` now return `null` instead of `false` if there was no result. ([#2105](https://github.com/craftcms/cms/issues/2105))
 
 ### Fixed
 - Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
