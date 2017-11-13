@@ -1006,6 +1006,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface|array|null the first element. Null is returned if the query
+     * results in nothing.
      */
     public function one($db = null)
     {
@@ -1020,6 +1022,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface|array|null The element. Null is returned if the query
+     * results in nothing.
      */
     public function nth(int $n, Connection $db = null)
     {

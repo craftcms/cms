@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -173,7 +172,7 @@ class Query extends \yii\db\Query
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      *                               If this parameter is not given, the `db` application component will be used.
      *
-     * @return ElementInterface|array|false The row (in terms of an array) of the query result. False is returned if the query
+     * @return array|false The row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
     public function nth(int $n, YiiConnection $db = null)
