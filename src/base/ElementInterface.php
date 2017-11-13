@@ -154,7 +154,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria The element ID or a set of element criteria parameters
      *
-     * @return static Element instance matching the condition, or null if nothing matches.
+     * @return static|null Element instance matching the condition, or null if nothing matches.
      */
     public static function findOne($criteria = null);
 

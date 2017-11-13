@@ -181,7 +181,7 @@ class Elements extends Component
         $query->status = null;
         $query->enabledForSite = false;
 
-        return $query->one() ?: null;
+        return $query->one();
     }
 
     /**
