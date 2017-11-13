@@ -199,7 +199,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return static[] an array of Element instances, or an empty array if nothing matches.
      */
-    public static function findAll($criteria = null);
+    public static function findAll($criteria = null): array;
 
     /**
      * Returns all of the possible statuses that elements of this type may have.

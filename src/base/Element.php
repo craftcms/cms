@@ -277,7 +277,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findAll($criteria = null)
+    public static function findAll($criteria = null): array
     {
         return static::findByCondition($criteria, false);
     }
