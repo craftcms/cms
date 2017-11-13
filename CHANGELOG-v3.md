@@ -78,6 +78,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `$generateNow` argument to `craft\services\Assets::getAssetUrl()`, which can be set to `true` to generate a transform immediately if it doesn’t exist. ([#2103](https://github.com/craftcms/cms/issues/2103))
+
 ### Changed
 - The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
 - `craft\elements\db\ElementQuery::one()` and `nth()` now return `null` instead of `false` if there was no result. ([#2105](https://github.com/craftcms/cms/issues/2105))

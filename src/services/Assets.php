@@ -543,10 +543,13 @@ class Assets extends Component
      *
      * @param Asset                            $asset
      * @param AssetTransform|string|array|null $transform
+     * @param bool|null                        $generateNow Whether the transformed image should be generated immediately if it doesn’t exist.
+     *                                                      Default is null, meaning it will be left up to the `generateTransformsBeforePageLoad`
+     *                                                      config setting.
      *
      * @return string|null
      */
-    public function getAssetUrl(Asset $asset, $transform = null)
+    public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
     {
         // Maybe a plugin wants to do something here
         $event = new GetAssetUrlEvent([
@@ -575,7 +578,11 @@ class Assets extends Component
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
         }
 
-        if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
+        if ($generateNow === null) {
+            $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        }
+
+        if ($generateNow) {
             try {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
             } catch (ImageException $exception) {
