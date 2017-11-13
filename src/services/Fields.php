@@ -248,11 +248,7 @@ class Fields extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if (!$result) {
-            return $this->_groupsById[$groupId] = null;
-        }
-
-        return $this->_groupsById[$groupId] = new FieldGroup($result);
+        return $this->_groupsById[$groupId] = $result ? new FieldGroup($result) : null;
     }
 
     /**
@@ -964,11 +960,7 @@ class Fields extends Component
             ->where(['id' => $layoutId])
             ->one();
 
-        if (!$result) {
-            return $this->_layoutsById[$layoutId] = null;
-        }
-
-        return $this->_layoutsById[$layoutId] = new FieldLayout($result);
+        return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
     }
 
     /**
