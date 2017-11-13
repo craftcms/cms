@@ -1032,7 +1032,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $cachedResult[$n] ?? null;
         }
 
-        return parent::nth($n, $db) ?: null;
+        return parent::nth($n, $db);
     }
 
     /**
