@@ -1025,14 +1025,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Executes the query and returns a single row of result at a given offset.
-     *
-     * @param int             $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param Connection|null $db The database connection used to generate the SQL statement.
-     *                            If this parameter is not given, the `db` application component will be used.
-     *
-     * @return ElementInterface|array|bool The element or row of the query result. False is returned if the query
-     * results in nothing.
+     * @inheritdoc
      */
     public function nth(int $n, Connection $db = null)
     {
