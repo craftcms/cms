@@ -7,9 +7,6 @@
 
 namespace craft\queue;
 
-use craft\base\SavableComponentInterface;
-use yii\queue\Job;
-
 /**
  * JobInterface defines the common interface to be implemented by job classes.
  *
@@ -18,7 +15,7 @@ use yii\queue\Job;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-interface JobInterface extends Job
+interface JobInterface extends \yii\queue\JobInterface
 {
     /**
      * Returns the description that should be used for the job.

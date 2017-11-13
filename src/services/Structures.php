@@ -74,11 +74,7 @@ class Structures extends Component
             ->where(['id' => $structureId])
             ->one();
 
-        if ($result) {
-            return new Structure($result);
-        }
-
-        return null;
+        return $result ? new Structure($result) : null;
     }
 
     /**

@@ -284,11 +284,7 @@ class AssetIndexer extends Component
             ])
             ->one();
 
-        if (!$result) {
-            return null;
-        }
-
-        return new AssetIndexData($result);
+        return $result ? new AssetIndexData($result) : null;
     }
 
     /**

@@ -498,11 +498,7 @@ class Sites extends Component
             $this->_sitesById[$siteId] = $site;
         }
 
-        if (isset($this->_sitesById[$siteId])) {
-            return $this->_sitesById[$siteId];
-        }
-
-        return null;
+        return $this->_sitesById[$siteId] ?? null;
     }
 
     /**
@@ -530,11 +526,7 @@ class Sites extends Component
             $this->_sitesByHandle[$siteHandle] = $site;
         }
 
-        if (isset($this->_sitesByHandle[$siteHandle])) {
-            return $this->_sitesByHandle[$siteHandle];
-        }
-
-        return null;
+        return $this->_sitesByHandle[$siteHandle] ?? null;
     }
 
     /**
