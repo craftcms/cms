@@ -6,6 +6,9 @@
 ### Changed
 - `<select>` inputs in the Control Panel now get the same custom styling in Firefox and IE/Edge that Chrome and Safari get.
 
+### Fixed
+- Fixed a bug where Craft would think that Rich Text field values had changed, even when they hadn’t, when leaving an edit page. ([#2098](https://github.com/craftcms/cms/issues/2098))
+
 ## 2.6.2997 - 2017-11-08
 
 ### Fixed
