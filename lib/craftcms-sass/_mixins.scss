@@ -372,6 +372,15 @@ $elementBorderRadius: 2px;
   box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
   transition: box-shadow linear 50ms;
   appearance: none;
+  // from https://stackoverflow.com/a/15933790/1688568
+  &::-ms-expand {
+    display: none;
+  }
+  // from https://stackoverflow.com/a/19451423/1688568
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 $textcolor;
+  }
 }
 
 @mixin select-input-fullwidth-styles {

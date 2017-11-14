@@ -1,5 +1,10 @@
-Craft CMS Changelog
-===================
+# Craft CMS Changelog
+
+
+## Unreleased
+
+### Changed
+- `<select>` inputs in the Control Panel now get the same custom styling in Firefox and IE/Edge that Chrome and Safari get.
 
 ## 2.6.2997 - 2017-11-08
 
