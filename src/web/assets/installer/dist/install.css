@@ -8,7 +8,7 @@ body { overflow: hidden; background: #ebedef url(images/install-bg-1920.png) no-
 
 #install-modal { width: 770px; height: 510px; padding: 0; }
 #install-modal #screens, #install-modal #screens .screen { width: 100%; height: 100%; }
-#install-modal #screens .screen { padding: 35px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+#install-modal #screens .screen { padding: 35px; box-sizing: border-box; }
 #install-modal #screens .screen .icon svg { position: absolute; bottom: -50px; left: -100px; width: 500px; height: 500px; }
 #install-modal #screens .screen .icon svg rect, #install-modal #screens .screen .icon svg circle, #install-modal #screens .screen .icon svg ellipse, #install-modal #screens .screen .icon svg line, #install-modal #screens .screen .icon svg polyline, #install-modal #screens .screen .icon svg polygon, #install-modal #screens .screen .icon svg path, #install-modal #screens .screen .icon svg text { fill: #ebedef; stroke-width: 0; }
 #install-modal #screens .screen h1 { margin-bottom: 35px; text-align: center; position: relative; }
@@ -27,7 +27,7 @@ body.ltr .buttons { right: 35px; }
 body.rtl .buttons { left: 35px; }
 body.ltr .buttons .btn { padding-right: 10px; }
 body.rtl .buttons .btn { padding-left: 10px; }
-.buttons .btn:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; font-size: 20px; width: 20px; height: 20px; line-height: 18px; }
+.buttons .btn:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; user-select: none; font-size: 20px; width: 20px; height: 20px; line-height: 18px; }
 body.ltr .buttons .btn:after { margin: -2px 0 0 4px ; }
 body.rtl .buttons .btn:after { margin: -2px 4px 0 0 ; }
 body.ltr .buttons .btn:after { content: 'rarr'; }
@@ -46,8 +46,8 @@ input.hidden { position: absolute; top: 100px; }
 #installing #spinner { display: block; margin: 0 auto; }
 #installing .buttons .btn { margin: 0; float: none; }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { .buttons .btn.loading:after { background-image: url(images/spinner_submit_2x.gif); background-size: 20px; } }
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { .buttons .btn.loading:after { background-image: url(images/spinner_submit_2x.gif); background-size: 20px; } }
 @media only screen and (min-width: 1921px) { body { background-image: url(images/install-bg-5120.png); } }
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (min-width: 961px), only screen and (-moz-min-device-pixel-ratio: 1.5) and (min-width: 961px), only screen and (min-device-pixel-ratio: 1.5) and (min-width: 961px), only screen and (min-resolution: 1.5dppx) and (min-width: 961px) { body { background-image: url(images/install-bg-5120.png); } }
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (min-width: 961px), only screen and (-moz-min-device-pixel-ratio: 1.5) and (min-width: 961px), only screen and (-o-min-device-pixel-ratio: 3 / 2) and (min-width: 961px), only screen and (min-device-pixel-ratio: 1.5) and (min-width: 961px), only screen and (min-resolution: 1.5dppx) and (min-width: 961px) { body { background-image: url(images/install-bg-5120.png); } }
 
 /*# sourceMappingURL=install.css.map */
