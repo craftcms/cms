@@ -1,4 +1,4 @@
-/*!   - 2017-11-06 */
+/*!   - 2017-11-14 */
 (function($){
 
 /** global: Craft */
@@ -8226,7 +8226,7 @@ Craft.CP = Garnish.Base.extend(
                 });
             }
 
-            Garnish.$win.on('load', $.proxy(function() {
+            Garnish.$doc.on('ready', $.proxy(function() {
                 // Look for forms that we should watch for changes on
                 this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
