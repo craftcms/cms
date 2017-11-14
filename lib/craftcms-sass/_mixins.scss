@@ -379,7 +379,7 @@ $elementBorderRadius: 2px;
   // from https://stackoverflow.com/a/19451423/1688568
   &:-moz-focusring {
     color: transparent;
-    text-shadow: 0 0 0 $textcolor;
+    text-shadow: 0 0 0 $textColor;
   }
 }
 
