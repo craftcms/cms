@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <div class="ps-grid-wrapper has-sidebar">
             <div class="ps-grid-sidebar">
                 <div class="developer-card">
@@ -26,9 +25,7 @@
                 <plugin-index :plugins="plugins"></plugin-index>
             </div>
         </div>
-
     </div>
-
 </template>
 
 <script>
@@ -48,12 +45,15 @@
         },
 
         computed: {
+
             ...mapGetters({
                 developer: 'developer'
             }),
+
         },
 
         methods: {
+
             onPluginStoreDataLoaded() {
                 let developerId = this.$route.params.id;
 
@@ -70,6 +70,7 @@
                         this.$root.loading = false;
                     });
             }
+
         },
 
         mounted () {
@@ -88,5 +89,6 @@
                 }
             ];
         },
+
     }
 </script>

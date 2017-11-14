@@ -4,6 +4,7 @@ import Resource from 'vue-resource';
 Vue.use(Resource);
 
 export default {
+
     saveCartState(cb, cartState) {
         localStorage.setItem('cartState', JSON.stringify(cartState));
 
@@ -91,4 +92,5 @@ export default {
     checkout(order) {
         return Vue.http.post(window.craftApiEndpoint+'/checkout', order, {emulateJSON: true});
     }
+
 }

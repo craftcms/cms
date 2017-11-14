@@ -19,12 +19,16 @@
     import { mapGetters } from 'vuex'
 
 	export default {
+
 	    props: ['edition'],
 
         computed: {
+
             ...mapGetters({
                 craftData: 'craftData',
             })
+
         }
+
 	}
 </script>

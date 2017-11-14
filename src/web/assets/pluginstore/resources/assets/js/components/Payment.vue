@@ -1,5 +1,4 @@
 <template>
-
 	<div>
 		<div v-if="!craftIdDataLoading">
 			<div class="block">
@@ -180,7 +179,6 @@
 
 		<div v-else class="spinner"></div>
 	</div>
-
 </template>
 
 <script>
@@ -242,17 +240,8 @@
             }
         },
 
-		watch: {
-          	craftIdAccount(newVal) {
-          	    if(!newVal.card) {
-                    this.paymentMode = 'newCard';
-                }
-
-          	    return newVal;
-			}
-		},
-
         computed: {
+
             ...mapGetters({
                 cartItems: 'cartItems',
                 cartTotal: 'cartTotal',
@@ -315,6 +304,19 @@
 			craftIdDataLoading() {
                 return this.$root.craftIdDataLoading;
 			}
+
+        },
+
+        watch: {
+
+            craftIdAccount(newVal) {
+                if(!newVal.card) {
+                    this.paymentMode = 'newCard';
+                }
+
+                return newVal;
+            }
+
         },
 
 		methods: {
@@ -530,6 +532,8 @@
 
                 window.open(url, name, specs);
             },
+
 		},
+
     }
 </script>

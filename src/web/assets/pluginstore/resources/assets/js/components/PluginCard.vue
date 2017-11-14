@@ -18,6 +18,8 @@
 
 <script>
     export default {
+
         props: ['plugin'],
+
     }
 </script>

@@ -7,7 +7,6 @@
 		<input type="submit" class="btn btn-primary" value="Save"></input>
 		<button type="button" class="btn btn-secondary" @click="cancel()">Cancel</button>
 		-->
-
 		<div class="spinner" v-if="loading"></div>
 	</form>
 </template>
@@ -15,6 +14,7 @@
 
 <script>
     export default {
+
         props: ['loading'],
 
 		data() {
@@ -24,6 +24,7 @@
 		},
 
         methods: {
+
             save() {
                 this.$emit('beforeSave');
                 let vm = this;
@@ -44,6 +45,7 @@
 
                 this.$emit('cancel');
             }
+
         },
 
         mounted() {
@@ -58,5 +60,6 @@
             // this.$children cannot be used because it expects a VNode :(
             this.$refs.cardElement.appendChild(el)
         },
+
     }
 </script>

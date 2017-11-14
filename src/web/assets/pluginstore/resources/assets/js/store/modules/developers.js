@@ -10,6 +10,7 @@ const getters = {
 }
 
 const actions = {
+
     getDeveloper({ commit }, developerId) {
         return new Promise((resolve, reject) => {
             api.getDeveloper(developerId, developer => {
@@ -20,12 +21,15 @@ const actions = {
             })
         })
     }
+
 }
 
 const mutations = {
+
     [types.RECEIVE_DEVELOPER] (state, { developer }) {
         state.developer = developer
     },
+
 }
 
 export default {

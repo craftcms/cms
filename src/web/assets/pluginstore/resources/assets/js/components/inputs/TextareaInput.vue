@@ -4,6 +4,8 @@
 
 <script>
     export default {
+
         props: ['id', 'placeholder', 'value', 'cols'],
+
     }
 </script>

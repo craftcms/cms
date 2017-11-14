@@ -1,9 +1,7 @@
 <template>
-
     <div v-if="category">
         <plugin-index :plugins="plugins"></plugin-index>
     </div>
-
 </template>
 
 <script>
@@ -11,6 +9,7 @@
     import { mapGetters } from 'vuex'
 
     export default {
+
         components: {
             PluginIndex,
         },
@@ -22,6 +21,7 @@
         },
 
         computed: {
+
             ...mapGetters({
                 getCategoryById: 'getCategoryById',
                 getPluginsByCategory: 'getPluginsByCategory',
@@ -40,6 +40,15 @@
             plugins() {
                 return this.getPluginsByCategory(this.categoryId);
             }
+
+        },
+
+        watch: {
+
+            '$route.params.id': function (id) {
+                this.categoryId = id;
+            }
+
         },
 
         created() {
@@ -53,10 +62,5 @@
             this.categoryId = this.$route.params.id;
         },
 
-        watch: {
-            '$route.params.id': function (id) {
-                this.categoryId = id;
-            }
-        },
     }
 </script>

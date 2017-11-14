@@ -44,7 +44,6 @@
     import ThankYou from './ThankYou';
 
     export default {
-        props: ['pluginId', 'show'],
 
         components: {
             PluginDetails,
@@ -53,6 +52,8 @@
             ThankYou
         },
 
+        props: ['pluginId', 'show'],
+
         data() {
             return {
                 modal: null,
@@ -60,18 +61,15 @@
         },
 
         computed: {
+
             modalStep() {
                 return this.$root.modalStep;
             }
-        },
 
-        methods: {
-            backToCart() {
-                this.$root.openGlobalModal('cart');
-            }
         },
 
         watch: {
+
             show(show) {
                 if(show) {
                     this.modal.show();
@@ -79,6 +77,15 @@
                     this.modal.hide();
                 }
             }
+
+        },
+
+        methods: {
+
+            backToCart() {
+                this.$root.openGlobalModal('cart');
+            }
+
         },
 
         mounted() {
@@ -92,5 +99,6 @@
                 }
             });
         }
+
     }
 </script>

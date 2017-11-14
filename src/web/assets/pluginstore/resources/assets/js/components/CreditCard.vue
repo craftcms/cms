@@ -18,11 +18,13 @@
     import TextInput from './inputs/TextInput';
 
     export default {
+
         props: ['value'],
 
         components: {
             TextField,
             TextInput,
         },
+
     }
 </script>

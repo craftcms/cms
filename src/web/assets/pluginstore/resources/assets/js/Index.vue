@@ -75,6 +75,7 @@
     import PluginSearch from './components/PluginSearch';
 
     export default {
+
         components: {
             PluginGrid,
             PluginSearch,
@@ -87,19 +88,8 @@
             }
         },
 
-        methods: {
-            ...mapActions([
-                'clearCraftData'
-            ]),
-            clearStorage() {
-                this.clearCraftData().then(() =>  {
-                    localStorage.removeItem('cartState');
-                    location.reload();
-                });
-            },
-        },
-
         computed: {
+
             ...mapGetters({
                 enableCraftId: 'enableCraftId',
                 allPlugins: 'allPlugins',
@@ -110,9 +100,26 @@
                 getPluginsByIds: 'getPluginsByIds',
                 installedPlugins: 'installedPlugins',
             }),
+
             indexBlocks() {
                 return this.pluginStoreData.indexBlocks;
             }
+
+        },
+
+        methods: {
+
+            ...mapActions([
+                'clearCraftData'
+            ]),
+
+            clearStorage() {
+                this.clearCraftData().then(() =>  {
+                    localStorage.removeItem('cartState');
+                    location.reload();
+                });
+            },
+
         },
 
         created() {
@@ -122,5 +129,6 @@
         mounted() {
             this.$root.crumbs = null;
         }
+
     }
 </script>

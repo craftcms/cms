@@ -13,9 +13,9 @@
 	</div>
 </template>
 
-
 <script>
 	export default {
+
 	    props: ['attributes', 'value'],
 
 	    data() {
@@ -27,19 +27,25 @@
 				}
 			};
 		},
+
+        computed: {
+
+            menuLabel() {
+                if(this.attributes) {
+                    return this.attributes[this.value.attribute];
+                }
+            }
+
+        },
+
 		methods: {
+
 	      	selectAttribute(attribute) {
                 this.$emit('update:value', { attribute: attribute, direction: this.value.direction })
 			},
+
 	      	selectDirection(direction) {
                 this.$emit('update:value', { attribute: this.value.attribute, direction: direction })
-			}
-		},
-		computed: {
-	        menuLabel() {
-	            if(this.attributes) {
-	            	return this.attributes[this.value.attribute];
-                }
 			}
 		},
 
@@ -53,5 +59,6 @@
 
             Craft.initUiElements();
 		},
+
 	}
 </script>

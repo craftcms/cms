@@ -16,7 +16,6 @@
         </div>
 
         <plugin-grid :plugins="pluginsToRender" :columns="4"></plugin-grid>
-
     </div>
 </template>
 
@@ -25,6 +24,7 @@
     import SortMenuBtn from './SortMenuBtn';
 
     export default {
+
         components: {
             PluginGrid,
             SortMenuBtn,
@@ -50,6 +50,7 @@
         },
 
         computed: {
+
             pluginsToRender() {
                 let self = this;
 
@@ -84,6 +85,8 @@
                     }
                 });
             },
+
         },
+
     }
 </script>

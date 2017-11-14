@@ -7,6 +7,7 @@ const state = {
 }
 
 const getters = {
+
     pluginStoreData: state => state.data,
 
     enableCraftId(state) {
@@ -94,13 +95,15 @@ const getters = {
             return state.data.craftProPluginId;
         };
     },
+
 };
 
 const actions = {
+
     getPluginStoreData ({ commit }) {
         return new Promise((resolve, reject) => {
             api.getPluginStoreData(data => {
-                commit(types.RECEIVE_PLUGIN_STORE_DATA, { data })
+                commit(types.RECEIVE_PLUGIN_STORE_DATA, { data });
                 resolve(data);
             }, response => {
                 reject(response);
@@ -111,24 +114,28 @@ const actions = {
     getPluginDetails({ commit }, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginDetails(pluginId, data => {
-                commit(types.RECEIVE_PLUGIN_DETAILS, { data })
+                commit(types.RECEIVE_PLUGIN_DETAILS, { data });
                 resolve(data);
             }, response => {
                 reject(response);
             })
         })
     },
-}
+
+};
 
 const mutations = {
+
     [types.RECEIVE_PLUGIN_STORE_DATA] (state, { data }) {
         state.data = data
     },
+
     [types.RECEIVE_PLUGIN_DETAILS] (state, { data }) {
         console.log('mutation', data);
         state.plugin = data
     },
-}
+
+};
 
 export default {
     state,

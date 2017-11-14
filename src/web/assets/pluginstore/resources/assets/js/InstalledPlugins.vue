@@ -10,14 +10,17 @@
     import PluginGrid from './components/PluginGrid';
 
     export default {
+
         components: {
             PluginGrid,
         },
 
         computed: {
+
             ...mapGetters({
                 installedPlugins: 'installedPlugins',
             }),
+
         },
 
         created() {
@@ -29,5 +32,6 @@
             ];
             this.$root.pageTitle = 'Installed Plugins';
         },
+
     }
 </script>

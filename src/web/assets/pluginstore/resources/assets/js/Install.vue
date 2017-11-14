@@ -18,6 +18,7 @@
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
+
         data() {
             return {
                 plugin: null,
@@ -25,12 +26,15 @@
         },
 
 		computed: {
+
             loading() {
                 return !this.$root.craftIdDataLoaded;
 			}
+
 		},
 
 		methods: {
+
           	onPluginStoreDataLoaded() {
 				if(this.$root.craftIdDataLoaded) {
 				    this.install();
@@ -66,7 +70,9 @@
 						});
                 }
 			}
+
 		},
+
 		mounted() {
             this.installing = false;
 
@@ -86,5 +92,6 @@
                 this.onCraftIdDataLoaded();
 			}
 		},
+
     };
 </script>

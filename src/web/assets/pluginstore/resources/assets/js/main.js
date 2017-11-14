@@ -43,23 +43,70 @@ window.pluginStoreApp = new Vue({
     },
 
     computed: {
+
         ...mapGetters({
             cartPlugins: 'cartPlugins',
         }),
+
+    },
+
+    watch: {
+
+        cartPlugins() {
+            if(window.enableCraftId) {
+                this.$cartButton.html('Cart (' + this.cartPlugins.length + ')');
+            }
+        },
+
+        crumbs(crumbs) {
+            // Remove existing crumbs
+            $('nav', this.$crumbs).remove();
+
+            if(crumbs && crumbs.length > 0) {
+                // Create new crumbs
+                let crumbsNav = $('<nav></nav>');
+                let crumbsUl = $('<ul></ul>').appendTo(crumbsNav);
+                let crumbsLi = $('<li></li>').appendTo(crumbsUl);
+
+                // Add crumb items
+                let $this = this;
+
+                for (let i = 0; i < crumbs.length; i++) {
+                    let item = crumbs[i];
+                    let link = $('<a href="#" data-path="'+item.path+'">'+item.label+'</a>').appendTo(crumbsLi);
+
+                    link.on('click', (e) => {
+                        e.preventDefault();
+                        $this.$router.push({ path: item.path })
+                    });
+                }
+
+                crumbsNav.appendTo(this.$crumbs);
+            }
+        },
+
+        pageTitle(pageTitle) {
+            this.$pageTitle.html(pageTitle);
+        }
+
     },
 
     methods: {
+
         displayNotice(message) {
             Craft.cp.displayNotice(message);
         },
+
         displayError(message) {
             Craft.cp.displayError(message);
         },
+
         showPlugin(plugin) {
             this.plugin = plugin;
             this.pluginId = plugin.id;
             this.openGlobalModal('plugin-details');
         },
+
         openGlobalModal(modalStep) {
             this.modalStep = modalStep;
 
@@ -68,12 +115,13 @@ window.pluginStoreApp = new Vue({
                 this.modal.show();
             }*/
         },
+
         closeGlobalModal() {
             this.showModal = false;
             // this.modal.hide();
         },
-        updateCraftId(craftId) {
 
+        updateCraftId(craftId) {
             let $accountInfoMenu = $('#account-info').data('menubtn').menu.$container;
 
             if(craftId) {
@@ -94,69 +142,21 @@ window.pluginStoreApp = new Vue({
 
             this.$store.dispatch('updateCraftId', { craftId });
         },
-    },
 
-    watch: {
-        cartPlugins() {
-            if(window.enableCraftId) {
-                this.$cartButton.html('Cart (' + this.cartPlugins.length + ')');
-            }
-        },
-
-        crumbs(crumbs) {
-            // Remove existing crumbs
-
-            $('nav', this.$crumbs).remove();
-
-
-            if(crumbs && crumbs.length > 0) {
-                // Create new crumbs
-
-                let crumbsNav = $('<nav></nav>');
-                let crumbsUl = $('<ul></ul>').appendTo(crumbsNav);
-                let crumbsLi = $('<li></li>').appendTo(crumbsUl);
-
-
-                // Add crumb items
-
-                let $this = this;
-
-                for (let i = 0; i < crumbs.length; i++) {
-                    let item = crumbs[i];
-                    let link = $('<a href="#" data-path="'+item.path+'">'+item.label+'</a>').appendTo(crumbsLi);
-
-                    link.on('click', (e) => {
-                        e.preventDefault();
-                        $this.$router.push({ path: item.path })
-                    });
-                }
-
-                crumbsNav.appendTo(this.$crumbs);
-            }
-        },
-
-        pageTitle(pageTitle) {
-            this.$pageTitle.html(pageTitle);
-        }
     },
 
     created() {
         // Crumbs
-
         this.$crumbs = $('#crumbs');
 
-
         // Page title
-
         this.$pageTitle = $('#header').find('h1');
 
         if(this.$pageTitle) {
             this.$pageTitle.html(this.pageTitle)
         }
 
-
         // Dispatch actions
-
         this.$store.dispatch('getCraftData')
             .then(data => {
                 this.craftIdDataLoading = false;
@@ -183,13 +183,10 @@ window.pluginStoreApp = new Vue({
     },
 
     mounted() {
-
         let $this = this;
 
         if(window.enableCraftId) {
-
             // Cart Button
-
             this.$cartButton = $('#cart-button')
 
             this.$cartButton.on('click', (e) => {
@@ -197,9 +194,7 @@ window.pluginStoreApp = new Vue({
                 $this.openGlobalModal('cart');
             });
 
-
             // Payment button
-
             let $paymentButton = $('#payment-button');
 
             $paymentButton.on('click', (e) => {
@@ -207,9 +202,7 @@ window.pluginStoreApp = new Vue({
                 $this.openGlobalModal('payment');
             });
 
-
             // reset-cart-button
-
             let $resetCartButton = $('#reset-cart-button');
 
             $resetCartButton.on('click', (e) => {
@@ -218,4 +211,5 @@ window.pluginStoreApp = new Vue({
             });
         }
     },
+
 });

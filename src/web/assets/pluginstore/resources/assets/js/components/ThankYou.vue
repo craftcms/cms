@@ -8,17 +8,18 @@
 		</div>
 
 		<!--<pre>{{lastOrder}}</pre>-->
-
 	</div>
-
 </template>
 
 <script>
     export default {
+
 		computed: {
+
 		    lastOrder() {
 		        return this.$root.lastOrder;
 			}
+
 		},
 
 		mounted() {
@@ -26,5 +27,6 @@
                 this.$router.push({ path: '/'})
 			}
 		}
+
     };
 </script>

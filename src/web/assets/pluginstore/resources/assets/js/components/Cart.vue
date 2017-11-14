@@ -73,6 +73,7 @@
             <div v-if="pendingActiveTrials.length > 1" class="right">
                 <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
             </div>
+
             <h2>{{ "Active Trials"|t('app') }}</h2>
 
             <table class="data fullwidth">
@@ -115,13 +116,16 @@
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
+
         computed: {
+
             ...mapGetters({
                 isInTrial: 'isInTrial',
                 cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
                 cartTotal: 'cartTotal',
             }),
+
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if(p) {
@@ -129,13 +133,16 @@
                     }
                 })
             },
+
         },
 
         methods: {
+
             ...mapActions([
                 'addToCart',
                 'removeFromCart'
             ]),
+
             addAllToCart () {
                 let $store = this.$store;
 
@@ -143,9 +150,12 @@
                     $store.dispatch('addToCart', activeTrial)
                 })
             },
+
             payment() {
                 this.$root.openGlobalModal('payment');
             }
+
         },
+
     }
 </script>

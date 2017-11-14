@@ -16,7 +16,6 @@
             </div>
 
             <div class="buttons">
-
                 <div v-if="pluginSnippet.price != '0.00'">
                     <a v-if="isInTrial(pluginSnippet) || isInstalled(pluginSnippet)" class="btn disabled">{{ "Installed"|t('app') }}</a>
                     <a v-else @click="tryPlugin(pluginSnippet)" class="btn">{{ "Try"|t('app') }}</a>
@@ -28,7 +27,6 @@
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
                     <a v-else @click="installPlugin(pluginSnippet)" class="btn submit">{{ "Install"|t('app') }}</a>
                 </div>
-
             </div>
         </div>
 
@@ -72,12 +70,12 @@
 </template>
 
 <script>
-
     import { mapGetters, mapActions } from 'vuex'
 
-    var marked = require('marked');
+    let marked = require('marked');
 
     export default {
+
         props: ['pluginId'],
 
         data() {
@@ -88,6 +86,7 @@
         },
 
         computed: {
+
             ...mapGetters({
                 plugins: 'allPlugins',
                 cartPlugins: 'cartPlugins',
@@ -96,50 +95,71 @@
                 isInCart: 'isInCart',
                 isInstalled: 'isInstalled',
             }),
+
             longDescription() {
                 if(this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return marked(this.plugin.longDescription, { sanitize: true });
                 }
             },
+
             developerUrl() {
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
             },
+
             installUrl() {
                 return Craft.getCpUrl('plugin-store/install');
             },
+
             categories() {
                 return this.$store.getters.getAllCategories().filter(c => {
                     return this.plugin.categoryIds.find(pc => pc == c.id);
                 });
             }
+
+        },
+
+        watch: {
+
+            pluginId(pluginId) {
+                this.loadPlugin(pluginId);
+                return pluginId;
+            }
+
         },
 
         methods: {
+
             ...mapActions([
                'addToCart'
             ]),
+
             buyPlugin(plugin) {
                 this.$store.dispatch('addToCart', plugin);
                 this.$root.openGlobalModal('cart');
             },
+
             tryPlugin(plugin) {
                 this.$root.closeGlobalModal();
                 this.$router.push({ path: '/install/'+plugin.id });
             },
+
             installPlugin(plugin) {
                 this.$root.closeGlobalModal();
                 this.$router.push({ path: '/install/'+plugin.id });
             },
+
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();
                 this.$root.pageTitle = plugin.developerName;
                 this.$router.push({ path: '/developer/'+plugin.developerId})
             },
+
             viewCategory(category) {
                 this.$root.closeGlobalModal();
                 this.$root.pageTitle = category.name;
                 this.$router.push({ path: '/categories/'+category.id})
             },
+
             loadPlugin(pluginId) {
                 this.plugin = null;
                 this.pluginSnippet = this.$store.getters.getPluginById(pluginId);
@@ -152,21 +172,12 @@
                         console.log('error', response);
                     });
             }
-        },
 
-        watch: {
-            pluginId(pluginId) {
-                this.loadPlugin(pluginId);
-                return pluginId;
-            }
         },
 
         mounted() {
             this.loadPlugin(this.pluginId);
         }
+
     }
 </script>
-
-<style scoped>
-
-</style>

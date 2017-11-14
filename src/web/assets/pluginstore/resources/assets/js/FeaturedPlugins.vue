@@ -1,9 +1,7 @@
 <template>
-
 	<div v-if="featuredPlugin">
 		<plugin-grid :columns="4" :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
 	</div>
-
 </template>
 
 <script>
@@ -11,10 +9,13 @@
     import PluginGrid from './components/PluginGrid';
 
     export default {
+
         components: {
             PluginGrid,
 		},
+
         computed: {
+
             ...mapGetters({
                 getFeaturedPlugin: 'getFeaturedPlugin',
                 getPluginsByIds: 'getPluginsByIds',
@@ -29,6 +30,7 @@
 
                 return featuredPlugin;
 			}
+
         },
 
         created () {
@@ -39,5 +41,6 @@
                 }
             ];
         },
+
     }
 </script>

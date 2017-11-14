@@ -13,10 +13,12 @@
     import TextInput from '../inputs/TextInput';
 
     export default {
+
         props: ['label', 'id', 'placeholder', 'value', 'errors'],
 
         components: {
             TextInput,
         },
+
     }
 </script>

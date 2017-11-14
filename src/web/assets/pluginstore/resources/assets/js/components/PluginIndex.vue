@@ -1,11 +1,9 @@
 <template>
-
 	<div>
 		<plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="pluginsToRender" :sort.sync="sort"></plugin-search>
 
 		<plugin-grid v-if="!showingSearchResults" :plugins="pluginsToRender" :columns="4"></plugin-grid>
 	</div>
-
 </template>
 
 <script>
@@ -14,12 +12,12 @@
 
     export default {
 
-        props: ['plugins'],
-
         components: {
             PluginGrid,
             PluginSearch,
         },
+
+        props: ['plugins'],
 
         data () {
             return {
@@ -32,6 +30,7 @@
         },
 
         computed: {
+
             pluginsToRender() {
                 if(!this.plugins) {
                     return [];
@@ -66,6 +65,8 @@
 
                 return plugins;
             }
+
         },
+
     }
 </script>

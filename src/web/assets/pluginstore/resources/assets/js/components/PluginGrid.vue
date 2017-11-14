@@ -1,5 +1,4 @@
 <template>
-
     <div>
         <div :class="cssClass" v-if="plugins && plugins.length > 0">
             <div class="ps-grid-box" v-for="plugin in plugins">
@@ -7,27 +6,22 @@
             </div>
         </div>
     </div>
-
 </template>
 
 
 <script>
-
     import PluginCard from './PluginCard';
 
     export default {
-        props: ['plugins', 'columns'],
 
         components: {
             PluginCard,
         },
 
-        data () {
-            return {
-            }
-        },
+        props: ['plugins', 'columns'],
 
         computed: {
+
             cssClass() {
                 let cssClass = 'ps-grid-plugins';
 
@@ -37,12 +31,16 @@
 
                 return cssClass;
             }
+
         },
 
         methods: {
+
             showPlugin(plugin) {
                 this.$root.showPlugin(plugin);
             },
+
         },
+
     }
 </script>

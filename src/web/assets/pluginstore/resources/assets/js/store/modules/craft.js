@@ -4,9 +4,10 @@ import * as types from '../mutation-types'
 const state = {
     craftData: {},
     // installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
-}
+};
 
 const getters = {
+
     craftData: (state) => {
         return state.craftData;
     },
@@ -35,13 +36,15 @@ const getters = {
     states: state => {
         return state.craftData.states;
     }
-}
+
+};
 
 const actions = {
+
     installPlugin({ dispatch, commit }, plugin) {
         return new Promise((resolve, reject) => {
             setTimeout(function() {
-                commit(types.INSTALL_PLUGIN, plugin)
+                commit(types.INSTALL_PLUGIN, plugin);
                 dispatch('saveCraftData');
                 resolve();
             }, 3000);
@@ -53,7 +56,7 @@ const actions = {
     getCraftData ({ commit }) {
         return new Promise((resolve, reject) => {
             api.getCraftData(data => {
-                commit(types.RECEIVE_CRAFT_DATA, { data })
+                commit(types.RECEIVE_CRAFT_DATA, { data });
                 resolve(data);
             }, response => {
                 reject(response);
@@ -82,7 +85,7 @@ const actions = {
         return new Promise((resolve, reject) => {
             api.clearCraftData()
                 .then(data => {
-                    commit(types.CLEAR_CRAFT_DATA, { data })
+                    commit(types.CLEAR_CRAFT_DATA, { data });
                     resolve(data);
                 })
                 .catch(response => {
@@ -90,11 +93,13 @@ const actions = {
                 });
         })
     },
-}
+
+};
 
 const mutations = {
+
     [types.INSTALL_PLUGIN] (state, { plugin }) {
-        const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id)
+        const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id);
 
         if (!record) {
             state.craftData.installedPlugins.push(plugin.id)
@@ -116,7 +121,8 @@ const mutations = {
     [types.UPDATE_CRAFT_ID] (state, { craftId }) {
         state.craftData.craftId = craftId;
     },
-}
+
+};
 
 export default {
     state,

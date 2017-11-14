@@ -8,9 +8,10 @@ Vue.use(Vuex);
 const state = {
     items: [],
     checkoutStatus: null
-}
+};
 
 const getters = {
+
     cartItems(state) {
         return state.items;
     },
@@ -45,7 +46,7 @@ const getters = {
             if(rootState.pluginStoreData.plugins) {
                 return rootState.pluginStoreData.plugins.find(p => p.id === id)
             }
-        })
+        });
 
         return items.map(({ id }) => {
             if(rootState.pluginStoreData.plugins) {
@@ -63,7 +64,7 @@ const getters = {
             if(rootState.pluginStoreData.plugins) {
                 return rootState.pluginStoreData.plugins.find(p => p.id == id)
             }
-        })
+        });
 
         return plugins.filter(p => {
             if(p) {
@@ -71,9 +72,11 @@ const getters = {
             }
         });
     }
-}
+
+};
 
 const actions = {
+
     addToCart({dispatch, commit}, plugin) {
         commit(types.ADD_TO_CART, {
             id: plugin.id
@@ -87,6 +90,7 @@ const actions = {
         })
         dispatch('saveCartState');
     },
+
     saveCartState({ commit, state }) {
         api.saveCartState(() => {
             commit(types.SAVE_CART_STATE);
@@ -117,9 +121,11 @@ const actions = {
         commit(types.RESET_CART);
         dispatch('saveCartState');
     }
-}
+
+};
 
 const mutations = {
+
     [types.ADD_TO_CART] (state, { id }) {
         const record = state.items.find(p => p.id === id)
 
@@ -156,7 +162,8 @@ const mutations = {
     [types.CHECKOUT] (state, { order }) {
         console.log('mutation', order);
     }
-}
+
+};
 
 export default {
     state,
