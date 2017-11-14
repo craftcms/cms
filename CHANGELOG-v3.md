@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
+- Fixed a PHP permissions error that might happen on some Craft 2 to Craft 3 upgrades.
 
 ## 3.0.0-beta.34 - 2017-11-09
 
