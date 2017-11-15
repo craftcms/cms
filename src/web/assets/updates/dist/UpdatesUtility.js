@@ -10,7 +10,7 @@
             updates: null,
 
             init: function() {
-                this.$body = Craft.cp.$content.children('.body');
+                this.$body = $('#content');
 
                 var $graphic = $('#graphic'),
                     $status = $('#status');
