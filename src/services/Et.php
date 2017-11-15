@@ -205,7 +205,7 @@ class Et extends Component
         $xy = App::majorMinorVersion($targetVersion);
         $url = "{$this->downloadBaseUrl}/{$uriPrefix}/{$xy}/{$targetVersion}/Patch/{$localVersion}/{$md5}.zip";
 
-        $client = new Client([
+        $client = Craft::createGuzzleClient([
             'timeout' => 240,
             'connect_timeout' => 30,
         ]);
