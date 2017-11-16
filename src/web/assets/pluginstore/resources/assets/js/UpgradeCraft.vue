@@ -1,12 +1,13 @@
 <template>
     <div v-if="craftClientPlugin && craftProPlugin">
 
-
         <div id="upgrademodal-compare" class="body">
             <table class="data fullwidth">
                 <thead>
                 <tr class="logos">
-                    <td></td>
+                    <td>
+                        <img :src="craftClientPlugin.iconUrl" width="75" height="75" />
+                    </td>
                     <th scope="col">
                         <h1 class="logo">Personal</h1>
                         <p>{{ "For sites built by and for the developer." }}</p>
