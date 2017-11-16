@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where Craft would think that Rich Text field values had changed, even when they hadn’t, when leaving an edit page. ([#2098](https://github.com/craftcms/cms/issues/2098))
+- Fixed a bug where Assets fields with large thumbnails were overlapping the following field in element editor HUDs. ([#1802](https://github.com/craftcms/cms/issues/1802))
 
 ## 2.6.2997 - 2017-11-08
 
