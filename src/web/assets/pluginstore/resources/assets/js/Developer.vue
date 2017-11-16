@@ -22,7 +22,7 @@
             </div>
 
             <div class="ps-grid-main">
-                <plugin-index :plugins="plugins"></plugin-index>
+                <plugin-index :plugins="plugins" columns="3"></plugin-index>
             </div>
         </div>
     </div>
