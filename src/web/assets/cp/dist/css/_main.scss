@@ -2027,8 +2027,8 @@ $checkboxPadding: 20px;
 /* element select fields */
 .elementselect {
   position: relative;
-  min-height: 40px;
-  margin-bottom: -10px;
+  min-height: 37px;
+  margin-top: -7px;
 }
 
 .elementselect:after {
@@ -2038,7 +2038,7 @@ $checkboxPadding: 20px;
 .elementselect .element,
 .elementselect .btn {
   @include floatleft;
-  @include margin(0, 7px, 7px, 0);
+  @include margin(7px, 7px, 0, 0);
 }
 
 .elementselect .element.small,
@@ -2556,39 +2556,6 @@ ul.tree,
       & > .timewrapper {
         display: block;
         width: 100%;
-      }
-
-      & > .elementselect > .elements > .element {
-        height: 18px;
-        float: none;
-        margin: 0;
-
-        & + .element {
-          margin-top: 7px;
-        }
-
-        &:not(.hasstatus):not(.hasthumb) {
-          width: calc(100% - 14px);
-        }
-
-        &.hasstatus:not(.hasthumb) {
-          width: calc(100% - 32px);
-        }
-
-        &.hasthumb:not(.hasstatus) {
-          width: calc(100% - 54px);
-        }
-
-        &.hasstatus.hasthumb {
-          width: calc(100% - 72px);
-        }
-
-        & > .label {
-          width: calc(100% - 20px);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
       }
     }
 
