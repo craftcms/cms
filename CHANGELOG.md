@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where Craft would think that Rich Text field values had changed, even when they hadn’t, when leaving an edit page. ([#2098](https://github.com/craftcms/cms/issues/2098))
+- Fixed a bug where Assets fields with large thumbnails were overlapping the following field in element editor HUDs. ([#1802](https://github.com/craftcms/cms/issues/1802))
 
 ## 2.6.2997 - 2017-11-08
 
@@ -59,6 +60,7 @@
 - Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
 - Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end. ([#2018](https://github.com/craftcms/cms/issues/2018))
 - Fixed a bug where `HttpRequestService::getQueryStringWithoutPath()` wasn’t including duplicate param names in the returned string. ([#2041](https://github.com/craftcms/cms/issues/2041))
+- Fixed a bug where Categories fields weren’t automatically adding all of a category’s ancestors when selecting a nested category, if any of its ancestors were disabled. ([#2035](https://github.com/craftcms/cms/issues/2035))
 
 ## 2.6.2992 - 2017-10-13
 
