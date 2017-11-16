@@ -555,6 +555,10 @@ ul.categories li:hover + li:before {
   text-align: center;
 }
 
+.developer-card .spinner {
+  margin-top: 48px;
+}
+
 .developer-card .avatar {
   width: 120px;
   height: 120px;

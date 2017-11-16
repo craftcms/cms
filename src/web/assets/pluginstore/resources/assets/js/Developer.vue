@@ -3,21 +3,26 @@
         <div class="ps-grid-wrapper has-sidebar">
             <div class="ps-grid-sidebar">
                 <div class="developer-card">
+                    <template v-if="loading">
+                        <div class="spinner"></div>
+                    </template>
 
-                    <div class="avatar">
-                        <img :src="developer.photoUrl" />
-                    </div>
+                    <template v-else>
+                        <div class="avatar">
+                            <img :src="developer.photoUrl" />
+                        </div>
 
-                    <ul>
-                        <li><strong>{{ developer.developerName }}</strong></li>
-                        <li>{{ developer.location }}</li>
-                    </ul>
+                        <ul>
+                            <li><strong>{{ developer.developerName }}</strong></li>
+                            <li>{{ developer.location }}</li>
+                        </ul>
 
-                    <ul class="links">
-                        <li><a class="btn" :href="developer.developerUrl">Website</a></li>
-                        <li><a class="btn" :href="developer.developerUrl">Contact</a></li>
-                        <!--<li>{{ developer.plugins.length }} plugins</li>-->
-                    </ul>
+                        <ul class="links">
+                            <li><a class="btn" :href="developer.developerUrl">Website</a></li>
+                            <li><a class="btn" :href="developer.developerUrl">Contact</a></li>
+                            <!--<li>{{ developer.plugins.length }} plugins</li>-->
+                        </ul>
+                    </template>
                 </div>
             </div>
 
@@ -37,6 +42,7 @@
         data() {
             return {
                 plugins: [],
+                loading: false,
             }
         },
 
@@ -58,6 +64,7 @@
                 let developerId = this.$route.params.id;
 
                 this.$root.loading = true;
+                this.loading = true;
 
                 this.plugins = this.$store.getters.getPluginsByDeveloperId(developerId);
 
@@ -65,9 +72,11 @@
                     .then(developer => {
                         this.$root.pageTitle = developer.developerName;
                         this.$root.loading = false;
+                        this.loading = false;
                     })
                     .catch(response => {
                         this.$root.loading = false;
+                        this.loading = false;
                     });
             }
 
