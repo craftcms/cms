@@ -549,6 +549,10 @@ ul.categories {
 .developer-card {
   text-align:center;
 
+  .spinner {
+    margin-top: 48px;
+  }
+
   .avatar {
     width: 120px;
     height: 120px;

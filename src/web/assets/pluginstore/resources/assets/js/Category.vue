@@ -1,6 +1,6 @@
 <template>
     <div v-if="category">
-        <plugin-index :plugins="plugins"></plugin-index>
+        <plugin-index :plugins="plugins" :columns="4"></plugin-index>
     </div>
 </template>
 

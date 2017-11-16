@@ -43,10 +43,10 @@
                 <div class="plugin-sidebar">
                     <div class="plugin-meta">
                         <ul>
-                            <li><span>{{ "Version"|t('app') }}</span> <strong>X.X.X</strong></li>
-                            <li><span>{{ "Last update"|t('app') }}</span> <strong>—</strong></li>
-                            <li><span>{{ "Active installs"|t('app') }}</span> <strong>XXX,XXX</strong></li>
-                            <li><span>{{ "Compatibility"|t('app') }}</span> <strong>Craft X</strong></li>
+                            <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
+                            <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ plugin.lastUpdate }}</strong></li>
+                            <li><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
+                            <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
                             <li>
                                 <span>{{ "Categories"|t('app') }}</span>
                                 <strong>
