@@ -5,9 +5,9 @@
             <table class="data fullwidth">
                 <thead>
                 <tr class="logos">
-                    <td>
-                        <img :src="craftClientPlugin.iconUrl" width="75" height="75" />
-                    </td>
+                    <th>
+                        <img :src="craftClientPlugin.iconUrl" width="70" height="70" />
+                    </th>
                     <th scope="col">
                         <h1 class="logo">Personal</h1>
                         <p>{{ "For sites built by and for the developer." }}</p>
