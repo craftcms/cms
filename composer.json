@@ -25,6 +25,11 @@
     "vlucas/phpdotenv": "^2.4.0",
     "roave/security-advisories": "dev-master"
   },
+  "autoload": {
+    "psr-4": {
+      "modules\\": "modules/"
+    }
+  },
   "config": {
     "optimize-autoloader": true
   },
@@ -33,6 +38,7 @@
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     ],
     "post-create-project-cmd": [
+      "@composer dump-autoload -o",
       "@php craft setup/welcome"
     ]
   }
