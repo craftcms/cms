@@ -6,6 +6,7 @@
 ### Changed
 - `<select>` inputs in the Control Panel now get the same custom styling in Firefox and IE/Edge that Chrome and Safari get.
 - Updated PhpMailer to 5.2.26.
+- Improved the performance of some queries to the `templatecaches` tables when the `globally` cache tag parameter was used with large amounts of data. ([#2110](https://github.com/craftcms/cms/issues/2110))
 
 ### Fixed
 - Fixed a bug where Craft would think that Rich Text field values had changed, even when they hadn’t, when leaving an edit page. ([#2098](https://github.com/craftcms/cms/issues/2098))
