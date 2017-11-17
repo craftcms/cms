@@ -38,8 +38,8 @@
                     }
                     else {
                         // Craft CMS update?
-                        if (response.updates.app) {
-                            this.processUpdate(response.updates.app, false);
+                        if (response.updates.cms) {
+                            this.processUpdate(response.updates.cms, false);
                         }
 
                         // Plugin updates?
@@ -79,7 +79,7 @@
             },
 
             processUpdate: function(updateInfo, isPlugin) {
-                if (!updateInfo.releases || !updateInfo.releases.length) {
+                if (!updateInfo.releases.length && updateInfo.status !== 'expired') {
                     return;
                 }
 
@@ -110,7 +110,7 @@
                 var requirements = [];
 
                 for (var i = 0; i < updates.length; i++) {
-                    requirements.push(updates[i].getHandle()+':'+updates[i].latestAllowedVersion);
+                    requirements.push(updates[i].updateInfo.handle+':'+updates[i].updateInfo.latestAllowedVersion);
                 }
 
                 return requirements.join(',');
@@ -123,13 +123,10 @@
             updateInfo: null,
             isPlugin: null,
             latestVersion: null,
-            latestAllowedVersion: null,
 
             $container: null,
             $header: null,
             $contents: null,
-            $ineligibleReleasesContainer: null,
-            $showIneligibleReleasesLink: null,
             $releaseContainer: null,
             $showAllLink: null,
 
@@ -145,33 +142,21 @@
                 this.createPane();
                 this.initReleases();
                 this.createHeading();
-                this.createUpdateButtons();
+                this.createCta();
 
                 // Any ineligible releases?
-                if (this.updateInfo.breakpoint) {
-                    $('<blockquote class="note ineligible"><p><strong>You’ve reached a breakpoint!</strong> More updates will become available after you install Doxter 3.1.3.</p>').insertBefore(this.$releaseContainer);
-                } else if (this.updateInfo.expired) {
-                    $('<blockquote class="note ineligible"><p><strong>Your license has expired!</strong> Renew your Craft CMS license for another year of amazing updates.</p>').insertBefore(this.$releaseContainer);
+                if (this.updateInfo.status !== 'eligible') {
+                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p>').insertBefore(this.$releaseContainer);
+
+                    if (this.updateInfo.status === 'expired' || this.updateInfo.latestAllowedVersion === null) {
+                        this.updatesPage.showUpdateAllBtn = false;
+                    }
                 }
-
-                if (this.updateInfo.expired || this.updateInfo.licenseUpdated || this.latestAllowedVersion === null) {
-                    this.updatesPage.showUpdateAllBtn = false;
-                }
-            },
-
-            getDisplayName: function()
-            {
-                return this.isPlugin ? this.updateInfo.displayName : 'Craft CMS';
-            },
-
-            getHandle: function()
-            {
-                return this.isPlugin ? this.updateInfo.handle : 'craft';
             },
 
             canUpdateToLatest: function()
             {
-                return this.latestAllowedVersion === this.updateInfo.releases[0].version;
+                return this.updateInfo.releases.length && this.updateInfo.latestAllowedVersion === this.updateInfo.releases[0].version;
             },
 
             createPane: function() {
@@ -183,40 +168,31 @@
 
             createHeading: function() {
                 $('<div class="readable left"/>').appendTo(this.$header).append(
-                    $('<h1/>', {text: this.getDisplayName()})
+                    $('<h1/>', {text: this.updateInfo.name})
                 );
             },
 
-            createUpdateButtons: function() {
+            createCta: function() {
                 if (this.latestAllowedVersion === null) {
                     return;
                 }
 
                 var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header);
+                var $btn = $('<div/>', {
+                    'class': 'btn submit',
+                    text: this.updateInfo.ctaText
+                }).appendTo($buttonContainer);
 
-                if (this.updateInfo.expired) {
-                    var $renewBtn = $('<div/>', {'class': 'btn submit', text: 'Renew for $59'}).appendTo($buttonContainer);
-                } else {
-                    var label = this.canUpdateToLatest() ? Craft.t('app', 'Update') : Craft.t('app', 'Update to {version}', {version: this.latestAllowedVersion});
-                    var $updateBtn = $('<div class="btn submit">' + label + '</div>').appendTo($buttonContainer);
-
-                    // Has the license been updated?
-                    if (this.updateInfo.licenseUpdated) {
-                        this.addListener($updateBtn, 'click', 'showLicenseForm');
+                this.addListener($btn, 'click', function() {
+                    if (typeof this.updateInfo.ctaUrl !== 'undefined') {
+                        window.location.href = this.updateInfo.ctaUrl;
+                    } else {
+                        this.updatesPage.redirectToUpdate([this]);
                     }
-                    else {
-                        this.addListener($updateBtn, 'click', function() {
-                            this.updatesPage.redirectToUpdate([this]);
-                        });
-                    }
-                }
+                });
             },
 
             initReleases: function() {
-                if (!this.updateInfo.releases) {
-                    return;
-                }
-
                 for (var i = 0; i < this.updateInfo.releases.length; i++) {
                     if (this.latestAllowedVersion === null && this.updateInfo.releases[i].allowed) {
                         this.latestAllowedVersion = this.updateInfo.releases[i].version;
@@ -224,38 +200,6 @@
 
                     new Release(this, this.updateInfo.releases[i]);
                 }
-            },
-
-            showLicenseForm: function(originalEvent) {
-                originalEvent.stopPropagation();
-
-                if (!this.licenseHud) {
-                    var $hudBody = $('<div><p>' + Craft.t('app', 'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.') + '</p></div>'),
-                        $label = $('<label> ' + Craft.t('app', 'I agree.') + ' &nbsp;</label>').appendTo($hudBody),
-                        $checkbox = $('<input type="checkbox"/>').prependTo($label);
-
-                    this.$licenseSubmitBtn = $('<input class="btn submit" type="submit"/>').appendTo($hudBody);
-
-                    this.licenseHud = new Garnish.HUD(originalEvent.currentTarget, $hudBody, {
-                        onSubmit: $.proxy(function() {
-                            if ($checkbox.prop('checked')) {
-                                this.licenseSubmitAction();
-                                this.licenseHud.hide();
-                                $checkbox.prop('checked', false);
-                            }
-                            else {
-                                Garnish.shake(this.licenseHud.$hud);
-                            }
-                        }, this)
-                    });
-                }
-                else {
-                    this.licenseHud.$trigger = $(originalEvent.currentTarget);
-                    this.licenseHud.show();
-                }
-
-                this.$licenseSubmitBtn.attr('value', Craft.t('app', 'Seriously, update.'));
-                this.licenseSubmitAction = this.redirectToUpdate;
             }
         }
     );
