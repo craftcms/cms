@@ -1,6 +1,21 @@
 {
   "private": true,
   "main": "gulpfile.js",
+  "scripts": {
+    "dev": "NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "watch": "NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "hot": "NODE_ENV=development webpack-dev-server --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "production": "NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "marked": "^0.3.6",
+    "vue": "^2.4.4",
+    "vue-lodash": "^1.0.3",
+    "vue-resource": "^1.3.3",
+    "vue-router": "^2.5.3",
+    "vuex": "^2.3.1"
+  },
   "devDependencies": {
     "autoprefixer": "^7.1.4",
     "bootstrap": "3.3.* || 3.2.* || 3.1.*",
@@ -28,6 +43,7 @@
     "inputmask": "~3.2.2 || ~3.3.5",
     "jquery": "3.2.* || 3.1.* || 2.2.* || 2.1.* || 1.11.* || 1.12.*",
     "jquery.payment": "^3.0.0",
+    "laravel-mix": "^1.6.1",
     "picturefill": "^3.0.2",
     "punycode": "1.3.*",
     "selectize": "^0.12.4",
