@@ -11,7 +11,7 @@ let mix = require('laravel-mix');
  |
  */
 
-const sourcePath = 'src/web/assets/pluginstore/resources/assets';
+const sourcePath = 'src/web/assets/pluginstore/src';
 const distPath = 'src/web/assets/pluginstore/dist';
 
 mix.js(sourcePath + '/js/main.js', distPath + '/js/')
