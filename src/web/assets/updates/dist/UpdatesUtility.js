@@ -211,7 +211,7 @@
             notesId: null,
 
             $container: null,
-            $toggle: null,
+            $headingContainer: null,
 
             init: function(update, releaseInfo) {
                 this.update = update;
@@ -220,9 +220,11 @@
 
                 this.createContainer();
                 this.createHeading();
-                this.createReleaseNotes();
 
-                new Craft.FieldToggle(this.$toggle);
+                if (this.releaseInfo.notes) {
+                    this.createReleaseNotes();
+                    new Craft.FieldToggle(this.$headingContainer);
+                }
             },
 
             createContainer: function() {
@@ -234,18 +236,32 @@
             },
 
             createHeading: function() {
-                this.$toggle = $('<a/>', {'class': 'fieldtoggle', 'data-target': this.notesId}).appendTo(this.$container);
-                $('<h2/>', {text: this.releaseInfo.version}).appendTo(this.$toggle);
-                if (this.releaseInfo.critical) {
-                    $('<strong/>', {'class': 'critical', text: Craft.t('app', 'Critical')}).appendTo(this.$toggle);
+                if (this.releaseInfo.notes) {
+                    this.$headingContainer = $('<a/>', {'class': 'release-info fieldtoggle', 'data-target': this.notesId});
+                } else {
+                    this.$headingContainer = $('<div/>', {'class': 'release-info'});
                 }
-                $('<span/>', {'class': 'date', text: Craft.formatDate(this.releaseInfo.date)}).appendTo(this.$toggle);
+                this.$headingContainer.appendTo(this.$container);
+                $('<h2/>', {text: this.releaseInfo.version}).appendTo(this.$headingContainer);
+                if (this.releaseInfo.critical) {
+                    $('<strong/>', {'class': 'critical', text: Craft.t('app', 'Critical')}).appendTo(this.$headingContainer);
+                }
+                if (this.releaseInfo.date) {
+                    $('<span/>', {'class': 'date', text: Craft.formatDate(this.releaseInfo.date)}).appendTo(this.$headingContainer);
+                }
             },
 
             createReleaseNotes: function() {
-                $('<div/>', {id: this.notesId, 'class': 'hidden'})
+                var $notes = $('<div/>', {id: this.notesId})
                     .appendTo(this.$container)
                     .append($('<div/>', {'class': 'release-notes'}).html(this.releaseInfo.notes));
+
+                // Auto-expand if this is a critical release, or there are any tips/warnings in the release notes
+                if (this.releaseInfo.critical || $notes.find('blockquote').length) {
+                    this.$headingContainer.addClass('expanded');
+                } else {
+                    $notes.addClass('hidden');
+                }
             }
         },
         {
