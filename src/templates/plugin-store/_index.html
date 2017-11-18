@@ -41,7 +41,7 @@
 {% set content %}
 
 	<div :class="{hidden: !pluginStoreDataLoading}">
-		Loading…
+		<div class="main-loading spinner big"></div>
 	</div>
 
 	<div :class="{ hidden: pluginStoreDataLoading }">

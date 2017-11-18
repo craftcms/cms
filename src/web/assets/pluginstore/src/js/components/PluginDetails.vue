@@ -61,9 +61,7 @@
                 </div>
             </template>
             <template v-else>
-                <div class="plugin-details-loading">
-                    Loading…
-                </div>
+                <div class="plugin-details-loading spinner"></div>
             </template>
         </div>
     </div>
