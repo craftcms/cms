@@ -37,7 +37,7 @@ class UpdateRelease extends Model
     public $critical = false;
 
     /**
-     * @var string Notes
+     * @var string|null Notes
      */
     public $notes;
 
