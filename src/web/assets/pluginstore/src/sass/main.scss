@@ -25,6 +25,10 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
   }
 }
 
+#main-content #content {
+  position: relative;
+}
+
 .main-loading {
   position: absolute;
   top: 50%;
