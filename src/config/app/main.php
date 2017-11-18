@@ -11,6 +11,9 @@ return [
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'api' => [
+            'class' => craft\services\Api::class,
+        ],
         'assets' => [
             'class' => craft\services\Assets::class,
         ],

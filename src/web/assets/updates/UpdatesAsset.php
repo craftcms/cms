@@ -49,13 +49,7 @@ class UpdatesAsset extends AssetBundle
             $view->registerTranslations('app', [
                 'You’re all up-to-date!',
                 'Critical',
-                'Update',
-                'Update to {version}',
                 'Update all',
-                'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.',
-                'I agree.',
-                'Seriously, update.',
-                'Show all',
             ]);
         }
     }

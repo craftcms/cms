@@ -35,6 +35,7 @@ use yii\web\ServerErrorHttpException;
 /**
  * ApplicationTrait
  *
+ * @property \craft\services\Api             $api                The API service
  * @property AssetManager                    $assetManager       The asset manager component
  * @property \craft\services\Assets          $assets             The assets service
  * @property \craft\services\AssetIndexer    $assetIndexing      The asset indexer service
@@ -638,6 +639,17 @@ trait ApplicationTrait
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the API service.
+     *
+     * @return \craft\services\Api The API service
+     */
+    public function getApi()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('api');
+    }
 
     /**
      * Returns the assets service.

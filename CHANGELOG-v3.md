@@ -30,6 +30,7 @@
 - Added `craft\models\SiteGroup`.
 - Added `craft\records\Site::getGroup()`.
 - Added `craft\records\SiteGroup`.
+- Added `craft\services\Api`, available from `Craft::$app->api`.
 - Added `craft\services\Config::getDotEnvPath()`.
 - Added `craft\services\Config::setEnvVar()`.
 - Added `craft\services\Sites::getAllGroups()`.
@@ -69,6 +70,9 @@
 - Removed `craft\fields\data\RichTextData`.
 - Removed `craft\fields\PositionSelect`.
 - Removed `craft\fields\RichText`.
+- Removed `craft\services\Et::checkForUpdates()`.
+- Removed `craft\services\Et::downloadUpdate()`.
+- Removed `craft\services\Et::getUpdateFileInfo()`.
 - Removed `craft\web\assets\redactor\RedactorAsset`.
 - Removed `craft\web\assets\richtext\RichTextAsset`.
 - Removed `lib/colorpicker/`.
