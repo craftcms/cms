@@ -685,6 +685,21 @@ class Asset extends Element
     }
 
     /**
+     * Returns the file name, with or without the extension.
+     *
+     * @param bool $withExtension
+     *
+     * @return string
+     */
+    public function getFilename(bool $withExtension = true): string
+    {
+        if ($withExtension) {
+            return $this->filename;
+        }
+        return pathinfo($this->filename, PATHINFO_FILENAME);
+    }
+
+    /**
      * Returns the file extension.
      *
      * @return string
