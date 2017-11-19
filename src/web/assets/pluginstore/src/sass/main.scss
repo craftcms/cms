@@ -36,6 +36,31 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
   transform: translate(-50%, -50%);
 }
 
+/* Graphic & Status */
+
+#content {
+  #graphic {
+    display: block;
+    margin: 200px auto 0;
+
+    &.success {
+      background-image: url(../images/success.png);
+    }
+
+    &.error {
+      background-image: url(../images/error.png);
+    }
+  }
+
+  #status {
+    margin: 20px auto 250px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 20px;
+    color: #666;
+  }
+}
+
 /* Grids */
 
 .ps-grid-wrapper {

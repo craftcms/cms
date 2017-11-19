@@ -34,10 +34,12 @@ window.pluginStoreApp = new Vue({
           modalStep: null,
           pluginStoreDataLoading: true,
           pluginStoreDataLoaded: false,
+          pluginStoreDataError: false,
           craftIdDataLoading: true,
           craftIdDataLoaded: false,
           showModal: false,
           lastOrder: null,
+          statusMessage: 'Loading Plugin Store…'
       }
     },
 
@@ -167,7 +169,9 @@ window.pluginStoreApp = new Vue({
                 this.$emit('pluginStoreDataLoaded');
             })
             .catch(response => {
-                this.pluginStoreDataLoading = false
+                this.pluginStoreDataLoading = false;
+                this.pluginStoreDataError = true;
+                this.statusMessage = 'The Plugin Store is not available, please try again later.';
             });
 
         this.$store.dispatch('getCartState')

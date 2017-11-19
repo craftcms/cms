@@ -40,13 +40,14 @@
 
 {% set content %}
 
-	<div :class="{hidden: !pluginStoreDataLoading}">
-		<div class="main-loading spinner big"></div>
-	</div>
-
-	<div :class="{ hidden: pluginStoreDataLoading }">
+	<template v-if="pluginStoreDataLoaded && !pluginStoreDataError">
 		<router-view></router-view>
-	</div>
+	</template>
+
+	<template v-else>
+		<div id="graphic" class="spinner big" :class="{ error: pluginStoreDataError }"></div>
+		<div id="status">{{ '{{ statusMessage }}' }}</div>
+	</template>
 
 	<global-modal :show.sync="showModal" :plugin-id="pluginId"></global-modal>
 
