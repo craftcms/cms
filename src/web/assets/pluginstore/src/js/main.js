@@ -2,18 +2,17 @@ import Vue from 'vue';
 import VueResource from 'vue-resource';
 import lodash from 'lodash'
 import VueLodash from 'vue-lodash/dist/vue-lodash.min'
-
-import GlobalModal from './components/GlobalModal';
 import { currency } from './filters/currency';
 import { t } from './filters/t';
 import router from './router';
-import store from './store'
-import { mapGetters } from 'vuex'
+import store from './store';
+import { mapGetters } from 'vuex';
+import GlobalModal from './components/GlobalModal';
 
 Vue.use(VueResource);
 Vue.use(VueLodash, lodash);
-Vue.filter('currency', currency)
-Vue.filter('t', t)
+Vue.filter('currency', currency);
+Vue.filter('t', t);
 
 window.pluginStoreApp = new Vue({
     el: '#main-content',
@@ -111,14 +110,10 @@ window.pluginStoreApp = new Vue({
             this.modalStep = modalStep;
 
             this.showModal = true;
-            /*if(!this.modal.visible) {
-                this.modal.show();
-            }*/
         },
 
         closeGlobalModal() {
             this.showModal = false;
-            // this.modal.hide();
         },
 
         updateCraftId(craftId) {
@@ -127,15 +122,11 @@ window.pluginStoreApp = new Vue({
             if(craftId) {
                 $('.craftid-connected').removeClass('hidden');
                 $('.craftid-disconnected').addClass('hidden');
-
                 $('.craftid-connected', $accountInfoMenu).removeClass('hidden');
                 $('.craftid-disconnected', $accountInfoMenu).addClass('hidden');
-
-
             } else {
                 $('.craftid-connected').addClass('hidden');
                 $('.craftid-disconnected').removeClass('hidden');
-
                 $('.craftid-connected', $accountInfoMenu).addClass('hidden');
                 $('.craftid-disconnected', $accountInfoMenu).removeClass('hidden');
             }
@@ -164,7 +155,7 @@ window.pluginStoreApp = new Vue({
                 this.$emit('craftIdDataLoaded');
             })
             .catch(response => {
-                this.craftIdDataLoading = false
+                this.craftIdDataLoading = false;
                 this.craftIdDataLoaded = true;
                 this.$emit('craftIdDataLoaded');
             });
@@ -187,7 +178,7 @@ window.pluginStoreApp = new Vue({
 
         if(window.enableCraftId) {
             // Cart Button
-            this.$cartButton = $('#cart-button')
+            this.$cartButton = $('#cart-button');
 
             this.$cartButton.on('click', (e) => {
                 e.preventDefault();
