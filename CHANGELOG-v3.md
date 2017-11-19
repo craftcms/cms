@@ -20,6 +20,7 @@
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
 - Added `craft\db\Connection::createFromConfig()`.
+- Added `craft\errors\ApiException`.
 - Added `craft\errors\SiteGroupNotFoundException`.
 - Added `craft\events\SiteGroupEvent`.
 - Added `craft\fields\data\ColorData`.
@@ -28,6 +29,10 @@
 - Added `craft\models\Site::groupId`.
 - Added `craft\models\Site::getGroup()`.
 - Added `craft\models\SiteGroup`.
+- Added `craft\models\Update::getHasCritical()`.
+- Added `craft\models\Update::getHasReleases()`.
+- Added `craft\models\Update::getLatest()`.
+- Added `craft\models\Updates`.
 - Added `craft\records\Site::getGroup()`.
 - Added `craft\records\SiteGroup`.
 - Added `craft\services\Api`, available from `Craft::$app->api`.
@@ -41,7 +46,6 @@
 - Added `craft\services\Sites::getSitesByGroupId()`.
 - Added `craft\validators\ColorValidator`.
 - Added `Craft.ColorInput` (JS class).
-
 
 ### Changed
 - The Control Panel has been redesigned for better usability, readability and responsiveness.
@@ -62,6 +66,8 @@
 - Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
 - Color inputs can now be left blank.
 - `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
+- `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
+- `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
 
 ### Removed
 - The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
@@ -70,9 +76,16 @@
 - Removed `craft\fields\data\RichTextData`.
 - Removed `craft\fields\PositionSelect`.
 - Removed `craft\fields\RichText`.
+- Removed `craft\models\AppUpdate`.
+- Removed `craft\models\AppUpdateRelease`.
 - Removed `craft\services\Et::checkForUpdates()`.
 - Removed `craft\services\Et::downloadUpdate()`.
 - Removed `craft\services\Et::getUpdateFileInfo()`.
+- Removed `craft\services\Updates::checkForUpdates()`.
+- Removed `craft\services\Updates::checkPluginChangelogs()`.
+- Removed `craft\services\Updates::fetchPluginChangelog()`.
+- Removed `craft\services\Updates::parsePluginChangelog()`.
+- Removed `craft\services\Updates::addNotesToPluginRelease()`.s
 - Removed `craft\web\assets\redactor\RedactorAsset`.
 - Removed `craft\web\assets\richtext\RichTextAsset`.
 - Removed `lib/colorpicker/`.
