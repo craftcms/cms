@@ -14,7 +14,7 @@
             },
 
             parseStatus: function(status) {
-                return '<p>' + Craft.escapeHtml(status).split('\n\n').join('</p><p>') + '</p>';
+                return '<p>' + Craft.escapeHtml(status).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
             },
 
             showStatus: function(status) {
