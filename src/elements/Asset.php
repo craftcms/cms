@@ -685,11 +685,11 @@ class Asset extends Element
     }
 
     /**
-     * Get the file extension.
+     * Returns the file extension.
      *
-     * @return mixed
+     * @return string
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         return pathinfo($this->filename, PATHINFO_EXTENSION);
     }
