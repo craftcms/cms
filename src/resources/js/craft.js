@@ -1,4 +1,4 @@
-/*! Craft  - 2017-11-06 */
+/*! Craft  - 2017-11-20 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -16379,7 +16379,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 					if (!response.exactMatch)
 					{
 						var $li = $('<li/>').appendTo($ul);
-						$('<a data-icon="+"/>').appendTo($li).text(data.search);
+						$('<a data-icon="+"/>').appendTo($li).text(Craft.escapeHtml(data.search));
 					}
 
 					$ul.find('> li:first-child > a').addClass('hover');
