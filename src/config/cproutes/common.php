@@ -74,7 +74,7 @@ return [
     'plugin-store/all-plugins' => 'plugin-store/all-plugins',
     'plugin-store/categories/<categoryId:\d+>' => 'plugin-store/category',
     'plugin-store/developer/<developerId:\d+>' => 'plugin-store/developer',
-    'plugin-store/install' => 'plugin-store/install',
+    'plugin-store/install' => 'pluginstore/install',
     'plugin-store/cart' => 'plugin-store/cart',
     'plugin-store/vue' => 'plugin-store/vue',
     'plugin-store/vue/<slug:([^\/]+)?>' => 'plugin-store/vue-plugin',

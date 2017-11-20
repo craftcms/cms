@@ -7,8 +7,10 @@
             $status: null,
             error: null,
             data: null,
+            actionPrefix: null,
 
-            init: function(data) {
+            init: function(actionPrefix) {
+                this.actionPrefix = actionPrefix;
                 this.$graphic = $('#graphic');
                 this.$status = $('#status');
             },
@@ -35,7 +37,7 @@
                     data: this.data
                 };
 
-                Craft.postActionRequest('updater/' + action, data, $.proxy(function(response, textStatus, jqXHR) {
+                Craft.postActionRequest(this.actionPrefix + '/' + action, data, $.proxy(function(response, textStatus, jqXHR) {
                     if (textStatus === 'success') {
                         this.setState(response);
                     } else {
@@ -142,7 +144,7 @@
                 });
 
                 // Tell Craft to disable maintenance mode
-                Craft.postActionRequest('updater/finish', {data: this.data});
+                Craft.postActionRequest(this.actionPrefix + '/finish', {data: this.data});
             }
         });
 })(jQuery);
