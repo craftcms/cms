@@ -533,10 +533,9 @@ class Asset extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dateModified';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateModified';
+        return $attributes;
     }
 
     /**
@@ -689,11 +688,26 @@ class Asset extends Element
     }
 
     /**
-     * Get the file extension.
+     * Returns the file name, with or without the extension.
      *
-     * @return mixed
+     * @param bool $withExtension
+     *
+     * @return string
      */
-    public function getExtension()
+    public function getFilename(bool $withExtension = true): string
+    {
+        if ($withExtension) {
+            return $this->filename;
+        }
+        return pathinfo($this->filename, PATHINFO_FILENAME);
+    }
+
+    /**
+     * Returns the file extension.
+     *
+     * @return string
+     */
+    public function getExtension(): string
     {
         return pathinfo($this->filename, PATHINFO_EXTENSION);
     }

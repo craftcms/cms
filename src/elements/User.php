@@ -562,14 +562,13 @@ class User extends Element implements IdentityInterface
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'lastLoginDate';
-        $names[] = 'lastInvalidLoginDate';
-        $names[] = 'lockoutDate';
-        $names[] = 'lastPasswordChangeDate';
-        $names[] = 'verificationCodeIssuedDate';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'lastLoginDate';
+        $attributes[] = 'lastInvalidLoginDate';
+        $attributes[] = 'lockoutDate';
+        $attributes[] = 'lastPasswordChangeDate';
+        $attributes[] = 'verificationCodeIssuedDate';
+        return $attributes;
     }
 
     /**
