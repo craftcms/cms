@@ -529,10 +529,9 @@ class Asset extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dateModified';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateModified';
+        return $attributes;
     }
 
     /**

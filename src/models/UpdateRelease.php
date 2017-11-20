@@ -51,7 +51,6 @@ class UpdateRelease extends Model
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';
-
         return $attributes;
     }
 

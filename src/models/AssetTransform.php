@@ -173,9 +173,8 @@ class AssetTransform extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dimensionChangeTime';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dimensionChangeTime';
+        return $attributes;
     }
 }

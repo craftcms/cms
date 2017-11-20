@@ -517,11 +517,10 @@ class Entry extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'postDate';
-        $names[] = 'expiryDate';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'postDate';
+        $attributes[] = 'expiryDate';
+        return $attributes;
     }
 
     /**
