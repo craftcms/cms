@@ -230,7 +230,7 @@ class UpdaterController extends Controller
                 $current = $plugin->getVersion();
             }
             $requirements[$packageName] = $version;
-            $this->_data['current'] = $current;
+            $this->_data['current'][$packageName] = $current;
         }
 
 
