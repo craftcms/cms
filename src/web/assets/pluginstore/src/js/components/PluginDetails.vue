@@ -16,7 +16,7 @@
             </div>
 
             <div class="buttons">
-                <div v-if="pluginSnippet.price != '0.00'">
+                <div v-if="pluginSnippet.price != '0.00' && pluginSnippet.price != null">
                     <a v-if="isInTrial(pluginSnippet) || isInstalled(pluginSnippet)" class="btn disabled">{{ "Installed"|t('app') }}</a>
                     <a v-else @click="tryPlugin(pluginSnippet)" class="btn">{{ "Try"|t('app') }}</a>
 
