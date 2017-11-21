@@ -47,7 +47,7 @@
                             <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ plugin.lastUpdate }}</strong></li>
                             <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
                             <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
-                            <li>
+                            <li v-if="categories.length > 0">
                                 <span>{{ "Categories"|t('app') }}</span>
                                 <strong>
                                     <template v-for="category, key in categories">
