@@ -56,6 +56,7 @@
                                     </template>
                                 </strong>
                             </li>
+                            <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
                         </ul>
                     </div>
                 </div>
@@ -112,8 +113,17 @@
                 return this.$store.getters.getAllCategories().filter(c => {
                     return this.plugin.categoryIds.find(pc => pc == c.id);
                 });
-            }
+            },
 
+            licenseLabel() {
+                switch(this.plugin.license) {
+                    case 'craft':
+                        return 'Craft';
+
+                    case 'mit':
+                        return 'MIT';
+                }
+            }
         },
 
         watch: {
