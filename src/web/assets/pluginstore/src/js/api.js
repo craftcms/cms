@@ -61,6 +61,16 @@ export default {
             });
     },
 
+    installPlugin(plugin, cb, cbError) {
+        Vue.http.get(Craft.getActionUrl('pluginstore/install'))
+            .then(response => {
+                return cb(response);
+            })
+            .catch(response => {
+                return cbError(response);
+            });
+    },
+
     getCraftData(cb, cbError) {
         Vue.http.get(Craft.getActionUrl('plugin-store/craft-data'))
             .then(data => {

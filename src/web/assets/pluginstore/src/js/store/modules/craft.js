@@ -43,13 +43,13 @@ const actions = {
 
     installPlugin({ dispatch, commit }, plugin) {
         return new Promise((resolve, reject) => {
-            setTimeout(function() {
+            api.installPlugin(plugin, response => {
                 commit(types.INSTALL_PLUGIN, plugin);
                 dispatch('saveCraftData');
                 resolve();
-            }, 3000);
-
-            // reject();
+            }, response => {
+                reject(response);
+            })
         })
     },
 
