@@ -19,7 +19,7 @@ const getters = {
 
         return rootState.allPlugins.filter(p => {
             if(state.craftData.installedPlugins) {
-                return state.craftData.installedPlugins.find(pluginId => pluginId == p.id);
+                return state.craftData.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle);
             }
             return false;
         })

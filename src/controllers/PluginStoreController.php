@@ -192,15 +192,31 @@ class PluginStoreController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $data = Craft::$app->getSession()->get('pluginStore.craftData');
+        $data = [];
 
-        if(!$data) {
-            $data = [
-                'installedPlugins' => []
+
+        // Installed plugins
+
+        $allPlugins = Craft::$app->getPlugins()->getAllPlugins();
+        $installedPlugins = [];
+
+        foreach($allPlugins as $plugin) {
+            $installedPlugins[] = [
+                'packageName' => $plugin->packageName,
+                'handle' => $plugin->handle,
+                'version' => $plugin->version,
             ];
         }
 
+        $data['installedPlugins'] = $installedPlugins;
+
+
+        // Craft ID account
+
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
+
+
+        // ET upgrade info
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
