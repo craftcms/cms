@@ -121,9 +121,11 @@ class UpdaterController extends Controller
 
         $state = $this->_initialState();
         $state['data'] = $this->_getHashedData();
-        $this->getView()->registerJs('Craft.updater = (new Craft.Updater()).setState('.Json::encode($state).');');
+        $this->getView()->registerJs('Craft.updater = (new Craft.Updater(\'updater\')).setState('.Json::encode($state).');');
 
-        return $this->renderTemplate('_special/updates/go');
+        return $this->renderTemplate('_special/updater', [
+            'title' => Craft::t('app', 'Updater'),
+        ]);
     }
 
     /**
@@ -230,7 +232,7 @@ class UpdaterController extends Controller
                 $current = $plugin->getVersion();
             }
             $requirements[$packageName] = $version;
-            $this->_data['current'] = $current;
+            $this->_data['current'][$packageName] = $current;
         }
 
 
@@ -671,7 +673,7 @@ class UpdaterController extends Controller
                 $state['status'] = Craft::t('app', 'Reverting update (this may take a minute)…');
                 break;
             case self::ACTION_OPTIMIZE:
-                $state['status'] = Craft::t('app', 'Optimizing installation…');
+                $state['status'] = Craft::t('app', 'Optimizing……');
                 break;
             case self::ACTION_SERVER_CHECK:
                 $state['status'] = Craft::t('app', 'Checking server requirements…');

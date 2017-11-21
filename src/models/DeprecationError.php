@@ -83,10 +83,9 @@ class DeprecationError extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'lastOccurrence';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'lastOccurrence';
+        return $attributes;
     }
 
     /**

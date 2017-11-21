@@ -66,9 +66,11 @@
                             $('#page-title').find('h1').text(headingText);
 
                             if (this.showUpdateAllBtn && this.updates.length > 1) {
-                                var $updateAllBtn = $('<div/>', {'class': 'btn submit', text: Craft.t('app', 'Update all')})
-                                    .appendTo($('<div/>', {id: 'extra-headers'}).appendTo(Craft.cp.$pageHeader));
-                                this.addListener($updateAllBtn, 'click', 'updateAll');
+                                $('<a/>', {
+                                    'class': 'btn submit',
+                                    text: Craft.t('app', 'Update all'),
+                                    href: this.buildUpdateUrl(this.updates)
+                                }).insertAfter($('#header').children('h1'));
                             }
                         } else {
                             $graphic.addClass('success');
@@ -86,16 +88,6 @@
                 this.totalAvailableUpdates++;
 
                 this.updates.push(new Update(this, updateInfo, isPlugin));
-            },
-
-            updateAll: function()
-            {
-                this.redirectToUpdate(this.updates);
-            },
-
-            redirectToUpdate: function(updates)
-            {
-                window.location.href = this.buildUpdateUrl(updates);
             },
 
             buildUpdateUrl: function(updates)
@@ -178,18 +170,11 @@
                 }
 
                 var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header);
-                var $btn = $('<div/>', {
+                $('<a/>', {
                     'class': 'btn submit',
-                    text: this.updateInfo.ctaText
+                    text: this.updateInfo.ctaText,
+                    href: typeof this.updateInfo.ctaUrl !== 'undefined' ? this.updateInfo.ctaUrl : this.updatesPage.buildUpdateUrl([this])
                 }).appendTo($buttonContainer);
-
-                this.addListener($btn, 'click', function() {
-                    if (typeof this.updateInfo.ctaUrl !== 'undefined') {
-                        window.location.href = this.updateInfo.ctaUrl;
-                    } else {
-                        this.updatesPage.redirectToUpdate([this]);
-                    }
-                });
             },
 
             initReleases: function() {

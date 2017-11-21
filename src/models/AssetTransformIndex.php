@@ -94,10 +94,9 @@ class AssetTransformIndex extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dateIndexed';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateIndexed';
+        return $attributes;
     }
 
     /**
