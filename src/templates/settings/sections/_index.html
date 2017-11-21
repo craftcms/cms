@@ -6,9 +6,7 @@
 ] %}
 
 {% block actionButton %}
-    <div id="newsectioncontainer">
-        <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
-    </div>
+    <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
 {% endblock %}
 
 
@@ -61,7 +59,6 @@
     var adminTable = new Craft.AdminTable({
         tableSelector: '#sections',
         noItemsSelector: '#nosections',
-        newItemBtnSelector: '#newsectioncontainer',
         deleteAction: 'sections/delete-section',
         confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t('app') }}',
         onDeleteItem: function()
