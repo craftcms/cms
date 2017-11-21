@@ -17,6 +17,7 @@
 - Fixed a PHP permissions error that might happen on some Craft 2 to Craft 3 upgrades.
 - Fixed a bug where ET and changelog requests weren’t factoring in custom Guzzle configs in `config/guzzle.php`.
 - Fixed a SQL error that could occur when upgrading a Craft 2 site to Craft 3 if there were any deprecation errors originated by a template, but the line number wasn’t known.
+- Fixed a PHP error that could occur if there was a logged-in user ID in the PHP session, but the corresponding user didn’t exist in the database. ([#2117](https://github.com/craftcms/cms/issues/2117))
 
 ## 3.0.0-beta.34 - 2017-11-09
 
