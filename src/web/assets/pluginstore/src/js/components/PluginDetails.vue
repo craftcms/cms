@@ -45,7 +45,7 @@
                         <ul>
                             <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
                             <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ plugin.lastUpdate }}</strong></li>
-                            <li><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
+                            <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
                             <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
                             <li>
                                 <span>{{ "Categories"|t('app') }}</span>
