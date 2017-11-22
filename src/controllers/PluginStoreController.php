@@ -68,7 +68,7 @@ class PluginStoreController extends Controller
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
             'apiEndpointUrl' => Craft::$app->getPluginStore()->craftApiEndpoint,
-            'clientId'     => '1234567890',
+            'clientId'     => Craft::$app->getPluginStore()->craftIdOauthClientId,
             'redirectUri'  => UrlHelper::cpUrl('plugin-store/callback'),
         ]);
 
@@ -257,6 +257,11 @@ class PluginStoreController extends Controller
             $data['CraftClient'] = Craft::Client;
             $data['CraftPro'] = Craft::Pro;
         }
+
+
+        // Craft logo
+
+        $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
 
         return $this->asJson($data);
     }

@@ -41,18 +41,6 @@ const getters = {
 
 const actions = {
 
-    installPlugin({ dispatch, commit }, plugin) {
-        return new Promise((resolve, reject) => {
-            api.installPlugin(plugin, response => {
-                commit(types.INSTALL_PLUGIN, plugin);
-                dispatch('saveCraftData');
-                resolve();
-            }, response => {
-                reject(response);
-            })
-        })
-    },
-
     getCraftData ({ commit }) {
         return new Promise((resolve, reject) => {
             api.getCraftData(data => {
@@ -66,32 +54,6 @@ const actions = {
 
     updateCraftId({ commit }, craftId) {
         commit(types.UPDATE_CRAFT_ID, craftId);
-    },
-
-    saveCraftData({ commit, state }) {
-        return new Promise((resolve, reject) => {
-            api.saveCraftData(state.craftData,
-                craftData => {
-                    commit(types.SAVE_CRAFT_DATA);
-                    resolve(craftData);
-                },
-                response => {
-                    reject(response);
-                })
-        })
-    },
-
-    clearCraftData ({ commit }) {
-        return new Promise((resolve, reject) => {
-            api.clearCraftData()
-                .then(data => {
-                    commit(types.CLEAR_CRAFT_DATA, { data });
-                    resolve(data);
-                })
-                .catch(response => {
-                    reject(response);
-                });
-        })
     },
 
 };
@@ -108,14 +70,6 @@ const mutations = {
 
     [types.RECEIVE_CRAFT_DATA] (state, { data }) {
         state.craftData = data
-    },
-
-    [types.SAVE_CRAFT_DATA] (state) {
-
-    },
-
-    [types.CLEAR_CRAFT_DATA] (state) {
-
     },
 
     [types.UPDATE_CRAFT_ID] (state, { craftId }) {

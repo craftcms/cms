@@ -47,6 +47,11 @@ class PluginStore extends Component
     public $craftApiEndpoint = 'https://api.craftcms.com/v1';
 
     /**
+     * @var string CraftIdOauthClientId
+     */
+    public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
+
+    /**
      * @var string Stripe API key
      */
     public $stripeApiKey;

@@ -5,6 +5,7 @@ $sidebarWidth: 225px;
 $detailsWidth: 350px;
 $minFullUiWidth: 1224px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+$minLargeScreenWidth: 1824px;
 
 #main-container {
   position: relative;
@@ -77,6 +78,7 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  grid-auto-rows: 1fr;
   grid-gap: 20px;
   color: #444;
   margin-bottom: 20px;
@@ -94,6 +96,16 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 @media only screen and (max-width: $minFullUiWidth - 1px) {
   .ps-grid-plugins-4 {
     grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media only screen and (min-width: $minLargeScreenWidth) {
+  .ps-grid-plugins {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
+  .ps-grid-plugins-4 {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
 }
 
@@ -422,7 +434,7 @@ ul.categories {
   padding: 20px;
   border: 1px solid #E3E5E8;
   border-radius: 5px;
-  height: 100px;
+  box-sizing: border-box;
 
   &:hover {
     cursor: pointer;
@@ -434,9 +446,9 @@ ul.categories {
   }
 }
 
-@media only screen and (max-width: 673px) {
+.ps-grid-plugins {
   .plugin-card {
-    height: 60px;
+    height: 100%;
   }
 }
 
@@ -612,6 +624,156 @@ ul.categories {
       a {
         display: block;
       }
+    }
+  }
+}
+
+/* upgrade modal */
+#upgrade-craft {
+  .logo {
+    margin: 0 auto 24px !important;
+    font-weight: 500;
+    font-size: 18px;
+    color: $submitColor;
+    letter-spacing: 3.3px;
+    line-height: 14px;
+    border: 1px solid $submitColor;
+    border-radius: 3px;
+    padding: 10px 6.7px 9px 10px;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+}
+
+#upgrade-craft-compare table {
+  table-layout: fixed;
+
+  th,
+  td {
+    width: 33.33%;
+  }
+
+  th.feature {
+    font-weight: normal;
+    color: $mediumTextColor;
+  }
+
+  thead {
+    th {
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: normal;
+    }
+
+    tr {
+      &.logos th {
+        padding-bottom: 14px;
+
+        .logo {
+          margin-bottom: 0;
+        }
+
+        p {
+          white-space: normal;
+          max-width: 250px;
+        }
+      }
+
+      &.license-statuses td {
+        padding-top: 0;
+        padding-bottom: 14px;
+
+        .license-status:before {
+          border: 1px solid;
+          border-radius: 9px;
+          width: 17px;
+          height: 17px;
+          line-height: 17px;
+          margin-right: 5px;
+        }
+
+        .installed {
+          color: $successColor;
+
+          &:before {
+            border-color: $successColor;
+          }
+        }
+
+        .licensed {
+          color: $noticeColor;
+
+          &:before {
+            border-color: $noticeColor;
+          }
+        }
+      }
+    }
+
+    tr.price {
+      th,
+      td {
+        position: relative;
+        padding-top: 14px;
+      }
+
+      td {
+        &:before {
+          position: absolute;
+          top: 0;
+          display: block;
+          width: 24px;
+          height: 1px;
+          content: '.';
+          font-size: 0;
+          background: $hairlineColor;
+        }
+
+        .listedprice {
+          @include margin-right(5px);
+          text-decoration: line-through;
+          color: $lightTextColor;
+        }
+      }
+
+      th:before {
+        @include left(0);
+      }
+
+      td:before {
+        @include left(14px);
+      }
+    }
+  }
+
+  tbody {
+    th,
+    td {
+      width: 33.33%;
+    }
+
+    tr:first-child {
+      th,
+      td {
+        border-top: none;
+      }
+    }
+
+    th.group {
+      padding-top: 30px;
+      border-bottom-style: solid;
+      color: $mediumTextColor;
+
+      &:before {
+        margin-top: -2px;
+        width: 24px;
+        font-size: 17px;
+      }
+    }
+
+    tr.buybtns td {
+      padding-top: 14px;
+      border-bottom: none;
     }
   }
 }
