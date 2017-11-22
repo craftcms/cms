@@ -83,9 +83,12 @@ class Api extends Component
                 'version' => Craft::$app->getVersion(),
                 'edition' => strtolower(Craft::$app->getEditionName()),
                 'licenseKey' => $this->cmsLicenseKey()
-            ],
-            'plugins' => $this->pluginInfo(),
+            ]
         ];
+
+        if (!empty($pluginInfo = $this->pluginInfo())) {
+            $requestBody['plugins'] = $pluginInfo;
+        }
 
         $response = $this->request('POST', 'updates', [
             RequestOptions::BODY => Json::encode($requestBody),
