@@ -5,6 +5,7 @@ $sidebarWidth: 225px;
 $detailsWidth: 350px;
 $minFullUiWidth: 1224px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+$minLargeScreenWidth: 1824px;
 
 #main-container {
   position: relative;
@@ -77,6 +78,7 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  grid-auto-rows: 1fr;
   grid-gap: 20px;
   color: #444;
   margin-bottom: 20px;
@@ -94,6 +96,16 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 @media only screen and (max-width: $minFullUiWidth - 1px) {
   .ps-grid-plugins-4 {
     grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media only screen and (min-width: $minLargeScreenWidth) {
+  .ps-grid-plugins {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
+  .ps-grid-plugins-4 {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
 }
 
@@ -422,7 +434,7 @@ ul.categories {
   padding: 20px;
   border: 1px solid #E3E5E8;
   border-radius: 5px;
-  height: 100px;
+  box-sizing: border-box;
 
   &:hover {
     cursor: pointer;
@@ -434,9 +446,9 @@ ul.categories {
   }
 }
 
-@media only screen and (max-width: 673px) {
+.ps-grid-plugins {
   .plugin-card {
-    height: 60px;
+    height: 100%;
   }
 }
 
