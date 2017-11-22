@@ -1,12 +1,11 @@
 <template>
-    <div v-if="craftClientPlugin && craftProPlugin">
-
-        <div id="upgrademodal-compare" class="body">
+    <div id="upgrade-craft">
+        <div id="upgrade-craft-compare" class="body">
             <table class="data fullwidth">
                 <thead>
                 <tr class="logos">
                     <th>
-                        <img :src="craftClientPlugin.iconUrl" width="70" height="70" />
+                        <img :src="craftData.craftLogo" width="70" height="70" />
                     </th>
                     <th scope="col">
                         <h1 class="logo">Personal</h1>
@@ -23,49 +22,29 @@
                 </tr>
                 <tr class="license-statuses">
                     <td></td>
-
-                    <!--<td>{{ "statusBadge(CraftPersonal, licensedEdition)" }}</td>-->
                     <td><craft-status-badge :edition="craftData.CraftPersonal" /></td>
-
-                    <!--<td>{{ "statusBadge(CraftClient, licensedEdition)" }}</td>-->
                     <td><craft-status-badge :edition="craftData.CraftClient" /></td>
-
-                    <!--<td>{{ "statusBadge(CraftPro, licensedEdition)" }}</td>-->
                     <td><craft-status-badge :edition="craftData.CraftPro" /></td>
                 </tr>
                 <tr class="price">
                     <th scope="row" class="feature">{{ "One-Time Price" }}</th>
                     <td>{{ "Free" }}</td>
-
-                    <!--<td>{{ "price(CraftClient, editions[CraftClient])" }}</td>-->
                     <td>{{ craftData.editions[1].formattedPrice }}</td>
-
-                    <!--<td>{{ "price(CraftPro, editions[CraftPro])" }}</td>-->
                     <td>{{ craftData.editions[2].formattedPrice }}</td>
                 </tr>
                 <tr class="buybtns">
                     <td></td>
                     <td></td>
-
-                    <!--<td>{{ "buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions)" }}</td>-->
                     <td>
                         <div class="btngroup">
-                            <a v-if="isInCart(craftClientPlugin)" class="btn submit disabled">Added to cart</a>
-                            <a v-else  @click="buy(craftClientPlugin)" class="btn submit">Buy now</a>
-
-                            <a v-if="isInTrial(craftClientPlugin)" class="btn disabled">Try for free</a>
-                            <a v-else @click="installPlugin(craftClientPlugin)" class="btn">Try for free</a>
+                            <a @click="buyCraft('client')" class="btn submit">Buy now</a>
+                            <a @click="installCraft('client')" class="btn">Try for free</a>
                         </div>
                     </td>
-
-                    <!--<td>{{ "buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions)" }}</td>-->
                     <td>
                         <div class="btngroup">
-                            <div v-if="isInCart(craftProPlugin)" class="btn submit disabled">Added to cart</div>
-                            <div v-else  @click="buy(craftProPlugin)" class="btn submit">Buy now</div>
-
-                            <div v-if="isInTrial(craftProPlugin)" class="btn disabled">Try for free</div>
-                            <div v-else @click="installPlugin(craftProPlugin)" class="btn">Try for free</div>
+                            <div  @click="buyCraft('pro')" class="btn submit">Buy now</div>
+                            <div @click="installCraft('pro')" class="btn">Try for free</div>
                         </div>
                     </td>
                 </tr>
@@ -123,9 +102,7 @@
                 </tbody>
             </table>
         </div>
-
     </div>
-
 </template>
 
 <script>
@@ -133,35 +110,27 @@
     import CraftStatusBadge from './components/CraftStatusBadge';
 
     export default {
+
         components: {
             CraftStatusBadge
         },
+
         computed: {
             ...mapGetters({
                 craftData: 'craftData',
-                isInTrial: 'isInTrial',
-                isInCart: 'isInCart',
             }),
-            craftClientPlugin() {
-                const pluginId = this.$store.getters.getCraftClientPluginId();
-                return this.$store.getters.getPluginById(pluginId);
-            },
-            craftProPlugin() {
-                const pluginId = this.$store.getters.getCraftProPluginId();
-                return this.$store.getters.getPluginById(pluginId);
-            },
         },
 
         methods: {
-            ...mapActions([
-               'addToCart',
-               'removeFromCart',
-               'installPlugin',
-           ]),
-            buy(plugin) {
-                this.$store.dispatch('addToCart', plugin);
-                this.$root.openGlobalModal('cart');
+
+            buyCraft(edition) {
+                console.log('buy craft '+edition);
             },
+
+            installCraft(edition) {
+                console.log('install craft '+edition);
+            },
+
         },
 
         created () {

@@ -258,6 +258,11 @@ class PluginStoreController extends Controller
             $data['CraftPro'] = Craft::Pro;
         }
 
+
+        // Craft logo
+
+        $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
+
         return $this->asJson($data);
     }
 
