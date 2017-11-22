@@ -1,15 +1,13 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Index from '../Index'
-import Category from '../Category'
-import UpgradeCraft from '../UpgradeCraft'
-import Developer from '../Developer'
-import FeaturedPlugins from '../FeaturedPlugins'
-import Install from '../Install'
-import InstalledPlugins from '../InstalledPlugins'
-import Tests from '../Tests'
+import Vue from 'vue';
+import Router from 'vue-router';
+import Index from '../Index';
+import Category from '../Category';
+import UpgradeCraft from '../UpgradeCraft';
+import Developer from '../Developer';
+import FeaturedPlugins from '../FeaturedPlugins';
+import Tests from '../Tests';
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
     routes: [
@@ -39,19 +37,9 @@ export default new Router({
             component: FeaturedPlugins,
         },
         {
-            path: '/install/:id',
-            name: 'Install',
-            component: Install,
-        },
-        {
-            path: '/installed-plugins',
-            name: 'InstalledPlugins',
-            component: InstalledPlugins,
-        },
-        {
             path: '/tests',
             name: 'Tests',
             component: Tests,
         },
     ]
-})
+});

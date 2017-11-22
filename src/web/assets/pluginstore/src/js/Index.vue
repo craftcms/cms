@@ -43,9 +43,6 @@
                         </router-link>
                     </li>
                 </ul>
-                <!--<p><router-link to="/tests">Tests</router-link></p>
-                <p><router-link to="/installed-plugins">Installed Plugins</router-link></p>
-                <p><a @click="clearStorage()">Clear Storage</a></p>-->
             </div>
 
             <div class="ps-grid-main">
@@ -70,7 +67,7 @@
 
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
+    import { mapGetters } from 'vuex'
     import PluginGrid from './components/PluginGrid';
     import PluginSearch from './components/PluginSearch';
 
@@ -104,21 +101,6 @@
             indexBlocks() {
                 return this.pluginStoreData.indexBlocks;
             }
-
-        },
-
-        methods: {
-
-            ...mapActions([
-                'clearCraftData'
-            ]),
-
-            clearStorage() {
-                this.clearCraftData().then(() =>  {
-                    localStorage.removeItem('cartState');
-                    location.reload();
-                });
-            },
 
         },
 

@@ -124,6 +124,7 @@
                         return 'MIT';
                 }
             }
+
         },
 
         watch: {
@@ -153,8 +154,6 @@
 
             installPlugin(plugin) {
                 this.$root.closeGlobalModal();
-
-                // this.$router.push({ path: '/install/'+plugin.id });
 
                 window.location.href = Craft.getUrl('plugin-store/install', {name: this.plugin.packageName, handle: this.plugin.handle, version: this.plugin.version});
             },
