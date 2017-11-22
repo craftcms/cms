@@ -160,7 +160,6 @@ const mutations = {
     },
 
     [types.CHECKOUT] (state, { order }) {
-        console.log('mutation', order);
     }
 
 };

@@ -119,7 +119,6 @@ const mutations = {
     },
 
     [types.RECEIVE_PLUGIN_DETAILS] (state, { data }) {
-        console.log('mutation', data);
         state.plugin = data
     },
 
