@@ -44,7 +44,7 @@
                     <div class="plugin-meta">
                         <ul>
                             <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
-                            <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ plugin.lastUpdate }}</strong></li>
+                            <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
                             <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
                             <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
                             <li v-if="categories.length > 0">
@@ -123,6 +123,10 @@
                     case 'mit':
                         return 'MIT';
                 }
+            },
+
+            lastUpdate() {
+                return Craft.formatDate(this.plugin.lastUpdate);
             }
 
         },
