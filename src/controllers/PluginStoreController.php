@@ -68,7 +68,7 @@ class PluginStoreController extends Controller
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
             'apiEndpointUrl' => Craft::$app->getPluginStore()->craftApiEndpoint,
-            'clientId'     => '1234567890',
+            'clientId'     => Craft::$app->getPluginStore()->craftIdOauthClientId,
             'redirectUri'  => UrlHelper::cpUrl('plugin-store/callback'),
         ]);
 
