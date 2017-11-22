@@ -30,7 +30,7 @@ class PluginStoreAsset extends AssetBundle
             'css/main.css',
         ];
         $this->js = [
-            'js/main'.$this->dotJs(),
+            'js/main.js',
         ];
 
         parent::init();
