@@ -1985,7 +1985,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                         $colName = $this->_getFieldContentColumnName($field);
 
                         if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
-                            $fieldValues[$field->handle] = $row[$colName];
+                            $fieldValues[$field->handle] = $row[$colName] ?? null;
                         }
 
                         unset($row[$colName]);
