@@ -3411,13 +3411,7 @@ input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
 .sel div.checkbox:not(.indeterminate):before {
   content: 'check';
-  font-size: 13px;
-  body.ltr & {
-    text-indent: 1px;
-  }
-  body.rtl & {
-    text-indent: -2px;
-  }
+  font-size: 15px;
 }
 
 input.checkbox:indeterminate + label:before,
