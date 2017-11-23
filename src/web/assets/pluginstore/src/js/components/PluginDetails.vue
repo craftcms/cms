@@ -51,8 +51,7 @@
                                 <span>{{ "Categories"|t('app') }}</span>
                                 <strong>
                                     <template v-for="category, key in categories">
-                                        <a @click="viewCategory(category)">{{ category.title }}</a>
-                                        <template v-if="key < (categories.length - 1)">, </template>
+                                        <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (categories.length - 1)">, </template>
                                     </template>
                                 </strong>
                             </li>
