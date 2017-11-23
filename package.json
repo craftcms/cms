@@ -9,6 +9,7 @@
     "production:watch": "NODE_ENV=production node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "dependencies": {
+    "github-markdown-css": "^2.9.0",
     "lodash": "^4.17.4",
     "marked": "^0.3.6",
     "vue": "^2.4.4",

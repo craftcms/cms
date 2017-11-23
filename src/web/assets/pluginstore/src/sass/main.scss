@@ -1,5 +1,6 @@
 @charset "UTF-8";
 @import "../../../../../../lib/craftcms-sass/mixins";
+@import "~github-markdown-css/github-markdown";
 
 $sidebarWidth: 225px;
 $detailsWidth: 350px;
@@ -35,6 +36,10 @@ $minLargeScreenWidth: 1824px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.markdown-body ul {
+  list-style: disc;
 }
 
 /* Graphic & Status */

@@ -33,7 +33,7 @@
         <div class="plugin-details-body">
             <template v-if="plugin">
                 <div class="plugin-description">
-                    <div v-html="longDescription"></div>
+                    <div v-html="longDescription" class="markdown-body"></div>
 
                     <div class="screenshots">
                         <img v-for="screenshotUrl in plugin.screenshotUrls" :src="screenshotUrl" />
