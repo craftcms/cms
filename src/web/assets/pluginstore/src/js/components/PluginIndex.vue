@@ -7,6 +7,7 @@
 </template>
 
 <script>
+    import clone from 'lodash/clone';
     import PluginGrid from './PluginGrid';
     import PluginSearch from './PluginSearch';
 
@@ -36,7 +37,7 @@
                     return [];
                 }
 
-                let plugins = this._.clone(this.plugins);
+                let plugins = clone(this.plugins);
 
                 let attribute = this.sort.attribute;
                 let direction = this.sort.direction;

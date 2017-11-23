@@ -20,6 +20,8 @@
 </template>
 
 <script>
+    import filter from 'lodash/filter';
+    import includes from 'lodash/includes';
     import PluginGrid from './PluginGrid';
     import SortMenuBtn from './SortMenuBtn';
 
@@ -63,24 +65,24 @@
 
                 this.$emit('showResults');
 
-                return this._.filter(this.plugins, o => {
-                    if(o.name && self._.includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
+                return filter(this.plugins, o => {
+                    if(o.name && includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.shortDescription && self._.includes(o.shortDescription.toLowerCase(), searchQuery.toLowerCase())) {
+                    if(o.shortDescription && includes(o.shortDescription.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.description && self._.includes(o.description.toLowerCase(), searchQuery.toLowerCase())) {
+                    if(o.description && includes(o.description.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.developerName && self._.includes(o.developerName.toLowerCase(), searchQuery.toLowerCase())) {
+                    if(o.developerName && includes(o.developerName.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.developerUrl && self._.includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
+                    if(o.developerUrl && includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
                 });

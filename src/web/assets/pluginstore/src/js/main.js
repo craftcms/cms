@@ -1,7 +1,5 @@
 import Vue from 'vue';
 import VueResource from 'vue-resource';
-import lodash from 'lodash'
-import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 import { currency } from './filters/currency';
 import { t } from './filters/t';
 import router from './router';
@@ -10,7 +8,6 @@ import { mapGetters } from 'vuex';
 import GlobalModal from './components/GlobalModal';
 
 Vue.use(VueResource);
-Vue.use(VueLodash, lodash);
 Vue.filter('currency', currency);
 Vue.filter('t', t);
 
