@@ -37,6 +37,7 @@
 - Added `craft\records\Site::getGroup()`.
 - Added `craft\records\SiteGroup`.
 - Added `craft\services\Api`, available from `Craft::$app->api`.
+- Added `craft\services\Assets::getThumbPath()`.
 - Added `craft\services\Config::getDotEnvPath()`.
 - Added `craft\services\Config::setEnvVar()`.
 - Added `craft\services\Sites::getAllGroups()`.
