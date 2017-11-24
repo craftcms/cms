@@ -1,5 +1,3 @@
-# The Craft License
-
 Copyright © Pixel & Tonic, Inc. 
 
 Permission is hereby granted to any person obtaining a copy of this software
