@@ -31,6 +31,4 @@ body.rtl #sites li .lightswitch { left: 9px; }
 body.ltr #sites li .status { right: 16px; }
 body.rtl #sites li .status { left: 16px; }
 
-#revision-notes { background: none; }
-
 /*# sourceMappingURL=entry.css.map */

@@ -633,6 +633,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
             color: hsl($hue, 5%, 60%);
           }
 
+          .text {
+            background: transparent;
+          }
+
           .ui-datepicker {
             @include margin(0, 0, 0, -8px);
           }
