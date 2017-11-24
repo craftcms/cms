@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Router from 'vue-router';
+import VueRouter from 'vue-router';
 import Index from '../Index';
 import Category from '../Category';
 import UpgradeCraft from '../UpgradeCraft';
@@ -7,9 +7,9 @@ import Developer from '../Developer';
 import FeaturedPlugins from '../FeaturedPlugins';
 import Tests from '../Tests';
 
-Vue.use(Router);
+Vue.use(VueRouter);
 
-export default new Router({
+export default new VueRouter({
     base: window.vueRouterBase,
     mode: 'history',
     routes: [
