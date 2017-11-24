@@ -9,14 +9,22 @@
             <li>{% spaceless %}
                 <a data-key="{{ key }}"
                     {%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs{% endif %}
-                    {%- if source.structureId is defined and source.structureId %} data-has-structure{% endif %}
+                    {%- if source.structureId is defined %} data-has-structure{% endif %}
                     {%- if source.defaultSort is defined %}{% set defaultSort = source.defaultSort %} data-default-sort="{{ defaultSort is iterable ? defaultSort|join(':') : defaultSort }}"{% endif %}
                     {%- if source.sites is defined %} data-sites="{{ source.sites|join(',') }}"{% endif %}
                     {%- if source.data is defined -%}
                         {% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
                     {%- endif %}>
-                        {% if source.status is defined and source.status %}
+                        {% if source.status is defined %}
                             <span class="status {{ source.status }}"></span>
+                        {% elseif source.icon is defined %}
+                            <span class="icon">
+                                {{ (svg(source.icon) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
+                            </span>
+                        {% elseif source.iconMask is defined %}
+                            <span class="icon icon-mask">
+                                {{ (svg(source.iconMask) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
+                            </span>
                         {% endif %}
                         <span class="label">{{ source.label }}</span>
                 </a>

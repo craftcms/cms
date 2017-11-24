@@ -1,24 +1,6 @@
 @charset "UTF-8";
 @import "../../../../../lib/craftcms-sass/mixins";
 
-/* Global */
-.sidebar nav li a.has-badge {
-  @include padding-right(50px);
-
-  span.badge {
-    display: block;
-    position: absolute;
-    top: 10px;
-    @include right(10px);
-    background: $mediumTextColor;
-    border-radius: 50px;
-    padding: 0 6px;
-    font-size: 11px;
-    line-height: 16px;
-    color: #fff;
-  }
-}
-
 /* Utilities */
 form.utility .utility-status {
   display: block;

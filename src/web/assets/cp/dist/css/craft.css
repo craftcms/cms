@@ -1889,19 +1889,15 @@ body.rtl #settingsmenu ul li a:before { margin: 1px -22px 0 0 ; }
 
 #nav li:not(.has-subnav) a.sel { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: #da5a47; opacity: 1; }
 #nav li:not(.has-subnav) a.sel .icon { opacity: 1; }
-#nav li a { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; margin: 0; padding: 10px 14px; min-height: 24px; -webkit-box-sizing: border-box; box-sizing: border-box; border-left: 0 solid transparent; }
+#nav li a { border-left: 0 solid transparent; }
 #nav li a.active { color: #fff; }
 #nav li a.menubtn { line-height: 26px; }
 #nav li a:active .icon { opacity: 1; }
-#nav li a .icon { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; width: 16px; opacity: 0.5; }
-body.ltr #nav li a .icon { margin-right: 10px; }
-body.rtl #nav li a .icon { margin-left: 10px; }
-#nav li a .icon span[data-icon] { font-size: 16px; color: #fff; }
-#nav li a .icon span[data-icon]::before { display: block; }
-#nav li a .icon svg { width: 16px; max-height: 16px; }
-#nav li a .icon svg rect, #nav li a .icon svg circle, #nav li a .icon svg ellipse, #nav li a .icon svg line, #nav li a .icon svg polyline, #nav li a .icon svg polygon, #nav li a .icon svg path, #nav li a .icon svg text { fill: #fff; stroke-width: 0; }
-#nav li a .label { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#nav li a .badge { display: block; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; background: rgba(255, 255, 255, 0.5); color: #333f4d; }
+#nav li a .icon { opacity: 0.5; }
+#nav li a .icon.icon-mask svg rect, #nav li a .icon.icon-mask svg circle, #nav li a .icon.icon-mask svg ellipse, #nav li a .icon.icon-mask svg line, #nav li a .icon.icon-mask svg polyline, #nav li a .icon.icon-mask svg polygon, #nav li a .icon.icon-mask svg path, #nav li a .icon.icon-mask svg text { fill: #fff; stroke-width: 0; }
+#nav li a .icon.icon-mask span[data-icon] { color: #fff; }
+#nav li a .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#nav li a .badge { background: rgba(255, 255, 255, 0.5); color: #333f4d; }
 body.ltr #nav li ul li a { padding-left: 60px; }
 body.rtl #nav li ul li a { padding-right: 60px; }
 
@@ -2013,66 +2009,61 @@ body.rtl .sidebar { -webkit-box-shadow: inset 1px 0 0 #e3e5e8; box-shadow: inset
 body.ltr .sidebar .heading { margin: 14px 0 2px -24px ; }
 body.rtl .sidebar .heading { margin: 14px -24px 2px 0 ; }
 .sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: #b9bfc6; font-size: 11px; font-weight: bold; }
-.sidebar nav { margin: 0 -24px; padding: 0 24px; overflow: auto; }
-.sidebar nav li { position: relative; }
-.sidebar nav li a { display: block; margin: 0 -24px; padding: 9px 24px; color: #29323d; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; outline: none; }
-.sidebar nav li a:hover { text-decoration: none; color: #29323d; background: rgba(41, 50, 61, 0.05); }
-.sidebar nav li a.sel { background: #737f8c; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; cursor: default; }
-.sidebar nav li a.sel, .sidebar nav li a.sel + .toggle { color: #fff; }
-.sidebar nav li .toggle { position: absolute; top: 6px; }
-.sidebar nav li ul { display: none; }
-.sidebar nav li.expanded > ul { display: block; }
+.sidebar nav { margin: 0 -24px; overflow: auto; }
 
 body.ltr .content.has-sidebar:not(.hiding-sidebar) { margin-left: 218px; }
 body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 218px; }
 
-body.ltr .sidebar nav > ul > li > a { padding-left: 24px; }
-body.rtl .sidebar nav > ul > li > a { padding-right: 24px; }
+nav { padding: 0 24px; }
+body.ltr nav > ul > li > ul > li > a { padding-left: 44px; }
+body.rtl nav > ul > li > ul > li > a { padding-right: 44px; }
+body.ltr nav > ul > li > ul > li > ul > li > a { padding-left: 64px; }
+body.rtl nav > ul > li > ul > li > ul > li > a { padding-right: 64px; }
+body.ltr nav > ul > li > ul > li > ul > li > ul > li > a { padding-left: 84px; }
+body.rtl nav > ul > li > ul > li > ul > li > ul > li > a { padding-right: 84px; }
+body.ltr nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-left: 104px; }
+body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-right: 104px; }
+nav li { position: relative; }
+nav li a { margin: 0 -24px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; min-height: 24px; -webkit-box-sizing: border-box; box-sizing: border-box; color: #29323d; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; outline: none; }
+body.ltr nav li a { padding: 10px 14px 10px 24px; }
+body.rtl nav li a { padding: 10px 24px 10px 14px; }
+nav li a:hover { text-decoration: none; color: #29323d; background: rgba(41, 50, 61, 0.05); }
+nav li a.sel { background: #737f8c; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; cursor: default; }
+nav li a.sel, nav li a.sel + .toggle { color: #fff; }
+nav li a.sel .icon.icon-mask svg rect, nav li a.sel .icon.icon-mask svg circle, nav li a.sel .icon.icon-mask svg ellipse, nav li a.sel .icon.icon-mask svg line, nav li a.sel .icon.icon-mask svg polyline, nav li a.sel .icon.icon-mask svg polygon, nav li a.sel .icon.icon-mask svg path, nav li a.sel .icon.icon-mask svg text { fill: #fff; stroke-width: 0; }
+nav li a.sel .icon.icon-mask span[data-icon] { color: #fff; }
+nav li a.sel .badge { background: #fff; color: #737f8c; }
+nav li a .status { -ms-flex-negative: 1; flex-shrink: 1; }
+nav li a .icon { -ms-flex-negative: 1; flex-shrink: 1; width: 16px; height: 16px; }
+body.ltr nav li a .icon { margin: 0 10px 0 -10px ; }
+body.rtl nav li a .icon { margin: 0 -10px 0 10px ; }
+nav li a .icon.icon-mask svg rect, nav li a .icon.icon-mask svg circle, nav li a .icon.icon-mask svg ellipse, nav li a .icon.icon-mask svg line, nav li a .icon.icon-mask svg polyline, nav li a .icon.icon-mask svg polygon, nav li a .icon.icon-mask svg path, nav li a .icon.icon-mask svg text { fill: #8f98a3; stroke-width: 0; }
+nav li a .icon.icon-mask span[data-icon] { color: #8f98a3; }
+nav li a .icon svg { width: 16px; height: 16px; }
+nav li a .icon span[data-icon] { font-size: 16px; }
+nav li a .icon span[data-icon]::before { display: block; }
+nav li a .label { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
+nav li a .badge { -ms-flex-negative: 1; flex-shrink: 1; padding: 0 6px; font-size: 11px; line-height: 16px; border-radius: 8px; background: #8f98a3; color: #fff; }
+body.ltr nav li a .badge { margin: 0 -4px 0 10px ; }
+body.rtl nav li a .badge { margin: 0 10px 0 -4px ; }
+nav li .toggle { position: absolute; top: 6px; }
+nav li ul { display: none; }
+nav li.expanded > ul { display: block; }
 
-body.ltr .sidebar nav > ul > li > ul > li > a { padding-left: 44px; }
-body.rtl .sidebar nav > ul > li > ul > li > a { padding-right: 44px; }
+body.ltr nav > ul > li > .toggle { left: -20px; }
+body.rtl nav > ul > li > .toggle { right: -20px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > a { padding-left: 64px; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > a { padding-right: 64px; }
+body.ltr nav > ul > li > ul > li > .toggle { left: 0px; }
+body.rtl nav > ul > li > ul > li > .toggle { right: 0px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-left: 84px; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-right: 84px; }
+body.ltr nav > ul > li > ul > li > ul > li > .toggle { left: 20px; }
+body.rtl nav > ul > li > ul > li > ul > li > .toggle { right: 20px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-left: 104px; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-right: 104px; }
+body.ltr nav > ul > li > ul > li > ul > li > ul > li > .toggle { left: 40px; }
+body.rtl nav > ul > li > ul > li > ul > li > ul > li > .toggle { right: 40px; }
 
-body.ltr .sidebar nav > ul > li > .toggle { left: -20px; }
-body.rtl .sidebar nav > ul > li > .toggle { right: -20px; }
-
-body.ltr .sidebar nav > ul > li > ul > li > .toggle { left: 0px; }
-body.rtl .sidebar nav > ul > li > ul > li > .toggle { right: 0px; }
-
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > .toggle { left: 20px; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > .toggle { right: 20px; }
-
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { left: 40px; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { right: 40px; }
-
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { left: 60px; }
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 60px; }
-
-.sidebar nav.has-icons li a { position: relative; }
-body.ltr .sidebar nav.has-icons li a { padding-left: 40px; }
-body.rtl .sidebar nav.has-icons li a { padding-right: 40px; }
-.sidebar nav.has-icons li a:not(.sel) .icon svg rect, .sidebar nav.has-icons li a:not(.sel) .icon svg circle, .sidebar nav.has-icons li a:not(.sel) .icon svg ellipse, .sidebar nav.has-icons li a:not(.sel) .icon svg line, .sidebar nav.has-icons li a:not(.sel) .icon svg polyline, .sidebar nav.has-icons li a:not(.sel) .icon svg polygon, .sidebar nav.has-icons li a:not(.sel) .icon svg path, .sidebar nav.has-icons li a:not(.sel) .icon svg text { fill: #8f98a3; stroke-width: 0; }
-.sidebar nav.has-icons li a.sel .icon svg rect, .sidebar nav.has-icons li a.sel .icon svg circle, .sidebar nav.has-icons li a.sel .icon svg ellipse, .sidebar nav.has-icons li a.sel .icon svg line, .sidebar nav.has-icons li a.sel .icon svg polyline, .sidebar nav.has-icons li a.sel .icon svg polygon, .sidebar nav.has-icons li a.sel .icon svg path, .sidebar nav.has-icons li a.sel .icon svg text { fill: #fff; stroke-width: 0; }
-.sidebar nav.has-icons li a .icon { display: block; position: absolute; top: 10px; width: 16px; height: 16px; }
-body.ltr .sidebar nav.has-icons li a .icon { left: 14px; }
-body.rtl .sidebar nav.has-icons li a .icon { right: 14px; }
-.sidebar nav.has-icons li a .icon svg { width: 16px; height: 16px; }
-
-body.ltr > .sidebar { padding: 0 0 0 0; }
-body.rtl > .sidebar { padding: 0 0 0 0; }
-body.ltr > .sidebar { margin: 0 0 0 0 ; }
-body.rtl > .sidebar { margin: 0 0 0 0 ; }
-
-body.ltr > .sidebar nav li a { margin-left: 0; }
-body.rtl > .sidebar nav li a { margin-right: 0; }
+body.ltr nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { left: 60px; }
+body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 60px; }
 
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #main-container #main #main-content #details .spinner { background-image: url(../images/spinner_details_2x.gif); }

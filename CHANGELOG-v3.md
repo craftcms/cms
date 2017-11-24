@@ -16,6 +16,7 @@
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
 - Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
 - Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
+- Added the `svg()` Twig function, which will sanitize and return SVG XML code. You can pass in the path to an SVG file or raw SVG XML code.
 - Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
@@ -36,6 +37,7 @@
 - Added `craft\records\Site::getGroup()`.
 - Added `craft\records\SiteGroup`.
 - Added `craft\services\Api`, available from `Craft::$app->api`.
+- Added `craft\services\Assets::getThumbPath()`.
 - Added `craft\services\Config::getDotEnvPath()`.
 - Added `craft\services\Config::setEnvVar()`.
 - Added `craft\services\Sites::getAllGroups()`.
@@ -65,6 +67,8 @@
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
 - Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
 - Color inputs can now be left blank.
+- CP nav item definitions registered with `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS` can now specify their icon with an `icon` key, whether it’s the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Support for the `iconSvg` key has been removed.)
+- Element source definitions can now include `icon` or `iconMask` keys, set to either the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Use `icon` for colored icons; use `iconMask` for masked icons that should change color depending on whether the source is selected.)
 - `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
 - `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
 - `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
