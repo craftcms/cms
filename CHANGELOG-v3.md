@@ -13,6 +13,7 @@
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
 - Added the “Default Color” setting to Color fields. ([#949](https://github.com/craftcms/cms/issues/949))
 - Color fields now return a `craft\fields\data\ColorData` object, with `hex`, `rgb`, `red`, `green`, `blue`, `r`, `g`, `b`, and `luma` properties.
+- Added support for the `text/markdown` MIME type.
 - Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
 - Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
 - Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
