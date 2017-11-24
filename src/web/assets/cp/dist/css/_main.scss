@@ -914,11 +914,11 @@ ul.icons li a:hover {
     &.invisible {
       visibility: hidden;
     }
-
-    &.flex-grow {
-      flex: 1;
-    }
   }
+}
+
+.flex-grow {
+  flex: 1;
 }
 
 .buttons {
