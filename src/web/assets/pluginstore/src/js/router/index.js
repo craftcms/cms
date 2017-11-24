@@ -10,6 +10,8 @@ import Tests from '../Tests';
 Vue.use(Router);
 
 export default new Router({
+    base: window.vueRouterBase,
+    mode: 'history',
     routes: [
         {
             path: '/',
