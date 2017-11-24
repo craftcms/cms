@@ -6,7 +6,7 @@
             <li class="heading"><span>{{ source.heading|t('site') }}</span></li>
         {% else %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
-            <li>
+            <li>{% spaceless %}
                 <a data-key="{{ key }}"
                     {%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs{% endif %}
                     {%- if source.structureId is defined and source.structureId %} data-has-structure{% endif %}
@@ -15,10 +15,10 @@
                     {%- if source.data is defined -%}
                         {% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
                     {%- endif %}>
-                        {%- if source.status is defined and source.status -%}
+                        {% if source.status is defined and source.status %}
                             <span class="status {{ source.status }}"></span>
-                        {%- endif -%}
-                        {{- source.label -}}
+                        {% endif %}
+                        <span class="label">{{ source.label }}</span>
                 </a>
                 {% if source.nested is defined and source.nested is not empty %}
                     <div class="toggle"></div>
@@ -27,7 +27,7 @@
                         sources: source.nested
                     } %}
                 {% endif %}
-            </li>
+            {% endspaceless %}</li>
         {% endif %}
     {% endfor %}
 </ul>
