@@ -158,17 +158,15 @@
                     </div>
                 </div>
 
-                <nav>
-                    <ul id="nav">
+                <nav id="nav">
+                    <ul>
                         {% for item in craft.cp.nav() %}
                             {% set hasSubnav = (item.subnav is defined and item.subnav) %}
                             <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
                                 <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
-                                    <span class="icon">
+                                    <span class="icon icon-mask">
                                         {%- if item.icon is defined -%}
-                                            <span data-icon="{{ item.icon }}"></span>
-                                        {%- elseif item.iconSvg is defined and item.iconSvg -%}
-                                            {{ item.iconSvg|raw }}
+                                            {{ (svg(item.icon) ?: "<span data-icon='#{item.icon}'></span>")|raw }}
                                         {%- else -%}
                                             {% include "_includes/defaulticon.svg" with { label: item.label } %}
                                         {%- endif -%}

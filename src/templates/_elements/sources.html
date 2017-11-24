@@ -17,6 +17,14 @@
                     {%- endif %}>
                         {% if source.status is defined %}
                             <span class="status {{ source.status }}"></span>
+                        {% elseif source.icon is defined %}
+                            <span class="icon">
+                                {{ (svg(source.icon) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
+                            </span>
+                        {% elseif source.iconMask is defined %}
+                            <span class="icon icon-mask">
+                                {{ (svg(source.iconMask) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
+                            </span>
                         {% endif %}
                         <span class="label">{{ source.label }}</span>
                 </a>

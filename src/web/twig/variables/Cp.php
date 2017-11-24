@@ -162,10 +162,6 @@ class Cp extends Component
                 'label' => Craft::t('app', 'Settings'),
                 'icon' => 'settings'
             ];
-
-            
-            // Add Plugin Store section
-
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
@@ -223,54 +219,54 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/sliders.svg')),
+            'icon' => '@app/icons/sliders.svg',
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/world.svg')),
+            'icon' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
         $settings[$label]['routes'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/routes.svg')),
+            'icon' => '@app/icons/routes.svg',
             'label' => Craft::t('app', 'Routes')
         ];
         $settings[$label]['users'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
+            'icon' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')
         ];
         $settings[$label]['email'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/envelope.svg')),
+            'icon' => '@app/icons/envelope.svg',
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/plugin.svg')),
+            'icon' => '@app/icons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/field.svg')),
+            'icon' => '@app/icons/field.svg',
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/newspaper.svg')),
+            'icon' => '@app/icons/newspaper.svg',
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/photo.svg')),
+            'icon' => '@app/icons/photo.svg',
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/globe.svg')),
+            'icon' => '@app/icons/globe.svg',
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/folder-open.svg')),
+            'icon' => '@app/icons/folder-open.svg',
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/tags.svg')),
+            'icon' => '@app/icons/tags.svg',
             'label' => Craft::t('app', 'Tags')
         ];
 
@@ -283,7 +279,7 @@ class Cp extends Component
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/'.$plugin->id,
-                    'iconSvg' => $pluginsService->getPluginIconSvg($plugin->id),
+                    'icon' => $pluginsService->getPluginIconSvg($plugin->id),
                     'label' => $plugin->name
                 ];
             }

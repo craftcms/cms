@@ -869,13 +869,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   }
 
   a {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin: 0;
-    padding: 10px 14px;
-    min-height: 24px;
-    box-sizing: border-box;
     border-left: 0 solid transparent;
 
     &.active {
@@ -891,43 +884,26 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     }
 
     .icon {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      @include margin-right(10px);
       opacity: 0.5;
 
-      span[data-icon] {
-        font-size: 16px;
-        color: #fff;
-
-        &::before {
-          display: block;
+      &.icon-mask {
+        svg {
+          @include svg-mask(#fff);
         }
-      }
 
-      svg {
-        width: 16px;
-        max-height: 16px;
-        @include svg-mask(#fff);
+        span[data-icon] {
+          color: #fff;
+        }
       }
     }
 
     .label {
-      flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .badge {
-      display: block;
-      border-radius: 50px;
-      padding: 0 6px;
-      font-size: 11px;
-      line-height: 16px;
       background: rgba(255, 255, 255, 0.5);
       color: $sidebarBgColor;
     }
@@ -1370,51 +1346,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
   nav {
     margin: 0 -24px;
-    padding: 0 24px;
     overflow: auto;
-
-    li {
-      position: relative;
-
-      a {
-        display: block;
-        margin: 0 -24px;
-        padding: 9px 24px;
-        color: $textColor;
-        user-select: none;
-        outline: none;
-
-        &:hover {
-          text-decoration: none;
-          color: $textColor;
-          background: $sidebarLinkHoverBgColor;
-        }
-
-        &.sel {
-          background: $darkSelColor;
-          @include light-on-dark-text;
-          cursor: default;
-
-          &,
-          & + .toggle {
-            color: #fff;
-          }
-        }
-      }
-
-      .toggle {
-        position: absolute;
-        top: 6px;
-      }
-
-      ul {
-        display: none;
-      }
-
-      &.expanded > ul {
-        display: block;
-      }
-    }
   }
 }
 
@@ -1422,81 +1354,171 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   @include margin-left(218px);
 }
 
-.sidebar nav > ul > li > a {
-  @include padding-left(24px);
-}
+nav {
+  padding: 0 24px;
 
-.sidebar nav > ul > li > ul > li > a {
-  @include padding-left(44px);
-}
+  & > ul > li > ul > li {
+    & > a {
+      @include padding-left(44px);
+    }
 
-.sidebar nav > ul > li > ul > li > ul > li > a {
-  @include padding-left(64px);
-}
+    & > ul > li {
+      & > a {
+        @include padding-left(64px);
+      }
 
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > a {
-  @include padding-left(84px);
-}
+      & > ul > li {
+        & > a {
+          @include padding-left(84px);
+        }
 
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a {
-  @include padding-left(104px);
-}
-
-.sidebar nav > ul > li > .toggle {
-  @include left(-20px);
-}
-
-.sidebar nav > ul > li > ul > li > .toggle {
-  @include left(0px);
-}
-
-.sidebar nav > ul > li > ul > li > ul > li > .toggle {
-  @include left(20px);
-}
-
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle {
-  @include left(40px);
-}
-
-.sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
-  @include left(60px);
-}
-
-.sidebar nav.has-icons li a {
-  position: relative;
-  @include padding-left(40px);
-
-  &:not(.sel) .icon svg {
-    @include svg-mask($mediumTextColor);
+        & > ul > li a {
+          @include padding-left(104px);
+        }
+      }
+    }
   }
 
-  &.sel .icon svg {
-    @include svg-mask(#fff);
-  }
+  li {
+    position: relative;
 
-  .icon {
-    display: block;
-    position: absolute;
-    top: 10px;
-    @include left(14px);
-    width: 16px;
-    height: 16px;
+    a {
+      margin: 0 -24px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      @include padding(10px, 14px, 10px, 24px);
+      min-height: 24px;
+      box-sizing: border-box;
+      color: $textColor;
+      user-select: none;
+      outline: none;
 
-    svg {
-      width: 16px;
-      height: 16px;
+      &:hover {
+        text-decoration: none;
+        color: $textColor;
+        background: $sidebarLinkHoverBgColor;
+      }
+
+      &.sel {
+        background: $darkSelColor;
+        @include light-on-dark-text;
+        cursor: default;
+
+        &,
+        & + .toggle {
+          color: #fff;
+        }
+
+        .icon.icon-mask {
+          svg {
+            @include svg-mask(#fff);
+          }
+
+          span[data-icon] {
+            color: #fff;
+          }
+        }
+
+        .badge {
+          background: #fff;
+          color: $darkSelColor;
+        }
+      }
+
+      .status {
+        flex-shrink: 1;
+      }
+
+      .icon {
+        @include margin(0, 10px, 0, -10px);
+        flex-shrink: 1;
+        width: 16px;
+        height: 16px;
+
+        &.icon-mask {
+          svg {
+            @include svg-mask($mediumTextColor);
+          }
+
+          span[data-icon] {
+            color: $mediumTextColor;
+          }
+        }
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+
+        span[data-icon] {
+          font-size: 16px;
+
+          &::before {
+            display: block;
+          }
+        }
+      }
+
+      .label {
+        flex: 1;
+      }
+
+      .badge {
+        @include margin(0, -4px, 0, 10px);
+        flex-shrink: 1;
+        padding: 0 6px;
+        font-size: 11px;
+        line-height: 16px;
+        border-radius: 8px;
+        background: $mediumTextColor;
+        color: #fff;
+      }
+    }
+
+    .toggle {
+      position: absolute;
+      top: 6px;
+    }
+
+    ul {
+      display: none;
+    }
+
+    &.expanded > ul {
+      display: block;
     }
   }
 }
 
-> .sidebar {
-  @include padding(0, 0, 0, 0);
-  @include margin(0, 0, 0, 0);
+nav > ul > li > .toggle {
+  @include left(-20px);
 }
 
-> .sidebar nav li a {
-  @include margin-left(0);
+nav > ul > li > ul > li > .toggle {
+  @include left(0px);
 }
+
+nav > ul > li > ul > li > ul > li > .toggle {
+  @include left(20px);
+}
+
+nav > ul > li > ul > li > ul > li > ul > li > .toggle {
+  @include left(40px);
+}
+
+nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
+  @include left(60px);
+}
+
+//> .sidebar {
+//  @include padding(0, 0, 0, 0);
+//  @include margin(0, 0, 0, 0);
+//}
+//
+//> nav li a {
+//  @include margin-left(0);
+//}
 
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
