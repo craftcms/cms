@@ -69,7 +69,7 @@
 
 {% block body %}
     <div id="global-container">
-        <header id="global-sidebar">
+        <header id="global-sidebar" class="sidebar">
             <div class="fixed-container">
                 {% if currentUser.admin and craft.app.config.general.devMode %}
                     <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>

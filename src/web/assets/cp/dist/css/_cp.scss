@@ -35,6 +35,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   flex: 0 0 $sidebarWidth;
   z-index: 100;
   position: relative;
+  padding: 0;
 
   body.focused & {
     position: absolute;
@@ -160,6 +161,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
   nav {
     flex: 1;
+    margin: 0;
   }
 
   #job-icon {
@@ -1346,149 +1348,146 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
   nav {
     margin: 0 -24px;
+    padding: 0 24px;
     overflow: auto;
+
+    & > ul > li > ul > li {
+      & > a {
+        @include padding-left(44px);
+      }
+
+      & > ul > li {
+        & > a {
+          @include padding-left(64px);
+        }
+
+        & > ul > li {
+          & > a {
+            @include padding-left(84px);
+          }
+
+          & > ul > li a {
+            @include padding-left(104px);
+          }
+        }
+      }
+    }
+
+    li {
+      position: relative;
+
+      a {
+        margin: 0 -24px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        @include padding(10px, 14px, 10px, 24px);
+        min-height: 24px;
+        box-sizing: border-box;
+        color: $textColor;
+        user-select: none;
+        outline: none;
+
+        &:hover {
+          text-decoration: none;
+          color: $textColor;
+          background: $sidebarLinkHoverBgColor;
+        }
+
+        &.sel {
+          background: $darkSelColor;
+          @include light-on-dark-text;
+          cursor: default;
+
+          &,
+          & + .toggle {
+            color: #fff;
+          }
+
+          .icon.icon-mask {
+            svg {
+              @include svg-mask(#fff);
+            }
+
+            span[data-icon] {
+              color: #fff;
+            }
+          }
+
+          .badge {
+            background: #fff;
+            color: $darkSelColor;
+          }
+        }
+
+        .status {
+          flex-shrink: 1;
+        }
+
+        .icon {
+          @include margin(0, 10px, 0, -10px);
+          flex-shrink: 1;
+          width: 16px;
+          height: 16px;
+
+          &.icon-mask {
+            svg {
+              @include svg-mask($mediumTextColor);
+            }
+
+            span[data-icon] {
+              color: $mediumTextColor;
+            }
+          }
+
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+
+          span[data-icon] {
+            font-size: 16px;
+
+            &::before {
+              display: block;
+            }
+          }
+        }
+
+        .label {
+          flex: 1;
+        }
+
+        .badge {
+          @include margin(0, -4px, 0, 10px);
+          flex-shrink: 1;
+          padding: 0 6px;
+          font-size: 11px;
+          line-height: 16px;
+          border-radius: 8px;
+          background: $mediumTextColor;
+          color: #fff;
+        }
+      }
+
+      .toggle {
+        position: absolute;
+        top: 6px;
+      }
+
+      ul {
+        display: none;
+      }
+
+      &.expanded > ul {
+        display: block;
+      }
+    }
   }
 }
 
 .content.has-sidebar:not(.hiding-sidebar) {
   @include margin-left(218px);
-}
-
-nav {
-  padding: 0 24px;
-
-  & > ul > li > ul > li {
-    & > a {
-      @include padding-left(44px);
-    }
-
-    & > ul > li {
-      & > a {
-        @include padding-left(64px);
-      }
-
-      & > ul > li {
-        & > a {
-          @include padding-left(84px);
-        }
-
-        & > ul > li a {
-          @include padding-left(104px);
-        }
-      }
-    }
-  }
-
-  li {
-    position: relative;
-
-    a {
-      margin: 0 -24px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      @include padding(10px, 14px, 10px, 24px);
-      min-height: 24px;
-      box-sizing: border-box;
-      color: $textColor;
-      user-select: none;
-      outline: none;
-
-      &:hover {
-        text-decoration: none;
-        color: $textColor;
-        background: $sidebarLinkHoverBgColor;
-      }
-
-      &.sel {
-        background: $darkSelColor;
-        @include light-on-dark-text;
-        cursor: default;
-
-        &,
-        & + .toggle {
-          color: #fff;
-        }
-
-        .icon.icon-mask {
-          svg {
-            @include svg-mask(#fff);
-          }
-
-          span[data-icon] {
-            color: #fff;
-          }
-        }
-
-        .badge {
-          background: #fff;
-          color: $darkSelColor;
-        }
-      }
-
-      .status {
-        flex-shrink: 1;
-      }
-
-      .icon {
-        @include margin(0, 10px, 0, -10px);
-        flex-shrink: 1;
-        width: 16px;
-        height: 16px;
-
-        &.icon-mask {
-          svg {
-            @include svg-mask($mediumTextColor);
-          }
-
-          span[data-icon] {
-            color: $mediumTextColor;
-          }
-        }
-
-        svg {
-          width: 16px;
-          height: 16px;
-        }
-
-        span[data-icon] {
-          font-size: 16px;
-
-          &::before {
-            display: block;
-          }
-        }
-      }
-
-      .label {
-        flex: 1;
-      }
-
-      .badge {
-        @include margin(0, -4px, 0, 10px);
-        flex-shrink: 1;
-        padding: 0 6px;
-        font-size: 11px;
-        line-height: 16px;
-        border-radius: 8px;
-        background: $mediumTextColor;
-        color: #fff;
-      }
-    }
-
-    .toggle {
-      position: absolute;
-      top: 6px;
-    }
-
-    ul {
-      display: none;
-    }
-
-    &.expanded > ul {
-      display: block;
-    }
-  }
 }
 
 nav > ul > li > .toggle {
