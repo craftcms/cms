@@ -4,17 +4,27 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\helpers\MigrationHelper;
 
 /**
  * m170809_223337_oauth_tokens_table migration.
  */
-class m170809_223337_oauth_tokens_table extends Migration
+class m170809_223338_oauth_tokens_table extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp()
     {
+        if ($this->db->tableExists('{{%oauthtokens}}')) {
+            return;
+        }
+
+        if ($this->db->tableExists('{{%oauth_tokens}}')) {
+            MigrationHelper::renameTable('{{%oauth_tokens}}', '{{%oauthtokens}}');
+            return;
+        }
+
         $this->createTable('{{%oauthtokens}}', [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
@@ -38,7 +48,7 @@ class m170809_223337_oauth_tokens_table extends Migration
      */
     public function safeDown()
     {
-        echo "m170809_223337_oauth_tokens_table cannot be reverted.\n";
+        echo "m170809_223338_oauth_tokens_table cannot be reverted.\n";
         return false;
     }
 }
