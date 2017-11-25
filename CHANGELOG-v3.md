@@ -21,6 +21,7 @@
 - Fixed a PHP error that could occur if there was a logged-in user ID in the PHP session, but the corresponding user didn’t exist in the database. ([#2117](https://github.com/craftcms/cms/issues/2117))
 - Fixed a bug where `QueryAbortedException`s weren’t getting caught by `ResaveElement` jobs.
 - Fixed a PHP error that occurred when executing an element query with a custom `SELECT` clause.
+- Fixed the Debug Toolbar’s “C” icon in Firefox.
 
 ## 3.0.0-beta.34 - 2017-11-09
 
