@@ -446,6 +446,7 @@ class Install extends Migration
             'schemaVersion' => $this->string()->notNull(),
             'licenseKey' => $this->char(24),
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
+            'enabled' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -824,6 +825,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%migrations}}', ['pluginId'], false);
         $this->createIndex(null, '{{%migrations}}', ['type', 'pluginId'], false);
         $this->createIndex(null, '{{%oauthtokens}}', ['provider', 'userId'], false);
+        $this->createIndex(null, '{{%plugins}}', ['enabled'], true);
         $this->createIndex(null, '{{%plugins}}', ['handle'], true);
         $this->createIndex(null, '{{%pluginstoretokens}}', ['userId'], true);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);

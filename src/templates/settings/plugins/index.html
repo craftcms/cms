@@ -56,21 +56,35 @@
                             {% endif %}
                         </td>
                         <td class="nowrap thin" data-title="{{ 'Status'|t('app') }}">
-                            {% if config.isInstalled %}
-                                <span class="status enabled"></span> {{ "Installed"|t('app') }}
+                            {% if config.isEnabled %}
+                                <span class="status on"></span> {{ "Enabled"|t('app') }}
+                            {% elseif config.isInstalled %}
+                                <span class="status off"></span> {{ "Disabled"|t('app') }}
                             {% else %}
                                 <span class="status"></span> <span class="light">{{ "Not installed"|t('app') }}</span>
                             {% endif %}
                         </td>
-                        <td class="nowrap centeralign thin" data-title="{{ 'Action'|t('app') }}">
+                        <td class="nowrap thin" data-title="{{ 'Action'|t('app') }}">
                             <form method="post" accept-charset="UTF-8">
                                 <input type="hidden" name="pluginHandle" value="{{ handle }}">
                                 {{ csrfInput() }}
-                                {% if config.isInstalled %}
-                                    <div class="btn formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</div>
-                                {% else %}
-                                    <div class="btn formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</div>
-                                {% endif %}
+                                <div class="btngroup">
+                                    <div class="btn menubtn" data-icon="settings"></div>
+                                    <div class="menu" data-align="right">
+                                        <ul>
+                                            {% if not config.isInstalled %}
+                                                <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
+                                            {% else %}
+                                                {% if config.isEnabled %}
+                                                    <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
+                                                    <li><a class="formsubmit error" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</a></li>
+                                                {% else %}
+                                                    <li><a class="formsubmit" data-action="plugins/enable-plugin">{{ 'Enable'|t('app') }}</a></li>
+                                                {% endif %}
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
                             </form>
                         </td>
                     </tr>

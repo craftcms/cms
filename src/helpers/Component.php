@@ -64,10 +64,15 @@ class Component
         // If it comes from a plugin, make sure the plugin is installed
         $pluginsService = Craft::$app->getPlugins();
         $pluginHandle = $pluginsService->getPluginHandleByClass($class);
-        if ($pluginHandle !== null && $pluginsService->getPlugin($pluginHandle) === null) {
+        if ($pluginHandle !== null && !$pluginsService->isPluginEnabled($pluginHandle)) {
             $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
             $pluginName = $pluginInfo['name'] ?? $pluginHandle;
-            throw new MissingComponentException("Component class '{$class}' belongs to an uninstalled plugin ({$pluginName}).");
+            if ($pluginsService->isPluginInstalled($pluginHandle)) {
+                $message = "Component class '{$class}' belongs to a disabled plugin ({$pluginName}).";
+            } else {
+                $message = "Component class '{$class}' belongs to an uninstalled plugin ({$pluginName}).";
+            }
+            throw new MissingComponentException($message);
         }
 
         $config = self::mergeSettings($config);
