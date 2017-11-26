@@ -40,36 +40,36 @@
                                 </div>
                             </div>
                         </th>
-                        <td data-title="{{ 'Settings'|t('app') }}">
+                        <td class="nowrap" data-title="{{ 'Settings'|t('app') }}">
                             {% if config.hasCpSettings %}
                                 <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span> {{ "Settings"|t('app') }}</a>
                             {% else %}
                                 <span class="light">—</span>
                             {% endif %}
                         </td>
-                        <td data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
-                        <td data-title="{{ 'Documentation'|t('app') }}">
+                        <td class="nowrap" data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
+                        <td class="nowrap" data-title="{{ 'Documentation'|t('app') }}">
                             {% if config.documentationUrl %}
                                 <a href="{{ config.documentationUrl }}" title="{{ "{name} Documentation"|t('app', {name: config.name}) }}" target="_blank">{{ "Documentation"|t('app') }}</a>
                             {% else %}
                                 <span class="light">—</span>
                             {% endif %}
                         </td>
-                        <td class="status-cell thin" data-title="{{ 'Status'|t('app') }}">
+                        <td class="nowrap thin" data-title="{{ 'Status'|t('app') }}">
                             {% if config.isInstalled %}
                                 <span class="status enabled"></span> {{ "Installed"|t('app') }}
                             {% else %}
                                 <span class="status"></span> <span class="light">{{ "Not installed"|t('app') }}</span>
                             {% endif %}
                         </td>
-                        <td class="centeralign thin" data-title="{{ 'Action'|t('app') }}">
+                        <td class="nowrap centeralign thin" data-title="{{ 'Action'|t('app') }}">
                             <form method="post" accept-charset="UTF-8">
                                 <input type="hidden" name="pluginHandle" value="{{ handle }}">
                                 {{ csrfInput() }}
                                 {% if config.isInstalled %}
-                                    <div class="btn small formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</div>
+                                    <div class="btn formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</div>
                                 {% else %}
-                                    <div class="btn small formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</div>
+                                    <div class="btn formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</div>
                                 {% endif %}
                             </form>
                         </td>

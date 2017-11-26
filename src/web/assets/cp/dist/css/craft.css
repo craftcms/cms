@@ -636,8 +636,6 @@ table.data td.timestamp { vertical-align: bottom; white-space: nowrap; color: #b
 body.ltr table.data td.timestamp { text-align: right; }
 body.rtl table.data td.timestamp { text-align: left; }
 
-table.data td form { height: 22px; }
-
 table.fixed-layout { table-layout: fixed; }
 
 /* collapsable data tables for small screens based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
