@@ -293,7 +293,7 @@ class UpdaterController extends Controller
 
         // Was this after a revert?
         if ($this->_data['reverted']) {
-            $this->_finished([
+            return $this->_finished([
                 'status' => Craft::t('app', 'The update was reverted successfully.'),
             ]);
         }
