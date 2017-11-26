@@ -34,6 +34,7 @@ class InstallController extends Controller
 
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
+    const ACTION_COMPOSER_REMOVE = 'composer-remove';
     const ACTION_OPTIMIZE = 'optimize';
     const ACTION_INSTALL = 'install';
 
@@ -95,6 +96,7 @@ class InstallController extends Controller
         $this->_data['name'] = $request->getRequiredQueryParam('name');
         $this->_data['handle'] = $request->getRequiredQueryParam('handle');
         $this->_data['version'] = $request->getRequiredQueryParam('version');
+        $this->_data['removed'] = false;
 
         // Load the updater JS
         $view = $this->getView();
@@ -133,7 +135,28 @@ class InstallController extends Controller
             Craft::$app->getComposer()->install($requirements, $io);
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
-            return $this->_composerError(Craft::t('app', 'Composer was unable to install the updates.'), $e, $io);
+            return $this->_composerError(Craft::t('app', 'Composer was unable to install the plugin.'), $e, $io);
+        }
+
+        return $this->_next(self::ACTION_OPTIMIZE);
+    }
+
+    /**
+     * Removes Composer dependencies.
+     *
+     * @return Response
+     */
+    public function actionComposerRemove(): Response
+    {
+        $packages = [$this->_data['name']];
+        $io = new BufferIO();
+
+        try {
+            Craft::$app->getComposer()->uninstall($packages, $io);
+            $this->_data['removed'] = true;
+        } catch (\Throwable $e) {
+            Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            return $this->_composerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io);
         }
 
         return $this->_next(self::ACTION_OPTIMIZE);
@@ -162,11 +185,18 @@ class InstallController extends Controller
             ]);
         }
 
+        // Was this after a remove?
+        if ($this->_data['removed']) {
+            return $this->_finished([
+                'status' => Craft::t('app', 'The plugin was removed successfully.'),
+            ]);
+        }
+
         return $this->_next(self::ACTION_INSTALL);
     }
 
     /**
-     * Runs pending migrations.
+     * Installs the plugin
      *
      * @return Response
      */
@@ -199,17 +229,21 @@ class InstallController extends Controller
             $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
 
             return $this->_send([
-                'error' => Craft::t('app', 'An error occurred when installing {name}.', ['name' => $pluginName]),
+                'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
                 'errorDetails' => $eName.': '.$e->getMessage().
                     ($migration ? "\n\nMigration: ".get_class($migration) : '').
                     ($output ? "\n\nOutput:\n\n".$output : ''),
                 'options' => [
+                    $this->_finishedState([
+                        'label' => Craft::t('app', 'Leave it uninstalled'),
+                    ]),
+                    $this->_actionOption(Craft::t('app', 'Remove it'), self::ACTION_COMPOSER_REMOVE),
                     [
                         'label' => Craft::t('app', 'Send for help'),
                         'submit' => true,
                         'email' => $email,
                         'subject' => $pluginName.' update failure',
-                    ]
+                    ],
                 ],
             ]);
         }
@@ -374,6 +408,9 @@ class InstallController extends Controller
                 break;
             case self::ACTION_COMPOSER_INSTALL:
                 $state['status'] = Craft::t('app', 'Loading the plugin (this may take a minute)…');
+                break;
+            case self::ACTION_COMPOSER_REMOVE:
+                $state['status'] = Craft::t('app', 'Removing the plugin (this may take a minute)…');
                 break;
             case self::ACTION_OPTIMIZE:
                 $state['status'] = Craft::t('app', 'Optimizing…');
