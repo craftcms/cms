@@ -200,14 +200,14 @@ class PluginStoreController extends Controller
 
         // Installed plugins
 
-        $allPlugins = Craft::$app->getPlugins()->getAllPlugins();
+        $allPluginInfo = Craft::$app->getPlugins()->getComposerPluginInfo();
         $installedPlugins = [];
 
-        foreach($allPlugins as $plugin) {
+        foreach($allPluginInfo as $packageName => $pluginInfo) {
             $installedPlugins[] = [
-                'packageName' => $plugin->packageName,
-                'handle' => $plugin->handle,
-                'version' => $plugin->version,
+                'packageName' => $packageName,
+                'handle' => $pluginInfo['handle'],
+                'version' => $pluginInfo['version'],
             ];
         }
 
