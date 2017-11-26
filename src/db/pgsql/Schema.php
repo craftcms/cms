@@ -34,16 +34,6 @@ class Schema extends \yii\db\pgsql\Schema
     // =========================================================================
 
     /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        $this->defaultSchema = Craft::$app->getConfig()->getDb()->schema;
-    }
-
-    /**
      * Creates a query builder for the database.
      * This method may be overridden by child classes to create a DBMS-specific query builder.
      *

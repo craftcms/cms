@@ -77,9 +77,14 @@ class Connection extends \yii\db\Connection
     public static function createFromConfig(DbConfig $config): Connection
     {
         if ($config->driver === DbConfig::DRIVER_MYSQL) {
-            $schemaClass = MysqlSchema::class;
+            $schemaConfig = [
+                'class' => MysqlSchema::class,
+            ];
         } else {
-            $schemaClass = PgsqlSchema::class;
+            $schemaConfig = [
+                'class' => PgsqlSchema::class,
+                'defaultSchema' => $config->schema,
+            ];
         }
 
         return Craft::createObject([
@@ -91,9 +96,7 @@ class Connection extends \yii\db\Connection
             'charset' => $config->charset,
             'tablePrefix' => $config->tablePrefix,
             'schemaMap' => [
-                $config->driver => [
-                    'class' => $schemaClass,
-                ]
+                $config->driver => $schemaConfig,
             ],
             'commandClass' => Command::class,
             'attributes' => $config->attributes,
