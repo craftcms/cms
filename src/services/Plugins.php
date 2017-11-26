@@ -711,14 +711,17 @@ class Plugins extends Component
     }
 
     /**
-     * Returns the Composer-supplied info for a given plugin.
+     * Returns the Composer-supplied info
      *
-     * @param string $handle The plugin handle
+     * @param string|null $handle The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.
      *
-     * @return array|null The plugin info, if there is any
+     * @return array|null The plugin info, or null if an unknown handle was passed.
      */
-    public function getComposerPluginInfo(string $handle)
+    public function getComposerPluginInfo(string $handle = null)
     {
+        if ($handle === null) {
+            return $this->_composerPluginInfo;
+        }
         return $this->_composerPluginInfo[$handle] ?? null;
     }
 

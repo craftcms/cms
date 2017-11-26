@@ -78,6 +78,7 @@
 - CP nav item definitions registered with `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS` can now specify their icon with an `icon` key, whether it’s the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Support for the `iconSvg` key has been removed.)
 - Element source definitions can now include `icon` or `iconMask` keys, set to either the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Use `icon` for colored icons; use `iconMask` for masked icons that should change color depending on whether the source is selected.)
 - `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
+- `craft\services\Plugins::getComposerPluginInfo()` will now return all Composer plugin info, if no handle is specified.
 - `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
 - `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
 
