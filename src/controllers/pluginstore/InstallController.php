@@ -199,7 +199,7 @@ class InstallController extends Controller
             $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
 
             return $this->_send([
-                'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $pluginName]),
+                'error' => Craft::t('app', 'An error occurred when installing {name}.', ['name' => $pluginName]),
                 'errorDetails' => $eName.': '.$e->getMessage().
                     ($migration ? "\n\nMigration: ".get_class($migration) : '').
                     ($output ? "\n\nOutput:\n\n".$output : ''),
