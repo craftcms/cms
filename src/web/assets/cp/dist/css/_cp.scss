@@ -696,6 +696,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           }
           & > .field.has-errors {
             margin: 0 -24px !important;
+            padding: 0 24px;
           }
 
           .text::placeholder,
