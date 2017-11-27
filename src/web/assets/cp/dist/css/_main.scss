@@ -2420,17 +2420,7 @@ ul.tree,
     align-items: center;
     flex-wrap: wrap;
     margin: 0 !important;
-
-    padding-left: 24px;
-    padding-right: 24px;
-
-    &:not(:first-child) {
-      padding-top: 8px;
-    }
-
-    &:not(:last-child) {
-      padding-bottom: 8px;
-    }
+    padding: 0 24px;
 
     & > .heading {
       flex: 0 0 105px;
@@ -2441,8 +2431,20 @@ ul.tree,
     & > .input {
       .flex {
         flex-wrap: nowrap;
+
+        & > * {
+          margin-bottom: 0;
+        }
       }
     }
+  }
+
+  & > .field > .heading {
+    padding: 14px 0;
+  }
+
+  & > .data > .heading {
+    padding: 8px 0;
   }
 
   & > .field > .heading > label,
@@ -2465,23 +2467,12 @@ ul.tree,
     }
 
     &.has-errors {
+      margin: 0 -1px !important;
       border: 1px solid $errorColor !important;
-      padding-left: 23px;
-      padding-right: 23px;
 
       & + .field {
-        border-top: none;
+        border-top: none !important;
       }
-    }
-
-    &:first-child {
-      border-top-left-radius: $paneBorderRadius;
-      border-top-right-radius: $paneBorderRadius;
-    }
-
-    &:last-child {
-      border-bottom-left-radius: $paneBorderRadius;
-      border-bottom-right-radius: $paneBorderRadius;
     }
 
     & + .field {
@@ -2516,7 +2507,6 @@ ul.tree,
       & > .datetimewrapper > .timewrapper {
         & > .text {
           display: block;
-          margin: -8px 0;
           padding: 14px 0;
           border-radius: 0;
           box-shadow: none;
@@ -2555,12 +2545,15 @@ ul.tree,
     }
 
     & > ul.errors {
-      margin: 8px -23px -8px;
-      padding: 8px 23px;
+      margin: 0;
+      padding: 0 0 14px;
       width: 100%;
-      background: $lightBgColor;
       list-style-type: none;
     }
+  }
+
+  .text {
+    background: transparent;
   }
 }
 

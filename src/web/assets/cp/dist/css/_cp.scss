@@ -678,7 +678,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
 
         .meta {
-          padding: 24px;
+          padding: 16px 24px;
 
           &.read-only {
             background: rgba(0, 0, 0, 0.05);
@@ -694,15 +694,14 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
               color: hsl($hue, 15%, 38%);
             }
           }
+          & > .field.has-errors {
+            margin: 0 -24px !important;
+          }
 
           .text::placeholder,
           .datewrapper .text:placeholder-shown + div[data-icon],
           .timewrapper .text:placeholder-shown + div[data-icon] {
             color: hsl($hue, 5%, 60%);
-          }
-
-          .text {
-            background: transparent;
           }
 
           .ui-datepicker {
