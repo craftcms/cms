@@ -16,7 +16,12 @@
             },
 
             parseStatus: function(status) {
-                return '<p>' + Craft.escapeHtml(status).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                return '<p>' +
+                    Craft.escapeHtml(status)
+                        .replace(/\n{2,}/g, '</p><p>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/`(.*?)`/g, '<code>$1</code>') +
+                    '</p>';
             },
 
             showStatus: function(status) {
