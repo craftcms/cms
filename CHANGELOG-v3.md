@@ -23,6 +23,7 @@
 - Fixed a PHP error that occurred when executing an element query with a custom `SELECT` clause.
 - Fixed the Debug Toolbar’s “C” icon in Firefox.
 - Fixed a bug where the selected site was not maintained when switching between global sets. ([#2123](https://github.com/craftcms/cms/issues/2123))
+- Fixed a deprecation error when a relation field’s column was included in an element index page.
 
 ## 3.0.0-beta.34 - 2017-11-09
 
