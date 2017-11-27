@@ -399,7 +399,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $element = $value->first();
+            $element = $value->one();
         } else {
             $element = $value[0] ?? null;
         }
