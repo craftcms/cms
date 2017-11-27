@@ -76,7 +76,7 @@ export default {
     checkout(order) {
         let params = qs.stringify(order);
 
-        return axios.post(window.craftApiEndpoint+'/checkout', order);
+        return axios.post(window.craftApiEndpoint+'/checkout', params);
     }
 
 }
