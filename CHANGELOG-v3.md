@@ -128,6 +128,7 @@
 - Fixed a bug where `QueryAbortedException`s weren’t getting caught by `ResaveElement` jobs.
 - Fixed a PHP error that occurred when executing an element query with a custom `SELECT` clause.
 - Fixed the Debug Toolbar’s “C” icon in Firefox.
+- Fixed a bug where the selected site was not maintained when switching between global sets.
 
 ## 3.0.0-beta.34 - 2017-11-09
 
