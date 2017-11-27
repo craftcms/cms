@@ -64,7 +64,9 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   a {
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
+  }
 
+  *:not(.has-subnav) > a {
     &:hover,
     &.active,
     &:active,
@@ -235,6 +237,70 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           display: block;
           width: 14px;
           height: 14px;
+        }
+      }
+    }
+  }
+
+  #nav {
+    li {
+      &:not(.has-subnav) > a.sel {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: $submitColor;
+        opacity: 1;
+
+        .icon {
+          opacity: 1;
+        }
+      }
+
+      a {
+        border-left: 0 solid transparent;
+
+        &.active {
+          color: #fff;
+        }
+
+        &.menubtn {
+          line-height: 26px;
+        }
+
+        &:active .icon {
+          opacity: 1;
+        }
+
+        .icon {
+          opacity: 0.5;
+
+          &.icon-mask {
+            svg {
+              @include svg-mask(#fff);
+            }
+
+            span[data-icon] {
+              color: #fff;
+            }
+          }
+        }
+
+        .label {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .badge {
+          background: rgba(255, 255, 255, 0.5);
+          color: $sidebarBgColor;
+        }
+      }
+
+      ul {
+        display: block;
+
+        li a {
+          @include padding-left(60px);
         }
       }
     }
@@ -858,64 +924,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   }
 }
 
-#nav li {
-  &:not(.has-subnav) a.sel {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
-    border-color: $submitColor;
-    opacity: 1;
-
-    .icon {
-      opacity: 1;
-    }
-  }
-
-  a {
-    border-left: 0 solid transparent;
-
-    &.active {
-      color: #fff;
-    }
-
-    &.menubtn {
-      line-height: 26px;
-    }
-
-    &:active .icon {
-      opacity: 1;
-    }
-
-    .icon {
-      opacity: 0.5;
-
-      &.icon-mask {
-        svg {
-          @include svg-mask(#fff);
-        }
-
-        span[data-icon] {
-          color: #fff;
-        }
-      }
-    }
-
-    .label {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .badge {
-      background: rgba(255, 255, 255, 0.5);
-      color: $sidebarBgColor;
-    }
-  }
-
-  ul li a {
-    @include padding-left(60px);
-  }
-}
-
 /* notifications */
 #notifications-wrapper {
   position: fixed;
@@ -1376,18 +1384,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     li {
       position: relative;
 
-      a {
-        margin: 0 -24px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        @include padding(10px, 14px, 10px, 24px);
-        min-height: 24px;
-        box-sizing: border-box;
-        color: $textColor;
-        user-select: none;
-        outline: none;
-
+      &:not(.has-subnav) > a {
         &:hover {
           text-decoration: none;
           color: $textColor;
@@ -1419,6 +1416,19 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
             color: $darkSelColor;
           }
         }
+      }
+
+      a {
+        margin: 0 -24px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        @include padding(10px, 14px, 10px, 24px);
+        min-height: 24px;
+        box-sizing: border-box;
+        color: $textColor;
+        user-select: none;
+        outline: none;
 
         .status {
           flex-shrink: 1;
