@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import VueResource from 'vue-resource';
 import { currency } from './filters/currency';
 import { t } from './filters/t';
 import router from './router';
@@ -7,7 +6,6 @@ import store from './store';
 import { mapGetters } from 'vuex';
 import GlobalModal from './components/GlobalModal';
 
-Vue.use(VueResource);
 Vue.filter('currency', currency);
 Vue.filter('t', t);
 

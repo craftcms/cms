@@ -1,7 +1,5 @@
-import Vue from 'vue';
-import Resource from 'vue-resource';
-
-Vue.use(Resource);
+import axios from 'axios';
+import qs from 'qs';
 
 export default {
 
@@ -22,12 +20,13 @@ export default {
     },
 
     getDeveloper(developerId, cb, errorCb) {
-        let body = { enableCraftId: window.enableCraftId };
-        let options = { emulateJSON: true };
+        let params = qs.stringify({
+            enableCraftId: window.enableCraftId,
+        });
 
-        Vue.http.post(window.craftApiEndpoint+'/developer/'+developerId, body, options)
-            .then(data => {
-                let developer = data.body;
+        axios.post(window.craftApiEndpoint+'/developer/'+developerId, params)
+            .then(response => {
+                let developer = response.data;
                 return cb(developer);
             })
             .catch(response => {
@@ -36,11 +35,12 @@ export default {
     },
 
     getPluginStoreData(cb, errorCb) {
-        let body = { enableCraftId: window.enableCraftId };
-        let options = { emulateJSON: true };
-        Vue.http.post(window.craftApiEndpoint+'/plugin-store', body, options)
+        let params = qs.stringify({
+            enableCraftId: window.enableCraftId,
+        });
+        axios.post(window.craftApiEndpoint+'/plugin-store', params)
             .then(response => {
-                return cb(response.body);
+                return cb(response.data);
             })
             .catch(response => {
                 return errorCb(response);
@@ -48,12 +48,13 @@ export default {
     },
 
     getPluginDetails(pluginId, cb, errorCb) {
-        let body = { enableCraftId: window.enableCraftId };
-        let options = { emulateJSON: true };
+        let params = qs.stringify({
+            enableCraftId: window.enableCraftId,
+        });
 
-        Vue.http.post(window.craftApiEndpoint+'/plugin/'+pluginId, body, options)
-            .then(data => {
-                let pluginDetails = data.body;
+        axios.post(window.craftApiEndpoint+'/plugin/'+pluginId, params)
+            .then(response => {
+                let pluginDetails = response.data;
                 return cb(pluginDetails);
             })
             .catch(response => {
@@ -62,9 +63,9 @@ export default {
     },
 
     getCraftData(cb, cbError) {
-        Vue.http.get(Craft.getActionUrl('plugin-store/craft-data'))
-            .then(data => {
-                let craftData = data.body;
+        axios.get(Craft.getActionUrl('plugin-store/craft-data'))
+            .then(response => {
+                let craftData = response.data;
                 return cb(craftData);
             })
             .catch(response => {
@@ -73,7 +74,9 @@ export default {
     },
 
     checkout(order) {
-        return Vue.http.post(window.craftApiEndpoint+'/checkout', order, {emulateJSON: true});
+        let params = qs.stringify(order);
+
+        return axios.post(window.craftApiEndpoint+'/checkout', order);
     }
 
 }

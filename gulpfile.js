@@ -33,9 +33,9 @@ var jsDeps = [
     { srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: libPath+'xregexp' },
     { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' },
     { srcGlob: 'node_modules/vue/dist/vue.js', dest: libPath+'vue' },
-    { srcGlob: 'node_modules/vue-resource/dist/vue-resource.js', dest: libPath+'vue-resource' },
     { srcGlob: 'node_modules/vue-router/dist/vue-router.js', dest: libPath+'vue-router' },
-    { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' }
+    { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' },
+    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' }
 
 ];
 

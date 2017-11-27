@@ -27,9 +27,9 @@ class VueAsset extends AssetBundle
 
         $this->js = [
             'vue/vue.js',
-            'vue-resource/vue-resource.js',
             'vue-router/vue-router.js',
-            'vuex/vuex.js'
+            'vuex/vuex.js',
+            'axios/axios.js',
         ];
 
         parent::init();

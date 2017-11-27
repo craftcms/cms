@@ -3,9 +3,9 @@ let mix = require('laravel-mix');
 mix.webpackConfig({
     externals: {
         'vue': 'Vue',
-        'vue-resource': 'VueResource',
         'vue-router': 'VueRouter',
-        'vuex': 'Vuex'
+        'vuex': 'Vuex',
+        'axios': 'axios'
     },
 });
 
