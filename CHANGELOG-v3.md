@@ -5,6 +5,8 @@
 
 ### Added
 - Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
+- Installed plugins now have a “Disable” option that temporarily disables them without uninstalling them.
+- Uninstalled plugins now have a “Remove” option that completely removes their files from the project.
 - Added the concept of “Site Groups”. ([#1668](https://github.com/craftcms/cms/issues/1668))
 - Added the Craft License to the web-based setup wizard.
 - Added a “Connect the database” screen to the web-based setup wizard, which will show up if a database connection can’t already be established, and Craft determines that it can control the DB connection settings via the `.env` file.
@@ -74,7 +76,6 @@
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
 - Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
 - Color inputs can now be left blank.
-- Plugins can once again be disabled.
 - CP nav item definitions registered with `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS` can now specify their icon with an `icon` key, whether it’s the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Support for the `iconSvg` key has been removed.)
 - Element source definitions can now include `icon` or `iconMask` keys, set to either the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Use `icon` for colored icons; use `iconMask` for masked icons that should change color depending on whether the source is selected.)
 - `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
