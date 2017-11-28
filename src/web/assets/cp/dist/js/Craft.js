@@ -1,4 +1,4 @@
-/*!   - 2017-11-14 */
+/*!   - 2017-11-28 */
 (function($){
 
 /** global: Craft */
@@ -15530,7 +15530,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
+                            $('<a data-icon="plus"/>').appendTo($li).text(Craft.escapeHtml(data.search));
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');
