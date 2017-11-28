@@ -844,10 +844,10 @@ $checkboxPadding: 20px;
 }
 
 /* element select fields */
-.elementselect { position: relative; min-height: 40px; margin-bottom: -10px; }
+.elementselect { position: relative; min-height: 37px; margin-top: -7px; }
 .elementselect:after { @include clearafter; }
 .elementselect .element,
-.elementselect .btn { @include floatleft; @include margin(0, 7px, 7px, 0); }
+.elementselect .btn { @include floatleft; @include margin(7px, 7px, 0, 0); }
 .elementselect .element.small,
 .elementselect .btn { clear: both; }
 .elementselect .element { z-index: 1; }
@@ -1030,21 +1030,10 @@ ul.tree,
 .meta > .field > .input > .datewrapper,
 .meta > .field > .input > .timewrapper { display: block; width: 100%; }
 
-.meta > .field > .input > .elementselect > .elements > .element { height: 18px; float: none; margin: 0; }
-.meta > .field > .input > .elementselect > .elements > .element + .element { margin-top: 7px; }
-.meta > .field > .input > .elementselect > .elements > .element:not(.hasstatus):not(.hasthumb) { width: calc(100% - 14px); }
-.meta > .field > .input > .elementselect > .elements > .element.hasstatus:not(.hasthumb) { width: calc(100% - 32px); }
-.meta > .field > .input > .elementselect > .elements > .element.hasthumb:not(.hasstatus) { width: calc(100% - 54px); }
-.meta > .field > .input > .elementselect > .elements > .element.hasstatus.hasthumb { width: calc(100% - 72px); }
-.meta > .field > .input > .elementselect > .elements > .element > .label { width: calc(100% - 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-@media screen and (-webkit-min-device-pixel-ratio: 0)
-{
-	.meta > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
-	.meta > .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
-	.meta > .field > .input .select:after { right: 0; }
-	.meta > .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
-}
+.meta > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
+.meta > .field > .input .select select { @include padding(14px, 12px, 14px, 0); width: 100%; @include box-shadow(none); }
+.meta > .field > .input .select:after { right: 0; }
+.meta > .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
 
 .body { position: relative; }
 
@@ -1505,25 +1494,32 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: $btn
 	-webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
 	-moz-transition: border linear 100ms, box-shadow linear 100ms;
 	-webkit-appearance: none;
+	-moz-appearance: none;
+	// from https://stackoverflow.com/a/15933790/1688568
+	&::-ms-expand {
+		display: none;
+	}
+	// from https://stackoverflow.com/a/19451423/1688568
+	&:-moz-focusring {
+		color: transparent;
+		text-shadow: 0 0 0 $textcolor;
+	}
 }
 @mixin select-input-fullwidth-styles { min-width: 100%; }
 @mixin select-input-focussed-styles { border-color: $focusglowcolor; outline: none;
 	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 }
 
-@media screen and (-webkit-min-device-pixel-ratio: 0)
-{
-	.select:not(.selectize),
-	.select:not(.selectize) select { @include select-styles; }
-	.select:not(.selectize) { @include select-container-styles; }
-	.select:not(.selectize):after { @include select-arrow-styles; }
-	.select:not(.selectize) select { @include select-input-styles; }
-	.select:not(.selectize).fullwidth select { @include select-input-fullwidth-styles; }
-	.select:not(.selectize) select:focus { @include select-input-focussed-styles; }
+.select:not(.selectize),
+.select:not(.selectize) select { @include select-styles; }
+.select:not(.selectize) { @include select-container-styles; }
+.select:not(.selectize):after { @include select-arrow-styles; }
+.select:not(.selectize) select { @include select-input-styles; }
+.select:not(.selectize).fullwidth select { @include select-input-fullwidth-styles; }
+.select:not(.selectize) select:focus { @include select-input-focussed-styles; }
 
-	.select:not(.selectize).small:after { top: 9px; }
-	.select:not(.selectize).small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
-}
+.select:not(.selectize).small:after { top: 9px; }
+.select:not(.selectize).small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
 
 /* selectize reset */
 .selectize .selectize-control.single .selectize-input { border-color: inherit; @include box-shadow(none); background: none; }

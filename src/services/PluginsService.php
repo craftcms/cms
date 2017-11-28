@@ -546,7 +546,7 @@ class PluginsService extends BaseApplicationComponent
 		if ($plugin->getSettings()->validate())
 		{
 			// JSON-encode them and save the plugin row
-			$settings = JsonHelper::encode($plugin->getSettings()->getAttributes());
+			$settings = JsonHelper::encode($plugin->getSettings()->getAttributes(null, true));
 
 			$affectedRows = craft()->db->createCommand()->update('plugins', array(
 				'settings' => $settings

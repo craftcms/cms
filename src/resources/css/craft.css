@@ -885,14 +885,14 @@ body.rtl .structure ul li.draginsertion { margin-right: 38px; }
 .structure .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px #0d78f2; -moz-box-shadow: inset 0 0 0 2px #0d78f2; box-shadow: inset 0 0 0 2px #0d78f2; }
 
 /* element select fields */
-.elementselect { position: relative; min-height: 40px; margin-bottom: -10px; }
+.elementselect { position: relative; min-height: 37px; margin-top: -7px; }
 
 .elementselect:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
 body.ltr .elementselect .element, body.ltr .elementselect .btn { float: left; }
 body.rtl .elementselect .element, body.rtl .elementselect .btn { float: right; }
-body.ltr .elementselect .element, body.ltr .elementselect .btn { margin: 0 7px 7px 0 ; }
-body.rtl .elementselect .element, body.rtl .elementselect .btn { margin: 0 0 7px 7px ; }
+body.ltr .elementselect .element, body.ltr .elementselect .btn { margin: 7px 7px 0 0 ; }
+body.rtl .elementselect .element, body.rtl .elementselect .btn { margin: 7px 0 0 7px ; }
 
 .elementselect .element.small, .elementselect .btn { clear: both; }
 
@@ -1077,26 +1077,16 @@ body.rtl .meta > .field > .input > .datetimewrapper > .datewrapper, body.rtl .me
 
 .meta > .field > .input > .datewrapper, .meta > .field > .input > .timewrapper { display: block; width: 100%; }
 
-.meta > .field > .input > .elementselect > .elements > .element { height: 18px; float: none; margin: 0; }
+.meta > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; background: none; }
 
-.meta > .field > .input > .elementselect > .elements > .element + .element { margin-top: 7px; }
+.meta > .field > .input .select select { width: 100%; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
+body.ltr .meta > .field > .input .select select { padding: 14px 12px 14px 0; }
+body.rtl .meta > .field > .input .select select { padding: 14px 0 14px 12px; }
 
-.meta > .field > .input > .elementselect > .elements > .element:not(.hasstatus):not(.hasthumb) { width: calc(100% - 14px); }
+.meta > .field > .input .select:after { right: 0; }
 
-.meta > .field > .input > .elementselect > .elements > .element.hasstatus:not(.hasthumb) { width: calc(100% - 32px); }
+.meta > .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; }
 
-.meta > .field > .input > .elementselect > .elements > .element.hasthumb:not(.hasstatus) { width: calc(100% - 54px); }
-
-.meta > .field > .input > .elementselect > .elements > .element.hasstatus.hasthumb { width: calc(100% - 72px); }
-
-.meta > .field > .input > .elementselect > .elements > .element > .label { width: calc(100% - 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-@media screen and (-webkit-min-device-pixel-ratio: 0) { .meta > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; background: none; }
-  .meta > .field > .input .select select { width: 100%; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
-  body.ltr .meta > .field > .input .select select { padding: 14px 12px 14px 0; }
-  body.rtl .meta > .field > .input .select select { padding: 14px 0 14px 12px; }
-  .meta > .field > .input .select:after { right: 0; }
-  .meta > .field > .input .select + .spinner { position: absolute; top: calc(50% - 15px); right: 0; } }
 .body { position: relative; }
 
 .modal, .hud, body #redactor-modal { z-index: 100; }
@@ -1625,18 +1615,28 @@ body.ltr .input .redactor-layer ol { padding-left: 0 !important; }
 body.rtl .input .redactor-layer ol { padding-right: 0 !important; }
 
 /** Selects  Waiting on this bug to get fixed before Firefox gets our fancy selects: https://bugzilla.mozilla.org/show_bug.cgi?id=649849 */
-@media screen and (-webkit-min-device-pixel-ratio: 0) { .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 3px; white-space: nowrap; }
-  .select:not(.selectize) { display: inline-block; position: relative; background-image: -webkit-linear-gradient(#fff, #fafafa); background-image: -moz-linear-gradient(#fff, #fafafa); background-image: -ms-linear-gradient(#fff, #fafafa); background-image: -o-linear-gradient(#fff, #fafafa); background-image: linear-gradient(#fff, #fafafa); -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); }
-  .select:not(.selectize):after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; position: absolute; z-index: 1; top: calc(50% - 5px); font-size: 10px; content: '▼'; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; pointer-events: none; }
-  body.ltr .select:not(.selectize):after { right: 9px; }
-  body.rtl .select:not(.selectize):after { left: 9px; }
-  .select:not(.selectize) select { display: block; position: relative; border: 0; font-size: 13px; line-height: 16px; color: #29323d; background: none; -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -moz-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -moz-transition: border linear 100ms, box-shadow linear 100ms; -webkit-appearance: none; }
-  body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px; }
-  body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
-  .select:not(.selectize).fullwidth select { min-width: 100%; }
-  .select:not(.selectize) select:focus { border-color: #7dafe8; outline: none; -webkit-box-shadow: 0 0 2px #33aaff, inset 0 0 0 1px rgba(51, 170, 255, 0.5); -moz-box-shadow: 0 0 2px #33aaff, inset 0 0 0 1px rgba(51, 170, 255, 0.5); box-shadow: 0 0 2px #33aaff, inset 0 0 0 1px rgba(51, 170, 255, 0.5); }
-  .select:not(.selectize).small:after { top: 9px; }
-  .select:not(.selectize).small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; } }
+.select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 3px; white-space: nowrap; }
+
+.select:not(.selectize) { display: inline-block; position: relative; background-image: -webkit-linear-gradient(#fff, #fafafa); background-image: -moz-linear-gradient(#fff, #fafafa); background-image: -ms-linear-gradient(#fff, #fafafa); background-image: -o-linear-gradient(#fff, #fafafa); background-image: linear-gradient(#fff, #fafafa); -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); }
+
+.select:not(.selectize):after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; position: absolute; z-index: 1; top: calc(50% - 5px); font-size: 10px; content: '▼'; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; pointer-events: none; }
+body.ltr .select:not(.selectize):after { right: 9px; }
+body.rtl .select:not(.selectize):after { left: 9px; }
+
+.select:not(.selectize) select { display: block; position: relative; border: 0; font-size: 13px; line-height: 16px; color: #29323d; background: none; -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -moz-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -moz-transition: border linear 100ms, box-shadow linear 100ms; -webkit-appearance: none; -moz-appearance: none; }
+body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px; }
+body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
+.select:not(.selectize) select::-ms-expand { display: none; }
+.select:not(.selectize) select:-moz-focusring { color: transparent; text-shadow: 0 0 0 #29323d; }
+
+.select:not(.selectize).fullwidth select { min-width: 100%; }
+
+.select:not(.selectize) select:focus { border-color: #7dafe8; outline: none; -webkit-box-shadow: 0 0 2px #33aaff, inset 0 0 0 1px rgba(51, 170, 255, 0.5); -moz-box-shadow: 0 0 2px #33aaff, inset 0 0 0 1px rgba(51, 170, 255, 0.5); box-shadow: 0 0 2px #33aaff, inset 0 0 0 1px rgba(51, 170, 255, 0.5); }
+
+.select:not(.selectize).small:after { top: 9px; }
+
+.select:not(.selectize).small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+
 /* selectize reset */
 .selectize .selectize-control.single .selectize-input { border-color: inherit; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; background: none; }
 
@@ -1653,9 +1653,11 @@ body .selectize-dropdown { border: none; }
 body.ltr .selectize.select .selectize-control:after { right: 9px; }
 body.rtl .selectize.select .selectize-control:after { left: 9px; }
 
-.selectize.select .selectize-control .selectize-input { display: block; position: relative; border: 0; font-size: 13px; line-height: 16px; color: #29323d; background: none; -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -moz-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -moz-transition: border linear 100ms, box-shadow linear 100ms; -webkit-appearance: none; }
+.selectize.select .selectize-control .selectize-input { display: block; position: relative; border: 0; font-size: 13px; line-height: 16px; color: #29323d; background: none; -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -moz-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; -moz-transition: border linear 100ms, box-shadow linear 100ms; -webkit-appearance: none; -moz-appearance: none; }
 body.ltr .selectize.select .selectize-control .selectize-input { padding: 7px 22px 7px 10px; }
 body.rtl .selectize.select .selectize-control .selectize-input { padding: 7px 10px 7px 22px; }
+.selectize.select .selectize-control .selectize-input::-ms-expand { display: none; }
+.selectize.select .selectize-control .selectize-input:-moz-focusring { color: transparent; text-shadow: 0 0 0 #29323d; }
 
 .selectize.select.fullwidth .selectize-control, .selectize.select.fullwidth .selectize-control .selectize-input { min-width: 100%; }
 

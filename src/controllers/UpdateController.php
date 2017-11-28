@@ -64,10 +64,74 @@ class UpdateController extends BaseController
 			}
 		}
 
+		$v3Plugins = array();
+		try
+		{
+			$localInfo = array();
+
+			foreach (craft()->plugins->getPlugins() as $plugin)
+			{
+				$localInfo['plugins'][] = $plugin->getClassHandle();
+			}
+
+			// Look for any remote asset source types
+			$remoteSourceTypes = array();
+			foreach (craft()->assetSources->getAllSources() as $source) {
+				if (in_array($source->type, ['GoogleCloud', 'Rackspace', 'S3'])) {
+					$remoteSourceTypes[$source->type] = true;
+				}
+			}
+			if (!empty($remoteSourceTypes))
+			{
+				$localInfo['assetSourceTypes'] = array_keys($remoteSourceTypes);
+			}
+
+			if (!empty($localInfo))
+			{
+				$client = new \Guzzle\Http\Client();
+				$response = $client->post('https://api.craftcms.com/v1/available-plugins')
+					->setBody(JsonHelper::encode($localInfo), 'application/json')
+					->send();
+
+				if ($response->isSuccessful())
+				{
+					$v3Plugins = JsonHelper::decode((string)$response->getBody());
+					$names = [];
+
+					foreach ($v3Plugins as $handle => &$info)
+					{
+						if ($plugin = craft()->plugins->getPlugin($handle))
+						{
+							$info += [
+								'name' => $plugin->getName(),
+								'iconUrl' => craft()->plugins->getPluginIconUrl($handle),
+								'developerName' => $plugin->getDeveloper(),
+								'developerUrl' => $plugin->getDeveloperUrl(),
+							];
+						}
+
+						if (array_key_exists('price', $info)) {
+							$info['formattedPrice'] = $info['price'] ? craft()->numberFormatter->formatCurrency($info['price'], $info['currency'], true) : 'Free';
+						}
+						$info['status'] = StringHelper::parseMarkdownLine($info['status']);
+						$info['status'] = str_replace('<a ', '<a target="_blank" ', $info['status']);
+
+						$names[] = $info['name'];
+					}
+
+					array_multisort($names, $v3Plugins);
+				}
+			}
+		}
+		catch (\Exception $e)
+		{
+		}
+
 		if ($updates)
 		{
 			$response = $updates->getAttributes();
 			$response['allowAutoUpdates'] = craft()->config->allowAutoUpdates();
+			$response['v3Plugins'] = array_values($v3Plugins);
 
 			$this->returnJson($response);
 		}

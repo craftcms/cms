@@ -37,6 +37,12 @@ class ElementHelper
 			// Enforce the limitAutoSlugsToAscii config setting
 			if (craft()->config->get('limitAutoSlugsToAscii'))
 			{
+				if (!craft()->config->get('allowUppercaseInSlug'))
+				{
+					// Do this now because our ASCII character mappings are lowercase only.
+					$slug = mb_strtolower($slug);
+				}
+
 				$slug = StringHelper::asciiString($slug);
 			}
 		}

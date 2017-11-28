@@ -30,7 +30,7 @@
         "guzzle/guzzle": "v3.9.4",
         "twig/twig": "1.33.2.1",
         "simplepie/simplepie": "1.3.3",
-        "phpmailer/phpmailer": "v5.2.21",
+        "phpmailer/phpmailer": "v5.2.26",
         "pixelandtonic/imagine": "v0.7.1.3",
         "lsolesen/pel": "0.9.4.5",
         "yiisoft/yii": "1.1.19.4",
