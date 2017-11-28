@@ -11,8 +11,9 @@ use Craft;
 use craft\controllers\BaseUpdaterController;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
+use craft\web\Response as CraftResponse;
 use yii\base\Exception as YiiException;
-use yii\web\Response;
+use yii\web\Response as YiiResponse;
 
 /**
  * InstallController handles the plugin installation workflow.
@@ -26,6 +27,14 @@ class InstallController extends BaseUpdaterController
     // =========================================================================
 
     const ACTION_CRAFT_INSTALL = 'craft-install';
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string|null
+     */
+    private $_pluginRedirect;
 
     // Public Methods
     // =========================================================================
@@ -48,13 +57,19 @@ class InstallController extends BaseUpdaterController
     /**
      * Installs the plugin.
      *
-     * @return Response
+     * @return YiiResponse
      */
-    public function actionCraftInstall(): Response
+    public function actionCraftInstall(): YiiResponse
     {
+        // Prevent the plugin from sending any headers, etc.
+        $realResponse = Craft::$app->getResponse();
+        $tempResponse = new CraftResponse(['isSent' => true]);
+        Craft::$app->set('response', $tempResponse);
+
         try {
             Craft::$app->getPlugins()->installPlugin($this->data['handle']);
         } catch (\Throwable $e) {
+            Craft::$app->set('response', $realResponse);
             $migration = $output = null;
 
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
@@ -96,6 +111,18 @@ class InstallController extends BaseUpdaterController
                     ],
                 ],
             ]);
+        }
+
+        // Put the real response back
+        Craft::$app->set('response', $realResponse);
+
+        // Did the plugin want to redirect us somewhere?
+        $headers = $tempResponse->getHeaders();
+        foreach (['Location', 'X-Redirect', 'X-Pjax-Url'] as $name) {
+            if (($value = $headers->get($name)) !== null) {
+                $this->_pluginRedirect = $value;
+                break;
+            }
         }
 
         return $this->sendFinished();
@@ -177,6 +204,6 @@ class InstallController extends BaseUpdaterController
      */
     protected function returnUrl(): string
     {
-        return 'plugin-store';
+        return $this->_pluginRedirect ?? 'plugin-store';
     }
 }
