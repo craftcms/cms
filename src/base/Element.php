@@ -277,7 +277,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findAll($criteria = null)
+    public static function findAll($criteria = null): array
     {
         return static::findByCondition($criteria, false);
     }
@@ -1806,7 +1806,7 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param bool  $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return static|static[]
+     * @return static|static[]|null
      */
     protected static function findByCondition($criteria, bool $one)
     {
@@ -1821,7 +1821,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($one) {
-            /** @var Element $result */
+            /** @var Element|null $result */
             $result = $query->one();
         } else {
             /** @var Element[] $result */
@@ -2037,12 +2037,9 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /** @var Element|false $element */
-        $element = static::find()
+        return static::find()
             ->id($elementIds[$key + $dir])
             ->siteId($query->siteId)
             ->one();
-
-        return $element !== false ? $element : null;
     }
 }

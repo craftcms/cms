@@ -168,11 +168,7 @@ class Deprecator extends Component
             ->where(['id' => $logId])
             ->one();
 
-        if ($log !== false) {
-            return new DeprecationError($log);
-        }
-
-        return null;
+        return $log ? new DeprecationError($log) : null;
     }
 
     /**

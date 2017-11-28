@@ -269,11 +269,7 @@ class Sections extends Component
             ->where(['sections.id' => $sectionId])
             ->one();
 
-        if (!$result) {
-            return $this->_sectionsById[$sectionId] = null;
-        }
-
-        return $this->_sectionsById[$sectionId] = new Section($result);
+        return $this->_sectionsById[$sectionId] = $result ? new Section($result) : null;
     }
 
     /**
@@ -289,14 +285,13 @@ class Sections extends Component
             ->where(['sections.handle' => $sectionHandle])
             ->one();
 
-        if ($result) {
-            $section = new Section($result);
-            $this->_sectionsById[$section->id] = $section;
-
-            return $section;
+        if (!$result) {
+            return null;
         }
 
-        return null;
+        $section = new Section($result);
+        $this->_sectionsById[$section->id] = $section;
+        return $section;
     }
 
     /**
@@ -751,11 +746,7 @@ class Sections extends Component
             ->where(['id' => $entryTypeId])
             ->one();
 
-        if (!$result) {
-            return $this->_entryTypesById[$entryTypeId] = null;
-        }
-
-        return $this->_entryTypesById[$entryTypeId] = new EntryType($result);
+        return $this->_entryTypesById[$entryTypeId] = $result ? new EntryType($result) : null;
     }
 
     /**

@@ -65,7 +65,8 @@ class Assets extends BaseRelationField
     public $useSingleFolder;
 
     /**
-     * @var int|null The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null Where files should be uploaded to by default, in format "folder:X", where X is the craft\models\VolumeFolder ID
+     *                  (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
@@ -75,7 +76,8 @@ class Assets extends BaseRelationField
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var int|null The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null Where files should be restricted to, in format "folder:X", where X is the craft\models\VolumeFolder ID
+     *                  (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 

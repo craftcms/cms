@@ -3,6 +3,17 @@
 return [
     'class' => \craft\web\Application::class,
     'components' => [
+        'assetManager' => function() {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $config = [
+                'class' => craft\web\AssetManager::class,
+                'basePath' => $generalConfig->resourceBasePath,
+                'baseUrl' => $generalConfig->resourceBaseUrl,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+            ];
+            return Craft::createObject($config);
+        },
         'request' => function() {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $config = [

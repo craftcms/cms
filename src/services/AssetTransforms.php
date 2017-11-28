@@ -150,11 +150,7 @@ class AssetTransforms extends Component
             ->where(['handle' => $handle])
             ->one();
 
-        if (!$result) {
-            return $this->_transformsByHandle[$handle] = null;
-        }
-
-        return $this->_transformsByHandle[$handle] = new AssetTransform($result);
+        return $this->_transformsByHandle[$handle] = $result ? new AssetTransform($result) : null;
     }
 
     /**
@@ -170,12 +166,7 @@ class AssetTransforms extends Component
             ->where(['id' => $id])
             ->one();
 
-        if ($result) {
-            return new AssetTransform($result);
-        }
-
-
-        return null;
+        return $result ? new AssetTransform($result) : null;
     }
 
     /**
@@ -396,9 +387,9 @@ class AssetTransforms extends Component
         $fingerprint = $asset->id.':'.$transformLocation.($transform->format === null ? '' : ':'.$transform->format);
 
         if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
-            $entry = $this->_eagerLoadedTransformIndexes[$fingerprint];
+            $result = $this->_eagerLoadedTransformIndexes[$fingerprint];
 
-            return new AssetTransformIndex($entry);
+            return new AssetTransformIndex($result);
         }
 
         // Check if an entry exists already
@@ -416,20 +407,20 @@ class AssetTransforms extends Component
             $query->andWhere(['format' => $transform->format]);
         }
 
-        $entry = $query->one();
+        $result = $query->one();
 
-        if ($entry) {
-            if ($this->validateTransformIndexResult($entry, $transform, $asset)) {
-                return new AssetTransformIndex($entry);
+        if ($result) {
+            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
+                return new AssetTransformIndex($result);
             }
 
             // Delete the out-of-date record
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%assettransformindex}}', ['id' => $entry['id']])
+                ->delete('{{%assettransformindex}}', ['id' => $result['id']])
                 ->execute();
 
             // And the file.
-            $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($entry));
+            $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($result));
             $asset->getVolume()->deleteFile($transformUri);
         }
 
@@ -728,15 +719,11 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelById(int $transformId)
     {
-        $entry = $this->_createTransformIndexQuery()
+        $result = $this->_createTransformIndexQuery()
             ->where(['id' => $transformId])
             ->one();
 
-        if ($entry) {
-            return new AssetTransformIndex($entry);
-        }
-
-        return null;
+        return $result ? new AssetTransformIndex($result) : null;
     }
 
     /**
@@ -756,11 +743,7 @@ class AssetTransforms extends Component
             ])
             ->one();
 
-        if ($result) {
-            return new AssetTransformIndex($result);
-        }
-
-        return null;
+        return $result ? new AssetTransformIndex($result) : null;
     }
 
     /**

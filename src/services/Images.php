@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Image;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
@@ -186,7 +186,7 @@ class Images extends Component
      */
     public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
     {
-        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
+        if (FileHelper::isSvg($path)) {
             $image = new Svg();
             $image->loadImage($path);
 
@@ -218,7 +218,7 @@ class Images extends Component
      */
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
     {
-        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'svg') {
+        if (FileHelper::isSvg($filePath)) {
             return true;
         }
 
@@ -273,7 +273,7 @@ class Images extends Component
         $cleanedByStripping = false;
 
         // Special case for SVG files.
-        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
+        if (FileHelper::isSvg($filePath)) {
             if (!Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads) {
                 return;
             }

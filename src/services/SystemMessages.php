@@ -181,7 +181,7 @@ class SystemMessages extends Component
         // Combine them to create the final message
         $message = clone $default;
 
-        if ($override !== false) {
+        if ($override) {
             $message->subject = $override['subject'];
             $message->body = $override['body'];
         }

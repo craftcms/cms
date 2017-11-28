@@ -326,25 +326,27 @@ class User extends Element implements IdentityInterface
      */
     public static function findIdentity($id)
     {
-        $user = User::find()
+        $user = static::find()
             ->id($id)
             ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
-        if ($user !== null) {
-            /** @var static $user */
-            if ($user->getStatus() === self::STATUS_ACTIVE) {
+        if ($user === null) {
+            return null;
+        }
+
+        /** @var static $user */
+        if ($user->getStatus() === self::STATUS_ACTIVE) {
+            return $user;
+        }
+
+        // If the previous user was an admin and we're impersonating the current user.
+        if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
+            $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+
+            if ($previousUser && $previousUser->admin) {
                 return $user;
-            }
-
-            // If the previous user was an admin and we're impersonating the current user.
-            if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
-                $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
-
-                if ($previousUser && $previousUser->admin) {
-                    return $user;
-                }
             }
         }
 
@@ -560,14 +562,13 @@ class User extends Element implements IdentityInterface
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'lastLoginDate';
-        $names[] = 'lastInvalidLoginDate';
-        $names[] = 'lockoutDate';
-        $names[] = 'lastPasswordChangeDate';
-        $names[] = 'verificationCodeIssuedDate';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'lastLoginDate';
+        $attributes[] = 'lastInvalidLoginDate';
+        $attributes[] = 'lockoutDate';
+        $attributes[] = 'lastPasswordChangeDate';
+        $attributes[] = 'verificationCodeIssuedDate';
+        return $attributes;
     }
 
     /**

@@ -181,7 +181,7 @@ class Elements extends Component
         $query->status = null;
         $query->enabledForSite = false;
 
-        return $query->one() ?: null;
+        return $query->one();
     }
 
     /**
@@ -224,13 +224,7 @@ class Elements extends Component
         }
 
         $result = $query->one();
-
-        if (!$result) {
-            return null;
-        }
-
-        // Return the actual element
-        return $this->getElementById($result['id'], $result['type'], $siteId);
+        return $result ? $this->getElementById($result['id'], $result['type'], $siteId) : null;
     }
 
     /**

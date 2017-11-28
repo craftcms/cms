@@ -1,4 +1,4 @@
-/*!   - 2017-11-06 */
+/*!   - 2017-11-28 */
 (function($){
 
 /** global: Craft */
@@ -8226,7 +8226,7 @@ Craft.CP = Garnish.Base.extend(
                 });
             }
 
-            Garnish.$win.on('load', $.proxy(function() {
+            Garnish.$doc.on('ready', $.proxy(function() {
                 // Look for forms that we should watch for changes on
                 this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
@@ -15530,7 +15530,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
+                            $('<a data-icon="plus"/>').appendTo($li).text(Craft.escapeHtml(data.search));
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');

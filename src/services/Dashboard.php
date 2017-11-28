@@ -169,11 +169,7 @@ class Dashboard extends Component
             ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])
             ->one();
 
-        if ($result) {
-            return $this->createWidget($result);
-        }
-
-        return null;
+        return $result ? $this->createWidget($result) : null;
     }
 
     /**

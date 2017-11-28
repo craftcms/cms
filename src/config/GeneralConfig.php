@@ -666,13 +666,13 @@ class GeneralConfig extends BaseObject
      */
     public $tokenParam = 'token';
     /**
-     * @var array|null The configuration for trusted security-related headers.
+     * @var array The configuration for trusted security-related headers.
      *
      * See [[\yii\web\Request::trustedHosts]] for more details.
      *
-     * If not set, the default [[\yii\web\Request::trustedHosts]] value will be used.
+     * By default, all hosts are trusted.
      */
-    public $trustedHosts;
+    public $trustedHosts = ['any'];
     /**
      * @var bool Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
      */

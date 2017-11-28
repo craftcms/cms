@@ -105,7 +105,6 @@ class PluginUpdate extends Model
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'latestDate';
-
         return $attributes;
     }
 

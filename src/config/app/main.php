@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.34',
-    'schemaVersion' => '3.0.62',
+    'version' => '3.0.0-beta.35',
+    'schemaVersion' => '3.0.63',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -175,20 +175,6 @@ return [
 
         // Dynamically configured components
         // -------------------------------------------------------------------------
-
-        'assetManager' => function() {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            $config = [
-                'class' => craft\web\AssetManager::class,
-                'basePath' => $generalConfig->resourceBasePath,
-                'baseUrl' => $generalConfig->resourceBaseUrl,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-            ];
-
-            return Craft::createObject($config);
-        },
 
         'cache' => function() {
             $generalConfig = Craft::$app->getConfig()->getGeneral();

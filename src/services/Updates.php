@@ -294,7 +294,7 @@ class Updates extends Component
 
         try {
             // Fetch it
-            $client = new Client([
+            $client = Craft::createGuzzleClient([
                 'headers' => [
                     'User-Agent' => 'Craft/'.Craft::$app->getVersion(),
                 ],
