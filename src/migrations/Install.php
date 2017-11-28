@@ -825,7 +825,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%migrations}}', ['pluginId'], false);
         $this->createIndex(null, '{{%migrations}}', ['type', 'pluginId'], false);
         $this->createIndex(null, '{{%oauthtokens}}', ['provider', 'userId'], false);
-        $this->createIndex(null, '{{%plugins}}', ['enabled'], true);
+        $this->createIndex(null, '{{%plugins}}', ['enabled']);
         $this->createIndex(null, '{{%plugins}}', ['handle'], true);
         $this->createIndex(null, '{{%pluginstoretokens}}', ['userId'], true);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);
