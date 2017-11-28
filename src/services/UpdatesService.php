@@ -155,7 +155,7 @@ class UpdatesService extends BaseApplicationComponent
 	 *
 	 * @return UpdateModel|false
 	 */
-	public function /**/getUpdates($forceRefresh = false)
+	public function getUpdates($forceRefresh = false)
 	{
 		if (!isset($this->_updateModel) || $forceRefresh)
 		{
