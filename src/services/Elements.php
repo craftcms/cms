@@ -1061,11 +1061,12 @@ class Elements extends Component
     /**
      * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
-     * @param string $str The string to parse.
+     * @param string   $str    The string to parse
+     * @param int|null $siteId The site ID to query the elements in
      *
-     * @return string The parsed string.
+     * @return string The parsed string
      */
-    public function parseRefs(string $str): string
+    public function parseRefs(string $str, int $siteId = null): string
     {
         if (!StringHelper::contains($str, '{')) {
             return $str;
@@ -1104,6 +1105,7 @@ class Elements extends Component
                 // Get the elements, indexed by their ref value
                 $refNames = array_keys($tokensByName);
                 $elementQuery = $elementType::find()
+                    ->siteId($siteId)
                     ->status(null)
                     ->limit(null);
 

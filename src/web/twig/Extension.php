@@ -368,13 +368,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses a string for reference tags.
      *
-     * @param string $str
+     * @param string   $str
+     * @param int|null $siteId
      *
      * @return \Twig_Markup
      */
-    public function parseRefsFilter(string $str): \Twig_Markup
+    public function parseRefsFilter(string $str, int $siteId = null): \Twig_Markup
     {
-        $str = Craft::$app->getElements()->parseRefs($str);
+        $str = Craft::$app->getElements()->parseRefs($str, $siteId);
 
         return TemplateHelper::raw($str);
     }

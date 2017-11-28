@@ -73,6 +73,7 @@
 - Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
 - Fields on multi-site installs can now be translated per site group.
 - Resource file URLs now have a timestamp appended to them, preventing browsers from loading cached versions when the files change.
+- `craft\services\Elements::parseRefs()` now has a `$siteId` argument, which can be set to the site ID that referenced elements should be queried in.
 - `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
 - Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
 - Color inputs can now be left blank.
