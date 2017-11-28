@@ -3,6 +3,8 @@
 
 ## Unreleased
 
+## 2.6.2998 - 2017-11-28
+
 ### Changed
 - `<select>` inputs in the Control Panel now get the same custom styling in Firefox and IE/Edge that Chrome and Safari get.
 - Updated PhpMailer to 5.2.26.
