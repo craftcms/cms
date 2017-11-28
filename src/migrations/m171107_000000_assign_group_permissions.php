@@ -74,7 +74,6 @@ class m171107_000000_assign_group_permissions extends Migration
         }
     }
 
-
     /**
      * @inheritdoc
      */
@@ -82,4 +81,5 @@ class m171107_000000_assign_group_permissions extends Migration
     {
         echo "m171107_000000_assign_group_permissions cannot be reverted.\n";
         return false;
-    }}
+    }
+}
