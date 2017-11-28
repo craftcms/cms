@@ -132,6 +132,7 @@
 - Fixed the Debug Toolbar’s “C” icon in Firefox.
 - Fixed a bug where the selected site was not maintained when switching between global sets. ([#2123](https://github.com/craftcms/cms/issues/2123))
 - Fixed a deprecation error when a relation field’s column was included in an element index page.
+- Fixed an error that could occur in the Control Panel if the `queue` component was not an instance of `craft\queue\QueueInterface`.
 
 ## 3.0.0-beta.34 - 2017-11-09
 
