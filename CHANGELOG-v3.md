@@ -1,7 +1,7 @@
 # Craft CMS 3.0 Working Changelog
 
 
-## Unreleased
+## 3.0.0-beta.35 - 2017-11-28
 
 ### Added
 - Added `craft\elements\Asset::getFilename()`.
