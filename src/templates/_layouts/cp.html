@@ -299,9 +299,11 @@
 
                         {# content-container #}
                         <div id="content-container">
-                            {% if tabs is defined and tabs %}
-                                {% include "_includes/tabs" %}
-                            {% endif %}
+                            {% block tabs %}
+                                {% if tabs is defined and tabs %}
+                                    {% include "_includes/tabs" %}
+                                {% endif %}
+                            {% endblock %}
 
                             <div id="content">
                                 {% block content %}

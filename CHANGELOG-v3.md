@@ -21,6 +21,7 @@
 - Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
 - Added the `svg()` Twig function, which will sanitize and return SVG XML code. You can pass in the path to an SVG file or raw SVG XML code.
 - Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
+- Added a `tabs` block to the `_layouts/cp.html` template that surrounds `<nav id="tabs">`, allowing the tab HTML to be overridden by sub-templates. ([#2128](https://github.com/craftcms/cms/issues/2128))
 - Added `craft\controllers\SitesController::actionSaveGroup()`.
 - Added `craft\controllers\SitesController::actionDeleteGroup()`.
 - Added `craft\db\Connection::createFromConfig()`.
