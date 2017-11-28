@@ -145,7 +145,7 @@ var Update = Garnish.Base.extend(
 				$menuUl = $('<ul/>').appendTo($menu),
 				$downloadLi = $('<li/>').appendTo($menuUl);
 
-			$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup);
+			$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').insertBefore($menuBtn);
 
 			this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
 
