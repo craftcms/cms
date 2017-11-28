@@ -109,7 +109,7 @@
 - Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
 
-## Unreleased
+## 3.0.0-beta.35 - 2017-11-28
 
 ### Added
 - Added `craft\elements\Asset::getFilename()`.
@@ -120,6 +120,13 @@
 - The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
 - `craft\db\Query::one()` and `nth()` now return `null` instead of `false` if there was no result. ([#2105](https://github.com/craftcms/cms/issues/2105))
 - `craft\services\Content::getContentRow()` now returns `null` instead of `false` if there was no result.
+- Updated Composer to ~1.5.2.
+- Updated Stringy to ~3.1.0.
+- Updated svg-sanitizer to ~0.7.2.
+- Updated Guzzle to ~6.3.0.
+- Updated CLI-Prompt to ~1.0.3.
+- Updated Twig to ~2.4.4.
+- Updated SwiftMailer Extension for Yii 2 to ~2.1.0.
 
 ### Fixed
 - Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
