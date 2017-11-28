@@ -158,12 +158,10 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _handleInputFocus: function() {
-            Garnish.$bod.addClass('focused');
             this.updateFixedHeader();
         },
 
         _handleInputBlur: function() {
-            Garnish.$bod.removeClass('focused');
             this.updateFixedHeader();
         },
 

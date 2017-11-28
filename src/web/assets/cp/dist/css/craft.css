@@ -1701,7 +1701,6 @@ html, body { overflow-x: hidden; }
 
 /* global sidebar */
 #global-sidebar { -webkit-box-flex: 0; -ms-flex: 0 0 225px; flex: 0 0 225px; z-index: 100; position: relative; padding: 0; }
-body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar .fixed-container { position: fixed; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; width: 225px; height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background: #333f4d; }
 #global-sidebar #devmode { -webkit-box-flex: 0; -ms-flex: 0 0 4px; flex: 0 0 4px; width: 100%; background: url(../images/dev-mode.svg) repeat-x 21px 0; cursor: help; }
 #global-sidebar a { color: #d7d9db; -webkit-transition: color linear 100ms; transition: color linear 100ms; }

@@ -37,11 +37,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   position: relative;
   padding: 0;
 
-  body.focused & {
-    position: absolute;
-    height: 100%;
-  }
-
   .fixed-container {
     position: fixed;
     display: flex;
