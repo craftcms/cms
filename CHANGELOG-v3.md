@@ -1,6 +1,11 @@
 # Craft CMS 3.0 Working Changelog
 
 
+## Unreleased
+
+### Fixed
+- Fixed a SQL error that occurred when installing Craft. ([#2142](https://github.com/craftcms/cms/issues/2142))
+
 ## 3.0.0-beta.35 - 2017-11-28
 
 ### Added
