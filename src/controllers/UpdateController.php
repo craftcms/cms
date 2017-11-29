@@ -77,7 +77,7 @@ class UpdateController extends BaseController
 			// Look for any remote asset source types
 			$remoteSourceTypes = array();
 			foreach (craft()->assetSources->getAllSources() as $source) {
-				if (in_array($source->type, ['GoogleCloud', 'Rackspace', 'S3'])) {
+				if (in_array($source->type, array('GoogleCloud', 'Rackspace', 'S3'))) {
 					$remoteSourceTypes[$source->type] = true;
 				}
 			}
@@ -96,18 +96,18 @@ class UpdateController extends BaseController
 				if ($response->isSuccessful())
 				{
 					$v3Plugins = JsonHelper::decode((string)$response->getBody());
-					$names = [];
+					$names = array();
 
 					foreach ($v3Plugins as $handle => &$info)
 					{
 						if ($plugin = craft()->plugins->getPlugin($handle))
 						{
-							$info += [
+							$info += array(
 								'name' => $plugin->getName(),
 								'iconUrl' => craft()->plugins->getPluginIconUrl($handle),
 								'developerName' => $plugin->getDeveloper(),
 								'developerUrl' => $plugin->getDeveloperUrl(),
-							];
+                            );
 						}
 
 						if (array_key_exists('price', $info)) {

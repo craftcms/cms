@@ -3,6 +3,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where Craft would assume PHP 5.4 or newer.
+
 ## 2.6.2998 - 2017-11-28
 
 ### Changed
