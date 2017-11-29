@@ -1,7 +1,10 @@
 # Craft CMS Changelog
 
 
-## Unreleased
+## 2.6.2999 - 2017-11-29
+
+### Fixed
+- Fixed PHP 5.3 compatibility.
 
 ## 2.6.2998 - 2017-11-28
 
