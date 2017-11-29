@@ -1,7 +1,7 @@
 # Craft CMS 3.0 Working Changelog
 
 
-## Unreleased
+## 3.0.0-beta.36 - 2017-11-29
 
 ### Added
 - Added a `cp.layouts.base` template hook to the `_layouts/base.html` template.
