@@ -109,6 +109,14 @@
 - Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
 
+## 3.0.0-beta.36 - 2017-11-29
+
+### Added
+- Added a `cp.layouts.base` template hook to the `_layouts/base.html` template.
+
+### Fixed
+- Fixed a SQL error that occurred when installing Craft. ([#2142](https://github.com/craftcms/cms/issues/2142))
+
 ## 3.0.0-beta.35 - 2017-11-28
 
 ### Added

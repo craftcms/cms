@@ -864,7 +864,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%templatecachequeries}}', ['cacheId'], false);
         $this->createIndex(null, '{{%templatecachequeries}}', ['type'], false);
         $this->createIndex(null, '{{%templatecaches}}', ['expiryDate', 'cacheKey', 'siteId', 'path'], false);
-        $this->createIndex(null, '{{%templatecaches}}', ['expiryDate', 'cacheKey', 'locale'], false);
+        $this->createIndex(null, '{{%templatecaches}}', ['expiryDate', 'cacheKey', 'siteId'], false);
         $this->createIndex(null, '{{%templatecaches}}', ['siteId'], false);
         $this->createIndex(null, '{{%tokens}}', ['token'], true);
         $this->createIndex(null, '{{%tokens}}', ['expiryDate'], false);
