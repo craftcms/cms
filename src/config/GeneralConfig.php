@@ -674,7 +674,7 @@ class GeneralConfig extends BaseObject
      */
     public $trustedHosts = ['any'];
     /**
-     * @var bool Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
+     * @var bool Tells Craft whether to use compressed JavaScript files whenever possible, to cut down on page load times.
      */
     public $useCompressedJs = true;
     /**

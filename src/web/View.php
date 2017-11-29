@@ -680,10 +680,10 @@ class View extends \yii\web\View
     }
 
     /**
-     * Starts a Javascript buffer.
+     * Starts a JavaScript buffer.
      *
-     * Javascript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
-     * Once you’ve started a Javascript buffer, any Javascript code included with [[registerJs()]] will be included
+     * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
+     * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
      * having it actually get output to the page.
      *
@@ -697,9 +697,9 @@ class View extends \yii\web\View
     }
 
     /**
-     * Clears and ends a Javascript buffer, returning whatever Javascript code was included while the buffer was active.
+     * Clears and ends a JavaScript buffer, returning whatever JavaScript code was included while the buffer was active.
      *
-     * @param bool $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
+     * @param bool $scriptTag Whether the JavaScript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
      * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
@@ -1365,7 +1365,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
+            throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you are trying to load a template outside the template folder: {template}.', ['template' => $name]));
         }
     }
 

@@ -460,7 +460,7 @@ class Assets
                     ]
                 ],
                 'javascript' => [
-                    'label' => Craft::t('app', 'Javascript'),
+                    'label' => Craft::t('app', 'JavaScript'),
                     'extensions' => [
                         'js',
                     ]
