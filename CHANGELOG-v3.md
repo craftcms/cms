@@ -3,6 +3,9 @@
 
 ## Unreleased
 
+### Added
+- Added a `cp.layouts.base` template hook to the `_layouts/base.html` template.
+
 ### Fixed
 - Fixed a SQL error that occurred when installing Craft. ([#2142](https://github.com/craftcms/cms/issues/2142))
 
