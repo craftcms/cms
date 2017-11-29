@@ -2453,7 +2453,8 @@ ul.tree,
   }
 
   & > .field > .input,
-  & .data > .value {
+  & > .data > .value {
+    padding: 8px 0;
     width: calc(100% - 112px);
   }
 
@@ -2507,6 +2508,7 @@ ul.tree,
       & > .datetimewrapper > .timewrapper {
         & > .text {
           display: block;
+          margin: -8px 0;
           padding: 14px 0;
           border-radius: 0;
           box-shadow: none;
@@ -2546,7 +2548,7 @@ ul.tree,
 
     & > ul.errors {
       margin: 0;
-      padding: 0 0 14px;
+      padding: 0 0 6px;
       width: 100%;
       list-style-type: none;
     }
