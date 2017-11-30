@@ -1,5 +1,9 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a race condition that could cause a PHP error when quickly saving multiple tasks.
 
 ## 2.6.2999 - 2017-11-29
 
