@@ -102,7 +102,7 @@ class Assets
         $appendix = '';
 
         /** @var Volume $volume */
-        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
+        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
             $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }
 
