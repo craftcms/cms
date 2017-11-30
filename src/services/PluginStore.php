@@ -8,15 +8,15 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\records\PluginStoreToken;
-use yii\base\Component;
-use GuzzleHttp\Client;
-use DateTime;
-use DateInterval;
-use craft\models\OauthToken;
 use craft\errors\TokenNotFoundException;
+use craft\helpers\DateTimeHelper;
+use craft\models\OauthToken;
 use craft\records\OauthToken as OauthTokenRecord;
+use craft\records\PluginStoreToken;
+use DateInterval;
+use DateTime;
+use GuzzleHttp\Client;
+use yii\base\Component;
 
 /**
  * Class PluginStore service.
@@ -88,7 +88,7 @@ class PluginStore extends Component
                     return $craftIdAccount;
                 }
             }
-        } catch(\GuzzleHttp\Exception\ServerException $e) {
+        } catch (\GuzzleHttp\Exception\ServerException $e) {
             // Todo: Handle exception
         }
     }
@@ -160,19 +160,19 @@ class PluginStore extends Component
                 ->where(['userId' => $userId])
                 ->one();
 
-            if($pluginstoreToken && $pluginstoreToken->oauthTokenId) {
+            if ($pluginstoreToken && $pluginstoreToken->oauthTokenId) {
                 $oauthTokenRecord = OauthTokenRecord::find()
                     ->where(['id' => $pluginstoreToken->oauthTokenId])
                     ->one();
 
-                if($oauthTokenRecord) {
+                if ($oauthTokenRecord) {
                     $oauthTokenRecord->delete();
 
                     $pluginstoreToken = false;
                 }
             }
 
-            if(!$pluginstoreToken) {
+            if (!$pluginstoreToken) {
                 $pluginstoreToken = new PluginStoreToken();
                 $pluginstoreToken->userId = $userId;
             }
@@ -215,10 +215,10 @@ class PluginStore extends Component
                 ->where(['userId' => $userId])
                 ->one();
 
-            if($pluginstoreToken) {
+            if ($pluginstoreToken) {
                 $oauthTokenRecord = $pluginstoreToken->getOauthToken()->one();
 
-                if($oauthTokenRecord) {
+                if ($oauthTokenRecord) {
                     return new OauthToken($oauthTokenRecord->getAttributes());
                 }
             }
@@ -240,10 +240,10 @@ class PluginStore extends Component
             ->where(['userId' => $userId])
             ->one();
 
-        if($pluginstoreToken) {
+        if ($pluginstoreToken) {
             $oauthToken = $pluginstoreToken->getOauthToken()->one();
 
-            if($oauthToken) {
+            if ($oauthToken) {
                 $oauthToken->delete();
             }
         }
