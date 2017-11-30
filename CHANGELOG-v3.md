@@ -29,6 +29,7 @@
 - Added `craft\errors\SiteGroupNotFoundException`.
 - Added `craft\events\SiteGroupEvent`.
 - Added `craft\fields\data\ColorData`.
+- Added `craft\image\Raster::getImagineImage()`. (([#1488](https://github.com/craftcms/cms/issues/1488))
 - Added `craft\image\Raster::setInterlace()`.
 - Added `craft\models\Section::getSiteIds()`.
 - Added `craft\models\Site::groupId`.

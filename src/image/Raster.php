@@ -19,6 +19,7 @@ use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Image as GdImage;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
+use Imagine\Image\AbstractImage;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface as Imagine;
 use Imagine\Image\Metadata\ExifMetadataReader;
@@ -60,7 +61,7 @@ class Raster extends Image
     private $_quality = 0;
 
     /**
-     * @var ImagickImage|GdImage|null
+     * @var AbstractImage|null
      */
     private $_image;
 
@@ -110,6 +111,16 @@ class Raster extends Image
         $this->_quality = $generalConfig->defaultImageQuality;
 
         parent::__construct($config);
+    }
+
+    /**
+     * Return the Imagine Image instance
+     *
+     * @return AbstractImage|null
+     */
+    public function getImagineImage()
+    {
+        return $this->_image;
     }
 
     /**
