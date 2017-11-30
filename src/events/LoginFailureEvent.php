@@ -28,6 +28,11 @@ class LoginFailureEvent extends Event
     public $authError;
 
     /**
+     * @var string The error message that will be presented to the user.
+     */
+    public $message;
+
+    /**
      * @var User|null The user that the login was attempted for, if there was a username/email match
      */
     public $user;

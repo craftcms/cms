@@ -85,6 +85,7 @@
 - `craft\services\Plugins::getComposerPluginInfo()` will now return all Composer plugin info, if no handle is specified.
 - `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
 - `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
+- `craft\events\LoginFailureEvent` now has a customizable `message` property that defines the user-facing error message. ([#2147](https://github.com/craftcms/cms/issues/2147))
 - Updated all Control Panel language translations.
 
 ### Removed

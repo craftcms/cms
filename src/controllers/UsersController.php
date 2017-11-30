@@ -1555,14 +1555,6 @@ class UsersController extends Controller
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
-        // Fire a 'loginFailure' event
-        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
-            $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
-                'authError' => $authError,
-                'user' => $user,
-            ]));
-        }
-
         switch ($authError) {
             case User::AUTH_PENDING_VERIFICATION:
                 $message = Craft::t('app', 'Account has not been activated.');
@@ -1607,20 +1599,28 @@ class UsersController extends Controller
                 }
         }
 
+        // Fire a 'loginFailure' event
+        $event = new LoginFailureEvent([
+            'authError' => $authError,
+            'message' => $message,
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
+
         if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson([
                 'errorCode' => $authError,
-                'error' => $message
+                'error' => $event->message
             ]);
         }
 
-        Craft::$app->getSession()->setError($message);
+        Craft::$app->getSession()->setError($event->message);
 
         Craft::$app->getUrlManager()->setRouteParams([
             'loginName' => Craft::$app->getRequest()->getBodyParam('loginName'),
             'rememberMe' => (bool)Craft::$app->getRequest()->getBodyParam('rememberMe'),
             'errorCode' => $authError,
-            'errorMessage' => $message,
+            'errorMessage' => $event->message,
         ]);
 
         $this->_enforceOfflineLoginPage();
