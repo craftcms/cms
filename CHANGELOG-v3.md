@@ -84,6 +84,7 @@
 - `craft\services\Plugins::getComposerPluginInfo()` will now return all Composer plugin info, if no handle is specified.
 - `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
 - `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
+- Updated all Control Panel language translations.
 
 ### Removed
 - The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
