@@ -76,6 +76,7 @@ class TasksService extends BaseApplicationComponent
 	 * @param bool      $validate
 	 *
 	 * @return bool
+	 * @throws Exception
 	 */
 	public function saveTask(TaskModel $task, $validate = true)
 	{
@@ -85,16 +86,7 @@ class TasksService extends BaseApplicationComponent
 		}
 		else
 		{
-			try
-			{
-				$taskRecord = $this->_getTaskRecordById($task->id);
-			}
-			catch (Exception $e)
-			{
-				// Maybe another task runner already beat us to it. Bail early.
-				Craft::log('Tried to save an existing task with an ID of '.$task->id.', but it no longer exists.', LogLevel::Warning);
-				return false;
-			}
+			$taskRecord = $this->_getTaskRecordById($task->id);
 		}
 
 		$taskRecord->type = $task->type;
