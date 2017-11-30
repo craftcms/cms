@@ -36,7 +36,7 @@ class EditImage extends ElementAction
     public function init()
     {
         if ($this->label === null) {
-            $this->label = Craft::t('app', 'Edit image');
+            $this->label = Craft::t('app', 'Edit Image');
         }
     }
 
