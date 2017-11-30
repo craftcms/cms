@@ -11,7 +11,6 @@
 - Added the Craft License to the web-based setup wizard.
 - Added a “Connect the database” screen to the web-based setup wizard, which will show up if a database connection can’t already be established, and Craft determines that it can control the DB connection settings via the `.env` file.
 - Added the OAuth 2.0 Client library.
-- Added the `oauthtokens` table, which plugins can use to store OAuth 2 tokens.
 - `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
 - Added the “Default Color” setting to Color fields. ([#949](https://github.com/craftcms/cms/issues/949))
 - Color fields now return a `craft\fields\data\ColorData` object, with `hex`, `rgb`, `red`, `green`, `blue`, `r`, `g`, `b`, and `luma` properties.
@@ -111,6 +110,7 @@
 - Removed `lib/redactor/`.
 - Removed `Craft.ColorPicker` (JS class).
 - Removed `Craft.RichTextInput` (JS class).
+- Removed the `oauthtokens` table.
 
 ## 3.0.0-beta.36 - 2017-11-29
 
