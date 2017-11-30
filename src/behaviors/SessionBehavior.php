@@ -126,7 +126,7 @@ class SessionBehavior extends Behavior
     /**
      * Stores JS in the user’s flash data.
      *
-     * The Javascript code will be stored on the session, and can be retrieved by calling
+     * The JavaScript code will be stored on the session, and can be retrieved by calling
      * [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
      * @param string      $js       the JS code block to be registered

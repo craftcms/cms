@@ -122,7 +122,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n").implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:").implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
