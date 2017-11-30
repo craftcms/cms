@@ -456,14 +456,13 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
-			$shouldCreateTask = true;
+			$taskCreated = false;
 
 			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
 			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
 			if ($task && is_array($task->settings))
 			{
-				$shouldCreateTask = false;
 				$settings = $task->settings;
 
 				if (!is_array($settings['elementId']))
@@ -486,19 +485,10 @@ class TemplateCacheService extends BaseApplicationComponent
 				// Set the new settings and save the task
 				$task->settings = $settings;
 
-				try
-				{
-					craft()->tasks->saveTask($task, false);
-				}
-				catch (Exception $e)
-				{
-					// Maybe another task runner already beat us to it. Bail early.
-					Craft::log('Tried to save an existing task with an ID of '.$task->id.', but it no longer exists. Error: '.$e->getMessage(), LogLevel::Warning);
-					$shouldCreateTask = true;
-				}
+                $taskCreated = craft()->tasks->saveTask($task, false);
 			}
 
-			if ($shouldCreateTask)
+			if (!$taskCreated)
 			{
 				craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
 					'elementId' => $elementId
