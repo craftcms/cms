@@ -1551,6 +1551,7 @@ class UsersController extends Controller
      * @param User|null   $user
      *
      * @return Response|null
+     * @throws ServiceUnavailableHttpException
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
