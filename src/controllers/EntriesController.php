@@ -938,7 +938,7 @@ class EntriesController extends BaseEntriesController
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn\'t have a URL for the site '.$entry->siteId.'.');
+            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn’t have a URL for the site '.$entry->siteId.'.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($entry->siteId);

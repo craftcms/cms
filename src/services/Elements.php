@@ -461,7 +461,7 @@ class Elements extends Component
             $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
 
             if (!$siteSettingsRecord->save(false)) {
-                throw new Exception('Couldn\'t save elements\' site settings record.');
+                throw new Exception('Couldn’t save elements’ site settings record.');
             }
 
             // Save the content
@@ -567,7 +567,7 @@ class Elements extends Component
                     $siteElement = $this->getElementById($element->id, $class, $siteInfo['siteId']);
 
                     if ($siteElement === null) {
-                        throw new Exception('Element '.$element->id.' doesn\'t exist in the site '.$siteInfo['siteId']);
+                        throw new Exception('Element '.$element->id.' doesn’t exist in the site '.$siteInfo['siteId']);
                     }
                 }
 
@@ -1376,12 +1376,12 @@ class Elements extends Component
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors
-            $error = 'Couldn\'t propagate element to other site due to validation errors:';
+            $error = 'Couldn’t propagate element to other site due to validation errors:';
             foreach ($siteElement->getFirstErrors() as $attributeError) {
                 $error .= "\n- ".$attributeError;
             }
             Craft::error($error);
-            throw new Exception('Couldn\'t propagate element to other site.');
+            throw new Exception('Couldn’t propagate element to other site.');
         }
     }
 

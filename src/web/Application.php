@@ -296,7 +296,7 @@ class Application extends \yii\web\Application
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-            throw new InvalidConfigException($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP.');
+            throw new InvalidConfigException($resourceBasePath.' doesn’t exist or isn’t writable by PHP.');
         }
     }
 

@@ -789,7 +789,7 @@ class CategoriesController extends Controller
         $categoryGroupSiteSettings = $category->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$category->siteId]) || !$categoryGroupSiteSettings[$category->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The category '.$category->id.' doesn\'t have a URL for the site '.$category->siteId.'.');
+            throw new ServerErrorHttpException('The category '.$category->id.' doesn’t have a URL for the site '.$category->siteId.'.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($category->siteId);

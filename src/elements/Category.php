@@ -266,7 +266,7 @@ class Category extends Element
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Category\'s group ('.$this->groupId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Category’s group ('.$this->groupId.') is not enabled for site '.$this->siteId);
         }
 
         return $categoryGroupSiteSettings[$this->siteId]->uriFormat;

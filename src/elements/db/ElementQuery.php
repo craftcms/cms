@@ -1737,7 +1737,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->orderBy === ['score' => SORT_ASC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn\'t support fixed ordering.');
+                    throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
@@ -1780,7 +1780,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
 
                 if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn\'t support fixed ordering.');
+                    throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
             } else if ($this->structureId) {

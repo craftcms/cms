@@ -24,7 +24,7 @@ Thanks for creating an account with {{siteName}}! To activate your account, clic
 
 {{link}}
 
-If you weren\'t expecting this email, just ignore it.',
+If you weren’t expecting this email, just ignore it.',
     'account_activation_heading' => 'When someone creates an account:',
     'account_activation_subject' => 'Activate your account',
     'Actions' => 'Actions',
@@ -359,7 +359,7 @@ To reset your {{siteName}} password, click on this link:
 
 {{link}}
 
-If you weren\'t expecting this email, just ignore it.',
+If you weren’t expecting this email, just ignore it.',
     'forgot_password_heading' => 'When someone forgets their password:',
     'forgot_password_subject' => 'Reset your password',
     'Format' => 'Format',
@@ -861,7 +861,7 @@ Please verify your new email address by clicking on this link:
 
 {{link}}
 
-If you weren\'t expecting this email, just ignore it.',
+If you weren’t expecting this email, just ignore it.',
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
     'Version Notes' => 'Version Notes',
@@ -1010,7 +1010,7 @@ If you weren\'t expecting this email, just ignore it.',
     'Craft CMS requires the PDO extension to operate.' => 'Craft CMS requires the PDO extension to operate.',
     'The language content in this site will use.' => 'The language content in this site will use.',
     'Craft Support' => 'Craft Support',
-    'The Asset you\'re trying to download does not exist.' => 'The Asset you\'re trying to download does not exist.',
+    'The Asset you’re trying to download does not exist.' => 'The Asset you’re trying to download does not exist.',
     'Transfer it to this domain?' => 'Transfer it to this domain?',
     'Rotate Left' => 'Rotate Left',
     'The maximum number of characters the field is allowed to have.' => 'The maximum number of characters the field is allowed to have.',
@@ -1019,7 +1019,7 @@ If you weren\'t expecting this email, just ignore it.',
     'Search Indexes' => 'Search Indexes',
     'Could not update statuses due to validation errors.' => 'Could not update statuses due to validation errors.',
     'Remove files and folders' => 'Remove files and folders',
-    'The Asset you\'re trying to edit does not exist.' => 'The Asset you\'re trying to edit does not exist.',
+    'The Asset you’re trying to edit does not exist.' => 'The Asset you’re trying to edit does not exist.',
     'The volumes that should be available when selecting assets (if the selected config has an Image or File button).' => 'The volumes that should be available when selecting assets (if the selected config has an Image or File button).',
     'Leave blank if entries don’t have URLs' => 'Leave blank if entries don’t have URLs',
     'Could not write to the temporary upload folder.' => 'Could not write to the temporary upload folder.',
@@ -1085,7 +1085,7 @@ If you weren\'t expecting this email, just ignore it.',
     'Failed to save the image.' => 'Failed to save the image.',
     'No volume exists with the ID “{id}”.' => 'No volume exists with the ID “{id}”.',
     'A folder with the name “{folderName}” already exists in the volume.' => 'A folder with the name “{folderName}” already exists in the volume.',
-    'It\'s not possible to rename the top folder of a Volume.' => 'It\'s not possible to rename the top folder of a Volume.',
+    'It’s not possible to rename the top folder of a Volume.' => 'It’s not possible to rename the top folder of a Volume.',
     'Failed to generate transform with id of {id}.' => 'Failed to generate transform with id of {id}.',
     'Craft is unable to determine if any updates are available at this time.' => 'Craft is unable to determine if any updates are available at this time.',
     'The file “{path}” does not appear to be an image.' => 'The file “{path}” does not appear to be an image.',
@@ -1167,7 +1167,7 @@ If you weren\'t expecting this email, just ignore it.',
     'Cache remote images?' => 'Cache remote images?',
     'Couldn’t send activation email. Check your email settings.' => 'Couldn’t send activation email. Check your email settings.',
     'A file with the name “{filename}” already exists.' => 'A file with the name “{filename}” already exists.',
-    'This field\'s Volume configuration is invalid.' => 'This field\'s Volume configuration is invalid.',
+    'This field’s Volume configuration is invalid.' => 'This field’s Volume configuration is invalid.',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'Square SVG file recommended. The logo will be displayed at {size} by {size}.',
     '/path/to/folder' => '/path/to/folder',
     'Which site should {type} be related from?' => 'Which site should {type} be related from?',

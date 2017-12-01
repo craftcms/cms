@@ -617,7 +617,7 @@ class Assets extends BaseRelationField
         }
 
         if (!$uploadSource) {
-            throw new InvalidVolumeException(Craft::t('app', 'This field\'s Volume configuration is invalid.'));
+            throw new InvalidVolumeException(Craft::t('app', 'This field’s Volume configuration is invalid.'));
         }
 
         $assets = Craft::$app->getAssets();

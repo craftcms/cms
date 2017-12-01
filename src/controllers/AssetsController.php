@@ -571,7 +571,7 @@ class AssetsController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to edit does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
         }
 
         $focal = null;
@@ -779,7 +779,7 @@ class AssetsController extends Controller
         $asset = $assetService->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to download does not exist.'));
         }
 
         $this->_requirePermissionByAsset('viewVolume', $asset);

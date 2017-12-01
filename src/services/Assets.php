@@ -209,7 +209,7 @@ class Assets extends Component
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new InvalidParamException('Folder '.$folder->id.' doesn\'t have a parent.');
+            throw new InvalidParamException('Folder '.$folder->id.' doesn’t have a parent.');
         }
 
         $existingFolder = $this->findFolder([
@@ -262,7 +262,7 @@ class Assets extends Component
 
         if (!$folder->parentId) {
             throw new AssetLogicException(Craft::t('app',
-                "It's not possible to rename the top folder of a Volume."));
+                'It’s not possible to rename the top folder of a Volume.'));
         }
 
         $conflictingFolder = $this->findFolder([

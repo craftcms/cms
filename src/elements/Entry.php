@@ -576,7 +576,7 @@ class Entry extends Element
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Entry\'s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
