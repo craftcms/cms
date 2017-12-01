@@ -155,7 +155,7 @@ class PluginStore extends Component
             // Save token to database
             // $this->_saveToken($oauthToken);
 
-            $oauthTokenRecord = CraftId::find()
+            $oauthTokenRecord = OauthTokenRecord::find()
                 ->where(['userId' => $userId])
                 ->one();
 
