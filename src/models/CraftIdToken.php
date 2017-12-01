@@ -11,12 +11,12 @@ use craft\base\Model;
 use DateTime;
 
 /**
- * Class OauthToken model.
+ * Class CraftIdToken model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class OauthToken extends Model
+class CraftIdToken extends Model
 {
     // Properties
     // =========================================================================
@@ -32,24 +32,9 @@ class OauthToken extends Model
     public $userId;
 
     /**
-     * @var string
-     */
-    public $provider;
-
-    /**
      * @var string|null
      */
     public $accessToken;
-
-    /**
-     * @var string|null
-     */
-    public $tokenType;
-
-    /**
-     * @var string|null
-     */
-    public $expiresIn;
 
     /**
      * @var string|null

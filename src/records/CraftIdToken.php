@@ -11,21 +11,18 @@ use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
 
 /**
- * Class OAuthToken record.
+ * Class CraftIdToken record.
  *
  * @property int            $id           ID
  * @property int            $userId       User ID
- * @property string         $provider     Provider
  * @property string         $accessToken  Access Token
- * @property string         $tokenType    Token Type
- * @property int            $expiresIn    Time left to expire
  * @property \DateTime      $expiryDate   Expiration Date
  * @property string         $refreshToken Refresh Token
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class OAuthToken extends ActiveRecord
+class CraftIdToken extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
@@ -37,7 +34,7 @@ class OAuthToken extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%oauthtokens}}';
+        return '{{%craftidtokens}}';
     }
 
     /**

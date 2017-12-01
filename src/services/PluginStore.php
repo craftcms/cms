@@ -10,9 +10,9 @@ namespace craft\services;
 use Craft;
 use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
-use craft\models\OauthToken;
-use craft\records\OauthToken as OauthTokenRecord;
-use craft\records\PluginStoreToken;
+use craft\models\CraftIdToken;
+use craft\records\CraftIdToken as OauthTokenRecord;
+use craftcms\oauth2\client\provider\CraftId;
 use DateInterval;
 use DateTime;
 use GuzzleHttp\Client;
@@ -137,12 +137,9 @@ class PluginStore extends Component
 
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        $oauthToken = new OauthToken;
+        $oauthToken = new CraftIdToken();
         $oauthToken->userId = $userId;
-        $oauthToken->provider = 'craftid';
         $oauthToken->accessToken = $tokenArray['access_token'];
-        $oauthToken->tokenType = $tokenArray['token_type'];
-        $oauthToken->expiresIn = $tokenArray['expires_in'];
 
         $expiryDate = new DateTime();
         $expiryDateInterval = DateTimeHelper::secondsToInterval($tokenArray['expires_in']);
@@ -156,39 +153,20 @@ class PluginStore extends Component
             // Save token to database
             // $this->_saveToken($oauthToken);
 
-            $pluginstoreToken = PluginStoreToken::find()
+            $oauthTokenRecord = OauthTokenRecord::find()
                 ->where(['userId' => $userId])
                 ->one();
 
-            if ($pluginstoreToken && $pluginstoreToken->oauthTokenId) {
-                $oauthTokenRecord = OauthTokenRecord::find()
-                    ->where(['id' => $pluginstoreToken->oauthTokenId])
-                    ->one();
-
-                if ($oauthTokenRecord) {
-                    $oauthTokenRecord->delete();
-
-                    $pluginstoreToken = false;
-                }
-            }
-
-            if (!$pluginstoreToken) {
-                $pluginstoreToken = new PluginStoreToken();
-                $pluginstoreToken->userId = $userId;
+            if ($oauthTokenRecord) {
+                $oauthTokenRecord->delete();
             }
 
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
-            $oauthTokenRecord->provider = $oauthToken->provider;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
-            $oauthTokenRecord->tokenType = $oauthToken->tokenType;
-            $oauthTokenRecord->expiresIn = $oauthToken->expiresIn;
             $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
             $oauthTokenRecord->refreshToken = $oauthToken->refreshToken;
             $oauthTokenRecord->save();
-
-            $pluginstoreToken->oauthTokenId = $oauthTokenRecord->id;
-            $pluginstoreToken->save();
         }
     }
 
@@ -211,16 +189,12 @@ class PluginStore extends Component
 
         if (!$token || ($token && $token->hasExpired())) {
 
-            $pluginstoreToken = PluginStoreToken::find()
+            $oauthTokenRecord = OauthTokenRecord::find()
                 ->where(['userId' => $userId])
                 ->one();
 
-            if ($pluginstoreToken) {
-                $oauthTokenRecord = $pluginstoreToken->getOauthToken()->one();
-
-                if ($oauthTokenRecord) {
-                    return new OauthToken($oauthTokenRecord->getAttributes());
-                }
+            if ($oauthTokenRecord) {
+                return new CraftIdToken($oauthTokenRecord->getAttributes());
             }
         }
 
@@ -236,18 +210,13 @@ class PluginStore extends Component
 
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        $pluginstoreToken = PluginStoreToken::find()
+        $oauthToken = OauthTokenRecord::find()
             ->where(['userId' => $userId])
             ->one();
 
-        if ($pluginstoreToken) {
-            $oauthToken = $pluginstoreToken->getOauthToken()->one();
-
-            if ($oauthToken) {
-                $oauthToken->delete();
-            }
+        if ($oauthToken) {
+            $oauthToken->delete();
         }
-
 
         // Delete session token
 
@@ -270,7 +239,7 @@ class PluginStore extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%oauthtokens}}', ['userId' => $userId])
+            ->delete('{{%craftidtokens}}', ['userId' => $userId])
             ->execute();
 
         return true;
@@ -281,15 +250,17 @@ class PluginStore extends Component
      *
      * @param $userId
      *
-     * @return OauthToken
+     * @return CraftIdToken|null
      */
     public function getTokenByUserId($userId)
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 
-        if ($record) {
-            return new OauthToken($record->getAttributes());
+        if (!$record) {
+            return null;
         }
+
+        return new CraftIdToken($record->getAttributes());
     }
 
     // Private Methods
@@ -320,11 +291,11 @@ class PluginStore extends Component
     /**
      * Save token to DB.
      *
-     * @param OauthToken $token
+     * @param CraftIdToken $token
      *
      * @return bool
      */
-    private function _saveToken(OauthToken $token)
+    private function _saveToken(CraftIdToken $token)
     {
         // is new ?
         $isNewToken = !$token->id;
@@ -332,10 +303,7 @@ class PluginStore extends Component
         // populate record
         $record = $this->_getOauthTokenRecordById($token->id);
         $record->userId = $token->userId;
-        $record->provider = $token->provider;
         $record->accessToken = $token->accessToken;
-        $record->tokenType = $token->tokenType;
-        $record->expiresIn = $token->expiresIn;
         $record->expiryDate = $token->expiryDate;
         $record->refreshToken = $token->refreshToken;
 
