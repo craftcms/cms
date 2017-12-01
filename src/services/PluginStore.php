@@ -141,7 +141,6 @@ class PluginStore extends Component
         $oauthToken->userId = $userId;
         $oauthToken->accessToken = $tokenArray['access_token'];
         $oauthToken->tokenType = $tokenArray['token_type'];
-        $oauthToken->expiresIn = $tokenArray['expires_in'];
 
         $expiryDate = new DateTime();
         $expiryDateInterval = DateTimeHelper::secondsToInterval($tokenArray['expires_in']);
@@ -167,7 +166,6 @@ class PluginStore extends Component
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
             $oauthTokenRecord->tokenType = $oauthToken->tokenType;
-            $oauthTokenRecord->expiresIn = $oauthToken->expiresIn;
             $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
             $oauthTokenRecord->refreshToken = $oauthToken->refreshToken;
             $oauthTokenRecord->save();
@@ -309,7 +307,6 @@ class PluginStore extends Component
         $record->userId = $token->userId;
         $record->accessToken = $token->accessToken;
         $record->tokenType = $token->tokenType;
-        $record->expiresIn = $token->expiresIn;
         $record->expiryDate = $token->expiryDate;
         $record->refreshToken = $token->refreshToken;
 
