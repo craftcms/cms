@@ -1,4 +1,4 @@
-/*!   - 2017-11-28 */
+/*!   - 2017-11-30 */
 (function($){
 
 /** global: Craft */
@@ -5672,6 +5672,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     this.promptHandler.addPrompt(response);
                 }
+
+                Craft.cp.runQueue();
             }
             else {
                 if (response.error) {
@@ -6332,6 +6334,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                         this.$container.removeClass('uploading');
                     }
                 }.bind(this));
+
+                Craft.cp.runQueue();
             }
         },
 
