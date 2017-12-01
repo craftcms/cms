@@ -140,7 +140,6 @@ class PluginStore extends Component
         $oauthToken = new CraftIdToken();
         $oauthToken->userId = $userId;
         $oauthToken->accessToken = $tokenArray['access_token'];
-        $oauthToken->tokenType = $tokenArray['token_type'];
 
         $expiryDate = new DateTime();
         $expiryDateInterval = DateTimeHelper::secondsToInterval($tokenArray['expires_in']);
@@ -165,7 +164,6 @@ class PluginStore extends Component
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
-            $oauthTokenRecord->tokenType = $oauthToken->tokenType;
             $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
             $oauthTokenRecord->refreshToken = $oauthToken->refreshToken;
             $oauthTokenRecord->save();
@@ -306,7 +304,6 @@ class PluginStore extends Component
         $record = $this->_getOauthTokenRecordById($token->id);
         $record->userId = $token->userId;
         $record->accessToken = $token->accessToken;
-        $record->tokenType = $token->tokenType;
         $record->expiryDate = $token->expiryDate;
         $record->refreshToken = $token->refreshToken;
 

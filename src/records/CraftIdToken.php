@@ -16,8 +16,6 @@ use yii\db\ActiveQueryInterface;
  * @property int            $id           ID
  * @property int            $userId       User ID
  * @property string         $accessToken  Access Token
- * @property string         $tokenType    Token Type
- * @property int            $expiresIn    Time left to expire
  * @property \DateTime      $expiryDate   Expiration Date
  * @property string         $refreshToken Refresh Token
  *
