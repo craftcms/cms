@@ -12,7 +12,7 @@ use craft\db\Migration;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Mailer;
-use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\Sendmail;
 use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
@@ -89,7 +89,7 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => Php::class
+            'transportType' => Sendmail::class
         ]);
         echo " done\n";
     }

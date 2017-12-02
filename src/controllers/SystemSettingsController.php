@@ -12,10 +12,9 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MailerHelper;
-use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
-use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\Info;
 use craft\models\MailSettings;
@@ -157,7 +156,7 @@ class SystemSettingsController extends Controller
             try {
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
             } catch (MissingComponentException $e) {
-                $adapter = new Php();
+                $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType
                 ]));

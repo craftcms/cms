@@ -5,7 +5,6 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\mail\transportadapters\Gmail;
-use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 
@@ -35,9 +34,6 @@ class m150617_213829_update_email_settings extends Migration
 
             // Protocol-specific stuff
             switch ($oldSettings['protocol']) {
-                case 'sendmail':
-                    $settings['transportType'] = Sendmail::class;
-                    break;
                 case 'smtp':
                     $settings['transportType'] = Smtp::class;
                     $settings['transportSettings'] = [
@@ -59,7 +55,7 @@ class m150617_213829_update_email_settings extends Migration
                     ];
                     break;
                 default:
-                    $settings['transportType'] = Php::class;
+                    $settings['transportType'] = Sendmail::class;
             }
 
             // Save the new settings
