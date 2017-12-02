@@ -73,7 +73,21 @@ class StructuresController extends Controller
         }
 
         $elementsService = Craft::$app->getElements();
-        if (($this->_element = $elementsService->getElementById($elementId, null, $siteId)) === null) {
+
+        if (($elementType = $elementsService->getElementTypeById($elementId)) === null) {
+            throw new NotFoundHttpException('Element not found');
+        };
+
+        /** @var Element|string $elementType */
+        $this->_element = $elementType::find()
+            ->id($elementId)
+            ->siteId($siteId)
+            ->status(null)
+            ->enabledForSite(false)
+            ->structureId($structureId)
+            ->one();
+
+        if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
     }
