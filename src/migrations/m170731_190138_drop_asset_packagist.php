@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Composer\Json\JsonFile;
 use Craft;
 use craft\db\Migration;
+use craft\helpers\FileHelper;
 use yii\base\Exception;
 
 /**
@@ -22,6 +23,12 @@ class m170731_190138_drop_asset_packagist extends Migration
             $jsonPath = Craft::$app->getComposer()->getJsonPath();
         } catch (Exception $e) {
             Craft::warning('Could not remove the asset-packagist.org repo from composer.json because composer.json could not be found.', __METHOD__);
+            return true;
+        }
+
+        // See if we can write to composer.json
+        if (!FileHelper::isWritable($jsonPath)) {
+            Craft::warning('Could not remove the asset-packagist.org repo from composer.json because we cannot write to composer.json.', __METHOD__);
             return true;
         }
 

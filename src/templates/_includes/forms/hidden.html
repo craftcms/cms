@@ -1,4 +1,5 @@
 <input type="hidden"
     {%- if id is defined %} id="{{ id }}"{% endif %}
     {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if value is defined %} value="{{ value }}"{% endif %}>
+    {%- if value is defined %} value="{{ value }}"{% endif %}
+    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>

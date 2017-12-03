@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\events;
@@ -26,6 +26,11 @@ class LoginFailureEvent extends Event
      * @see User
      */
     public $authError;
+
+    /**
+     * @var string The error message that will be presented to the user.
+     */
+    public $message;
 
     /**
      * @var User|null The user that the login was attempted for, if there was a username/email match

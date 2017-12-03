@@ -5,13 +5,9 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% set docsUrl = 'http://craftcms.com/docs/sections-and-entries#sections' %}
-
-{% set extraPageHeaderHtml %}
-    <div id="newsectioncontainer" class="buttons right">
-        <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
-    </div>
-{% endset %}
+{% block actionButton %}
+    <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
+{% endblock %}
 
 
 {% block content %}
@@ -63,7 +59,6 @@
     var adminTable = new Craft.AdminTable({
         tableSelector: '#sections',
         noItemsSelector: '#nosections',
-        newItemBtnSelector: '#newsectioncontainer',
         deleteAction: 'sections/delete-section',
         confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t('app') }}',
         onDeleteItem: function()
