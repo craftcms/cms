@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -187,9 +187,11 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:'.$section->id,
                         'label' => Craft::t('site', $section->name),
+                        'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
                             'handle' => $section->handle
@@ -517,11 +519,10 @@ class Entry extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'postDate';
-        $names[] = 'expiryDate';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'postDate';
+        $attributes[] = 'expiryDate';
+        return $attributes;
     }
 
     /**
@@ -575,7 +576,7 @@ class Entry extends Element
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Entry\'s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;

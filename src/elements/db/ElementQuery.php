@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -436,7 +436,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function offsetGet($name)
     {
-        if (is_numeric($name) && ($element = $this->nth($name)) !== false) {
+        if (is_numeric($name) && ($element = $this->nth($name)) !== null) {
             return $element;
         }
 
@@ -1006,39 +1006,30 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface|array|null the first element. Null is returned if the query
+     * results in nothing.
      */
     public function one($db = null)
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
-            // Conveniently, reset() returns false on an empty array, just like one() should do for an empty result
-            return reset($cachedResult);
+            return reset($cachedResult) ?: null;
         }
 
         $row = parent::one($db);
-
-        if ($row === false) {
-            return false;
-        }
-
-        return $this->_createElement($row);
+        return $row ? $this->_createElement($row) : null;
     }
 
     /**
-     * Executes the query and returns a single row of result at a given offset.
-     *
-     * @param int             $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param Connection|null $db The database connection used to generate the SQL statement.
-     *                            If this parameter is not given, the `db` application component will be used.
-     *
-     * @return ElementInterface|array|bool The element or row of the query result. False is returned if the query
+     * @inheritdoc
+     * @return ElementInterface|array|null The element. Null is returned if the query
      * results in nothing.
      */
     public function nth(int $n, Connection $db = null)
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
-            return $cachedResult[$n] ?? false;
+            return $cachedResult[$n] ?? null;
         }
 
         return parent::nth($n, $db);
@@ -1239,7 +1230,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The first() function used to query for elements is now deprecated. Use one() instead.');
         $this->_setAttributes($attributes);
 
-        return $this->one() ?: null;
+        return $this->one();
     }
 
     /**
@@ -1260,7 +1251,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $result = $this->nth($count - 1);
         $this->offset = $offset;
 
-        return $result ?: null;
+        return $result;
     }
 
     /**
@@ -1746,7 +1737,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->orderBy === ['score' => SORT_ASC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn\'t support fixed ordering.');
+                    throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
@@ -1789,7 +1780,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
 
                 if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn\'t support fixed ordering.');
+                    throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
             } else if ($this->structureId) {
@@ -1994,7 +1985,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                         $colName = $this->_getFieldContentColumnName($field);
 
                         if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
-                            $fieldValues[$field->handle] = $row[$colName];
+                            $fieldValues[$field->handle] = $row[$colName] ?? null;
                         }
 
                         unset($row[$colName]);

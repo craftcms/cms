@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -21,8 +21,8 @@ use yii\db\Connection;
  * @property string|string[]|Volume $volume The handle(s) of the volume(s) that resulting assets must belong to.
  *
  * @method Asset[]|array all($db = null)
- * @method Asset|array|false one($db = null)
- * @method Asset|array|false nth(int $n, Connection $db = null)
+ * @method Asset|array|null one($db = null)
+ * @method Asset|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

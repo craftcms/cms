@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -13,7 +13,6 @@ use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
-use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
@@ -47,7 +46,6 @@ class MailerHelper
     public static function allMailerTransportTypes(): array
     {
         $transportTypes = [
-            Php::class,
             Sendmail::class,
             Smtp::class,
             Gmail::class,
@@ -94,7 +92,7 @@ class MailerHelper
             $adapter = self::createTransportAdapter($settings->transportType, $settings->transportSettings);
         } catch (MissingComponentException $e) {
             // Fallback to the PHP mailer
-            $adapter = new Php();
+            $adapter = new Sendmail();
         }
 
         $mailer = new Mailer([

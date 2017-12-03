@@ -32,7 +32,7 @@ Craft.AdminTable = Garnish.Base.extend(
                 });
             }
 
-            this.$deleteBtns = this.$table.find('.delete');
+            this.$deleteBtns = this.$table.find('.delete:not(.disabled)');
             this.addListener(this.$deleteBtns, 'click', 'handleDeleteBtnClick');
 
             this.updateUI();

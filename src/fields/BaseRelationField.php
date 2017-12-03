@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -399,7 +399,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $element = $value->first();
+            $element = $value->one();
         } else {
             $element = $value[0] ?? null;
         }
