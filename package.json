@@ -11,7 +11,6 @@
   "dependencies": {
     "axios": "^0.17.1",
     "lodash": "^4.17.4",
-    "marked": "^0.3.6",
     "qs": "^6.5.1",
     "vue": "^2.4.4",
     "vue-lodash": "^1.0.3",

@@ -70,8 +70,6 @@
 <script>
     import { mapGetters, mapActions } from 'vuex'
 
-    let marked = require('marked');
-
     export default {
 
         props: ['pluginId'],
@@ -96,7 +94,7 @@
 
             longDescription() {
                 if(this.plugin.longDescription && this.plugin.longDescription.length > 0) {
-                    return marked(this.plugin.longDescription, { sanitize: true });
+                    return this.plugin.longDescription;
                 }
             },
 
