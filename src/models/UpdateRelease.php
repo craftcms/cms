@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -22,7 +22,7 @@ class UpdateRelease extends Model
     // =========================================================================
 
     /**
-     * @var string|null Version
+     * @var string Version
      */
     public $version;
 
@@ -32,14 +32,14 @@ class UpdateRelease extends Model
     public $date;
 
     /**
-     * @var string|null Notes
-     */
-    public $notes;
-
-    /**
      * @var bool Critical
      */
     public $critical = false;
+
+    /**
+     * @var string|null Notes
+     */
+    public $notes;
 
     // Public Methods
     // =========================================================================
@@ -51,17 +51,6 @@ class UpdateRelease extends Model
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';
-
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['date'], DateTimeValidator::class],
-        ];
     }
 }

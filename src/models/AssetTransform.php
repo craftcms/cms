@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -73,6 +73,11 @@ class AssetTransform extends Model
     public $position = 'center-center';
 
     /**
+     * @var string Position
+     */
+    public $interlace = 'none';
+
+    /**
      * @var int|null Quality
      */
     public $quality;
@@ -113,6 +118,16 @@ class AssetTransform extends Model
                     'bottom-left',
                     'bottom-center',
                     'bottom-right',
+                ],
+            ],
+            [
+                ['interlace'],
+                'in',
+                'range' => [
+                    'none',
+                    'line',
+                    'plane',
+                    'partition',
                 ],
             ],
             [
@@ -173,9 +188,8 @@ class AssetTransform extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dimensionChangeTime';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dimensionChangeTime';
+        return $attributes;
     }
 }

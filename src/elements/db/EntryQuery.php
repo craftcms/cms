@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -30,8 +30,8 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
  *
  * @method Entry[]|array all($db = null)
- * @method Entry|array|false one($db = null)
- * @method Entry|array|false nth(int $n, Connection $db = null)
+ * @method Entry|array|null one($db = null)
+ * @method Entry|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

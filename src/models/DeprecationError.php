@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -83,10 +83,9 @@ class DeprecationError extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'lastOccurrence';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'lastOccurrence';
+        return $attributes;
     }
 
     /**

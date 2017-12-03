@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -153,11 +153,7 @@ class Tags extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if (!$result) {
-            return $this->_tagGroupsById[$groupId] = null;
-        }
-
-        return $this->_tagGroupsById[$groupId] = new TagGroup($result);
+        return $this->_tagGroupsById[$groupId] = $result ? new TagGroup($result) : null;
     }
 
     /**
@@ -173,11 +169,7 @@ class Tags extends Component
             ->where(['handle' => $groupHandle])
             ->one();
 
-        if ($result) {
-            return new TagGroup($result);
-        }
-
-        return null;
+        return $result ? new TagGroup($result) : null;
     }
 
     /**

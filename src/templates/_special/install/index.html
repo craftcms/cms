@@ -7,12 +7,21 @@
 ]) %}
 
 {% block body %}
-    <div id="bg"></div>
     <div class="beginbtncontainer">
-        <div id="beginbtn" class="btn big submit">{{ "Begin"|t('app') }}</div>
+        <div id="beginbtn" class="btn big submit">{{ "Install Craft"|t('app') }}</div>
     </div>
 
-    {% include "_special/install/account" %}
-    {% include "_special/install/site" %}
-    {% include "_special/install/installing" %}
+    <div id="install-modal" class="modal hidden">
+        <div id="screens">
+            {% include "_special/install/license" %}
+            {% if showDbScreen %}
+                {% include "_special/install/db" %}
+            {% endif %}
+            {% include "_special/install/account" %}
+            {% include "_special/install/site" %}
+            {% include "_special/install/installing" %}
+        </div>
+
+        <div id="dots"></div>
+    </div>
 {% endblock %}

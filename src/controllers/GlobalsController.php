@@ -2,13 +2,14 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\elements\GlobalSet;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -181,11 +182,37 @@ class GlobalsController extends Controller
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
 
+        // Define the content tabs
+        // ---------------------------------------------------------------------
+
+        $tabs = [];
+
+        foreach ($globalSet->getFieldLayout()->getTabs() as $index => $tab) {
+            // Do any of the fields on this tab have errors?
+            $hasErrors = false;
+
+            if ($globalSet->hasErrors()) {
+                foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($hasErrors = $globalSet->hasErrors($field->handle)) {
+                        break;
+                    }
+                }
+            }
+
+            $tabs[] = [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#tab'.($index + 1),
+                'class' => $hasErrors ? 'error' : null
+            ];
+        }
+
         // Render the template!
-        return $this->renderTemplate('globals/_edit', [
-            'editableGlobalSets' => $editableGlobalSets,
-            'globalSet' => $globalSet
-        ]);
+        return $this->renderTemplate('globals/_edit', compact(
+            'editableGlobalSets',
+            'globalSet',
+            'tabs'
+        ));
     }
 
     /**
@@ -218,7 +245,7 @@ class GlobalsController extends Controller
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -228,7 +255,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 
         return $this->redirectToPostedUrl();
     }
