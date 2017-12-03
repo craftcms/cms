@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 span.draft { margin-top: -4px; display: inline-block; border: 2px solid #bbb; border-radius: 4px; padding: 0 4px; height: 16px; vertical-align: middle; font-size: 11px; line-height: 16px; text-transform: uppercase; font-weight: bold; color: #29323d; }
 
 h1 span.draft span { display: none; }
@@ -16,7 +13,7 @@ body.rtl #sites li { padding: 7px 0 7px 45px; }
 
 #sites li.sel { cursor: default; }
 
-#sites li.sel:before { font-size: 11px; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'check'; }
+#sites li.sel:before { font-size: 11px; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; content: 'check'; }
 body.ltr #sites li.sel:before { float: left; }
 body.rtl #sites li.sel:before { float: right; }
 body.ltr #sites li.sel:before { margin: 3px 0 0 -16px ; }

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -317,7 +317,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *                       If this parameter is not given, the `db` application
      *                       component will be used.
      *
-     * @return ElementInterface|false The resulting element. False is returned if the query results in nothing.
+     * @return ElementInterface|array|null The resulting element. Null is returned if the query results in nothing.
      */
     public function one($db = null);
 
@@ -328,7 +328,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @param Connection|null $db The database connection used to generate the SQL statement.
      *                            If this parameter is not given, the `db` application component will be used.
      *
-     * @return array|false The row (in terms of an array) of the query result. False is returned if the query
+     * @return ElementInterface|array|null The element or row of the query result. Null is returned if the query
      * results in nothing.
      */
     public function nth(int $n, Connection $db = null);

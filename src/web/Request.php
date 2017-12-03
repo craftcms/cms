@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -928,19 +928,24 @@ class Request extends \yii\web\Request
                 $updatePath = null;
             }
 
-            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
+            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
             $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true);
 
-            if ($hasActionParam || $hasTriggerMatch || $hasSpecialPath) {
+            if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
 
-                if ($hasActionParam) {
-                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-                    $this->_isSingleActionRequest = empty($this->_path);
-                } else if ($hasTriggerMatch) {
+                // Important we check in this specific order:
+                // 1) /actions/some/action
+                // 2) any/uri?action=some/action
+                // 3) special/uri
+
+                if ($hasTriggerMatch) {
                     $this->_actionSegments = array_slice($this->_segments, 1);
                     $this->_isSingleActionRequest = true;
+                } else if ($hasActionParam) {
+                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
+                    $this->_isSingleActionRequest = empty($this->_path);
                 } else {
                     switch ($this->_path) {
                         case $loginPath:

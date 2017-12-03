@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -105,7 +105,6 @@ class PluginUpdate extends Model
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'latestDate';
-
         return $attributes;
     }
 

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -17,8 +17,8 @@ use yii\db\Connection;
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
  * @method GlobalSet[]|array all($db = null)
- * @method GlobalSet|array|false one($db = null)
- * @method GlobalSet|array|false nth(int $n, Connection $db = null)
+ * @method GlobalSet|array|null one($db = null)
+ * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

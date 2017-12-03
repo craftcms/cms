@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig;
@@ -12,7 +12,7 @@ use craft\base\MissingComponentInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Json;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
@@ -40,6 +40,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use enshrined\svgSanitize\Sanitizer;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -367,13 +368,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses a string for reference tags.
      *
-     * @param string $str
+     * @param string   $str
+     * @param int|null $siteId
      *
      * @return \Twig_Markup
      */
-    public function parseRefsFilter(string $str): \Twig_Markup
+    public function parseRefsFilter(string $str, int $siteId = null): \Twig_Markup
     {
-        $str = Craft::$app->getElements()->parseRefs($str);
+        $str = Craft::$app->getElements()->parseRefs($str, $siteId);
 
         return TemplateHelper::raw($str);
     }
@@ -625,6 +627,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
+            new \Twig_SimpleFunction('svg', [$this, 'svgFunction']),
             new \Twig_SimpleFunction('url', [UrlHelper::class, 'url']),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
@@ -711,6 +714,36 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         shuffle($arr);
 
         return $arr;
+    }
+
+    /**
+     * Returns the contents of a given SVG file
+     *
+     * @param string $svg      The SVG file path or contents
+     * @param bool   $sanitize Whether the file should be sanitized first
+     *
+     * @return \Twig_Markup|string
+     */
+    public function svgFunction(string $svg, bool $sanitize = true)
+    {
+        // If we can't find an <svg> tag, it's probably a file path
+        if (stripos($svg, '<svg') === false) {
+            $svg = Craft::getAlias($svg);
+            if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                return '';
+            }
+            $svg = file_get_contents($svg);
+        }
+
+        // Sanitize?
+        if ($sanitize) {
+            $svg = (new Sanitizer())->sanitize($svg);
+        }
+
+        // Remove the XML declaration
+        $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
+
+        return TemplateHelper::raw($svg);
     }
 
     /**

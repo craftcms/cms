@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -121,11 +121,7 @@ class Matrix extends Component
             ->where(['id' => $blockTypeId])
             ->one();
 
-        if (!$result) {
-            return $this->_blockTypesById[$blockTypeId] = null;
-        }
-
-        return $this->_blockTypesById[$blockTypeId] = new MatrixBlockType($result);
+        return $this->_blockTypesById[$blockTypeId] = $result ? new MatrixBlockType($result) : null;
     }
 
     /**

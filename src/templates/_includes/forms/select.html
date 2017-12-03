@@ -7,7 +7,8 @@
 {%- set value = (value is defined ? value : null) %}
 {%- set hasOptgroups = false -%}
 
-<div class="{{ class }}">
+<div class="{{ class }}"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <select
         {%- if id is defined %} id="{{ id }}"{% endif %}
         {%- if toggle is defined and toggle %} class="fieldtoggle"{% endif %}

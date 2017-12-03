@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -19,8 +19,8 @@ use yii\db\Connection;
  * @property string|string[]|TagGroup $group The handle(s) of the tag group(s) that resulting tags must belong to.
  *
  * @method Tag[]|array all($db = null)
- * @method Tag|array|false one($db = null)
- * @method Tag|array|false nth(int $n, Connection $db = null)
+ * @method Tag|array|null one($db = null)
+ * @method Tag|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
