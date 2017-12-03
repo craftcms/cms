@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -556,13 +556,11 @@ class DashboardController extends Controller
 
         if (!is_file($iconPath)) {
             Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+        if (!FileHelper::isSvg($iconPath)) {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 

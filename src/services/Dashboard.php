@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -169,11 +169,7 @@ class Dashboard extends Component
             ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])
             ->one();
 
-        if ($result) {
-            return $this->createWidget($result);
-        }
-
-        return null;
+        return $result ? $this->createWidget($result) : null;
     }
 
     /**

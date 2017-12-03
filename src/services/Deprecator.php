@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -168,11 +168,7 @@ class Deprecator extends Component
             ->where(['id' => $logId])
             ->one();
 
-        if ($log !== false) {
-            return new DeprecationError($log);
-        }
-
-        return null;
+        return $log ? new DeprecationError($log) : null;
     }
 
     /**

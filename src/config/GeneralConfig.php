@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\config;
@@ -333,6 +333,14 @@ class GeneralConfig extends BaseObject
      */
     public $invalidUserTokenPath = '';
     /**
+     * @var string[]|null List of headers where proxies store the real client IP.
+     *
+     * See [[\yii\web\Request::ipHeaders]] for more details.
+     *
+     * If not set, the default [[\yii\web\Request::ipHeaders]] value will be used.
+     */
+    public $ipHeaders;
+    /**
      * @var bool|null Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
      * System Status setting in Settings → General.
      */
@@ -615,6 +623,22 @@ class GeneralConfig extends BaseObject
      */
     public $slugWordSeparator = '-';
     /**
+     * @var array|null Lists of headers that are, by default, subject to the trusted host configuration.
+     *
+     * See [[\yii\web\Request::secureHeaders]] for more details.
+     *
+     * If not set, the default [[\yii\web\Request::secureHeaders]] value will be used.
+     */
+    public $secureHeaders;
+    /**
+     * @var array|null list of headers to check for determining whether the connection is made via HTTPS.
+     *
+     * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
+     *
+     * If not set, the default [[\yii\web\Request::secureProtocolHeaders]] value will be used.
+     */
+    public $secureProtocolHeaders;
+    /**
      * @var bool Controls whether or not to show or hide any Twig template runtime errors that occur on the site in the browser.
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
      */
@@ -642,7 +666,15 @@ class GeneralConfig extends BaseObject
      */
     public $tokenParam = 'token';
     /**
-     * @var bool Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
+     * @var array The configuration for trusted security-related headers.
+     *
+     * See [[\yii\web\Request::trustedHosts]] for more details.
+     *
+     * By default, all hosts are trusted.
+     */
+    public $trustedHosts = ['any'];
+    /**
+     * @var bool Tells Craft whether to use compressed JavaScript files whenever possible, to cut down on page load times.
      */
     public $useCompressedJs = true;
     /**

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -181,7 +181,7 @@ class Elements extends Component
         $query->status = null;
         $query->enabledForSite = false;
 
-        return $query->one() ?: null;
+        return $query->one();
     }
 
     /**
@@ -224,13 +224,7 @@ class Elements extends Component
         }
 
         $result = $query->one();
-
-        if (!$result) {
-            return null;
-        }
-
-        // Return the actual element
-        return $this->getElementById($result['id'], $result['type'], $siteId);
+        return $result ? $this->getElementById($result['id'], $result['type'], $siteId) : null;
     }
 
     /**
@@ -467,7 +461,7 @@ class Elements extends Component
             $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
 
             if (!$siteSettingsRecord->save(false)) {
-                throw new Exception('Couldn\'t save elements\' site settings record.');
+                throw new Exception('Couldn’t save elements’ site settings record.');
             }
 
             // Save the content
@@ -573,7 +567,7 @@ class Elements extends Component
                     $siteElement = $this->getElementById($element->id, $class, $siteInfo['siteId']);
 
                     if ($siteElement === null) {
-                        throw new Exception('Element '.$element->id.' doesn\'t exist in the site '.$siteInfo['siteId']);
+                        throw new Exception('Element '.$element->id.' doesn’t exist in the site '.$siteInfo['siteId']);
                     }
                 }
 
@@ -1067,11 +1061,12 @@ class Elements extends Component
     /**
      * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
-     * @param string $str The string to parse.
+     * @param string   $str    The string to parse
+     * @param int|null $siteId The site ID to query the elements in
      *
-     * @return string The parsed string.
+     * @return string The parsed string
      */
-    public function parseRefs(string $str): string
+    public function parseRefs(string $str, int $siteId = null): string
     {
         if (!StringHelper::contains($str, '{')) {
             return $str;
@@ -1110,6 +1105,7 @@ class Elements extends Component
                 // Get the elements, indexed by their ref value
                 $refNames = array_keys($tokensByName);
                 $elementQuery = $elementType::find()
+                    ->siteId($siteId)
                     ->status(null)
                     ->limit(null);
 
@@ -1380,12 +1376,12 @@ class Elements extends Component
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors
-            $error = 'Couldn\'t propagate element to other site due to validation errors:';
+            $error = 'Couldn’t propagate element to other site due to validation errors:';
             foreach ($siteElement->getFirstErrors() as $attributeError) {
                 $error .= "\n- ".$attributeError;
             }
             Craft::error($error);
-            throw new Exception('Couldn\'t propagate element to other site.');
+            throw new Exception('Couldn’t propagate element to other site.');
         }
     }
 

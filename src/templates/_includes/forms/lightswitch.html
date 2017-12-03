@@ -9,7 +9,8 @@
     {%- if id is defined %} id="{{ id }}"{% endif %}
     {%- if labelId is defined %} aria-labelledby="{{ labelId }}"{% endif %}
     {%- if toggle %} data-target="{{ toggle }}"{% endif %}
-    {%- if reverseToggle %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
+    {%- if reverseToggle %} data-reverse-target="{{ reverseToggle }}"{% endif %}
+    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <div class="lightswitch-container">
         <div class="label on"></div>
         <div class="handle"></div>
