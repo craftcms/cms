@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
@@ -161,28 +161,7 @@ EOD;
         // Test the DB connection
         $this->stdout('Testing database credentials... ', Console::FG_YELLOW);
         $dbConfig->updateDsn();
-        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
-            $schemaClass = \craft\db\mysql\Schema::class;
-        } else {
-            $schemaClass = \craft\db\pgsql\Schema::class;
-        }
-        /** @var Connection $db */
-        $db = Craft::createObject([
-            'class' => Connection::class,
-            'driverName' => $dbConfig->driver,
-            'dsn' => $dbConfig->dsn,
-            'username' => $dbConfig->user,
-            'password' => $dbConfig->password,
-            'charset' => $dbConfig->charset,
-            'tablePrefix' => $dbConfig->tablePrefix,
-            'schemaMap' => [
-                $dbConfig->driver => [
-                    'class' => $schemaClass,
-                ]
-            ],
-            'commandClass' => \craft\db\Command::class,
-            'attributes' => $dbConfig->attributes,
-        ]);
+        $db = Connection::createFromConfig($dbConfig);
 
         try {
             $db->open();
@@ -248,10 +227,12 @@ EOD;
      */
     private function _setEnvVar($name, $value): bool
     {
-        $path = Craft::getAlias('@root/.env');
+        $configService = Craft::$app->getConfig();
+        $path = $configService->getDotEnvPath();
+
         if (!file_exists($path)) {
             if ($this->confirm("A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
-                FileHelper::writeToFile($path, "{$name}=".PHP_EOL);
+                FileHelper::writeToFile($path, '');
                 $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect.".PHP_EOL, Console::FG_YELLOW);
             } else {
                 $this->stdout('Action aborted.'.PHP_EOL, Console::FG_YELLOW);
@@ -259,20 +240,7 @@ EOD;
             }
         }
 
-        $contents = file_get_contents($path);
-        $qName = preg_quote($name, '/');
-        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$value}\"", $contents, -1, $count);
-        if ($count === 0) {
-            if ($this->confirm("{$name} could not be found in {$path}. Would you like to add it?", true)) {
-                $contents = rtrim($contents);
-                $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$value}\"".PHP_EOL;
-            } else {
-                $this->stdout('Action aborted.'.PHP_EOL, Console::FG_YELLOW);
-                return false;
-            }
-        }
-
-        FileHelper::writeToFile($path, $contents);
+        $configService->setDotEnvVar($name, $value);
         return true;
     }
 }

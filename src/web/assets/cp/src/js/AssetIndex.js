@@ -833,6 +833,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     this.promptHandler.addPrompt(response);
                 }
+
+                Craft.cp.runQueue();
             }
             else {
                 if (response.error) {

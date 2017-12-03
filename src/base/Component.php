@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -24,7 +24,7 @@ abstract class Component extends Model implements ComponentInterface
      * This is a good place to register custom behaviors on the component
      */
     const EVENT_INIT = 'init';
-    
+
     // Static
     // =========================================================================
 

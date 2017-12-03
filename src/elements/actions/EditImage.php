@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -27,17 +27,6 @@ class EditImage extends ElementAction
      */
     public $label;
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
-    {
-        return true;
-    }
-
     // Public Methods
     // =========================================================================
 
@@ -47,7 +36,7 @@ class EditImage extends ElementAction
     public function init()
     {
         if ($this->label === null) {
-            $this->label = Craft::t('app', 'Edit image');
+            $this->label = Craft::t('app', 'Edit Image');
         }
     }
 

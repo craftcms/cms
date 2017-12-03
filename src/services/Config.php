@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -16,6 +16,7 @@ use craft\helpers\StringHelper;
 use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 
@@ -61,6 +62,11 @@ class Config extends Component
      * @var array
      */
     private $_configSettings = [];
+
+    /**
+     * @var bool|null
+     */
+    private $_dotEnvPath;
 
     // Public Methods
     // =========================================================================
@@ -180,5 +186,42 @@ class Config extends Component
         }
 
         return $mergedConfig;
+    }
+
+    /**
+     * Returns the path to the .env file (regardless of whether it exists).
+     *
+     * @return string
+     */
+    public function getDotEnvPath(): string
+    {
+        return $this->_dotEnvPath ?? ($this->_dotEnvPath = Craft::getAlias('@root/.env'));
+    }
+
+    /**
+     * Sets an environment variable value in the project's .env file.
+     *
+     * @param string $name  The environment variable name
+     * @param string $value The environment variable value
+     *
+     * @throws Exception if the .env file doesn't exist
+     */
+    public function setDotEnvVar($name, $value)
+    {
+        $path = $this->getDotEnvPath();
+
+        if (!file_exists($path)) {
+            throw new Exception("No .env file exists at {$path}");
+        }
+
+        $contents = file_get_contents($path);
+        $qName = preg_quote($name, '/');
+        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$value}\"", $contents, -1, $count);
+        if ($count === 0) {
+            $contents = rtrim($contents);
+            $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$value}\"".PHP_EOL;
+        }
+
+        FileHelper::writeToFile($path, $contents);
     }
 }

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -103,6 +103,7 @@ class AssetTransformsController extends Controller
         $transform->mode = $request->getBodyParam('mode');
         $transform->position = $request->getBodyParam('position');
         $transform->quality = $request->getBodyParam('quality');
+        $transform->interlace = $request->getBodyParam('interlace');
         $transform->format = $request->getBodyParam('format');
 
         if (empty($transform->format)) {

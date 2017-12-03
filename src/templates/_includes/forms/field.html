@@ -14,13 +14,10 @@
     (errors ? 'has-errors' : null),
     (fieldClass is defined and fieldClass ? fieldClass : null)
 ]|filter|join(' ') %}
-{%- set dataAttributes %}
-    {%- if data is defined %}
-        {%- for dataKey, dataVal in data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
-    {%- endif %}
-{%- endset -%}
 
-<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}{{ dataAttributes }}>
+<div class="{{ fieldClass }}"
+        {%- if fieldId %} id="{{ fieldId }}"{% endif %}
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {% if label or instructions %}
         <div class="heading">
             {% if label %}

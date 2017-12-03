@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -35,6 +35,7 @@ use yii\web\ServerErrorHttpException;
 /**
  * ApplicationTrait
  *
+ * @property \craft\services\Api             $api                The API service
  * @property AssetManager                    $assetManager       The asset manager component
  * @property \craft\services\Assets          $assets             The assets service
  * @property \craft\services\AssetIndexer    $assetIndexing      The asset indexer service
@@ -71,6 +72,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
  * @property \craft\services\Path            $path               The path service
  * @property \craft\services\Plugins         $plugins            The plugins service
+ * @property \craft\services\PluginStore     $pluginStore        The plugin store service
  * @property Queue|QueueInterface            $queue              The job queue
  * @property \craft\services\Relations       $relations          The relations service
  * @property \craft\services\Routes          $routes             The routes service
@@ -141,11 +143,6 @@ trait ApplicationTrait
      * @var bool|null
      */
     private $_isDbConfigValid;
-
-    /**
-     * @var bool|null
-     */
-    private $_isDbConnectionValid;
 
     /**
      * @var bool
@@ -248,19 +245,10 @@ trait ApplicationTrait
             return $this->_isInstalled;
         }
 
-        try {
-            // Initialize the DB connection
-            $this->getDb();
-
-            // If the db config isn't valid, then we'll assume it's not installed.
-            if (!$this->getIsDbConnectionValid()) {
-                return false;
-            }
-        } catch (DbConnectException $e) {
-            return false;
-        }
-
-        return $this->_isInstalled = (bool)($this->getDb()->tableExists('{{%info}}', false));
+        return $this->_isInstalled = (
+            $this->getIsDbConnectionValid() &&
+            $this->getDb()->tableExists('{{%info}}', false)
+        );
     }
 
     /**
@@ -633,28 +621,35 @@ trait ApplicationTrait
     }
 
     /**
-     * Don't even think of moving this check into Connection->init().
+     * Returns whether the DB connection settings are valid.
      *
      * @return bool
+     * @internal Don't even think of moving this check into Connection->init().
      */
-    public function getIsDbConnectionValid(): bool
+    public function getIsDbConnectionValid(bool $recheck = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isDbConnectionValid !== null) {
-            return $this->_isDbConnectionValid;
-        }
-
         try {
             $this->getDb()->open();
-
-            return $this->_isDbConnectionValid = true;
+            return true;
         } catch (DbConnectException $e) {
-            return $this->_isDbConnectionValid = false;
+            return false;
         }
     }
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the API service.
+     *
+     * @return \craft\services\Api The API service
+     */
+    public function getApi()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('api');
+    }
 
     /**
      * Returns the assets service.
@@ -951,6 +946,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('plugins');
+    }
+
+    /**
+     * Returns the plugin store service.
+     *
+     * @return \craft\services\PluginStore The plugin store service
+     */
+    public function getPluginStore()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('pluginStore');
     }
 
     /**

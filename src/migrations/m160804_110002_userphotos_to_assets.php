@@ -164,7 +164,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->where(['handle' => $handle])
             ->one($this->db);
 
-        while (!empty($existingVolume)) {
+        while ($existingVolume !== null) {
             $handle = 'userPhotos'.++$counter;
             $name = 'User Photos '.$counter;
             $existingVolume = (new Query())
@@ -269,7 +269,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'assets.folderId' => $folderId,
                     'filename' => $user['photo']
                 ])
-                ->one($this->db);
+                ->exists($this->db);
 
             if (!$assetExists && is_file($filePath)) {
                 $elementData = [
