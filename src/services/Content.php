@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -67,13 +67,13 @@ class Content extends Component
      *
      * @param ElementInterface $element The element whose content we're looking for.
      *
-     * @return array|false The element's content row values, or false if the row could not be found
+     * @return array|null The element's content row values, or null if the row could not be found
      */
     public function getContentRow(ElementInterface $element)
     {
         /** @var Element $element */
         if (!$element->id || !$element->siteId) {
-            return false;
+            return null;
         }
 
         $originalContentTable = $this->contentTable;

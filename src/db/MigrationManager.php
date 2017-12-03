@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db;
@@ -422,16 +422,14 @@ class MigrationManager extends Component
             $path = $this->migrationPath.DIRECTORY_SEPARATOR.$file;
 
             if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
-                // Index as the key instead of value to work around a PHP bug where readdir() is returning the same file twice
-                // at least on my machine (7.1.3-3+deb.sury.org~xenial+1). Because PHP.
-                $migrations[$matches[1]] = true;
+                $migrations[] = $matches[1];
             }
         }
 
         closedir($handle);
-        ksort($migrations);
+        sort($migrations);
 
-        return array_keys($migrations);
+        return $migrations;
     }
 
     // Private Methods

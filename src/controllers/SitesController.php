@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -11,9 +11,12 @@ use Craft;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
+use craft\models\SiteGroup;
+use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
@@ -41,32 +44,180 @@ class SitesController extends Controller
     /**
      * Site settings index.
      *
+     * @param int|null $groupId
+     *
+     * @return Response
+     * @throws NotFoundHttpException if $groupId is invalid
+     */
+    public function actionSettingsIndex(int $groupId = null): Response
+    {
+        $sitesService = Craft::$app->getSites();
+        $allGroups = $sitesService->getAllGroups();
+
+        if ($groupId) {
+            if (($group = $sitesService->getGroupById($groupId)) === null) {
+                throw new NotFoundHttpException('Invalid site group ID: '.$groupId);
+            }
+            $sites = $sitesService->getSitesByGroupId($groupId);
+        } else {
+            $group = null;
+            $sites = $sitesService->getAllSites();
+        }
+
+        $crumbs = [
+            ['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::cpUrl('settings')],
+        ];
+
+        $view = $this->getView();
+        $view->registerAssetBundle(SitesAsset::class);
+        $view->registerTranslations('app', [
+            'Could not create the group:',
+            'Group renamed.',
+            'Could not rename the group:',
+            'What do you want to name the group?',
+            'Are you sure you want to delete this group?',
+            'What do you want to do with any content that is only available in {language}?',
+            'Transfer it to:',
+            'Delete it',
+            'Delete {site}',
+        ]);
+
+        return $this->renderTemplate('settings/sites/index', compact(
+            'crumbs',
+            'allGroups',
+            'group',
+            'sites'
+        ));
+    }
+
+    // Groups
+    // -------------------------------------------------------------------------
+
+    /**
+     * Saves a site group.
+     *
      * @return Response
      */
-    public function actionSettingsIndex(): Response
+    public function actionSaveGroup(): Response
     {
-        $allSites = Craft::$app->getSites()->getAllSites();
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
 
-        return $this->renderTemplate('settings/sites/index', [
-            'allSites' => $allSites
+        $group = new SiteGroup();
+        $group->id = Craft::$app->getRequest()->getBodyParam('id');
+        $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+
+        $isNewGroup = empty($group->id);
+
+        if (Craft::$app->getSites()->saveGroup($group)) {
+            if ($isNewGroup) {
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
+            }
+
+            return $this->asJson([
+                'success' => true,
+                'group' => $group->getAttributes(),
+            ]);
+        }
+
+        return $this->asJson([
+            'errors' => $group->getErrors(),
         ]);
     }
 
     /**
+     * Deletes a site group.
+     *
+     * @return Response
+     */
+    public function actionDeleteGroup(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $success = Craft::$app->getSites()->deleteGroupById($groupId);
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
+
+        return $this->asJson([
+            'success' => $success,
+        ]);
+    }
+
+    // Sites
+    // -------------------------------------------------------------------------
+
+    /**
      * Edit a category group.
      *
-     * @param int|null  $siteId The site’s ID, if editing an existing site
-     * @param Site|null $site   The site being edited, if there were any validation errors
+     * @param int|null  $siteId  The site’s ID, if editing an existing site
+     * @param Site|null $site    The site being edited, if there were any validation errors
+     * @param int|null  $groupId The default group ID that the site should be saved in
      *
      * @return Response
      * @throws NotFoundHttpException if the requested site cannot be found
+     * @throws ServerErrorHttpException if no site groups exist
      */
-    public function actionEditSite(int $siteId = null, Site $site = null): Response
+    public function actionEditSite(int $siteId = null, Site $site = null, int $groupId = null): Response
     {
-        $variables = [];
+        $sitesService = Craft::$app->getSites();
+
+        $brandNewSite = false;
+
+        if ($siteId !== null) {
+            if ($site === null) {
+                $site = $sitesService->getSiteById($siteId);
+
+                if (!$site) {
+                    throw new NotFoundHttpException('Site not found');
+                }
+            }
+
+            $title = $site->name;
+        } else {
+            if ($site === null) {
+                $site = new Site();
+                $site->language = $sitesService->getPrimarySite()->language;
+                $brandNewSite = true;
+            }
+
+            $title = Craft::t('app', 'Create a new site');
+        }
+
+        // Groups
+        // ---------------------------------------------------------------------
+
+        $allGroups = $sitesService->getAllGroups();
+
+        if (empty($allGroups)) {
+            throw new ServerErrorHttpException('No site groups exist');
+        }
+
+        if ($groupId === null) {
+            $groupId = $site->groupId ?? $allGroups[0]->id;
+        }
+
+        $siteGroup = $sitesService->getGroupById($groupId);
+
+        if ($siteGroup === null) {
+            throw new NotFoundHttpException('Site group not found');
+        }
+
+        $groupOptions = [];
+
+        foreach ($allGroups as $group) {
+            $groupOptions[] = [
+                'value' => $group->id,
+                'label' => $group->name
+            ];
+        }
+
+        // Page setup + render
+        // ---------------------------------------------------------------------
 
         // Breadcrumbs
-        $variables['crumbs'] = [
+        $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
                 'url' => UrlHelper::url('settings')
@@ -77,34 +228,10 @@ class SitesController extends Controller
             ]
         ];
 
-        $variables['brandNewSite'] = false;
-
-        if ($siteId !== null) {
-            if ($site === null) {
-                $site = Craft::$app->getSites()->getSiteById($siteId);
-
-                if (!$site) {
-                    throw new NotFoundHttpException('Site not found');
-                }
-            }
-
-            $variables['title'] = $site->name;
-        } else {
-            if ($site === null) {
-                $site = new Site();
-                $site->language = Craft::$app->getSites()->getPrimarySite()->language;
-                $variables['brandNewSite'] = true;
-            }
-
-            $variables['title'] = Craft::t('app', 'Create a new site');
-        }
-
-        $variables['site'] = $site;
-
-        $variables['languageOptions'] = [];
+        $languageOptions = [];
 
         foreach (Craft::$app->getI18n()->getAllLocales() as $locale) {
-            $variables['languageOptions'][] = [
+            $languageOptions[] = [
                 'value' => $locale->id,
                 'label' => Craft::t('app', '{id} – {name}', [
                     'name' => $locale->getDisplayName(Craft::$app->language),
@@ -113,7 +240,15 @@ class SitesController extends Controller
             ];
         }
 
-        return $this->renderTemplate('settings/sites/_edit', $variables);
+        return $this->renderTemplate('settings/sites/_edit', compact(
+            'brandNewSite',
+            'title',
+            'crumbs',
+            'site',
+            'groupId',
+            'groupOptions',
+            'languageOptions'
+        ));
     }
 
     /**
@@ -124,15 +259,15 @@ class SitesController extends Controller
     public function actionSaveSite()
     {
         $this->requirePostRequest();
+        $request = Craft::$app->getRequest();
 
         $site = new Site();
-
-        // Set the simple stuff
-        $request = Craft::$app->getRequest();
         $site->id = $request->getBodyParam('siteId');
+        $site->groupId = $request->getBodyParam('group');
         $site->name = $request->getBodyParam('name');
         $site->handle = $request->getBodyParam('handle');
         $site->language = $request->getBodyParam('language');
+        $site->primary = (bool)$request->getBodyParam('primary');
         $site->hasUrls = (bool)$request->getBodyParam('hasUrls');
         $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
 

@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 .cp-chart { margin: 0; height: 100%; position: relative; }
 
 .cp-chart svg { width: 100%; height: 100%; }
@@ -19,6 +16,6 @@
 
 .cp-chart .grid-line path { stroke-width: 0; }
 
-.tooltip { border-radius: 3px; padding: 7px 10px; background: rgba(250, 250, 250, 0.9); position: absolute; z-index: 1000000; -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; pointer-events: none; }
+.tooltip { border-radius: 3px; padding: 7px 10px; background: rgba(250, 250, 250, 0.9); position: absolute; z-index: 1000000; -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
 
 /*# sourceMappingURL=charts.css.map */

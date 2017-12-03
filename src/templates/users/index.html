@@ -8,12 +8,8 @@
 {% set title = "Users"|t('app') %}
 {% set elementType = 'craft\\elements\\User' %}
 
-{% set docsUrl = 'http://craftcms.com/docs/users' %}
-
-{% if currentUser.can('registerUsers') %}
-    {% set extraPageHeaderHtml %}
-        <div class="buttons right">
-            <a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New user"|t('app') }}</a>
-        </div>
-    {% endset %}
-{% endif %}
+{% block actionButton %}
+    {% if currentUser.can('registerUsers') %}
+        <a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New user"|t('app') }}</a>
+    {% endif %}
+{% endblock %}

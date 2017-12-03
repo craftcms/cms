@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -102,7 +102,7 @@ class Assets
         $appendix = '';
 
         /** @var Volume $volume */
-        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
+        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
             $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }
 
@@ -460,7 +460,7 @@ class Assets
                     ]
                 ],
                 'javascript' => [
-                    'label' => Craft::t('app', 'Javascript'),
+                    'label' => Craft::t('app', 'JavaScript'),
                     'extensions' => [
                         'js',
                     ]
