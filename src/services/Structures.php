@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -74,11 +74,7 @@ class Structures extends Component
             ->where(['id' => $structureId])
             ->one();
 
-        if ($result) {
-            return new Structure($result);
-        }
-
-        return null;
+        return $result ? new Structure($result) : null;
     }
 
     /**

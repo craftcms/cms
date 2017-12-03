@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -95,29 +95,29 @@ class Tokens extends Component
             ->where(['token' => $token])
             ->one();
 
-        if ($result) {
-            // Usage limit enforcement (for future requests)
-            if ($result['usageLimit']) {
-                // Does it have any more life after this?
-                if ($result['usageCount'] < $result['usageLimit'] - 1) {
-                    // Increment its count
-                    $this->incrementTokenUsageCountById($result['id']);
-                } else {
-                    // Just delete it
-                    $this->deleteTokenById($result['id']);
-                }
-            }
-
-            // Figure out where we should route the request
-            $route = $result['route'];
-
-            // Might be JSON, might not be
-            $route = Json::decodeIfJson($route);
-
-            return $route;
+        if (!$result) {
+            return false;
         }
 
-        return false;
+        // Usage limit enforcement (for future requests)
+        if ($result['usageLimit']) {
+            // Does it have any more life after this?
+            if ($result['usageCount'] < $result['usageLimit'] - 1) {
+                // Increment its count
+                $this->incrementTokenUsageCountById($result['id']);
+            } else {
+                // Just delete it
+                $this->deleteTokenById($result['id']);
+            }
+        }
+
+        // Figure out where we should route the request
+        $route = $result['route'];
+
+        // Might be JSON, might not be
+        $route = Json::decodeIfJson($route);
+
+        return $route;
     }
 
     /**

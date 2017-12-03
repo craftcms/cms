@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
@@ -51,13 +51,7 @@ class Updates extends Utility
      */
     public static function badgeCount(): int
     {
-        $updatesService = Craft::$app->getUpdates();
-
-        if ($updatesService->getIsUpdateInfoCached() === false) {
-            return 0;
-        }
-
-        return $updatesService->getTotalAvailableUpdates();
+        return Craft::$app->getUpdates()->getTotalAvailableUpdates();
     }
 
     /**

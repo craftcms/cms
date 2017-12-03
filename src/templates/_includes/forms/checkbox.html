@@ -14,15 +14,15 @@
     <input type="hidden" name="{{ name }}" value="">
 {% endif %}
 
-<input type="checkbox" value="{{ value }}"
+<input type="checkbox" value="{{ value }}" class="{{ class }}"
     {%- if id %} id="{{ id }}"{% endif %}
-    class="{{ class }}"
     {%- if name is defined %} name="{{ name }}"{% endif %}
     {%- if checked is defined and checked %} checked{% endif %}
     {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
     {%- if disabled is defined and disabled %} disabled{% endif %}
     {%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
-    {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
+    {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}
+    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
 
 <label for="{{ id }}">{{ label|raw }}</label>
 

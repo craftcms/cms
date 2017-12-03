@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
@@ -422,7 +422,7 @@ EOD;
     }
 
     /**
-     * @return array|false payload
+     * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
     protected function reserve()
@@ -482,7 +482,7 @@ EOD;
         $mutex->release(__CLASS__);
 
         // pgsql
-        if (is_resource($payload['job'])) {
+        if (is_array($payload) && is_resource($payload['job'])) {
             $payload['job'] = stream_get_contents($payload['job']);
         }
 

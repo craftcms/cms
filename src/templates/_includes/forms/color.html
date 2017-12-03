@@ -1,15 +1,25 @@
-{%- set class = [
-    'btn big',
-    (class is defined and class ? class : null)
-]|filter|join(' ') %}
+{% import "_includes/forms" as forms %}
 
-<input class="{{ class }}" type="color" id="{{ id }}"
-    {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if value is defined %} value="{{ value }}"{% endif %}
-    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if disabled is defined and disabled %} disabled {% endif %}>
+{% set id = id ?? 'color'~random() %}
 
-{%- do view.registerAssetBundle("craft\\web\\assets\\colorpicker\\ColorpickerAsset") -%}
+<div class="flex"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+    <div class="color static">
+        <div class="colorpreview"
+            {%- if value %} style="background-color: {{ value }};"{% endif -%}
+        ></div>
+    </div>
+    {{ forms.text({
+        id: id,
+        name: name ?? null,
+        value: value ?? null,
+        size: 10,
+        class: 'code',
+        autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
+        disabled: disabled ?? false
+    }) }}
+</div>
+
 {%- js %}
-    new Craft.ColorPicker('{{ id|namespaceInputId }}');
+    new Craft.ColorInput('{{ id|namespaceInputId }}');
 {% endjs %}

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -513,8 +513,7 @@ class UtilitiesController extends Controller
                     /** @var Element $element */
                     Craft::$app->getSearch()->indexElementAttributes($element);
 
-                    if ($class::hasContent()) {
-                        $fieldLayout = $element->getFieldLayout();
+                    if ($class::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
                         $keywords = [];
 
                         foreach ($fieldLayout->getFields() as $field) {
@@ -592,6 +591,7 @@ class UtilitiesController extends Controller
      */
     private function _getUtilityIconSvg(string $class): string
     {
+        /** @var UtilityInterface|string $class */
         $iconPath = $class::iconPath();
 
         if ($iconPath === null) {
@@ -600,13 +600,11 @@ class UtilitiesController extends Controller
 
         if (!is_file($iconPath)) {
             Craft::warning("Utility icon file doesn't exist: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultUtilityIconSvg($class);
         }
 
-        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+        if (!FileHelper::isSvg($iconPath)) {
             Craft::warning("Utility icon file is not an SVG: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultUtilityIconSvg($class);
         }
 

@@ -11,7 +11,7 @@
                 <li>
                     <a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}">
                         <div class="icon">
-                            {{ item.iconSvg|raw }}
+                            {{ svg(item.icon) }}
                         </div>
                         {{ item.label }}
                     </a>

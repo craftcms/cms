@@ -1,7 +1,32 @@
-Craft CMS Changelog
-===================
+# Craft CMS Changelog
 
-## 2.6.2997 (WIP)
+
+## 2.6.2999 - 2017-11-29
+
+### Fixed
+- Fixed PHP 5.3 compatibility.
+
+## 2.6.2998 - 2017-11-28
+
+### Changed
+- `<select>` inputs in the Control Panel now get the same custom styling in Firefox and IE/Edge that Chrome and Safari get.
+- Updated PhpMailer to 5.2.26.
+- Improved the performance of some queries to the `templatecaches` tables when the `globally` cache tag parameter was used with large amounts of data. ([#2110](https://github.com/craftcms/cms/issues/2110))
+- Plugin settings values are now run through `ModelHelper::packageAttributeValue()` before getting saved, so things like `DateTime` objects get converted to JSON-safe values before getting JSON-encoded. ([#2114](https://github.com/craftcms/cms/issues/2114))
+
+### Fixed
+- Fixed a bug where Craft would think that Rich Text field values had changed, even when they hadn’t, when leaving an edit page. ([#2098](https://github.com/craftcms/cms/issues/2098))
+- Fixed a bug where Assets fields with large thumbnails were overlapping the following field in element editor HUDs. ([#1802](https://github.com/craftcms/cms/issues/1802))
+- Fixed a bug where uppercase non-ASCII characters were not getting converted to their correct ASCII equivalents for element slugs, if the `limitAutoSlugsToAscii` config setting was enabled. ([#2096](https://github.com/craftcms/cms/issues/2096))
+- Fixed a bug where Craft would re-install updates after reverting them.
+
+### Security
+- Fixed an XSS vulnerability in the Control Panel.
+
+## 2.6.2997 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
 
 ## 2.6.2996 - 2017-11-08
 
@@ -48,6 +73,7 @@ Craft CMS Changelog
 - Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
 - Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end. ([#2018](https://github.com/craftcms/cms/issues/2018))
 - Fixed a bug where `HttpRequestService::getQueryStringWithoutPath()` wasn’t including duplicate param names in the returned string. ([#2041](https://github.com/craftcms/cms/issues/2041))
+- Fixed a bug where Categories fields weren’t automatically adding all of a category’s ancestors when selecting a nested category, if any of its ancestors were disabled. ([#2035](https://github.com/craftcms/cms/issues/2035))
 
 ## 2.6.2992 - 2017-10-13
 
