@@ -401,10 +401,21 @@ class Structures extends Component
                 return false;
             }
 
-            $element->root = $elementRecord->root;
-            $element->lft = $elementRecord->lft;
-            $element->rgt = $elementRecord->rgt;
-            $element->level = $elementRecord->level;
+            // Update the element with the latest values.
+            // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
+            $values = (new Query())
+                ->select(['root', 'lft', 'rgt', 'level'])
+                ->from('{{%structureelements}}')
+                ->where([
+                    'structureId' => $structureId,
+                    'elementId' => $element->id,
+                ])
+                ->one();
+
+            $element->root = $values['root'];
+            $element->lft = $values['lft'];
+            $element->rgt = $values['rgt'];
+            $element->level = $values['level'];
 
             // Tell the element about it
             $element->afterMoveInStructure($structureId);
