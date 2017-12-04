@@ -391,7 +391,7 @@ class Category extends Element
     public function beforeSave(bool $isNew): bool
     {
         if ($this->_hasNewParent()) {
-            if ($this->newParentId !== null) {
+            if ($this->newParentId) {
                 $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
 
                 if (!$parentCategory) {
@@ -435,7 +435,7 @@ class Category extends Element
 
         // Has the parent changed?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId === null) {
+            if (!$this->newParentId) {
                 Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
             } else {
                 Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
@@ -543,12 +543,12 @@ class Category extends Element
         }
 
         // Is it set to the top level now, but it hadn't been before?
-        if ($this->newParentId === '' && $this->level != 1) {
+        if (!$this->newParentId && $this->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId !== '' && $this->level == 1) {
+        if ($this->newParentId && $this->level == 1) {
             return true;
         }
 

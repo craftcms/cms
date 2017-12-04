@@ -872,7 +872,7 @@ EOD;
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId !== null) {
+            if ($this->newParentId) {
                 $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
 
                 if (!$parentEntry) {
@@ -935,7 +935,7 @@ EOD;
         if ($section->type == Section::TYPE_STRUCTURE) {
             // Has the parent changed?
             if ($this->_hasNewParent()) {
-                if ($this->newParentId === null) {
+                if (!$this->newParentId) {
                     Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
                 } else {
                     Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
@@ -1007,12 +1007,12 @@ EOD;
         }
 
         // Is it set to the top level now, but it hadn't been before?
-        if ($this->newParentId === '' && $this->level != 1) {
+        if (!$this->newParentId && $this->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId !== '' && $this->level == 1) {
+        if ($this->newParentId && $this->level == 1) {
             return true;
         }
 

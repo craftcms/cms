@@ -124,6 +124,7 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getComposer()->install($this->data['requirements'], $io);
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to install the updates.'), $e, $io);
         }
 
@@ -145,6 +146,7 @@ abstract class BaseUpdaterController extends Controller
             $this->data['removed'] = true;
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io);
         }
 
@@ -164,6 +166,7 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getComposer()->optimize($io);
         } catch (\Throwable $e) {
             Craft::error('Error optimizing the Composer autoloader: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
             $continueOption = $this->postComposerOptimizeState();
             $continueOption['label'] = Craft::t('app', 'Continue');
             return $this->send([

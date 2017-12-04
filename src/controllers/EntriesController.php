@@ -913,13 +913,13 @@ class EntriesController extends BaseEntriesController
         $entry->authorId = $authorId;
 
         // Parent
-        $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
+        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: '';
+            }
 
-        if (is_array($parentId)) {
-            $parentId = reset($parentId) ?: null;
+            $entry->newParentId = $parentId ?: '';
         }
-
-        $entry->newParentId = $parentId ?: null;
 
         // Revision notes
         $entry->revisionNotes = Craft::$app->getRequest()->getBodyParam('revisionNotes');
