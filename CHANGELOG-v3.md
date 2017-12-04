@@ -120,6 +120,7 @@
 ### Fixed
 - Fixed a bug where removing the parent element from an entry or category had no effect. ([#2152](https://github.com/craftcms/cms/issues/2152))
 - Fixed a bug where `{id}` tags in element URI formats weren’t getting replaced with the element ID when saving a brand new element. ([#2157](https://github.com/craftcms/cms/issues/2157))
+- Fixed a bug where it was not possible to reassign a field within a Matrix field to a different field type if its current field type class was missing.
 
 ## 3.0.0-beta.36 - 2017-11-29
 
