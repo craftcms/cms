@@ -42,6 +42,8 @@ Craft.MatrixInput = Garnish.Base.extend(
 		this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
 		this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
 
+        this.$container.data('matrix', this);
+
 		this.setNewBlockBtn();
 
 		this.blockTypesByHandle = {};
