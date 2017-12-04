@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `Craft.MatrixInput` JavaScript objects are now accessible via `$('.matrix').data('matrix')`. ([#2156](https://github.com/craftcms/cms/issues/2156))
+
 ### Fixed
 - Fixed a race condition that could cause a PHP error when quickly saving multiple tasks.
 - Fixed a bug where `ArrayHelper::stringToArray('0')` would return an empty array instead of `array('0')`. ([#2144](https://github.com/craftcms/cms/issues/2144))
