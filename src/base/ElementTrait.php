@@ -26,6 +26,11 @@ trait ElementTrait
     public $id;
 
     /**
+     * @var string|null The element’s temporary ID (only used if the element's URI format contains {id})
+     */
+    public $tempId;
+
+    /**
      * @var string|null The element’s UID
      */
     public $uid;

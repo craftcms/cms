@@ -435,9 +435,15 @@ class Elements extends Component
             $element->dateUpdated = $dateUpdated;
 
             if ($isNewElement) {
-                // Save the element ID on the element model, in case {id} is in the URL format
+                // Save the element ID on the element model
                 $element->id = $elementRecord->id;
                 $element->uid = $elementRecord->uid;
+
+                // If there's a temp ID, update the URI
+                if ($element->tempId && $element->uri) {
+                    $element->uri = str_replace($element->tempId, $element->id, $element->uri);
+                    $element->tempId = null;
+                }
             }
 
             // Save the element's site settings record
