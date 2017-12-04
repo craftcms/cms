@@ -116,6 +116,9 @@
 - Removed `Craft.RichTextInput` (JS class).
 - Removed the `oauthtokens` table.
 
+### Fixed
+- Fixed a bug where removing the parent element from an entry or category had no effect. ([#2152](https://github.com/craftcms/cms/issues/2152))
+
 ## 3.0.0-beta.36 - 2017-11-29
 
 ### Added

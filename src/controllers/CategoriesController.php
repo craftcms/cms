@@ -767,13 +767,13 @@ class CategoriesController extends Controller
         $category->setFieldValuesFromRequest($fieldsLocation);
 
         // Parent
-        $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
+        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: '';
+            }
 
-        if (is_array($parentId)) {
-            $parentId = reset($parentId) ?: null;
+            $category->newParentId = $parentId ?: '';
         }
-
-        $category->newParentId = $parentId ?: null;
     }
 
     /**
