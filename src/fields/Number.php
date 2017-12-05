@@ -150,7 +150,7 @@ class Number extends Field implements PreviewableFieldInterface
             $value = number_format($value, $decimals, $decimalSeparator, '');
         }
 
-        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">' .
+        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">'.
             Craft::$app->getView()->renderTemplate('_includes/forms/text', [
                 'name' => $this->handle.'[value]',
                 'value' => $value,

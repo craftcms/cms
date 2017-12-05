@@ -18,7 +18,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
 
 /**
@@ -562,7 +561,7 @@ class Assets extends BaseRelationField
                     throw new InvalidSubpathException($subpath);
                 }
 
-                $volume = Craft::$app ->getVolumes()->getVolumeById($volumeId);
+                $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
                 $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
             } else {
                 $folderId = $folder->id;

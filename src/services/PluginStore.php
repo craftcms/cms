@@ -12,7 +12,6 @@ use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
-use craftcms\oauth2\client\provider\CraftId;
 use DateInterval;
 use DateTime;
 use GuzzleHttp\Client;

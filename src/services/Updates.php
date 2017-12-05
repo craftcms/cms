@@ -10,16 +10,11 @@ namespace craft\services;
 use Craft;
 use craft\base\Plugin;
 use craft\base\PluginInterface;
-use craft\enums\PluginUpdateStatus;
-use craft\errors\ApiException;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
-use craft\helpers\DateTimeHelper;
-use craft\models\UpdateRelease;
 use craft\models\Updates as UpdatesModel;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\helpers\Markdown;
 
 /**
  * Class Updates service.

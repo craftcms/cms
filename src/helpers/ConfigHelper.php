@@ -79,13 +79,13 @@ class ConfigHelper
         switch (strtolower($matches[2])) {
             case 'g':
                 $value *= 1024;
-                // no break
+            // no break
             case 'm':
                 $value *= 1024;
-                // no break
+            // no break
             case 'k':
                 $value *= 1024;
-                // no break
+            // no break
         }
 
         return $value;

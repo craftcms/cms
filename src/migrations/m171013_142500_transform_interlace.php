@@ -2,10 +2,7 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\helpers\FileHelper;
-use craft\helpers\MigrationHelper;
 
 /**
  * m171013_142500_transform_interlace migration.

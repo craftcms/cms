@@ -342,8 +342,8 @@ class EntryRevisions extends Component
     /**
      * Returns whether an entry has any versions stored.
      *
-     * @param int      $entryId        The entry ID to search for
-     * @param int|null $siteId         The site ID to search for
+     * @param int      $entryId The entry ID to search for
+     * @param int|null $siteId  The site ID to search for
      *
      * @return bool
      */

@@ -111,6 +111,7 @@ class PluginsController extends Controller
         }
         return $this->redirectToPostedUrl();
     }
+
     /**
      * Disables a plugin.
      *

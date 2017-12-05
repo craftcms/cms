@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;

@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Migration;
 use craft\elements\User;
 use craft\helpers\StringHelper;
-use craft\mail\Mailer;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\FieldGroup;
 use craft\models\Info;

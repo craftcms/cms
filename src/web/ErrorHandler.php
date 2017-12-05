@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
-use yii\base\Exception;
 use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;

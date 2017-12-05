@@ -12,9 +12,9 @@ use craft\base\Model;
 /**
  * Craft/plugin update model.
  *
- * @property bool $hasCritical Whether any of the updates have a critical release available
- * @property bool $hasReleases Whether there are any releases available
- * @property UpdateRelease|null $latest The latest release (if any are available)
+ * @property bool               $hasCritical Whether any of the updates have a critical release available
+ * @property bool               $hasReleases Whether there are any releases available
+ * @property UpdateRelease|null $latest      The latest release (if any are available)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -7,11 +7,7 @@
 
 namespace craft\web\assets\vue;
 
-use Craft;
-use craft\helpers\ChartHelper;
-use craft\helpers\Json;
 use craft\web\AssetBundle;
-use craft\web\View;
 
 /**
  * Vue asset bundle.

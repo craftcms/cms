@@ -44,7 +44,7 @@ class Cp extends Component
     {
         try {
             return Craft::$app->getPluginStore()->getCraftIdAccount();
-        } catch(\GuzzleHttp\Exception\ServerException $e) {
+        } catch (\GuzzleHttp\Exception\ServerException $e) {
             return null;
         }
     }

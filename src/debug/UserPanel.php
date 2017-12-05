@@ -8,8 +8,6 @@
 namespace craft\debug;
 
 use Craft;
-use yii\data\ArrayDataProvider;
-use yii\db\ActiveRecord;
 
 /**
  * Debugger panel that collects and displays user info..

@@ -478,7 +478,7 @@ class Connection extends \yii\db\Connection
 
     /**
      * @param ShellCommand $shellCommand
-     * @param string       $file    The path to the backup file
+     * @param string       $file The path to the backup file
      *
      * @return ShellCommand
      */

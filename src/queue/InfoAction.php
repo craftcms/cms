@@ -7,7 +7,6 @@
 
 namespace craft\queue;
 
-use yii\db\Query;
 use yii\helpers\Console;
 use yii\queue\cli\Action;
 

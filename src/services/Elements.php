@@ -39,8 +39,6 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\db\Exception as DbException;
-use yii\web\Response;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -391,7 +389,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
+            Craft::info('Element not saved due to validation error: '.print_r($element->errors, true), __METHOD__);
 
             return false;
         }

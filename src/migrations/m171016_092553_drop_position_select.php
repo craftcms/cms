@@ -2,11 +2,9 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\Dropdown;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
 /**

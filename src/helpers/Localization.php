@@ -36,7 +36,7 @@ class Localization
      * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
      * locale uses something else.
      *
-     * @param mixed $number The number that should be normalized.
+     * @param mixed       $number   The number that should be normalized.
      * @param string|null $localeId The locale ID that the number is set in
      *
      * @return mixed The normalized number.

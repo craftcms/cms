@@ -142,7 +142,7 @@ class Schema extends \yii\db\pgsql\Schema
         if (Platform::isWindows()) {
             $envCommand = 'set '.$envCommand.'&&';
         } else {
-            $envCommand .=' ';
+            $envCommand .= ' ';
         }
 
         return $envCommand.

@@ -13,7 +13,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);

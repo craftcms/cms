@@ -22,7 +22,6 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\queue\jobs\ResaveElements;
@@ -213,7 +212,7 @@ class Sites extends Component
      * Saves a site group.
      *
      * @param SiteGroup $group         The site group to be saved
-     * @param bool       $runValidation Whether the group should be validated
+     * @param bool      $runValidation Whether the group should be validated
      *
      * @return bool Whether the site group was saved successfully
      */

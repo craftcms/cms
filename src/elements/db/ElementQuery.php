@@ -19,7 +19,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;

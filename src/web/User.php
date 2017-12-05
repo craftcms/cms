@@ -15,7 +15,6 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
-use yii\web\IdentityInterface;
 
 /**
  * The User service provides APIs for managing the user authentication status.

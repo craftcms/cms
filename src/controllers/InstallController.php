@@ -19,7 +19,6 @@ use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
 use yii\base\Response;
-use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -356,7 +355,7 @@ class InstallController extends Controller
      * Populates a DbConfig object with post data.
      *
      * @param DbConfig $dbConfig The DbConfig object
-     * @param string $prefix The post param prefix to use
+     * @param string   $prefix   The post param prefix to use
      */
     private function _populateDbConfig(DbConfig $dbConfig, string $prefix = '')
     {

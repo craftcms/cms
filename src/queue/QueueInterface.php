@@ -7,8 +7,6 @@
 
 namespace craft\queue;
 
-use craft\base\SavableComponentInterface;
-
 /**
  * QueueInterface defines the common interface to be implemented by queue classes.
  *

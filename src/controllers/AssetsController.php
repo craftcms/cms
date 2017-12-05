@@ -738,7 +738,7 @@ class AssetsController extends Controller
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
                     $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-                } else if($focal) {
+                } else if ($focal) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
             } else {

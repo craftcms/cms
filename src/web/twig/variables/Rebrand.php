@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);

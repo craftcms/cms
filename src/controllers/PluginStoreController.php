@@ -8,11 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
-use craft\web\assets\pluginstore\PluginStoreAsset;
-use craft\web\Controller;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\web\assets\pluginstore\PluginStoreAsset;
+use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
+use craft\web\Controller;
 use craft\web\View;
 use craftcms\oauth2\client\provider\CraftId;
 use yii\web\BadRequestHttpException;
@@ -71,13 +71,13 @@ class PluginStoreController extends Controller
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
             'apiEndpointUrl' => Craft::$app->getPluginStore()->craftApiEndpoint,
-            'clientId'     => Craft::$app->getPluginStore()->craftIdOauthClientId,
-            'redirectUri'  => UrlHelper::cpUrl('plugin-store/callback'),
+            'clientId' => Craft::$app->getPluginStore()->craftIdOauthClientId,
+            'redirectUri' => UrlHelper::cpUrl('plugin-store/callback'),
         ]);
 
         $referrer = Craft::$app->getRequest()->getReferrer();
 
-        if($redirect) {
+        if ($redirect) {
             $referrer = $redirect;
         }
 
@@ -113,7 +113,7 @@ class PluginStoreController extends Controller
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from craftcms.com.'));
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Craft::error('Couldn’t revoke token: '.$e->getMessage());
             Craft::$app->getSession()->setError(Craft::t('app', 'Disconnected from craftcms.com with errors, check the logs.'));
         }
@@ -164,7 +164,7 @@ class PluginStoreController extends Controller
         $this->requirePostRequest();
 
         try {
-            if(!Craft::$app->getRequest()->isSecureConnection) {
+            if (!Craft::$app->getRequest()->isSecureConnection) {
                 throw new BadRequestHttpException('OAuth requires a secure callback URL.');
             }
 
@@ -186,7 +186,7 @@ class PluginStoreController extends Controller
                 'success' => true,
                 'redirect' => UrlHelper::cpUrl('plugin-store/account')
             ]);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->asErrorJson($e->getMessage());
         }
     }
@@ -203,7 +203,7 @@ class PluginStoreController extends Controller
         $allPluginInfo = Craft::$app->getPlugins()->getComposerPluginInfo();
         $installedPlugins = [];
 
-        foreach($allPluginInfo as $handle => $pluginInfo) {
+        foreach ($allPluginInfo as $handle => $pluginInfo) {
             $installedPlugins[] = [
                 'handle' => $handle,
                 'packageName' => $pluginInfo['packageName'],
@@ -223,7 +223,7 @@ class PluginStoreController extends Controller
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
-        if($etResponse) {
+        if ($etResponse) {
             $upgradeInfo = $etResponse->data;
 
             $data['countries'] = $upgradeInfo->countries;

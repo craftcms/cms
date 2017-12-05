@@ -514,7 +514,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Splits a string into chunks on a given delimiter.
      *
-     * @param string $string The string
+     * @param string $string    The string
      * @param string $delimiter The delimiter to split the string on (defaults to a comma)
      *
      * @return string[] The segments of the string
