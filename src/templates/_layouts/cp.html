@@ -134,7 +134,6 @@
                             <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
                                 <li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
                                 <li>
-                                    {#<a href="#">Disconnect from Craft ID</a>#}
                                     <form method="post" id="disconnect">
                                         {{ csrfInput() }}
                                         <input type="hidden" name="action" value="plugin-store/disconnect">
@@ -145,8 +144,6 @@
 
                             <ul class="craftid-disconnected{% if craftIdAccount %} hidden{% endif %}">
                                 <li>
-                                    {#<a class="formsubmit" data-action="plugin-store/connect">Connect to Craft ID</a>#}
-
                                     <form method="post" id="connect">
                                         {{ csrfInput() }}
                                         <input type="hidden" name="action" value="plugin-store/connect">
