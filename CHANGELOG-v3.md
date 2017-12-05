@@ -83,6 +83,7 @@
 - Assets fields and the Assets index page now create a queue runner automatically after new assets are uploaded, in case there are any new jobs that were registered as part of the asset save process.
 - Craft now uses Sendmail as the default mailer, as Swift Mailer removed support for the PHP mailer in 6.0. ([#2149](https://github.com/craftcms/cms/issues/2149))
 - Structure info and relationships are now available on elements during Structure operations. ([#2153](https://github.com/craftcms/cms/issues/2153))
+- Craft will now always respond with JSON when an exception occurs for requests that include the `Accept: application/json` header.
 - `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
 - `craft\services\Plugins::getComposerPluginInfo()` will now return all Composer plugin info, if no handle is specified.
 - `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
