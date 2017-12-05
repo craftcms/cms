@@ -38,7 +38,7 @@ class PluginStore extends Component
     /**
      * @var string OAuth endpoint
      */
-    public $craftOauthEndpoint = 'https://api.craftcms.com/oauth';
+    public $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
 
     /**
      * @var string API endpoint
