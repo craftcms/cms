@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -31,7 +31,6 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
@@ -200,15 +199,14 @@ class Asset extends Element
             );
 
             $userSessionService = Craft::$app->getUser();
+            $canDeleteAndSave = (
+                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id) &&
+                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
+            );
 
             // Rename File
-            if (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)
-                &&
-                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
-            ) {
+            if ($canDeleteAndSave) {
                 $actions[] = RenameFile::class;
-                $actions[] = EditImage::class;
             }
 
             // Replace File
@@ -223,6 +221,11 @@ class Asset extends Element
                     'elementType' => static::class,
                 ]
             );
+
+            // Edit Image
+            if ($canDeleteAndSave) {
+                $actions[] = EditImage::class;
+            }
 
             // Delete
             if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)) {

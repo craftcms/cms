@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -39,8 +39,6 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\db\Exception as DbException;
-use yii\web\Response;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -391,7 +389,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
+            Craft::info('Element not saved due to validation error: '.print_r($element->errors, true), __METHOD__);
 
             return false;
         }
@@ -435,9 +433,15 @@ class Elements extends Component
             $element->dateUpdated = $dateUpdated;
 
             if ($isNewElement) {
-                // Save the element ID on the element model, in case {id} is in the URL format
+                // Save the element ID on the element model
                 $element->id = $elementRecord->id;
                 $element->uid = $elementRecord->uid;
+
+                // If there's a temp ID, update the URI
+                if ($element->tempId && $element->uri) {
+                    $element->uri = str_replace($element->tempId, $element->id, $element->uri);
+                    $element->tempId = null;
+                }
             }
 
             // Save the element's site settings record
@@ -461,7 +465,7 @@ class Elements extends Component
             $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
 
             if (!$siteSettingsRecord->save(false)) {
-                throw new Exception('Couldn\'t save elements\' site settings record.');
+                throw new Exception('Couldn’t save elements’ site settings record.');
             }
 
             // Save the content
@@ -567,7 +571,7 @@ class Elements extends Component
                     $siteElement = $this->getElementById($element->id, $class, $siteInfo['siteId']);
 
                     if ($siteElement === null) {
-                        throw new Exception('Element '.$element->id.' doesn\'t exist in the site '.$siteInfo['siteId']);
+                        throw new Exception('Element '.$element->id.' doesn’t exist in the site '.$siteInfo['siteId']);
                     }
                 }
 
@@ -1061,11 +1065,12 @@ class Elements extends Component
     /**
      * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
-     * @param string $str The string to parse.
+     * @param string   $str    The string to parse
+     * @param int|null $siteId The site ID to query the elements in
      *
-     * @return string The parsed string.
+     * @return string The parsed string
      */
-    public function parseRefs(string $str): string
+    public function parseRefs(string $str, int $siteId = null): string
     {
         if (!StringHelper::contains($str, '{')) {
             return $str;
@@ -1104,6 +1109,7 @@ class Elements extends Component
                 // Get the elements, indexed by their ref value
                 $refNames = array_keys($tokensByName);
                 $elementQuery = $elementType::find()
+                    ->siteId($siteId)
                     ->status(null)
                     ->limit(null);
 
@@ -1374,12 +1380,12 @@ class Elements extends Component
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors
-            $error = 'Couldn\'t propagate element to other site due to validation errors:';
+            $error = 'Couldn’t propagate element to other site due to validation errors:';
             foreach ($siteElement->getFirstErrors() as $attributeError) {
                 $error .= "\n- ".$attributeError;
             }
             Craft::error($error);
-            throw new Exception('Couldn\'t propagate element to other site.');
+            throw new Exception('Couldn’t propagate element to other site.');
         }
     }
 

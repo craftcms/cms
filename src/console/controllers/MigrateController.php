@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
@@ -161,7 +161,7 @@ class MigrateController extends BaseMigrateController
      * Use `--type=app` to create a new Craft CMS app migration.
      *
      * @param string $name the name of the new migration. This should only contain
-     * letters, digits, and underscores.
+     *                     letters, digits, and underscores.
      *
      * @throws Exception if the name argument is invalid.
      */

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -11,7 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\fields\data\ColorData;
 use craft\helpers\Html;
+use craft\validators\ColorValidator;
 use yii\db\Schema;
 
 /**
@@ -33,6 +35,14 @@ class Color extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Color');
     }
 
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string|null The default color hex
+     */
+    public $defaultColor;
+
     // Public Methods
     // =========================================================================
 
@@ -44,20 +54,80 @@ class Color extends Field implements PreviewableFieldInterface
         return Schema::TYPE_STRING.'(7)';
     }
 
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms.html', 'colorField', [
+            [
+                'label' => Craft::t('app', 'Default Color'),
+                'id' => 'default-color',
+                'name' => 'defaultColor',
+                'value' => $this->defaultColor,
+                'errors' => $this->getErrors('defaultColor'),
+            ]
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['defaultColor'], ColorValidator::class];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        if ($value instanceof ColorData) {
+            return $value;
+        }
+
+        if (!$value || $value === '#') {
+            return null;
+        }
+
+        $value = strtolower($value);
+
+        if ($value[0] !== '#') {
+            $value = '#'.$value;
+        }
+
+        if (strlen($value) === 4) {
+            $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
+        }
+
+        return new ColorData($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        return [
+            ColorValidator::class,
+        ];
+    }
+
     /**
      * @inheritdoc
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        // Default to black, so the JS-based color picker is consistent with Chrome
-        if (!$value) {
-            $value = '#000000';
+        /** @var ColorData|null $value */
+        // If this is a new entry, look for any default options
+        if ($this->isFresh($element) && $this->defaultColor) {
+            $value = new ColorData($this->defaultColor);
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'name' => $this->handle,
-            'value' => $value,
+            'value' => $value ? $value->getHex() : null,
         ]);
     }
 
@@ -66,6 +136,7 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
+        /** @var ColorData|null $value */
         if (!$value) {
             return '';
         }
@@ -73,7 +144,7 @@ class Color extends Field implements PreviewableFieldInterface
         return Html::encodeParams(
             '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
             [
-                'bgColor' => $value
+                'bgColor' => $value->getHex()
             ]);
     }
 
@@ -82,11 +153,12 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if (!$value || $value === '#000000') {
-            return '';
+        /** @var ColorData|null $value */
+        if (!$value) {
+            return '<div class="color small static"><div class="colorpreview"></div></div>';
         }
 
-        return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.
-            '<div class="colorhex code">'.$value.'</div>';
+        return "<div class='color small static'><div class='colorpreview' style='background-color: {$value->getHex()};'></div></div>".
+            "<div class='colorhex code'>{$value->getHex()}</div>";
     }
 }

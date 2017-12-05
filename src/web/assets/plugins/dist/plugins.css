@@ -1,6 +1,3 @@
-/* Flexbox stuff */
-/* Other */
-/* RTL stuff */
 #plugins .plugin-infos { display: table; }
 
 #plugins .plugin-infos .icon, #plugins .plugin-infos .details { display: table-cell; }
@@ -18,7 +15,5 @@
 #plugins .plugin-infos .details .description { font-weight: normal; }
 
 #plugins:not(.collapsed) .plugin-infos .details { min-width: 150px; }
-
-#plugins:not(.collapsed) .status-cell { white-space: nowrap; }
 
 /*# sourceMappingURL=plugins.css.map */

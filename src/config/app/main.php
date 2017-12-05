@@ -3,14 +3,17 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.36',
-    'schemaVersion' => '3.0.63',
+    'version' => '3.0.0-RC1',
+    'schemaVersion' => '3.0.74',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'api' => [
+            'class' => craft\services\Api::class,
+        ],
         'assets' => [
             'class' => craft\services\Assets::class,
         ],
@@ -70,6 +73,9 @@ return [
         ],
         'plugins' => [
             'class' => craft\services\Plugins::class,
+        ],
+        'pluginStore' => [
+            'class' => craft\services\PluginStore::class,
         ],
         'queue' => [
             'class' => craft\queue\Queue::class,
@@ -192,29 +198,7 @@ return [
 
         'db' => function() {
             $dbConfig = Craft::$app->getConfig()->getDb();
-
-            if ($dbConfig->driver === \craft\config\DbConfig::DRIVER_MYSQL) {
-                $schemaClass = craft\db\mysql\Schema::class;
-            } else {
-                $schemaClass = craft\db\pgsql\Schema::class;
-            }
-
-            return Craft::createObject([
-                'class' => craft\db\Connection::class,
-                'driverName' => $dbConfig->driver,
-                'dsn' => $dbConfig->dsn,
-                'username' => $dbConfig->user,
-                'password' => $dbConfig->password,
-                'charset' => $dbConfig->charset,
-                'tablePrefix' => $dbConfig->tablePrefix,
-                'schemaMap' => [
-                    $dbConfig->driver => [
-                        'class' => $schemaClass,
-                    ]
-                ],
-                'commandClass' => \craft\db\Command::class,
-                'attributes' => $dbConfig->attributes,
-            ]);
+            return craft\db\Connection::createFromConfig($dbConfig);
         },
 
         'mailer' => function() {

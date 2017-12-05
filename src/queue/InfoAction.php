@@ -2,12 +2,11 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
 
-use yii\db\Query;
 use yii\helpers\Console;
 use yii\queue\cli\Action;
 

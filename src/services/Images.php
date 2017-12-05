@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -144,7 +144,7 @@ class Images extends Component
         }
 
         if (!extension_loaded('imagick')) {
-            throw new Exception('The Imagick extension isn\'t loaded.');
+            throw new Exception('The Imagick extension isn’t loaded.');
         }
 
         // Taken from Imagick\Imagine() constructor.

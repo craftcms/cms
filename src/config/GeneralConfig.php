@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\config;
@@ -674,7 +674,7 @@ class GeneralConfig extends BaseObject
      */
     public $trustedHosts = ['any'];
     /**
-     * @var bool Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
+     * @var bool Tells Craft whether to use compressed JavaScript files whenever possible, to cut down on page load times.
      */
     public $useCompressedJs = true;
     /**

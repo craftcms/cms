@@ -2,13 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -204,6 +204,24 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ');'
         );
 
+        // Look for any missing fields and convert to Plain Text
+        foreach ($this->getBlockTypes() as $blockType) {
+            /** @var Field[] $blockTypeFields */
+            $blockTypeFields = $blockType->getFields();
+
+            foreach ($blockTypeFields as $i => $field) {
+                if ($field instanceof MissingField) {
+                    $blockTypeFields[$i] = $field->createFallback(PlainText::class);
+                    $blockTypeFields[$i]->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
+                        'type' => $field->expectedType
+                    ]));
+                    $blockType->hasFieldErrors = true;
+                }
+            }
+
+            $blockType->setFields($blockTypeFields);
+        }
+
         $fieldsService = Craft::$app->getFields();
         $fieldTypeOptions = [];
 
@@ -243,24 +261,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     }
                 }
             }
-        }
-
-        // Look for any missing fields and convert to Plain Text
-        foreach ($this->getBlockTypes() as $blockType) {
-            /** @var Field[] $blockTypeFields */
-            $blockTypeFields = $blockType->getFields();
-
-            foreach ($blockTypeFields as $i => $field) {
-                if ($field instanceof MissingField) {
-                    $blockTypeFields[$i] = $field->createFallback(PlainText::class);
-                    $blockTypeFields[$i]->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
-                        'type' => $field->expectedType
-                    ]));
-                    $blockType->hasFieldErrors = true;
-                }
-            }
-
-            $blockType->setFields($blockTypeFields);
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings',

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -13,7 +13,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);

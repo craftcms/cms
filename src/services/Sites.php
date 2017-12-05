@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -15,14 +15,18 @@ use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\errors\DbConnectException;
+use craft\errors\SiteGroupNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
+use craft\events\SiteGroupEvent;
 use craft\helpers\App;
 use craft\models\Site;
+use craft\models\SiteGroup;
 use craft\queue\jobs\ResaveElements;
 use craft\records\Site as SiteRecord;
+use craft\records\SiteGroup as SiteGroupRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -45,6 +49,26 @@ class Sites extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event SiteGroupEvent The event that is triggered before a site group is saved.
+     */
+    const EVENT_BEFORE_SAVE_SITE_GROUP = 'beforeSaveSiteGroup';
+
+    /**
+     * @event SiteGroupEvent The event that is triggered after a site group is saved.
+     */
+    const EVENT_AFTER_SAVE_SITE_GROUP = 'afterSaveSiteGroup';
+
+    /**
+     * @event SiteGroupEvent The event that is triggered before a site group is deleted.
+     */
+    const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
+
+    /**
+     * @event SiteGroupEvent The event that is triggered after a site group is deleted.
+     */
+    const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
 
     /**
      * @event SiteEvent The event that is triggered before a site is saved.
@@ -92,6 +116,16 @@ class Sites extends Component
     public $currentSite;
 
     /**
+     * @var bool
+     */
+    private $_fetchedAllGroups = false;
+
+    /**
+     * @var
+     */
+    private $_groupsById;
+
+    /**
      * @var int[]|null
      */
     private $_editableSiteIds;
@@ -118,6 +152,174 @@ class Sites extends Component
 
     // Public Methods
     // =========================================================================
+
+    // Groups
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns all site groups.
+     *
+     * @return SiteGroup[] The site groups
+     */
+    public function getAllGroups(): array
+    {
+        if ($this->_fetchedAllGroups) {
+            return array_values($this->_groupsById);
+        }
+
+        $this->_groupsById = [];
+        $results = $this->_createGroupQuery()->all();
+
+        foreach ($results as $result) {
+            $group = new SiteGroup($result);
+            $this->_groupsById[$group->id] = $group;
+        }
+
+        $this->_fetchedAllGroups = true;
+
+        return array_values($this->_groupsById);
+    }
+
+    /**
+     * Returns a site group by its ID.
+     *
+     * @param int $groupId The site group’s ID
+     *
+     * @return SiteGroup|null The site group, or null if it doesn’t exist
+     */
+    public function getGroupById(int $groupId)
+    {
+        if ($this->_groupsById !== null && array_key_exists($groupId, $this->_groupsById)) {
+            return $this->_groupsById[$groupId];
+        }
+
+        if ($this->_fetchedAllGroups) {
+            return null;
+        }
+
+        $result = $this->_createGroupQuery()
+            ->where(['id' => $groupId])
+            ->one();
+
+        if (!$result) {
+            return $this->_groupsById[$groupId] = null;
+        }
+
+        return $this->_groupsById[$groupId] = new SiteGroup($result);
+    }
+
+    /**
+     * Saves a site group.
+     *
+     * @param SiteGroup $group         The site group to be saved
+     * @param bool      $runValidation Whether the group should be validated
+     *
+     * @return bool Whether the site group was saved successfully
+     */
+    public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
+    {
+        $isNewGroup = !$group->id;
+
+        // Fire a 'beforeSaveSiteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, new SiteGroupEvent([
+                'group' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Site group not saved due to validation error.', __METHOD__);
+            return false;
+        }
+
+        $groupRecord = $this->_getGroupRecord($group);
+        $groupRecord->name = $group->name;
+        $groupRecord->save(false);
+
+        // Now that we have an ID, save it on the model & models
+        if ($isNewGroup) {
+            $group->id = $groupRecord->id;
+        }
+
+        // Fire an 'afterSaveSiteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
+                'group' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes a site group by its ID.
+     *
+     * @param int $groupId The site group’s ID
+     *
+     * @return bool Whether the site group was deleted successfully
+     */
+    public function deleteGroupById(int $groupId): bool
+    {
+        $group = $this->getGroupById($groupId);
+
+        if (!$group) {
+            return false;
+        }
+
+        return $this->deleteGroup($group);
+    }
+
+    /**
+     * Deletes a site group.
+     *
+     * @param SiteGroup $group The site group
+     *
+     * @return bool Whether the site group was deleted successfully
+     */
+    public function deleteGroup(SiteGroup $group): bool
+    {
+        if ($this->getSitesByGroupId($group->id)) {
+            Craft::warning('Attempted to delete a site group that still had sites assigned to it.', __METHOD__);
+            return false;
+        }
+
+        /** @var SiteGroupRecord $groupRecord */
+        $groupRecord = SiteGroupRecord::find()
+            ->where(['id' => $group->id])
+            ->one();
+
+        if (!$groupRecord) {
+            return false;
+        }
+
+        // Fire a 'beforeDeleteSiteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
+                'group' => $group
+            ]));
+        }
+
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%sitegroups}}', ['id' => $group->id])
+            ->execute();
+
+        // Delete our cache of it
+        unset($this->_groupsById[$group->id]);
+
+        // Fire an 'afterDeleteSiteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
+                'group' => $group
+            ]));
+        }
+
+        return true;
+    }
+
+    // Sites
+    // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
@@ -220,6 +422,30 @@ class Sites extends Component
         }
 
         return $editableSites;
+    }
+
+    /**
+     * Returns sites by a group ID.
+     *
+     * @param int $groupId
+     *
+     * @return Site[]
+     */
+    public function getSitesByGroupId(int $groupId): array
+    {
+        $sites = [];
+        $sortOrders = [];
+
+        foreach ($this->getAllSites() as $site) {
+            if ($site->groupId == $groupId) {
+                $sites[] = $site;
+                $sortOrders[] = (int)$site->sortOrder;
+            }
+        }
+
+        array_multisort($sortOrders, SORT_NUMERIC, $sites);
+
+        return $sites;
     }
 
     /**
@@ -352,11 +578,21 @@ class Sites extends Component
         }
 
         // Shared attributes
+        $siteRecord->groupId = $site->groupId;
         $siteRecord->name = $site->name;
         $siteRecord->handle = $site->handle;
         $siteRecord->language = $site->language;
         $siteRecord->hasUrls = $site->hasUrls;
         $siteRecord->baseUrl = $site->baseUrl;
+
+        if ($isNewSite) {
+            if (!Craft::$app->getIsInstalled()) {
+                $siteRecord->primary = $site->primary = true;
+            } else {
+                // Even if this will be the new primary site, let _processNewPrimarySite() be the one to set this
+                $siteRecord->primary = false;
+            }
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -377,6 +613,15 @@ class Sites extends Component
             $transaction->rollBack();
 
             throw $e;
+        }
+
+        // Did the primary site just change?
+        if ($site->primary && Craft::$app->getIsInstalled()) {
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+
+            if ($site->id != $oldPrimarySiteId) {
+                $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
+            }
         }
 
         if (Craft::$app->getIsInstalled() && $isNewSite) {
@@ -479,14 +724,6 @@ class Sites extends Component
             throw $e;
         }
 
-        // Did the primary site just change?
-        $oldPrimarySiteId = $this->getPrimarySite()->id;
-        $newPrimarySiteId = $siteIds[0];
-
-        if ($newPrimarySiteId != $oldPrimarySiteId) {
-            $this->_processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId);
-        }
-
         if ($this->hasEventHandlers(self::EVENT_AFTER_REORDER_SITES)) {
             $this->trigger(self::EVENT_AFTER_REORDER_SITES, new ReorderSitesEvent([
                 'siteIds' => $siteIds,
@@ -523,10 +760,16 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
      * @return bool Whether the site was deleted successfully
+     * @throws Exception if $site is the primary site
      * @throws \Throwable if reasons
      */
     public function deleteSite(Site $site, int $transferContentTo = null): bool
     {
+        // Make sure this isn't the primary site
+        if ($site->id === $this->_primarySite->id) {
+            throw new Exception('You cannot delete the primary site.');
+        }
+
         // Fire a 'beforeDeleteSite' event
         $event = new DeleteSiteEvent([
             'site' => $site,
@@ -707,22 +950,6 @@ class Sites extends Component
             }
         }
 
-        $oldPrimarySiteId = $this->getPrimarySite()->id;
-
-        // Is the primary site ID getting deleted?
-        if ($oldPrimarySiteId === $site->id) {
-            $newPrimarySiteId = $this->_createSiteQuery()
-                ->select('id')
-                ->offset(1)
-                ->scalar();
-
-            if (!$newPrimarySiteId || $oldPrimarySiteId == $newPrimarySiteId) {
-                throw new Exception('Deleting the only site is not permitted');
-            }
-
-            $this->_processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId);
-        }
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $affectedRows = Craft::$app->getDb()->createCommand()
@@ -783,7 +1010,7 @@ class Sites extends Component
                     $this->_sitesById[$site->id] = $site;
                     $this->_sitesByHandle[$site->handle] = $site;
 
-                    if ($i == 0) {
+                    if ($site->primary) {
                         $this->_primarySite = $site;
                     }
                 }
@@ -793,7 +1020,8 @@ class Sites extends Component
         } catch (\yii\db\Exception $e) {
             // todo: remove this after the next breakpoint
             // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
-            if (isset($e->errorInfo[0]) && ($e->errorInfo[0] === '42S02' || $e->errorInfo[0] === '42P01')) {
+            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId column yet
+            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42S22', '42P01', '42703'], true)) {
                 return;
             }
 
@@ -875,6 +1103,22 @@ class Sites extends Component
     }
 
     /**
+     * Returns a Query object prepped for retrieving groups.
+     *
+     * @return Query
+     */
+    private function _createGroupQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'name',
+            ])
+            ->from(['{{%sitegroups}}'])
+            ->orderBy(['name' => SORT_ASC]);
+    }
+
+    /**
      * Returns a Query object prepped for retrieving sites.
      *
      * @return Query
@@ -882,9 +1126,32 @@ class Sites extends Component
     private function _createSiteQuery(): Query
     {
         return (new Query())
-            ->select(['id', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])
+            ->select(['id', 'groupId', 'name', 'handle', 'language', 'primary', 'hasUrls', 'baseUrl', 'sortOrder'])
             ->from(['{{%sites}}'])
-            ->orderBy(['sortOrder' => SORT_ASC]);
+            ->orderBy(['name' => SORT_ASC]);
+    }
+
+    /**
+     * Gets a site group record or creates a new one.
+     *
+     * @param SiteGroup $group
+     *
+     * @return SiteGroupRecord
+     * @throws SiteGroupNotFoundException if $group->id is invalid
+     */
+    private function _getGroupRecord(SiteGroup $group): SiteGroupRecord
+    {
+        if ($group->id) {
+            $record = SiteGroupRecord::findOne($group->id);
+
+            if (!$record) {
+                throw new SiteGroupNotFoundException('Invalid site group ID: '.$group->id);
+            }
+        } else {
+            $record = new SiteGroupRecord();
+        }
+
+        return $record;
     }
 
     /**
@@ -892,61 +1159,82 @@ class Sites extends Component
      *
      * @param int $oldPrimarySiteId
      * @param int $newPrimarySiteId
+     *
+     * @throws \Throwable
      */
     private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)
     {
-        // Set the new primary site
-        $this->_primarySite = $this->getSiteById($newPrimarySiteId);
-
         App::maxPowerCaptain();
 
-        // Update all of the non-localized elements
-        $nonLocalizedElementTypes = [];
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var Element|string $elementType */
-            if (!$elementType::isLocalized()) {
-                $nonLocalizedElementTypes[] = $elementType;
+        try {
+            $db->createCommand()
+                ->update('{{%sites}}', ['primary' => false], ['id' => $oldPrimarySiteId])
+                ->execute();
+
+
+            $db->createCommand()
+                ->update('{{%sites}}', ['primary' => true], ['id' => $newPrimarySiteId])
+                ->execute();
+
+            // Update all of the non-localized elements
+            $nonLocalizedElementTypes = [];
+
+            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+                /** @var Element|string $elementType */
+                if (!$elementType::isLocalized()) {
+                    $nonLocalizedElementTypes[] = $elementType;
+                }
             }
+
+            if (!empty($nonLocalizedElementTypes)) {
+                $elementIds = (new Query())
+                    ->select(['id'])
+                    ->from(['{{%elements}}'])
+                    ->where(['type' => $nonLocalizedElementTypes])
+                    ->column();
+
+                if (!empty($elementIds)) {
+                    // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
+                    // these elements that don't currently use the old primary site ID
+                    $deleteCondition = [
+                        'and',
+                        ['elementId' => $elementIds],
+                        ['not', ['siteId' => $oldPrimarySiteId]]
+                    ];
+
+                    $db->createCommand()
+                        ->delete('{{%elements_sites}}', $deleteCondition)
+                        ->execute();
+                    $db->createCommand()
+                        ->delete('{{%content}}', $deleteCondition)
+                        ->execute();
+
+                    // Now swap the sites
+                    $updateColumns = ['siteId' => $newPrimarySiteId];
+                    $updateCondition = ['elementId' => $elementIds];
+
+                    $db->createCommand()
+                        ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
+                        ->execute();
+                    $db->createCommand()
+                        ->update('{{%content}}', $updateColumns, $updateCondition)
+                        ->execute();
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        if (!empty($nonLocalizedElementTypes)) {
-            $elementIds = (new Query())
-                ->select(['id'])
-                ->from(['{{%elements}}'])
-                ->where(['type' => $nonLocalizedElementTypes])
-                ->column();
-
-            if (!empty($elementIds)) {
-                // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
-                // these elements that don't currently use the old primary site ID
-                $deleteCondition = [
-                    'and',
-                    ['elementId' => $elementIds],
-                    ['not', ['siteId' => $oldPrimarySiteId]]
-                ];
-
-                $db = Craft::$app->getDb();
-
-                $db->createCommand()
-                    ->delete('{{%elements_sites}}', $deleteCondition)
-                    ->execute();
-                $db->createCommand()
-                    ->delete('{{%content}}', $deleteCondition)
-                    ->execute();
-
-                // Now swap the sites
-                $updateColumns = ['siteId' => $newPrimarySiteId];
-                $updateCondition = ['elementId' => $elementIds];
-
-                $db->createCommand()
-                    ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
-                    ->execute();
-                $db->createCommand()
-                    ->update('{{%content}}', $updateColumns, $updateCondition)
-                    ->execute();
-            }
-        }
+        // Set the new primary site
+        $this->_primarySite->primary = false;
+        $this->_primarySite = $this->getSiteById($newPrimarySiteId);
+        $this->_primarySite->primary = true;
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {

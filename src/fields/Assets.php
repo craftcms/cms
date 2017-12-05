@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -18,7 +18,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
 
 /**
@@ -562,7 +561,7 @@ class Assets extends BaseRelationField
                     throw new InvalidSubpathException($subpath);
                 }
 
-                $volume = Craft::$app ->getVolumes()->getVolumeById($volumeId);
+                $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
                 $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
             } else {
                 $folderId = $folder->id;
@@ -617,7 +616,7 @@ class Assets extends BaseRelationField
         }
 
         if (!$uploadSource) {
-            throw new InvalidVolumeException(Craft::t('app', 'This field\'s Volume configuration is invalid.'));
+            throw new InvalidVolumeException(Craft::t('app', 'This field’s Volume configuration is invalid.'));
         }
 
         $assets = Craft::$app->getAssets();

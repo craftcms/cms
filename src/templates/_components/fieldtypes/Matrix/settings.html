@@ -119,8 +119,9 @@
                                                     name: 'translationMethod',
                                                     options: [
                                                         'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
-                                                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
                                                         'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
+                                                        'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
+                                                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
                                                         'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
                                                     ]|filter,
                                                     value: field.translationMethod,

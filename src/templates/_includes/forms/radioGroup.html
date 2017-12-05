@@ -1,7 +1,8 @@
 {%- set options = (options is defined ? options : []) %}
 {%- set value = (value is defined ? value : null) %}
 
-<div class="radio-group">
+<div class="radio-group"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- for key, option in options %}
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}
