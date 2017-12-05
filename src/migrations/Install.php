@@ -214,7 +214,6 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'accessToken' => $this->text()->notNull(),
             'expiryDate' => $this->dateTime(),
-            'refreshToken' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
