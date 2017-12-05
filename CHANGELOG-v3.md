@@ -1,7 +1,7 @@
 # Craft CMS 3.0 Working Changelog
 
 
-## 3.0.0-RC1 (WIP)
+## 3.0.0-RC1 2017-12-05
 
 ### Added
 - Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
