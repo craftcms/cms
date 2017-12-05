@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -19,7 +19,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
@@ -1737,7 +1736,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->orderBy === ['score' => SORT_ASC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn\'t support fixed ordering.');
+                    throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
@@ -1780,7 +1779,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
 
                 if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn\'t support fixed ordering.');
+                    throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
             } else if ($this->structureId) {

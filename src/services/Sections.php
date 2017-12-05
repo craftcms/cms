@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -1055,7 +1055,7 @@ class Sections extends Component
         $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
 
         if (empty($entryTypes)) {
-            throw new Exception('Couldn\'t find any entry types for the section: '.$section->id);
+            throw new Exception('Couldn’t find any entry types for the section: '.$section->id);
         }
 
         // Get/save the entry
@@ -1093,7 +1093,7 @@ class Sections extends Component
         $entry->title = $section->name;
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getElements()->saveElement($entry)) {
-            throw new Exception('Couldn\'t save single entry due to validation errors on the slug and/or URI');
+            throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI');
         }
 
         // Delete any other entries in the section

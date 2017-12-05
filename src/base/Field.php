@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -69,8 +69,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     // -------------------------------------------------------------------------
 
     const TRANSLATION_METHOD_NONE = 'none';
-    const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_SITE = 'site';
+    const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
+    const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
 
     // Static
@@ -91,8 +92,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         return [
             self::TRANSLATION_METHOD_NONE,
-            self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_SITE,
+            self::TRANSLATION_METHOD_SITE_GROUP,
+            self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_CUSTOM,
         ];
     }
@@ -161,8 +163,9 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'in',
                 'range' => [
                     self::TRANSLATION_METHOD_NONE,
-                    self::TRANSLATION_METHOD_LANGUAGE,
                     self::TRANSLATION_METHOD_SITE,
+                    self::TRANSLATION_METHOD_SITE_GROUP,
+                    self::TRANSLATION_METHOD_LANGUAGE,
                     self::TRANSLATION_METHOD_CUSTOM
                 ]
             ],
@@ -251,10 +254,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         switch ($this->translationMethod) {
             case self::TRANSLATION_METHOD_NONE:
                 return '1';
-            case self::TRANSLATION_METHOD_LANGUAGE:
-                return $element->getSite()->language;
             case self::TRANSLATION_METHOD_SITE:
                 return (string)$element->siteId;
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return (string)$element->getSite()->groupId;
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return $element->getSite()->language;
             default:
                 return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
         }

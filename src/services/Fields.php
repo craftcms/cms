@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -33,9 +33,7 @@ use craft\fields\MissingField;
 use craft\fields\MultiSelect as MultiSelectField;
 use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
-use craft\fields\PositionSelect as PositionSelectField;
 use craft\fields\RadioButtons as RadioButtonsField;
-use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
@@ -263,7 +261,7 @@ class Fields extends Component
     {
         $isNewGroup = !$group->id;
 
-        // Fire a 'beforeSaveFieldLayout' event
+        // Fire a 'beforeSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -285,7 +283,7 @@ class Fields extends Component
             $group->id = $groupRecord->id;
         }
 
-        // Fire an 'afterSaveFieldLayout' event
+        // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -390,9 +388,7 @@ class Fields extends Component
             MultiSelectField::class,
             NumberField::class,
             PlainTextField::class,
-            PositionSelectField::class,
             RadioButtonsField::class,
-            RichTextField::class,
             TableField::class,
             TagsField::class,
             UrlField::class,

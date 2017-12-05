@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -85,7 +85,7 @@ class Cp
                 // If the license key path starts with the root project path, trim the project path off
                 $rootPath = Craft::getAlias('@root');
                 if (strpos($keyPath, $rootPath.'/') === 0) {
-                    $keyPath = substr($keyPath, strlen($rootPath)+1);
+                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
                 }
 
                 $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [

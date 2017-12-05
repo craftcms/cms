@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;

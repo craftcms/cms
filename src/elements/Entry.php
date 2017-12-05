@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -187,9 +187,11 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:'.$section->id,
                         'label' => Craft::t('site', $section->name),
+                        'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
                             'handle' => $section->handle
@@ -574,7 +576,7 @@ class Entry extends Element
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Entry\'s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
@@ -870,7 +872,7 @@ EOD;
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId !== null) {
+            if ($this->newParentId) {
                 $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
 
                 if (!$parentEntry) {
@@ -933,7 +935,7 @@ EOD;
         if ($section->type == Section::TYPE_STRUCTURE) {
             // Has the parent changed?
             if ($this->_hasNewParent()) {
-                if ($this->newParentId === null) {
+                if (!$this->newParentId) {
                     Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
                 } else {
                     Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
@@ -1005,12 +1007,12 @@ EOD;
         }
 
         // Is it set to the top level now, but it hadn't been before?
-        if ($this->newParentId === '' && $this->level != 1) {
+        if (!$this->newParentId && $this->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId !== '' && $this->level == 1) {
+        if ($this->newParentId && $this->level == 1) {
             return true;
         }
 

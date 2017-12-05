@@ -1,6 +1,127 @@
 # Craft CMS 3.0 Working Changelog
 
 
+## 3.0.0-RC1 2017-12-05
+
+### Added
+- Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
+- Installed plugins now have a “Disable” option that temporarily disables them without uninstalling them.
+- Uninstalled plugins now have a “Remove” option that completely removes their files from the project.
+- Added the concept of “Site Groups”. ([#1668](https://github.com/craftcms/cms/issues/1668))
+- Added the Craft License to the web-based setup wizard.
+- Added a “Connect the database” screen to the web-based setup wizard, which will show up if a database connection can’t already be established, and Craft determines that it can control the DB connection settings via the `.env` file.
+- Added the OAuth 2.0 Client library.
+- `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
+- Added the “Default Color” setting to Color fields. ([#949](https://github.com/craftcms/cms/issues/949))
+- Color fields now return a `craft\fields\data\ColorData` object, with `hex`, `rgb`, `red`, `green`, `blue`, `r`, `g`, `b`, and `luma` properties.
+- Added support for the `text/markdown` MIME type.
+- Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
+- Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
+- Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
+- Added the `svg()` Twig function, which will sanitize and return SVG XML code. You can pass in the path to an SVG file or raw SVG XML code.
+- Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
+- Added a `tabs` block to the `_layouts/cp.html` template that surrounds `<nav id="tabs">`, allowing the tab HTML to be overridden by sub-templates. ([#2128](https://github.com/craftcms/cms/issues/2128))
+- Added `craft\controllers\SitesController::actionSaveGroup()`.
+- Added `craft\controllers\SitesController::actionDeleteGroup()`.
+- Added `craft\db\Connection::createFromConfig()`.
+- Added `craft\errors\ApiException`.
+- Added `craft\errors\SiteGroupNotFoundException`.
+- Added `craft\events\SiteGroupEvent`.
+- Added `craft\fields\data\ColorData`.
+- Added `craft\image\Raster::getImagineImage()`. (([#1488](https://github.com/craftcms/cms/issues/1488))
+- Added `craft\image\Raster::setInterlace()`.
+- Added `craft\models\Section::getSiteIds()`.
+- Added `craft\models\Site::groupId`.
+- Added `craft\models\Site::getGroup()`.
+- Added `craft\models\SiteGroup`.
+- Added `craft\models\Update::getHasCritical()`.
+- Added `craft\models\Update::getHasReleases()`.
+- Added `craft\models\Update::getLatest()`.
+- Added `craft\models\Updates`.
+- Added `craft\records\Site::getGroup()`.
+- Added `craft\records\SiteGroup`.
+- Added `craft\services\Api`, available from `Craft::$app->api`.
+- Added `craft\services\Assets::getThumbPath()`.
+- Added `craft\services\Config::getDotEnvPath()`.
+- Added `craft\services\Config::setEnvVar()`.
+- Added `craft\services\Plugins::disablePlugin()`.
+- Added `craft\services\Plugins::enablePlugin()`.
+- Added `craft\services\Plugins::isPluginDisabled()`.
+- Added `craft\services\Plugins::isPluginEnabled()`.
+- Added `craft\services\Plugins::isPluginInstalled()`.
+- Added `craft\services\Sites::getAllGroups()`.
+- Added `craft\services\Sites::getGroupById()`.
+- Added `craft\services\Sites::saveGroup()`.
+- Added `craft\services\Sites::deleteGroupById()`.
+- Added `craft\services\Sites::deleteGroup()`.
+- Added `craft\services\Sites::getSitesByGroupId()`.
+- Added `craft\validators\ColorValidator`.
+- Added `Craft.ColorInput` (JS class).
+- Added the `beforeDisablePlugin`, `afterDisablePlugin`, `beforeEnablePlugin`, and `afterEnablePlugin` events to `craft\services\Plugins`.
+
+### Changed
+- The Control Panel has been redesigned for better usability, readability and responsiveness.
+- Control Panel templates can now easily add UI elements to the page header, via new `contextMenu` and `actionButton` blocks.
+- Control Panel templates can now have a details pane, via the new `details` block.
+- The “Delete” button on entry and category edit pages has been moved to the Save button menu.
+- The site selection on entry and category edit pages has been moved to the context menu in the page header.
+- The icons on date/time inputs now behave like placeholder text; they can be clicked on to focus the input, and they become hidden when the input has a value. ([#1730](https://github.com/craftcms/cms/issues/1730))
+- Users’ field layouts can now have multiple tabs. ([#892](https://github.com/craftcms/cms/issues/892))
+- Global sets’ field layouts can now have multiple tabs. ([#1196](https://github.com/craftcms/cms/issues/1196))
+- Edit User pages’ Save buttons are now positioned in the page header, like similar pages.
+- The Language, Week Start Day, and Debug Toolbar settings have been moved to a new “Preferences” tab on the My Account page.
+- Users’ Langauge preference is now visible for single-site installs, and now shows all supported application languages; not just the site language(s). ([#847](https://github.com/craftcms/cms/issues/847))
+- Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
+- Fields on multi-site installs can now be translated per site group.
+- Resource file URLs now have a timestamp appended to them, preventing browsers from loading cached versions when the files change.
+- `craft\services\Elements::parseRefs()` now has a `$siteId` argument, which can be set to the site ID that referenced elements should be queried in.
+- `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
+- Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
+- Color inputs can now be left blank.
+- CP nav item definitions registered with `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS` can now specify their icon with an `icon` key, whether it’s the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Support for the `iconSvg` key has been removed.)
+- Element source definitions can now include `icon` or `iconMask` keys, set to either the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Use `icon` for colored icons; use `iconMask` for masked icons that should change color depending on whether the source is selected.)
+- Assets fields and the Assets index page now create a queue runner automatically after new assets are uploaded, in case there are any new jobs that were registered as part of the asset save process.
+- Craft now uses Sendmail as the default mailer, as Swift Mailer removed support for the PHP mailer in 6.0. ([#2149](https://github.com/craftcms/cms/issues/2149))
+- Structure info and relationships are now available on elements during Structure operations. ([#2153](https://github.com/craftcms/cms/issues/2153))
+- Craft will now always respond with JSON when an exception occurs for requests that include the `Accept: application/json` header.
+- `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
+- `craft\services\Plugins::getComposerPluginInfo()` will now return all Composer plugin info, if no handle is specified.
+- `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
+- `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
+- `craft\events\LoginFailureEvent` now has a customizable `message` property that defines the user-facing error message. ([#2147](https://github.com/craftcms/cms/issues/2147))
+- Updated all Control Panel language translations.
+
+### Removed
+- The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
+- Removed `craft\events\RegisterRedactorPluginEvent`.
+- Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
+- Removed `craft\fields\data\RichTextData`.
+- Removed `craft\fields\PositionSelect`.
+- Removed `craft\fields\RichText`.
+- Removed `craft\mail\transportadapters\Php`.
+- Removed `craft\models\AppUpdate`.
+- Removed `craft\models\AppUpdateRelease`.
+- Removed `craft\services\Et::checkForUpdates()`.
+- Removed `craft\services\Et::downloadUpdate()`.
+- Removed `craft\services\Et::getUpdateFileInfo()`.
+- Removed `craft\services\Updates::checkForUpdates()`.
+- Removed `craft\services\Updates::checkPluginChangelogs()`.
+- Removed `craft\services\Updates::fetchPluginChangelog()`.
+- Removed `craft\services\Updates::parsePluginChangelog()`.
+- Removed `craft\services\Updates::addNotesToPluginRelease()`.s
+- Removed `craft\web\assets\redactor\RedactorAsset`.
+- Removed `craft\web\assets\richtext\RichTextAsset`.
+- Removed `lib/colorpicker/`.
+- Removed `lib/redactor/`.
+- Removed `Craft.ColorPicker` (JS class).
+- Removed `Craft.RichTextInput` (JS class).
+- Removed the `oauthtokens` table.
+
+### Fixed
+- Fixed a bug where removing the parent element from an entry or category had no effect. ([#2152](https://github.com/craftcms/cms/issues/2152))
+- Fixed a bug where `{id}` tags in element URI formats weren’t getting replaced with the element ID when saving a brand new element. ([#2157](https://github.com/craftcms/cms/issues/2157))
+- Fixed a bug where it was not possible to reassign a field within a Matrix field to a different field type if its current field type class was missing.
+
 ## 3.0.0-beta.36 - 2017-11-29
 
 ### Added

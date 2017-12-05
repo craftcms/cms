@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -16,8 +16,8 @@ use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
-use craft\events\UserEvent;
 use craft\events\UserAssignGroupEvent;
+use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -401,7 +401,7 @@ class Users extends Component
                 'The volume set for user photo storage is not valid.'));
         }
 
-        $subpath = (string) Craft::$app->getSystemSettings()->getSetting('users', 'photoSubpath');
+        $subpath = (string)Craft::$app->getSystemSettings()->getSetting('users', 'photoSubpath');
 
         if ($subpath) {
             try {

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -204,17 +204,22 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
+        if ($variables['showSites'] = (Craft::$app->getIsMultiSite() && count($section->getSiteSettings()) > 1)) {
+            $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name).' – ';
+        } else {
+            $variables['revisionLabel'] = '';
+        }
         switch (get_class($entry)) {
             case EntryDraft::class:
                 /** @var EntryDraft $entry */
-                $variables['revisionLabel'] = $entry->name;
+                $variables['revisionLabel'] .= $entry->name;
                 break;
             case EntryVersion::class:
                 /** @var EntryVersion $entry */
-                $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
+                $variables['revisionLabel'] .= Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                 break;
             default:
-                $variables['revisionLabel'] = Craft::t('app', 'Current');
+                $variables['revisionLabel'] .= Craft::t('app', 'Current');
         }
 
         if ($entry->id === null) {
@@ -375,16 +380,18 @@ class EntriesController extends BaseEntriesController
 
         $this->_prepEditEntryVariables($variables);
 
-        $paneHtml = $this->getView()->renderTemplate('_includes/tabs', $variables).
-            $this->getView()->renderTemplate('entries/_fields', $variables);
-
         $view = $this->getView();
+        $tabsHtml = $view->renderTemplate('_includes/tabs', $variables);
+        $fieldsHtml = $view->renderTemplate('entries/_fields', $variables);
+        $headHtml = $view->getHeadHtml();
+        $bodyHtml = $view->getBodyHtml();
 
-        return $this->asJson([
-            'paneHtml' => $paneHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
-        ]);
+        return $this->asJson(compact(
+            'tabsHtml',
+            'fieldsHtml',
+            'headHtml',
+            'bodyHtml'
+        ));
     }
 
     /**
@@ -826,8 +833,7 @@ class EntriesController extends BaseEntriesController
             if ($variables['entry']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($variables['entry']->getErrors($field->handle)) {
-                        $hasErrors = true;
+                    if ($hasErrors = $variables['entry']->hasErrors($field->handle)) {
                         break;
                     }
                 }
@@ -907,13 +913,13 @@ class EntriesController extends BaseEntriesController
         $entry->authorId = $authorId;
 
         // Parent
-        $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
+        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: '';
+            }
 
-        if (is_array($parentId)) {
-            $parentId = reset($parentId) ?: null;
+            $entry->newParentId = $parentId ?: '';
         }
-
-        $entry->newParentId = $parentId ?: null;
 
         // Revision notes
         $entry->revisionNotes = Craft::$app->getRequest()->getBodyParam('revisionNotes');
@@ -932,7 +938,7 @@ class EntriesController extends BaseEntriesController
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn\'t have a URL for the site '.$entry->siteId.'.');
+            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn’t have a URL for the site '.$entry->siteId.'.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($entry->siteId);

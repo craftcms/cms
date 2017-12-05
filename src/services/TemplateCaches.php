@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -15,7 +15,6 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
 use yii\base\Component;

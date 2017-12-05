@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
@@ -112,7 +112,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * Updates the given elements’ slugs and URIs
      *
-     * @param Queue|QueueInterface  $queue
+     * @param Queue|QueueInterface               $queue
      * @param ElementQuery|ElementQueryInterface $query
      */
     private function _processElements($queue, $query)

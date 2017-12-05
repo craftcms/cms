@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -958,7 +958,7 @@ class User extends Element implements IdentityInterface
             return Craft::$app->getAssets()->getThumbUrl($photo, $size, false);
         }
 
-        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true).'/images/user.svg';
+        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
     }
 
     /**
@@ -1127,7 +1127,7 @@ class User extends Element implements IdentityInterface
         $language = $this->getPreference('language');
 
         // Make sure it's valid
-        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
+        if ($language !== null && in_array($language, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
             return $language;
         }
 
@@ -1221,8 +1221,8 @@ class User extends Element implements IdentityInterface
     public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
-            'account' => $this,
-            'isNewAccount' => false,
+            'user' => $this,
+            'isNewUser' => false,
             'meta' => true,
         ]);
 

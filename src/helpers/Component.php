@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -50,24 +50,29 @@ class Component
 
         // Validate the class
         if (!class_exists($class)) {
-            throw new MissingComponentException("Unable to find component class '$class'.");
+            throw new MissingComponentException("Unable to find component class '{$class}'.");
         }
 
         if (!is_subclass_of($class, ComponentInterface::class)) {
-            throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
+            throw new InvalidConfigException("Component class '{$class}' does not implement ComponentInterface.");
         }
 
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
-            throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
+            throw new InvalidConfigException("Component class '{$class}' is not an instance of '{$instanceOf}'.");
         }
 
         // If it comes from a plugin, make sure the plugin is installed
         $pluginsService = Craft::$app->getPlugins();
         $pluginHandle = $pluginsService->getPluginHandleByClass($class);
-        if ($pluginHandle !== null && $pluginsService->getPlugin($pluginHandle) === null) {
+        if ($pluginHandle !== null && !$pluginsService->isPluginEnabled($pluginHandle)) {
             $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
             $pluginName = $pluginInfo['name'] ?? $pluginHandle;
-            throw new MissingComponentException("Component class '{$class}' belongs to an uninstalled plugin ('{$pluginName}').");
+            if ($pluginsService->isPluginInstalled($pluginHandle)) {
+                $message = "Component class '{$class}' belongs to a disabled plugin ({$pluginName}).";
+            } else {
+                $message = "Component class '{$class}' belongs to an uninstalled plugin ({$pluginName}).";
+            }
+            throw new MissingComponentException($message);
         }
 
         $config = self::mergeSettings($config);

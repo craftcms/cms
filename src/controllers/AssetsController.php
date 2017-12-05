@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -122,7 +122,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n").implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', 'Failed to save the Asset:').implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -571,7 +571,7 @@ class AssetsController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to edit does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
         }
 
         $focal = null;
@@ -738,7 +738,7 @@ class AssetsController extends Controller
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
                     $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-                } else if($focal) {
+                } else if ($focal) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
             } else {
@@ -779,7 +779,7 @@ class AssetsController extends Controller
         $asset = $assetService->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to download does not exist.'));
         }
 
         $this->_requirePermissionByAsset('viewVolume', $asset);
