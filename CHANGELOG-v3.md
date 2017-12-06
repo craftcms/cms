@@ -1,6 +1,11 @@
 # Craft CMS 3.0 Working Changelog
 
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))
+
 ## 3.0.0-RC1 - 2017-12-05
 
 ### Added
