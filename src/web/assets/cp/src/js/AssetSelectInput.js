@@ -145,6 +145,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                         this.$container.removeClass('uploading');
                     }
                 }.bind(this));
+
+                Craft.cp.runQueue();
             }
         },
 

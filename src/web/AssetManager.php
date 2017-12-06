@@ -2,11 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
 
+use Craft;
 use craft\helpers\FileHelper;
 
 /**
@@ -42,20 +43,33 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * Returns the URL of a published file/directory path.
      *
-     * @param string $sourcePath directory or file path being published
-     * @param bool   $publish    whether the directory or file should be published, if not already
+     * @param string      $sourcePath directory or file path being published
+     * @param bool        $publish    whether the directory or file should be published, if not already
+     * @param string|null $filePath   A file path, relative to $sourcePath if $sourcePath is a directory, that should be appended to the returned URL.
      *
      * @return string|false the published URL for the file or directory, or false if $publish is false and the file or directory does not exist
      */
-    public function getPublishedUrl($sourcePath, bool $publish = false)
+    public function getPublishedUrl($sourcePath, bool $publish = false, $filePath = null)
     {
         if ($publish === true) {
             list(, $url) = $this->publish($sourcePath);
-
-            return $url;
+        } else {
+            $url = parent::getPublishedUrl($sourcePath);
         }
 
-        return parent::getPublishedUrl($sourcePath);
+        if ($filePath !== null) {
+            $url .= '/'.$filePath;
+
+            // Should we append a timestamp?
+            if ($this->appendTimestamp) {
+                $fullPath = FileHelper::normalizePath(Craft::getAlias($sourcePath).DIRECTORY_SEPARATOR.$filePath);
+                if (($timestamp = @filemtime($fullPath)) > 0) {
+                    $url .= '?v='.$timestamp;
+                }
+            }
+        }
+
+        return $url;
     }
 
     // Protected Methods
@@ -99,6 +113,10 @@ class AssetManager extends \yii\web\AssetManager
 
         // Clear out any older instances of the same file
         $this->_clearOldDirs(dirname($file));
+
+        if ($this->appendTimestamp && strpos($url, '?') === false && ($timestamp = @filemtime($src)) > 0) {
+            $url .= '?v='.$timestamp;
+        }
 
         return [$file, $url];
     }

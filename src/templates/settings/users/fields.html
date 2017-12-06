@@ -3,8 +3,6 @@
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'fields' %}
 
-{% set docsUrl = 'http://craftcms.com/docs/fields#field-layouts' %}
-
 
 {% block content %}
     <form method="post" accept-charset="UTF-8" data-saveshortcut>
@@ -13,9 +11,7 @@
         {{ csrfInput() }}
 
         {% include "_includes/fieldlayoutdesigner" with {
-            fieldLayout: craft.app.fields.getLayoutByType('craft\\elements\\User'),
-            customizableTabs: false,
-            pretendTabName: "Profile"|t('app')
+            fieldLayout: craft.app.fields.getLayoutByType('craft\\elements\\User')
         } only %}
 
         <div class="buttons">

@@ -2,12 +2,10 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
-
-use craft\base\SavableComponentInterface;
 
 /**
  * QueueInterface defines the common interface to be implemented by queue classes.

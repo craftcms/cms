@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -13,6 +13,7 @@ use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * Site model class.
@@ -31,6 +32,11 @@ class Site extends Model
     public $id;
 
     /**
+     * @var int|null Group ID
+     */
+    public $groupId;
+
+    /**
      * @var string|null Name
      */
     public $name;
@@ -44,6 +50,11 @@ class Site extends Model
      * @var string|null Name
      */
     public $language;
+
+    /**
+     * @var bool Primary site?
+     */
+    public $primary = false;
 
     /**
      * @var bool Has URLs
@@ -64,6 +75,11 @@ class Site extends Model
      * @var string|null Base URL
      */
     public $baseUrl;
+
+    /**
+     * @var int Sort order
+     */
+    public $sortOrder = 1;
 
     // Public Methods
     // =========================================================================
@@ -87,8 +103,8 @@ class Site extends Model
     public function rules()
     {
         $rules = [
-            [['name', 'handle', 'language'], 'required'],
-            [['id'], 'number', 'integerOnly' => true],
+            [['groupId', 'name', 'handle', 'language'], 'required'],
+            [['id', 'groupId'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
@@ -110,6 +126,25 @@ class Site extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name);
+    }
+
+    /**
+     * Returns the site's group
+     *
+     * @return SiteGroup
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
+     */
+    public function getGroup(): SiteGroup
+    {
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Site is missing its group ID');
+        }
+
+        if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid site group ID: '.$this->groupId);
+        }
+
+        return $group;
     }
 
     /**

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -225,6 +226,10 @@ class TagsController extends Controller
         }
 
         array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
+
+        foreach ($return as &$tag) {
+            $tag['title'] = Html::encode($tag['title']);
+        }
 
         return $this->asJson([
             'tags' => $return,

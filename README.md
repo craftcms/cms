@@ -6,15 +6,16 @@ Craft is a content-first CMS that aims to make life enjoyable for developers and
 
 Learn more about Craft at [craftcms.com](https://craftcms.com).
 
-## How to Install Craft 3 Beta
+## How to Install Craft 3
 
-Installation instructions can be found in the [Craft 3 documentation](https://github.com/craftcms/docs/blob/master/en/installation.md).
+See the Craft 3 documentation for [installation](https://github.com/craftcms/docs/blob/master/en/installation.md) and [updating](https://github.com/craftcms/docs/blob/master/en/upgrade.md) instructions.
 
 ## Resources
 
 #### Official Resources
 - [Craft 3 Documentation](https://github.com/craftcms/docs)
-- [Craft 3 Plugins](https://github.com/craftcms/plugins)
+- [Craft 3 Class Reference](https://docs.craftcms.com/api/v3/)
+- [Craft 3 Plugins](https://plugins.craftcms.com)
 - [Demo site](https://demo.craftcms.com/)
 - [Craft Slack](https://craftcms.com/community#slack)
 - [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/)
@@ -23,5 +24,4 @@ Installation instructions can be found in the [Craft 3 documentation](https://gi
 - [Mijingo](https://mijingo.com/craft) – Video courses and other learning resources
 - [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) – Video courses
 - [Straight Up Craft](http://straightupcraft.com/) – Articles, tutorials, and more
-- [Craft Cookbook](https://craftcookbook.net/) – Quick answers for common tasks
 - [pluginfactory.io](https://pluginfactory.io/) – Craft plugin scaffold generator

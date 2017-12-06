@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -27,8 +27,8 @@ use yii\db\Connection;
  * @property string|string[]|MatrixBlockType $type      The handle(s) of the block type(s) that resulting Matrix blocks must have
  *
  * @method MatrixBlock[]|array all($db = null)
- * @method MatrixBlock|array|false one($db = null)
- * @method MatrixBlock|array|false nth(int $n, Connection $db = null)
+ * @method MatrixBlock|array|null one($db = null)
+ * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

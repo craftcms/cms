@@ -85,7 +85,7 @@ class AssetIndexer extends Component
             // Ensure folders are in the DB
             $assets = Craft::$app->getAssets();
             foreach ($foldersFound as $fullPath) {
-                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim( $fullPath, '/' ).'/', $volume);
+                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/').'/', $volume);
                 $indexedFolderIds[$folderId] = true;
             }
 
@@ -284,11 +284,7 @@ class AssetIndexer extends Component
             ])
             ->one();
 
-        if (!$result) {
-            return null;
-        }
-
-        return new AssetIndexData($result);
+        return $result ? new AssetIndexData($result) : null;
     }
 
     /**
@@ -509,7 +505,6 @@ class AssetIndexer extends Component
                     $volume->saveFileLocally($indexEntryModel->uri, $tempPath);
                     $dimensions = Image::imageSize($tempPath);
                 }
-
             }
 
             list ($w, $h) = $dimensions;

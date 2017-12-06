@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -24,6 +24,11 @@ trait ElementTrait
      * @var int|null The element’s ID
      */
     public $id;
+
+    /**
+     * @var string|null The element’s temporary ID (only used if the element's URI format contains {id})
+     */
+    public $tempId;
 
     /**
      * @var string|null The element’s UID

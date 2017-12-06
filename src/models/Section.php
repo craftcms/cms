@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -70,12 +70,12 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
-     * @var
+     * @var Section_SiteSettings[]|null
      */
     private $_siteSettings;
 
     /**
-     * @var
+     * @var EntryType[]|null
      */
     private $_entryTypes;
 
@@ -126,7 +126,7 @@ class Section extends Model
     }
 
     /**
-     * Returns the section's site-specific settings.
+     * Returns the section's site-specific settings, indexed by site ID.
      *
      * @return Section_SiteSettings[]
      */
@@ -140,8 +140,8 @@ class Section extends Model
             return [];
         }
 
-        // Set them with setSiteSettings() so setSection() gets called on them
-        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getSections()->getSectionSiteSettings($this->id), 'siteId'));
+        // Set them with setSiteSettings() so they get indexed by site ID and setSection() gets called on them
+        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id));
 
         return $this->_siteSettings;
     }
@@ -149,17 +149,28 @@ class Section extends Model
     /**
      * Sets the section's site-specific settings.
      *
-     * @param Section_SiteSettings[] $siteSettings
+     * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects with the site ID for the site
+     *                                             settings as the key for each, e.g. [$siteId => $siteSettings]
      *
      * @return void
      */
     public function setSiteSettings(array $siteSettings)
     {
-        $this->_siteSettings = $siteSettings;
+        $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);
         }
+    }
+
+    /**
+     * Returns the site IDs that are enabled for the section.
+     *
+     * @return int[]
+     */
+    public function getSiteIds(): array
+    {
+        return array_keys($this->getSiteSettings());
     }
 
     /**
