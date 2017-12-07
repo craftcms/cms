@@ -223,17 +223,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         $fieldsService = Craft::$app->getFields();
+        $allFieldTypes = $fieldsService->getAllFieldTypes();
         $fieldTypeOptions = [];
 
-        foreach ($fieldsService->getAllFieldTypes() as $class) {
+        foreach ($allFieldTypes as $class) {
             // No Matrix-Inception, sorry buddy.
-            /** @var Field|string $class */
-            if ($class !== self::class) {
-                $fieldTypeOptions['new'][] = [
-                    'value' => $class,
-                    'label' => $class::displayName()
-                ];
-            }
+            $enabled = $class !== self::class;
+            $fieldTypeOptions['new'][] = [
+                'value' => $class,
+                'label' => $class::displayName(),
+                'disabled' => !$enabled,
+            ];
         }
 
         // Sort them by name
@@ -245,15 +245,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     /** @var Field $field */
                     if (!$field->getIsNew()) {
                         $fieldTypeOptions[$field->id] = [];
-                        foreach ($fieldsService->getCompatibleFieldTypes($field, true) as $class) {
+                        $allowedFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
+                        foreach ($allFieldTypes as $class) {
                             // No Matrix-Inception, sorry buddy.
-                            /** @var Field|string $class */
-                            if ($class !== self::class) {
-                                $fieldTypeOptions[$field->id][] = [
-                                    'value' => $class,
-                                    'label' => $class::displayName()
-                                ];
-                            }
+                            $enabled = in_array($class, $allowedFieldTypes) && $class !== self::class;
+                            $fieldTypeOptions[$field->id][] = [
+                                'value' => $class,
+                                'label' => $class::displayName(),
+                                'disabled' => !$enabled,
+                            ];
                         }
 
                         // Sort them by name
