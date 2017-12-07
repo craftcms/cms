@@ -639,6 +639,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         .fixed-container {
           padding: 24px;
           box-sizing: border-box;
+          width: $sidebarWidth;
         }
       }
 

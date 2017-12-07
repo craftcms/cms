@@ -1822,7 +1822,7 @@ body.rtl #main-container #main #header h1:not(:last-child) { margin-left: 24px !
 #main-container #main #main-content #sidebar .fixed-container, #main-container #main #main-content #details .fixed-container { overflow-y: auto; }
 body.fixed-header #main-container #main #main-content #sidebar .fixed-container, body.fixed-header #main-container #main #main-content #details .fixed-container { position: fixed; }
 #main-container #main #main-content #sidebar { -webkit-box-flex: 0; -ms-flex: 0 0 225px; flex: 0 0 225px; padding: 0; }
-#main-container #main #main-content #sidebar .fixed-container { padding: 24px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+#main-container #main #main-content #sidebar .fixed-container { padding: 24px; -webkit-box-sizing: border-box; box-sizing: border-box; width: 225px; }
 #main-container #main #main-content #content-container { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; }
 #main-container #main #main-content #content-container #tabs { position: relative; z-index: 1; overflow: hidden; -webkit-box-shadow: inset 0 -1px 0 #e3e5e8; box-shadow: inset 0 -1px 0 #e3e5e8; }
 #main-container #main #main-content #content-container #tabs li a { color: #555; }

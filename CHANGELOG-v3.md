@@ -6,6 +6,7 @@
 ### Fixed
 - Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))
 - Fixed a bug where the main content area could expand wider than it was supposed to. ([#2169](https://github.com/craftcms/cms/issues/2169))
+- Fixed the width of sidebar nav items when the sidebar had fixed positioning.
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.
