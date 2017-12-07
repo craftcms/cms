@@ -18,7 +18,6 @@
     "docs": "https://craftcms.com/docs",
     "rss": "https://craftcms.com/changelog.rss"
   },
-  "minimum-stability": "beta",
   "require": {
     "php": ">=7.0.0",
     "craftcms/cms": "^3.0.0-RC1",
