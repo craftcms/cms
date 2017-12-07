@@ -6,6 +6,7 @@
 ### Fixed
 - Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))
 - Fixed a bug where the main content area could expand wider than it was supposed to. ([#2169](https://github.com/craftcms/cms/issues/2169))
+- Fixed a bug where page titles from the Plugin Store were not properly escaping HTML.
 
 ## 3.0.0-RC1 - 2017-12-05
 

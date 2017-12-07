@@ -161,7 +161,7 @@
 
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();
-                this.$root.pageTitle = plugin.developerName;
+                this.$root.pageTitle = this.$options.filters.escapeHtml(plugin.developerName);
                 this.$router.push({ path: '/developer/'+plugin.developerId})
             },
 
