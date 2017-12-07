@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.6.3000 - 2017-12-07
+
 ### Changed
 - `Craft.MatrixInput` JavaScript objects are now accessible via `$('.matrix').data('matrix')`. ([#2156](https://github.com/craftcms/cms/issues/2156))
 
