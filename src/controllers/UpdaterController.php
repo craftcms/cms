@@ -311,7 +311,7 @@ class UpdaterController extends BaseUpdaterController
 
         // Set the return URL, if any
         if (($returnUrl = $request->getQueryParam('return')) !== null) {
-            $data['returnUrl'] = $returnUrl;
+            $data['returnUrl'] = strip_tags($returnUrl);
         }
 
         return $data;
@@ -432,6 +432,7 @@ class UpdaterController extends BaseUpdaterController
      */
     private function _parseInstallParam(string $installParam): array
     {
+        $installParam = strip_tags($installParam);
         $install = [];
         $pairs = explode(',', $installParam);
 

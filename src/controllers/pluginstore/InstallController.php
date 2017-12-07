@@ -145,9 +145,9 @@ class InstallController extends BaseUpdaterController
     protected function initialData(): array
     {
         $request = Craft::$app->getRequest();
-        $name = $request->getRequiredQueryParam('name');
-        $handle = $request->getRequiredQueryParam('handle');
-        $version = $request->getRequiredQueryParam('version');
+        $name = strip_tags($request->getRequiredQueryParam('name'));
+        $handle = strip_tags($request->getRequiredQueryParam('handle'));
+        $version = strip_tags($request->getRequiredQueryParam('version'));
 
         return [
             'name' => $name,
