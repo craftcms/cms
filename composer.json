@@ -21,7 +21,7 @@
   "minimum-stability": "beta",
   "require": {
     "php": ">=7.0.0",
-    "craftcms/cms": "^3.0.0-beta.29",
+    "craftcms/cms": "^3.0.0-RC1",
     "vlucas/phpdotenv": "^2.4.0",
     "roave/security-advisories": "dev-master"
   },
