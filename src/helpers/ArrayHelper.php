@@ -112,7 +112,7 @@ class ArrayHelper
 		{
 			return (array) $str;
 		}
-		else if (empty($str))
+		else if ($str === '' || $str === null || $str === false)
 		{
 			return array();
 		}
@@ -134,7 +134,10 @@ class ArrayHelper
 			}
 
 			// Remove any empty elements and reset the keys
-			$arr = array_merge(array_filter($arr));
+			$arr = array_merge(array_filter($arr, function($value)
+            {
+                return $value !== '';
+            }));
 
 			return $arr;
 		}

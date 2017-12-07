@@ -440,6 +440,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	 *                                     (Defaults to `true`.)
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
 	{
@@ -455,6 +456,8 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
+			$taskCreated = false;
+
 			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
 			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
@@ -481,9 +484,11 @@ class TemplateCacheService extends BaseApplicationComponent
 
 				// Set the new settings and save the task
 				$task->settings = $settings;
-				craft()->tasks->saveTask($task, false);
+
+                $taskCreated = craft()->tasks->saveTask($task, false);
 			}
-			else
+
+			if (!$taskCreated)
 			{
 				craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
 					'elementId' => $elementId
@@ -510,10 +515,8 @@ class TemplateCacheService extends BaseApplicationComponent
 		{
 			return $this->deleteCacheById($cacheIds);
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
