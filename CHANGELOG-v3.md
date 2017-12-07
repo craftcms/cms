@@ -11,6 +11,7 @@
 - Fixed a bug where the main content area could expand wider than it was supposed to. ([#2169](https://github.com/craftcms/cms/issues/2169))
 - Fixed the width of sidebar nav items when the sidebar had fixed positioning.
 - Fixed a bug where Color fields were getting saved as `{}`. ([#2170](https://github.com/craftcms/cms/issues/2170))
+- Fixed a bug where the `searchScore` property wasn’t being set on elements queried with the `search` param. ([#2174](https://github.com/craftcms/cms/issues/2174))
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.

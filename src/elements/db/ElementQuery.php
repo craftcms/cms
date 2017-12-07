@@ -967,7 +967,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Should we set a search score on the elements?
         if ($this->_searchScores !== null) {
-            foreach ($rows as $row) {
+            foreach ($rows as &$row) {
                 if (isset($this->_searchScores[$row['id']])) {
                     $row['searchScore'] = $this->_searchScores[$row['id']];
                 }
