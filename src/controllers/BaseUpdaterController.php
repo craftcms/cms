@@ -62,6 +62,8 @@ abstract class BaseUpdaterController extends Controller
             throw new NotFoundHttpException();
         }
 
+        $this->requirePostRequest();
+
         if (!parent::beforeAction($action)) {
             return false;
         }
@@ -138,7 +140,7 @@ abstract class BaseUpdaterController extends Controller
      */
     public function actionComposerRemove(): Response
     {
-        $packages = [$this->data['name']];
+        $packages = [$this->data['packageName']];
         $io = new BufferIO();
 
         try {

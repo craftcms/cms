@@ -51,9 +51,6 @@ class InstallController extends BaseUpdaterController
         // Only admins can install plugins
         $this->requireAdmin();
 
-        // Require POST request
-        $this->requirePostRequest();
-
         return true;
     }
 
@@ -76,7 +73,7 @@ class InstallController extends BaseUpdaterController
             $migration = $output = null;
 
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
-            $pluginName = $info['name'] ?? $this->data['name'];
+            $pluginName = $info['name'] ?? $this->data['packageName'];
             $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             if ($e instanceof MigrateException) {
@@ -148,15 +145,15 @@ class InstallController extends BaseUpdaterController
     protected function initialData(): array
     {
         $request = Craft::$app->getRequest();
-        $name = strip_tags($request->getRequiredBodyParam('packageName'));
+        $packageName = strip_tags($request->getRequiredBodyParam('packageName'));
         $handle = strip_tags($request->getRequiredBodyParam('handle'));
         $version = strip_tags($request->getRequiredBodyParam('version'));
 
         return [
-            'name' => $name,
+            'packageName' => $packageName,
             'handle' => $handle,
             'version' => $version,
-            'requirements' => [$name => $version],
+            'requirements' => [$packageName => $version],
             'removed' => false,
         ];
     }

@@ -10,7 +10,7 @@
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.
-- Require the Plugin Store installer to be a POST request.
+- Fixed a bug where an admin could be coerced into installing or removing a plugin.
 
 ## 3.0.0-RC1 - 2017-12-05
 

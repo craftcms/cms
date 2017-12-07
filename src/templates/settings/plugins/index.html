@@ -74,7 +74,7 @@
                                         <ul>
                                             {% if not config.isInstalled %}
                                                 <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
-                                                <li><a class="error" href="{{ url('plugin-store/remove', {name: config.packageName}) }}">{{ 'Remove'|t('app') }}</a></li>
+                                                <li><a class="formsubmit error" data-action="pluginstore/remove" data-param="packageName" data-value="{{ config.packageName }}">{{ 'Remove'|t('app') }}</a></li>
                                             {% else %}
                                                 {% if config.isEnabled %}
                                                     <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
