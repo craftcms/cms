@@ -51,6 +51,9 @@ class InstallController extends BaseUpdaterController
         // Only admins can install plugins
         $this->requireAdmin();
 
+        // Require POST request
+        $this->requirePostRequest();
+
         return true;
     }
 
@@ -145,9 +148,9 @@ class InstallController extends BaseUpdaterController
     protected function initialData(): array
     {
         $request = Craft::$app->getRequest();
-        $name = strip_tags($request->getRequiredQueryParam('name'));
-        $handle = strip_tags($request->getRequiredQueryParam('handle'));
-        $version = strip_tags($request->getRequiredQueryParam('version'));
+        $name = strip_tags($request->getRequiredBodyParam('packageName'));
+        $handle = strip_tags($request->getRequiredBodyParam('handle'));
+        $version = strip_tags($request->getRequiredBodyParam('version'));
 
         return [
             'name' => $name,

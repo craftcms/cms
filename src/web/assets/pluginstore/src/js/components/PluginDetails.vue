@@ -25,7 +25,15 @@
                 </div>
                 <div v-else>
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
-                    <a v-else @click="installPlugin(pluginSnippet)" class="btn submit">{{ "Install"|t('app') }}</a>
+
+                    <div v-else>
+                        <form method="post" :action="installActionUrl">
+                            <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
+                            <input type="hidden" name="handle" :value="pluginSnippet.handle">
+                            <input type="hidden" name="version" :value="pluginSnippet.version">
+                            <input type="submit" class="btn submit" value="Install">
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +137,11 @@
 
             lastUpdate() {
                 return Craft.formatDate(this.plugin.lastUpdate);
-            }
+            },
+
+            installActionUrl() {
+                return Craft.getCpUrl('plugin-store/install');
+            },
 
         },
 
@@ -156,12 +168,6 @@
             tryPlugin(plugin) {
                 this.$root.closeGlobalModal();
                 this.$router.push({ path: '/install/'+plugin.id });
-            },
-
-            installPlugin(plugin) {
-                this.$root.closeGlobalModal();
-
-                window.location.href = Craft.getUrl('plugin-store/install', {name: this.plugin.packageName, handle: this.plugin.handle, version: this.plugin.version});
             },
 
             viewDeveloper(plugin) {
