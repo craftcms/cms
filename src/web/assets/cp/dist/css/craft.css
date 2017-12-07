@@ -1814,6 +1814,10 @@ body.rtl #main-container #main #header h1:not(:last-child) { margin-left: 24px !
 #main-container #main #header #extra-headers { -webkit-box-flex: 0; -ms-flex: 0 0 0px; flex: 0 0 0; }
 #main-container #main #header .buttons, #main-container #main #header .btngroup { margin-top: 0; }
 #main-container #main #main-content { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; width: calc(100vw - 225px); }
+#main-container #main #main-content:not(.has-sidebar):not(.has-details) #content-container { width: 100%; }
+#main-container #main #main-content.has-sidebar:not(.has-details) #content-container { width: calc(100% - 225px); }
+#main-container #main #main-content.has-details:not(.has-sidebar) #content-container { width: calc(100% - 350px); }
+#main-container #main #main-content.has-sidebar.has-details #content-container { width: calc(100% - 575px); }
 #main-container #main #main-content #sidebar-toggle { display: none; }
 #main-container #main #main-content #sidebar .fixed-container, #main-container #main #main-content #details .fixed-container { overflow-y: auto; }
 body.fixed-header #main-container #main #main-content #sidebar .fixed-container, body.fixed-header #main-container #main #main-content #details .fixed-container { position: fixed; }
@@ -1857,6 +1861,7 @@ body.rtl #main-container #main #main-content #details .meta .ui-datepicker { mar
   body.ltr.showing-nav.fixed-header #main-container #main #header { left: 225px; }
   body.rtl.showing-nav.fixed-header #main-container #main #header { right: 225px; }
   #main-container #main #main-content { width: 100vw; }
+  #main-container #main #main-content #content-container { width: 100% !important; }
   #nav-toggle { display: block !important; } }
 @media only screen and (max-width: 998px) { #main-container #main #main-content { -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; }
   #main-container #main #main-content #sidebar-toggle { display: block; position: relative; background: #fafafa; -webkit-box-shadow: inset 0 -1px 0 #e3e5e8; box-shadow: inset 0 -1px 0 #e3e5e8; color: #8f98a3; line-height: 21px; padding: 14px 24px; }

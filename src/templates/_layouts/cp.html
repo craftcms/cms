@@ -67,6 +67,9 @@
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 
 
+{% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+{% set details = (details ?? block('details') ?? '')|trim %}
+
 {% block body %}
     <div id="global-container">
         <header id="global-sidebar" class="sidebar">
@@ -281,10 +284,9 @@
                 </header>
 
                 {# main-content #}
-                <div id="main-content">
+                <div id="main-content" class="{% if sidebar %}has-sidebar{% endif %} {% if details %}has-details{% endif %}">
                     {% block main %}
                         {# sidebar #}
-                        {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
                         {% if sidebar is not empty %}
                             <a id="sidebar-toggle">&nbsp;</a>
                             <div id="sidebar" class="sidebar">
@@ -310,7 +312,6 @@
                         </div>
 
                         {# details #}
-                        {% set details = (details ?? block('details') ?? '')|trim %}
                         {% if details is not empty %}
                             <div id="details">
                                 <div class="fixed-container">

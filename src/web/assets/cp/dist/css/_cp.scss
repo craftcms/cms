@@ -596,6 +596,27 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       align-items: stretch;
       width: calc(100vw - #{$sidebarWidth});
 
+      &:not(.has-sidebar):not(.has-details) {
+        #content-container {
+          width: 100%;
+        }
+      }
+      &.has-sidebar:not(.has-details) {
+        #content-container {
+          width: calc(100% - #{$sidebarWidth});
+        }
+      }
+      &.has-details:not(.has-sidebar) {
+        #content-container {
+          width: calc(100% - #{$detailsWidth});
+        }
+      }
+      &.has-sidebar.has-details {
+        #content-container {
+          width: calc(100% - #{$sidebarWidth + $detailsWidth});
+        }
+      }
+
       #sidebar-toggle {
         display: none;
       }
@@ -774,6 +795,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       #main-content {
         width: 100vw;
+
+        #content-container {
+          width: 100% !important;
+        }
       }
     }
   }
