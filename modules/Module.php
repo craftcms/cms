@@ -1,6 +1,8 @@
 <?php
 namespace modules;
 
+use Craft;
+
 /**
  * Custom module class.
  *
@@ -25,6 +27,7 @@ class Module extends \yii\base\Module
      */
     public function init()
     {
+        Craft::setAlias('@modules', __DIR__);
         parent::init();
 
         // Custom initialization code goes here...
