@@ -7,6 +7,7 @@
 
 namespace craft\fields\data;
 
+use craft\base\Serializable;
 use yii\base\BaseObject;
 
 /**
@@ -26,7 +27,7 @@ use yii\base\BaseObject;
  * @author Top Shelf Craft <michael@michaelrog.com>
  * @since  3.0
  */
-class ColorData extends BaseObject
+class ColorData extends BaseObject implements Serializable
 {
     // Properties
     // =========================================================================
@@ -54,6 +55,14 @@ class ColorData extends BaseObject
      * @return string
      */
     public function __toString()
+    {
+        return $this->_hex;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize()
     {
         return $this->_hex;
     }
