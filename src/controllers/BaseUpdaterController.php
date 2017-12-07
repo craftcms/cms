@@ -387,11 +387,11 @@ abstract class BaseUpdaterController extends Controller
             case self::ACTION_RECHECK_COMPOSER:
                 return Craft::t('app', 'Checking…');
             case self::ACTION_COMPOSER_INSTALL:
-                return Craft::t('app', 'Running {command} (this may take a minute)…', [
+                return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
                     'command' => '`composer install`'
                 ]);
             case self::ACTION_COMPOSER_REMOVE:
-                return Craft::t('app', 'Running {command} (this may take a minute)…', [
+                return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
                     'command' => '`composer remove`'
                 ]);
             case self::ACTION_COMPOSER_OPTIMIZE:
