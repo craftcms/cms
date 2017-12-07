@@ -28,7 +28,7 @@ class PathHelper
 		// Sanitize
 		$path = craft()->request->decodePathInfo($path);
 
-		$segs = explode('/', $path);
+		$segs = array_filter(explode('/', $path));
 		$level = 0;
 
 		foreach ($segs as $seg)
