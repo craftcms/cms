@@ -28,6 +28,7 @@
 
                     <div v-else>
                         <form method="post" :action="installActionUrl">
+                            <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
                             <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
                             <input type="hidden" name="handle" :value="pluginSnippet.handle">
                             <input type="hidden" name="version" :value="pluginSnippet.version">
@@ -142,6 +143,14 @@
             installActionUrl() {
                 return Craft.getCpUrl('plugin-store/install');
             },
+
+            csrfTokenName() {
+                return Craft.csrfTokenName;
+            },
+
+            csrfTokenValue() {
+                return Craft.csrfTokenValue;
+            }
 
         },
 
