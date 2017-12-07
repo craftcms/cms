@@ -554,23 +554,32 @@ ul.categories {
         border-radius: 4px;
         padding: 24px;
 
-        ul li {
-          display: flex;
+        ul.plugin-meta-data {
           border-bottom: 1px solid #eee;
+          margin-bottom: 14px;
+
+          li {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            padding: 7px 0;
+
+            &:last-child {
+              border-bottom: 0;
+            }
+
+            & span,
+            & strong {
+              flex-grow: 1;
+            }
+
+            & strong {
+              text-align: right;
+            }
+          }
+        }
+
+        ul.plugin-meta-links li {
           padding: 7px 0;
-
-          &:last-child {
-            border-bottom: 0;
-          }
-
-          & span,
-          & strong {
-            flex-grow: 1;
-          }
-
-          & strong {
-            text-align: right;
-          }
         }
       }
     }
