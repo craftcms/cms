@@ -42,7 +42,7 @@
 
                 <div class="plugin-sidebar">
                     <div class="plugin-meta">
-                        <ul>
+                        <ul class="plugin-meta-data">
                             <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
                             <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
                             <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
@@ -56,6 +56,11 @@
                                 </strong>
                             </li>
                             <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
+                        </ul>
+
+                        <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
+                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn">Documentation</a></li>
+                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn">Changelog</a></li>
                         </ul>
                     </div>
                 </div>
