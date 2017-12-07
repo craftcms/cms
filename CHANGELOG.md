@@ -10,6 +10,9 @@
 - Fixed a bug where `ArrayHelper::stringToArray('0')` would return an empty array instead of `array('0')`. ([#2144](https://github.com/craftcms/cms/issues/2144))
 - Improved the performance of some queries to the `templatecaches` tables.
 
+### Security
+- Fixed a vulnerability that made it possible to access sensitive files.
+
 ## 2.6.2999 - 2017-11-29
 
 ### Fixed
