@@ -17,7 +17,7 @@ class m171016_221244_less_strict_translation_method extends Migration
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres
             // (see https://github.com/yiisoft/yii2/issues/12077)
-            $this->execute('alter table {{%fields}} drop constraint [[fields_translationMethod_check]]');
+            $this->execute("ALTER TABLE {{%fields}} DROP CONSTRAINT [[{$this->db->tablePrefix}fields_translationMethod_check]]");
         } else {
             $this->alterColumn('{{%fields}}', 'translationMethod', $this->string()->notNull()->defaultValue('none'));
         }

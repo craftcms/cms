@@ -37,7 +37,7 @@ class m171011_214115_site_groups extends Migration
             'name' => $name,
         ]);
 
-        $groupId = $this->db->getLastInsertID();
+        $groupId = $this->db->getLastInsertID('{{%sitegroups}}');
 
         // Assign all the current sites to it
         $this->update('{{%sites}}', ['groupId' => $groupId], '', [], false);
