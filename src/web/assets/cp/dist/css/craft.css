@@ -1828,7 +1828,7 @@ body.rtl #main-container #main #header h1:not(:last-child) { margin-left: 24px !
 #main-container #main #main-content #content-container #tabs li a { color: #555; }
 #main-container #main #main-content #content-container #tabs li a:not(.sel):hover { color: #0d78f2; }
 #main-container #main #main-content #content-container #tabs li a.sel { background: #fff; -webkit-box-shadow: 1px 0 0 #e3e5e8, -1px 0 0 #e3e5e8; box-shadow: 1px 0 0 #e3e5e8, -1px 0 0 #e3e5e8; }
-#main-container #main #main-content #content-container #content { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; background: #fff; padding: 24px; }
+#main-container #main #main-content #content-container #content { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; background: #fff; padding: 24px; word-break: break-all; }
 #main-container #main #main-content #details { -webkit-box-flex: 0; -ms-flex: 0 0 350px; flex: 0 0 350px; width: 350px; background: #d5d8dd; }
 body.ltr #main-container #main #main-content #details { -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 20, 0.1); box-shadow: inset 1px 0 0 rgba(0, 0, 20, 0.1); }
 body.rtl #main-container #main #main-content #details { -webkit-box-shadow: inset -1px 0 0 rgba(0, 0, 20, 0.1); box-shadow: inset -1px 0 0 rgba(0, 0, 20, 0.1); }
