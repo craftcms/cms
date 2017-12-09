@@ -810,6 +810,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     #main {
       #main-content {
         flex-direction: column;
+        max-height: none !important;
 
         #sidebar-toggle {
           display: block;

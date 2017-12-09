@@ -1863,7 +1863,7 @@ body.rtl #main-container #main #main-content #details .meta .ui-datepicker { mar
   #main-container #main #main-content #content-container { width: 100% !important; }
   #crumbs { display: -webkit-box !important; display: -ms-flexbox !important; display: flex !important; }
   #crumbs #nav-toggle { display: block; } }
-@media only screen and (max-width: 998px) { #main-container #main #main-content { -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; }
+@media only screen and (max-width: 998px) { #main-container #main #main-content { -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; max-height: none !important; }
   #main-container #main #main-content #sidebar-toggle { display: block; position: relative; background: #fafafa; -webkit-box-shadow: inset 0 -1px 0 #e3e5e8; box-shadow: inset 0 -1px 0 #e3e5e8; color: #8f98a3; line-height: 21px; padding: 14px 24px; }
   body.ltr #main-container #main #main-content #sidebar-toggle { padding: 14px 50px 14px 24px; }
   body.rtl #main-container #main #main-content #sidebar-toggle { padding: 14px 24px 14px 50px; }
