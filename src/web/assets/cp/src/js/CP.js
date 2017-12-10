@@ -108,7 +108,7 @@ Craft.CP = Garnish.Base.extend(
 
             this.initTabs();
 
-            Garnish.$doc.on('ready', $.proxy(function() {
+            Garnish.$doc.ready($.proxy(function() {
                 // Look for forms that we should watch for changes on
                 this.$confirmUnloadForms = $('form[data-confirm-unload]');
 

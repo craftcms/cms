@@ -19,6 +19,7 @@
 - Fixed a bug where some updates to RC1 would fail if using PostgreSQL.
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` was returning `text/html` for some SVG files. ([#2181](https://github.com/craftcms/cms/issues/2181))
 - Fixed a bug where routes that contained an “any” (`*`) token were not working. ([#2184](https://github.com/craftcms/cms/issues/2184))
+- Fixed a bug where some Control Panel JavaScript features weren’t getting initialized. ([#2188](https://github.com/craftcms/cms/issues/2188))
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.
