@@ -1918,9 +1918,16 @@ body.rtl #nav-toggle { margin-right: -24px; }
 
 /* tabs */
 .tabs ul { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; }
-.tabs ul li a { display: block; padding: 10px 24px; color: #777; white-space: nowrap; }
+.tabs ul li a { position: relative; display: block; padding: 10px 24px; color: #777; white-space: nowrap; overflow: hidden; }
+.tabs ul li a:after { content: '.'; font-size: 0; display: block; position: absolute; top: 0; width: 24px; height: 100%; }
+body.ltr .tabs ul li a:after { right: 0; }
+body.rtl .tabs ul li a:after { left: 0; }
+body.ltr .tabs ul li a:after { background: -webkit-gradient(linear, left top, right top, from(rgba(235, 237, 239, 0)), to(#ebedef)); background: linear-gradient(to right, rgba(235, 237, 239, 0), #ebedef); }
+body.rtl .tabs ul li a:after { background: -webkit-gradient(linear, right top, left top, from(rgba(235, 237, 239, 0)), to(#ebedef)); background: linear-gradient(to left, rgba(235, 237, 239, 0), #ebedef); }
 .tabs ul li a:hover { text-decoration: none; color: #0d78f2; }
 .tabs ul li a.sel { color: #000; padding-bottom: 10px; cursor: default; }
+body.ltr .tabs ul li a.sel:after { background: -webkit-gradient(linear, left top, right top, from(rgba(255, 255, 255, 0)), to(#fff)); background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff); }
+body.rtl .tabs ul li a.sel:after { background: -webkit-gradient(linear, right top, left top, from(rgba(255, 255, 255, 0)), to(#fff)); background: linear-gradient(to left, rgba(255, 255, 255, 0), #fff); }
 
 /* grids */
 .grid { position: relative; }

@@ -996,10 +996,31 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
     li {
       a {
+        position: relative;
         display: block;
         padding: 10px 24px;
         color: #777;
         white-space: nowrap;
+        overflow: hidden;
+
+        &:after {
+          content: '.';
+          font-size: 0;
+          display: block;
+          position: absolute;
+          top: 0;
+          @include right(0);
+          width: 24px;
+          height: 100%;
+
+          body.ltr & {
+            background: linear-gradient(to right, hsla($hue, 10%, 93%, 0), $bgColor);
+          }
+
+          body.rtl & {
+            background: linear-gradient(to left, hsla($hue, 10%, 93%, 0), $bgColor);
+          }
+        }
 
         &:hover {
           text-decoration: none;
@@ -1010,6 +1031,16 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           color: #000;
           padding-bottom: 10px;
           cursor: default;
+
+          &:after {
+            body.ltr & {
+              background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff);
+            }
+
+            body.rtl & {
+              background: linear-gradient(to left, rgba(255, 255, 255, 0), #fff);
+            }
+          }
         }
       }
     }

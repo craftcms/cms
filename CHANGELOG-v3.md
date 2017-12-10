@@ -7,6 +7,7 @@
 - Field Type dropdowns no longer completely hide incompatible field types; now they are visible but disabled.
 - URI segments matched with the “any” (`*`) token are now passed to the template as variables named `any`, `any2`, `any3`, etc.
 - Control Panel templates can now define `.info` elements with multiple paragraphs or line breaks. ([#2185](https://github.com/craftcms/cms/issues/2185))
+- Control Panel content tabs now shrink to fit if they’re too wide for the tab bar. ([#2186](https://github.com/craftcms/cms/issues/2186))
 
 ### Fixed
 - Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))

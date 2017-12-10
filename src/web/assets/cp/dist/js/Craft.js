@@ -1,4 +1,4 @@
-/*!   - 2017-12-09 */
+/*!   - 2017-12-10 */
 (function($){
 
 /** global: Craft */
@@ -8349,23 +8349,35 @@ Craft.CP = Garnish.Base.extend(
         initTabs: function() {
             this.$selectedTab = null;
 
-            // Are there any tabs that link to anchors?
-            var $tabs = $('#tabs').find('> ul > li > a');
+            var $tabs = $('#tabs').find('> ul > li');
+            var tabs = [];
+            var tabWidths = [];
+            var totalWidth = 0;
+            var i, a, href;
 
-            for (var i = 0; i < $tabs.length; i++) {
-                var $tab = $($tabs[i]),
-                    href = $tab.attr('href');
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i] = $($tabs[i]);
+                tabWidths[i] = tabs[i].width();
+                totalWidth += tabWidths[i];
 
+                // Does it link to an anchor?
+                a = tabs[i].children('a');
+                href = a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener($tab, 'click', function(ev) {
+                    this.addListener(a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
                 }
 
-                if (!this.$selectedTab && $tab.hasClass('sel')) {
-                    this.$selectedTab = $tab;
+                if (!this.$selectedTab && a.hasClass('sel')) {
+                    this.$selectedTab = a;
                 }
+            }
+
+            // Now set their max widths
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 
