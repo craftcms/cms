@@ -1800,7 +1800,7 @@ body.rtl #main-container #alerts li:before { margin: -1px 0 0 3px ; }
 #main-container #crumbs nav ul li:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; margin: -1px 5px 0; font-size: 11px; color: #8f98a3; }
 body.ltr #main-container #crumbs nav ul li:after { content: 'rightangle'; }
 body.rtl #main-container #crumbs nav ul li:after { content: 'leftangle'; }
-#main-container #crumbs nav ul li a { display: inline-block; padding: 14px 0; color: #8f98a3; }
+#main-container #crumbs nav ul li a { display: inline-block; padding: 10px 0; color: #8f98a3; }
 #main-container #crumbs nav ul li a:hover { color: #0d78f2; text-decoration: none; }
 #main-container #main, #main-container #main-form { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; }
 #main-container #main #header { -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; position: relative; z-index: 2; padding: 20px 24px 13px; -webkit-box-sizing: border-box; box-sizing: border-box; width: calc(100vw - 225px); background: #ebedef; -webkit-box-shadow: 0 1px 0 rgba(0, 0, 20, 0.1); box-shadow: 0 1px 0 rgba(0, 0, 20, 0.1); }
@@ -1924,7 +1924,7 @@ body.rtl #notifications-wrapper { right: 0; }
 #notifications .notification.notice { background: #5286d9; }
 #notifications .notification.error { background: #da5a47; }
 
-#nav-toggle { display: none; width: 24px; height: 24px; padding: 10px; line-height: 22px; color: #8f98a3; text-align: center; }
+#nav-toggle { display: none; width: 40px; height: 40px; line-height: 40px; color: #8f98a3; text-align: center; }
 body.ltr #nav-toggle { margin-left: -24px; }
 body.rtl #nav-toggle { margin-right: -24px; }
 #nav-toggle:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; content: 'menu'; font-size: 16px; line-height: 0; }

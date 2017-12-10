@@ -517,7 +517,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
           a {
             display: inline-block;
-            padding: 14px 0;
+            padding: 10px 0;
             color: $mediumTextColor;
 
             &:hover {
@@ -1026,10 +1026,9 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
 #nav-toggle {
   display: none;
-  width: 24px;
-  height: 24px;
-  padding: 10px;
-  line-height: 22px;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
   color: $secondarySubmitColor;
   text-align: center;
   @include margin-left(-24px);
