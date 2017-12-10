@@ -68,8 +68,8 @@
                         </ul>
 
                         <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
-                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn">Documentation</a></li>
-                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn">Changelog</a></li>
+                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth">Documentation</a></li>
+                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth">Changelog</a></li>
                         </ul>
                     </div>
                 </div>
