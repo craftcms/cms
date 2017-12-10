@@ -646,18 +646,72 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           position: relative;
           z-index: 1;
           box-shadow: inset 0 -1px 0 $hairlineColor;
+          min-height: 40px;
+          overflow: hidden;
 
-          li {
-            a {
-              color: #555;
+          ul {
+            display: flex;
+            flex-direction: row;
+            width: calc(100% + 1px);
 
-              &:not(.sel):hover {
-                color: $linkColor;
-              }
+            li {
+              box-sizing: border-box;
+              @include border-right(1px solid $hairlineColorAlpha);
 
-              &.sel {
-                background: #fff;
-                box-shadow: 1px 0 0 $hairlineColor, -1px 0 0 $hairlineColor;
+              a {
+                position: relative;
+                display: block;
+                padding: 10px 24px;
+                white-space: nowrap;
+                overflow: hidden;
+
+                &:after {
+                  content: '.';
+                  font-size: 0;
+                  display: block;
+                  position: absolute;
+                  top: 0;
+                  @include right(0);
+                  width: 24px;
+                  height: calc(100% - 1px);
+
+                  body.ltr & {
+                    background: linear-gradient(to right, hsla($hue, 10%, 93%, 0), $bgColor 17px);
+                  }
+
+                  body.rtl & {
+                    background: linear-gradient(to left, hsla($hue, 10%, 93%, 0), $bgColor 17px);
+                  }
+                }
+
+                &:hover {
+                  text-decoration: none;
+                }
+
+                &:not(.sel) {
+                  color: $mediumDarkTextColor;
+
+                  &:hover {
+                    color: $linkColor;
+                  }
+                }
+
+                &.sel {
+                  color: $textColor;
+                  background: #fff;
+                  padding-bottom: 10px;
+                  cursor: default;
+
+                  &:after {
+                    body.ltr & {
+                      background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 17px);
+                    }
+
+                    body.rtl & {
+                      background: linear-gradient(to left, rgba(255, 255, 255, 0), #fff 17px);
+                    }
+                  }
+                }
               }
             }
           }
@@ -985,65 +1039,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     content: 'menu';
     font-size: 16px;
     line-height: 0;
-  }
-}
-
-/* tabs */
-.tabs {
-  ul {
-    display: flex;
-    flex-direction: row;
-
-    li {
-      a {
-        position: relative;
-        display: block;
-        padding: 10px 24px;
-        color: #777;
-        white-space: nowrap;
-        overflow: hidden;
-
-        &:after {
-          content: '.';
-          font-size: 0;
-          display: block;
-          position: absolute;
-          top: 0;
-          @include right(0);
-          width: 24px;
-          height: 100%;
-
-          body.ltr & {
-            background: linear-gradient(to right, hsla($hue, 10%, 93%, 0), $bgColor);
-          }
-
-          body.rtl & {
-            background: linear-gradient(to left, hsla($hue, 10%, 93%, 0), $bgColor);
-          }
-        }
-
-        &:hover {
-          text-decoration: none;
-          color: $linkColor;
-        }
-
-        &.sel {
-          color: #000;
-          padding-bottom: 10px;
-          cursor: default;
-
-          &:after {
-            body.ltr & {
-              background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff);
-            }
-
-            body.rtl & {
-              background: linear-gradient(to left, rgba(255, 255, 255, 0), #fff);
-            }
-          }
-        }
-      }
-    }
   }
 }
 
