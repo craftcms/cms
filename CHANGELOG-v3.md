@@ -5,6 +5,7 @@
 
 ### Changed
 - Field Type dropdowns no longer completely hide incompatible field types; now they are visible but disabled.
+- URI segments matched with the “any” (`*`) token are now passed to the template as variables named `any`, `any2`, `any3`, etc.
 
 ### Fixed
 - Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))
@@ -15,6 +16,7 @@
 - Fixed a bug where the Craft logo was broken on the Control Panel login screen on Windows. ([#2179](https://github.com/craftcms/cms/issues/2179))
 - Fixed a bug where some updates to RC1 would fail if using PostgreSQL.
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` was returning `text/html` for some SVG files. ([#2181](https://github.com/craftcms/cms/issues/2181))
+- Fixed a bug where routes that contained an “any” (`*`) token were not working. ([#2184](https://github.com/craftcms/cms/issues/2184))
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.

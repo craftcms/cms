@@ -168,23 +168,22 @@ class Routes extends Component
                 // Is the name a valid handle?
                 if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
                     $subpatternName = $part[0];
-
-                    // Make sure it's unique
-                    if (isset($subpatternNameCounts[$subpatternName])) {
-                        $subpatternNameCounts[$subpatternName]++;
-
-                        // Append the count to the end of the name
-                        $subpatternName .= $subpatternNameCounts[$subpatternName];
-                    } else {
-                        $subpatternNameCounts[$subpatternName] = 1;
-                    }
-
-                    // Add the var as a named subpattern
-                    $uriPattern .= '<'.preg_quote($subpatternName, '/').':'.$part[1].'>';
                 } else {
-                    // Just match it
-                    $uriPattern .= '('.$part[1].')';
+                    $subpatternName = 'any';
                 }
+
+                // Make sure it's unique
+                if (isset($subpatternNameCounts[$subpatternName])) {
+                    $subpatternNameCounts[$subpatternName]++;
+
+                    // Append the count to the end of the name
+                    $subpatternName .= $subpatternNameCounts[$subpatternName];
+                } else {
+                    $subpatternNameCounts[$subpatternName] = 1;
+                }
+
+                // Add the var as a named subpattern
+                $uriPattern .= '<'.preg_quote($subpatternName, '/').':'.$part[1].'>';
             }
         }
 
