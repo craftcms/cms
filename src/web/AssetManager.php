@@ -98,6 +98,9 @@ class AssetManager extends \yii\web\AssetManager
     {
         list($dir, $url) = parent::publishDirectory($src, $options);
 
+        // A backslash can cause issues on Windows here.
+        $url = str_replace('\\','/', $url);
+
         // Clear out any older instances of the same directory
         $this->_clearOldDirs($dir);
 

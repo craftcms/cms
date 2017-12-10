@@ -10,6 +10,7 @@ Craft.CP = Garnish.Base.extend(
         $nav: null,
         $mainContainer: null,
         $alerts: null,
+        $crumbs: null,
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
@@ -18,6 +19,7 @@ Craft.CP = Garnish.Base.extend(
         $details: null,
         $selectedTab: null,
         $sidebar: null,
+        $contentContainer: null,
 
         $collapsibleTables: null,
 
@@ -47,13 +49,15 @@ Craft.CP = Garnish.Base.extend(
             this.$nav = $('#nav');
             this.$mainContainer = $('#main-container');
             this.$alerts = $('#alerts');
+            this.$crumbs = $('#crumbs');
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
-            this.$details = $('#details').children('.fixed-container');
-            this.$sidebar = $('#sidebar').children('.fixed-container');
+            this.$details = $('#details');
+            this.$sidebar = $('#sidebar');
+            this.$contentContainer = $('#content-container');
 
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
@@ -64,9 +68,9 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Set up responsibe tables
-                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
-                this.updateResponsiveTables();
+                // Keep the layout in order on window resize
+                this.addListener(Garnish.$win, 'resize', 'handleResize');
+                this.handleResize();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -242,6 +246,14 @@ Craft.CP = Garnish.Base.extend(
                 $(this.$selectedTab.attr('href')).addClass('hidden');
             }
             this.$selectedTab = null;
+        },
+
+        handleResize: function() {
+            // #main-content height = viewport height - #alerts - #crumbs - #header
+            this.$mainContent.css('max-height', Garnish.$win.height() - (this.$alerts.outerHeight() || 0) - (this.$crumbs.outerHeight() || 0) - this.$header.outerHeight());
+
+            // Update responsive tables
+            this.updateResponsiveTables();
         },
 
         updateResponsiveTables: function() {

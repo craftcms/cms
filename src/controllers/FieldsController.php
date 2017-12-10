@@ -242,7 +242,6 @@ class FieldsController extends Controller
             'groupOptions' => $groupOptions,
             'crumbs' => $crumbs,
             'title' => $title,
-            'docsUrl' => 'http://craftcms.com/docs/fields#field-layouts',
         ]);
     }
 

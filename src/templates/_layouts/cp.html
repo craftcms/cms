@@ -69,148 +69,147 @@
 
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set details = (details ?? block('details') ?? '')|trim %}
+{% set crumbs = crumbs ?? null %}
 
 {% block body %}
     <div id="global-container">
         <header id="global-sidebar" class="sidebar">
-            <div class="fixed-container">
-                {% if currentUser.admin and craft.app.config.general.devMode %}
-                    <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
-                {% endif %}
+            {% if currentUser.admin and craft.app.config.general.devMode %}
+                <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
+            {% endif %}
 
-                <div id="id">
-                    <a class="system-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
+            <div id="id">
+                <a class="system-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
 
-                        {% if CraftEdition >= CraftClient %}
-                            {% if craft.rebrand.isIconUploaded %}
-                                <div id="site-icon" class="photo-container">
-                                    <img src="{{ craft.rebrand.icon.url }}" alt="">
-                                </div>
-                            {% endif %}
+                    {% if CraftEdition >= CraftClient %}
+                        {% if craft.rebrand.isIconUploaded %}
+                            <div id="site-icon" class="photo-container">
+                                <img src="{{ craft.rebrand.icon.url }}" alt="">
+                            </div>
                         {% endif %}
-
-                        <h2>{{ systemName }}</h2>
-                    </a>
-
-                    {% if craft.cp.enableCraftId() %}
-                        {% set craftIdAccount = craft.cp.craftIdAccount() %}
-                    {% else %}
-                        {% set craftIdAccount = null %}
                     {% endif %}
 
-                    <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
-                        <div id="user-photo-icon" class="photo-container">
-                            <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
+                    <h2>{{ systemName }}</h2>
+                </a>
 
-                            <div class="craftid craftid-connected{% if not craftIdAccount %} hidden{% endif %}">
-                                <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
-                            </div>
+                {% if craft.cp.enableCraftId() %}
+                    {% set craftIdAccount = craft.cp.craftIdAccount() %}
+                {% else %}
+                    {% set craftIdAccount = null %}
+                {% endif %}
+
+                <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
+                    <div id="user-photo-icon" class="photo-container">
+                        <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
+
+                        <div class="craftid craftid-connected{% if not craftIdAccount %} hidden{% endif %}">
+                            <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
                         </div>
-                        <div id="account-menu-anchor"></div>
-                    </a>
+                    </div>
+                    <div id="account-menu-anchor"></div>
+                </a>
 
-                    <div class="menu" data-align="left">
-                        <ul>
-                            <li>
-                                <a href="{{ url('myaccount') }}">
-                                    <div id="account-info-preview">
-                                        <div id="user-photo" class="photo-container">
-                                            <img width="50" sizes="50px" srcset="{{ currentUser.getThumbUrl(50) }} 50w, {{ currentUser.getThumbUrl(100) }} 100w" alt="{{ currentUser.getName() }}">
-                                        </div>
-                                        <div class="username">
-                                            {{ currentUser.name }}
-                                            {% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
-                                        </div>
+                <div class="menu" data-align="left">
+                    <ul>
+                        <li>
+                            <a href="{{ url('myaccount') }}">
+                                <div id="account-info-preview">
+                                    <div id="user-photo" class="photo-container">
+                                        <img width="50" sizes="50px" srcset="{{ currentUser.getThumbUrl(50) }} 50w, {{ currentUser.getThumbUrl(100) }} 100w" alt="{{ currentUser.getName() }}">
                                     </div>
-                                </a>
-                            </li>
+                                    <div class="username">
+                                        {{ currentUser.name }}
+                                        {% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
 
-                            {% if CraftEdition == CraftClient and currentUser.admin %}
-                                <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
-                            {% endif %}
-                            <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                        {% if CraftEdition == CraftClient and currentUser.admin %}
+                            <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
+                        {% endif %}
+                        <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                    </ul>
+
+                    {% if craft.cp.enableCraftId() %}
+                        <hr>
+
+                        <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
+                            <li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                            <li>
+                                <form method="post" id="disconnect">
+                                    {{ csrfInput() }}
+                                    <input type="hidden" name="action" value="plugin-store/disconnect">
+                                    <a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect your Craft ID"|t('app') }}</a>
+                                </form>
+                            </li>
                         </ul>
 
-                        {% if craft.cp.enableCraftId() %}
-                            <hr>
+                        <ul class="craftid-disconnected{% if craftIdAccount %} hidden{% endif %}">
+                            <li>
+                                <form method="post" id="connect">
+                                    {{ csrfInput() }}
+                                    <input type="hidden" name="action" value="plugin-store/connect">
+                                    <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
+                                </form>
+                            </li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
 
-                            <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
-                                <li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
-                                <li>
-                                    <form method="post" id="disconnect">
-                                        {{ csrfInput() }}
-                                        <input type="hidden" name="action" value="plugin-store/disconnect">
-                                        <a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect your Craft ID"|t('app') }}</a>
-                                    </form>
-                                </li>
-                            </ul>
+            <nav id="nav">
+                <ul>
+                    {% for item in craft.cp.nav() %}
+                        {% set hasSubnav = (item.subnav is defined and item.subnav) %}
+                        <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
+                            <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
+                                <span class="icon icon-mask">
+                                    {%- if item.icon is defined -%}
+                                        {{ (svg(item.icon) ?: "<span data-icon='#{item.icon}'></span>")|raw }}
+                                    {%- else -%}
+                                        {% include "_includes/defaulticon.svg" with { label: item.label } %}
+                                    {%- endif -%}
+                                </span>
 
-                            <ul class="craftid-disconnected{% if craftIdAccount %} hidden{% endif %}">
-                                <li>
-                                    <form method="post" id="connect">
-                                        {{ csrfInput() }}
-                                        <input type="hidden" name="action" value="plugin-store/connect">
-                                        <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
-                                    </form>
-                                </li>
-                            </ul>
+                                <span class="label">
+                                    {{- item.label -}}
+                                </span>
+
+                                {%- if not item.sel and item.badgeCount -%}
+                                    <span class="badge">{{ item.badgeCount }}</span>
+                                {%- endif -%}
+                            </a>
+                            {% if item.sel and hasSubnav %}
+                                <ul class="subnav">
+                                    {% for itemId, item in item.subnav %}
+                                        {% set itemIsSelected = (
+                                            (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
+                                            (selectedSubnavItem is not defined and loop.first)
+                                        ) -%}
+
+                                        <li>
+                                            <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
+                                        </li>
+
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            <div>
+                <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
+                    <div id="edition-logo">
+                        <div class="edition-name">{{ craft.app.getEditionName() }}</div>
+                        {% if isTrial %}
+                            <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                         {% endif %}
                     </div>
                 </div>
-
-                <nav id="nav">
-                    <ul>
-                        {% for item in craft.cp.nav() %}
-                            {% set hasSubnav = (item.subnav is defined and item.subnav) %}
-                            <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
-                                <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
-                                    <span class="icon icon-mask">
-                                        {%- if item.icon is defined -%}
-                                            {{ (svg(item.icon) ?: "<span data-icon='#{item.icon}'></span>")|raw }}
-                                        {%- else -%}
-                                            {% include "_includes/defaulticon.svg" with { label: item.label } %}
-                                        {%- endif -%}
-                                    </span>
-
-                                    <span class="label">
-                                        {{- item.label -}}
-                                    </span>
-
-                                    {%- if not item.sel and item.badgeCount -%}
-                                        <span class="badge">{{ item.badgeCount }}</span>
-                                    {%- endif -%}
-                                </a>
-                                {% if item.sel and hasSubnav %}
-                                    <ul class="subnav">
-                                        {% for itemId, item in item.subnav %}
-                                            {% set itemIsSelected = (
-                                                (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
-                                                (selectedSubnavItem is not defined and loop.first)
-                                            ) -%}
-
-                                            <li>
-                                                <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>{{ item.label }}</a>
-                                            </li>
-
-                                        {% endfor %}
-                                    </ul>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </nav>
-
-                <div>
-                    <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
-                        <div id="edition-logo">
-                            <div class="edition-name">{{ craft.app.getEditionName() }}</div>
-                            {% if isTrial %}
-                                <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div><!-- .fixed-container -->
+            </div>
         </header><!-- #global-sidebar -->
 
         <div id="main-container">
@@ -244,9 +243,9 @@
             </div>
 
             {# crumbs #}
-            <div id="crumbs">
+            <div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
                 <a id="nav-toggle" title="{{ 'Show nav'|t('app') }}"></a>
-                {% if crumbs is defined and crumbs %}
+                {% if crumbs %}
                     <nav>
                         <ul>
                             {% for crumb in crumbs %}
@@ -290,9 +289,7 @@
                         {% if sidebar is not empty %}
                             <a id="sidebar-toggle">&nbsp;</a>
                             <div id="sidebar" class="sidebar">
-                                <div class="fixed-container">
-                                    {{ sidebar|raw }}
-                                </div>
+                                {{ sidebar|raw }}
                             </div>
                         {% endif %}
 
@@ -314,9 +311,7 @@
                         {# details #}
                         {% if details is not empty %}
                             <div id="details">
-                                <div class="fixed-container">
-                                    {{ details|raw }}
-                                </div>
+                                {{ details|raw }}
                             </div>
                         {% endif %}
                     {% endblock %}

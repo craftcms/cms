@@ -8,9 +8,9 @@ use craft\db\Query;
 use craft\helpers\Json;
 
 /**
- * m170707_131841_fix_db_routes migration.
+ * m171210_142046_fix_db_routes migration.
  */
-class m170707_131841_fix_db_routes extends Migration
+class m171210_142046_fix_db_routes extends Migration
 {
     /**
      * @inheritdoc
@@ -39,7 +39,7 @@ class m170707_131841_fix_db_routes extends Migration
      */
     public function safeDown()
     {
-        echo "m170707_131841_fix_db_routes cannot be reverted.\n";
+        echo "m171210_142046_fix_db_routes cannot be reverted.\n";
         return false;
     }
 }

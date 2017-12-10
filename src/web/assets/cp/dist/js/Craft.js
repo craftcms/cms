@@ -1,4 +1,4 @@
-/*!   - 2017-11-30 */
+/*!   - 2017-12-09 */
 (function($){
 
 /** global: Craft */
@@ -1938,7 +1938,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
                 !Garnish.isMobileBrowser(true)
             ) {
-                this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -2171,27 +2172,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }, this));
         },
 
-        updateFixedToolbar: function() {
-            this.updateFixedToolbar._pageHeaderHeight = $('#header').outerHeight();
+        updateFixedToolbar: function(e) {
+            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
 
-            if (!this.toolbarOffset) {
-                this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
-
-                if (!this.toolbarOffset) {
-                    return;
-                }
-            }
-
-            this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7) {
-                if (!this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
+            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
+                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
+                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
                     this.$toolbar.addClass('fixed');
-                    this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
                 }
 
-                this.$toolbar.css('width', this.$main.width());
+                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
+                    this.$toolbar.css({
+                        top: Craft.cp.$contentContainer.offset().top,
+                        width: this.$main.width()
+                    });
+                }
             }
             else {
                 if (this.$toolbar.hasClass('fixed')) {
@@ -8166,6 +8161,7 @@ Craft.CP = Garnish.Base.extend(
         $nav: null,
         $mainContainer: null,
         $alerts: null,
+        $crumbs: null,
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
@@ -8174,6 +8170,7 @@ Craft.CP = Garnish.Base.extend(
         $details: null,
         $selectedTab: null,
         $sidebar: null,
+        $contentContainer: null,
 
         $collapsibleTables: null,
 
@@ -8203,13 +8200,15 @@ Craft.CP = Garnish.Base.extend(
             this.$nav = $('#nav');
             this.$mainContainer = $('#main-container');
             this.$alerts = $('#alerts');
+            this.$crumbs = $('#crumbs');
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
-            this.$details = $('#details').children('.fixed-container');
-            this.$sidebar = $('#sidebar').children('.fixed-container');
+            this.$details = $('#details');
+            this.$sidebar = $('#sidebar');
+            this.$contentContainer = $('#content-container');
 
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
@@ -8220,9 +8219,9 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Set up responsibe tables
-                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
-                this.updateResponsiveTables();
+                // Keep the layout in order on window resize
+                this.addListener(Garnish.$win, 'resize', 'handleResize');
+                this.handleResize();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -8398,6 +8397,14 @@ Craft.CP = Garnish.Base.extend(
                 $(this.$selectedTab.attr('href')).addClass('hidden');
             }
             this.$selectedTab = null;
+        },
+
+        handleResize: function() {
+            // #main-content height = viewport height - #alerts - #crumbs - #header
+            this.$mainContent.css('max-height', Garnish.$win.height() - (this.$alerts.outerHeight() || 0) - (this.$crumbs.outerHeight() || 0) - this.$header.outerHeight());
+
+            // Update responsive tables
+            this.updateResponsiveTables();
         },
 
         updateResponsiveTables: function() {
