@@ -113,6 +113,22 @@ class EntryType extends Model
                 'targetAttribute' => ['handle', 'sectionId'],
                 'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
+            [
+                ['titleLabel'],
+                'required',
+                'when' => function ($model, $attribute) {
+                    /** @var static $model */
+                    return $model->hasTitleField;
+                }
+            ],
+            [
+                ['titleFormat'],
+                'required',
+                'when' => function ($model, $attribute) {
+                    /** @var static $model */
+                    return !$model->hasTitleField;
+                }
+            ],
         ];
     }
 
