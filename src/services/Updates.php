@@ -113,7 +113,7 @@ class Updates extends Component
             $updates = Craft::$app->getApi()->getUpdates();
             $cacheDuration = 86400; // 24 hours
         } catch (\Throwable $e) {
-            Craft::warning("Couldn't get updates: {$e->getMessage()}");
+            Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updates = [];
             $cacheDuration = 300; // 5 minutes
         }
