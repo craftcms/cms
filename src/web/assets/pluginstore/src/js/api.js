@@ -22,6 +22,7 @@ export default {
     getDeveloper(developerId, cb, errorCb) {
         let params = qs.stringify({
             enableCraftId: window.enableCraftId,
+            cms: window.cmsInfo,
         });
 
         axios.post(window.craftApiEndpoint+'/developer/'+developerId, params)
@@ -37,7 +38,9 @@ export default {
     getPluginStoreData(cb, errorCb) {
         let params = qs.stringify({
             enableCraftId: window.enableCraftId,
+            cms: window.cmsInfo,
         });
+
         axios.post(window.craftApiEndpoint+'/plugin-store', params)
             .then(response => {
                 return cb(response.data);
@@ -50,6 +53,7 @@ export default {
     getPluginDetails(pluginId, cb, errorCb) {
         let params = qs.stringify({
             enableCraftId: window.enableCraftId,
+            cms: window.cmsInfo,
         });
 
         axios.post(window.craftApiEndpoint+'/plugin/'+pluginId, params)
