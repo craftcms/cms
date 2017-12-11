@@ -5,7 +5,6 @@
 ### Fixed
 - Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
 
-
 ## 2.6.3000 - 2017-12-07
 
 ### Changed
