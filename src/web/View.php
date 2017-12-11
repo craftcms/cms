@@ -148,10 +148,10 @@ class View extends \yii\web\View
     private $_jsBuffers = [];
 
     /**
-     * @var array the registered generic <script> code blocks
+     * @var array the registered generic `<script>` code blocks
      * @see registerScript()
      */
-    public $_scripts;
+    private $_scripts;
 
     /**
      * @var
@@ -729,19 +729,19 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a generic <script> code block.
+     * Registers a generic `<script>` code block.
      *
-     * @param string $script   the generic <script> code block to be registered
-     * @param int    $position the position at which the generic <script> code block should be inserted
+     * @param string $script   the generic `<script>` code block to be registered
+     * @param int    $position the position at which the generic `<script>` code block should be inserted
      *                         in a page. The possible values are:
      *
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
      * - [[POS_END]]: at the end of the body section
      *
-     * @param array  $options  the HTML attributes for the <script> tag.
-     * @param string $key      the key that identifies the generic <script> code block. If null, it will use
-     *                         $script as the key. If two generic <script> code blocks are registered with the same key, the latter
+     * @param array  $options  the HTML attributes for the `<script>` tag.
+     * @param string $key      the key that identifies the generic `<script>` code block. If null, it will use
+     *                         $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      *                         will overwrite the former.
      */
     public function registerScript($script, $position = self::POS_END, $options = [], $key = null)

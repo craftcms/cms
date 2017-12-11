@@ -577,7 +577,7 @@ class Asset extends Element
     }
 
     /**
-     * Returns an <img> tag based on this asset.
+     * Returns an `<img>` tag based on this asset.
      *
      * @return \Twig_Markup|null
      */
