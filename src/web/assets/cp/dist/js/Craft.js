@@ -8219,9 +8219,9 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Keep the layout in order on window resize
-                this.addListener(Garnish.$win, 'resize', 'handleResize');
-                this.handleResize();
+                // Update responsive tables on window resize
+                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
+                this.updateResponsiveTables();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -8409,11 +8409,6 @@ Craft.CP = Garnish.Base.extend(
                 $(this.$selectedTab.attr('href')).addClass('hidden');
             }
             this.$selectedTab = null;
-        },
-
-        handleResize: function() {
-            // Update responsive tables
-            this.updateResponsiveTables();
         },
 
         updateResponsiveTables: function() {
