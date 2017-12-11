@@ -24,8 +24,8 @@
             return {
                 showingSearchResults: false,
                 sort: {
-                    attribute: 'name',
-					direction: 'asc',
+					attribute: 'activeInstalls',
+					direction: 'desc',
 				},
             }
         },
