@@ -20,6 +20,7 @@
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` was returning `text/html` for some SVG files. ([#2181](https://github.com/craftcms/cms/issues/2181))
 - Fixed a bug where routes that contained an “any” (`*`) token were not working. ([#2184](https://github.com/craftcms/cms/issues/2184))
 - Fixed a bug where some Control Panel JavaScript features weren’t getting initialized. ([#2188](https://github.com/craftcms/cms/issues/2188))
+- Fixed a bug where Craft was never pinging the licensing server to learn about its license key status.
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.

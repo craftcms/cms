@@ -118,6 +118,13 @@ class Updates extends Component
             $cacheDuration = 300; // 5 minutes
         }
 
+        // Ping Elliott so we get the license key status while we're at it
+        try {
+            Craft::$app->getEt()->ping();
+        } catch (\Throwable $e) {
+            Craft::warning("Couldn't ping Elliott: {$e->getMessage()}", __METHOD__);
+        }
+
         Craft::$app->getCache()->set($this->cacheKey, $updates, $cacheDuration);
         return $this->_updates = new UpdatesModel($updates);
     }
