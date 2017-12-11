@@ -23,6 +23,7 @@
 - Fixed a bug where Craft was never pinging the licensing server to learn about its license key status.
 - Fixed a bug where the Edit User Group page was not ensuring the user had an elevated session if one was going to be required. ([#2194](https://github.com/craftcms/cms/issues/2194))
 - Fixed a conflict with jQuery UI Autocomplete. ([#2196](https://github.com/craftcms/cms/issues/2196))
+- Fixed a bug where Matrix fields were not validating required sub-fields. ([#2197](https://github.com/craftcms/cms/issues/2197))
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.
