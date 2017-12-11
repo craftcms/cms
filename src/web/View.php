@@ -148,10 +148,10 @@ class View extends \yii\web\View
     private $_jsBuffers = [];
 
     /**
-     * @var array the registered generic <script> code blocks
+     * @var array the registered generic `<script>` code blocks
      * @see registerScript()
      */
-    public $_scripts;
+    private $_scripts;
 
     /**
      * @var
