@@ -12,7 +12,7 @@ Vue.filter('t', t);
 Vue.filter('escapeHtml', escapeHtml);
 
 window.pluginStoreApp = new Vue({
-    el: '#main-content',
+    el: '#content',
     router,
     store,
 
