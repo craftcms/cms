@@ -79,11 +79,7 @@ class Api extends Component
                 'email' => $user->email,
             ],
             'platform' => $this->platformVersions(),
-            'cms' => [
-                'version' => Craft::$app->getVersion(),
-                'edition' => strtolower(Craft::$app->getEditionName()),
-                'licenseKey' => $this->cmsLicenseKey()
-            ]
+            'cms' => $this->getCmsInfo(),
         ];
 
         if (!empty($pluginInfo = $this->pluginInfo())) {
@@ -95,6 +91,21 @@ class Api extends Component
         ]);
 
         return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns info about the CMS.
+     *
+     * @return array
+     * @throws Exception if there isn't a valid license key
+     */
+    public function getCmsInfo(): array
+    {
+        return [
+            'version' => Craft::$app->getVersion(),
+            'edition' => strtolower(Craft::$app->getEditionName()),
+            'licenseKey' => $this->cmsLicenseKey(),
+        ];
     }
 
     // Protected Methods
