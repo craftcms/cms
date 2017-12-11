@@ -19,9 +19,10 @@ body {
 
 #global-container {
   display: flex;
+  min-height: 0;
   flex-direction: row;
   align-items: stretch;
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
 }
 
@@ -433,6 +434,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 #main-container {
   flex: 1 0 0;
   display: flex;
+  min-height: 0;
   flex-direction: column;
   align-items: stretch;
 
@@ -534,6 +536,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   #main-form {
     flex: 1;
     display: flex;
+    min-height: 0;
     flex-direction: column;
     align-items: stretch;
   }
@@ -594,6 +597,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     #main-content {
       flex: 1;
       display: flex;
+      min-height: 0;
       flex-direction: row;
       align-items: stretch;
       width: calc(100vw - #{$sidebarWidth});
@@ -639,6 +643,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       #content-container {
         flex: 1;
         display: flex;
+        min-height: 0;
         flex-direction: column;
         align-items: stretch;
 
@@ -1028,7 +1033,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   display: none;
   width: 40px;
   height: 40px;
-  line-height: 40px;
+  line-height: px;
   color: $secondarySubmitColor;
   text-align: center;
   @include margin-left(-24px);

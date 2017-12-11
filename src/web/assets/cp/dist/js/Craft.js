@@ -1,4 +1,4 @@
-/*!   - 2017-12-10 */
+/*!   - 2017-12-11 */
 (function($){
 
 /** global: Craft */
@@ -8413,7 +8413,7 @@ Craft.CP = Garnish.Base.extend(
 
         handleResize: function() {
             // #main-content height = viewport height - #alerts - #crumbs - #header
-            this.$mainContent.css('max-height', Garnish.$win.height() - (this.$alerts.outerHeight() || 0) - (this.$crumbs.outerHeight() || 0) - this.$header.outerHeight());
+            //this.$mainContent.css('max-height', Garnish.$win.height() - (this.$alerts.outerHeight() || 0) - (this.$crumbs.outerHeight() || 0) - this.$header.outerHeight());
 
             // Update responsive tables
             this.updateResponsiveTables();
