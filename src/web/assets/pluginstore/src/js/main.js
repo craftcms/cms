@@ -61,6 +61,8 @@ window.pluginStoreApp = new Vue({
             $('nav', this.$crumbs).remove();
 
             if(crumbs && crumbs.length > 0) {
+                this.$crumbs.removeClass('empty');
+
                 // Create new crumbs
                 let crumbsNav = $('<nav></nav>');
                 let crumbsUl = $('<ul></ul>').appendTo(crumbsNav);
@@ -80,6 +82,8 @@ window.pluginStoreApp = new Vue({
                 }
 
                 crumbsNav.appendTo(this.$crumbs);
+            } else {
+                this.$crumbs.removeClass('empty');
             }
         },
 
