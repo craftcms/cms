@@ -483,6 +483,7 @@ ul.categories {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 
   .plugin-details-header {
     flex-shrink: 0;
@@ -517,6 +518,7 @@ ul.categories {
     flex-grow: 1;
     display: flex;
     position: relative;
+    min-height: 0;
 
     .plugin-details-loading {
       position: absolute;
