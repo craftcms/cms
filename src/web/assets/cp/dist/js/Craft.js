@@ -1,4 +1,4 @@
-/*!   - 2017-12-10 */
+/*!   - 2017-12-11 */
 (function($){
 
 /** global: Craft */
@@ -15369,19 +15369,21 @@ Craft.ui =
     {
         createTextInput: function(config) {
             var $input = $('<input/>', {
-                'class': 'text',
-                type: (config.type || 'text'),
-                id: config.id,
-                size: config.size,
-                name: config.name,
-                value: config.value,
-                maxlength: config.maxlength,
-                autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
-                disabled: this.getDisabledValue(config.disabled),
-                readonly: config.readonly,
-                title: config.title,
-                placeholder: config.placeholder
+                attr: {
+                    'class': 'text',
+                    type: (config.type || 'text'),
+                    id: config.id,
+                    size: config.size,
+                    name: config.name,
+                    value: config.value,
+                    maxlength: config.maxlength,
+                    autofocus: this.getAutofocusValue(config.autofocus),
+                    autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
+                    disabled: this.getDisabledValue(config.disabled),
+                    readonly: config.readonly,
+                    title: config.title,
+                    placeholder: config.placeholder
+                }
             });
 
             if (config.class) {
