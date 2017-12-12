@@ -14,6 +14,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
@@ -194,6 +195,67 @@ class MigrateController extends BaseMigrateController
 
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.'.PHP_EOL, Console::FG_GREEN);
+        }
+    }
+
+    public function actionUp($limit = 0)
+    {
+        $migrations = $this->getNewMigrations();
+        if (empty($migrations)) {
+            $this->stdout("No new migrations found. Your system is up-to-date.\n", Console::FG_GREEN);
+
+            return ExitCode::OK;
+        }
+
+        $total = count($migrations);
+        $limit = (int) $limit;
+        if ($limit > 0) {
+            $migrations = array_slice($migrations, 0, $limit);
+        }
+
+        $n = count($migrations);
+        if ($n === $total) {
+            $this->stdout("Total $n new " . ($n === 1 ? 'migration' : 'migrations') . " to be applied:\n", Console::FG_YELLOW);
+        } else {
+            $this->stdout("Total $n out of $total new " . ($total === 1 ? 'migration' : 'migrations') . " to be applied:\n", Console::FG_YELLOW);
+        }
+
+        foreach ($migrations as $migration) {
+            $nameLimit = $this->getMigrationNameLimit();
+            if ($nameLimit !== null && strlen($migration) > $nameLimit) {
+                $this->stdout("\nThe migration name '$migration' is too long. Its not possible to apply this migration.\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+            $this->stdout("\t$migration\n");
+        }
+        $this->stdout("\n");
+
+        $applied = 0;
+        if ($this->confirm('Apply the above ' . ($n === 1 ? 'migration' : 'migrations') . '?')) {
+            foreach ($migrations as $migration) {
+                if (!$this->migrateUp($migration)) {
+                    $this->stdout("\n$applied from $n " . ($applied === 1 ? 'migration was' : 'migrations were') . " applied.\n", Console::FG_RED);
+                    $this->stdout("\nMigration failed. The rest of the migrations are canceled.\n", Console::FG_RED);
+
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+                $applied++;
+            }
+
+            if ($limit === 0) {
+                // Update any schema versions.
+                switch ($this->type) {
+                    case MigrationManager::TYPE_APP:
+                        Craft::$app->getUpdates()->updateCraftVersionInfo();
+                        break;
+                    case MigrationManager::TYPE_PLUGIN:
+                        Craft::$app->getUpdates()->setNewPluginInfo($this->plugin);
+                        break;
+                }
+            }
+
+            $this->stdout("\n$n " . ($n === 1 ? 'migration was' : 'migrations were') . " applied.\n", Console::FG_GREEN);
+            $this->stdout("\nMigrated up successfully.\n", Console::FG_GREEN);
         }
     }
 
