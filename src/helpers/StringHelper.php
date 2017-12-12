@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\helpers\Stringy;
 use Stringy\Stringy as BaseStringy;
 
 /**
@@ -912,7 +913,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         // Get the map from Stringy.
-        self::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
+        self::$_asciiCharMap = (new Stringy(''))->getAsciiCharMap();
 
         foreach (Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings as $asciiChar => $values) {
             self::$_asciiCharMap[$asciiChar] = $values;

@@ -15,6 +15,7 @@ use craft\records\CraftIdToken as OauthTokenRecord;
 use DateInterval;
 use DateTime;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 
 /**
@@ -87,7 +88,7 @@ class PluginStore extends Component
                     return $craftIdAccount;
                 }
             }
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
+        } catch (ServerException $e) {
             // Todo: Handle exception
         }
 
