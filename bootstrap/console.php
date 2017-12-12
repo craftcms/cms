@@ -1,4 +1,11 @@
 <?php
+/**
+ * Craft console bootstrap file.
+ *
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
+ */
 
 mb_detect_order('auto');
 
