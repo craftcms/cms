@@ -1,7 +1,7 @@
 # Craft CMS 3.0 Working Changelog
 
 
-## Unreleased
+## 3.0.0-RC2 - 2017-12-12
 
 ### Added
 - Added the `migrate/all` console command for running all Craft, content, and plugin migrations.
@@ -12,7 +12,7 @@
 - Control Panel templates can now define `.info` elements with multiple paragraphs or line breaks. ([#2185](https://github.com/craftcms/cms/issues/2185))
 - Control Panel content tabs now shrink to fit if they’re too wide for the tab bar. ([#2186](https://github.com/craftcms/cms/issues/2186))
 - Craft’s bootstrap scripts now ensure that the server is running PHP 7+ before loading any files that would cause a syntax error on lower PHP versions.
-- The `migrate/up` console command will now update a plugin’s or Craft’s schema version in the database after successfully completing all migrations. ([#1907](https://github.com/craftcms/cms/issues/1907))
+- The `migrate/up` console command will now update the appropriate schema version in the database after successfully completing all migrations. ([#1907](https://github.com/craftcms/cms/issues/1907))
 
 ### Fixed
 - Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))
