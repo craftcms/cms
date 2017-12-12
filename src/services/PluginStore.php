@@ -107,10 +107,8 @@ class PluginStore extends Component
 
         $token = $this->getToken();
 
-        if ($token) {
-            if (isset($token->accessToken)) {
-                $options['headers']['Authorization'] = 'Bearer '.$token->accessToken;
-            }
+        if ($token && isset($token->accessToken)) {
+            $options['headers']['Authorization'] = 'Bearer '.$token->accessToken;
         }
 
         return Craft::createGuzzleClient($options);
