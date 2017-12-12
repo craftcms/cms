@@ -181,11 +181,11 @@ class AssetsController extends Controller
         $assetToReplace = null;
 
         if ($assetId && !$assetToReplace = $assets->getAssetById($assetId)) {
-            throw new NotFoundHttpException("Asset not found.");
+            throw new NotFoundHttpException('Asset not found.');
         }
 
         if ($sourceAssetId && !$sourceAsset = $assets->getAssetById($sourceAssetId)) {
-            throw new NotFoundHttpException("Asset not found.");
+            throw new NotFoundHttpException('Asset not found.');
         }
 
         $this->_requirePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
