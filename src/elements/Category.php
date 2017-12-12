@@ -553,7 +553,7 @@ class Category extends Element
         }
 
         // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentQuery = Category::find();
+        $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->status(null);
