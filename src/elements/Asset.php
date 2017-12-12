@@ -885,7 +885,6 @@ class Asset extends Element
     {
         switch ($attribute) {
             case 'filename':
-                /** @noinspection CssInvalidPropertyValue - FP */
                 return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
                     'filename' => $this->filename,
                 ]);
