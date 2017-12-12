@@ -534,7 +534,7 @@ class DashboardController extends Controller
             'title' => $widget->getTitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
-            'settingsHtml' => (string)$settingsHtml,
+            'settingsHtml' => $settingsHtml,
             'settingsJs' => (string)$settingsJs,
         ];
     }
