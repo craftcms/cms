@@ -885,7 +885,7 @@ class Asset extends Element
     {
         switch ($attribute) {
             case 'filename':
-                return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
+                return Html::encodeParams('<span style="word-wrap: break-word;;">{filename}</span>', [
                     'filename' => $this->filename,
                 ]);
 
