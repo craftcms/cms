@@ -27,8 +27,9 @@
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
 
                     <div v-else>
-                        <form method="post" :action="installActionUrl">
+                        <form method="post">
                             <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
+                            <input type="hidden" name="action" value="pluginstore/install">
                             <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
                             <input type="hidden" name="handle" :value="pluginSnippet.handle">
                             <input type="hidden" name="version" :value="pluginSnippet.version">
@@ -116,10 +117,6 @@
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
             },
 
-            installUrl() {
-                return Craft.getCpUrl('plugin-store/install');
-            },
-
             categories() {
                 return this.$store.getters.getAllCategories().filter(c => {
                     return this.plugin.categoryIds.find(pc => pc == c.id);
@@ -138,10 +135,6 @@
 
             lastUpdate() {
                 return Craft.formatDate(this.plugin.lastUpdate);
-            },
-
-            installActionUrl() {
-                return Craft.getCpUrl('plugin-store/install');
             },
 
             csrfTokenName() {
