@@ -888,8 +888,12 @@ class EntriesController extends BaseEntriesController
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $entry->typeId = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
         $entry->slug = Craft::$app->getRequest()->getBodyParam('slug', $entry->slug);
-        $entry->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== false ? (DateTimeHelper::toDateTime($postDate) ?: null) : $entry->postDate);
-        $entry->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== false ? (DateTimeHelper::toDateTime($expiryDate) ?: null) : null);
+        if (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== null) {
+            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
+        }
+        if (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== null) {
+            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        }
         $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
         $entry->enabledForSite = (bool)Craft::$app->getRequest()->getBodyParam('enabledForSite', $entry->enabledForSite);
         $entry->title = Craft::$app->getRequest()->getBodyParam('title', $entry->title);

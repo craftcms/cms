@@ -297,8 +297,12 @@ class EntryRevisionsController extends BaseEntriesController
     {
         $draft->typeId = Craft::$app->getRequest()->getBodyParam('typeId');
         $draft->slug = Craft::$app->getRequest()->getBodyParam('slug');
-        $draft->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== false ? (DateTimeHelper::toDateTime($postDate) ?: null) : $draft->postDate);
-        $draft->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== false ? (DateTimeHelper::toDateTime($expiryDate) ?: null) : $draft->expiryDate);
+        if (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== null) {
+            $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
+        }
+        if (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== null) {
+            $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        }
         $draft->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled');
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 

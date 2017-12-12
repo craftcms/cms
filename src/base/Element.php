@@ -709,7 +709,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        return $this->title ?: ((string)$this->id ?: static::class);
+        if ($this->title) {
+            return (string)$this->title;
+        }
+        return (string)$this->id ?: static::class;
     }
 
     /**
