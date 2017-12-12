@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -48,7 +48,7 @@ class TemplatesController extends Controller
     public function beforeAction($action)
     {
         $actionSegments = Craft::$app->getRequest()->getActionSegments();
-        if (isset($actionSegments[0]) && $actionSegments[0] === 'templates') {
+        if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
         }
 
@@ -68,7 +68,7 @@ class TemplatesController extends Controller
     {
         // Does that template exist?
         if (!$this->getView()->doesTemplateExist($template)) {
-            throw new NotFoundHttpException('Template not found');
+            throw new NotFoundHttpException('Template not found: '.$template);
         }
 
         // Merge any additional route params
@@ -114,6 +114,12 @@ class TemplatesController extends Controller
     {
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $reqCheck->dsn = $dbConfig->dsn;
+        $reqCheck->dbDriver = $dbConfig->driver;
+        $reqCheck->dbUser = $dbConfig->user;
+        $reqCheck->dbPassword = $dbConfig->password;
+
         $reqCheck->checkCraft();
 
         if ($reqCheck->result['summary']['errors'] > 0) {
@@ -128,15 +134,15 @@ class TemplatesController extends Controller
                 }
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
-            } else {
-                return $this->renderTemplate('_special/cantrun', [
-                    'reqCheck' => $reqCheck
-                ]);
             }
-        } else {
-            // Cache the base path.
-            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
+
+            return $this->renderTemplate('_special/cantrun', [
+                'reqCheck' => $reqCheck
+            ]);
         }
+
+        // Cache the base path.
+        Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
 
         return null;
     }

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -31,7 +31,6 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
@@ -200,15 +199,14 @@ class Asset extends Element
             );
 
             $userSessionService = Craft::$app->getUser();
+            $canDeleteAndSave = (
+                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id) &&
+                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
+            );
 
             // Rename File
-            if (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)
-                &&
-                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
-            ) {
+            if ($canDeleteAndSave) {
                 $actions[] = RenameFile::class;
-                $actions[] = EditImage::class;
             }
 
             // Replace File
@@ -223,6 +221,11 @@ class Asset extends Element
                     'elementType' => static::class,
                 ]
             );
+
+            // Edit Image
+            if ($canDeleteAndSave) {
+                $actions[] = EditImage::class;
+            }
 
             // Delete
             if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)) {
@@ -529,10 +532,9 @@ class Asset extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dateModified';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateModified';
+        return $attributes;
     }
 
     /**
@@ -575,7 +577,7 @@ class Asset extends Element
     }
 
     /**
-     * Returns an <img> tag based on this asset.
+     * Returns an `<img>` tag based on this asset.
      *
      * @return \Twig_Markup|null
      */
@@ -673,7 +675,7 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        return Craft::$app->getAssets()->getUrlForAsset($this, $transform);
+        return Craft::$app->getAssets()->getAssetUrl($this, $transform);
     }
 
     /**
@@ -681,31 +683,30 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        if ($this->getHasThumb()) {
-            return UrlHelper::resourceUrl('resized/'.$this->id.'/'.$size, [
-                Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
-            ]);
-        } else {
-            return UrlHelper::resourceUrl('icons/'.$this->getExtension());
-        }
+        return Craft::$app->getAssets()->getThumbUrl($this, $size, false);
     }
 
     /**
-     * Returns whether the file has a thumbnail.
+     * Returns the file name, with or without the extension.
      *
-     * @return bool
+     * @param bool $withExtension
+     *
+     * @return string
      */
-    public function getHasThumb(): bool
+    public function getFilename(bool $withExtension = true): string
     {
-        return Image::canManipulateAsImage($this->getExtension());
+        if ($withExtension) {
+            return $this->filename;
+        }
+        return pathinfo($this->filename, PATHINFO_FILENAME);
     }
 
     /**
-     * Get the file extension.
+     * Returns the file extension.
      *
-     * @return mixed
+     * @return string
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         return pathinfo($this->filename, PATHINFO_EXTENSION);
     }
@@ -814,7 +815,7 @@ class Asset extends Element
             return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());
         }
 
-        return Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
+        return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
     }
 
     /**

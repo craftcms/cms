@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig;
@@ -90,7 +90,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return false;
         }
 

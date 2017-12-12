@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -29,7 +29,7 @@ class DeleteAssets extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Delete…');
+        return Craft::t('app', 'Delete');
     }
 
     /**

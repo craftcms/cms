@@ -1,8 +1,8 @@
 {% extends "_layouts/cp" %}
 {% set title = "Dashboard"|t('app') %}
 
-{% set extraPageHeaderHtml %}
-    <div class="buttons secondary-buttons right">
+{% block actionButton %}
+    <div class="buttons secondary-buttons">
         <div class="newwidget btngroup">
             <div id="newwidgetmenubtn" class="btn submit menubtn add icon">{{ 'New widget'|t('app') }}</div>
             <div class="menu newwidgetmenu">
@@ -21,11 +21,11 @@
 
         <div id="widgetManagerBtn" class="btn settings icon submit" title="{{ 'Settings'|t('app') }}"></div>
     </div>
-{% endset %}
+{% endblock %}
 
 
-{% block main %}
-    <div class="grid">
+{% block content %}
+    <div id="dashboard-grid" class="grid">
         {% for widget in widgets %}
             <div class="item" data-colspan="{{ widget.colspan }}">
                 <div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-type="{{ widget.type }}" data-title="{{ widget.title }}">

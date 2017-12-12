@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -72,9 +72,9 @@ abstract class BaseElementsController extends Controller
     /**
      * Returns the context that this controller is being called in.
      *
-     * @return string
+     * @return string|null
      */
-    protected function context(): string
+    protected function context()
     {
         return Craft::$app->getRequest()->getParam('context');
     }

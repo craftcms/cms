@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -314,7 +314,7 @@ class Categories extends Component
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-        if ($group->maxLevels === 0) {
+        if ((int)$group->maxLevels === 0) {
             $group->maxLevels = null;
         }
 
@@ -657,7 +657,9 @@ class Categories extends Component
             ) {
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
-                $ancestorQuery = $category->getAncestors();
+                $ancestorQuery = $category->getAncestors()
+                    ->status(null)
+                    ->enabledForSite(false);
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);

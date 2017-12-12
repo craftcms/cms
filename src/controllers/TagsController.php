@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -180,7 +181,7 @@ class TagsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $search = Craft::$app->getRequest()->getBodyParam('search');
+        $search = trim(Craft::$app->getRequest()->getBodyParam('search'));
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
         $excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
         $allowSimilarTags = Craft::$app->getConfig()->getGeneral()->allowSimilarTags;
@@ -226,6 +227,10 @@ class TagsController extends Controller
 
         array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
 
+        foreach ($return as &$tag) {
+            $tag['title'] = Html::encode($tag['title']);
+        }
+
         return $this->asJson([
             'tags' => $return,
             'exactMatch' => $exactMatch
@@ -251,18 +256,18 @@ class TagsController extends Controller
         $tag = new Tag();
         $tag->groupId = $group->id;
         $tag->fieldLayoutId = $group->fieldLayoutId;
-        $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
-        $tag->validateCustomFields = false;
+        $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
 
-        if (Craft::$app->getElements()->saveElement($tag)) {
-            return $this->asJson([
-                'success' => true,
-                'id' => $tag->id
-            ]);
-        } else {
+        // Don't validate required custom fields
+        if (!Craft::$app->getElements()->saveElement($tag)) {
             return $this->asJson([
                 'success' => false
             ]);
         }
+
+        return $this->asJson([
+            'success' => true,
+            'id' => $tag->id
+        ]);
     }
 }

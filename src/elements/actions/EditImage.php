@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -26,17 +26,6 @@ class EditImage extends ElementAction
      * @var string The trigger label
      */
     public $label;
-
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
-    {
-        return true;
-    }
 
     // Public Methods
     // =========================================================================

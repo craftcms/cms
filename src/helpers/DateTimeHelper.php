@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -479,7 +479,7 @@ class DateTimeHelper
     public static function isYesterday($date): bool
     {
         $date = self::toDateTime($date);
-        $yesterday = new DateTime('@'.strtotime('yesterday'));
+        $yesterday = new DateTime('yesterday', new DateTimeZone(Craft::$app->getTimeZone()));
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
     }

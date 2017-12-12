@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -104,10 +104,6 @@ class SectionsController extends Controller
 
         foreach ($types as $type) {
             $typeOptions[$type] = Craft::t('app', ucfirst($type));
-        }
-
-        if (empty($typeOptions)) {
-            throw new BadRequestHttpException('Craft Client or Pro Edition is required to create any additional sections');
         }
 
         if (!$section->type) {

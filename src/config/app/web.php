@@ -1,18 +1,46 @@
 <?php
 
 return [
+    'class' => \craft\web\Application::class,
     'components' => [
+        'assetManager' => function() {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $config = [
+                'class' => craft\web\AssetManager::class,
+                'basePath' => $generalConfig->resourceBasePath,
+                'baseUrl' => $generalConfig->resourceBaseUrl,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+                'appendTimestamp' => true,
+            ];
+            return Craft::createObject($config);
+        },
         'request' => function() {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            return Craft::createObject([
+            $config = [
                 'class' => craft\web\Request::class,
                 'enableCookieValidation' => true,
-                'cookieValidationKey' => Craft::$app->getSecurity()->getValidationKey(),
+                'cookieValidationKey' => $generalConfig->securityKey,
                 'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
                 'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
                 'csrfParam' => $generalConfig->csrfTokenName,
-            ]);
+            ];
+            if ($generalConfig->trustedHosts !== null) {
+                $config['trustedHosts'] = $generalConfig->trustedHosts;
+            }
+            if ($generalConfig->secureHeaders !== null) {
+                $config['secureHeaders'] = $generalConfig->secureHeaders;
+            }
+            if ($generalConfig->ipHeaders !== null) {
+                $config['ipHeaders'] = $generalConfig->ipHeaders;
+            }
+            if ($generalConfig->secureProtocolHeaders !== null) {
+                $config['secureProtocolHeaders'] = $generalConfig->secureProtocolHeaders;
+            }
+            /** @var craft\web\Request $request */
+            $request = Craft::createObject($config);
+            $request->csrfCookie = Craft::cookieConfig([], $request);
+            return $request;
         },
         'response' => [
             'class' => craft\web\Response::class,

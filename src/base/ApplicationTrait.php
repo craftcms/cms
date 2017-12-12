@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -35,6 +35,7 @@ use yii\web\ServerErrorHttpException;
 /**
  * ApplicationTrait
  *
+ * @property \craft\services\Api             $api                The API service
  * @property AssetManager                    $assetManager       The asset manager component
  * @property \craft\services\Assets          $assets             The assets service
  * @property \craft\services\AssetIndexer    $assetIndexing      The asset indexer service
@@ -71,9 +72,9 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
  * @property \craft\services\Path            $path               The path service
  * @property \craft\services\Plugins         $plugins            The plugins service
+ * @property \craft\services\PluginStore     $pluginStore        The plugin store service
  * @property Queue|QueueInterface            $queue              The job queue
  * @property \craft\services\Relations       $relations          The relations service
- * @property \craft\services\Resources       $resources          The resources service
  * @property \craft\services\Routes          $routes             The routes service
  * @property \craft\services\Search          $search             The search service
  * @property Security                        $security           The security component
@@ -142,11 +143,6 @@ trait ApplicationTrait
      * @var bool|null
      */
     private $_isDbConfigValid;
-
-    /**
-     * @var bool|null
-     */
-    private $_isDbConnectionValid;
 
     /**
      * @var bool
@@ -249,31 +245,23 @@ trait ApplicationTrait
             return $this->_isInstalled;
         }
 
-        try {
-            // Initialize the DB connection
-            $this->getDb();
-
-            // If the db config isn't valid, then we'll assume it's not installed.
-            if (!$this->getIsDbConnectionValid()) {
-                return false;
-            }
-        } catch (DbConnectException $e) {
-            return false;
-        }
-
-        return $this->_isInstalled = (bool)($this->getDb()->tableExists('{{%info}}', false));
+        return $this->_isInstalled = (
+            $this->getIsDbConnectionValid() &&
+            $this->getDb()->tableExists('{{%info}}', false)
+        );
     }
 
     /**
-     * Tells Craft that it's installed now.
+     * Sets Craft's record of whether it's installed
+     *
+     * @param bool|null $value
      *
      * @return void
      */
-    public function setIsInstalled()
+    public function setIsInstalled($value = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // If you say so!
-        $this->_isInstalled = true;
+        $this->_isInstalled = $value;
     }
 
     /**
@@ -419,8 +407,8 @@ trait ApplicationTrait
     public function getCanUpgradeEdition(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Only admins can upgrade Craft
-        if ($this->getUser()->getIsAdmin()) {
+        // Only admin & client accounts can upgrade Craft
+        if ($this->getUser()->getIsAdmin() || Craft::$app->getEdition() === Craft::Client) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
@@ -633,28 +621,35 @@ trait ApplicationTrait
     }
 
     /**
-     * Don't even think of moving this check into Connection->init().
+     * Returns whether the DB connection settings are valid.
      *
      * @return bool
+     * @internal Don't even think of moving this check into Connection->init().
      */
-    public function getIsDbConnectionValid(): bool
+    public function getIsDbConnectionValid(bool $recheck = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isDbConnectionValid !== null) {
-            return $this->_isDbConnectionValid;
-        }
-
         try {
             $this->getDb()->open();
-
-            return $this->_isDbConnectionValid = true;
+            return true;
         } catch (DbConnectException $e) {
-            return $this->_isDbConnectionValid = false;
+            return false;
         }
     }
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the API service.
+     *
+     * @return \craft\services\Api The API service
+     */
+    public function getApi()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('api');
+    }
 
     /**
      * Returns the assets service.
@@ -954,6 +949,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the plugin store service.
+     *
+     * @return \craft\services\PluginStore The plugin store service
+     */
+    public function getPluginStore()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('pluginStore');
+    }
+
+    /**
      * Returns the queue service.
      *
      * @return Queue|QueueInterface The queue service
@@ -973,17 +979,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('relations');
-    }
-
-    /**
-     * Returns the resources service.
-     *
-     * @return \craft\services\Resources The resources service
-     */
-    public function getResources()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('resources');
     }
 
     /**
@@ -1229,8 +1224,10 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
+        if ((bool)$info->maintenance === $value) {
+            return true;
+        }
         $info->maintenance = $value;
-
         return $this->saveInfo($info);
     }
 

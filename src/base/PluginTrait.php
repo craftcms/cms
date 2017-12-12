@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -114,4 +114,9 @@ trait PluginTrait
      * @var bool Whether the plugin has its own section in the CP
      */
     public $hasCpSection = false;
+
+    /**
+     * @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.)
+     */
+    public $isInstalled = false;
 }

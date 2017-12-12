@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\Controller;
@@ -167,14 +168,17 @@ class FieldsController extends Controller
         /** @var string[]|FieldInterface[] $allowedFieldTypes */
         $fieldTypeOptions = [];
 
-        foreach ($allowedFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
-                $fieldTypeOptions[] = [
-                    'value' => $class,
-                    'label' => $class::displayName()
-                ];
-            }
+        foreach ($allFieldTypes as $class) {
+            $enabled = in_array($class, $allowedFieldTypes, true) && ($class === get_class($field) || $class::isSelectable());
+            $fieldTypeOptions[] = [
+                'value' => $class,
+                'label' => $class::displayName(),
+                'disabled' => !$enabled,
+            ];
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($fieldTypeOptions, 'label');
 
         // Groups
         // ---------------------------------------------------------------------
@@ -238,7 +242,6 @@ class FieldsController extends Controller
             'groupOptions' => $groupOptions,
             'crumbs' => $crumbs,
             'title' => $title,
-            'docsUrl' => 'http://craftcms.com/docs/fields#field-layouts',
         ]);
     }
 

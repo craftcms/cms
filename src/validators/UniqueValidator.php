@@ -2,12 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
 
-use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 use yii\base\Model;
 use yii\db\ActiveRecord;
 use yii\validators\UniqueValidator as YiiUniqueValidator;
@@ -51,7 +51,11 @@ class UniqueValidator extends YiiUniqueValidator
 
             // Set the primary key values on the record, if they're set
             $pks = $record::primaryKey();
-            $pkMap = $this->pk !== null ? ArrayHelper::toArray($this->pk) : $pks;
+            if ($this->pk !== null) {
+                $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
+            } else {
+                $pkMap = $pks;
+            }
             $isNewRecord = true;
 
             foreach ($pkMap as $k => $v) {

@@ -39,14 +39,16 @@ class Temp extends Local
     {
         parent::init();
 
+        $this->hasUrls = true;
+
         if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
-            $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
+            $this->path = Craft::$app->getPath()->getTempAssetUploadsPath();
         }
 
         if ($this->url === null) {
-            $this->url = rtrim(UrlHelper::resourceUrl(), '/').'/tempassets/';
+            $this->url = UrlHelper::actionUrl('assets/download-temp-asset', ['path' => '']);
         }
 
         if ($this->name === null) {

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -161,8 +161,6 @@ class ChartHelper
                 ->groupBy($sqlGroup)
                 ->orderBy($orderBy);
         }
-
-        die($query->getRawSql());
 
         // Execute the query
         $results = $query->all();

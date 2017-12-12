@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -164,7 +164,7 @@ class User extends Element implements IdentityInterface
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
 
-            if ($groups) {
+            if (!empty($groups)) {
                 $sources[] = ['heading' => Craft::t('app', 'Groups')];
 
                 foreach ($groups as $group) {
@@ -326,25 +326,27 @@ class User extends Element implements IdentityInterface
      */
     public static function findIdentity($id)
     {
-        $user = User::find()
+        $user = static::find()
             ->id($id)
             ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
-        if ($user !== null) {
-            /** @var static $user */
-            if ($user->getStatus() === self::STATUS_ACTIVE) {
+        if ($user === null) {
+            return null;
+        }
+
+        /** @var static $user */
+        if ($user->getStatus() === self::STATUS_ACTIVE) {
+            return $user;
+        }
+
+        // If the previous user was an admin and we're impersonating the current user.
+        if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
+            $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+
+            if ($previousUser && $previousUser->admin) {
                 return $user;
-            }
-
-            // If the previous user was an admin and we're impersonating the current user.
-            if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
-                $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
-
-                if ($previousUser && $previousUser->admin) {
-                    return $user;
-                }
             }
         }
 
@@ -560,14 +562,13 @@ class User extends Element implements IdentityInterface
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'lastLoginDate';
-        $names[] = 'lastInvalidLoginDate';
-        $names[] = 'lockoutDate';
-        $names[] = 'lastPasswordChangeDate';
-        $names[] = 'verificationCodeIssuedDate';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'lastLoginDate';
+        $attributes[] = 'lastInvalidLoginDate';
+        $attributes[] = 'lockoutDate';
+        $attributes[] = 'lastPasswordChangeDate';
+        $attributes[] = 'verificationCodeIssuedDate';
+        return $attributes;
     }
 
     /**
@@ -954,12 +955,10 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return UrlHelper::resourceUrl('resized/'.$this->photoId.'/'.$size, [
-                Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
-            ]);
+            return Craft::$app->getAssets()->getThumbUrl($photo, $size, false);
         }
 
-        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true).'/images/user.svg';
+        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
     }
 
     /**
@@ -1128,7 +1127,7 @@ class User extends Element implements IdentityInterface
         $language = $this->getPreference('language');
 
         // Make sure it's valid
-        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
+        if ($language !== null && in_array($language, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
             return $language;
         }
 
@@ -1222,8 +1221,8 @@ class User extends Element implements IdentityInterface
     public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
-            'account' => $this,
-            'isNewAccount' => false,
+            'user' => $this,
+            'isNewUser' => false,
             'meta' => true,
         ]);
 

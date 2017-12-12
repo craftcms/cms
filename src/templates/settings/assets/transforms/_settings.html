@@ -1,7 +1,5 @@
 {% extends "_layouts/cp" %}
 
-{% set docsUrl = 'http://craftcms.com/docs/image-transforms' %}
-
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
@@ -130,6 +128,21 @@
             translatable: true
         }) }}
 
+        {{ forms.selectField({
+            label: "Interlacing"|t('app'),
+            id: "interlace",
+            name: "interlace",
+            options: {
+                'none': "None"|t('app'),
+                'line': "Line"|t('app'),
+                'plane': "Plane"|t('app'),
+                'partition': "Partition"|t('app')
+            },
+            value: (transform is defined ? transform.interlace : 'none'),
+            errors: (transform is defined ? transform.getErrors('interlace') : null),
+            translatable: true
+        }) }}
+
         {% set formatOptions = [
             {label: 'Auto', value: null},
             {label: 'jpg', value: 'jpg'},
@@ -147,6 +160,8 @@
             options: formatOptions,
             translatable: true
         }) }}
+
+
 {% endblock %}
 
 

@@ -85,7 +85,7 @@
                 });
 
                 // Just in case the tool created a new task...
-                Craft.cp.runPendingTasks();
+                Craft.cp.trackJobProgress(false, true);
             }
         });
 

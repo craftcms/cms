@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -91,6 +91,7 @@ class SetStatus extends ElementAction
             if ($enabled) {
                 // Also enable for this site
                 $element->enabled = $element->enabledForSite = true;
+                $element->setScenario(Element::SCENARIO_LIVE);
             } else {
                 $element->enabled = false;
             }

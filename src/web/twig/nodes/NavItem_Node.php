@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
@@ -28,7 +28,7 @@ class NavItem_Node extends \Twig_Node
      * @param \Twig_Node|null                  $outdent
      * @param \Twig_Node|null                  $lowerBody
      * @param                                  $lineno
-     * @param null                             $tag
+     * @param                                  $tag
      */
     public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_Node $indent = null, \Twig_Node $outdent = null, \Twig_Node $lowerBody = null, $lineno, $tag = null)
     {

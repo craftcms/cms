@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -149,9 +149,6 @@ class RecentEntries extends Widget
         $view->registerAssetBundle(RecentEntriesAsset::class);
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
         $view->registerJs($js);
-        $view->registerTranslations('app', [
-            'by {author}',
-        ]);
 
         $entries = $this->_getEntries();
 

@@ -21,7 +21,6 @@ class ArrayHelperTest extends \Codeception\TestCase\Test
     public function testToArray()
     {
         $this->assertEquals([], ArrayHelper::toArray(null));
-        $this->assertEquals([1, 1, 1, 2, 2, 2, 3, 3, 3], ArrayHelper::toArray('1,1,1,2,2,2,3,3,3'));
         $this->assertEquals([1, 2, 3], ArrayHelper::toArray([1, 2, 3]));
     }
 

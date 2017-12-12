@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -73,16 +73,16 @@ interface SavableComponentInterface extends ComponentInterface
      * An extremely simple implementation would be to directly return some HTML:
      *
      * ```php
-     * return '<textarea name="foo">'.$this->getSettings()->foo.'</textarea>';
+     * return '<textarea name="foo">'.$this->foo.'</textarea>';
      * ```
      *
      * For more complex settings, you might prefer to create a template, and render it via
      * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
-     * `path/to/myplugin/templates/_settings.html`, passing the settings to it:
+     * `src/templates/_settings.html`, passing the settings to it:
      *
      * ```php
-     * return Craft::$app->getView()->renderTemplate('myplugin/_settings', [
-     *     'settings' => $this->getSettings()
+     * return Craft::$app->getView()->renderTemplate('plugin-handle/_widget-settings', [
+     *     'widget' => $this
      * ]);
      * ```
      *
@@ -136,18 +136,18 @@ interface SavableComponentInterface extends ComponentInterface
      *     $namespacedId = Craft::$app->getView()->namespaceInputId($id);
      *
      *     // Render and return the input template
-     *     return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [
+     *     return Craft::$app->getView()->renderTemplate('plugin-handle/_widget-settings', [
      *         'id'           => $id,
      *         'namespacedId' => $namespacedId,
-     *         'settings'     => $this->getSettings()
+     *         'widget'       => $this
      *     ]);
      * }
      * ```
      *
-     * And the _settings.html template might look like this:
+     * And the _widget-settings.twig template might look like this:
      *
      * ```twig
-     * <textarea id="{{ id }}" name="foo">{{ settings.foo }}</textarea>
+     * <textarea id="{{ id }}" name="foo">{{ widget.foo }}</textarea>
      *
      * <script type="text/javascript">
      *     var textarea = document.getElementById('{{ namespacedId }}');

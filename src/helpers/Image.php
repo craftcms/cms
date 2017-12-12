@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -61,7 +61,15 @@ class Image
      */
     public static function canManipulateAsImage(string $extension): bool
     {
-        return in_array(StringHelper::toLowerCase($extension), Craft::$app->getImages()->getSupportedImageFormats(), true);
+        $formats = Craft::$app->getImages()->getSupportedImageFormats();
+
+        $alwaysManipulatable = ['svg'];
+        $neverManipulatable = ['pdf'];
+
+        $formats = array_merge($formats, $alwaysManipulatable);
+        $formats = array_diff($formats, $neverManipulatable);
+
+        return in_array(strtolower($extension), $formats);
     }
 
     /**
@@ -181,14 +189,12 @@ class Image
      */
     public static function imageSize(string $filePath): array
     {
-        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
+        if (FileHelper::isSvg($filePath)) {
             $svg = file_get_contents($filePath);
-
             return static::parseSvgSize($svg);
         }
 
         $image = Craft::$app->getImages()->loadImage($filePath);
-
         return [$image->getWidth(), $image->getHeight()];
     }
 

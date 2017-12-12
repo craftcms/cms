@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -176,14 +176,14 @@ class UrlHelper
 
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+        if ($request->getIsCpRequest()) {
             $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
             $cpUrl = true;
         } else {
             $cpUrl = false;
         }
 
-        // Send all resources over SSL if this request is loaded over SSL.
+        // Stick with SSL if the current request is over SSL and a protocol wasn't defined
         if ($protocol === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
             $protocol = 'https';
         }
@@ -247,72 +247,6 @@ class UrlHelper
         }
 
         return $url;
-    }
-
-    /**
-     * Returns a resource URL.
-     *
-     * @param string            $uri
-     * @param array|string|null $params
-     * @param string|null       $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the
-     *                                    current request will be used.
-     *
-     * @return string
-     */
-    public static function resourceUrl(string $uri = '', $params = null, string $protocol = null): string
-    {
-        $uri = trim($uri, '/');
-
-        if ($uri) {
-            // If we've served this resource before, we should have a cached copy of the server path already. Use that
-            // to get its timestamp, and add timestamp to the resource URL so the Resources service sends it with
-            // a Pragma: Cache header.
-            $dateParam = Craft::$app->getResources()->dateParam;
-
-            if (!isset($params[$dateParam])) {
-                $path = Craft::$app->getResources()->getCachedResourcePath($uri);
-
-                if ($path) {
-                    if (!is_array($params)) {
-                        $params = (array)$params;
-                    }
-
-                    $params[$dateParam] = filemtime($path);
-                } else {
-                    // Just set a random query string param on there, so even if the browser decides to cache it,
-                    // the next time this happens, the cache won't be used.
-
-                    // Use a consistent param for all resource requests with uncached paths, in case the same resource
-                    // URL is requested multiple times in the same request
-                    if (self::$_x === null) {
-                        self::$_x = StringHelper::randomString(9);
-                    }
-
-                    $params['x'] = self::$_x;
-                }
-            }
-        }
-
-        return static::url(static::resourceTrigger().'/'.$uri, $params, $protocol);
-    }
-
-    /**
-     * Returns the Resource Request trigger word based on the type of the current request.
-     *
-     * If it’s a front-end request, the [[\craft\config\GeneralConfig::resourceTrigger resourceTrigger]]
-     * config setting value will be returned. Otherwise `'resources'` will be returned.
-     *
-     * @return string The Resource Request trigger word.
-     */
-    public static function resourceTrigger(): string
-    {
-        $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-            return 'resources';
-        }
-
-        return Craft::$app->getConfig()->getGeneral()->resourceTrigger;
     }
 
     /**
@@ -485,7 +419,7 @@ class UrlHelper
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && $generalConfig->addTrailingSlashesToUrls) {
+                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls) {
                     $url .= '/';
                 }
             } else {

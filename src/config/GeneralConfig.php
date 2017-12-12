@@ -2,15 +2,16 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\config;
 
-use craft\helpers\ArrayHelper;
+use Craft;
 use craft\helpers\ConfigHelper;
+use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -19,21 +20,13 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GeneralConfig extends Object
+class GeneralConfig extends BaseObject
 {
     // Constants
     // =========================================================================
 
     const AUTO_UPDATE_MINOR_ONLY = 'minor-only';
     const AUTO_UPDATE_PATCH_ONLY = 'patch-only';
-
-    const CACHE_METHOD_APC = 'apc';
-    const CACHE_METHOD_DB = 'db';
-    const CACHE_METHOD_FILE = 'file';
-    const CACHE_METHOD_MEMCACHE = 'memcache';
-    const CACHE_METHOD_WINCACHE = 'wincache';
-    const CACHE_METHOD_XCACHE = 'xcache';
-    const CACHE_METHOD_ZENDDATA = 'zenddata';
 
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
@@ -146,11 +139,6 @@ class GeneralConfig extends Object
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $cacheDuration = 86400;
-    /**
-     * @var mixed The caching method that Craft should use.  Valid values are 'apc', 'db', 'file', 'memcache' (Memcached),
-     * 'wincache', 'xcache', and 'zenddata'.
-     */
-    public $cacheMethod = self::CACHE_METHOD_FILE;
     /**
      * @var bool If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
      * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
@@ -345,6 +333,14 @@ class GeneralConfig extends Object
      */
     public $invalidUserTokenPath = '';
     /**
+     * @var string[]|null List of headers where proxies store the real client IP.
+     *
+     * See [[\yii\web\Request::ipHeaders]] for more details.
+     *
+     * If not set, the default [[\yii\web\Request::ipHeaders]] value will be used.
+     */
+    public $ipHeaders;
+    /**
      * @var bool|null Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
      * System Status setting in Settings → General.
      */
@@ -466,6 +462,13 @@ class GeneralConfig extends Object
      */
     public $postLogoutRedirect = '';
     /**
+     * @var bool Whether the EXIF data should be preserved when manipulating images.
+     *
+     * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared.
+     * This will only have effect if Imagick is in use.
+     */
+    public $preserveExifData = false;
+    /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
      * Setting this to false will reduce the image size a little bit, but on some Imagick versions can cause images to be saved with
@@ -528,10 +531,6 @@ class GeneralConfig extends Object
      */
     public $resourceBaseUrl = '@web/cpresources';
     /**
-     * @var string The URI segment Craft should use for resource URLs on the front end.
-     */
-    public $resourceTrigger = 'cpresources';
-    /**
      * @var string|null Craft will use the command line libraries `psql` and `mysql` for restoring a database
      * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
@@ -572,6 +571,14 @@ class GeneralConfig extends Object
      */
     public $sanitizeSvgUploads = true;
     /**
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting
+     * data in [[\craft\services\Security]].
+     *
+     * This value should be the same across all environments. Note that if this key ever changes, any data that
+     * was encrypted with it will be inaccessible.
+     */
+    public $securityKey;
+    /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
     public $sendPoweredByHeader = true;
@@ -598,6 +605,12 @@ class GeneralConfig extends Object
      */
     public $showBetaUpdates = false;
     /**
+     * @var string|string[] The site name(s). If set, it will take precedence over the Name settings in Settings → Sites → [Site Name].
+     *
+     * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
+     */
+    public $siteName;
+    /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
@@ -609,6 +622,22 @@ class GeneralConfig extends Object
      * @var string The character(s) that should be used to separate words in slugs.
      */
     public $slugWordSeparator = '-';
+    /**
+     * @var array|null Lists of headers that are, by default, subject to the trusted host configuration.
+     *
+     * See [[\yii\web\Request::secureHeaders]] for more details.
+     *
+     * If not set, the default [[\yii\web\Request::secureHeaders]] value will be used.
+     */
+    public $secureHeaders;
+    /**
+     * @var array|null list of headers to check for determining whether the connection is made via HTTPS.
+     *
+     * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
+     *
+     * If not set, the default [[\yii\web\Request::secureProtocolHeaders]] value will be used.
+     */
+    public $secureProtocolHeaders;
     /**
      * @var bool Controls whether or not to show or hide any Twig template runtime errors that occur on the site in the browser.
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
@@ -637,7 +666,15 @@ class GeneralConfig extends Object
      */
     public $tokenParam = 'token';
     /**
-     * @var bool Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
+     * @var array The configuration for trusted security-related headers.
+     *
+     * See [[\yii\web\Request::trustedHosts]] for more details.
+     *
+     * By default, all hosts are trusted.
+     */
+    public $trustedHosts = ['any'];
+    /**
+     * @var bool Tells Craft whether to use compressed JavaScript files whenever possible, to cut down on page load times.
      */
     public $useCompressedJs = true;
     /**
@@ -692,15 +729,6 @@ class GeneralConfig extends Object
      */
     public $useXSendFile = false;
     /**
-     * @var string|null If set, should be a private, random, cryptographically secure key that is used to generate HMAC
-     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-     * If not set, a random one is generated for you. Ultimately saved in `storage/runtime/validation.key`.
-     *
-     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
-     * should be set to the same key across all web servers.
-     */
-    public $validationKey;
-    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
@@ -714,6 +742,33 @@ class GeneralConfig extends Object
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Check for renamed settings
+        $renamedSettings = [
+            'defaultFilePermissions' => 'defaultFileMode',
+            'defaultFolderPermissions' => 'defaultDirMode',
+            'useWriteFileLock' => 'useFileLocks',
+            'backupDbOnUpdate' => 'backupOnUpdate',
+            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+            'activateAccountFailurePath' => 'invalidUserTokenPath',
+            'validationKey' => 'securityKey',
+        ];
+
+        foreach ($renamedSettings as $old => $new) {
+            if (array_key_exists($old, $config)) {
+                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.");
+                $config[$new] = $config[$old];
+                unset($config[$old]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -761,17 +816,12 @@ class GeneralConfig extends Object
             throw new InvalidConfigException('Unsupported allowAutoUpdates value: '.$this->allowAutoUpdates);
         }
 
-        // Validate cacheMethod
-        if (!in_array($this->cacheMethod, [self::CACHE_METHOD_APC, self::CACHE_METHOD_DB, self::CACHE_METHOD_FILE, self::CACHE_METHOD_MEMCACHE, self::CACHE_METHOD_WINCACHE, self::CACHE_METHOD_XCACHE, self::CACHE_METHOD_ZENDDATA], true)) {
-            throw new InvalidConfigException('Unsupported cacheMethod value: '.$this->cacheMethod);
-        }
-
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
-            $this->allowedFileExtensions = ArrayHelper::toArray($this->allowedFileExtensions);
+            $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);
         }
         if (is_string($this->extraAllowedFileExtensions)) {
-            $this->extraAllowedFileExtensions = ArrayHelper::toArray($this->extraAllowedFileExtensions);
+            $this->extraAllowedFileExtensions = StringHelper::split($this->extraAllowedFileExtensions);
         }
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);

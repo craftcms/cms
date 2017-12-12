@@ -2,14 +2,13 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
-use yii\base\Exception;
 use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
@@ -70,6 +69,19 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         parent::handleException($exception);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleError($code, $message, $file, $line)
+    {
+        // Because: https://bugs.php.net/bug.php?id=74980
+        if (PHP_VERSION_ID >= 70100 && strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
+            return null;
+        }
+
+        return parent::handleError($code, $message, $file, $line);
     }
 
     /**

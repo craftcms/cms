@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -15,7 +15,6 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
 use yii\base\Component;
@@ -277,8 +276,7 @@ class TemplateCaches extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
-        // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains(stripslashes($body), UrlHelper::siteUrl(UrlHelper::resourceTrigger().'/transforms'))) {
+        if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {
             return;
         }
 
@@ -518,10 +516,14 @@ class TemplateCaches extends Component
      */
     public function handleResponse()
     {
-        Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
-            'elementId' => array_keys($this->_deleteCachesIndex),
-        ]));
-        $this->_deleteCachesIndex = null;
+        // It's possible this is already null
+        if ($this->_deleteCachesIndex !== null) {
+            Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
+                'elementId' => array_keys($this->_deleteCachesIndex),
+            ]));
+
+            $this->_deleteCachesIndex = null;
+        }
     }
 
     /**

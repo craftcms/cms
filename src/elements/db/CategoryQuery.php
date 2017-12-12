@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -11,8 +11,8 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\Category;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use yii\db\Connection;
 
@@ -22,8 +22,8 @@ use yii\db\Connection;
  * @property string|string[]|CategoryGroup $group The handle(s) of the category group(s) that resulting categories must belong to.
  *
  * @method Category[]|array all($db = null)
- * @method Category|array|false one($db = null)
- * @method Category|array|false nth(int $n, Connection $db = null)
+ * @method Category|array|null one($db = null)
+ * @method Category|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -201,7 +201,11 @@ class CategoryQuery extends ElementQuery
             return;
         }
 
-        $refs = ArrayHelper::toArray($this->ref);
+        $refs = $this->ref;
+        if (!is_array($refs)) {
+            $refs = is_string($refs) ? StringHelper::split($refs) : [$refs];
+        }
+
         $condition = ['or'];
         $joinCategoryGroups = false;
 

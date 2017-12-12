@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -74,14 +74,6 @@ class Updates extends Widget
         if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
             $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
-
-            $view->registerTranslations('app', [
-                'One update available!',
-                '{total} updates available!',
-                'Go to Updates',
-                'Congrats! You’re up-to-date.',
-                'Check again',
-            ]);
         }
 
         if ($cached) {

@@ -687,7 +687,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 fileuploaddone: $.proxy(this, '_onUploadComplete')
             };
 
-            if (typeof this.settings.criteria.kind !== 'undefined') {
+            if (this.settings.criteria && typeof this.settings.criteria.kind !== 'undefined') {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
@@ -833,6 +833,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     this.promptHandler.addPrompt(response);
                 }
+
+                Craft.cp.runQueue();
             }
             else {
                 if (response.error) {
@@ -1327,7 +1329,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         responseArray.push(data);
 
                         // If assets were just merged we should get the reference tags updated right away
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
 
                     if (responseArray.length >= parameterArray.length) {

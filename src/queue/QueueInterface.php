@@ -2,15 +2,13 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
 
-use craft\base\SavableComponentInterface;
-
 /**
- * JobInterface defines the common interface to be implemented by job classes.
+ * QueueInterface defines the common interface to be implemented by queue classes.
  *
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[JobTrait]].
  *

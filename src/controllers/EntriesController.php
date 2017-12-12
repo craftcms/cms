@@ -2,12 +2,13 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -129,7 +130,7 @@ class EntriesController extends BaseEntriesController
 
         if (
             $section->type === Section::TYPE_STRUCTURE &&
-            $section->maxLevels !== 1
+            (int)$section->maxLevels !== 1
         ) {
             $variables['elementType'] = Entry::class;
 
@@ -168,12 +169,12 @@ class EntriesController extends BaseEntriesController
                 if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
                 } else {
-                    $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
-
-                    if (!empty($parentIds)) {
-                        $parentId = $parentIds[0];
-                    }
+                    $parentId = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
                 }
+            }
+
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {
@@ -203,17 +204,22 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
+        if ($variables['showSites'] = (Craft::$app->getIsMultiSite() && count($section->getSiteSettings()) > 1)) {
+            $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name).' – ';
+        } else {
+            $variables['revisionLabel'] = '';
+        }
         switch (get_class($entry)) {
             case EntryDraft::class:
                 /** @var EntryDraft $entry */
-                $variables['revisionLabel'] = $entry->name;
+                $variables['revisionLabel'] .= $entry->name;
                 break;
             case EntryVersion::class:
                 /** @var EntryVersion $entry */
-                $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
+                $variables['revisionLabel'] .= Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                 break;
             default:
-                $variables['revisionLabel'] = Craft::t('app', 'Current');
+                $variables['revisionLabel'] .= Craft::t('app', 'Current');
         }
 
         if ($entry->id === null) {
@@ -247,7 +253,7 @@ class EntriesController extends BaseEntriesController
 
             if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
-                foreach ($entry->getAncestors() as $ancestor) {
+                foreach ($entry->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
                         'url' => $ancestor->getCpEditUrl()
@@ -348,11 +354,6 @@ class EntriesController extends BaseEntriesController
         $variables['fullPageForm'] = true;
         $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
-        // Include translations
-        $this->getView()->registerTranslations('app', [
-            'Live Preview',
-        ]);
-
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
     }
@@ -379,16 +380,18 @@ class EntriesController extends BaseEntriesController
 
         $this->_prepEditEntryVariables($variables);
 
-        $paneHtml = $this->getView()->renderTemplate('_includes/tabs', $variables).
-            $this->getView()->renderTemplate('entries/_fields', $variables);
-
         $view = $this->getView();
+        $tabsHtml = $view->renderTemplate('_includes/tabs', $variables);
+        $fieldsHtml = $view->renderTemplate('entries/_fields', $variables);
+        $headHtml = $view->getHeadHtml();
+        $bodyHtml = $view->getBodyHtml();
 
-        return $this->asJson([
-            'paneHtml' => $paneHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
-        ]);
+        return $this->asJson(compact(
+            'tabsHtml',
+            'fieldsHtml',
+            'headHtml',
+            'bodyHtml'
+        ));
     }
 
     /**
@@ -479,7 +482,7 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the entry has at least one version if the section has versioning enabled
         $revisionsService = Craft::$app->getEntryRevisions();
-        if ($entry->getSection()->enableVersioning && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
+        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
             $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
             $currentEntry->revisionCreatorId = $entry->authorId;
             $currentEntry->revisionNotes = 'Revision from '.Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
@@ -487,6 +490,10 @@ class EntriesController extends BaseEntriesController
         }
 
         // Save the entry (finally!)
+        if ($entry->enabled && $entry->enabledForSite) {
+            $entry->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (!Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -516,7 +523,7 @@ class EntriesController extends BaseEntriesController
             $return['id'] = $entry->id;
             $return['title'] = $entry->title;
 
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            if ($request->getIsCpRequest()) {
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
@@ -826,8 +833,7 @@ class EntriesController extends BaseEntriesController
             if ($variables['entry']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($variables['entry']->getErrors($field->handle)) {
-                        $hasErrors = true;
+                    if ($hasErrors = $variables['entry']->hasErrors($field->handle)) {
                         break;
                     }
                 }
@@ -907,13 +913,13 @@ class EntriesController extends BaseEntriesController
         $entry->authorId = $authorId;
 
         // Parent
-        $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
+        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: '';
+            }
 
-        if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $entry->newParentId = $parentId ?: '';
         }
-
-        $entry->newParentId = $parentId ?: null;
 
         // Revision notes
         $entry->revisionNotes = Craft::$app->getRequest()->getBodyParam('revisionNotes');
@@ -932,7 +938,7 @@ class EntriesController extends BaseEntriesController
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn\'t have a URL for the site '.$entry->siteId.'.');
+            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn’t have a URL for the site '.$entry->siteId.'.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($entry->siteId);

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -80,6 +81,9 @@ class DashboardController extends Controller
             ];
         }
 
+        // Sort them by name
+        ArrayHelper::multisort($widgetTypeInfo, 'name');
+
         $view->setNamespace($namespace);
         $variables = [];
 
@@ -125,14 +129,6 @@ class DashboardController extends Controller
         $view->registerAssetBundle(DashboardAsset::class);
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
-        $view->registerTranslations('app', [
-            '1 column',
-            '{num} columns',
-            '{type} Settings',
-            'Widget saved.',
-            'Couldn’t save widget.',
-            'You don’t have any widgets yet.',
-        ]);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
@@ -560,13 +556,11 @@ class DashboardController extends Controller
 
         if (!is_file($iconPath)) {
             Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+        if (!FileHelper::isSvg($iconPath)) {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 

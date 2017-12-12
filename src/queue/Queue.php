@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
@@ -320,7 +320,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         $this->_executingJobId = null;
 
-        if ($givingUp = parent::handleError($id, $job, $ttr, $attempt, $error)) {
+        if (parent::handleError($id, $job, $ttr, $attempt, $error)) {
             // Log the exception
             Craft::$app->getErrorHandler()->logException($error);
 
@@ -435,12 +435,11 @@ EOD;
                 false)
             ->execute();
 
-        $tableSchema = $db->getTableSchema('{{%queue}}');
-        return $db->getLastInsertID($tableSchema->sequenceName);
+        return $db->getLastInsertID('{{%queue}}');
     }
 
     /**
-     * @return array|false payload
+     * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
     protected function reserve()
@@ -500,7 +499,7 @@ EOD;
         $mutex->release(__CLASS__);
 
         // pgsql
-        if (is_resource($payload['job'])) {
+        if (is_array($payload) && is_resource($payload['job'])) {
             $payload['job'] = stream_get_contents($payload['job']);
         }
 

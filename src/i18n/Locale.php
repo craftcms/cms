@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\i18n;
@@ -12,10 +12,10 @@ use craft\helpers\Localization;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
 use yii\helpers\FormatConverter;
 
 /**
@@ -26,7 +26,7 @@ use yii\helpers\FormatConverter;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Locale extends Object
+class Locale extends BaseObject
 {
     // Constants
     // =========================================================================
@@ -312,7 +312,7 @@ class Locale extends Object
     public function getScriptID()
     {
         // Find sub tags
-        if (($pos = strpos($this->id, '-')) !== false) {
+        if (strpos($this->id, '-') !== false) {
             $subTag = explode('-', $this->id);
 
             // Script sub tags can be distinguished from territory sub tags by length
@@ -334,7 +334,7 @@ class Locale extends Object
     public function getTerritoryID()
     {
         // Find sub tags
-        if (($pos = strpos($this->id, '-')) !== false) {
+        if (strpos($this->id, '-') !== false) {
             $subTag = explode('-', $this->id);
 
             // Territory sub tags can be distinguished from script sub tags by length
@@ -697,9 +697,9 @@ class Locale extends Object
      *
      * @param int $attribute The attribute to return. Values: Locale::
      *
-     * @return string The attribute.
+     * @return string|null The attribute.
      */
-    public function getTextAttribute(int $attribute): string
+    public function getTextAttribute(int $attribute)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -735,9 +735,9 @@ class Locale extends Object
      * @param int $style     The pattern style to return.
      *                       Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
      *
-     * @return string The pattern
+     * @return string|null The pattern
      */
-    public function getNumberPattern(int $style): string
+    public function getNumberPattern(int $style)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, $style);
@@ -769,9 +769,9 @@ class Locale extends Object
      *                        ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE, ::SYMBOL_INFINITY, ::SYMBOL_NAN,
      *                        ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
      *
-     * @return string The symbol.
+     * @return string|null The symbol.
      */
-    public function getNumberSymbol(int $symbol): string
+    public function getNumberSymbol(int $symbol)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -935,10 +935,10 @@ class Locale extends Object
      * @param bool   $withDate Whether the date should be included in the format.
      * @param bool   $withTime Whether the time should be included in the format.
      *
-     * @return string The ICU date/time format
+     * @return string|null The ICU date/time format
      * @throws Exception if $length is invalid
      */
-    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): string
+    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime)
     {
         if ($length === null) {
             $length = self::LENGTH_MEDIUM;

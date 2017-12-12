@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -251,7 +251,7 @@ class Globals extends Component
             ]));
         }
 
-        $globalSet->validateCustomFields = false;
+        // Don't validate required custom fields
         if ($runValidation && !$globalSet->validate()) {
             Craft::info('Global set not saved due to validation error.', __METHOD__);
             return false;
@@ -280,7 +280,7 @@ class Globals extends Component
             $globalSetRecord->fieldLayoutId = $fieldLayout->id;
 
             // Save the global set
-            if (!Craft::$app->getElements()->saveElement($globalSet)) {
+            if (!Craft::$app->getElements()->saveElement($globalSet, false)) {
                 throw new Exception('Couldn’t save the global set.');
             }
 

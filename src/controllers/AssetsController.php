@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,6 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
@@ -25,6 +26,8 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -48,7 +51,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-transform'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform', 'download-temp-asset'];
 
     // Public Methods
     // =========================================================================
@@ -119,7 +122,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n").implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', 'Failed to save the Asset:').implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -216,6 +219,7 @@ class AssetsController extends Controller
                     $volume = $sourceAsset->getVolume();
                     $volume->deleteFile(rtrim($sourceAsset->folderPath, '/').'/'.$targetFilename);
                     $sourceAsset->newFilename = $targetFilename;
+                    // Don't validate required custom fields
                     Craft::$app->getElements()->saveElement($sourceAsset);
                     $assetId = $sourceAsset->id;
                 }
@@ -567,7 +571,7 @@ class AssetsController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to edit does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
         }
 
         $focal = null;
@@ -575,7 +579,7 @@ class AssetsController extends Controller
             $focal = $asset->getFocalPoint();
         }
 
-        $html = Craft::$app->getView()->renderTemplate('_special/image_editor');
+        $html = $this->getView()->renderTemplate('_special/image_editor');
 
         return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }
@@ -664,6 +668,7 @@ class AssetsController extends Controller
             $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
             $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
             $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
+            $imageChanged = $imageCropped || $imageRotated || $imageFlipped;
 
             $imageCopy = $asset->getCopyOfFile();
 
@@ -723,13 +728,19 @@ class AssetsController extends Controller
                 $image->crop($x, $x + $width, $y, $y + $height);
             }
 
-            if ($imageCropped || $imageRotated || $imageFlipped) {
+            if ($imageChanged) {
                 $image->saveAs($imageCopy);
             }
 
             if ($replace) {
                 $asset->focalPoint = $focal;
-                $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+
+                // Only replace file if it changed, otherwise just save changed focal points
+                if ($imageChanged) {
+                    $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+                } else if ($focal) {
+                    Craft::$app->getElements()->saveElement($asset);
+                }
             } else {
                 $newAsset = new Asset();
                 $newAsset->avoidFilenameConflicts = true;
@@ -741,6 +752,7 @@ class AssetsController extends Controller
                 $newAsset->volumeId = $folder->volumeId;
                 $newAsset->focalPoint = $focal;
 
+                // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
             }
         } catch (\Throwable $exception) {
@@ -767,7 +779,7 @@ class AssetsController extends Controller
         $asset = $assetService->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to download does not exist.'));
         }
 
         $this->_requirePermissionByAsset('viewVolume', $asset);
@@ -784,37 +796,105 @@ class AssetsController extends Controller
     }
 
     /**
-     * Generate a transform.
+     * Generates a thumbnail.
+     *
+     * @param string $uid  The asset's UID
+     * @param int    $size The thumbnail size
      *
      * @return Response
      */
-    public function actionGenerateTransform(): Response
+    public function actionGenerateThumb(string $uid, int $size): Response
+    {
+        $asset = Asset::find()->uid($uid)->one();
+        if (!$asset) {
+            return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: '.$uid));
+        }
+        try {
+            $url = Craft::$app->getAssets()->getThumbUrl($asset, $size, true);
+        } catch (\Exception $e) {
+            return $this->_handleImageException($e);
+        }
+
+        return $this->redirect($url);
+    }
+
+    /**
+     * Generate a transform.
+     *
+     * @param int|null $transformId
+     *
+     * @return Response
+     * @throws NotFoundHttpException if the transform can't be found
+     */
+    public function actionGenerateTransform(int $transformId = null): Response
     {
         $request = Craft::$app->getRequest();
-        $transformId = $request->getQueryParam('transformId');
-        $returnUrl = (bool)$request->getBodyParam('returnUrl',
-            false);
 
         // If transform Id was not passed in, see if file id and handle were.
         $assetTransforms = Craft::$app->getAssetTransforms();
 
-        if (empty($transformId)) {
+        if ($transformId) {
+            $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
+        } else {
             $assetId = $request->getBodyParam('assetId');
             $handle = $request->getBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
-            $transformIndexModel = $assetTransforms->getTransformIndex($assetModel,
-                $handle);
-        } else {
-            $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
+            $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
+        }
+
+        if (!$transformIndexModel) {
+            throw new NotFoundHttpException('Image transform not found.');
         }
 
         $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
 
-        if ($returnUrl) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);
         }
 
         return $this->redirect($url);
+    }
+
+    /**
+     * Downloads a temporary asset.
+     *
+     * @param string $path
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
+     * @throws NotFoundHttpException if $path doesn't exist
+     */
+    public function actionDownloadTempAsset(string $path): Response
+    {
+        $path = ltrim($path, "/\\");
+        if (PathHelper::ensurePathIsContained($path) === false) {
+            throw new ForbiddenHttpException('Invalid path: '.$path);
+        }
+        $fullPath = Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$path;
+        if (!file_exists($fullPath)) {
+            throw new NotFoundHttpException('File not found: '.$path);
+        }
+        return Craft::$app->getResponse()
+            ->sendFile($fullPath, null, ['inline' => true]);
+    }
+
+    /**
+     * Handles an error when generating a thumb/transform.
+     *
+     * @param \Exception $e The exception that was thrown
+     *
+     * @return Response
+     */
+    private function _handleImageException(\Exception $e): Response
+    {
+        Craft::$app->getErrorHandler()->logException($e);
+        $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
+        return Craft::$app->getResponse()
+            ->sendFile(Craft::getAlias('@app/icons/broken-image.svg'), 'nope.svg', [
+                'mimeType' => 'image/svg+xml',
+                'inline' => true,
+            ])
+            ->setStatusCode($statusCode);
     }
 
     /**

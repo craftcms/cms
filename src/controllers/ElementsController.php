@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -122,6 +122,10 @@ class ElementsController extends BaseElementsController
         $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
+        if ($element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,

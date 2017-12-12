@@ -194,6 +194,12 @@
 {% endmacro %}
 
 
+{% macro checkboxGroupField(config) %}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.checkboxGroup(config)) }}
+{% endmacro %}
+
+
 {% macro checkboxSelectField(config) %}
     {% import _self as forms %}
     {{ forms.field(config, forms.checkboxSelect(config)) }}

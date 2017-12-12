@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -21,8 +21,8 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
  *
  * @method User[]|array all($db = null)
- * @method User|array|false one($db = null)
- * @method User|array|false nth(int $n, Connection $db = null)
+ * @method User|array|null one($db = null)
+ * @method User|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -95,7 +95,7 @@ class UserQuery extends ElementQuery
 
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = User::STATUS_ACTIVE;
+            $config['status'] = [User::STATUS_ACTIVE];
         }
 
         parent::__construct($elementType, $config);

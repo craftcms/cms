@@ -1,7 +1,418 @@
-Craft CMS 3.0 Working Changelog
-===============================
+# Craft CMS 3.0 Working Changelog
+
 
 ## Unreleased
+
+### Changed
+- Field Type dropdowns no longer completely hide incompatible field types; now they are visible but disabled.
+- URI segments matched with the “any” (`*`) token are now passed to the template as variables named `any`, `any2`, `any3`, etc.
+- Control Panel templates can now define `.info` elements with multiple paragraphs or line breaks. ([#2185](https://github.com/craftcms/cms/issues/2185))
+- Control Panel content tabs now shrink to fit if they’re too wide for the tab bar. ([#2186](https://github.com/craftcms/cms/issues/2186))
+
+### Fixed
+- Fixed a bug where the “New entry” and “New category” buttons on entry/category index pages weren’t getting translated. ([#2164](https://github.com/craftcms/cms/issues/2164))
+- Fixed a bug where the main content area could expand wider than it was supposed to. ([#2169](https://github.com/craftcms/cms/issues/2169))
+- Fixed several Control Panel layout issues.
+- Fixed a bug where Color fields were getting saved as `{}`. ([#2170](https://github.com/craftcms/cms/issues/2170))
+- Fixed a bug where the `searchScore` property wasn’t being set on elements queried with the `search` param. ([#2174](https://github.com/craftcms/cms/issues/2174))
+- Fixed a bug where the Craft logo was broken on the Control Panel login screen on Windows. ([#2179](https://github.com/craftcms/cms/issues/2179))
+- Fixed a bug where some updates to RC1 would fail if using PostgreSQL.
+- Fixed a bug where `craft\helpers\FileHelper::getMimeType()` was returning `text/html` for some SVG files. ([#2181](https://github.com/craftcms/cms/issues/2181))
+- Fixed a bug where routes that contained an “any” (`*`) token were not working. ([#2184](https://github.com/craftcms/cms/issues/2184))
+- Fixed a bug where some Control Panel JavaScript features weren’t getting initialized. ([#2188](https://github.com/craftcms/cms/issues/2188))
+- Fixed a bug where Craft was never pinging the licensing server to learn about its license key status.
+- Fixed a bug where the Edit User Group page was not ensuring the user had an elevated session if one was going to be required. ([#2194](https://github.com/craftcms/cms/issues/2194))
+- Fixed a conflict with jQuery UI Autocomplete. ([#2196](https://github.com/craftcms/cms/issues/2196))
+- Fixed a bug where Matrix fields were not validating required sub-fields. ([#2197](https://github.com/craftcms/cms/issues/2197))
+- Fixed a bug where entry types’ “Title Field Label” and “Title Format” settings weren’t getting validated. ([#2199](https://github.com/craftcms/cms/issues/2199))
+
+### Security
+- Fixed an XSS vulnerability in the Control Panel.
+- Fixed a bug where an admin could be coerced into installing or removing a plugin.
+
+## 3.0.0-RC1 - 2017-12-05
+
+### Added
+- Added the Plugin Store section to the Control Panel (currently in beta; non-commercial plugins only). ([#808](https://github.com/craftcms/cms/issues/808))
+- Installed plugins now have a “Disable” option that temporarily disables them without uninstalling them.
+- Uninstalled plugins now have a “Remove” option that completely removes their files from the project.
+- Added the concept of “Site Groups”. ([#1668](https://github.com/craftcms/cms/issues/1668))
+- Added the Craft License to the web-based setup wizard.
+- Added a “Connect the database” screen to the web-based setup wizard, which will show up if a database connection can’t already be established, and Craft determines that it can control the DB connection settings via the `.env` file.
+- Added the OAuth 2.0 Client library.
+- `.formsubmit` elements can now specify a `data-form` attribute, so they no longer need to be nested within the `<form>` they’re associated with.
+- Added the “Default Color” setting to Color fields. ([#949](https://github.com/craftcms/cms/issues/949))
+- Color fields now return a `craft\fields\data\ColorData` object, with `hex`, `rgb`, `red`, `green`, `blue`, `r`, `g`, `b`, and `luma` properties.
+- Added support for the `text/markdown` MIME type.
+- Element sources can now specify which sites they are available in, by adding a `sites` key to the source definition.
+- Added the `beforeSaveSiteGroup`, `afterSaveSiteGroup`, `beforeDeleteSiteGroup`, and `afterDeleteSiteGroup` events to `craft\services\Sites`.
+- Added the “Interlacing” image transform setting. ([#1487](https://github.com/craftcms/cms/issues/1487))
+- Added the `svg()` Twig function, which will sanitize and return SVG XML code. You can pass in the path to an SVG file or raw SVG XML code.
+- Added an `attr` block to each of the templates in `_includes/forms/`, which can be overridden when the templates are embedded, to add custom HTML attributes to the input elements. ([#1430](https://github.com/craftcms/cms/issues/1430))
+- Added a `tabs` block to the `_layouts/cp.html` template that surrounds `<nav id="tabs">`, allowing the tab HTML to be overridden by sub-templates. ([#2128](https://github.com/craftcms/cms/issues/2128))
+- Added `craft\controllers\SitesController::actionSaveGroup()`.
+- Added `craft\controllers\SitesController::actionDeleteGroup()`.
+- Added `craft\db\Connection::createFromConfig()`.
+- Added `craft\errors\ApiException`.
+- Added `craft\errors\SiteGroupNotFoundException`.
+- Added `craft\events\SiteGroupEvent`.
+- Added `craft\fields\data\ColorData`.
+- Added `craft\image\Raster::getImagineImage()`. (([#1488](https://github.com/craftcms/cms/issues/1488))
+- Added `craft\image\Raster::setInterlace()`.
+- Added `craft\models\Section::getSiteIds()`.
+- Added `craft\models\Site::groupId`.
+- Added `craft\models\Site::getGroup()`.
+- Added `craft\models\SiteGroup`.
+- Added `craft\models\Update::getHasCritical()`.
+- Added `craft\models\Update::getHasReleases()`.
+- Added `craft\models\Update::getLatest()`.
+- Added `craft\models\Updates`.
+- Added `craft\records\Site::getGroup()`.
+- Added `craft\records\SiteGroup`.
+- Added `craft\services\Api`, available from `Craft::$app->api`.
+- Added `craft\services\Assets::getThumbPath()`.
+- Added `craft\services\Config::getDotEnvPath()`.
+- Added `craft\services\Config::setEnvVar()`.
+- Added `craft\services\Plugins::disablePlugin()`.
+- Added `craft\services\Plugins::enablePlugin()`.
+- Added `craft\services\Plugins::isPluginDisabled()`.
+- Added `craft\services\Plugins::isPluginEnabled()`.
+- Added `craft\services\Plugins::isPluginInstalled()`.
+- Added `craft\services\Sites::getAllGroups()`.
+- Added `craft\services\Sites::getGroupById()`.
+- Added `craft\services\Sites::saveGroup()`.
+- Added `craft\services\Sites::deleteGroupById()`.
+- Added `craft\services\Sites::deleteGroup()`.
+- Added `craft\services\Sites::getSitesByGroupId()`.
+- Added `craft\validators\ColorValidator`.
+- Added `Craft.ColorInput` (JS class).
+- Added the `beforeDisablePlugin`, `afterDisablePlugin`, `beforeEnablePlugin`, and `afterEnablePlugin` events to `craft\services\Plugins`.
+
+### Changed
+- The Control Panel has been redesigned for better usability, readability and responsiveness.
+- Control Panel templates can now easily add UI elements to the page header, via new `contextMenu` and `actionButton` blocks.
+- Control Panel templates can now have a details pane, via the new `details` block.
+- The “Delete” button on entry and category edit pages has been moved to the Save button menu.
+- The site selection on entry and category edit pages has been moved to the context menu in the page header.
+- The icons on date/time inputs now behave like placeholder text; they can be clicked on to focus the input, and they become hidden when the input has a value. ([#1730](https://github.com/craftcms/cms/issues/1730))
+- Users’ field layouts can now have multiple tabs. ([#892](https://github.com/craftcms/cms/issues/892))
+- Global sets’ field layouts can now have multiple tabs. ([#1196](https://github.com/craftcms/cms/issues/1196))
+- Edit User pages’ Save buttons are now positioned in the page header, like similar pages.
+- The Language, Week Start Day, and Debug Toolbar settings have been moved to a new “Preferences” tab on the My Account page.
+- Users’ Langauge preference is now visible for single-site installs, and now shows all supported application languages; not just the site language(s). ([#847](https://github.com/craftcms/cms/issues/847))
+- Element indexes now hide any sources that aren’t available for the currently-selected site. ([#2021](https://github.com/craftcms/cms/issues/2021))
+- Fields on multi-site installs can now be translated per site group.
+- Resource file URLs now have a timestamp appended to them, preventing browsers from loading cached versions when the files change.
+- `craft\services\Elements::parseRefs()` now has a `$siteId` argument, which can be set to the site ID that referenced elements should be queried in.
+- `craft\web\AssetManager::getPublishedUrl()` now has a `$filePath` argument, which can be set to a file path relative to `$sourcePath`, which should be appended to the returned URL.
+- Color inputs have been redesigned so they look the same regardless of whether the browser supports `<input type="color">`, and no longer use a JavaScript color-picker polyfill. ([#2059](https://github.com/craftcms/cms/issues/2059), [#2061](https://github.com/craftcms/cms/issues/2061))
+- Color inputs can now be left blank.
+- CP nav item definitions registered with `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS` can now specify their icon with an `icon` key, whether it’s the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Support for the `iconSvg` key has been removed.)
+- Element source definitions can now include `icon` or `iconMask` keys, set to either the path to an SVG file, SVG XML code, or a Craft font icon ligature. (Use `icon` for colored icons; use `iconMask` for masked icons that should change color depending on whether the source is selected.)
+- Assets fields and the Assets index page now create a queue runner automatically after new assets are uploaded, in case there are any new jobs that were registered as part of the asset save process.
+- Craft now uses Sendmail as the default mailer, as Swift Mailer removed support for the PHP mailer in 6.0. ([#2149](https://github.com/craftcms/cms/issues/2149))
+- Structure info and relationships are now available on elements during Structure operations. ([#2153](https://github.com/craftcms/cms/issues/2153))
+- Craft will now always respond with JSON when an exception occurs for requests that include the `Accept: application/json` header.
+- `craft\config\DbConfig` will not parse the `dsn` string if it was provided, populating the other config values.
+- `craft\services\Plugins::getComposerPluginInfo()` will now return all Composer plugin info, if no handle is specified.
+- `craft\services\Updates::getIsCriticalUpdateAvailable()` now has a `$check` argument.
+- `craft\services\Updates::getTotalAvailableUpdates()` now has a `$check` argument.
+- `craft\events\LoginFailureEvent` now has a customizable `message` property that defines the user-facing error message. ([#2147](https://github.com/craftcms/cms/issues/2147))
+- Updated all Control Panel language translations.
+
+### Removed
+- The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
+- Removed `craft\events\RegisterRedactorPluginEvent`.
+- Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
+- Removed `craft\fields\data\RichTextData`.
+- Removed `craft\fields\PositionSelect`.
+- Removed `craft\fields\RichText`.
+- Removed `craft\mail\transportadapters\Php`.
+- Removed `craft\models\AppUpdate`.
+- Removed `craft\models\AppUpdateRelease`.
+- Removed `craft\services\Et::checkForUpdates()`.
+- Removed `craft\services\Et::downloadUpdate()`.
+- Removed `craft\services\Et::getUpdateFileInfo()`.
+- Removed `craft\services\Updates::checkForUpdates()`.
+- Removed `craft\services\Updates::checkPluginChangelogs()`.
+- Removed `craft\services\Updates::fetchPluginChangelog()`.
+- Removed `craft\services\Updates::parsePluginChangelog()`.
+- Removed `craft\services\Updates::addNotesToPluginRelease()`.s
+- Removed `craft\web\assets\redactor\RedactorAsset`.
+- Removed `craft\web\assets\richtext\RichTextAsset`.
+- Removed `lib/colorpicker/`.
+- Removed `lib/redactor/`.
+- Removed `Craft.ColorPicker` (JS class).
+- Removed `Craft.RichTextInput` (JS class).
+- Removed the `oauthtokens` table.
+
+### Fixed
+- Fixed a bug where removing the parent element from an entry or category had no effect. ([#2152](https://github.com/craftcms/cms/issues/2152))
+- Fixed a bug where `{id}` tags in element URI formats weren’t getting replaced with the element ID when saving a brand new element. ([#2157](https://github.com/craftcms/cms/issues/2157))
+- Fixed a bug where it was not possible to reassign a field within a Matrix field to a different field type if its current field type class was missing.
+
+## 3.0.0-beta.36 - 2017-11-29
+
+### Added
+- Added a `cp.layouts.base` template hook to the `_layouts/base.html` template.
+
+### Fixed
+- Fixed a SQL error that occurred when installing Craft. ([#2142](https://github.com/craftcms/cms/issues/2142))
+
+## 3.0.0-beta.35 - 2017-11-28
+
+### Added
+- Added `craft\elements\Asset::getFilename()`.
+- Added `craft\helpers\FileHelper::isSvg()`.
+- Added the `$generateNow` argument to `craft\services\Assets::getAssetUrl()`, which can be set to `true` to generate a transform immediately if it doesn’t exist. ([#2103](https://github.com/craftcms/cms/issues/2103))
+
+### Changed
+- The default `trustedHosts` config setting value is now `['any']`, meaning all hosts are trusted.
+- `craft\db\Query::one()` and `nth()` now return `null` instead of `false` if there was no result. ([#2105](https://github.com/craftcms/cms/issues/2105))
+- `craft\services\Content::getContentRow()` now returns `null` instead of `false` if there was no result.
+- Updated Composer to ~1.5.2.
+- Updated Stringy to ~3.1.0.
+- Updated svg-sanitizer to ~0.7.2.
+- Updated Guzzle to ~6.3.0.
+- Updated CLI-Prompt to ~1.0.3.
+- Updated Twig to ~2.4.4.
+- Updated SwiftMailer Extension for Yii 2 to ~2.1.0.
+
+### Fixed
+- Fixed a PHP error that occurred when running the `cache/flush-all` command. ([#2099](https://github.com/craftcms/cms/issues/2099))
+- Fixed a PHP permissions error that might happen on some Craft 2 to Craft 3 upgrades.
+- Fixed a bug where ET and changelog requests weren’t factoring in custom Guzzle configs in `config/guzzle.php`.
+- Fixed a SQL error that could occur when upgrading a Craft 2 site to Craft 3 if there were any deprecation errors originated by a template, but the line number wasn’t known.
+- Fixed a PHP error that could occur if there was a logged-in user ID in the PHP session, but the corresponding user didn’t exist in the database. ([#2117](https://github.com/craftcms/cms/issues/2117))
+- Fixed a bug where `QueryAbortedException`s weren’t getting caught by `ResaveElement` jobs.
+- Fixed a PHP error that occurred when executing an element query with a custom `SELECT` clause.
+- Fixed the Debug Toolbar’s “C” icon in Firefox.
+- Fixed a bug where the selected site was not maintained when switching between global sets. ([#2123](https://github.com/craftcms/cms/issues/2123))
+- Fixed a deprecation error when a relation field’s column was included in an element index page.
+- Fixed an error that could occur in the Control Panel if the `queue` component was not an instance of `craft\queue\QueueInterface`.
+
+## 3.0.0-beta.34 - 2017-11-09
+
+### Added
+- Added the `trustedHosts`, `secureHeaders`, `ipHeaders`, and `secureProtocolHeaders` config settings, which map to the `yii\web\Request` properties of the same names. They should be used to fix SSL detection for environments where an `X-Forwarded-Proto` HTTP header is used to forward SSL status to the web server. See [Trusted Proxies and Headers](http://www.yiiframework.com/doc-2.0/guide-runtime-requests.html#trusted-proxies) in Yii’s documentation for an explanation of these properties.
+- Created an `oauthtokens` database table.
+- Added the [League's OAuth 2 Client](http://oauth2-client.thephpleague.com/) as a dependency. ([#1481](https://github.com/craftcms/cms/issues/1481))
+
+### Fixed
+- Fixed a bug where updating to beta 31 could cause a fatal database error on PostgreSQL.
+
+## 3.0.0-beta.33 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
+
+## 3.0.0-beta.32 - 2017-11-08
+
+### Fixed
+- Fixed a segmentation fault that occurred on fresh installs.
+
+## 3.0.0-beta.31 - 2017-11-08
+
+### Added
+- Added the `getAssetThumbUrl` event to `craft\services\Assets`. ([#2073](https://github.com/craftcms/cms/issues/2073))
+- Added `craft\events\GetAssetThumbUrlEvent`.
+- Added `craft\services\Plugins::getPluginHandleByClass()`.
+
+### Changed
+- Control Panel JavaScript translations registered with `craft\web\View::registerTranslations()` now get registered via `registerJs()`, so Ajax-loaded Control Panel content can register new translations to the main page on the fly.
+- `craft\helpers\Component::createComponent()` will now throw a `MissingComponentException` if the component belongs to a plugin that’s not installed.
+- `craft\helpers\FileHelper::removeDirectory()` now uses `Symfony\Component\Filesystem::remove()` as a fallback if an error occurred.
+- `craft\db\Query::one()` and `scalar()` now explicitly add `LIMIT 1` to the SQL statement.
+- It’s now possible to create element indexes with batch actions on non-index pages. ([#1479](https://github.com/craftcms/cms/issues/1479))
+- Updated Yii to 2.0.13.
+- Updated D3 to 4.11.0.
+- Updated Fabric to 1.7.19.
+- Updated Inputmask to 3.3.10.
+- Updated jQuery to 3.2.1.
+- Updated Timepicker to 1.11.12.
+- Updated yii2-pjax to 2.0.7.
+
+### Removed
+- Removed the “RSS caches” option from the Clear Caches utility. (RSS feeds are cached using Craft’s data caching now.)
+- Removed the `cacheMethod` config setting. To use a different cache method, override the `cache` application component from `config/app.php`. ([#2053](https://github.com/craftcms/cms/issues/2053))
+- Removed `craft\config\DbCacheConfig`.
+- Removed `craft\config\FileCacheConfig`.
+- Removed `craft\config\MemCacheConfig`.
+- Removed `craft\services\Cache::getDbCache()`.
+- Removed `craft\services\Cache::getFileCache()`.
+- Removed `craft\services\Cache::getMemCache()`.
+- Removed `craft\services\Plugins::getPluginByClass()`.
+- Removed `craft\web\View::getTranslations()`.
+- Removed the `getTranslations()` template function.
+
+### Fixed
+- Fixed an issue where `photoSubpath` user setting was missing a default value. ([#2095](https://github.com/craftcms/cms/issues/2095))
+- Fixed a Composer error that could occur when updating Craft or a plugin from the Control Panel.
+- Fixed a PHP error that occurred when loading the French app translation messages.
+- Fixed a PHP error that occurred if a reference tag didn’t specify a property name and the element didn’t have a URL. ([#2082](https://github.com/craftcms/cms/issues/2082))
+- Fixed a bug where the `install` console command wasn’t validating the password length.
+- Fixed a bug where the Debug Toolbar was labeling the current user as a guest.
+- Fixed a bug where image editor strings were not getting translated.
+- Fixed various PHP errors that could occur after uninstalling (but not Composer-removing) a plugin, if any plugin-supplied components (fields, widgets, etc.) were still around. ([#1877](https://github.com/craftcms/cms/issues/1877))
+- Fixed a bug where the image editor was re-saving images even if the only thing that changed was the focal point. ([#2089](https://github.com/craftcms/cms/pull/2089))
+- Fixed a PHP error that occurred when duplicating an entry in a section that has URLs.
+
+## 3.0.0-beta.30 - 2017-10-31
+
+### Added
+- Added `craft\base\Element::SCENARIO_LIVE`, which should be used when required custom field validation is desired.
+- Added `craft\base\PluginTrait::$isInstalled`, which will be set to `true` or `false` depending on whether the plugin is currently installed.
+- Added `craft\console\Request::getIsLivePreview()` (always `false`). ([#2020](https://github.com/craftcms/cms/pull/2020))
+- Added `craft\services\AssetTransforms::getTransformUri()`.
+- Added `craft\web\Application::ensureResourcePathExists()`.
+- Added `craft\web\Application::debugBootstrap()`.
+- The installer now creates a “Common” field group.
+- It's now possible to specify subpath for uploaded user photos. ([#1575](https://github.com/craftcms/cms/issues/1575))
+- Added the `preserveExifData` config setting, `false` by default and requires Imagick. ([#2034](https://github.com/craftcms/cms/issues/2034))
+
+### Changed
+- Explicitly added `craft\base\PluginInterface::getVersion()`. ([#2012](https://github.com/craftcms/cms/issues/2012))
+- Improved the contrast of focal point icons. ([#1452](https://github.com/craftcms/cms/issues/1452))
+- Craft no longer requires you to manually create a [pgpass](https://www.postgresql.org/docs/9.4/static/libpq-pgpass.html) file when using the default database backup and restore commands.
+- Renamed `craft\services\Assets::ensureFolderByFullPathAndVolumeId()` to `craft\services\Assets::ensureFolderByFullPathAndVolume()`.
+- It is now possible for application configs returned by `config/app.php` to override the application class, via a `'class'` key.
+
+### Removed
+- Removed `craft\base\Element::validateCustomFields`.
+- Removed `craft\base\Element::validateCustomFields()`.
+
+### Fixed
+- Fixed a bug where Craft was not enforcing current password validation when a user changed their password from a front-end form.
+- Fixed a bug where Craft was not performing normal user validation when an invalid profile photo was uploaded from a front-end form.
+- Fixed a bug where image transform URLs were getting a backslash on Windows servers. ([#2026](https://github.com/craftcms/cms/issues/2026))
+- Fixed a 404 error that occurred when loading the jQuery.payment library in the Control Panel.
+- Fixed a bug where Craft’s bootstrap file was not taking into account the `CRAFT_LICENSE_KEY_PATH` PHP constant when doing folder sanity checks.
+- Fixed a bug where the Password field in the installer wizard wasn’t displaying validation errors.
+- Fixed a JavaScript error that occurred after running the Find and Replace utility, preventing the Control Panel from immediately tracking the job’s progress. ([#2030](https://github.com/craftcms/cms/issues/2030))
+- Fixed a bug where Craft would consider PDF to be a manipulatable image which is not desired behavior. ([#1938](https://github.com/craftcms/cms/issues/1938))
+- Fixed a bug where the self-updater wouldn’t work on environments without a `HOME` or `COMPOSER_HOME` environment variable set. ([#2019](https://github.com/craftcms/cms/issues/2019))
+- Fixed a PHP error if any of the URL rules weren’t an instance of `craft\web\UrlRule`. ([#2042](https://github.com/craftcms/cms/pull/2042))
+- Fixed a bug where `craft\helpers\FileHelper::getMimeType()` was returning `'text/plain'` for `.svg` files that didn’t have an XML declaration.
+- Fixed an error that occurred if the database credentials were set correctly but no database had been selected yet.
+- Fixed a bug where calls to undefined methods within Twig templates were A) not suppressing the UnknownMethodException when Dev Mode was disabled; and B) not showing the appropriate template line when Dev Mode was disabled. ([#2066](https://github.com/craftcms/cms/pull/2066))
+- Fixed a bug where custom element query conditions were getting ignored when `{% paginate %}` tags fetched the current page’s elements. ([#2051](https://github.com/craftcms/cms/issues/2051))
+
+## 3.0.0-beta.29 - 2017-09-29
+
+### Added
+- Added the `checkboxGroupField()` macro to `_includes/forms.html`. ([#1991](https://github.com/craftcms/cms/issues/1991))
+- Added the `Craft.DynamicGenerator` JavaScript class, for creating dynamic input generators.
+- Added `craft\config\DbConfig::updateDsn()`.
+- Added `craft\console\Request::getIsActionRequest()` (always `false`).
+- Added `craft\console\Request::getIsCpRequest()` (always `false`).
+- Added `craft\console\Request::getIsSiteRequest()` (always `false`).
+- Added a `setup/db-creds` command that collects all the database credentials, tests them, and saves them to the `.env` file.
+- Added a `setup` command that runs through the `setup/security-key`, `setup/db-creds`, and `install` commands.
+- Brought back the `siteName` config setting. ([#2003](https://github.com/craftcms/cms/issues/2003))
+
+### Changed
+- It is now possible to force an update to be installed, even if Craft thinks that someone else may already be performing an update. ([#1990](https://github.com/craftcms/cms/issues/1990))
+- `options` arrays passed to `_includes/forms/checkboxGroup.html` and `checkboxSelect.html` can now contain any of the properties supported by `checkbox.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
+- `options` arrays passed to `_includes/forms/radioGroup.html` can now contain any of the properties supported by `radio.html` (e.g. `disabled`). ([#1994](https://github.com/craftcms/cms/issues/1994))
+- The `limit` property is no longer required by `_includes/forms/elementSelect.html`.
+- Craft’s required PHP version and extensions are now specified in `composer.json`.
+- Craft no longer re-saves *all* localizable elements after a new site is created; entries and Matrix blocks are skipped, and plugins that supply custom element types must now re-save their elements manually as well.
+
+### Fixed
+- Fixed a PHP error that could occur if a DeleteStaleTemplateCaches job was improperly configured.
+- Fixed a PHP error that occurred after canceling a DB-only update.
+- Fixed a bug where all fields were getting marked as translatable on edit pages. ([#1996](https://github.com/craftcms/cms/issues/1996))
+- Fixed a PHP error that would occur when calling `craft\services\UserGroups::getGroupByHandle()`.
+- Fixed a JavaScript error that occurred if an asset select input was initialized without a `criteria` setting.
+- Fixed a bug where field types, volume types, mail transport types, and widget types weren’t getting listed in alphabetical order.
+- Fixed a bug where the queue info in the Control Panel wasn’t refreshing instantly after retrying or canceling a failed job.
+- Fixed a bug where a queue job to resave all Matrix blocks after creating a new site would fail. ([#2001](https://github.com/craftcms/cms/issues/2001))
+- Fixed a PHP error that occurred when submitting a front-end user profile form with a new user photo. ([#2005](https://github.com/craftcms/cms/issues/2005))
+
+## 3.0.0-beta.28 - 2017-09-15
+
+### Changed
+- Console requests no longer validate the DB connection settings up front, so the `setup/security-key` console command can be run even with invalid settings.
+
+### Fixed
+- Fixed a PHP error that occurred when saving a new relational field within a Matrix field, if the “Manage relations on a per-site basis” setting was enabled. ([#1987](https://github.com/craftcms/cms/issues/1987))
+- Fixed a bug where the `setup/security-key` console command wouldn’t recognize that the `.env` file already specified a security key, if it wasn’t defined on the first line of the file.
+
+## 3.0.0-beta.27 - 2017-09-15
+
+### Added
+- Added the `install/plugin` console command, which makes it possible to install plugins from the command line. ([#1973](https://github.com/craftcms/cms/pull/1973))
+- Added the `setup/security-key` console command, which generates a new security key and stores it in a `CRAFT_SECURITY_KEY` variable in the project’s `.env` file.
+- Added support for a `CRAFT_LICENSE_KEY_PATH` PHP constant, which can be used to customize the location of the license key file. ([#1015](https://github.com/craftcms/cms/issues/1015))
+- Added the “Email” and “URL” field types. ([#1981](https://github.com/craftcms/cms/pull/1981))
+- Added `craft\helpers\StringHelper::split()`.
+- Added `craft\services\Assets::getThumbUrl()`.
+- Added `craft\services\Path::getAssetThumbsPath()`.
+- Added `craft\web\View::createTwig()`.
+- Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
+- Added a `@root` path alias, which is set to the project root directory (what `$craftPath`/`CRAFT_BASE_PATH` is set to in `index.php`).
+- Added the `assets/download-temp-asset` action, for viewing temporary assets that haven’t been placed in their permanent volume yet.
+- Added the `assets/generate-thumb` action, which generates an asset thumb and redirects to its URL.
+- The `_includes/forms/field` include template now supports passing a `data` variable, set to an object of `data-x` attribute name/value pairs.
+
+### Changed
+- Renamed the `validationKey` config setting to `securityKey`.
+- If the `securityKey` config setting isn’t set, an auto-generated key will now be stored at `storage/security.key` rather than `storage/runtime/validation.key`.
+- Plugin translation sources are now configured with `forceTranslations` enabled.
+- Checkbox and radio groups now have `div.checkbox-group` and `div.radio-group` container elements. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Improved the performance of `craft\services\Images::getSupportImageFormats()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Improved the performance of `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Queue info requests in the Control Panel no longer extend the user session.
+- `craft\web\View` now manages two separate Twig environments – one for CP templates and another for site templates.
+- Custom field inputs’ `<div class="field">` container elements now have a `data-type` attribute set to the field’s class name. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Asset thumbnails are now published to the web-accessible `cpresources/` folder, so they can be served by web servers directly rather than going through PHP. ([#1982](https://github.com/craftcms/cms/issues/1982))
+- Moved the location of cached asset sources, thumbnails, and icons up to `storage/runtime/assets/`.
+- Renamed `craft\services\Assets::getUrlForAsset()` to `getAssetUrl()`, and now it is possible that `null` will be returned.
+- Renamed `craft\services\Path::getAssetsTempVolumePath()` to `getTempAssetUploadsPath()`.
+- Renamed `craft\services\Path::getAssetsImageSourcePath()` to `getAssetSourcesPath()`.
+
+### Deprecated
+- Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
+- Deprecated the `defaultFilePermissions`, `defaultFolderPermissions`, `useWriteFileLock`, `backupDbOnUpdate`, `restoreDbOnUpdateFailure`, `activateAccountFailurePath`, and `validationKey`. (These were removed outright in earlier Craft 3 Beta releases.)
+- Running Craft without the `securityKey` config setting explicitly set is now deprecated.
+- Deprecated `craft\services\Security::getValidationKey()`. Use `Craft::$app->config->general->securityKey` instead.
+
+### Removed
+- Removed support for “resource URLs”, including the `resources` service (`craft\services\Resources`), `craft\helpers\UrlHelper::resourceTrigger()`, `craft\helpers\UrlHelper::resourceUrl()`, the `resourceUrl()` Twig function, the `Craft.getResourceUrl()` JS function, the `resourceTrigger` config setting.
+- Removed `craft\base\ApplicationTrait::getResources()`.
+- Removed `craft\elements\Asset::getHasThumb()`.
+- Removed `craft\services\AssetTransforms::getResizedAssetServerPath()`.
+- Removed `craft\services\Path::getAssetsCachePath()`.
+- Removed `craft\services\Path::getResizedAssetsPath()`.
+- Removed `craft\services\Path::getTempUploadsPath()`.
+
+### Fixed
+- Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))
+- Fixed a bug where the “Parent” field was showing up on Edit Entry pages in Structure sections that were limited to a single level. ([#1940](https://github.com/craftcms/cms/pull/1940))
+- Fixed a bug where the “Delete Stale Template Cache” task would fail when saving an existing Single section.
+- Fixed a bug where it was not possible to use `:notempty:` with PostgreSQL.
+- Fixed a bug where the `job` column in the `queue` table wasn’t large enough to store some job data. ([#1948](https://github.com/craftcms/cms/issues/1948))
+- Fixed a JS error that occurred on CP templates that extended `_layouts/cp` but overrode the `body` block to remove the sidebar, if there were any running/waiting jobs in the queue. ([#1950](https://github.com/craftcms/cms/issues/1950))
+- Fixed some JS errors due to outdated references to `Craft.runPendingTasks()`. ([#1951](https://github.com/craftcms/cms/issues/1951))
+- Fixed a bug where the “Translation Method” setting was visible for existing Matrix sub-fields even when there was only one available translation method (e.g. Entries fields). ([#1967](https://github.com/craftcms/cms/issues/1967))
+- Fixed a bug where Craft would get confused whether or not it could manipulate SVG files. ([#1874](https://github.com/craftcms/cms/issues/1874))
+- Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel. ([#1957](https://github.com/craftcms/cms/issues/1957))
+- Fixed a “divide by zero” error when paginating an empty set of elements. ([#1970](https://github.com/craftcms/cms/pull/1970))
+- Fixed a bug where the “Host Name”, “Port”, and “Timeout” SMTP mailer type settings weren’t marked as required. ([#1976](https://github.com/craftcms/cms/issues/1976))
+- Fixed some weird behavior when saving a Matrix field with validation errors. ([#1971](https://github.com/craftcms/cms/issues/1971))
+- Fixed a bug where temporary assets didn’t get URLs.
+- Fixed some deprecation errors in the Control Panel. ([#1983](https://github.com/craftcms/cms/issues/1983))
+- Fixed a PHP error that occurred when saving an entry or category with a parent entry/category, if there were any validation errors. ([#1984](https://github.com/craftcms/cms/issues/1984))
+
+## 3.0.0-beta.26 - 2017-08-22
+
+### Fixed
+- Fixed a SQL error that could occur when logging deprecation errors if the line number is unknown. ([#1927](https://github.com/craftcms/cms/issues/1927))
+- Fixed a deprecation error that occurred when using a Tags field. ([#1932](https://github.com/craftcms/cms/issues/1932))
+- Fixed a PHP error that occurred if a volume type class was missing. ([#1934](https://github.com/craftcms/cms/issues/1934))
+- Fixed a PHP error that occurred when saving a new entry in a section with versioning enabled. ([#1935](https://github.com/craftcms/cms/issues/1935))
+
+## 3.0.0-beta.25 - 2017-08-17
 
 ### Added
 - Added `craft\elements\Entry::$revisionCreatorId`.
@@ -14,6 +425,10 @@ Craft CMS 3.0 Working Changelog
 - Fixed an error that occurred when chaining a custom field method and a normal query method (e.g. `all()`) together on an element query. ([#1887](https://github.com/craftcms/cms/issues/1887))
 - Fixed a PHP error that occurred when processing a user verification request.
 - Fixed a bug where newly-created `div.matrixblock` elements weren’t getting a `data-type` attribute like existing blocks had. ([#1925](https://github.com/craftcms/cms/pull/1925))
+- Fixed a bug where you would get a SQL error if you tried to push a job to the queue using PostgreSQL.
+- Fixed a bug that would trigger the browser’s JavaScript debugger if you saved a Matrix field that had collapsed blocks.
+- Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` an SQL query instead of the actual results.
+- Fixed a bug where `craft\controllers\BaseElementsController::context()` was expecting a`string ` return, while return could also be `null`.
 
 ## 3.0.0-beta.24 - 2017-08-15
 
@@ -49,7 +464,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
 - Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
 - Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
-- `craft\base\Volume` is now only focussed on things that every volume would need, regardless of whether it will use Flysystem under the hood.
+- `craft\base\Volume` is now only focused on things that every volume would need, regardless of whether it will use Flysystem under the hood.
 - `craft\base\VolumeInterface::createFileByStream()`, `updateFileByStream()`, `deleteFile()`, `renameFile()`, `copyFile()`, `createDir()`, `deleteDir()`, and `renameDir()` no longer require their implementation methods to return a boolean value.
 - `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
 
@@ -135,7 +550,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a Twig error that could occur if a `null` value was passed to the `|t` filter. ([#1864](https://github.com/craftcms/cms/issues/1864))
 - Fixed a PHP error that would occur if a content migration created a new field or renamed an existing field’s handle, and then attempted to reference that field in the same request. ([#1865](https://github.com/craftcms/cms/issues/1865))
 - Fixed a bug where the Customize Sources Modal would always select the first asset volume’s source by default if a subfolder had been selected when opening the modal. ([#1871](https://github.com/craftcms/cms/issues/1871))
-- Fixed a bug where uploaded Assets would have their width and height set to `null` on upload  when using multisite. ([#1872](https://github.com/craftcms/cms/issues/1872))
+- Fixed a bug where uploaded Assets would have their width and height set to `null` on upload  on multi-site installs. ([#1872](https://github.com/craftcms/cms/issues/1872))
 - Fixed a bug where cached versions of cloud images would not be saved when indexing for files that weren't already indexed.
 - Fixed a JavaScript error that prevented dialog prompts in Assets manager from being displayed correctly.
 - Fixed a bug on multi-site installs where relational fields wouldn’t save related elements that were disabled (either globally for a specific site site). ([#1854](https://github.com/craftcms/cms/issues/1854))
@@ -298,7 +713,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where you would get a PostgreSQL error when saving large amounts of data in a textual field. ([#1768](https://github.com/craftcms/cms/issues/1768))
 - Fixed a bug where you would get a PHP error in `services/Feeds->getFeedItems()` when trying to parse an RSS feed that had no publish date. ([#1770](https://github.com/craftcms/cms/issues/1770))
 - Fixed a PHP error that occurred when PHP’s `memory_limit` setting was set to something greater than `PHP_INT_MAX` when represented in bytes. ([#1771](https://github.com/craftcms/cms/issues/1771))
-- Fixed a bug where adding a new site did not update any existing category groups with the new site’s category uri format and template settings.
+- Fixed a bug where adding a new site did not update any existing category groups with the new site’s category URI format and template settings.
 - Fixed a PHP error that occurred when calling `craft\elements\Asset::getWidth()` if the `$transform` argument was anything other than a string. ([#1796](https://github.com/craftcms/cms/issues/1796))
 - Fixed a bug where the Updates utility would spin indefinitely for users that didn’t have permission to perform updates. ([#1719](https://github.com/craftcms/cms/issues/1719))
 - Fixed a SQL error that occurred when editing a non-admin user.
@@ -1047,7 +1462,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when executing an element query with the `relatedTo` param set to an element. ([#1346](https://github.com/craftcms/cms/issues/1346))
 - Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language. ([#1349](https://github.com/craftcms/cms/issues/1349))
 - Fixed a PHP type error that would occur when calling `craft\services\Globals::getSetByHandle()`. ([#1351](https://github.com/craftcms/cms/issues/1351))
-- Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enfoncing their Min and Max Value settings. ([#1350](https://github.com/craftcms/cms/issues/1350))
+- Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enforcing their Min and Max Value settings. ([#1350](https://github.com/craftcms/cms/issues/1350))
 - Fixed a 404 error that would occur when switching sites when editing a global set. ([#1355](https://github.com/craftcms/cms/issues/1355))
 - Fixed a bug that broke reference tags for Global Sets, Matrix Blocks and Tags. ([#1359](https://github.com/craftcms/cms/issues/1359))
 - Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs. ([#1358](https://github.com/craftcms/cms/issues/1358))
@@ -1129,7 +1544,7 @@ Craft CMS 3.0 Working Changelog
 - Added the “Utilities” section to the Control Panel, replacing the Tools area of the Settings page.
 - Added the Utility API, which enables plugins to provide custom utilities.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
-- Added method paramater and return types everywhere possible.
+- Added method parameter and return types everywhere possible.
 - Added a new `@lib` Yii alias, pointed to `vendor/craftcms/cms/lib/`.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
@@ -1520,7 +1935,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Element::onAfterMoveElementInStructure()` is no longer static, no longer has an `$element` argument, and has been renamed to `afterMoveInStructure()`.
 - `craft\services\AssetIndexer::getIndexEntry()` now returns `null` if the index doesn’t exist, instead of `false`.
 - `craft\services\Updates::getUnwritableFolders()` now returns folder paths without trailing slashes.
-- `craft\web\Session::addJsFlash()` now has `$positon` and `$key` arguments.
+- `craft\web\Session::addJsFlash()` now has `$position` and `$key` arguments.
 - `craft\web\Session::getJsFlashes()` now returns an array of nested arrays, each defining the JS code, the position, and the key.
 - `craft\web\View::getTwig()` no longer has `$loaderClass` or `$options` arguments.
 - Renamed `craft.getAssets()` back to `craft.assets()`.

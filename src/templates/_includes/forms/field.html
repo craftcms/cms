@@ -6,16 +6,18 @@
 {%- set instructions = (instructions is defined ? instructions : null) %}
 {%- set warning = (warning is defined ? warning : null) %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
-{%- set translatable = translatable ?? site is not same as(null) %}
+{%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
 {%- set fieldClass = [
     'field',
     (first is defined and first ? 'first' : null),
     (errors ? 'has-errors' : null),
     (fieldClass is defined and fieldClass ? fieldClass : null)
-]|filter|join(' ') -%}
+]|filter|join(' ') %}
 
-<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}>
+<div class="{{ fieldClass }}"
+        {%- if fieldId %} id="{{ fieldId }}"{% endif %}
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {% if label or instructions %}
         <div class="heading">
             {% if label %}

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -114,7 +114,7 @@ class AssetLocationValidator extends Validator
         }
 
         // Get the folder
-        if (($folder = Craft::$app->getAssets()->getFolderById($folderId)) === null) {
+        if (Craft::$app->getAssets()->getFolderById($folderId) === null) {
             throw new InvalidConfigException('Invalid folder ID: '.$folderId);
         }
 

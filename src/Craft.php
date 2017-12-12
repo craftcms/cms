@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 use craft\behaviors\ContentBehavior;
@@ -186,7 +186,7 @@ EOD;
 
             foreach ($fieldHandles as $handle) {
                 $methods[] = <<<EOD
- * @method void {$handle}(mixed \$value) Sets the [[{$handle}]] property
+ * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
             }
 

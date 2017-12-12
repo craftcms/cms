@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -129,6 +129,7 @@ class UserSettingsController extends Controller
         $settings = $systemSettingsService->getSettings('users');
 
         $settings['photoVolumeId'] = Craft::$app->getRequest()->getBodyParam('photoVolumeId');
+        $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;
 
@@ -87,7 +88,7 @@ class ClearCaches extends Utility
      */
     public static function cacheOptions(): array
     {
-        $runtimePath = Craft::$app->getPath()->getRuntimePath();
+        $pathService = Craft::$app->getPath();
 
         $options = [
             [
@@ -98,22 +99,21 @@ class ClearCaches extends Utility
             [
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'cache'
-            ],
-            [
-                'key' => 'rss',
-                'label' => Craft::t('app', 'RSS caches'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'cache'
+                'action' => function() use ($pathService) {
+                    FileHelper::clearDirectory($pathService->getAssetSourcesPath());
+                    FileHelper::clearDirectory($pathService->getAssetThumbsPath());
+                    FileHelper::clearDirectory($pathService->getAssetsIconsPath());
+                }
             ],
             [
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'compiled_templates'
+                'action' => $pathService->getCompiledTemplatesPath(),
             ],
             [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'temp'
+                'action' => $pathService->getTempPath(),
             ],
             [
                 'key' => 'transform-indexes',

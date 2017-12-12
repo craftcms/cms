@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -14,12 +14,14 @@ use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
+use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
+use Twig_ExtensionInterface;
 use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -81,14 +83,24 @@ class View extends \yii\web\View
     private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
-     * @var Environment|null
+     * @var Environment|null The Twig environment instance used for CP templates
      */
-    private $_twig;
+    private $_cpTwig;
+
+    /**
+     * @var Environment|null The Twig environment instance used for site templates
+     */
+    private $_siteTwig;
 
     /**
      * @var
      */
     private $_twigOptions;
+
+    /**
+     * @var Twig_ExtensionInterface[] List of Twig extensions registered with [[registerTwigExtension()]]
+     */
+    private $_twigExtensions = [];
 
     /**
      * @var
@@ -136,15 +148,10 @@ class View extends \yii\web\View
     private $_jsBuffers = [];
 
     /**
-     * @var array the registered generic <script> code blocks
+     * @var array the registered generic `<script>` code blocks
      * @see registerScript()
      */
-    public $_scripts;
-
-    /**
-     * @var array
-     */
-    private $_translations = [];
+    private $_scripts;
 
     /**
      * @var
@@ -195,25 +202,56 @@ class View extends \yii\web\View
      */
     public function getTwig(): Environment
     {
-        if ($this->_twig !== null) {
-            return $this->_twig;
-        }
+        return $this->_templateMode === self::TEMPLATE_MODE_CP
+            ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
+            : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
+    }
 
-        $this->_twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+    /**
+     * Creates a new Twig environment.
+     *
+     * @return Environment
+     */
+    public function createTwig(): Environment
+    {
+        $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
-        $this->_twig->addExtension(new \Twig_Extension_StringLoader());
-        $this->_twig->addExtension(new Extension($this, $this->_twig));
+        $twig->addExtension(new \Twig_Extension_StringLoader());
+        $twig->addExtension(new Extension($this, $twig));
 
         if (YII_DEBUG) {
-            $this->_twig->addExtension(new \Twig_Extension_Debug());
+            $twig->addExtension(new \Twig_Extension_Debug());
+        }
+
+        // Add plugin-supplied extensions
+        foreach ($this->_twigExtensions as $extension) {
+            $twig->addExtension($extension);
         }
 
         // Set our timezone
         /** @var \Twig_Extension_Core $core */
-        $core = $this->_twig->getExtension(\Twig_Extension_Core::class);
+        $core = $twig->getExtension(\Twig_Extension_Core::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
-        return $this->_twig;
+        return $twig;
+    }
+
+    /**
+     * Registers a new Twig extension, which will be added on existing environments and queued up for future environments.
+     *
+     * @param Twig_ExtensionInterface $extension
+     */
+    public function registerTwigExtension(Twig_ExtensionInterface $extension)
+    {
+        $this->_twigExtensions[] = $extension;
+
+        // Add it to any existing Twig environments
+        if ($this->_cpTwig !== null) {
+            $this->_cpTwig->addExtension($extension);
+        }
+        if ($this->_siteTwig !== null) {
+            $this->_siteTwig->addExtension($extension);
+        }
     }
 
     /**
@@ -642,10 +680,10 @@ class View extends \yii\web\View
     }
 
     /**
-     * Starts a Javascript buffer.
+     * Starts a JavaScript buffer.
      *
-     * Javascript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
-     * Once you’ve started a Javascript buffer, any Javascript code included with [[registerJs()]] will be included
+     * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
+     * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
      * having it actually get output to the page.
      *
@@ -659,9 +697,9 @@ class View extends \yii\web\View
     }
 
     /**
-     * Clears and ends a Javascript buffer, returning whatever Javascript code was included while the buffer was active.
+     * Clears and ends a JavaScript buffer, returning whatever JavaScript code was included while the buffer was active.
      *
-     * @param bool $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
+     * @param bool $scriptTag Whether the JavaScript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
      * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
@@ -691,19 +729,19 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a generic <script> code block.
+     * Registers a generic `<script>` code block.
      *
-     * @param string $script   the generic <script> code block to be registered
-     * @param int    $position the position at which the generic <script> code block should be inserted
+     * @param string $script   the generic `<script>` code block to be registered
+     * @param int    $position the position at which the generic `<script>` code block should be inserted
      *                         in a page. The possible values are:
      *
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
      * - [[POS_END]]: at the end of the body section
      *
-     * @param array  $options  the HTML attributes for the <script> tag.
-     * @param string $key      the key that identifies the generic <script> code block. If null, it will use
-     *                         $script as the key. If two generic <script> code blocks are registered with the same key, the latter
+     * @param array  $options  the HTML attributes for the `<script>` tag.
+     * @param string $key      the key that identifies the generic `<script>` code block. If null, it will use
+     *                         $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      *                         will overwrite the former.
      */
     public function registerScript($script, $position = self::POS_END, $options = [], $key = null)
@@ -878,7 +916,12 @@ class View extends \yii\web\View
     }
 
     /**
-     * Prepares translations for inclusion in the template, to be used by the JS.
+     * Translates messages for a given translation category, so they will be
+     * available for `Craft.t()` calls in the Control Panel.
+     *
+     * Note this should always be called *before* any JavaScript is registered
+     * that will need to use the translations, unless the JavaScript is
+     * registered at [[self::POS_READY]].
      *
      * @param string   $category The category the messages are in
      * @param string[] $messages The messages to be translated
@@ -887,34 +930,30 @@ class View extends \yii\web\View
      */
     public function registerTranslations(string $category, array $messages)
     {
-        foreach ($messages as $message) {
-            if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
-                $translation = Craft::t($category, $message);
+        $jsCategory = Json::encode($category);
+        $js = '';
 
-                if ($translation != $message) {
-                    $this->_translations[$category][$message] = $translation;
-                } else {
-                    $this->_translations[$category][$message] = null;
-                }
+        foreach ($messages as $message) {
+            $translation = Craft::t($category, $message);
+            if ($translation !== $message) {
+                $jsMessage = Json::encode($message);
+                $jsTranslation = Json::encode($translation);
+                $js .= ($js !== '' ? "\n" : '')."Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
             }
         }
-    }
 
-    /**
-     * Returns the translations prepared for inclusion by registerTranslations(), in JSON, and flushes out the
-     * translations queue.
-     *
-     * @return array Source/translation message mappings.
-     *
-     * @todo Add a $json param that determines whether the returned array should be JSON-encoded (defaults to true).
-     */
-    public function getTranslations()
-    {
-        // Prune out any empty translations
-        $translations = array_filter(array_map('array_filter', $this->_translations));
-        $this->_translations = [];
+        if ($js === '') {
+            return;
+        }
 
-        return $translations;
+        $js = <<<JS
+if (typeof Craft.translations[{$jsCategory}] === 'undefined') {
+    Craft.translations[{$jsCategory}] = {};
+}
+{$js}
+JS;
+
+        $this->registerJs($js, self::POS_END);
     }
 
     /**
@@ -1326,7 +1365,7 @@ class View extends \yii\web\View
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
+            throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you are trying to load a template outside the template folder: {template}.', ['template' => $name]));
         }
     }
 

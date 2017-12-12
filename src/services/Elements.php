@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -179,7 +179,7 @@ class Elements extends Component
         $query->status = null;
         $query->enabledForSite = false;
 
-        return $query->one() ?: null;
+        return $query->one();
     }
 
     /**
@@ -222,13 +222,7 @@ class Elements extends Component
         }
 
         $result = $query->one();
-
-        if (!$result) {
-            return null;
-        }
-
-        // Return the actual element
-        return $this->getElementById($result['id'], $result['type'], $siteId);
+        return $result ? $this->getElementById($result['id'], $result['type'], $siteId) : null;
     }
 
     /**
@@ -379,7 +373,7 @@ class Elements extends Component
 
         // Make sure the element actually supports the site it's being saved in
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to save an element in an unsupported site.');
         }
 
@@ -395,7 +389,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error.', __METHOD__);
+            Craft::info('Element not saved due to validation error: '.print_r($element->errors, true), __METHOD__);
 
             return false;
         }
@@ -439,9 +433,15 @@ class Elements extends Component
             $element->dateUpdated = $dateUpdated;
 
             if ($isNewElement) {
-                // Save the element ID on the element model, in case {id} is in the URL format
+                // Save the element ID on the element model
                 $element->id = $elementRecord->id;
                 $element->uid = $elementRecord->uid;
+
+                // If there's a temp ID, update the URI
+                if ($element->tempId && $element->uri) {
+                    $element->uri = str_replace($element->tempId, $element->id, $element->uri);
+                    $element->tempId = null;
+                }
             }
 
             // Save the element's site settings record
@@ -465,7 +465,7 @@ class Elements extends Component
             $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
 
             if (!$siteSettingsRecord->save(false)) {
-                throw new Exception('Couldn\'t save elements\' site settings record.');
+                throw new Exception('Couldn’t save elements’ site settings record.');
             }
 
             // Save the content
@@ -489,36 +489,35 @@ class Elements extends Component
                 }
             }
 
-            // Delete the rows that don't need to be there anymore
-            if (!$isNewElement) {
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Delete the rows that don't need to be there anymore
+        if (!$isNewElement) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%elements_sites}}',
+                    [
+                        'and',
+                        ['elementId' => $element->id],
+                        ['not', ['siteId' => $supportedSiteIds]]
+                    ])
+                ->execute();
+
+            if ($element::hasContent()) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%elements_sites}}',
+                        $element->getContentTable(),
                         [
                             'and',
                             ['elementId' => $element->id],
                             ['not', ['siteId' => $supportedSiteIds]]
                         ])
                     ->execute();
-
-                if ($element::hasContent()) {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete(
-                            $element->getContentTable(),
-                            [
-                                'and',
-                                ['elementId' => $element->id],
-                                ['not', ['siteId' => $supportedSiteIds]]
-                            ])
-                        ->execute();
-                }
             }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
         }
 
         // Delete any caches involving this element. (Even do this for new elements, since they
@@ -552,7 +551,7 @@ class Elements extends Component
 
         // Make sure the element actually supports its own site ID
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
@@ -572,7 +571,7 @@ class Elements extends Component
                     $siteElement = $this->getElementById($element->id, $class, $siteInfo['siteId']);
 
                     if ($siteElement === null) {
-                        throw new Exception('Element '.$element->id.' doesn\'t exist in the site '.$siteInfo['siteId']);
+                        throw new Exception('Element '.$element->id.' doesn’t exist in the site '.$siteInfo['siteId']);
                     }
                 }
 
@@ -1066,11 +1065,12 @@ class Elements extends Component
     /**
      * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
-     * @param string $str The string to parse.
+     * @param string   $str    The string to parse
+     * @param int|null $siteId The site ID to query the elements in
      *
-     * @return string The parsed string.
+     * @return string The parsed string
      */
-    public function parseRefs(string $str): string
+    public function parseRefs(string $str, int $siteId = null): string
     {
         if (!StringHelper::contains($str, '{')) {
             return $str;
@@ -1109,6 +1109,7 @@ class Elements extends Component
                 // Get the elements, indexed by their ref value
                 $refNames = array_keys($tokensByName);
                 $elementQuery = $elementType::find()
+                    ->siteId($siteId)
                     ->status(null)
                     ->limit(null);
 
@@ -1190,7 +1191,10 @@ class Elements extends Component
         }
 
         // Normalize the paths and find any custom path criterias
-        $with = ArrayHelper::toArray($with);
+        if (is_string($with)) {
+            $with = StringHelper::split($with);
+        }
+
         $paths = [];
         $pathCriterias = [];
 
@@ -1376,12 +1380,12 @@ class Elements extends Component
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors
-            $error = 'Couldn\'t propagate element to other site due to validation errors:';
+            $error = 'Couldn’t propagate element to other site due to validation errors:';
             foreach ($siteElement->getFirstErrors() as $attributeError) {
                 $error .= "\n- ".$attributeError;
             }
             Craft::error($error);
-            throw new Exception('Couldn\'t propagate element to other site.');
+            throw new Exception('Couldn’t propagate element to other site.');
         }
     }
 
@@ -1423,7 +1427,7 @@ class Elements extends Component
 
         if (empty($matches[3]) || !isset($element->{$matches[3]})) {
             // Default to the URL
-            return $element->getUrl();
+            return (string)$element->getUrl();
         }
 
         try {

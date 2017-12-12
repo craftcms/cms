@@ -402,17 +402,6 @@ $.extend(Craft,
         },
 
         /**
-         * Returns a resource URL.
-         *
-         * @param {string} path
-         * @param {object|string|undefined} params
-         * @return string
-         */
-        getResourceUrl: function(path, params) {
-            return Craft.getUrl(path, params, Craft.resourceUrl);
-        },
-
-        /**
          * Returns an action URL.
          *
          * @param {string} path
@@ -1047,7 +1036,6 @@ $.extend(Craft,
          */
         initUiElements: function($container) {
             $('.grid', $container).grid();
-            $('.pane', $container).pane();
             $('.info', $container).infoicon();
             $('.checkbox-select', $container).checkboxselect();
             $('.fieldtoggle', $container).fieldtoggle();
@@ -1362,14 +1350,6 @@ $.extend($.fn,
             });
         },
 
-        pane: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pane')) {
-                    new Craft.Pane(this);
-                }
-            });
-        },
-
         /**
          * Sets the element as a container for a checkbox select.
          */
@@ -1456,15 +1436,8 @@ $.extend($.fn,
                     }
                 }
 
-                var $form;
-
-                // Is this a menu item?
-                if ($btn.data('menu')) {
-                    $form = $btn.data('menu').$anchor.closest('form');
-                }
-                else {
-                    $form = $btn.closest('form');
-                }
+                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.attr('data-action')) {
                     $('<input type="hidden" name="action"/>')

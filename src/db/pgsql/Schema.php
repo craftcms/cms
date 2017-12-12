@@ -2,11 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db\pgsql;
 
+use Composer\Util\Platform;
 use Craft;
 use craft\db\TableSchema;
 use yii\db\Exception;
@@ -31,16 +32,6 @@ class Schema extends \yii\db\pgsql\Schema
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        $this->defaultSchema = Craft::$app->getConfig()->getDb()->schema;
-    }
 
     /**
      * Creates a query builder for the database.
@@ -145,12 +136,21 @@ class Schema extends \yii\db\pgsql\Schema
             $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
         }
 
-        return 'pg_dump'.
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $envCommand = 'PGPASSWORD='.$dbConfig->password;
+
+        if (Platform::isWindows()) {
+            $envCommand = 'set '.$envCommand.'&&';
+        } else {
+            $envCommand .= ' ';
+        }
+
+        return $envCommand.
+            'pg_dump'.
             ' --dbname={database}'.
             ' --host={server}'.
             ' --port={port}'.
             ' --username={user}'.
-            ' --no-password'.
             ' --if-exists'.
             ' --clean'.
             ' --file={file}'.

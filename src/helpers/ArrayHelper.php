@@ -2,10 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
+
+use Craft;
 
 /**
  * Class ArrayHelper
@@ -28,6 +30,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         if (is_string($object)) {
+            Craft::$app->getDeprecator()->log('ArrayHelper::toArray(string)', 'Passing a string to ArrayHelper::toArray() has been deprectaed. Use StringHelper::split() instead.');
+
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);
 
@@ -43,7 +47,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
 
             // Remove any empty elements and reset the keys
-            $object = array_merge(array_filter($object));
+            $object = array_merge(array_filter($object, function($value) {
+                return $value !== '';
+            }));
 
             return $object;
         }

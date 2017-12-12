@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db\mysql;
@@ -22,6 +22,17 @@ use yii\db\Expression;
  */
 class QueryBuilder extends \yii\db\mysql\QueryBuilder
 {
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Use LONGBLOB for "binary" columns rather than BLOB
+        $this->typeMap[Schema::TYPE_BINARY] = 'longblob';
+    }
+
     /**
      * @inheritdoc
      *

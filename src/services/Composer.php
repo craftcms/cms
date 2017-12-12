@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -14,6 +14,12 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
+use Composer\Package\Locker;
+use Composer\Util\Platform;
+use Craft;
+use craft\helpers\FileHelper;
+use Seld\JsonLint\DuplicateKeyException;
+use Seld\JsonLint\JsonParser;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -27,6 +33,14 @@ use yii\base\Exception;
  */
 class Composer extends Component
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string
+     */
+    public $composerRepoUrl = 'https://composer.craftcms.com/';
+
     // Public Methods
     // =========================================================================
 
@@ -38,7 +52,7 @@ class Composer extends Component
      */
     public function getJsonPath(): string
     {
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : CRAFT_BASE_PATH.'/composer.json';
+        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : Craft::getAlias('@root/composer.json');
         if (!file_exists($jsonPath)) {
             throw new Exception('Could not locate your composer.json file.');
         }
@@ -71,18 +85,20 @@ class Composer extends Component
         $wd = getcwd();
         chdir(dirname($jsonPath));
 
+        // Ensure there's a home var
+        $this->_ensureHomeVar();
+
         try {
             // Update composer.json
-            $sortPackages = Factory::create($io, $jsonPath)->getConfig()->get('sort-packages');
+            $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
             $this->updateRequirements($jsonPath, $requirements, $sortPackages);
 
             // Run the installer
-            $composer = Factory::create($io, $jsonPath);
+            $composer = $this->createComposer($io, $jsonPath);
             $installer = Installer::create($io, $composer)
                 ->setPreferDist()
                 ->setSkipSuggest()
-                ->setUpdate()
-                ->setUpdateWhitelist(array_keys($requirements));
+                ->setUpdate();
 
             $status = $installer->run();
         } catch (\Throwable $exception) {
@@ -123,6 +139,9 @@ class Composer extends Component
         $wd = getcwd();
         chdir(dirname($jsonPath));
 
+        // Ensure there's a home var
+        $this->_ensureHomeVar();
+
         try {
             $jsonFile = new JsonFile($jsonPath);
             $jsonSource = new JsonConfigSource($jsonFile);
@@ -144,7 +163,7 @@ class Composer extends Component
                 }
             }
 
-            $composer = Factory::create($io, $jsonPath);
+            $composer = $this->createComposer($io, $jsonPath);
             $composer->getDownloadManager()->setOutputProgress(false);
 
             // Run the installer
@@ -186,8 +205,11 @@ class Composer extends Component
         $wd = getcwd();
         chdir(dirname($jsonPath));
 
+        // Ensure there's a home var
+        $this->_ensureHomeVar();
+
         try {
-            $composer = Factory::create($io, $jsonPath);
+            $composer = $this->createComposer($io, $jsonPath);
 
             $installationManager = $composer->getInstallationManager();
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
@@ -212,6 +234,26 @@ class Composer extends Component
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.
+     */
+    protected function _ensureHomeVar()
+    {
+        if (getenv('COMPOSER_HOME') !== false) {
+            return;
+        }
+
+        $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
+        if (getenv($alt) !== false) {
+            return;
+        }
+
+        // Just define one ourselves
+        $path = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'composer';
+        FileHelper::createDirectory($path);
+        putenv("COMPOSER_HOME={$path}");
+    }
 
     /**
      * Updates the composer.json file with new requirements
@@ -256,6 +298,98 @@ class Composer extends Component
         }
 
         $json->write($config);
+    }
+
+    /**
+     * Returns the decoded Composer config, modified to use
+     * composer.craftcms.com instead of packagist.org.
+     *
+     * @param IOInterface $io
+     * @param string      $jsonPath
+     * @param bool        $swapPackagist
+     *
+     * @return array
+     */
+    protected function composerConfig(IOInterface $io, string $jsonPath, bool $swapPackagist = true): array
+    {
+        // Copied from \Composer\Factory::createComposer()
+        $file = new JsonFile($jsonPath, null, $io);
+        $file->validateSchema(JsonFile::LAX_SCHEMA);
+        $jsonParser = new JsonParser;
+        try {
+            $jsonParser->parse(file_get_contents($jsonPath), JsonParser::DETECT_KEY_CONFLICTS);
+        } catch (DuplicateKeyException $e) {
+            $details = $e->getDetails();
+            $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$jsonPath.' at line '.$details['line'].'</warning>');
+        }
+        $config = $file->read();
+
+        if ($swapPackagist) {
+            // Add composer.craftcms.com if it's not already in there
+            if (!$this->findCraftRepo($config)) {
+                $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
+            }
+
+            // Disable Packagist if it's not already disabled
+            if (!$this->findDisablePackagist($config)) {
+                $config['repositories'][] = ['packagist.org' => false];
+            }
+        }
+
+        return $config;
+    }
+
+    protected function findCraftRepo(array $config): bool
+    {
+        if (!isset($config['repositories'])) {
+            return false;
+        }
+
+        foreach ($config['repositories'] as $repository) {
+            if (isset($repository['url']) && $repository['url'] === $this->composerRepoUrl) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function findDisablePackagist(array $config): bool
+    {
+        if (!isset($config['repositories'])) {
+            return false;
+        }
+
+        foreach ($config['repositories'] as $repository) {
+            if ($repository === ['packagist.org' => false]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Creates a new Composer instance.
+     *
+     * @param IOInterface $io
+     * @param string      $jsonPath
+     * @param bool        $swapPackagist
+     *
+     * @return \Composer\Composer
+     */
+    protected function createComposer(IOInterface $io, string $jsonPath, bool $swapPackagist = true): \Composer\Composer
+    {
+        $config = $this->composerConfig($io, $jsonPath, $swapPackagist);
+        $composer = Factory::create($io, $config);
+        $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
+            ? substr($jsonPath, 0, -4).'lock'
+            : $jsonPath.'.lock';
+        $rm = $composer->getRepositoryManager();
+        $im = $composer->getInstallationManager();
+        $locker = new Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($jsonPath));
+        $composer->setLocker($locker);
+        return $composer;
     }
 
     /**

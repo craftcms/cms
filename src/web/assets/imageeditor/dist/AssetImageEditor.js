@@ -85,10 +85,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.$buttons = $('<div class="buttons right"/>').appendTo(this.$footer);
             this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
-            this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
+            this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Save') + '</div>').appendTo(this.$buttons);
 
             if (this.settings.allowSavingAsNew) {
-                this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
+                this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as a new asset') + '</div>').appendTo(this.$buttons);
                 this.addListener(this.$saveBtn, 'activate', this.saveImage.bind(this));
             }
 
@@ -119,7 +119,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         loadEditor: function(data) {
 
             if (!data.html) {
-                alert(Craft.t('Could not load the Asset image editor.', 'app'));
+                alert(Craft.t('Could not load the image editor.', 'app'));
             }
 
             this.$body.html(data.html);
@@ -421,7 +421,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
 
             this.focalPoint = new fabric.Group([
-                new fabric.Circle({radius: 8, fill: 'rgba(0,0,0,0.2)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
+                new fabric.Circle({radius: 8, fill: 'rgba(0,0,0,0.5)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
                 new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'})
             ], {
                 originX: 'center',

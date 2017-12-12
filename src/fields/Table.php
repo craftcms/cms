@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -225,7 +225,7 @@ class Table extends Field
             }
         }
 
-        return parent::serializeValue($value, $element);
+        return $value;
     }
 
     /**
@@ -246,9 +246,9 @@ class Table extends Field
      * @param ElementInterface|null $element
      * @param bool                  $static
      *
-     * @return string
+     * @return string|null
      */
-    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
+    private function _getInputHtml($value, ElementInterface $element = null, bool $static)
     {
         $columns = $this->columns;
 

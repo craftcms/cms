@@ -4,7 +4,7 @@
  *
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 use craft\helpers\ArrayHelper;
@@ -90,15 +90,15 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
 // Set the vendor path. By default assume that it's 4 levels up from here
 $vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
 
-// Set the base directory path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$basePath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+// Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
+$rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
-$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
-$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
-$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
-$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
+$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath.'/config';
+$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath.'/migrations';
+$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath.'/storage';
+$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath.'/templates';
+$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath.'/translations';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -106,22 +106,32 @@ $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-// Validate permissions on config/ and storage/
-$ensureFolderIsReadable($configPath);
+// Validate permissions on the license key file path (default config/) and storage/
+if (defined('CRAFT_LICENSE_KEY_PATH')) {
+    $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
+    $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
+} else {
+    $licensePath = $configPath;
+    $licenseKeyName = 'license.key';
+}
+
+// Make sure the license folder exists.
+if (!is_dir($licensePath) && !file_exists($licensePath)) {
+    $createFolder($licensePath);
+}
+
+$ensureFolderIsReadable($licensePath);
 
 if ($appType === 'web') {
-    $licensePath = $configPath.'/license.key';
+    $licenseFullPath = $licensePath.'/'.$licenseKeyName;
 
-    // If license.key doesn't exist yet, make sure the config folder is readable and we can write a temp one.
-    if (!file_exists($licensePath)) {
-        // Make sure config is at least readable.
-        $ensureFolderIsReadable($configPath);
-
-        // Try and write out a temp license.key file.
-        @file_put_contents($licensePath, 'temp');
+    // If the license key doesn't exist yet, make sure the folder is readable and we can write a temp one.
+    if (!file_exists($licenseFullPath)) {
+        // Try and write out a temp license key file.
+        @file_put_contents($licenseFullPath, 'temp');
 
         // See if it worked.
-        if (!file_exists($licensePath) || (file_exists($licensePath) && file_get_contents($licensePath) !== 'temp')) {
+        if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
             exit($licensePath.' isn\'t writable by PHP. Please fix that.');
         }
     }
@@ -188,6 +198,7 @@ spl_autoload_unregister(['Yii', 'autoload']);
 spl_autoload_register(['Yii', 'autoload'], true, false);
 
 // Set aliases
+Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);
@@ -217,41 +228,4 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-$class = "craft\\{$appType}\\Application";
-/** @var $app craft\web\Application|craft\console\Application */
-$app = new $class($config);
-
-if ($appType === 'web') {
-    // See if the resource base path exists and is writable
-    $resourceBasePath = Craft::getAlias($app->config->getGeneral()->resourceBasePath);
-    @FileHelper::createDirectory($resourceBasePath);
-
-    if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-        exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
-    }
-
-    // See if we should enable the Debug module
-    $session = $app->getSession();
-
-    if ($session->getHasSessionId() || $session->getIsActive()) {
-        $isCpRequest = $app->getRequest()->getIsCpRequest();
-
-        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
-        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
-
-        if ($enableDebugToolbarForCp || $enableDebugToolbarForSite) {
-            // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
-            if (!$isCpRequest) {
-                \yii\debug\Module::setYiiLogo("data:image/svg+xml;utf8,<svg width='30px' height='30px' viewBox='0 0 30 30' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g fill='#DA5B47'><path d='M21.5549104,8.56198524 C21.6709104,8.6498314 21.7812181,8.74275447 21.8889104,8.83706217 L23.6315258,7.47013909 L23.6858335,7.39952371 C23.4189104,7.12998524 23.132295,6.87506217 22.8224489,6.64075447 C18.8236796,3.62275447 12.7813719,4.88598524 9.32737193,9.46275447 C5.87321809,14.0393699 6.31475655,20.195216 10.3135258,23.2138314 C13.578295,25.6779852 18.2047565,25.287216 21.6732181,22.5699852 L21.6693719,22.5630622 L20.0107565,21.2621391 C17.4407565,22.9144468 14.252295,23.0333699 11.9458335,21.2927545 C8.87414116,18.9746006 8.53506424,14.245216 11.188295,10.7293699 C13.8419873,7.21398524 18.4832181,6.24367755 21.5549104,8.56198524'></path></g></svg>");
-            }
-
-            if (($isCpRequest && $enableDebugToolbarForCp) || (!$isCpRequest && $enableDebugToolbarForSite)) {
-                /** @var yii\debug\Module $module */
-                $module = $app->getModule('debug');
-                $module->bootstrap($app);
-            }
-        }
-    }
-}
-
-return $app;
+return Craft::createObject($config);

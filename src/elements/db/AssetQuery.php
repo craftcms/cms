@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use yii\db\Connection;
 
 /**
@@ -21,8 +21,8 @@ use yii\db\Connection;
  * @property string|string[]|Volume $volume The handle(s) of the volume(s) that resulting assets must belong to.
  *
  * @method Asset[]|array all($db = null)
- * @method Asset|array|false one($db = null)
- * @method Asset|array|false nth(int $n, Connection $db = null)
+ * @method Asset|array|null one($db = null)
+ * @method Asset|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -81,7 +81,7 @@ class AssetQuery extends ElementQuery
     public $includeSubfolders = false;
 
     /**
-     * @var array|null The asset transform indexes that should be eager-loaded, if they exist
+     * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist
      */
     public $withTransforms;
 
@@ -283,7 +283,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[withTransforms]] property.
      *
-     * @param array|null $value The transforms to include.
+     * @param string|array|null $value The transforms to include.
      *
      * @return self The query object itself
      */
@@ -302,8 +302,11 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if ($this->asArray === false && !empty($this->withTransforms)) {
-            $transforms = ArrayHelper::toArray($this->withTransforms);
+        if ($this->asArray === false && $this->withTransforms) {
+            $transforms = $this->withTransforms;
+            if (!is_array($transforms)) {
+                $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
+            }
 
             Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
         }

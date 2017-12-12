@@ -2,13 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -106,7 +105,7 @@ class Rebrand
             $path = $this->_getImagePath($type);
 
             if ($path !== false) {
-                $url = $this->_getImageUrl($path, $type);
+                $url = Craft::$app->getAssetManager()->getPublishedUrl($path, true);
                 $this->_imageVariables[$type] = new Image($path, $url);
             } else {
                 $this->_imageVariables[$type] = false;
@@ -165,18 +164,5 @@ class Rebrand
         $this->_paths[$type] = false;
 
         return false;
-    }
-
-    /**
-     * Returns the URL to a rebrand image.
-     *
-     * @param string $path
-     * @param string $type
-     *
-     * @return string
-     */
-    private function _getImageUrl(string $path, string $type): string
-    {
-        return UrlHelper::resourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }
 }

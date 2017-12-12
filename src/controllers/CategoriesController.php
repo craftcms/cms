@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -225,6 +225,10 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
+        $this->view->registerTranslations('app', [
+            'New category',
+        ]);
+
         return $this->renderTemplate('categories/_index', [
             'groupHandle' => $groupHandle,
             'groups' => $groups
@@ -270,7 +274,7 @@ class CategoriesController extends Controller
         // Parent Category selector variables
         // ---------------------------------------------------------------------
 
-        if ($variables['group']->maxLevels != 1) {
+        if ((int)$variables['group']->maxLevels !== 1) {
             $variables['elementType'] = Category::class;
 
             // Define the parent options criteria
@@ -305,11 +309,11 @@ class CategoriesController extends Controller
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $category->id !== null) {
-                $parentIds = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+                $parentId = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+            }
 
-                if (!empty($parentIds)) {
-                    $parentId = $parentIds[0];
-                }
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: null;
             }
 
             if ($parentId) {
@@ -340,7 +344,7 @@ class CategoriesController extends Controller
         ];
 
         /** @var Category $ancestor */
-        foreach ($category->getAncestors() as $ancestor) {
+        foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
                 'url' => $ancestor->getCpEditUrl()
@@ -441,6 +445,10 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
+        if ($category->enabled && $category->enabledForSite) {
+            $category->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (!Craft::$app->getElements()->saveElement($category)) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
@@ -676,8 +684,7 @@ class CategoriesController extends Controller
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($variables['category']->getErrors($field->handle)) {
-                        $hasErrors = true;
+                    if ($hasErrors = $variables['category']->hasErrors($field->handle)) {
                         break;
                     }
                 }
@@ -764,13 +771,13 @@ class CategoriesController extends Controller
         $category->setFieldValuesFromRequest($fieldsLocation);
 
         // Parent
-        $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
+        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: '';
+            }
 
-        if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+            $category->newParentId = $parentId ?: '';
         }
-
-        $category->newParentId = $parentId ?: null;
     }
 
     /**
@@ -786,7 +793,7 @@ class CategoriesController extends Controller
         $categoryGroupSiteSettings = $category->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$category->siteId]) || !$categoryGroupSiteSettings[$category->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The category '.$category->id.' doesn\'t have a URL for the site '.$category->siteId.'.');
+            throw new ServerErrorHttpException('The category '.$category->id.' doesn’t have a URL for the site '.$category->siteId.'.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($category->siteId);

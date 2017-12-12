@@ -14,14 +14,17 @@
 {% endif %}
 
 {% if instructions or input %}
-    {% include "_includes/forms/field" with {
+    {% embed "_includes/forms/field" with {
         label: field.name|t('site')|e,
-        transslatable: translatable,
+        translatable: translatable,
         siteId: siteId,
         required: (not static ? required : false),
         instructions: instructions|e,
         id: field.handle,
         errors: errors,
-        input: input
+        input: input,
+        fieldType: className(field)
     } only %}
+        {% block attr %}data-type="{{ fieldType }}"{% endblock %}
+    {% endembed %}
 {% endif %}

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -75,10 +75,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             // Manually validate 'title' since the Elements service will just give it a title automatically.
             if ($draft->validate(['title'])) {
-                $draftEnabled = $draft->enabled;
-                $draft->enabled = false;
-                Craft::$app->getElements()->saveElement($draft);
-                $draft->enabled = $draftEnabled;
+                Craft::$app->getElements()->saveElement($draft, false);
             }
         }
 

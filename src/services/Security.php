@@ -2,14 +2,12 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
 
 use Craft;
-use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
@@ -89,36 +87,15 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Returns a validtion key unique to this Craft installation. Craft will initially check the 'validationKey'
-     * config setting and return that if one has been explicitly set. If not, Craft will generate a cryptographically
-     * secure, random key and save it in `craft\storage\validation.key` and serve that on future requests.
+     * Deprecated wrapper for [[\craft\config\GeneralConfig::securityKey Craft::$app->config->general->securityKey]].
      *
-     * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
-     *
-     * @return mixed|string The validation key.
-     * @throws Exception if the validation key could not be written
+     * @return string
+     * @deprecated in 3.0.0-beta.27. Use [[\craft\config\GeneralConfig::securityKey Craft::$app->config->general->securityKey]] instead.
      */
-    public function getValidationKey()
+    public function getValidationKey(): string
     {
-        if ($key = Craft::$app->getConfig()->getGeneral()->validationKey) {
-            return $key;
-        }
-
-        $validationKeyPath = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'validation.key';
-
-        if (is_file($validationKeyPath)) {
-            return StringHelper::trim(file_get_contents($validationKeyPath));
-        }
-
-        if (!FileHelper::isWritable($validationKeyPath)) {
-            throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
-        }
-
-        $key = $this->generateRandomString();
-
-        FileHelper::writeToFile($validationKeyPath, $key);
-
-        return $key;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Craft::$app->security->getValidationKey() has been deprecated. Use Craft::$app->config->general->securityKey instead.');
+        return Craft::$app->getConfig()->getGeneral()->securityKey;
     }
 
     /**
@@ -141,7 +118,7 @@ class Security extends \yii\base\Security
     public function hashData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = $this->getValidationKey();
+            $key = Craft::$app->getConfig()->getGeneral()->securityKey;
         }
 
         return parent::hashData($data, $key, $rawHash);
@@ -168,7 +145,7 @@ class Security extends \yii\base\Security
     public function validateData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = $this->getValidationKey();
+            $key = Craft::$app->getConfig()->getGeneral()->securityKey;
         }
 
         return parent::validateData($data, $key, $rawHash);

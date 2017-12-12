@@ -9,7 +9,6 @@
 namespace craft\base;
 
 use Craft;
-use craft\base\Volume;
 use craft\errors\AssetException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
@@ -92,7 +91,7 @@ abstract class FlysystemVolume extends Volume
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
-            $success = $this->filesystem()->updateStream($path, $stream, $config);;
+            $success = $this->filesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $e) {
             throw new VolumeObjectNotFoundException($e->getMessage(), 0, $e);
         }

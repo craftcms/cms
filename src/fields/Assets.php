@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -18,7 +18,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
 
 /**
@@ -65,7 +64,8 @@ class Assets extends BaseRelationField
     public $useSingleFolder;
 
     /**
-     * @var int|null The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null Where files should be uploaded to by default, in format "folder:X", where X is the craft\models\VolumeFolder ID
+     *                  (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
@@ -75,7 +75,8 @@ class Assets extends BaseRelationField
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var int|null The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null Where files should be restricted to, in format "folder:X", where X is the craft\models\VolumeFolder ID
+     *                  (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
@@ -195,8 +196,9 @@ class Assets extends BaseRelationField
 
         // Get all the value's assets' filenames
         /** @var Element $element */
+        /** @var AssetQuery $value */
         $value = $element->getFieldValue($this->handle);
-        foreach ($value as $asset) {
+        foreach ($value->all() as $asset) {
             /** @var Asset $asset */
             $filenames[] = $asset->filename;
         }
@@ -520,7 +522,7 @@ class Assets extends BaseRelationField
 
         if ($subpath === '') {
             // Get the root folder in the source
-            $folder = $rootFolder;
+            $folderId = $rootFolder->id;
         } else {
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
@@ -559,49 +561,14 @@ class Assets extends BaseRelationField
                     throw new InvalidSubpathException($subpath);
                 }
 
-                // Start at the root, and, go over each folder in the path and create it if it's missing.
-                $parentFolder = $rootFolder;
-
-                $segments = explode('/', $subpath);
-                foreach ($segments as $segment) {
-                    $folder = $assetsService->findFolder([
-                        'parentId' => $parentFolder->id,
-                        'name' => $segment
-                    ]);
-
-                    // Create it if it doesn't exist
-                    if (!$folder) {
-                        $folder = $this->_createSubfolder($parentFolder, $segment);
-                    }
-
-                    // In case there's another segment after this...
-                    $parentFolder = $folder;
-                }
+                $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
+                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            } else {
+                $folderId = $folder->id;
             }
         }
 
-        return $folder->id;
-    }
-
-    /**
-     * Create a subfolder within a folder with the given name.
-     *
-     * @param VolumeFolder $currentFolder
-     * @param string       $folderName
-     *
-     * @return VolumeFolder The new subfolder
-     */
-    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName): VolumeFolder
-    {
-        $newFolder = new VolumeFolder();
-        $newFolder->parentId = $currentFolder->id;
-        $newFolder->name = $folderName;
-        $newFolder->volumeId = $currentFolder->volumeId;
-        $newFolder->path = ltrim(rtrim($currentFolder->path, '/').'/'.$folderName, '/').'/';
-
-        Craft::$app->getAssets()->createFolder($newFolder, true);
-
-        return $newFolder;
+        return $folderId;
     }
 
     /**
@@ -649,7 +616,7 @@ class Assets extends BaseRelationField
         }
 
         if (!$uploadSource) {
-            throw new InvalidVolumeException(Craft::t('app', 'This field\'s Volume configuration is invalid.'));
+            throw new InvalidVolumeException(Craft::t('app', 'This field’s Volume configuration is invalid.'));
         }
 
         $assets = Craft::$app->getAssets();

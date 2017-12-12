@@ -1,17 +1,19 @@
 {%- set options = (options is defined ? options : []) %}
 {%- set value = (value is defined ? value : null) %}
 
-{%- for key, option in options %}
-    {%- set optionLabel = (option.label is defined ? option.label : option) %}
-    {%- set optionValue = (option.value is defined ? option.value : key) -%}
-    <div>
-        {% include "_includes/forms/radio" with {
-            label:     optionLabel,
-            id:        (id is defined and loop.first ? id : null),
-            name:      (name is defined ? name : null),
-            value:     optionValue,
-            checked:   (optionValue == value),
-            autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
-        } only %}
-    </div>
-{% endfor %}
+<div class="radio-group"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+    {%- for key, option in options %}
+        {%- if option is not iterable %}
+            {%- set option = {label: option, value: key} %}
+        {%- endif %}
+        <div>
+            {% include "_includes/forms/radio" with {
+                id:        (id is defined and loop.first ? id : null),
+                name:      (name is defined ? name : null),
+                checked:   (option.value is defined and option.value == value),
+                autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
+            }|merge(option) only %}
+        </div>
+    {% endfor %}
+</div>

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -14,7 +14,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 use craft\models\Site;
 
 /**
@@ -68,14 +68,16 @@ class ElementRelationParamParser
     public function parse($relatedToParam)
     {
         // Ensure the criteria is an array
-        if (is_string($relatedToParam)) {
-            $relatedToParam = ArrayHelper::toArray($relatedToParam);
-        } else if (!is_array($relatedToParam)) {
-            $relatedToParam = [$relatedToParam];
+        if (!is_array($relatedToParam)) {
+            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
         }
 
         if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
             $relatedToParam = [$relatedToParam];
+        }
+
+        if (!isset($relatedToParam[0])) {
+            return false;
         }
 
         $conditions = [];
@@ -179,7 +181,10 @@ class ElementRelationParamParser
 
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
-                $elements = ArrayHelper::toArray($relCriteria[$elementParam], [], false);
+                $elements = $relCriteria[$elementParam];
+                if (!is_array($elements)) {
+                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
+                }
 
                 if (isset($elements[0]) && ($elements[0] === 'and' || $elements[0] === 'or')) {
                     $glue = array_shift($elements);
@@ -247,7 +252,10 @@ class ElementRelationParamParser
         if ($relCriteria['field']) {
             // Loop through all of the fields in this rel criteria, create the Matrix-specific conditions right away
             // and save the normal field IDs for later
-            $fields = ArrayHelper::toArray($relCriteria['field']);
+            $fields = $relCriteria['field'];
+            if (!is_array($fields)) {
+                $fields = is_string($fields) ? StringHelper::split($fields) : [$fields];
+            }
 
             foreach ($fields as $field) {
                 if (($fieldModel = $this->_getField($field, $fieldHandleParts)) === null) {

@@ -3,7 +3,8 @@
 {%- set cols = (cols is defined ? cols : []) %}
 {%- set rows = (rows is defined ? rows : []) -%}
 
-<table id="{{ id }}" class="shadow-box editable">
+<table id="{{ id }}" class="shadow-box editable"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
             {% for col in cols %}
@@ -42,8 +43,12 @@
                                         disabled: static
                                     } only %}
                                 {%- case 'checkbox' -%}
-                                    <input type="hidden" name="{{ cellName }}">
-                                    <input type="checkbox" name="{{ cellName }}" value="{{ col.value ?? 1 }}"{% if value %} checked{% endif %}{% if static %} disabled{% endif %}>
+                                    {% include "_includes/forms/checkbox" with {
+                                        name: cellName,
+                                        value:  col.value ?? 1,
+                                        checked: value is not empty,
+                                        disabled: static
+                                    } only %}
                                 {%- case 'lightswitch' -%}
                                     {% include "_includes/forms/lightswitch" with {
                                         name: cellName,

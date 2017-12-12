@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -35,7 +35,9 @@ class MigrationHelper
         $schema = $db->getSchema();
         $tableName = $schema->getRawTableName($tableName);
         $schema->refreshTableSchema($tableName);
-        $columns = ArrayHelper::toArray($columns);
+        if (is_string($columns)) {
+            $columns = StringHelper::split($columns);
+        }
         $table = $db->getTableSchema($tableName);
 
         foreach ($table->foreignKeys as $num => $fk) {
@@ -87,7 +89,9 @@ class MigrationHelper
     {
         $db = Craft::$app->getDb();
         $schema = $db->getSchema();
-        $columns = ArrayHelper::toArray($columns);
+        if (is_string($columns)) {
+            $columns = StringHelper::split($columns);
+        }
 
         $allIndexes = $schema->findIndexes($tableName);
         $needleIndex = $db->getIndexName($tableName, $columns, $unique, $foreignKey);

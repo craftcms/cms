@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -27,7 +27,7 @@ class DownloadAssetFile extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Download Asset file');
+        return Craft::t('app', 'Download file');
     }
 
     /**

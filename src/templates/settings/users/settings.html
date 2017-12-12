@@ -3,8 +3,6 @@
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'settings' %}
 
-{% set docsUrl = 'http://craftcms.com/docs/users' %}
-
 {% import "_includes/forms" as forms %}
 
 
@@ -18,21 +16,42 @@
     {% set volumeList = volumeList|merge([{'value': volume.id, 'label': volume.name}]) %}
 {% endfor %}
 
+{% macro assetLocationInput(volumeOptions, volumeId, subpath) %}
+    {% from "_includes/forms" import select, text %}
+    <div class="flex">
+        <div>
+            {{ select({
+                id: 'photoVolumeId',
+                name: 'photoVolumeId',
+                options: volumeOptions,
+                value: volumeId,
+            }) }}
+        </div>
+        <div class="flex-grow">
+            {{ text({
+                id: 'photoSubpath',
+                class: 'ltr',
+                name: 'photoSubpath',
+                value: subpath,
+                placeholder: "path/to/subfolder"|t('app')
+            }) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% from _self import assetLocationInput %}
+
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
         <input type="hidden" name="action" value="user-settings/save-user-settings">
         {{ csrfInput() }}
 
         {% if volumeList %}
-            {{ forms.selectField({
+            {{ forms.field({
                 first: true,
-                label: "User Photo Volume"|t('app'),
-                instructions: "Which volume do you want to use to store user photos?"|t('app'),
-                id: 'photoVolumeId',
-                name: 'photoVolumeId',
-                options: volumeList,
-                value: settings.photoVolumeId
-            })}}
+                label: "User Photo Location"|t('app'),
+                instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
+            }, assetLocationInput(volumeList, settings.photoVolumeId, settings.photoSubpath)) }}
         {% else %}
             {{ forms.field({
                 first: true,

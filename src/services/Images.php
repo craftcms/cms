@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Image;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
@@ -107,7 +107,7 @@ class Images extends Component
     public function getSupportedImageFormats(): array
     {
         if ($this->getIsImagick()) {
-            return array_map([StringHelper::class, 'toLowerCase'], Imagick::queryFormats());
+            return array_map('strtolower', Imagick::queryFormats());
         }
 
         $output = [];
@@ -144,7 +144,7 @@ class Images extends Component
         }
 
         if (!extension_loaded('imagick')) {
-            throw new Exception('The Imagick extension isn\'t loaded.');
+            throw new Exception('The Imagick extension isn’t loaded.');
         }
 
         // Taken from Imagick\Imagine() constructor.
@@ -186,7 +186,7 @@ class Images extends Component
      */
     public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
     {
-        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
+        if (FileHelper::isSvg($path)) {
             $image = new Svg();
             $image->loadImage($path);
 
@@ -218,7 +218,7 @@ class Images extends Component
      */
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
     {
-        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'svg') {
+        if (FileHelper::isSvg($filePath)) {
             return true;
         }
 
@@ -260,7 +260,7 @@ class Images extends Component
     }
 
     /**
-     * Cleans an image by it's path, clearing embedded potentially malicious embedded code.
+     * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
      *
@@ -273,7 +273,7 @@ class Images extends Component
         $cleanedByStripping = false;
 
         // Special case for SVG files.
-        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
+        if (FileHelper::isSvg($filePath)) {
             if (!Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads) {
                 return;
             }
@@ -359,9 +359,9 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return array
+     * @return array|null
      */
-    public function getExifData(string $filePath): array
+    public function getExifData(string $filePath)
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;

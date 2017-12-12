@@ -52,13 +52,12 @@ Craft.AuthManager = Garnish.Base.extend(
                 dataType: 'json',
                 complete: $.proxy(function(jqXHR, textStatus) {
                     if (textStatus === 'success') {
-                        this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
-
-                        this.submitLoginIfLoggedOut = false;
-
                         if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                             Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
                         }
+
+                        this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
+                        this.submitLoginIfLoggedOut = false;
                     }
                     else {
                         this.updateRemainingSessionTime(-1);

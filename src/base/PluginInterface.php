@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -29,6 +29,13 @@ interface PluginInterface
      * @return string The plugin’s handle
      */
     public function getHandle(): string;
+
+    /**
+     * Returns the plugin’s current version.
+     *
+     * @return string The plugin’s current version
+     */
+    public function getVersion();
 
     /**
      * Installs the plugin.

@@ -5,7 +5,6 @@
 // - jquery-touch-events
 // - jquery-ui
 // - qunit
-// - redactor
 
 var es = require('event-stream');
 var gulp = require('gulp');
@@ -23,7 +22,7 @@ var jsDeps = [
     { srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: libPath+'element-resize-detector' },
     { srcGlob: 'node_modules/fabric/dist/fabric.js', dest: libPath+'fabric' },
     { srcGlob: 'node_modules/garnishjs/dist/garnish.js', dest: libPath+'garnishjs' },
-    { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'jquery.inputmask' },
+    { srcGlob: 'node_modules/inputmask/dist/jquery.inputmask.bundle.js', dest: libPath+'inputmask' },
     { srcGlob: 'node_modules/jquery/dist/jquery.js', dest: libPath+'jquery' },
     { srcGlob: 'node_modules/jquery.payment/lib/jquery.payment.js', dest: libPath+'jquery.payment' },
     { srcGlob: 'node_modules/picturefill/dist/picturefill.js', dest: libPath+'picturefill' },
@@ -32,7 +31,13 @@ var jsDeps = [
     { srcGlob: 'node_modules/timepicker/jquery.timepicker.js', dest: libPath+'timepicker' },
     { srcGlob: 'node_modules/velocity-animate/velocity.js', dest: libPath+'velocity' },
     { srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: libPath+'xregexp' },
-    { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' }
+    { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' },
+    { srcGlob: 'node_modules/vue/dist/vue.js', dest: libPath+'vue' },
+    { srcGlob: 'node_modules/vue/dist/vue.min.js', dest: libPath+'vue' },
+    { srcGlob: 'node_modules/vue-router/dist/vue-router.js', dest: libPath+'vue-router' },
+    { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' },
+    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' }
+
 ];
 
 var d3LocaleData = [
@@ -80,4 +85,9 @@ gulp.task('deps', function() {
     });
 
     return es.merge(streams);
+});
+
+gulp.task('sass', function() {
+    return gulp.src('node_modules/craftcms-sass/src/_mixins.scss')
+        .pipe(gulp.dest('lib/craftcms-sass'));
 });

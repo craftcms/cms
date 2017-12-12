@@ -313,11 +313,7 @@ class Volumes extends Component
             ->where(['id' => $volumeId])
             ->one();
 
-        if (!$result) {
-            return $this->_volumesById[$volumeId] = null;
-        }
-
-        return $this->_volumesById[$volumeId] = $this->createVolume($result);
+        return $this->_volumesById[$volumeId] = $result ? $this->createVolume($result) : null;
     }
 
     /**
@@ -341,11 +337,7 @@ class Volumes extends Component
             ->where(['handle' => $handle])
             ->one();
 
-        if (!$result) {
-            return $this->_volumesByHandle[$handle] = null;
-        }
-
-        return $this->_volumesByHandle[$handle] = $this->createVolume($result);
+        return $this->_volumesByHandle[$handle] = $result ? $this->createVolume($result) : null;
     }
 
     /**
@@ -700,8 +692,7 @@ class Volumes extends Component
             $volumeRecord = AssetVolumeRecord::findOne(['id' => $volumeId]);
 
             if (!$volumeRecord) {
-                throw new VolumeException(Craft::t('app', 'No volume exists with the ID “{id}”.',
-                    ['id' => $volumeId]));
+                throw new VolumeException(Craft::t('app', 'No volume exists with the ID “{id}”.', ['id' => $volumeId]));
             }
         } else {
             $volumeRecord = new AssetVolumeRecord();

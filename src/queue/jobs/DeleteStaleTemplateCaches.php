@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
@@ -39,11 +39,11 @@ class DeleteStaleTemplateCaches extends BaseJob
         // What type of element(s) are we dealing with?
         if (is_array($this->elementId)) {
             $elementType = Craft::$app->getElements()->getElementTypesByIds($this->elementId);
-        } else {
+        } else if ($this->elementId) {
             $elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
         }
 
-        if ($elementType === null) {
+        if (empty($elementType)) {
             return;
         }
 

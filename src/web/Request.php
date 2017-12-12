@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\base\RequestTrait;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 
@@ -26,7 +25,6 @@ use yii\web\BadRequestHttpException;
  * @property string $token                  The token submitted with the request, if there is one.
  * @property bool   $isCpRequest            Whether the Control Panel was requested.
  * @property bool   $isSiteRequest          Whether the front end site was requested.
- * @property bool   $isResourceRequest      Whether a resource was requested.
  * @property bool   $isActionRequest        Whether a specific controller action was requested.
  * @property array  $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
  * @property bool   $isLivePreview          Whether this is a Live Preview request.
@@ -74,12 +72,12 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
-    private $_isResourceRequest = false;
+    private $_isActionRequest = false;
 
     /**
      * @var bool
      */
-    private $_isActionRequest = false;
+    private $_isSingleActionRequest = false;
 
     /**
      * @var bool
@@ -123,18 +121,6 @@ class Request extends \yii\web\Request
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        if (!isset($config['csrfCookie'])) {
-            $config['csrfCookie'] = Craft::cookieConfig([], $this);
-        }
-
-        parent::__construct($config);
-    }
 
     /**
      * @inheritdoc
@@ -322,7 +308,6 @@ class Request extends \yii\web\Request
      * [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger).
      *
      * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
-     * It could instead route to a resource, for example.
      *
      * @return bool Whether the current request should be routed to the Control Panel.
      */
@@ -344,21 +329,6 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether a resource was requested.
-     *
-     * The result depends on whether the first segment in the Craft path matches the
-     * [resource trigger](http://craftcms.com/docs/config-settings#resourceTrigger).
-     *
-     * @return bool Whether the current request should be routed to a resource.
-     */
-    public function getIsResourceRequest(): bool
-    {
-        $this->_checkRequestType();
-
-        return $this->_isResourceRequest;
-    }
-
-    /**
      * Returns whether a specific controller action was requested.
      *
      * There are several ways that this method could return `true`:
@@ -373,8 +343,16 @@ class Request extends \yii\web\Request
     public function getIsActionRequest(): bool
     {
         $this->_checkRequestType();
-
         return $this->_isActionRequest;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request.
+     */
+    public function getIsSingleActionRequest()
+    {
+        $this->_checkRequestType();
+        return $this->_isSingleActionRequest;
     }
 
     /**
@@ -658,10 +636,19 @@ class Request extends \yii\web\Request
      */
     public function getQueryStringWithoutPath(): string
     {
-        parse_str($this->getQueryString(), $queryParams);
+        // Get the full query string
+        $queryString = $this->getQueryString();
+        $parts = explode('&', $queryString);
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-        unset($queryParams[$pathParam]);
-        return http_build_query($queryParams);
+
+        foreach ($parts as $key => $part) {
+            if (strpos($part, $pathParam.'=') === 0) {
+                unset($parts[$key]);
+                break;
+            }
+        }
+
+        return implode('&', $parts);
     }
 
     /**
@@ -911,7 +898,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Checks to see if this is an action or resource request.
+     * Checks to see if this is an action request.
      *
      * @return void
      */
@@ -928,55 +915,53 @@ class Request extends \yii\web\Request
         if (!$this->getQueryParam($generalConfig->tokenParam)) {
             $firstSegment = $this->getSegment(1);
 
-            // Is this a resource request?
-            if ($firstSegment === UrlHelper::resourceTrigger()) {
-                $this->_isResourceRequest = true;
+            // Is this an action request?
+            if ($this->_isCpRequest) {
+                $loginPath = 'login';
+                $logoutPath = 'logout';
+                $setPasswordPath = 'setpassword';
+                $updatePath = 'update';
             } else {
-                // Is this an action request?
-                if ($this->_isCpRequest) {
-                    $loginPath = 'login';
-                    $logoutPath = 'logout';
-                    $setPasswordPath = 'setpassword';
-                    $updatePath = 'update';
+                $loginPath = trim($generalConfig->getLoginPath(), '/');
+                $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                $updatePath = null;
+            }
+
+            $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
+            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
+            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true);
+
+            if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
+                $this->_isActionRequest = true;
+
+                // Important we check in this specific order:
+                // 1) /actions/some/action
+                // 2) any/uri?action=some/action
+                // 3) special/uri
+
+                if ($hasTriggerMatch) {
+                    $this->_actionSegments = array_slice($this->_segments, 1);
+                    $this->_isSingleActionRequest = true;
+                } else if ($hasActionParam) {
+                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
+                    $this->_isSingleActionRequest = empty($this->_path);
                 } else {
-                    $loginPath = trim($generalConfig->getLoginPath(), '/');
-                    $logoutPath = trim($generalConfig->getLogoutPath(), '/');
-                    $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
-                    $updatePath = null;
-                }
-
-                if (
-                    ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
-                    ($actionParam = $this->getParam('action')) !== null ||
-                    ($specialPath = in_array($this->_path, [
-                        $loginPath,
-                        $logoutPath,
-                        $setPasswordPath,
-                        $updatePath
-                    ], true))
-                ) {
-                    $this->_isActionRequest = true;
-
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    if ($triggerMatch) {
-                        $this->_actionSegments = array_slice($this->_segments, 1);
-                    } else if (!empty($actionParam)) {
-                        $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-                    } else {
-                        switch ($this->_path) {
-                            case $loginPath:
-                                $this->_actionSegments = ['users', 'login'];
-                                break;
-                            case $logoutPath:
-                                $this->_actionSegments = ['users', 'logout'];
-                                break;
-                            case $setPasswordPath:
-                                $this->_actionSegments = ['users', 'set-password'];
-                                break;
-                            case $updatePath:
-                                $this->_actionSegments = ['updater', 'index'];
-                        }
+                    switch ($this->_path) {
+                        case $loginPath:
+                            $this->_actionSegments = ['users', 'login'];
+                            break;
+                        case $logoutPath:
+                            $this->_actionSegments = ['users', 'logout'];
+                            break;
+                        case $setPasswordPath:
+                            $this->_actionSegments = ['users', 'set-password'];
+                            break;
+                        case $updatePath:
+                            $this->_actionSegments = ['updater', 'index'];
+                            break;
                     }
+                    $this->_isSingleActionRequest = true;
                 }
             }
         }

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -80,11 +80,18 @@ class Cp
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
 
-                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',
-                    [
-                        'file' => 'config/license.key',
-                        'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-                    ]);
+                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                // If the license key path starts with the root project path, trim the project path off
+                $rootPath = Craft::getAlias('@root');
+                if (strpos($keyPath, $rootPath.'/') === 0) {
+                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                }
+
+                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                    'file' => $keyPath,
+                    'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
+                ]);
 
                 // Can they actually do something about it?
                 if ($user->admin) {

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -15,7 +15,6 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
-use yii\web\IdentityInterface;
 
 /**
  * The User service provides APIs for managing the user authentication status.
@@ -48,15 +47,6 @@ class User extends \yii\web\User
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Initializes the application component.
-     */
-    public function init()
-    {
-        parent::init();
-        $this->_setStaticIdentity();
-    }
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -370,7 +360,20 @@ class User extends \yii\web\User
     {
         // Only renew if the request meets our user agent and IP requirements
         if (Craft::$app->getIsInstalled() && $this->_validateUserAgentAndIp()) {
-            parent::renewAuthStatus();
+            // Prevent the user session from getting extended?
+            $request = Craft::$app->getRequest();
+            if ($this->authTimeout !== null && $request->getParam('dontExtendSession')) {
+                $this->absoluteAuthTimeout = $this->authTimeout;
+                $this->authTimeout = null;
+                $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
+                $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
+                parent::renewAuthStatus();
+                $this->authTimeout = $this->absoluteAuthTimeout;
+                $this->absoluteAuthTimeout = null;
+                $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
+            } else {
+                parent::renewAuthStatus();
+            }
         }
     }
 
@@ -430,40 +433,6 @@ class User extends \yii\web\User
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Statically sets the identity in the event that this request should not be extending it.
-     *
-     * @return void
-     */
-    private function _setStaticIdentity()
-    {
-        // Is the request specifying that the session should not be extended?
-        $request = Craft::$app->getRequest();
-
-        if (
-            $request->getIsGet() &&
-            $request->getIsCpRequest() &&
-            $request->getParam('dontExtendSession')
-        ) {
-            // Prevent getIdentity() from automatically fetching the identity from session
-            $this->enableSession = false;
-
-            // Code adapted from \yii\web\User::renewAuthStatus()
-            $session = Craft::$app->getSession();
-            $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
-
-            if ($id === null) {
-                $identity = null;
-            } else {
-                /** @var $class IdentityInterface */
-                $class = $this->identityClass;
-                $identity = $class::findIdentity($id);
-            }
-
-            $this->setIdentity($identity);
-        }
-    }
 
     /**
      * Validates that the request has a user agent and IP associated with it,

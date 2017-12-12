@@ -2,13 +2,13 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
 
 use Craft;
-use Stringy\Stringy;
+use Stringy\Stringy as BaseStringy;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -44,7 +44,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function camelCase(string $str): string
     {
-        return (string)Stringy::create($str)->camelize();
+        return (string)BaseStringy::create($str)->camelize();
     }
 
     /**
@@ -56,7 +56,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function charsAsArray(string $str): array
     {
-        return Stringy::create($str)->chars();
+        return BaseStringy::create($str)->chars();
     }
 
     /**
@@ -69,7 +69,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function collapseWhitespace(string $str): string
     {
-        return (string)Stringy::create($str)->collapseWhitespace();
+        return (string)BaseStringy::create($str)->collapseWhitespace();
     }
 
     /**
@@ -84,7 +84,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function contains(string $haystack, string $needle, bool $caseSensitive = true): bool
     {
-        return Stringy::create($haystack)->contains($needle, $caseSensitive);
+        return BaseStringy::create($haystack)->contains($needle, $caseSensitive);
     }
 
     /**
@@ -99,7 +99,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAny(string $haystack, array $needles, bool $caseSensitive = true): bool
     {
-        return Stringy::create($haystack)->containsAny($needles, $caseSensitive);
+        return BaseStringy::create($haystack)->containsAny($needles, $caseSensitive);
     }
 
     /**
@@ -114,7 +114,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAll(string $haystack, array $needles, bool $caseSensitive = true): bool
     {
-        return Stringy::create($haystack)->containsAll($needles, $caseSensitive);
+        return BaseStringy::create($haystack)->containsAll($needles, $caseSensitive);
     }
 
     /**
@@ -129,7 +129,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function countSubstrings(string $str, string $substring, bool $caseSensitive = true): int
     {
-        return Stringy::create($str)->countSubstr($substring, $caseSensitive);
+        return BaseStringy::create($str)->countSubstr($substring, $caseSensitive);
     }
 
     /**
@@ -144,7 +144,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function delimit(string $str, string $delimiter): string
     {
-        return (string)Stringy::create($str)->delimit($delimiter);
+        return (string)BaseStringy::create($str)->delimit($delimiter);
     }
 
     /**
@@ -159,7 +159,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function endsWith($str, $substring, $caseSensitive = true): bool
     {
-        return Stringy::create($str)->endsWith($substring, $caseSensitive);
+        return BaseStringy::create($str)->endsWith($substring, $caseSensitive);
     }
 
     /**
@@ -172,7 +172,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function ensureLeft(string $str, string $substring): string
     {
-        return (string)Stringy::create($str)->ensureLeft($substring);
+        return (string)BaseStringy::create($str)->ensureLeft($substring);
     }
 
     /**
@@ -185,7 +185,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function ensureRight(string $str, string $substring): string
     {
-        return (string)Stringy::create($str)->ensureRight($substring);
+        return (string)BaseStringy::create($str)->ensureRight($substring);
     }
 
     /**
@@ -198,7 +198,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function first(string $str, int $number): string
     {
-        return (string)Stringy::create($str)->first($number);
+        return (string)BaseStringy::create($str)->first($number);
     }
 
     /**
@@ -211,7 +211,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function charAt(string $str, int $i): string
     {
-        return (string)Stringy::create($str)->at($i);
+        return (string)BaseStringy::create($str)->at($i);
     }
 
     /**
@@ -223,7 +223,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function hasLowerCase(string $str): bool
     {
-        return Stringy::create($str)->hasLowerCase();
+        return BaseStringy::create($str)->hasLowerCase();
     }
 
     /**
@@ -235,7 +235,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function hasUpperCase(string $str): bool
     {
-        return Stringy::create($str)->hasUpperCase();
+        return BaseStringy::create($str)->hasUpperCase();
     }
 
     /**
@@ -250,7 +250,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function indexOf($str, $needle, $offset = 0)
     {
-        return Stringy::create($str)->indexOf($needle, $offset);
+        return BaseStringy::create($str)->indexOf($needle, $offset);
     }
 
     /**
@@ -266,7 +266,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function indexOfLast($str, $needle, $offset = 0)
     {
-        return Stringy::create($str)->indexOfLast($needle, $offset);
+        return BaseStringy::create($str)->indexOfLast($needle, $offset);
     }
 
     /**
@@ -280,7 +280,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function insert(string $str, string $substring, int $index): string
     {
-        return (string)Stringy::create($str)->insert($substring, $index);
+        return (string)BaseStringy::create($str)->insert($substring, $index);
     }
 
     /**
@@ -292,7 +292,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isAlpha(string $str): bool
     {
-        return Stringy::create($str)->isAlpha();
+        return BaseStringy::create($str)->isAlpha();
     }
 
     /**
@@ -304,7 +304,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isAlphanumeric(string $str): bool
     {
-        return Stringy::create($str)->isAlphanumeric();
+        return BaseStringy::create($str)->isAlphanumeric();
     }
 
     /**
@@ -316,7 +316,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isWhitespace(string $str): bool
     {
-        return Stringy::create($str)->isBlank();
+        return BaseStringy::create($str)->isBlank();
     }
 
     /**
@@ -328,7 +328,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isHexadecimal(string $str): bool
     {
-        return Stringy::create($str)->isHexadecimal();
+        return BaseStringy::create($str)->isHexadecimal();
     }
 
     /**
@@ -340,7 +340,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isLowerCase(string $str): bool
     {
-        return Stringy::create($str)->isLowerCase();
+        return BaseStringy::create($str)->isLowerCase();
     }
 
     /**
@@ -352,7 +352,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUpperCase(string $str): bool
     {
-        return Stringy::create($str)->isUpperCase();
+        return BaseStringy::create($str)->isUpperCase();
     }
 
     /**
@@ -377,7 +377,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function last(string $str, int $number): string
     {
-        return (string)Stringy::create($str)->last($number);
+        return (string)BaseStringy::create($str)->last($number);
     }
 
     /**
@@ -389,7 +389,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function length(string $str): int
     {
-        return Stringy::create($str)->length();
+        return BaseStringy::create($str)->length();
     }
 
     /**
@@ -401,7 +401,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lines(string $str): array
     {
-        $lines = Stringy::create($str)->lines();
+        $lines = BaseStringy::create($str)->lines();
 
         foreach ($lines as $i => $line) {
             $lines[$i] = (string)$line;
@@ -420,7 +420,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lowercaseFirst(string $str): string
     {
-        return (string)Stringy::create($str)->lowerCaseFirst();
+        return (string)BaseStringy::create($str)->lowerCaseFirst();
     }
 
     /**
@@ -512,6 +512,19 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Splits a string into chunks on a given delimiter.
+     *
+     * @param string $string    The string
+     * @param string $delimiter The delimiter to split the string on (defaults to a comma)
+     *
+     * @return string[] The segments of the string
+     */
+    public static function split(string $string, string $delimiter = ','): array
+    {
+        return preg_split('/\s*'.preg_quote($delimiter, '/').'\s*/', $string, -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    /**
      * Splits a string into an array of the words in the string.
      *
      * @param string $string The string
@@ -550,7 +563,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function padBoth($str, $length, $padStr = ' '): string
     {
-        return (string)Stringy::create($str)->padBoth($length, $padStr);
+        return (string)BaseStringy::create($str)->padBoth($length, $padStr);
     }
 
     /**
@@ -564,7 +577,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function padLeft(string $str, int $length, string $padStr = ' '): string
     {
-        return (string)Stringy::create($str)->padLeft($length, $padStr);
+        return (string)BaseStringy::create($str)->padLeft($length, $padStr);
     }
 
     /**
@@ -578,7 +591,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function padRight(string $str, int $length, string $padStr = ' '): string
     {
-        return (string)Stringy::create($str)->padRight($length, $padStr);
+        return (string)BaseStringy::create($str)->padRight($length, $padStr);
     }
 
     /**
@@ -648,7 +661,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function regexReplace(string $str, string $pattern, string $replacement, string $options = 'msr'): string
     {
-        return (string)Stringy::create($str)->regexReplace($pattern, $replacement, $options);
+        return (string)BaseStringy::create($str)->regexReplace($pattern, $replacement, $options);
     }
 
     /**
@@ -661,7 +674,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function removeLeft(string $str, string $substring): string
     {
-        return (string)Stringy::create($str)->removeLeft($substring);
+        return (string)BaseStringy::create($str)->removeLeft($substring);
     }
 
     /**
@@ -674,7 +687,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function removeRight(string $str, string $substring): string
     {
-        return (string)Stringy::create($str)->removeRight($substring);
+        return (string)BaseStringy::create($str)->removeRight($substring);
     }
 
     /**
@@ -688,7 +701,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replace(string $str, string $search, string $replacement): string
     {
-        return (string)Stringy::create($str)->replace($search, $replacement);
+        return (string)BaseStringy::create($str)->replace($search, $replacement);
     }
 
     /**
@@ -700,7 +713,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function reverse(string $str): string
     {
-        return (string)Stringy::create($str)->reverse();
+        return (string)BaseStringy::create($str)->reverse();
     }
 
     /**
@@ -716,7 +729,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function safeTruncate(string $str, int $length, string $substring = ''): string
     {
-        return (string)Stringy::create($str)->safeTruncate($length, $substring);
+        return (string)BaseStringy::create($str)->safeTruncate($length, $substring);
     }
 
     /**
@@ -731,7 +744,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function startsWith($str, $substring, $caseSensitive = true): bool
     {
-        return Stringy::create($str)->startsWith($substring, $caseSensitive);
+        return BaseStringy::create($str)->startsWith($substring, $caseSensitive);
     }
 
     /**
@@ -746,7 +759,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function substr(string $str, int $start, int $length = null): string
     {
-        return (string)Stringy::create($str)->substr($start, $length);
+        return (string)BaseStringy::create($str)->substr($start, $length);
     }
 
     /**
@@ -758,7 +771,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function swapCase(string $str): string
     {
-        return (string)Stringy::create($str)->swapCase();
+        return (string)BaseStringy::create($str)->swapCase();
     }
 
     /**
@@ -772,7 +785,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function titleize(string $str, array $ignore = null): string
     {
-        return (string)Stringy::create($str)->titleize($ignore);
+        return (string)BaseStringy::create($str)->titleize($ignore);
     }
 
     /**
@@ -784,7 +797,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toLowerCase(string $str): string
     {
-        return (string)Stringy::create($str)->toLowerCase();
+        return (string)BaseStringy::create($str)->toLowerCase();
     }
 
     /**
@@ -820,7 +833,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toTitleCase(string $str): string
     {
-        return (string)Stringy::create($str)->toTitleCase();
+        return (string)BaseStringy::create($str)->toTitleCase();
     }
 
     /**
@@ -832,7 +845,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toUpperCase(string $str): string
     {
-        return (string)Stringy::create($str)->toUpperCase();
+        return (string)BaseStringy::create($str)->toUpperCase();
     }
 
     /**
@@ -844,7 +857,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function trim(string $str): string
     {
-        return (string)Stringy::create($str)->trim();
+        return (string)BaseStringy::create($str)->trim();
     }
 
     /**
@@ -856,7 +869,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function upperCaseFirst(string $str): string
     {
-        return (string)Stringy::create($str)->upperCaseFirst();
+        return (string)BaseStringy::create($str)->upperCaseFirst();
     }
 
     /**
@@ -918,7 +931,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str): string
     {
-        return (string)Stringy::create($str)->toAscii();
+        return (string)BaseStringy::create($str)->toAscii();
     }
 
     // Encodings
