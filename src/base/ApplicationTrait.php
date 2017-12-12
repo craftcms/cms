@@ -417,9 +417,9 @@ trait ApplicationTrait
                 ($activeEdition < Craft::Pro) ||
                 ($licensedEdition !== null && $licensedEdition < Craft::Pro)
             );
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

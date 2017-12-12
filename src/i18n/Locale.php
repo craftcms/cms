@@ -540,21 +540,21 @@ class Locale extends BaseObject
             }
 
             return $formatter->format(new DateTime('1970-'.sprintf('%02d', $month).'-01'));
-        } else {
-            $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
+        }
 
-            switch ($length) {
-                case self::LENGTH_ABBREVIATED:
-                    return $this->_data[$which]['abbreviated'][$month - 1];
-                    break; // S
-                case self::LENGTH_SHORT:
-                case self::LENGTH_MEDIUM:
-                    return $this->_data[$which]['medium'][$month - 1];
-                    break; // Sep
-                default:
-                    return $this->_data[$which]['full'][$month - 1];
-                    break; // September
-            }
+        $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
+
+        switch ($length) {
+            case self::LENGTH_ABBREVIATED:
+                return $this->_data[$which]['abbreviated'][$month - 1];
+                break; // S
+            case self::LENGTH_SHORT:
+            case self::LENGTH_MEDIUM:
+                return $this->_data[$which]['medium'][$month - 1];
+                break; // Sep
+            default:
+                return $this->_data[$which]['full'][$month - 1];
+                break; // September
         }
     }
 
@@ -622,23 +622,23 @@ class Locale extends BaseObject
             // 1970-01-09 => Friday (5 + 4)
             // 1970-01-10 => Saturday (6 + 4)
             return $formatter->format(new DateTime('1970-01-'.sprintf('%02d', $day + 4)));
-        } else {
-            $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
+        }
 
-            switch ($length) {
-                case self::LENGTH_ABBREVIATED:
-                    // T
-                    return $this->_data[$which]['abbreviated'][$day];
-                case self::LENGTH_SHORT:
-                    // Tu
-                    return $this->_data[$which]['short'][$day];
-                case self::LENGTH_MEDIUM:
-                    // Tue
-                    return $this->_data[$which]['medium'][$day];
-                default:
-                    // Tuesday
-                    return $this->_data[$which]['full'][$day];
-            }
+        $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
+
+        switch ($length) {
+            case self::LENGTH_ABBREVIATED:
+                // T
+                return $this->_data[$which]['abbreviated'][$day];
+            case self::LENGTH_SHORT:
+                // Tu
+                return $this->_data[$which]['short'][$day];
+            case self::LENGTH_MEDIUM:
+                // Tue
+                return $this->_data[$which]['medium'][$day];
+            default:
+                // Tuesday
+                return $this->_data[$which]['full'][$day];
         }
     }
 

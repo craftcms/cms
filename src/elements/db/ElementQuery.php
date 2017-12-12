@@ -473,10 +473,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
-        } else {
-            /** @noinspection ImplicitMagicMethodCallInspection */
-            return $this->__unset($name);
         }
+
+        /** @noinspection ImplicitMagicMethodCallInspection */
+        return $this->__unset($name);
     }
 
     /**

@@ -145,9 +145,9 @@ class Application extends \yii\web\Application
                 throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', [
                     'url' => "[{$version}]({$url})",
                 ]));
-            } else {
-                throw new ServiceUnavailableHttpException();
             }
+
+            throw new ServiceUnavailableHttpException();
         }
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.

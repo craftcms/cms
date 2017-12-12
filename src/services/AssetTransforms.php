@@ -487,10 +487,10 @@ class AssetTransforms extends Component
 
                     if ($time->getTimestamp() - $index->dateUpdated->getTimestamp() < 30) {
                         continue;
-                    } else {
-                        $this->storeTransformIndexData($index);
-                        break;
                     }
+
+                    $this->storeTransformIndexData($index);
+                    break;
                 } else {
                     // Must be done now!
                     break;
