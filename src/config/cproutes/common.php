@@ -73,5 +73,4 @@ return [
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',
-    'POST plugin-store/install' => 'pluginstore/install',
 ];
