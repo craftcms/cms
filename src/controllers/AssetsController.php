@@ -733,6 +733,7 @@ class AssetsController extends Controller
             }
 
             if ($replace) {
+                $nukeTransforms = $asset->focalPoint !== $focal;
                 $asset->focalPoint = $focal;
 
                 // Only replace file if it changed, otherwise just save changed focal points
@@ -740,6 +741,12 @@ class AssetsController extends Controller
                     $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
                 } else if ($focal) {
                     Craft::$app->getElements()->saveElement($asset);
+                }
+
+                if ($nukeTransforms) {
+                    $transforms = Craft::$app->getAssetTransforms();
+                    $transforms->deleteCreatedTransformsForAsset($asset);
+                    $transforms->deleteTransformIndexDataByAssetId($assetId);
                 }
             } else {
                 $newAsset = new Asset();
