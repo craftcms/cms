@@ -467,9 +467,8 @@ class Asset extends Element
             if ($this->_transform !== null) {
                 return (string)$this->getUrl();
             }
-
             return parent::__toString();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }

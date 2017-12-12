@@ -552,7 +552,7 @@ class User extends Element implements IdentityInterface
     {
         try {
             return $this->getName();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
