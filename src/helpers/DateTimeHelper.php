@@ -625,19 +625,19 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($dateInterval->y) {
-            $timeComponents[] = $dateInterval->y.' '.($dateInterval->y > 1 ? Craft::t('app', 'years') : Craft::t('app', 'year'));
+            $timeComponents[] = $dateInterval->y == 1 ? Craft::t('app', '1 year') : Craft::t('app', '{num} years', ['num' => $dateInterval->y]);
         }
 
         if ($dateInterval->m) {
-            $timeComponents[] = $dateInterval->m.' '.($dateInterval->m > 1 ? Craft::t('app', 'months') : Craft::t('app', 'month'));
+            $timeComponents[] = $dateInterval->m == 1 ? Craft::t('app', '1 month') : Craft::t('app', '{num} months', ['num' => $dateInterval->m]);
         }
 
         if ($dateInterval->d) {
-            $timeComponents[] = $dateInterval->d.' '.($dateInterval->d > 1 ? Craft::t('app', 'days') : Craft::t('app', 'day'));
+            $timeComponents[] = $dateInterval->d == 1 ? Craft::t('app', '1 day') : Craft::t('app', '{num} days', ['num' => $dateInterval->d]);
         }
 
         if ($dateInterval->h) {
-            $timeComponents[] = $dateInterval->h.' '.($dateInterval->h > 1 ? Craft::t('app', 'hours') : Craft::t('app', 'hour'));
+            $timeComponents[] = $dateInterval->h == 1 ? Craft::t('app', '1 hour') : Craft::t('app', '{num} hours', ['num' => $dateInterval->h]);
         }
 
         $minutes = $dateInterval->i;
@@ -651,11 +651,11 @@ class DateTimeHelper
         }
 
         if ($minutes) {
-            $timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('app', 'minutes') : Craft::t('app', 'minute'));
+            $timeComponents[] = $minutes == 1 ? Craft::t('app', '1 minute') : Craft::t('app', '{num} minutes', ['num' => $minutes]);
         }
 
         if ($showSeconds && $dateInterval->s) {
-            $timeComponents[] = $dateInterval->s.' '.($dateInterval->s > 1 ? Craft::t('app', 'seconds') : Craft::t('app', 'second'));
+            $timeComponents[] = $dateInterval->s == 1 ? Craft::t('app', '1 second') : Craft::t('app', '{num} seconds', ['num' => $dateInterval->s]);
         }
 
         return implode(', ', $timeComponents);
