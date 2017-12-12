@@ -438,24 +438,24 @@ class Locale extends BaseObject
             } else {
                 $config['dateTimeFormats'] = [
                     'short' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_SHORT),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_SHORT),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_SHORT),
+                        'date' => $this->getDateFormat(self::LENGTH_SHORT),
+                        'time' => $this->getTimeFormat(self::LENGTH_SHORT),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_SHORT),
                     ],
                     'medium' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_MEDIUM),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_MEDIUM),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_MEDIUM),
+                        'date' => $this->getDateFormat(self::LENGTH_MEDIUM),
+                        'time' => $this->getTimeFormat(self::LENGTH_MEDIUM),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_MEDIUM),
                     ],
                     'long' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_LONG),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_LONG),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_LONG),
+                        'date' => $this->getDateFormat(self::LENGTH_LONG),
+                        'time' => $this->getTimeFormat(self::LENGTH_LONG),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_LONG),
                     ],
                     'full' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_FULL),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_FULL),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_FULL),
+                        'date' => $this->getDateFormat(self::LENGTH_FULL),
+                        'time' => $this->getTimeFormat(self::LENGTH_FULL),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_FULL),
                     ],
                 ];
             }

@@ -1,4 +1,16 @@
 <?php
+/**
+ * Craft console bootstrap file.
+ *
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
+ */
+
+// Make sure they're running PHP 7+
+if (PHP_VERSION_ID < 70000) {
+    exit("Craft requires PHP 7.0 or later.\n");
+}
 
 mb_detect_order('auto');
 

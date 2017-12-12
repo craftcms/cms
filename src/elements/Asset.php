@@ -467,9 +467,8 @@ class Asset extends Element
             if ($this->_transform !== null) {
                 return (string)$this->getUrl();
             }
-
             return parent::__toString();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -886,7 +885,6 @@ class Asset extends Element
     {
         switch ($attribute) {
             case 'filename':
-                /** @noinspection CssInvalidPropertyValue - FP */
                 return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
                     'filename' => $this->filename,
                 ]);
@@ -972,7 +970,7 @@ class Asset extends Element
     public function copyWithTransform($transform): Asset
     {
         // Duplicate this model and set it to that transform
-        $model = new Asset();
+        $model = new self();
 
         // Can't just use attributes() here because we'll get thrown into an infinite loop.
         foreach ($this->attributes() as $attributeName) {

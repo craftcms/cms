@@ -566,5 +566,7 @@ class AppController extends Controller
                 }
             }
         }
+
+        return null;
     }
 }

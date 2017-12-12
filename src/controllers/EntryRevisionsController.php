@@ -69,14 +69,9 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
         }
 
-
-        if (!$draft->id) {
-            // Attempt to create a new entry
-
-            // Manually validate 'title' since the Elements service will just give it a title automatically.
-            if ($draft->validate(['title'])) {
-                Craft::$app->getElements()->saveElement($draft, false);
-            }
+        // Manually validate 'title' since the Elements service will just give it a title automatically.
+        if (!$draft->id && $draft->validate(['title'])) {
+            Craft::$app->getElements()->saveElement($draft, false);
         }
 
         if (!$draft->id || !Craft::$app->getEntryRevisions()->saveDraft($draft)) {
