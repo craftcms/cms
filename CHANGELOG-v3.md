@@ -26,6 +26,7 @@
 - Fixed a conflict with jQuery UI Autocomplete. ([#2196](https://github.com/craftcms/cms/issues/2196))
 - Fixed a bug where Matrix fields were not validating required sub-fields. ([#2197](https://github.com/craftcms/cms/issues/2197))
 - Fixed a bug where entry types’ “Title Field Label” and “Title Format” settings weren’t getting validated. ([#2199](https://github.com/craftcms/cms/issues/2199))
+- Fixed a bug where changing an Asset's focal point would not invalidate the transforms. ([#2198](https://github.com/craftcms/cms/issues/2198))
 
 ### Security
 - Fixed an XSS vulnerability in the Control Panel.
