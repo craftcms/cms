@@ -416,23 +416,23 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($weeks) {
-            $timeComponents[] = $weeks.' '.($weeks == 1 ? Craft::t('app', 'week') : Craft::t('app', 'weeks'));
+            $timeComponents[] = $weeks == 1 ? Craft::t('app', '1 week') : Craft::t('app', '{num} weeks', ['num' => $weeks]);
         }
 
         if ($days) {
-            $timeComponents[] = $days.' '.($days == 1 ? Craft::t('app', 'day') : Craft::t('app', 'days'));
+            $timeComponents[] = $days == 1 ? Craft::t('app', '1 day') : Craft::t('app', '{num} days', ['num' => $days]);
         }
 
         if ($hours) {
-            $timeComponents[] = $hours.' '.($hours == 1 ? Craft::t('app', 'hour') : Craft::t('app', 'hours'));
+            $timeComponents[] = $hours == 1 ? Craft::t('app', '1 hour') : Craft::t('app', '{num} hours', ['num' => $hours]);
         }
 
         if ($minutes || (!$showSeconds && !$weeks && !$days && !$hours)) {
-            $timeComponents[] = $minutes.' '.($minutes == 1 ? Craft::t('app', 'minute') : Craft::t('app', 'minutes'));
+            $timeComponents[] = $minutes == 1 ? Craft::t('app', '1 minute') : Craft::t('app', '{num} minutes', ['num' => $minutes]);
         }
 
         if ($seconds || ($showSeconds && !$weeks && !$days && !$hours && !$minutes)) {
-            $timeComponents[] = $seconds.' '.($seconds == 1 ? Craft::t('app', 'second') : Craft::t('app', 'seconds'));
+            $timeComponents[] = $seconds == 1 ? Craft::t('app', '1 second') : Craft::t('app', '{num} seconds', ['num' => $seconds]);
         }
 
         return implode(', ', $timeComponents);
