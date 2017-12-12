@@ -209,6 +209,8 @@ EOD;
 
     /**
      * Outputs a terminal command.
+     *
+     * @param string $command
      */
     private function _outputCommand(string $command)
     {

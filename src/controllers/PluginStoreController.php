@@ -67,9 +67,11 @@ class PluginStoreController extends Controller
     /**
      * Connect
      *
+     * @param string|null $redirect
+     *
      * @return Response
      */
-    public function actionConnect($redirect = null)
+    public function actionConnect(string $redirect = null)
     {
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
