@@ -25,7 +25,17 @@
                 </div>
                 <div v-else>
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
-                    <a v-else @click="installPlugin(pluginSnippet)" class="btn submit">{{ "Install"|t('app') }}</a>
+
+                    <div v-else>
+                        <form method="post">
+                            <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
+                            <input type="hidden" name="action" value="pluginstore/install">
+                            <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
+                            <input type="hidden" name="handle" :value="pluginSnippet.handle">
+                            <input type="hidden" name="version" :value="pluginSnippet.version">
+                            <input type="submit" class="btn submit" value="Install">
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -42,7 +52,7 @@
 
                 <div class="plugin-sidebar">
                     <div class="plugin-meta">
-                        <ul>
+                        <ul class="plugin-meta-data">
                             <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
                             <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
                             <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls }}</strong></li>
@@ -56,6 +66,11 @@
                                 </strong>
                             </li>
                             <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
+                        </ul>
+
+                        <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
+                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth">Documentation</a></li>
+                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth">Changelog</a></li>
                         </ul>
                     </div>
                 </div>
@@ -102,10 +117,6 @@
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
             },
 
-            installUrl() {
-                return Craft.getCpUrl('plugin-store/install');
-            },
-
             categories() {
                 return this.$store.getters.getAllCategories().filter(c => {
                     return this.plugin.categoryIds.find(pc => pc == c.id);
@@ -124,6 +135,14 @@
 
             lastUpdate() {
                 return Craft.formatDate(this.plugin.lastUpdate);
+            },
+
+            csrfTokenName() {
+                return Craft.csrfTokenName;
+            },
+
+            csrfTokenValue() {
+                return Craft.csrfTokenValue;
             }
 
         },
@@ -153,15 +172,9 @@
                 this.$router.push({ path: '/install/'+plugin.id });
             },
 
-            installPlugin(plugin) {
-                this.$root.closeGlobalModal();
-
-                window.location.href = Craft.getUrl('plugin-store/install', {name: this.plugin.packageName, handle: this.plugin.handle, version: this.plugin.version});
-            },
-
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();
-                this.$root.pageTitle = plugin.developerName;
+                this.$root.pageTitle = this.$options.filters.escapeHtml(plugin.developerName);
                 this.$router.push({ path: '/developer/'+plugin.developerId})
             },
 

@@ -44,6 +44,8 @@
 
                 sortMenuBtn: {
                     attributes: {
+                        activeInstalls: "Popularity",
+                        lastUpdate: "Last Update",
                         name: "Name",
                         price: "Price",
                     }

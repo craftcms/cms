@@ -230,7 +230,11 @@ class UpdaterController extends BaseUpdaterController
 
             // Do we have a database backup to restore?
             if (!empty($this->data['dbBackupPath'])) {
-                $restoreLabel = !empty($this->data['install']) ? Craft::t('app', 'Revert update') : Craft::t('app', 'Restore database');
+                if (!empty($this->data['install'])) {
+                    $restoreLabel = Craft::t('app', 'Revert update');
+                } else {
+                    $restoreLabel = Craft::t('app', 'Restore database');
+                }
                 $options[] = $this->actionOption($restoreLabel, self::ACTION_RESTORE_DB);
             }
 
@@ -280,7 +284,7 @@ class UpdaterController extends BaseUpdaterController
         $request = Craft::$app->getRequest();
 
         // Set the things to install, if any
-        if (($install = $request->getQueryParam('install')) !== null) {
+        if (($install = $request->getBodyParam('install')) !== null) {
             $data = [
                 'install' => $this->_parseInstallParam($install),
                 'current' => [],
@@ -310,8 +314,8 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Set the return URL, if any
-        if (($returnUrl = $request->getQueryParam('return')) !== null) {
-            $data['returnUrl'] = $returnUrl;
+        if (($returnUrl = $request->getBodyParam('return')) !== null) {
+            $data['returnUrl'] = strip_tags($returnUrl);
         }
 
         return $data;
@@ -425,22 +429,18 @@ class UpdaterController extends BaseUpdaterController
     /**
      * Parses the 'install` param and returns handle => version pairs.
      *
-     * @param string $installParam
+     * @param array $installParam
      *
      * @return array
      * @throws BadRequestHttpException
      */
-    private function _parseInstallParam(string $installParam): array
+    private function _parseInstallParam(array $installParam): array
     {
         $install = [];
-        $pairs = explode(',', $installParam);
 
-        foreach ($pairs as $pair) {
-            if (strpos($pair, ':') === false) {
-                throw new BadRequestHttpException('Updates must be specified in the format "handle:version".');
-            }
-
-            list($handle, $version) = explode(':', $pair);
+        foreach ($installParam as $handle => $version) {
+            $handle = strip_tags($handle);
+            $version = strip_tags($version);
             if ($this->_canUpdate($handle, $version)) {
                 $install[$handle] = $version;
             }

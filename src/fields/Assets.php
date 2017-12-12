@@ -624,7 +624,11 @@ class Assets extends BaseRelationField
         try {
             $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
         } catch (InvalidVolumeException $exception) {
-            $message = $this->useSingleFolder ? Craft::t('app', 'This field’s single upload location Volume is missing') : Craft::t('app', 'This field’s default upload location Volume is missing');
+            if ($this->useSingleFolder) {
+                $message = Craft::t('app', 'This field’s single upload location Volume is missing');
+            } else {
+                $message = Craft::t('app', 'This field’s default upload location Volume is missing');
+            }
             throw new InvalidVolumeException($message);
         } catch (InvalidSubpathException $exception) {
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}

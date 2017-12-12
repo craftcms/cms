@@ -55,7 +55,7 @@ class RemoveController extends BaseUpdaterController
         $request = Craft::$app->getRequest();
 
         return [
-            'name' => $request->getRequiredQueryParam('name'),
+            'packageName' => strip_tags($request->getRequiredBodyParam('packageName')),
         ];
     }
 

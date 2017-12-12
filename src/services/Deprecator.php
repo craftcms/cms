@@ -13,6 +13,7 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\models\DeprecationError;
 use yii\base\Component;
 
@@ -290,7 +291,7 @@ class Deprecator extends Component
         $t = $traces[$index];
         return (
             isset($t['class'], $t['function']) &&
-            $t['class'] === \craft\helpers\Template::class &&
+            $t['class'] === Template::class &&
             $t['function'] === 'attribute'
         );
     }

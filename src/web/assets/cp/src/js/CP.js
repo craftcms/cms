@@ -10,6 +10,7 @@ Craft.CP = Garnish.Base.extend(
         $nav: null,
         $mainContainer: null,
         $alerts: null,
+        $crumbs: null,
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
@@ -18,6 +19,7 @@ Craft.CP = Garnish.Base.extend(
         $details: null,
         $selectedTab: null,
         $sidebar: null,
+        $contentContainer: null,
 
         $collapsibleTables: null,
 
@@ -47,13 +49,15 @@ Craft.CP = Garnish.Base.extend(
             this.$nav = $('#nav');
             this.$mainContainer = $('#main-container');
             this.$alerts = $('#alerts');
+            this.$crumbs = $('#crumbs');
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
-            this.$details = $('#details').children('.fixed-container');
-            this.$sidebar = $('#sidebar').children('.fixed-container');
+            this.$details = $('#details');
+            this.$sidebar = $('#sidebar');
+            this.$contentContainer = $('#content-container');
 
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
@@ -64,7 +68,7 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Set up responsibe tables
+                // Update responsive tables on window resize
                 this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
                 this.updateResponsiveTables();
 
@@ -104,7 +108,7 @@ Craft.CP = Garnish.Base.extend(
 
             this.initTabs();
 
-            Garnish.$doc.on('ready', $.proxy(function() {
+            Garnish.$doc.ready($.proxy(function() {
                 // Look for forms that we should watch for changes on
                 this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
@@ -194,23 +198,35 @@ Craft.CP = Garnish.Base.extend(
         initTabs: function() {
             this.$selectedTab = null;
 
-            // Are there any tabs that link to anchors?
-            var $tabs = $('#tabs').find('> ul > li > a');
+            var $tabs = $('#tabs').find('> ul > li');
+            var tabs = [];
+            var tabWidths = [];
+            var totalWidth = 0;
+            var i, a, href;
 
-            for (var i = 0; i < $tabs.length; i++) {
-                var $tab = $($tabs[i]),
-                    href = $tab.attr('href');
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i] = $($tabs[i]);
+                tabWidths[i] = tabs[i].width();
+                totalWidth += tabWidths[i];
 
+                // Does it link to an anchor?
+                a = tabs[i].children('a');
+                href = a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener($tab, 'click', function(ev) {
+                    this.addListener(a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
                 }
 
-                if (!this.$selectedTab && $tab.hasClass('sel')) {
-                    this.$selectedTab = $tab;
+                if (!this.$selectedTab && a.hasClass('sel')) {
+                    this.$selectedTab = a;
                 }
+            }
+
+            // Now set their max widths
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 

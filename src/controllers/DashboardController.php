@@ -534,7 +534,7 @@ class DashboardController extends Controller
             'title' => $widget->getTitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
-            'settingsHtml' => (string)$settingsHtml,
+            'settingsHtml' => $settingsHtml,
             'settingsJs' => (string)$settingsJs,
         ];
     }
@@ -603,18 +603,18 @@ class DashboardController extends Controller
                 'headHtml' => $view->getHeadHtml(),
                 'footHtml' => $view->getBodyHtml(),
             ]);
-        } else {
-            $allErrors = [];
-
-            foreach ($widget->getErrors() as $attribute => $errors) {
-                foreach ($errors as $error) {
-                    $allErrors[] = $error;
-                }
-            }
-
-            return $this->asJson([
-                'errors' => $allErrors
-            ]);
         }
+
+        $allErrors = [];
+
+        foreach ($widget->getErrors() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $allErrors[] = $error;
+            }
+        }
+
+        return $this->asJson([
+            'errors' => $allErrors
+        ]);
     }
 }

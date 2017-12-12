@@ -168,13 +168,13 @@ class FieldsController extends Controller
         /** @var string[]|FieldInterface[] $allowedFieldTypes */
         $fieldTypeOptions = [];
 
-        foreach ($allowedFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
-                $fieldTypeOptions[] = [
-                    'value' => $class,
-                    'label' => $class::displayName()
-                ];
-            }
+        foreach ($allFieldTypes as $class) {
+            $enabled = in_array($class, $allowedFieldTypes, true) && ($class === get_class($field) || $class::isSelectable());
+            $fieldTypeOptions[] = [
+                'value' => $class,
+                'label' => $class::displayName(),
+                'disabled' => !$enabled,
+            ];
         }
 
         // Sort them by name
@@ -242,7 +242,6 @@ class FieldsController extends Controller
             'groupOptions' => $groupOptions,
             'crumbs' => $crumbs,
             'title' => $title,
-            'docsUrl' => 'http://craftcms.com/docs/fields#field-layouts',
         ]);
     }
 

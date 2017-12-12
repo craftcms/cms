@@ -72,7 +72,5 @@ return [
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
-    'plugin-store/install' => 'pluginstore/install',
-    'plugin-store/remove' => 'pluginstore/remove',
     'plugin-store/<url:(.*)>' => 'plugin-store',
 ];

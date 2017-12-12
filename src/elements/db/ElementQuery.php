@@ -473,10 +473,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
-        } else {
-            /** @noinspection ImplicitMagicMethodCallInspection */
-            return $this->__unset($name);
         }
+
+        /** @noinspection ImplicitMagicMethodCallInspection */
+        return $this->__unset($name);
     }
 
     /**
@@ -967,7 +967,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Should we set a search score on the elements?
         if ($this->_searchScores !== null) {
-            foreach ($rows as $row) {
+            foreach ($rows as &$row) {
                 if (isset($this->_searchScores[$row['id']])) {
                     $row['searchScore'] = $this->_searchScores[$row['id']];
                 }

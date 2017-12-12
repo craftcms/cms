@@ -473,7 +473,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             /** @var Field $existingField */
             $existingField = Craft::$app->getFields()->getFieldById($this->id);
 
-            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
+            if ($existingField && $existingField instanceof self && !$existingField->localizeRelations) {
                 $this->_makeExistingRelationsTranslatable = true;
             }
         }

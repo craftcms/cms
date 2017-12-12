@@ -66,11 +66,8 @@
                             $('#page-title').find('h1').text(headingText);
 
                             if (this.showUpdateAllBtn && this.updates.length > 1) {
-                                $('<a/>', {
-                                    'class': 'btn submit',
-                                    text: Craft.t('app', 'Update all'),
-                                    href: this.buildUpdateUrl(this.updates)
-                                }).insertAfter($('#header').children('h1'));
+                                this.createUpdateForm(Craft.t('app', 'Update all'), this.updates)
+                                    .insertAfter($('#header').children('h1'));
                             }
                         } else {
                             $graphic.addClass('success');
@@ -90,22 +87,39 @@
                 this.updates.push(new Update(this, updateInfo, isPlugin));
             },
 
-            buildUpdateUrl: function(updates)
+            createUpdateForm: function(label, updates)
             {
-                return Craft.getUrl('update', {
-                    install: this.buildRequirements(updates)
+                var $form = $('<form/>', {
+                    method: 'post'
                 });
-            },
 
-            buildRequirements: function(updates)
-            {
-                var requirements = [];
+                $form.append(Craft.getCsrfInput());
+                $form.append($('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    value: 'updater'
+                }));
+                $form.append($('<input/>', {
+                    type: 'hidden',
+                    name: 'return',
+                    value: 'utilities/updates'
+                }));
 
                 for (var i = 0; i < updates.length; i++) {
-                    requirements.push(updates[i].updateInfo.handle+':'+updates[i].updateInfo.latestAllowedVersion);
+                    $form.append($('<input/>', {
+                        type: 'hidden',
+                        name: 'install['+updates[i].updateInfo.handle+']',
+                        value: updates[i].updateInfo.latestAllowedVersion
+                    }));
                 }
 
-                return requirements.join(',');
+                $form.append($('<input/>', {
+                    type: 'submit',
+                    value: label,
+                    class: 'btn submit'
+                }));
+
+                return $form;
             }
         }
     );
@@ -170,11 +184,16 @@
                 }
 
                 var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header);
-                $('<a/>', {
-                    'class': 'btn submit',
-                    text: this.updateInfo.ctaText,
-                    href: typeof this.updateInfo.ctaUrl !== 'undefined' ? this.updateInfo.ctaUrl : this.updatesPage.buildUpdateUrl([this])
-                }).appendTo($buttonContainer);
+                if (typeof this.updateInfo.ctaUrl !== 'undefined') {
+                    $('<a/>', {
+                        'class': 'btn submit',
+                        text: this.updateInfo.ctaText,
+                        href: this.updateInfo.ctaUrl
+                    }).appendTo($buttonContainer);
+                } else {
+                    this.updatesPage.createUpdateForm(this.updateInfo.ctaText, [this])
+                        .appendTo($buttonContainer);
+                }
             },
 
             initReleases: function() {

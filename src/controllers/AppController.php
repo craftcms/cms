@@ -243,9 +243,9 @@ class AppController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else {
-            return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
         }
+
+        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
     }
 
     /**
@@ -265,9 +265,9 @@ class AppController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else {
-            return $this->asErrorJson($response);
         }
+
+        return $this->asErrorJson($response);
     }
 
     /**
@@ -566,5 +566,7 @@ class AppController extends Controller
                 }
             }
         }
+
+        return null;
     }
 }

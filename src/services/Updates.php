@@ -113,9 +113,16 @@ class Updates extends Component
             $updates = Craft::$app->getApi()->getUpdates();
             $cacheDuration = 86400; // 24 hours
         } catch (\Throwable $e) {
-            Craft::warning("Couldn't get updates: {$e->getMessage()}");
+            Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updates = [];
             $cacheDuration = 300; // 5 minutes
+        }
+
+        // Ping Elliott so we get the license key status while we're at it
+        try {
+            Craft::$app->getEt()->ping();
+        } catch (\Throwable $e) {
+            Craft::warning("Couldn't ping Elliott: {$e->getMessage()}", __METHOD__);
         }
 
         Craft::$app->getCache()->set($this->cacheKey, $updates, $cacheDuration);

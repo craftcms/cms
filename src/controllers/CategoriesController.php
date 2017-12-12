@@ -225,6 +225,10 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
+        $this->view->registerTranslations('app', [
+            'New category',
+        ]);
+
         return $this->renderTemplate('categories/_index', [
             'groupHandle' => $groupHandle,
             'groups' => $groups

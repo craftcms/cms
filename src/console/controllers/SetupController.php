@@ -120,9 +120,14 @@ EOD;
             'default' => $dbConfig->server,
         ]);
         $dbConfig->server = strtolower($server);
+        if ($firstTime) {
+            $defaultPort = $dbConfig->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
+        } else {
+            $defaultPort = $dbConfig->port;
+        }
         $dbConfig->port = $this->prompt('Database port:', [
             'required' => true,
-            'default' => $firstTime ? ($dbConfig->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432) : $dbConfig->port,
+            'default' => $defaultPort,
             'validator' => function(string $input): bool {
                 return is_numeric($input);
             }
@@ -204,6 +209,8 @@ EOD;
 
     /**
      * Outputs a terminal command.
+     *
+     * @param string $command
      */
     private function _outputCommand(string $command)
     {

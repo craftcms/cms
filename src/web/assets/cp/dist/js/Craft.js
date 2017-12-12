@@ -1,4 +1,4 @@
-/*!   - 2017-11-30 */
+/*!   - 2017-12-11 */
 (function($){
 
 /** global: Craft */
@@ -1938,7 +1938,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
                 !Garnish.isMobileBrowser(true)
             ) {
-                this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -2171,27 +2172,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }, this));
         },
 
-        updateFixedToolbar: function() {
-            this.updateFixedToolbar._pageHeaderHeight = $('#header').outerHeight();
+        updateFixedToolbar: function(e) {
+            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
 
-            if (!this.toolbarOffset) {
-                this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
-
-                if (!this.toolbarOffset) {
-                    return;
-                }
-            }
-
-            this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7) {
-                if (!this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
+            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
+                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
+                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
                     this.$toolbar.addClass('fixed');
-                    this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
                 }
 
-                this.$toolbar.css('width', this.$main.width());
+                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
+                    this.$toolbar.css({
+                        top: Craft.cp.$contentContainer.offset().top,
+                        width: this.$main.width()
+                    });
+                }
             }
             else {
                 if (this.$toolbar.hasClass('fixed')) {
@@ -8166,6 +8161,7 @@ Craft.CP = Garnish.Base.extend(
         $nav: null,
         $mainContainer: null,
         $alerts: null,
+        $crumbs: null,
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
@@ -8174,6 +8170,7 @@ Craft.CP = Garnish.Base.extend(
         $details: null,
         $selectedTab: null,
         $sidebar: null,
+        $contentContainer: null,
 
         $collapsibleTables: null,
 
@@ -8203,13 +8200,15 @@ Craft.CP = Garnish.Base.extend(
             this.$nav = $('#nav');
             this.$mainContainer = $('#main-container');
             this.$alerts = $('#alerts');
+            this.$crumbs = $('#crumbs');
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
-            this.$details = $('#details').children('.fixed-container');
-            this.$sidebar = $('#sidebar').children('.fixed-container');
+            this.$details = $('#details');
+            this.$sidebar = $('#sidebar');
+            this.$contentContainer = $('#content-container');
 
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
@@ -8220,7 +8219,7 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Set up responsibe tables
+                // Update responsive tables on window resize
                 this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
                 this.updateResponsiveTables();
 
@@ -8260,7 +8259,7 @@ Craft.CP = Garnish.Base.extend(
 
             this.initTabs();
 
-            Garnish.$doc.on('ready', $.proxy(function() {
+            Garnish.$doc.ready($.proxy(function() {
                 // Look for forms that we should watch for changes on
                 this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
@@ -8350,23 +8349,35 @@ Craft.CP = Garnish.Base.extend(
         initTabs: function() {
             this.$selectedTab = null;
 
-            // Are there any tabs that link to anchors?
-            var $tabs = $('#tabs').find('> ul > li > a');
+            var $tabs = $('#tabs').find('> ul > li');
+            var tabs = [];
+            var tabWidths = [];
+            var totalWidth = 0;
+            var i, a, href;
 
-            for (var i = 0; i < $tabs.length; i++) {
-                var $tab = $($tabs[i]),
-                    href = $tab.attr('href');
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i] = $($tabs[i]);
+                tabWidths[i] = tabs[i].width();
+                totalWidth += tabWidths[i];
 
+                // Does it link to an anchor?
+                a = tabs[i].children('a');
+                href = a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener($tab, 'click', function(ev) {
+                    this.addListener(a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
                 }
 
-                if (!this.$selectedTab && $tab.hasClass('sel')) {
-                    this.$selectedTab = $tab;
+                if (!this.$selectedTab && a.hasClass('sel')) {
+                    this.$selectedTab = a;
                 }
+            }
+
+            // Now set their max widths
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 
@@ -15350,19 +15361,21 @@ Craft.ui =
     {
         createTextInput: function(config) {
             var $input = $('<input/>', {
-                'class': 'text',
-                type: (config.type || 'text'),
-                id: config.id,
-                size: config.size,
-                name: config.name,
-                value: config.value,
-                maxlength: config.maxlength,
-                autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
-                disabled: this.getDisabledValue(config.disabled),
-                readonly: config.readonly,
-                title: config.title,
-                placeholder: config.placeholder
+                attr: {
+                    'class': 'text',
+                    type: (config.type || 'text'),
+                    id: config.id,
+                    size: config.size,
+                    name: config.name,
+                    value: config.value,
+                    maxlength: config.maxlength,
+                    autofocus: this.getAutofocusValue(config.autofocus),
+                    autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
+                    disabled: this.getDisabledValue(config.disabled),
+                    readonly: config.readonly,
+                    title: config.title,
+                    placeholder: config.placeholder
+                }
             });
 
             if (config.class) {

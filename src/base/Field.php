@@ -112,17 +112,17 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Public Methods
     // =========================================================================
 
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * Use the translated field name as the string representation.
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
             return (string)Craft::t('site', $this->name);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }

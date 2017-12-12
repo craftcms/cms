@@ -106,7 +106,7 @@ class GlobalSet extends Element
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
-            'elementType' => GlobalSet::class
+            'elementType' => __CLASS__
         ];
 
         return $behaviors;

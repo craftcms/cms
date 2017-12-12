@@ -73,7 +73,7 @@ class InstallController extends BaseUpdaterController
             $migration = $output = null;
 
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
-            $pluginName = $info['name'] ?? $this->data['name'];
+            $pluginName = $info['name'] ?? $this->data['packageName'];
             $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             if ($e instanceof MigrateException) {
@@ -145,15 +145,15 @@ class InstallController extends BaseUpdaterController
     protected function initialData(): array
     {
         $request = Craft::$app->getRequest();
-        $name = $request->getRequiredQueryParam('name');
-        $handle = $request->getRequiredQueryParam('handle');
-        $version = $request->getRequiredQueryParam('version');
+        $packageName = strip_tags($request->getRequiredBodyParam('packageName'));
+        $handle = strip_tags($request->getRequiredBodyParam('handle'));
+        $version = strip_tags($request->getRequiredBodyParam('version'));
 
         return [
-            'name' => $name,
+            'packageName' => $packageName,
             'handle' => $handle,
             'version' => $version,
-            'requirements' => [$name => $version],
+            'requirements' => [$packageName => $version],
             'removed' => false,
         ];
     }
@@ -163,12 +163,11 @@ class InstallController extends BaseUpdaterController
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_CRAFT_INSTALL:
-                return Craft::t('app', 'Installing the plugin…');
-            default:
-                return parent::actionStatus($action);
+        if ($action == self::ACTION_CRAFT_INSTALL) {
+            return Craft::t('app', 'Installing the plugin…');
         }
+
+        return parent::actionStatus($action);
     }
 
     /**

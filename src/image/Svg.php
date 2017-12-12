@@ -235,8 +235,8 @@ class Svg extends Image
             $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"{$viewBox}\"", $this->_svgContent);
         }
 
-        $this->_width = (int)$targetWidth;
-        $this->_height = (int)$targetHeight;
+        $this->_width = $targetWidth;
+        $this->_height = $targetHeight;
 
         return $this;
     }

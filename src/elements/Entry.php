@@ -588,7 +588,7 @@ class Entry extends Element
     protected function route()
     {
         // Make sure that the entry is actually live
-        if ($this->getStatus() != Entry::STATUS_LIVE) {
+        if ($this->getStatus() != self::STATUS_LIVE) {
             return null;
         }
 
@@ -784,9 +784,7 @@ class Entry extends Element
                 return Craft::t('site', $this->getType()->name);
         }
 
-        $r = parent::tableAttributeHtml($attribute);
-
-        return $r;
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**
@@ -1017,7 +1015,7 @@ EOD;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentQuery = Entry::find();
+        $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->status(null);

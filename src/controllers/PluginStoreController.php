@@ -49,12 +49,15 @@ class PluginStoreController extends Controller
     {
         $vueRouterBase = '/'.Craft::$app->getConfig()->getGeneral()->cpTrigger.'/plugin-store/';
 
-        Craft::$app->getView()->registerJsFile('https://js.stripe.com/v3/');
-        Craft::$app->getView()->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
-        Craft::$app->getView()->registerJs('window.stripeApiKey = "'.Craft::$app->getPluginStore()->stripeApiKey.'";', View::POS_BEGIN);
-        Craft::$app->getView()->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
-        Craft::$app->getView()->registerJs('window.vueRouterBase = "'.$vueRouterBase.'";', View::POS_BEGIN);
-        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+        $view = $this->getView();
+        $view->registerJsFile('https://js.stripe.com/v3/');
+        $view->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
+        $view->registerJs('window.stripeApiKey = "'.Craft::$app->getPluginStore()->stripeApiKey.'";', View::POS_BEGIN);
+        $view->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
+        $view->registerJs('window.vueRouterBase = "'.$vueRouterBase.'";', View::POS_BEGIN);
+        $view->registerJs('window.cmsInfo = '.Json::encode(Craft::$app->getApi()->getCmsInfo()).';', View::POS_BEGIN);
+
+        $view->registerAssetBundle(PluginStoreAsset::class);
 
         return $this->renderTemplate('plugin-store/_index', [
             'enableCraftId' => Craft::$app->getPluginStore()->enableCraftId,
@@ -64,9 +67,11 @@ class PluginStoreController extends Controller
     /**
      * Connect
      *
+     * @param string|null $redirect
+     *
      * @return Response
      */
-    public function actionConnect($redirect = null)
+    public function actionConnect(string $redirect = null)
     {
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,

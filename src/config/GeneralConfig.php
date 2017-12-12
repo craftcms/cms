@@ -738,7 +738,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var array Stores any custom config settings
      */
-    protected $_customSettings = [];
+    private $_customSettings = [];
 
     // Public Methods
     // =========================================================================

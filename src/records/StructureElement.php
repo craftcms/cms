@@ -65,7 +65,7 @@ class StructureElement extends ActiveRecord
     public static function find(): StructuredElementQuery
     {
         /** @var StructuredElementQuery $query */
-        $query = Craft::createObject(StructuredElementQuery::class, [get_called_class()]);
+        $query = Craft::createObject(StructuredElementQuery::class, [static::class]);
 
         return $query;
     }

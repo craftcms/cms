@@ -646,8 +646,7 @@ class Raster extends Image
             clearstatcache();
 
             // Generate one last time.
-            $this->_image->save($tempFileName,
-                $this->_getSaveOptions($midQuality));
+            $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 
             return $tempFileName;
         }
@@ -655,13 +654,11 @@ class Raster extends Image
         $step++;
 
         if ($newFileSize > $originalSize) {
-            return $this->_autoGuessImageQuality($tempFileName, $originalSize,
-                $extension, $minQuality, $midQuality, $step);
-        } // Too much.
-        else {
-            return $this->_autoGuessImageQuality($tempFileName, $originalSize,
-                $extension, $midQuality, $maxQuality, $step);
+            return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
         }
+
+        // Too much.
+        return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $midQuality, $maxQuality, $step);
     }
 
     /**

@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import { currency } from './filters/currency';
 import { t } from './filters/t';
+import { escapeHtml } from './filters/escapeHtml';
 import router from './router';
 import store from './store';
 import { mapGetters } from 'vuex';
@@ -8,9 +9,10 @@ import GlobalModal from './components/GlobalModal';
 
 Vue.filter('currency', currency);
 Vue.filter('t', t);
+Vue.filter('escapeHtml', escapeHtml);
 
 window.pluginStoreApp = new Vue({
-    el: '#main-content',
+    el: '#content',
     router,
     store,
 
@@ -59,6 +61,8 @@ window.pluginStoreApp = new Vue({
             $('nav', this.$crumbs).remove();
 
             if(crumbs && crumbs.length > 0) {
+                this.$crumbs.removeClass('empty');
+
                 // Create new crumbs
                 let crumbsNav = $('<nav></nav>');
                 let crumbsUl = $('<ul></ul>').appendTo(crumbsNav);
@@ -78,6 +82,8 @@ window.pluginStoreApp = new Vue({
                 }
 
                 crumbsNav.appendTo(this.$crumbs);
+            } else {
+                this.$crumbs.removeClass('empty');
             }
         },
 

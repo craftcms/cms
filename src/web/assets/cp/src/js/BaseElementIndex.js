@@ -127,7 +127,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
                 !Garnish.isMobileBrowser(true)
             ) {
-                this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -360,27 +361,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }, this));
         },
 
-        updateFixedToolbar: function() {
-            this.updateFixedToolbar._pageHeaderHeight = $('#header').outerHeight();
+        updateFixedToolbar: function(e) {
+            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
 
-            if (!this.toolbarOffset) {
-                this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
-
-                if (!this.toolbarOffset) {
-                    return;
-                }
-            }
-
-            this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7) {
-                if (!this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
+            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
+                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
+                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
                     this.$toolbar.addClass('fixed');
-                    this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
                 }
 
-                this.$toolbar.css('width', this.$main.width());
+                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
+                    this.$toolbar.css({
+                        top: Craft.cp.$contentContainer.offset().top,
+                        width: this.$main.width()
+                    });
+                }
             }
             else {
                 if (this.$toolbar.hasClass('fixed')) {

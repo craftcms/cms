@@ -14,6 +14,7 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 
 /**
@@ -44,7 +45,7 @@ class Cp extends Component
     {
         try {
             return Craft::$app->getPluginStore()->getCraftIdAccount();
-        } catch (\GuzzleHttp\Exception\ServerException $e) {
+        } catch (ServerException $e) {
             return null;
         }
     }

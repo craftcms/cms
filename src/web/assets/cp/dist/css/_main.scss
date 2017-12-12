@@ -677,21 +677,26 @@ td.right {
 }
 
 .info {
-  font-size: 0;
-  vertical-align: top;
+  vertical-align: bottom;
   display: inline-block;
+  width: 1em;
+  height: 1.375em;
+  text-align: center;
   cursor: pointer;
-}
+  overflow: hidden;
 
-.info:before {
-  @include icon;
-  content: 'info';
-  color: $lightTextColor;
-  font-size: 13px;
-}
+  &:before {
+    @include icon;
+    vertical-align: baseline;
+    width: 100%;
+    line-height: 1.375;
+    content: 'info';
+    color: $lightTextColor;
+  }
 
-.info:hover:before {
-  color: $linkColor;
+  &:hover:before {
+    color: $linkColor;
+  }
 }
 
 .info-hud {

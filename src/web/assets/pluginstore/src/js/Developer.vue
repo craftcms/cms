@@ -70,7 +70,7 @@
 
                 this.$store.dispatch('getDeveloper', developerId)
                     .then(developer => {
-                        this.$root.pageTitle = developer.developerName;
+                        this.$root.pageTitle = this.$options.filters.escapeHtml(developer.developerName);
                         this.$root.loading = false;
                         this.loading = false;
                     })

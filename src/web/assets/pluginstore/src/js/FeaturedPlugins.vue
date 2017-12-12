@@ -25,7 +25,7 @@
                 let featuredPlugin = this.getFeaturedPlugin(this.$route.params.id);
 
                 if(featuredPlugin) {
-                    this.$root.pageTitle = featuredPlugin.title;
+                    this.$root.pageTitle = this.$options.filters.escapeHtml(featuredPlugin.title);
                 }
 
                 return featuredPlugin;

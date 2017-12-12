@@ -1,5 +1,4 @@
 @charset "UTF-8";
-@charset "UTF-8";
 @import "../../../../../../lib/craftcms-sass/mixins";
 
 $sidebarWidth: 225px;
@@ -13,7 +12,6 @@ $sidebarLinkHoverBgColor: hsla($hue, 20%, 20%, 0.05);
 $editionStaticColor: hsl($hue, 20%, 10%);
 $editionHoverColor: hsl($hue, 20%, 70%);
 
-
 html,
 body {
   overflow-x: hidden;
@@ -21,9 +19,10 @@ body {
 
 #global-container {
   display: flex;
+  min-height: 0;
   flex-direction: row;
   align-items: stretch;
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
 }
 
@@ -33,21 +32,18 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
 #global-sidebar {
   flex: 0 0 $sidebarWidth;
+  display: flex;
+  flex-direction: column;
   z-index: 100;
   position: relative;
+  width: $sidebarWidth;
+  height: 100vh;
   padding: 0;
-
-  .fixed-container {
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    width: $sidebarWidth;
-    height: 100vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    @include light-on-dark-text;
-    background: $sidebarBgColor;
-  }
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  @include light-on-dark-text;
+  background: $sidebarBgColor;
+  box-shadow: none;
 
   #devmode {
     flex: 0 0 4px;
@@ -238,6 +234,8 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   }
 
   #nav {
+    overflow: visible;
+
     li {
       &:not(.has-subnav) > a.sel {
         color: #fff;
@@ -436,6 +434,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 #main-container {
   flex: 1 0 0;
   display: flex;
+  min-height: 0;
   flex-direction: column;
   align-items: stretch;
 
@@ -482,13 +481,18 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   }
 
   #crumbs {
-    &:not(:empty) {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.03);
+
+    &.empty {
+      display: none;
+    }
+
+    &:not(.empty) {
       display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      padding: 0 24px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      background: rgba(0, 0, 0, 0.03);
     }
 
     nav {
@@ -515,7 +519,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
           a {
             display: inline-block;
-            padding: 14px 0;
+            padding: 10px 0;
             color: $mediumTextColor;
 
             &:hover {
@@ -532,6 +536,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   #main-form {
     flex: 1;
     display: flex;
+    min-height: 0;
     flex-direction: column;
     align-items: stretch;
   }
@@ -592,57 +597,126 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     #main-content {
       flex: 1;
       display: flex;
+      min-height: 0;
       flex-direction: row;
       align-items: stretch;
       width: calc(100vw - #{$sidebarWidth});
+
+      &:not(.has-sidebar):not(.has-details) {
+        #content-container {
+          width: 100%;
+        }
+      }
+      &.has-sidebar:not(.has-details) {
+        #content-container {
+          width: calc(100% - #{$sidebarWidth});
+        }
+      }
+      &.has-details:not(.has-sidebar) {
+        #content-container {
+          width: calc(100% - #{$detailsWidth});
+        }
+      }
+      &.has-sidebar.has-details {
+        #content-container {
+          width: calc(100% - #{$sidebarWidth + $detailsWidth});
+        }
+      }
 
       #sidebar-toggle {
         display: none;
       }
 
       #sidebar,
+      #content-container,
       #details {
-        .fixed-container {
-          overflow-y: auto;
-
-          body.fixed-header & {
-            position: fixed;
-          }
-        }
+        overflow-y: auto;
       }
 
       #sidebar {
         flex: 0 0 $sidebarWidth;
-        padding: 0;
-
-        .fixed-container {
-          padding: 24px;
-          box-sizing: border-box;
-        }
+        width: $sidebarWidth;
+        box-sizing: border-box;
+        padding: 24px;
       }
 
       #content-container {
         flex: 1;
         display: flex;
+        min-height: 0;
         flex-direction: column;
         align-items: stretch;
 
         #tabs {
           position: relative;
           z-index: 1;
-          overflow: hidden; // hides the bottom shadow on selected tab
           box-shadow: inset 0 -1px 0 $hairlineColor;
+          min-height: 40px;
+          overflow: hidden;
 
-          li {
-            a {
-              color: #555;
+          ul {
+            display: flex;
+            flex-direction: row;
+            width: calc(100% + 1px);
 
-              &:not(.sel):hover {
-                color: $linkColor;
-              }
+            li {
+              box-sizing: border-box;
+              @include border-right(1px solid $hairlineColorAlpha);
 
-              &.sel {
-                @include pane;
+              a {
+                position: relative;
+                display: block;
+                padding: 10px 24px;
+                white-space: nowrap;
+                overflow: hidden;
+
+                &:after {
+                  content: '.';
+                  font-size: 0;
+                  display: block;
+                  position: absolute;
+                  top: 0;
+                  @include right(0);
+                  width: 24px;
+                  height: calc(100% - 1px);
+
+                  body.ltr & {
+                    background: linear-gradient(to right, hsla($hue, 10%, 93%, 0), $bgColor 17px);
+                  }
+
+                  body.rtl & {
+                    background: linear-gradient(to left, hsla($hue, 10%, 93%, 0), $bgColor 17px);
+                  }
+                }
+
+                &:hover {
+                  text-decoration: none;
+                }
+
+                &:not(.sel) {
+                  color: $mediumDarkTextColor;
+
+                  &:hover {
+                    color: $linkColor;
+                  }
+                }
+
+                &.sel {
+                  color: $textColor;
+                  background: #fff;
+                  padding-bottom: 10px;
+                  cursor: default;
+
+                  &:after {
+                    body.ltr & {
+                      background: linear-gradient(to right, rgba(255, 255, 255, 0), #fff 17px);
+                    }
+
+                    body.rtl & {
+                      background: linear-gradient(to left, rgba(255, 255, 255, 0), #fff 17px);
+                    }
+                  }
+                }
               }
             }
           }
@@ -652,11 +726,13 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           flex: 1;
           background: #fff;
           padding: 24px;
+          word-wrap: break-word;
         }
       }
 
       #details {
         flex: 0 0 $detailsWidth;
+        width: $detailsWidth;
         background: hsl($hue, 10%, 85%);
 
         body.ltr & {
@@ -665,10 +741,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
         body.rtl & {
           box-shadow: inset -1px 0 0 $hairlineColorAlpha;
-        }
-
-        .fixed-container {
-          width: $detailsWidth;
         }
 
         .meta {
@@ -774,12 +846,20 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       #main-content {
         width: 100vw;
+
+        #content-container {
+          width: 100% !important;
+        }
       }
     }
   }
 
-  #nav-toggle {
-    display: block !important;
+  #crumbs {
+    display: flex !important;
+
+    #nav-toggle {
+      display: block;
+    }
   }
 }
 
@@ -789,6 +869,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     #main {
       #main-content {
         flex-direction: column;
+        max-height: none !important;
 
         #sidebar-toggle {
           display: block;
@@ -822,6 +903,12 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           }
         }
 
+        #sidebar,
+        #content-container,
+        #details {
+          overflow-y: visible;
+        }
+
         #sidebar {
           flex-basis: auto;
           width: auto;
@@ -834,17 +921,8 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
         #details {
           flex-basis: auto;
+          width: auto;
           box-shadow: inset 0 1px 0 $hairlineColorAlpha !important;
-
-          .fixed-container {
-            width: auto;
-
-            body.fixed-header & {
-              position: relative;
-              top: auto !important;
-              max-height: none !important;
-            }
-          }
         }
       }
     }
@@ -953,10 +1031,9 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
 #nav-toggle {
   display: none;
-  width: 24px;
-  height: 24px;
-  padding: 10px;
-  line-height: 22px;
+  width: 40px;
+  height: 40px;
+  line-height: px;
   color: $secondarySubmitColor;
   text-align: center;
   @include margin-left(-24px);
@@ -966,34 +1043,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     content: 'menu';
     font-size: 16px;
     line-height: 0;
-  }
-}
-
-/* tabs */
-.tabs {
-  ul {
-    display: flex;
-    flex-direction: row;
-
-    li {
-      a {
-        display: block;
-        padding: 10px 24px;
-        color: #777;
-        white-space: nowrap;
-
-        &:hover {
-          text-decoration: none;
-          color: $linkColor;
-        }
-
-        &.sel {
-          color: #000;
-          padding-bottom: 10px;
-          cursor: default;
-        }
-      }
-    }
   }
 }
 
