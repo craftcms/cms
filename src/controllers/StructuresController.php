@@ -76,7 +76,7 @@ class StructuresController extends Controller
 
         if (($elementType = $elementsService->getElementTypeById($elementId)) === null) {
             throw new NotFoundHttpException('Element not found');
-        };
+        }
 
         /** @var Element|string $elementType */
         $this->_element = $elementType::find()
