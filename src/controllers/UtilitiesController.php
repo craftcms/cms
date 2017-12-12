@@ -240,7 +240,9 @@ class UtilitiesController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else if (!empty($params['overview'])) {
+        }
+
+        if (!empty($params['overview'])) {
             $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
             $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
             $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);

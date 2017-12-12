@@ -491,10 +491,10 @@ class AssetTransforms extends Component
 
                     $this->storeTransformIndexData($index);
                     break;
-                } else {
-                    // Must be done now!
-                    break;
                 }
+
+                // Must be done now!
+                break;
             }
         }
 
