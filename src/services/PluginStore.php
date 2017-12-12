@@ -90,6 +90,8 @@ class PluginStore extends Component
         } catch (\GuzzleHttp\Exception\ServerException $e) {
             // Todo: Handle exception
         }
+
+        return null;
     }
 
     /**
