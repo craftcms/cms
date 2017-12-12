@@ -465,7 +465,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         $string = array_shift($words).implode('', array_map([
-                get_called_class(),
+                static::class,
                 'upperCaseFirst'
             ], $words));
 
@@ -487,7 +487,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         $words = self::_prepStringForCasing($string);
         $string = implode('', array_map([
-            get_called_class(),
+            static::class,
             'upperCaseFirst'
         ], $words));
 

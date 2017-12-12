@@ -263,7 +263,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return new ElementQuery(get_called_class());
+        return new ElementQuery(static::class);
     }
 
     /**
