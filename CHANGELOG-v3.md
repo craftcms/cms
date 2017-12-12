@@ -3,6 +3,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `migrate/all` console command for running all Craft, content, and plugin migrations.
+
 ### Changed
 - Field Type dropdowns no longer completely hide incompatible field types; now they are visible but disabled.
 - URI segments matched with the “any” (`*`) token are now passed to the template as variables named `any`, `any2`, `any3`, etc.

@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Plugin;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use yii\console\controllers\BaseMigrateController;
@@ -196,6 +197,80 @@ class MigrateController extends BaseMigrateController
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.'.PHP_EOL, Console::FG_GREEN);
         }
+    }
+
+    /**
+     * Runs all pending Craft, plugin, and content migrations.
+     *
+     * @return int
+     * @throws MigrateException
+     */
+    public function actionAll()
+    {
+        $updatesService = Craft::$app->getUpdates();
+        $db = Craft::$app->getDb();
+
+        // Get the handles in need of an update
+        $handles = $updatesService->getPendingMigrationHandles(true);
+
+        // Anything to update?
+        if (!empty($handles)) {
+
+            // Enable maintenance mode
+            Craft::$app->enableMaintenanceMode();
+
+            // Backup the DB?
+            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            if ($backup) {
+                try {
+                    $backupPath = $db->backup();
+                } catch (\Throwable $e) {
+                    Craft::$app->disableMaintenanceMode();
+                    $this->stderr("Error backing up the database: {$e->getMessage()}".PHP_EOL, Console::FG_RED);
+                    Craft::error("Error backing up the database: {$e->getMessage()}", __METHOD__);
+                    Craft::$app->getErrorHandler()->logException($e);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+            }
+
+            // Run the migrations
+            try {
+                $updatesService->runMigrations($handles);
+            } catch (MigrationException $e) {
+                // Do we have a backup?
+                $restored = false;
+                if (!empty($backupPath)) {
+                    // Attempt a restore
+                    try {
+                        $db->restore($backupPath);
+                        $restored = true;
+                    } catch (\Throwable $restoreException) {
+                        // Just log it
+                        Craft::$app->getErrorHandler()->logException($restoreException);
+                    }
+                }
+
+                $error = 'An error occurred running nuw migrations.';
+                if ($restored) {
+                    $error .= ' The database has been restored to its previous state.';
+                } else if (isset($restoreException)) {
+                    $error .= ' The database could not be restored due to a separate error: '.$restoreException->getMessage();
+                } else {
+                    $error .= ' The database has not been restored.';
+                }
+
+                Craft::$app->disableMaintenanceMode();
+                $this->stderr($error.PHP_EOL, Console::FG_RED);
+                Craft::error($error, __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            Craft::$app->disableMaintenanceMode();
+        }
+
+        $this->stdout('Migrated up successfully.'.PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 
     /**
