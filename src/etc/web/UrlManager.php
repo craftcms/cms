@@ -376,10 +376,10 @@ class UrlManager extends \CUrlManager
 	{
 		foreach ($routes as $pattern => $route)
 		{
-			// Does the URL pattern specify a request type?
-			if (preg_match('/^(GET|POST|HEAD|PUT|PATCH|DELETE)\s+(.+)/i', $pattern, $match))
+			// Does the URL pattern begin with a request type (GET, POST, etc.)?
+			if (preg_match('/^([A-Z]+)\s+(.+)/', $pattern, $match))
 			{
-				if (craft()->getRequest()->getRequestType() !== strtoupper($match[1]))
+				if (craft()->getRequest()->getRequestType() !== $match[1])
 				{
 					continue;
 				}
