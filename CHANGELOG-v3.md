@@ -1,5 +1,9 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where it wasn't possible to expand Asset subfolders sometimes. ([#2210](https://github.com/craftcms/cms/issues/2210), [#2215](https://github.com/craftcms/cms/issues/2215))
 
 ## 3.0.0-RC2 - 2017-12-12
 
