@@ -18,7 +18,7 @@ use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
-use craft\events\GenerateTransformEvent;
+use craft\events\DeleteAssetTransformsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
@@ -34,6 +34,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetTransforms service.
@@ -69,9 +70,14 @@ class AssetTransforms extends Component
     const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     /**
-     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GENERATE_TRANSFORM = 'generateTransform';
+
+    /**
+     * @event DeleteAssetTransformsEvent The event that is triggered when created transforms are deleted for an Asset.
+     */
+    const EVENT_DELETE_ASSET_TRANSFORMS = 'deleteAssetTransforms';
 
     // Properties
     // =========================================================================
@@ -252,6 +258,7 @@ class AssetTransforms extends Component
      * @param int $transformId
      *
      * @return bool
+     * @throws \yii\db\Exception on DB error
      */
     public function deleteTransform(int $transformId): bool
     {
@@ -1107,6 +1114,9 @@ class AssetTransforms extends Component
      * Delete created transforms for an Asset.
      *
      * @param Asset $asset
+     *
+     * @throws VolumeException        if something went very wrong when deleting a transform
+     * @throws InvalidConfigException should not ever be thrown
      */
     public function deleteCreatedTransformsForAsset(Asset $asset)
     {
@@ -1116,6 +1126,13 @@ class AssetTransforms extends Component
 
         foreach ($transformIndexes as $transformIndex) {
             $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset, $transformIndex));
+        }
+
+        // Fire a 'deleteCreatedTransforms' event
+        if ($this->hasEventHandlers(self::EVENT_DELETE_ASSET_TRANSFORMS)) {
+            $this->trigger(self::EVENT_DELETE_ASSET_TRANSFORMS, new DeleteAssetTransformsEvent([
+                'asset' => $asset,
+            ]));
         }
     }
 
