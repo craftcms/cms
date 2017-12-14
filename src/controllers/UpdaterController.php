@@ -230,7 +230,11 @@ class UpdaterController extends BaseUpdaterController
 
             // Do we have a database backup to restore?
             if (!empty($this->data['dbBackupPath'])) {
-                $restoreLabel = !empty($this->data['install']) ? Craft::t('app', 'Revert update') : Craft::t('app', 'Restore database');
+                if (!empty($this->data['install'])) {
+                    $restoreLabel = Craft::t('app', 'Revert update');
+                } else {
+                    $restoreLabel = Craft::t('app', 'Restore database');
+                }
                 $options[] = $this->actionOption($restoreLabel, self::ACTION_RESTORE_DB);
             }
 

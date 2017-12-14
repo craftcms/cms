@@ -552,7 +552,7 @@ class User extends Element implements IdentityInterface
     {
         try {
             return $this->getName();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -626,7 +626,7 @@ class User extends Element implements IdentityInterface
      */
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
     {
-        $query = User::find()
+        $query = self::find()
             ->where(['email' => $this->unverifiedEmail])
             ->status(null);
 

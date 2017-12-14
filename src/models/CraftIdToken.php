@@ -74,11 +74,7 @@ class CraftIdToken extends Model
         $now = new DateTime();
         $expiryDate = $this->expiryDate;
 
-        if ($now->getTimestamp() > $expiryDate->getTimestamp()) {
-            return true;
-        }
-
-        return false;
+        return $now->getTimestamp() > $expiryDate->getTimestamp();
     }
 
     /**

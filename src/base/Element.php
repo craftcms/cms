@@ -263,7 +263,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return new ElementQuery(get_called_class());
+        return new ElementQuery(static::class);
     }
 
     /**
@@ -709,7 +709,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        return $this->title ?: ((string)$this->id ?: static::class);
+        if ($this->title) {
+            return (string)$this->title;
+        }
+        return (string)$this->id ?: static::class;
     }
 
     /**

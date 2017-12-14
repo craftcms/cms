@@ -103,9 +103,9 @@ class Tags extends BaseRelationField
                     'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
-        } else {
-            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
         }
+
+        return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
     }
 
     // Private Methods

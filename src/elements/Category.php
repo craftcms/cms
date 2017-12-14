@@ -121,7 +121,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
             ];
         }
 
@@ -553,7 +553,7 @@ class Category extends Element
         }
 
         // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentQuery = Category::find();
+        $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->status(null);

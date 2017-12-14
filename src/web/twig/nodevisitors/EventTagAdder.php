@@ -97,10 +97,10 @@ class EventTagAdder extends BaseEventTagVisitor
                         $beginBodyPos = $matches[0][1] + strlen($matches[0][0]);
 
                         return $this->_insertEventNode($node, $env, $beginBodyPos, 'beginBody');
-                    } else {
-                        // Will have to wait for the next text node
-                        $this->_findingBeginBody = true;
                     }
+
+// Will have to wait for the next text node
+                    $this->_findingBeginBody = true;
                 }
             } else {
                 // Did we just find the `>`?
