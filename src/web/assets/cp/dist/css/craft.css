@@ -1348,7 +1348,6 @@ body.rtl .passwordwrapper .password-toggle { text-align: left; }
 
 body.ltr .password { padding-right: 5em; }
 body.rtl .password { padding-left: 5em; }
-.password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper, .timewrapper { display: inline-block; position: relative; background: #fff; }
 .datewrapper .text, .timewrapper .text { position: relative; z-index: 1; width: 100%; background: transparent; }

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- URL patterns defined in `craft/config/routes.php` can now begin with a verb (e.g. `POST some/path`) to restrict the route to a specific request type.
+
 ### Fixed
 - Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
 

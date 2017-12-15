@@ -3529,10 +3529,6 @@ input.checkbox:focus + label:before,
 
 .password {
   @include padding-right(5em);
-
-  &.capslock:focus {
-    background: #fff url(../images/capslock.png) no-repeat 100% 50%;
-  }
 }
 
 .datewrapper,
