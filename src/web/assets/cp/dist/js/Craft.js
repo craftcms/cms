@@ -1,4 +1,4 @@
-/*!   - 2017-12-14 */
+/*!   - 2017-12-15 */
 (function($){
 
 /** global: Craft */
@@ -8371,6 +8371,10 @@ Craft.CP = Garnish.Base.extend(
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
+
+                    if (href === document.location.hash) {
+                        this.selectTab(a);
+                    }
                 }
 
                 if (!this.$selectedTab && a.hasClass('sel')) {
@@ -8395,7 +8399,11 @@ Craft.CP = Garnish.Base.extend(
             }
 
             $tab.addClass('sel');
-            $($tab.attr('href')).removeClass('hidden');
+            var href = $tab.attr('href')
+            $(href).removeClass('hidden');
+            if (typeof history !== 'undefined') {
+                history.replaceState(undefined, undefined, href);
+            }
             Garnish.$win.trigger('resize');
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');

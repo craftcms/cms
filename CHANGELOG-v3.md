@@ -6,9 +6,13 @@
 - Added the `deleteAssetTransforms` event to `craft\services\AssetTransforms`. ([#2212](https://github.com/craftcms/cms/issues/2212))
 - Added `craft\events\DeleteAssetTransformsEvent`.
 
+### Changed
+- Control Panel tabs that switch the visible pane on the page (rather than linking to a different page) now add a fragment to the URL when selected, so the selected tab can be remembered when sharing the URL.
+
 ### Fixed
 - Fixed a bug where it wasn't possible to expand Asset subfolders sometimes. ([#2210](https://github.com/craftcms/cms/issues/2210), [#2215](https://github.com/craftcms/cms/issues/2215))
 - Fixed a bug where changing an Asset's focal point would invalidate the transforms a bit too early. ([#2198](https://github.com/craftcms/cms/issues/2198))
+- Fixed a regression where it wasn’t possible to deep-link to specific tabs in the Control Panel. ([#2206](https://github.com/craftcms/cms/issues/2206))
 
 ## 3.0.0-RC2 - 2017-12-12
 
