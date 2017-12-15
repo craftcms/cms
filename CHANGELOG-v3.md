@@ -136,6 +136,8 @@
 - Updated all Control Panel language translations.
 
 ### Removed
+- Removed the “Rich Text” field type. If you had any Rich Text fields, just install the [Redactor](https://github.com/craftcms/redactor) plugin after updating to RC1+.
+- Removed the “Position Select” field type. Any Position Select fields will get converted to Dropdowns.
 - The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
 - Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
