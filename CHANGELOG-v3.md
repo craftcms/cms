@@ -14,6 +14,7 @@
 - Fixed a bug where changing an Asset's focal point would invalidate the transforms a bit too early. ([#2198](https://github.com/craftcms/cms/issues/2198))
 - Fixed a regression where it wasn’t possible to deep-link to specific tabs in the Control Panel. ([#2206](https://github.com/craftcms/cms/issues/2206))
 - Fixed a bug where `craft\services\Volumes::getVolumeByHandle()` would return `null` if the volume had just been saved, and `getAllVolumes()` had been called earlier in the request.
+- Fixed a PHP error that could occur during a Craft 2 to 3 upgrade.
 
 ## 3.0.0-RC2 - 2017-12-12
 
