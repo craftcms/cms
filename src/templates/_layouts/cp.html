@@ -58,6 +58,7 @@
     {% endif %}
 {% endjs %}
 
+{% set hasSystemIcon = CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %}
 
 {% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
@@ -65,7 +66,6 @@
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
-
 
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set details = (details ?? block('details') ?? '')|trim %}
@@ -79,16 +79,12 @@
             {% endif %}
 
             <div id="id">
-                <a class="system-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
-
-                    {% if CraftEdition >= CraftClient %}
-                        {% if craft.rebrand.isIconUploaded %}
-                            <div id="site-icon" class="photo-container">
-                                <img src="{{ craft.rebrand.icon.url }}" alt="">
-                            </div>
-                        {% endif %}
+                <a class="system-name{% if hasSystemIcon %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
+                    {% if hasSystemIcon %}
+                        <div id="site-icon" class="photo-container">
+                            <img src="{{ craft.rebrand.icon.url }}" alt="">
+                        </div>
                     {% endif %}
-
                     <h2>{{ systemName }}</h2>
                 </a>
 
