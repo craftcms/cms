@@ -59,6 +59,7 @@
 {% endjs %}
 
 {% set hasSystemIcon = CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %}
+{% set craftIdAccount = craft.cp.enableCraftId() ? craft.cp.craftIdAccount() : null %}
 
 {% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
@@ -78,80 +79,38 @@
                 <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
             {% endif %}
 
-            <div id="id">
-                <a class="system-name{% if hasSystemIcon %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
-                    {% if hasSystemIcon %}
-                        <div id="site-icon" class="photo-container">
-                            <img src="{{ craft.rebrand.icon.url }}" alt="">
-                        </div>
-                    {% endif %}
-                    <h2>{{ systemName }}</h2>
-                </a>
-
-                {% if craft.cp.enableCraftId() %}
-                    {% set craftIdAccount = craft.cp.craftIdAccount() %}
-                {% else %}
-                    {% set craftIdAccount = null %}
-                {% endif %}
-
-                <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
-                    <div id="user-photo-icon" class="photo-container">
-                        <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
-
-                        <div class="craftid craftid-connected{% if not craftIdAccount %} hidden{% endif %}">
-                            <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
-                        </div>
+            <a id="system-name"{% if hasSystemIcon %} class="has-icon"{% endif %} href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
+                {% if hasSystemIcon %}
+                    <div id="site-icon" class="photo-container">
+                        <img src="{{ craft.rebrand.icon.url }}" alt="">
                     </div>
-                    <div id="account-menu-anchor"></div>
-                </a>
+                {% endif %}
+                <h2>{{ systemName }}</h2>
+            </a>
 
-                <div class="menu" data-align="left">
-                    <ul>
-                        <li>
-                            <a href="{{ url('myaccount') }}">
-                                <div id="account-info-preview">
-                                    <div id="user-photo" class="photo-container">
-                                        <img width="50" sizes="50px" srcset="{{ currentUser.getThumbUrl(50) }} 50w, {{ currentUser.getThumbUrl(100) }} 100w" alt="{{ currentUser.getName() }}">
-                                    </div>
-                                    <div class="username">
-                                        {{ currentUser.name }}
-                                        {% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
+            <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
+                <div id="user-photo-icon" class="photo-container">
+                    <img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
 
-                        {% if CraftEdition == CraftClient and currentUser.admin %}
-                            <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
-                        {% endif %}
-                        <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                    </ul>
-
-                    {% if craft.cp.enableCraftId() %}
-                        <hr>
-
-                        <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
-                            <li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
-                            <li>
-                                <form method="post" id="disconnect">
-                                    {{ csrfInput() }}
-                                    <input type="hidden" name="action" value="plugin-store/disconnect">
-                                    <a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect your Craft ID"|t('app') }}</a>
-                                </form>
-                            </li>
-                        </ul>
-
-                        <ul class="craftid-disconnected{% if craftIdAccount %} hidden{% endif %}">
-                            <li>
-                                <form method="post" id="connect">
-                                    {{ csrfInput() }}
-                                    <input type="hidden" name="action" value="plugin-store/connect">
-                                    <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
-                                </form>
-                            </li>
-                        </ul>
-                    {% endif %}
+                    <div class="craftid craftid-connected{% if not craftIdAccount %} hidden{% endif %}">
+                        <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
+                    </div>
                 </div>
+                <div class="user-name">
+                    <div>{{ currentUser.name }}</div>
+                    {% if currentUser.admin %}<div class="light">{{ 'Admin'|t('app') }}</div>{% endif %}
+                </div>
+                <div id="account-menu-anchor"></div>
+            </a>
+
+            <div class="menu" data-align="left">
+                <ul>
+                    <li><a href="{{ url('myaccount') }}">My Account</a></li>
+                    {% if CraftEdition == CraftClient and currentUser.admin %}
+                        <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
+                    {% endif %}
+                    <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                </ul>
             </div>
 
             <nav id="nav">

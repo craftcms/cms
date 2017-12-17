@@ -55,15 +55,17 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   a {
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
+    text-decoration: none;
   }
 
+  & > a,
   *:not(.has-subnav) > a {
+    outline: none;
+
     &:hover,
     &.active,
-    &:active,
-    &:focus {
+    &:active {
       color: #fff;
-      text-decoration: none;
     }
 
     &:hover {
@@ -74,29 +76,13 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       }
     }
 
+    &.active,
     &:active {
-      background: rgba(255, 255, 255, 0.07);
-    }
-
-    &:focus {
       background: rgba(255, 255, 255, 0.07);
     }
 
     .icon {
       transition: opacity linear 100ms;
-    }
-  }
-
-  .photo-container {
-    vertical-align: middle;
-    width: 32px;
-    height: 32px;
-
-    & > img {
-      display: block;
-      width: 32px;
-      height: 32px;
-      border-radius: 100%;
     }
   }
 
@@ -111,50 +97,57 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     color: #717983;
   }
 
-  #id {
+  #system-name,
+  #account-info {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: center;
+    padding: 14px 10px;
     min-height: -webkit-min-content;
     min-height: -moz-min-content;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-clip: padding-box;
 
-    & > a {
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
+    .photo-container {
+      width: 32px;
+      height: 32px;
+      @include margin-right(14px);
 
-      &:focus {
-        background: none;
+      & > img {
+        display: block;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
       }
+    }
+  }
 
-      &:hover {
-        background-color: transparent;
-      }
+  #system-name {
+    h2 {
+      margin: 0;
+    }
+  }
 
-      &.system-name {
-        flex: 1;
-        @include padding(14px, 0, 14px, 14px);
-        min-width: 0;
+  #account-info {
+    position: relative;
+    @include padding-right(44px);
 
-        .photo-container {
-          @include margin-right(10px);
-        }
+    &:after {
+      position: absolute;
+      top: calc(50% - 9px);
+      @include right(16px);
+      font-size: 19px;
+    }
 
-        h2 {
-          flex: 1;
-          padding: 0;
-          margin: 0;
-          word-break: normal;
-          word-wrap: break-word;
-          min-width: 0;
-        }
-      }
+    .user-name {
+      flex: 1;
+      line-height: 16px;
     }
   }
 
   nav {
     flex: 1;
-    margin: 0;
+    margin: 4px 0 0;
   }
 
   #job-icon {
@@ -205,34 +198,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     }
   }
 
-  #account-info {
-    &.menubtn:after {
-      display: none !important;
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    .photo-container {
-      position: relative;
-
-      .craftid {
-        position: absolute;
-        bottom: -3px;
-        right: -3px;
-        border: 2px solid $sidebarBgColor;
-        border-radius: 100%;
-
-        & > img {
-          display: block;
-          width: 14px;
-          height: 14px;
-        }
-      }
-    }
-  }
-
   #nav {
     overflow: visible;
 
@@ -249,6 +214,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       }
 
       a {
+        @include padding-left(18px);
         border-left: 0 solid transparent;
 
         &.active {
@@ -264,6 +230,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
 
         .icon {
+          @include margin(0, 22px, 0, 0);
           opacity: 0.5;
 
           &.icon-mask {
@@ -284,6 +251,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
 
         .badge {
+          @include margin-right(0);
           background: rgba(255, 255, 255, 0.5);
           color: $sidebarBgColor;
         }
@@ -296,40 +264,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           @include padding-left(60px);
         }
       }
-    }
-  }
-}
-
-#account-info-preview {
-  display: flex;
-  flex-direction: row;
-
-  &:after {
-    @include icon;
-    margin-top: 21px;
-    margin-left: 14px;
-    font-size: 13px;
-    color: $mediumTextColor;
-
-    body.ltr & {
-      content: 'rightangle';
-    }
-
-    body.rtl & {
-      content: 'leftangle';
-    }
-  }
-
-  .photo-container {
-    @include margin-right(14px);
-
-    & > img {
-      border-radius: 100%;
-    }
-
-    .craftid > img {
-      position: relative;
-      top: 3px;
     }
   }
 }
