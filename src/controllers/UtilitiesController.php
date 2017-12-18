@@ -329,16 +329,16 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:clear-caches');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $caches = Craft::$app->getRequest()->getRequiredBodyParam('caches');
 
-        if (!isset($params['caches'])) {
+        if (!isset($caches)) {
             return $this->asJson([
                 'success' => true
             ]);
         }
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
-            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true)) {
+            if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
                 continue;
             }
 
