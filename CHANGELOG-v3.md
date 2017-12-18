@@ -19,6 +19,7 @@
 - Fixed a PHP error that could occur during a Craft 2 to 3 upgrade.
 - Fixed a bug where it was not possible to delete disabled Matrix blocks. ([#2219](https://github.com/craftcms/cms/issues/2219))
 - Fixed a SQL error that could occur when storing template caches. ([#1792](https://github.com/craftcms/cms/issues/1792))
+- Fixed a layout issue on small screens. ([#2224](https://github.com/craftcms/cms/issues/2224))
 
 ## 3.0.0-RC2 - 2017-12-12
 

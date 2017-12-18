@@ -799,6 +799,11 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
 // Rearrange #main-content to flow vertically at < 999
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+  #global-container {
+    height: auto;
+    min-height: 100vh;
+  }
+
   #main-container {
     #main {
       #main-content {
