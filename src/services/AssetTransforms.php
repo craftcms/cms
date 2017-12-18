@@ -17,8 +17,8 @@ use craft\errors\ValidationException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetEvent;
 use craft\events\AssetTransformEvent;
-use craft\events\DeleteAssetTransformsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
@@ -75,9 +75,9 @@ class AssetTransforms extends Component
     const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     /**
-     * @event DeleteAssetTransformsEvent The event that is triggered when created transforms are deleted for an Asset.
+     * @event AssetEvent The event that is triggered when created transforms are deleted for an Asset.
      */
-    const EVENT_DELETE_ASSET_TRANSFORMS = 'deleteAssetTransforms';
+    const EVENT_DELETE_TRANSFORMS = 'deleteTransforms';
 
     // Properties
     // =========================================================================
@@ -1129,8 +1129,8 @@ class AssetTransforms extends Component
         }
 
         // Fire a 'deleteCreatedTransforms' event
-        if ($this->hasEventHandlers(self::EVENT_DELETE_ASSET_TRANSFORMS)) {
-            $this->trigger(self::EVENT_DELETE_ASSET_TRANSFORMS, new DeleteAssetTransformsEvent([
+        if ($this->hasEventHandlers(self::EVENT_DELETE_TRANSFORMS)) {
+            $this->trigger(self::EVENT_DELETE_TRANSFORMS, new AssetEvent([
                 'asset' => $asset,
             ]));
         }
