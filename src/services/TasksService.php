@@ -233,7 +233,7 @@ class TasksService extends BaseApplicationComponent
 				$task->totalSteps = $taskType->getTotalSteps();
 				$task->status = TaskStatus::Running;
 
-				Craft::Log('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.', LogLevel::Info, true);
+				Craft::log('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.', LogLevel::Info, true);
 
 				for ($step = 0; $step < $task->totalSteps; $step++)
 				{
@@ -241,7 +241,7 @@ class TasksService extends BaseApplicationComponent
 					$task->currentStep = $step+1;
 					$this->saveTask($task);
 
-					Craft::Log('Starting step '.($step+1).' of '.$task->totalSteps.' total steps.', LogLevel::Info, true);
+					Craft::log('Starting step '.($step+1).' of '.$task->totalSteps.' total steps.', LogLevel::Info, true);
 
 					// Run it.
 					if (($result = $taskType->runStep($step)) !== true)
