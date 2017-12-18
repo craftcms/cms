@@ -10,6 +10,7 @@
 - Control Panel tabs that switch the visible pane on the page (rather than linking to a different page) now add a fragment to the URL when selected, so the selected tab can be remembered when sharing the URL.
 - Improved the account info presentation in the global sidebar. ([#2213](https://github.com/craftcms/cms/issues/2213))
 - Pending jobs in the queue are now ran whenever an image is saved with the Image Editor. ([#2211](https://github.com/craftcms/cms/issues/2211))
+- Improved list styles in `.readable` blocks in the Control Panel.
 
 ### Fixed
 - Fixed a bug where it wasn't possible to expand Asset subfolders sometimes. ([#2210](https://github.com/craftcms/cms/issues/2210), [#2215](https://github.com/craftcms/cms/issues/2215))
