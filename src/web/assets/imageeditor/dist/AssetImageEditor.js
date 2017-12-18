@@ -1191,6 +1191,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 this.onSave();
                 this.hide();
+                Craft.cp.runQueue();
             }.bind(this));
         },
 

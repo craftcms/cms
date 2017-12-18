@@ -446,12 +446,12 @@ class m160807_144858_sites extends Migration
             ->all($this->db);
 
         foreach ($fields as $field) {
-            try {
-                $settings = Json::decode($field['settings']);
-            } catch (InvalidParamException $e) {
-                echo 'Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']."\n";
 
-                return false;
+            $settings = Json::decodeIfJson($field['settings']);
+
+            if (!is_array($settings)) {
+                echo 'Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']."\n";
+                $settings = [];
             }
 
             $localized = ($field['translationMethod'] === 'site');
@@ -459,6 +459,7 @@ class m160807_144858_sites extends Migration
             if ($field['type'] === 'craft\fields\Matrix') {
                 $settings['localizeBlocks'] = $localized;
             } else {
+                // Exception: Cannot use a scalar value as an array
                 $settings['localizeRelations'] = $localized;
 
                 // targetLocale => targetSiteId

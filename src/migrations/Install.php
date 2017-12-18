@@ -592,7 +592,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'cacheId' => $this->integer()->notNull(),
             'type' => $this->string()->notNull(),
-            'query' => $this->text()->notNull(),
+            'query' => $this->longText()->notNull(),
         ]);
         $this->createTable('{{%templatecaches}}', [
             'id' => $this->primaryKey(),

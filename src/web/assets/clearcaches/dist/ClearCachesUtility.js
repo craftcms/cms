@@ -36,7 +36,7 @@
                                     params = Craft.expandPostArray(postData);
 
                                 var data = {
-                                    params: params
+                                    caches: params.caches
                                 };
 
                                 Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus) {
