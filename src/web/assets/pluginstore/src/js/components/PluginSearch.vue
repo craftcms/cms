@@ -87,6 +87,14 @@
                     if(o.developerUrl && includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
+
+                    if(o.keywords.length > 0) {
+                        for (let i = 0; i < o.keywords.length; i++) {
+                            if(includes(o.keywords[i].toLowerCase(), searchQuery.toLowerCase())) {
+                                return true;
+                            }
+                        }
+                    }
                 });
             },
 
