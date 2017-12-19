@@ -253,7 +253,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Deletes an asset transform by it's id.
+     * Deletes an asset transform by its id.
      *
      * @param int $transformId
      *
