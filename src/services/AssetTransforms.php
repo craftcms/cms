@@ -1122,7 +1122,6 @@ class AssetTransforms extends Component
      * @param Asset $asset
      *
      * @throws VolumeException        if something went very wrong when deleting a transform
-     * @throws InvalidConfigException should not ever be thrown
      */
     public function deleteCreatedTransformsForAsset(Asset $asset)
     {
