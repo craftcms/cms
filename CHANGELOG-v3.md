@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `deleteTransforms` event to `craft\services\AssetTransforms`. ([#2212](https://github.com/craftcms/cms/issues/2212))
+- Added `craft\events\AssetTransformImageEvent`.
 
 ### Changed
 - Control Panel tabs that switch the visible pane on the page (rather than linking to a different page) now add a fragment to the URL when selected, so the selected tab can be remembered when sharing the URL.
