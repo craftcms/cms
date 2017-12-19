@@ -20,6 +20,7 @@ use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\events\AssetTransformEvent;
 use craft\events\AssetTransformImageEvent;
+use craft\events\GenerateTransformEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
