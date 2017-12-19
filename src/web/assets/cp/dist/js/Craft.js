@@ -1,4 +1,4 @@
-/*!   - 2017-12-11 */
+/*!   - 2017-12-19 */
 (function($){
 
 /** global: Craft */
@@ -2212,6 +2212,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $toggle = this._getSourceToggle($source);
 
             if ($toggle.length) {
+                // Remove handlers for the same thing. Just in case.
+                this.removeListener($toggle, 'click', '_handleSourceToggleClick');
+
                 this.addListener($toggle, 'click', '_handleSourceToggleClick');
                 $source.data('hasNestedSources', true);
             } else {
@@ -3566,7 +3569,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Set up lazy-loading
             if (this.settings.batchSize) {
                 if (this.settings.context === 'index') {
-                    this.$scroller = Garnish.$win;
+                    this.$scroller = Craft.cp.$contentContainer;
                 }
                 else {
                     this.$scroller = this.elementIndex.$main;
@@ -8229,6 +8232,10 @@ Craft.CP = Garnish.Base.extend(
 
                 $errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
                 $otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+
+                // Wait a frame before initializing any confirm-unload forms,
+                // so other JS that runs on ready() has a chance to initialize
+                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
             }, this));
 
             // Alerts
@@ -8259,49 +8266,6 @@ Craft.CP = Garnish.Base.extend(
 
             this.initTabs();
 
-            Garnish.$doc.ready($.proxy(function() {
-                // Look for forms that we should watch for changes on
-                this.$confirmUnloadForms = $('form[data-confirm-unload]');
-
-                if (this.$confirmUnloadForms.length) {
-                    if (!Craft.forceConfirmUnload) {
-                        this.initialFormValues = [];
-                    }
-
-                    for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                        var $form = $(this.$confirmUnloadForms);
-
-                        if (!Craft.forceConfirmUnload) {
-                            this.initialFormValues[i] = $form.serialize();
-                        }
-
-                        this.addListener($form, 'submit', function() {
-                            this.removeListener(Garnish.$win, 'beforeunload');
-                        });
-                    }
-
-                    this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-                        for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                            if (
-                                Craft.forceConfirmUnload ||
-                                this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
-                            ) {
-                                var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
-
-                                if (ev) {
-                                    ev.originalEvent.returnValue = message;
-                                }
-                                else {
-                                    window.event.returnValue = message;
-                                }
-
-                                return message;
-                            }
-                        }
-                    });
-                }
-            }, this));
-
             if (this.$edition.hasClass('hot')) {
                 this.addListener(this.$edition, 'click', 'showUpgradeModal');
             }
@@ -8310,6 +8274,51 @@ Craft.CP = Garnish.Base.extend(
                 this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
                 this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+        },
+
+        initConfirmUnloadForms: function() {
+            // Look for forms that we should watch for changes on
+            this.$confirmUnloadForms = $('form[data-confirm-unload]');
+
+            if (!this.$confirmUnloadForms.length) {
+                return;
+            }
+
+            if (!Craft.forceConfirmUnload) {
+                this.initialFormValues = [];
+            }
+
+            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                var $form = $(this.$confirmUnloadForms);
+
+                if (!Craft.forceConfirmUnload) {
+                    this.initialFormValues[i] = $form.serialize();
+                }
+
+                this.addListener($form, 'submit', function() {
+                    this.removeListener(Garnish.$win, 'beforeunload');
+                });
+            }
+
+            this.addListener(Garnish.$win, 'beforeunload', function(ev) {
+                for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                    if (
+                        Craft.forceConfirmUnload ||
+                        this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
+                    ) {
+                        var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
+
+                        if (ev) {
+                            ev.originalEvent.returnValue = message;
+                        }
+                        else {
+                            window.event.returnValue = message;
+                        }
+
+                        return message;
+                    }
+                }
+            });
         },
 
         _handleInputFocus: function() {
@@ -8368,6 +8377,10 @@ Craft.CP = Garnish.Base.extend(
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
+
+                    if (href === document.location.hash) {
+                        this.selectTab(a);
+                    }
                 }
 
                 if (!this.$selectedTab && a.hasClass('sel')) {
@@ -8392,7 +8405,11 @@ Craft.CP = Garnish.Base.extend(
             }
 
             $tab.addClass('sel');
-            $($tab.attr('href')).removeClass('hidden');
+            var href = $tab.attr('href')
+            $(href).removeClass('hidden');
+            if (typeof history !== 'undefined') {
+                history.replaceState(undefined, undefined, href);
+            }
             Garnish.$win.trigger('resize');
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');

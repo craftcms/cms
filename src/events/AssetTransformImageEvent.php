@@ -7,29 +7,21 @@
 
 namespace craft\events;
 
-use craft\base\Image;
-use craft\elements\Asset;
 use craft\models\AssetTransformIndex;
-use yii\base\Event;
 
 /**
- * Asset generate transform event class.
+ * Asset transform image event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GenerateTransformEvent extends AssetTransformImageEvent
+class AssetTransformImageEvent extends AssetEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Image
+     * @var AssetTransformIndex Asset transform index that is being generated.
      */
-    public $image;
-
-    /**
-     * @var string|null Path to the modified image that should be used instead.
-     */
-    public $tempPath;
+    public $transformIndex;
 }

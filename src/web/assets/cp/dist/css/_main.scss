@@ -407,103 +407,98 @@ strong, b, i em {
 .readable {
   font-size: 16px;
   line-height: 22px;
-}
 
-.readable h1 {
-  margin: 24px 0 16px;
-  font-size: 32px;
-  line-height: 40px;
-  font-weight: 600;
-  color: #000;
-}
-
-.readable h2 {
-  margin: 24px 0 16px;
-  font-size: 24px;
-  line-height: 30px;
-  font-weight: 600;
-}
-
-.readable h3 {
-  margin: 24px 0 16px;
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 600;
-}
-
-.readable ul,
-.readable ol {
-  @include padding-left(2em);
-}
-
-.readable ul li {
-  list-style-type: disc;
-}
-
-.readable li + li {
-  margin-top: 0.25em;
-}
-
-.readable blockquote {
-  margin: 16px 0;
-}
-
-.readable blockquote:not(.note) {
-  padding: 0 16px;
-  color: $mediumTextColor;
-  @include border-left(4px solid $hairlineColor);
-}
-
-.readable blockquote.note {
-  position: relative;
-  border-radius: 4px;
-  padding: 1em;
-  @include padding-left(56px);
-  border: 1px solid;
-}
-
-.readable blockquote.note:not(.tip):not(.warning) {
-  border-color: $errorColor;
-}
-
-.readable blockquote.note.tip {
-  border-color: $linkColor;
-}
-
-.readable blockquote.note.warning {
-  border-color: $warningColor;
-}
-
-.readable blockquote.note:before {
-  @include icon;
-  position: absolute;
-  top: 12px;
-  @include left(16px);
-  font-size: 30px;
-  width: 24px;
-}
-
-.readable blockquote.note:not(.tip):not(.warning) {
-  color: #bf503f;
-  &:before {
-    content: 'alert';
-    color: $errorColor;
+  h1 {
+    margin: 24px 0 16px;
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 600;
+    color: #000;
   }
-}
 
-.readable blockquote.note.tip {
-  color: $mediumTextColor;
-  &:before {
-    content: 'lightbulb';
-    color: $linkColor;
+  h2 {
+    margin: 24px 0 16px;
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 600;
   }
-}
 
-.readable blockquote.note.warning {
-  color: #cf783a;
-  &:before {
-    content: 'alert';
-    color: $warningColor;
+  h3 {
+    margin: 24px 0 16px;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    @include padding-left(2em);
+  }
+
+  ul li {
+    list-style-type: disc;
+  }
+
+  li + li {
+    margin-top: 0.25em;
+  }
+
+  blockquote {
+    margin: 16px 0;
+
+    &:not(.note) {
+      padding: 0 16px;
+      color: $mediumTextColor;
+      @include border-left(4px solid $hairlineColor);
+    }
+
+    &.note {
+      position: relative;
+      border-radius: 4px;
+      padding: 1em;
+      @include padding-left(56px);
+      border: 1px solid;
+
+      &:not(.tip):not(.warning) {
+        border-color: $errorColor;
+        color: #bf503f;
+
+        &:before {
+          content: 'alert';
+          color: $errorColor;
+        }
+      }
+
+      &.tip {
+        border-color: $linkColor;
+        color: $mediumTextColor;
+
+        &:before {
+          content: 'lightbulb';
+          color: $linkColor;
+        }
+      }
+
+      &.warning {
+        border-color: $warningColor;
+        color: #cf783a;
+
+        &:before {
+          content: 'alert';
+          color: $warningColor;
+        }
+      }
+
+      &:before {
+        @include icon;
+        position: absolute;
+        top: 12px;
+        @include left(16px);
+        font-size: 30px;
+        width: 24px;
+      }
+    }
   }
 }
 
@@ -3529,10 +3524,6 @@ input.checkbox:focus + label:before,
 
 .password {
   @include padding-right(5em);
-
-  &.capslock:focus {
-    background: #fff url(../images/capslock.png) no-repeat 100% 50%;
-  }
 }
 
 .datewrapper,
