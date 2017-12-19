@@ -554,7 +554,7 @@ class AssetTransforms extends Component
             }
         }
 
-        $index->transform = $transform;
+        $index->setTransform($transform);
 
         $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
         $volume = $asset->getVolume();
@@ -1284,13 +1284,7 @@ class AssetTransforms extends Component
             return;
         }
 
-        if ($index->transform === null) {
-            if (($transform = $this->normalizeTransform(mb_substr($index->location, 1))) === null) {
-                throw new AssetTransformException(Craft::t('app', 'Unable to recognize the transform for this transform index!'));
-            }
-        } else {
-            $transform = $index->transform;
-        }
+        $transform = $index->getTransform();
 
         if ($index->detectedFormat === null) {
             $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
