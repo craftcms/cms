@@ -19,6 +19,7 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\events\AssetTransformEvent;
+use craft\events\AssetTransformImageEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
@@ -75,9 +76,14 @@ class AssetTransforms extends Component
     const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     /**
-     * @event AssetEvent The event that is triggered when created transforms are deleted for an Asset.
+     * @event AssetTransformImageEvent The event that is triggered before deleting generated transforms.
      */
-    const EVENT_DELETE_TRANSFORMS = 'deleteTransforms';
+    const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
+
+    /**
+     * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
+     */
+    const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
 
     // Properties
     // =========================================================================
@@ -1125,14 +1131,23 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
 
         foreach ($transformIndexes as $transformIndex) {
-            $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset, $transformIndex));
-        }
+            // Fire a 'beforeDeleteTransforms' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TRANSFORMS)) {
+                $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new AssetTransformImageEvent([
+                    'asset' => $asset,
+                    'transformIndex' => $transformIndex,
+                ]));
+            }
 
-        // Fire a 'deleteCreatedTransforms' event
-        if ($this->hasEventHandlers(self::EVENT_DELETE_TRANSFORMS)) {
-            $this->trigger(self::EVENT_DELETE_TRANSFORMS, new AssetEvent([
-                'asset' => $asset,
-            ]));
+            $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset, $transformIndex));
+
+            // Fire an 'afterDeleteTransforms' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TRANSFORMS)) {
+                $this->trigger(self::EVENT_AFTER_DELETE_TRANSFORMS, new AssetTransformImageEvent([
+                    'asset' => $asset,
+                    'transformIndex' => $transformIndex,
+                ]));
+            }
         }
     }
 

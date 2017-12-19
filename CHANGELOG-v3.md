@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added the `deleteTransforms` event to `craft\services\AssetTransforms`. ([#2212](https://github.com/craftcms/cms/issues/2212))
+- Added the `beforeDeleteTransforms` and `afterDeleteTransforms` events to `craft\services\AssetTransforms`. ([#2212](https://github.com/craftcms/cms/issues/2212))
 - Added `craft\events\AssetTransformImageEvent`.
 
 ### Changed
