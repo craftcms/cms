@@ -17,7 +17,9 @@ use craft\errors\ValidationException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetEvent;
 use craft\events\AssetTransformEvent;
+use craft\events\AssetTransformImageEvent;
 use craft\events\GenerateTransformEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -34,6 +36,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetTransforms service.
@@ -69,9 +72,19 @@ class AssetTransforms extends Component
     const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     /**
-     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GENERATE_TRANSFORM = 'generateTransform';
+
+    /**
+     * @event AssetTransformImageEvent The event that is triggered before deleting generated transforms.
+     */
+    const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
+
+    /**
+     * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
+     */
+    const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
 
     // Properties
     // =========================================================================
@@ -247,11 +260,12 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Deletes an asset transform by it's id.
+     * Deletes an asset transform by its id.
      *
      * @param int $transformId
      *
      * @return bool
+     * @throws \yii\db\Exception on DB error
      */
     public function deleteTransform(int $transformId): bool
     {
@@ -547,7 +561,7 @@ class AssetTransforms extends Component
             }
         }
 
-        $index->transform = $transform;
+        $index->setTransform($transform);
 
         $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
         $volume = $asset->getVolume();
@@ -1107,6 +1121,8 @@ class AssetTransforms extends Component
      * Delete created transforms for an Asset.
      *
      * @param Asset $asset
+     *
+     * @throws VolumeException        if something went very wrong when deleting a transform
      */
     public function deleteCreatedTransformsForAsset(Asset $asset)
     {
@@ -1115,7 +1131,23 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
 
         foreach ($transformIndexes as $transformIndex) {
+            // Fire a 'beforeDeleteTransforms' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TRANSFORMS)) {
+                $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new AssetTransformImageEvent([
+                    'asset' => $asset,
+                    'transformIndex' => $transformIndex,
+                ]));
+            }
+
             $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset, $transformIndex));
+
+            // Fire an 'afterDeleteTransforms' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TRANSFORMS)) {
+                $this->trigger(self::EVENT_AFTER_DELETE_TRANSFORMS, new AssetTransformImageEvent([
+                    'asset' => $asset,
+                    'transformIndex' => $transformIndex,
+                ]));
+            }
         }
     }
 
@@ -1267,13 +1299,7 @@ class AssetTransforms extends Component
             return;
         }
 
-        if ($index->transform === null) {
-            if (($transform = $this->normalizeTransform(mb_substr($index->location, 1))) === null) {
-                throw new AssetTransformException(Craft::t('app', 'Unable to recognize the transform for this transform index!'));
-            }
-        } else {
-            $transform = $index->transform;
-        }
+        $transform = $index->getTransform();
 
         if ($index->detectedFormat === null) {
             $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);

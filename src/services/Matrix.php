@@ -699,6 +699,8 @@ class Matrix extends Component
 
                 // Delete any blocks that shouldn't be there anymore
                 $deleteBlocksQuery = MatrixBlock::find()
+                    ->status(null)
+                    ->enabledForSite(false)
                     ->ownerId($owner->id)
                     ->fieldId($field->id)
                     ->where(['not', ['elements.id' => $blockIds]]);

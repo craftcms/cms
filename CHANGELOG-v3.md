@@ -1,5 +1,30 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+## 3.0.0-RC3 - 2017-12-19
+
+### Added
+- Added the `beforeDeleteTransforms` and `afterDeleteTransforms` events to `craft\services\AssetTransforms`. ([#2212](https://github.com/craftcms/cms/issues/2212))
+- Added `craft\events\AssetTransformImageEvent`.
+
+### Changed
+- Control Panel tabs that switch the visible pane on the page (rather than linking to a different page) now add a fragment to the URL when selected, so the selected tab can be remembered when sharing the URL.
+- Improved the account info presentation in the global sidebar. ([#2213](https://github.com/craftcms/cms/issues/2213))
+- Pending jobs in the queue are now ran whenever an image is saved with the Image Editor. ([#2211](https://github.com/craftcms/cms/issues/2211))
+- Improved list styles in `.readable` blocks in the Control Panel.
+
+### Fixed
+- Fixed a bug where it wasn't possible to expand Asset subfolders sometimes. ([#2210](https://github.com/craftcms/cms/issues/2210), [#2215](https://github.com/craftcms/cms/issues/2215))
+- Fixed a bug where changing an Asset's focal point would invalidate the transforms a bit too early. ([#2198](https://github.com/craftcms/cms/issues/2198))
+- Fixed a regression where it wasn’t possible to deep-link to specific tabs in the Control Panel. ([#2206](https://github.com/craftcms/cms/issues/2206))
+- Fixed a bug where `craft\services\Volumes::getVolumeByHandle()` would return `null` if the volume had just been saved, and `getAllVolumes()` had been called earlier in the request.
+- Fixed a PHP error that could occur during a Craft 2 to 3 upgrade.
+- Fixed a bug where it was not possible to delete disabled Matrix blocks. ([#2219](https://github.com/craftcms/cms/issues/2219))
+- Fixed a SQL error that could occur when storing template caches. ([#1792](https://github.com/craftcms/cms/issues/1792))
+- Fixed a layout issue on small screens. ([#2224](https://github.com/craftcms/cms/issues/2224))
+- Fixed a bug where Craft would issue unsaved data warnings when unloading pages, even if nothing had actually changed, in some cases. ([#2225](https://github.com/craftcms/cms/issues/2225))
+- Fixed a bug where element index pages weren’t loading more elements when the content area was scrolled to the bottom. ([#2228](https://github.com/craftcms/cms/issues/2228))
 
 ## 3.0.0-RC2 - 2017-12-12
 
@@ -127,6 +152,8 @@
 - Updated all Control Panel language translations.
 
 ### Removed
+- Removed the “Rich Text” field type. If you had any Rich Text fields, just install the [Redactor](https://github.com/craftcms/redactor) plugin after updating to RC1+.
+- Removed the “Position Select” field type. Any Position Select fields will get converted to Dropdowns.
 - The `_includes/forms/field.html` template no longer supports a `dataAttributes` variable. (Use the new `attr` block instead.)
 - Removed `craft\events\RegisterRedactorPluginEvent`.
 - Removed `craft\events\RegisterRichTextLinkOptionsEvent`.
