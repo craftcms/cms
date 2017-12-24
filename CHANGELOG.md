@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
+- Fixed a bug where some `IOHelper` methods could create a folder with zero permission under specific circumstances.
 
 ## 2.6.3000 - 2017-12-07
 
