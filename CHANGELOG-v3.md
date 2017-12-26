@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
+
 ## 3.0.0-RC3 - 2017-12-19
 
 ### Added
