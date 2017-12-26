@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
+
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
 
