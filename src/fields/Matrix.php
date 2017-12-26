@@ -312,9 +312,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     {
         /** @var MatrixBlockQuery $value */
         $serialized = [];
+        $new = 0;
 
         foreach ($value->all() as $block) {
-            $serialized[$block->id] = [
+            $blockId = $block->id ?? 'new'.++$new;
+            $serialized[$blockId] = [
                 'type' => $block->getType()->handle,
                 'enabled' => $block->enabled,
                 'collapsed' => $block->collapsed,
