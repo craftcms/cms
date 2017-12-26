@@ -59,7 +59,6 @@
 {% endjs %}
 
 {% set hasSystemIcon = CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %}
-{% set craftIdAccount = craft.cp.enableCraftId() ? craft.cp.craftIdAccount() : null %}
 
 {% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
@@ -79,26 +78,22 @@
                 <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
             {% endif %}
 
-            <a id="system-name"{% if hasSystemIcon %} class="has-icon"{% endif %} href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
+            <a id="system-info" class="menubtn" role="button" data-menu-anchor="#account-menu-anchor">
                 {% if hasSystemIcon %}
-                    <div id="site-icon" class="photo-container">
+                    <div id="site-icon">
                         <img src="{{ craft.rebrand.icon.url }}" alt="">
                     </div>
                 {% endif %}
-                <h2>{{ systemName }}</h2>
-            </a>
-
-            <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
-                <div id="user-photo-icon" class="photo-container">
-                    <img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
-
-                    <div class="craftid craftid-connected{% if not craftIdAccount %} hidden{% endif %}">
-                        <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
+                <div id="system-name">
+                    <h2>{{ systemName }}</h2>
+                    <div id="user-info">
+                        {% if currentUser.photoId %}
+                            <div id="user-photo">
+                                <img width="14" sizes="14px" srcset="{{ currentUser.getThumbUrl(14) }} 14w, {{ currentUser.getThumbUrl(28) }} 28w" alt="{{ currentUser.getName() }}">
+                            </div>
+                        {% endif %}
+                        <div>{{ currentUser.friendlyName }}</div>
                     </div>
-                </div>
-                <div class="user-name">
-                    <div>{{ currentUser.name }}</div>
-                    {% if currentUser.admin %}<div class="light">{{ 'Admin'|t('app') }}</div>{% endif %}
                 </div>
                 <div id="account-menu-anchor"></div>
             </a>
@@ -110,6 +105,10 @@
                         <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
                     {% endif %}
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                </ul>
+                <hr>
+                <ul>
+                    <li><a href="{{ siteUrl }}">View site</a></li>
                 </ul>
             </div>
 

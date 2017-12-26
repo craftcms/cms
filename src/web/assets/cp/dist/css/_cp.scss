@@ -97,40 +97,16 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     color: #717983;
   }
 
-  #system-name,
-  #account-info {
+  #system-info {
+    position: relative;
     display: flex;
     flex-direction: row;
-    align-items: center;
-    padding: 14px 10px;
+    align-items: top;
+    @include padding(14px, 44px, 14px, 10px);
     min-height: -webkit-min-content;
     min-height: -moz-min-content;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
-
-    .photo-container {
-      width: 32px;
-      height: 32px;
-      @include margin-right(14px);
-
-      & > img {
-        display: block;
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-      }
-    }
-  }
-
-  #system-name {
-    h2 {
-      margin: 0;
-    }
-  }
-
-  #account-info {
-    position: relative;
-    @include padding-right(44px);
 
     &:after {
       position: absolute;
@@ -139,9 +115,45 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       font-size: 19px;
     }
 
-    .user-name {
+    #site-icon {
+      width: 32px;
+      height: 32px;
+      @include margin-right(14px);
+
+      img {
+        display: block;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+      }
+    }
+
+    #system-name {
       flex: 1;
-      line-height: 16px;
+
+      h2 {
+        margin: 0;
+      }
+
+      #user-info {
+        margin-top: 5px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        #user-photo {
+          width: 14px;
+          height: 14px;
+          @include margin-right(5px);
+
+          img {
+            display: block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+          }
+        }
+      }
     }
   }
 
