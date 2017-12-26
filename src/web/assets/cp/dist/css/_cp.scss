@@ -136,7 +136,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       }
 
       #user-info {
-        margin-top: 5px;
+        margin-top: 4px;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -155,6 +155,11 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
       }
     }
+  }
+
+  #devmode + #system-info {
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 
   nav {

@@ -1702,11 +1702,12 @@ body.rtl #global-sidebar #system-info #site-icon { margin-left: 14px; }
 #global-sidebar #system-info #site-icon img { display: block; width: 32px; height: 32px; border-radius: 4px; }
 #global-sidebar #system-info #system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #global-sidebar #system-info #system-name h2 { margin: 0; }
-#global-sidebar #system-info #system-name #user-info { margin-top: 5px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
+#global-sidebar #system-info #system-name #user-info { margin-top: 4px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
 #global-sidebar #system-info #system-name #user-info #user-photo { width: 14px; height: 14px; }
 body.ltr #global-sidebar #system-info #system-name #user-info #user-photo { margin-right: 5px; }
 body.rtl #global-sidebar #system-info #system-name #user-info #user-photo { margin-left: 5px; }
 #global-sidebar #system-info #system-name #user-info #user-photo img { display: block; width: 14px; height: 14px; border-radius: 50%; }
+#global-sidebar #devmode + #system-info { padding-top: 12px; padding-bottom: 12px; }
 #global-sidebar nav { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; margin: 4px 0 0; }
 #global-sidebar #job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
 #global-sidebar #job-icon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
