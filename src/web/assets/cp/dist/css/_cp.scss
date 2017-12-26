@@ -164,7 +164,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
   nav {
     flex: 1;
-    margin: 4px 0 0;
+    margin: 13px 0 0;
   }
 
   #job-icon {
@@ -588,7 +588,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         flex: 0 0 $sidebarWidth;
         width: $sidebarWidth;
         box-sizing: border-box;
-        padding: 24px;
       }
 
       #content-container {
@@ -1322,7 +1321,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 /* Sidebar */
 .sidebar {
   width: $sidebarWidth;
-  padding: 24px;
+  padding: 14px 24px;
   overflow: auto;
   background: $lightBgColor;
   box-sizing: border-box;
