@@ -1,4 +1,4 @@
-/*!   - 2017-12-19 */
+/*!   - 2017-12-26 */
 (function($){
 
 /** global: Craft */
@@ -2992,6 +2992,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.trigger('selectSource', {sourceKey: this.sourceKey});
         },
 
+        onSelectSite: function() {
+            this.settings.onSelectSite(this.siteId);
+            this.trigger('selectSite', {siteId: this.siteId});
+        },
+
         onUpdateElements: function() {
             this.settings.onUpdateElements();
             this.trigger('updateElements');
@@ -3078,6 +3083,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$siteMenuBtn.html($option.html());
             this._setSite($option.data('site-id'));
+            this.onSelectSite();
         },
 
         _setSite: function(siteId) {
@@ -3452,6 +3458,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
+            onSelectSite: $.noop,
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,
@@ -7023,6 +7030,12 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
         $newCategoryBtnGroup: null,
         $newCategoryBtn: null,
 
+        init: function(elementType, $container, settings) {
+            this.on('selectSource', $.proxy(this, 'updateButton'));
+            this.on('selectSite', $.proxy(this, 'updateButton'));
+            this.base(elementType, $container, settings);
+        },
+
         afterInit: function() {
             // Find which of the visible groups the user has permission to create new categories in
             this.editableGroups = [];
@@ -7053,7 +7066,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        onSelectSource: function() {
+        updateButton: function() {
+            if (!this.$source) {
+                return;
+            }
+
             // Get the handle of the selected source
             var selectedSourceHandle = this.$source.data('handle');
 
@@ -7144,13 +7161,19 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
                 history.replaceState({}, '', Craft.getUrl(uri));
             }
-
-            this.base();
         },
 
         _getGroupTriggerHref: function(group) {
             if (this.settings.context === 'index') {
-                return 'href="' + Craft.getUrl('categories/' + group.handle + '/new') + '"';
+                var uri = 'categories/' + group.handle + '/new';
+                if (this.siteId && this.siteId != Craft.primarySiteId) {
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == this.siteId) {
+                            uri += '/'+Craft.sites[i].handle;
+                        }
+                    }
+                }
+                return 'href="' + Craft.getUrl(uri) + '"';
             }
             else {
                 return 'data-id="' + group.id + '"';
@@ -10709,6 +10732,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         $newEntryBtnGroup: null,
         $newEntryBtn: null,
 
+        init: function(elementType, $container, settings) {
+            this.on('selectSource', $.proxy(this, 'updateButton'));
+            this.on('selectSite', $.proxy(this, 'updateButton'));
+            this.base(elementType, $container, settings);
+        },
+
         afterInit: function() {
             // Find which of the visible sections the user has permission to create new entries in
             this.publishableSections = [];
@@ -10744,7 +10773,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        onSelectSource: function() {
+        updateButton: function() {
+            if (!this.$source) {
+                return;
+            }
+
             var handle;
 
             // Get the handle of the selected source
@@ -10784,7 +10817,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
                 // Otherwise only show a menu button
                 if (selectedSection) {
-                    href = this._getSectionTriggerHref(selectedSection);
+                    href = this._getSectionTriggerHref(selectedSection, true);
                     label = (this.settings.context === 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
                     this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
@@ -10842,13 +10875,19 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
                 history.replaceState({}, '', Craft.getUrl(uri));
             }
-
-            this.base();
         },
 
-        _getSectionTriggerHref: function(section) {
+        _getSectionTriggerHref: function(section, includeSite) {
             if (this.settings.context === 'index') {
-                return 'href="' + Craft.getUrl('entries/' + section.handle + '/new') + '"';
+                var uri = 'entries/' + section.handle + '/new';
+                if (includeSite && this.siteId && this.siteId != Craft.primarySiteId) {
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == this.siteId) {
+                            uri += '/'+Craft.sites[i].handle;
+                        }
+                    }
+                }
+                return 'href="' + Craft.getUrl(uri) + '"';
             }
             else {
                 return 'data-id="' + section.id + '"';
