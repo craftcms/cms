@@ -4,6 +4,7 @@
 
 ### Changed
 - URL patterns defined in `craft/config/routes.php` can now begin with a verb (e.g. `POST some/path`) to restrict the route to a specific request type.
+- Edit Entry pages for entries without a user-defined title now show the Title field anyway if it has any validation errors. ([#2242](https://github.com/craftcms/cms/issues/2242))
 
 ### Fixed
 - Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
