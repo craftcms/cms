@@ -1099,34 +1099,40 @@ class MatrixService extends BaseApplicationComponent
 			$criteria->ownerLocale = ':empty:';
 			$blocks = $criteria->find();
 
-			foreach ($blocks as $block)
+			if (!empty($blocks))
 			{
-				// Assign the current block to the owner's locale
-				$block->ownerLocale = $owner->locale;
-				$this->saveBlock($block, false);
+				$originalBlockIds = array();
+				$newBlockIds = array();
 
-				// Now duplicate it for the other locales
-				$originalBlockId = $block->id;
-
-				foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+				foreach ($blocks as $block)
 				{
-					if ($localeId != $owner->locale)
-					{
-						$block->id = null;
-						$block->getContent()->id = null;
-						$block->ownerLocale = $localeId;
-						$this->saveBlock($block, false);
+					// Assign the current block to the owner's locale
+					$block->ownerLocale = $owner->locale;
+					$this->saveBlock($block, false);
 
-						$newBlockIds[$originalBlockId][$localeId] = $block->id;
+					// Now duplicate it for the other locales
+					$originalBlockId = $originalBlockIds[] = $block->id;
+
+					foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+					{
+						if ($localeId != $owner->locale)
+						{
+							$block->id = null;
+							$block->getContent()->id = null;
+							$block->ownerLocale = $localeId;
+							$this->saveBlock($block, false);
+
+							$newBlockIds[$originalBlockId][$localeId] = $block->id;
+						}
 					}
 				}
 
-				// Duplicate the relations, too.  First by getting all of the existing relations for the original
-				// blocks
+				// Duplicate the relations, too.  First by getting all of the
+				// existing relations for the original blocks
 				$relations = craft()->db->createCommand()
 					->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
 					->from('relations')
-					->where(array('in', 'sourceId', array_keys($newBlockIds)))
+					->where(array('in', 'sourceId', array_keys($originalBlockIds)))
 					->queryAll();
 
 				if (!empty($relations))
