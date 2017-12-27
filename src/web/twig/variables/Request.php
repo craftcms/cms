@@ -326,9 +326,9 @@ class Request
     /**
      * Returns the server port number.
      *
-     * @return int
+     * @return int|null
      */
-    public function getServerPort(): int
+    public function getServerPort()
     {
         Craft::$app->getDeprecator()->log('craft.request.getServerPort()', 'craft.request.getServerPort() has been deprecated. Use craft.app.request.serverPort instead.');
 
@@ -362,9 +362,9 @@ class Request
     /**
      * Returns the user host name or null if it cannot be determined.
      *
-     * @return string
+     * @return string|null
      */
-    public function getUserHost(): string
+    public function getUserHost()
     {
         Craft::$app->getDeprecator()->log('craft.request.getUserHost()', 'craft.request.getUserHost() has been deprecated. Use craft.app.request.userHost instead.');
 
