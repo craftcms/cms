@@ -13,6 +13,7 @@ use craft\base\Plugin;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;

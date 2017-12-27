@@ -143,7 +143,7 @@ class ElementHelper
     {
         /** @var Element $element */
         // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
-        if (!$element->id && ($pos = strpos($uriFormat, '{id')) !== false) {
+        if (!$element->id && strpos($uriFormat, '{id') !== false) {
             $element->id = $element->tempId = 'id-'.StringHelper::randomString(10);
         }
 
