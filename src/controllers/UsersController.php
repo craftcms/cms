@@ -762,7 +762,7 @@ class UsersController extends Controller
 
                 $tabs['profile'.$index] = [
                     'label' => Craft::t('site', $tab->name),
-                    'url' => '#profile'.($index + 1),
+                    'url' => '#'.$tab->getHtmlId(),
                     'class' => $hasErrors ? 'error' : null
                 ];
             }
