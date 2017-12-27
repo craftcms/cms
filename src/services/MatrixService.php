@@ -1132,7 +1132,7 @@ class MatrixService extends BaseApplicationComponent
 				$relations = craft()->db->createCommand()
 					->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
 					->from('relations')
-					->where(array('in', 'sourceId', array_keys($originalBlockIds)))
+					->where(array('in', 'sourceId', $originalBlockIds))
 					->queryAll();
 
 				if (!empty($relations))
