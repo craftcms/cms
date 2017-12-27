@@ -1119,6 +1119,7 @@ class MatrixService extends BaseApplicationComponent
 						{
 							$block->id = null;
 							$block->getContent()->id = null;
+							$block->locale = $localeId;
 							$block->ownerLocale = $localeId;
 							$this->saveBlock($block, false);
 
