@@ -1116,11 +1116,6 @@ class MatrixService extends BaseApplicationComponent
 			$criteria->localeEnabled = null;
 			$criteria->limit = null;
 
-			if ($field->translatable)
-			{
-				$criteria->ownerLocale = ':empty:';
-			}
-
 			foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
 			{
 				if ($localeId == $owner->locale)
@@ -1129,11 +1124,7 @@ class MatrixService extends BaseApplicationComponent
 				}
 
 				$criteria->locale = $localeId;
-
-				if (!$field->translatable)
-				{
-					$criteria->ownerLocale = $localeId;
-				}
+				$criteria->ownerLocale = $field->translatable ? ':empty:' : $localeId;
 
 				$blocksInOtherLocale = $criteria->find();
 
