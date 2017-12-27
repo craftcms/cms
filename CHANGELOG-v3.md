@@ -11,6 +11,7 @@
 - It’s now possible to change a field to an incompatible type. ([#2232](https://github.com/craftcms/cms/issues/2232))
 - The Control Panel now uses default system UI fonts, rather than Helvetica Neue or whatever `sans-serif` results in. ([#2241](https://github.com/craftcms/cms/issues/2241))
 - Field layout tabs’ IDs are now based on their tab name, for nicer-looking URL fragments.
+- Auto-generated site names created when upgrading from Craft 2 now include the ID of the locale they were based on.
 
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
