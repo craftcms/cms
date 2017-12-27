@@ -38,7 +38,12 @@ $menuBorderRadius: 2px;
 $elementBorderRadius: 2px;
 
 @mixin sans-serif-font {
-  font-family: "Helvetica Neue", HelveticaNeue, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+@mixin fixed-width-font {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9em !important;
 }
 
 // Flexbox stuff
