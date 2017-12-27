@@ -10,6 +10,7 @@
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
 - Fixed a bug where entry drafts would discard all but the first new Matrix block when saved. ([2235](https://github.com/craftcms/cms/issues/2235))
+- Fixed a bug where the Plugin Store’s Vue app base URL could be wrong, resulting in the Plugin Store showing a blank page without errors. ([2209](https://github.com/craftcms/cms/issues/2209))
 
 ## 3.0.0-RC3 - 2017-12-19
 

@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
@@ -47,14 +48,14 @@ class PluginStoreController extends Controller
      */
     public function actionIndex()
     {
-        $vueRouterBase = '/'.Craft::$app->getConfig()->getGeneral()->cpTrigger.'/plugin-store/';
+        $pluginStoreAppBaseUrl = $this->getVueAppBaseUrl();
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v3/');
         $view->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
         $view->registerJs('window.stripeApiKey = "'.Craft::$app->getPluginStore()->stripeApiKey.'";', View::POS_BEGIN);
         $view->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
-        $view->registerJs('window.vueRouterBase = "'.$vueRouterBase.'";', View::POS_BEGIN);
+        $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = '.Json::encode(Craft::$app->getApi()->getCmsInfo()).';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
@@ -294,5 +295,20 @@ class PluginStoreController extends Controller
         Craft::$app->getSession()->remove('pluginStore.craftData');
 
         return $this->asJson(true);
+    }
+
+    /**
+     * Returns the Plugin Store’s Vue App Base URL for Vue Router.
+     *
+     * @return string
+     */
+    private function getVueAppBaseUrl()
+    {
+        $url = UrlHelper::url('plugin-store');
+
+        $hostInfo = Craft::$app->getRequest()->getHostInfo();
+        $hostInfo = StringHelper::ensureRight($hostInfo, '/');
+
+        return  (string) substr($url, strlen($hostInfo) - 1);
     }
 }

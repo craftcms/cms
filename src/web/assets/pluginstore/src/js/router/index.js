@@ -10,7 +10,7 @@ import Tests from '../Tests';
 Vue.use(VueRouter);
 
 export default new VueRouter({
-    base: window.vueRouterBase,
+    base: window.pluginStoreAppBaseUrl,
     mode: 'history',
     routes: [
         {
