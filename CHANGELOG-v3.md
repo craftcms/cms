@@ -5,6 +5,7 @@
 ### Changed
 - More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
 - The “New entry” and “New category” buttons on Entries and Categories index pages now load the Edit page for the currently-selected site. ([#2236](https://github.com/craftcms/cms/issues/2236))
+- It’s now possible to change a field to an incompatible type. ([#2232](https://github.com/craftcms/cms/issues/2232))
 
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))

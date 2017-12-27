@@ -223,6 +223,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         $fieldsService = Craft::$app->getFields();
+        /** @var string[]|FieldInterface[] $allFieldTypes */
         $allFieldTypes = $fieldsService->getAllFieldTypes();
         $fieldTypeOptions = [];
 
@@ -245,15 +246,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     /** @var Field $field */
                     if (!$field->getIsNew()) {
                         $fieldTypeOptions[$field->id] = [];
-                        $allowedFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
+                        $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
                         foreach ($allFieldTypes as $class) {
                             // No Matrix-Inception, sorry buddy.
-                            $enabled = in_array($class, $allowedFieldTypes) && $class !== self::class;
-                            $fieldTypeOptions[$field->id][] = [
-                                'value' => $class,
-                                'label' => $class::displayName(),
-                                'disabled' => !$enabled,
-                            ];
+                            if ($class !== self::class && ($class === get_class($field) || $class::isSelectable())) {
+                                $compatible = in_array($class, $compatibleFieldTypes, true);
+                                $fieldTypeOptions[$field->id][] = [
+                                    'value' => $class,
+                                    'label' => $class::displayName().($compatible ? '' : ' ⚠️'),
+                                ];
+                            }
                         }
 
                         // Sort them by name
