@@ -1699,7 +1699,8 @@ body.rtl #global-sidebar #system-info:after { left: 16px; }
 #global-sidebar #system-info #site-icon { width: 32px; height: 32px; }
 body.ltr #global-sidebar #system-info #site-icon { margin-right: 14px; }
 body.rtl #global-sidebar #system-info #site-icon { margin-left: 14px; }
-#global-sidebar #system-info #site-icon img { display: block; width: 32px; height: 32px; border-radius: 4px; }
+#global-sidebar #system-info #site-icon img, #global-sidebar #system-info #site-icon svg { display: block; width: 32px; height: 32px; border-radius: 4px; }
+#global-sidebar #system-info #site-icon svg rect, #global-sidebar #system-info #site-icon svg circle, #global-sidebar #system-info #site-icon svg ellipse, #global-sidebar #system-info #site-icon svg line, #global-sidebar #system-info #site-icon svg polyline, #global-sidebar #system-info #site-icon svg polygon, #global-sidebar #system-info #site-icon svg path, #global-sidebar #system-info #site-icon svg text { fill: #8f98a3; stroke-width: 0; }
 #global-sidebar #system-info #system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #global-sidebar #system-info #system-name h2 { margin: 0; }
 #global-sidebar #system-info #system-name #user-info { margin-top: 4px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
@@ -2028,7 +2029,7 @@ body.rtl .sidebar nav li a .icon { margin: 0 -10px 0 10px ; }
 .sidebar nav li a .badge { -ms-flex-negative: 1; flex-shrink: 1; padding: 0 6px; font-size: 11px; line-height: 16px; border-radius: 8px; background: #8f98a3; color: #fff; }
 body.ltr .sidebar nav li a .badge { margin: 0 -4px 0 10px ; }
 body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
-.sidebar nav li .toggle { position: absolute; top: 10px; }
+.sidebar nav li .toggle { position: absolute; top: px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
 
