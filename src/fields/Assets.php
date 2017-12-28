@@ -64,34 +64,40 @@ class Assets extends BaseRelationField
     public $useSingleFolder;
 
     /**
-     * @var string|null Where files should be uploaded to by default, in format "folder:X", where X is the craft\models\VolumeFolder ID
-     *                  (only used if [[useSingleFolder]] is false)
+     * @var string|null Where files should be uploaded to by default, in format
+     * "folder:X", where X is the craft\models\VolumeFolder ID
+     * (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
     /**
-     * @var string|null The subpath that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null The subpath that files should be uploaded to by default
+     * (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var string|null Where files should be restricted to, in format "folder:X", where X is the craft\models\VolumeFolder ID
-     *                  (only used if [[useSingleFolder]] is true)
+     * @var string|null Where files should be restricted to, in format
+     * "folder:X", where X is the craft\models\VolumeFolder ID
+     * (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
     /**
-     * @var string|null The subpath that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null The subpath that files should be restricted to
+     * (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSubpath;
 
     /**
-     * @var bool|null Whether the available assets should be restricted to [[allowedKinds]]
+     * @var bool|null Whether the available assets should be restricted to
+     * [[allowedKinds]]
      */
     public $restrictFiles;
 
     /**
-     * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
+     * @var array|null The file kinds that the field should be restricted to
+     * (only used if [[restrictFiles]] is true)
      */
     public $allowedKinds;
 
