@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Category;
+use craft\errors\InvalidElementException;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -420,6 +421,7 @@ class CategoriesController extends Controller
      * Saves an category.
      *
      * @return Response|null
+     * @throws ServerErrorHttpException
      */
     public function actionSaveCategory()
     {
@@ -436,6 +438,26 @@ class CategoriesController extends Controller
             // Swap $category with the duplicate
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
+            } catch (InvalidElementException $e) {
+                /** @var Category $clone */
+                $clone = $e->element;
+
+                if ($request->getAcceptsJson()) {
+                    return $this->asJson([
+                        'success' => false,
+                        'errors' => $clone->getErrors(),
+                    ]);
+                }
+
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate category.'));
+
+                // Send the original category back to the template, with any validation errors on the clone
+                $category->addErrors($clone->getErrors());
+                Craft::$app->getUrlManager()->setRouteParams([
+                    'category' => $category
+                ]);
+
+                return null;
             } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
