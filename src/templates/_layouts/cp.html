@@ -79,11 +79,13 @@
             {% endif %}
 
             <a id="system-info" class="menubtn" role="button" data-menu-anchor="#account-menu-anchor">
-                {% if hasSystemIcon %}
-                    <div id="site-icon">
+                <div id="site-icon">
+                    {% if hasSystemIcon %}
                         <img src="{{ craft.rebrand.icon.url }}" alt="">
-                    </div>
-                {% endif %}
+                    {% else %}
+                        {{ svg('@app/icons/circle-c-outline.svg') }}
+                    {% endif %}
+                </div>
                 <div id="system-name">
                     <h2>{{ systemName }}</h2>
                     <div id="user-info">

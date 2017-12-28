@@ -214,7 +214,7 @@ body.rtl [data-icon-after=structure]:after {
 /* headings */
 h1 {
   margin-bottom: 24px;
-  font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif;
+  font-weight: 300;
   font-size: 24px;
   line-height: 1;
 }
@@ -310,8 +310,7 @@ code,
 .code,
 .code input,
 .code textarea {
-  font-family: Menlo, monospace;
-  font-size: 0.9em !important;
+  @include fixed-width-font;
 }
 
 /* links */

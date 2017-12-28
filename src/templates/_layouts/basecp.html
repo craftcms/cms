@@ -74,7 +74,7 @@
                 monthNames: {{ localeData.getMonthNames('full', true)|values|json_encode|raw }},
                 monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
             },
-            primarySiteId: {{ craft.app.sites.primarySite.id ?? 'null' }},
+            primarySiteId: {{ craft.app.isInstalled and not craft.app.updates.isCraftDbMigrationNeeded ? craft.app.sites.primarySite.id : 'null' }},
             sites: [
                 {% for site in craft.app.sites.getAllSites() %}
                     {

@@ -103,7 +103,7 @@ class m160807_144858_sites extends Migration
             $language = $this->locale2language($locale);
 
             $this->insert('{{%sites}}', [
-                'name' => $siteInfo['siteName'],
+                'name' => "{$siteInfo['siteName']} ({$language})",
                 'handle' => $siteHandle,
                 'language' => $language,
                 'hasUrls' => 1,

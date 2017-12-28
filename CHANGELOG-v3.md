@@ -2,16 +2,22 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\models\FieldLayoutTab::getHtmlId()`.
+
 ### Changed
 - More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
 - The “New entry” and “New category” buttons on Entries and Categories index pages now load the Edit page for the currently-selected site. ([#2236](https://github.com/craftcms/cms/issues/2236))
 - It’s now possible to change a field to an incompatible type. ([#2232](https://github.com/craftcms/cms/issues/2232))
+- The Control Panel now uses default system UI fonts, rather than Helvetica Neue or whatever `sans-serif` results in. ([#2241](https://github.com/craftcms/cms/issues/2241))
+- Field layout tabs’ IDs are now based on their tab name, for nicer-looking URL fragments.
+- Auto-generated site names created when upgrading from Craft 2 now include the ID of the locale they were based on.
 - The Plugin Store now shows a “Page not found“ message when there is a routing error with the Vue app. 
 
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
 - Fixed a bug where entry drafts would discard all but the first new Matrix block when saved. ([2235](https://github.com/craftcms/cms/issues/2235))
-- Fixed a bug where the Plugin Store’s Vue app base URL could be wrong, resulting in the Plugin Store showing a blank page without errors. ([2209](https://github.com/craftcms/cms/issues/2209))
+- Fixed a bug where the Plugin Store wasn’t loading properly when the `omitScriptNameInUrls` config setting was disabled. ([2209](https://github.com/craftcms/cms/issues/2209))
 
 ## 3.0.0-RC3 - 2017-12-19
 
