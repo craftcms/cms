@@ -22,6 +22,7 @@
 - Fixed a bug where entry drafts would discard all but the first new Matrix block when saved. ([2235](https://github.com/craftcms/cms/issues/2235))
 - Fixed a bug where the Plugin Store wasn’t loading properly when the `omitScriptNameInUrls` config setting was disabled. ([2209](https://github.com/craftcms/cms/issues/2209))
 - Fixed a bug where validation errors that occurred when duplicating an entry or category would result in a generic error page, rather than the original Edit page with validation errors displayed. ([#2237](https://github.com/craftcms/cms/issues/2237))
+- Fixed a bug where you could get a fatal PHP error if you were using the latest 2.0.2 release of the `yii2-queue` library from the command line in Craft. ([#2248](https://github.com/craftcms/cms/issues/2248))
 
 ## 3.0.0-RC3 - 2017-12-19
 
