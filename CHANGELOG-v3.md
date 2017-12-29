@@ -15,6 +15,7 @@
 - Auto-generated site names created when upgrading from Craft 2 now include the ID of the locale they were based on.
 - The Plugin Store now shows a “Page not found“ message when there is a routing error.
 - Updated svg-sanitizer to ~0.8.2, which no longer removes seemingly-safe `<use>` elements.
+- Any `id` attributes (and their references) within SVG files output by the `svg()` template function now get namespaced, avoiding potential conflicts between the SVG and other elements on the page.
 
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
