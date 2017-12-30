@@ -28,13 +28,13 @@
     ],
     "require": {
         "guzzle/guzzle": "3.9.3.1",
-        "twig/twig": "1.33.2.1",
-        "simplepie/simplepie": "1.3.3",
+        "twig/twig": "1.35.0.1",
+        "simplepie/simplepie": "1.5.1.1",
         "phpmailer/phpmailer": "v5.2.26",
         "pixelandtonic/imagine": "v0.7.1.3",
-        "lsolesen/pel": "0.9.4.5",
+        "lsolesen/pel": "0.9.6.1",
         "yiisoft/yii": "1.1.19.4",
-        "enshrined/svg-sanitize": "0.6.0",
+        "enshrined/svg-sanitize": "0.8.2",
         "pclzip/pclzip": "2.8.2.1"
     },
     "require-dev": {
