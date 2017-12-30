@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\errors\InvalidElementException`.
 - Added `craft\models\FieldLayoutTab::getHtmlId()`.
+- Added the ability to search plugins by package name in the Plugin Store. ([#2139](https://github.com/craftcms/cms/issues/2139))
 
 ### Changed
 - More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
