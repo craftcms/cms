@@ -45,7 +45,7 @@
         },
         {
             "name": "guzzle/guzzle",
-            "version": "3.9.4",
+            "version": "3.9.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/guzzle3.git",
@@ -141,7 +141,7 @@
                 "web service"
             ],
             "support": {
-                "source": "https://github.com/pixelandtonic/guzzle3/tree/3.9.4"
+                "source": "https://github.com/pixelandtonic/guzzle3/tree/v3.9.3.1"
             },
             "time": "2015-11-22T02:29:59+00:00"
         },
@@ -550,7 +550,7 @@
             ],
             "support": {
                 "forum": "https://groups.google.com/forum/#!forum/twig-users",
-                "source": "https://github.com/pixelandtonic/Twig/tree/1.33.2.1"
+                "source": "https://github.com/pixelandtonic/Twig/tree/v1.33.2.1"
             },
             "time": "2017-04-20T23:54:49+00:00"
         },
