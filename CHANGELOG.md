@@ -5,6 +5,10 @@
 ### Changed
 - URL patterns defined in `craft/config/routes.php` can now begin with a verb (e.g. `POST some/path`) to restrict the route to a specific request type.
 - Edit Entry pages for entries without a user-defined title now show the Title field anyway if it has any validation errors. ([#2242](https://github.com/craftcms/cms/issues/2242))
+- Updated Twig to 1.35.0.
+- Updated SimplePie to 1.5.1.
+- Updated PEL to 0.9.6.
+- Updated svg-sanitize to 0.8.2.
 
 ### Fixed
 - Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
