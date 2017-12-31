@@ -89,15 +89,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return $this->path;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl()
-    {
-        return rtrim($this->url, '/').'/';
+        return Craft::getAlias($this->path);
     }
 
     /**

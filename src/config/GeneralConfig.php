@@ -54,6 +54,10 @@ class GeneralConfig extends BaseObject
      */
     public $addTrailingSlashesToUrls = false;
     /**
+     * @var array Any custom Yii aliases that should be defined for every request.
+     */
+    public $aliases = [];
+    /**
      * @var bool|string Whether or not to allow auto-updating in Craft. Does not affect manual updates.
      *
      * Possible values are:
@@ -765,6 +769,11 @@ class GeneralConfig extends BaseObject
                 $config[$new] = $config[$old];
                 unset($config[$old]);
             }
+        }
+
+        // Check for environmentVariables, but don't actually rename it in case a template is referencing it
+        if (array_key_exists('environmentVariables', $config)) {
+            Craft::$app->getDeprecator()->log('environmentVariables', "The environmentVariables config setting has been renamed to aliases.");
         }
 
         parent::__construct($config);

@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added the `aliases` config setting, providing an easy way to define custom [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html).
+- Some URL and path settings are now parsed for [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html), including sites’ Base URL settings, volumes’ Base URL settings, and Local volumes’ File System Path settings. If those settings currently begin with a Craft 2-style environment variable tag (e.g. `{variable}`),  they will automatically be converted to the new alias syntax (e.g. `@variable`).
 - Added the ability to search plugins by package name in the Plugin Store. ([#2139](https://github.com/craftcms/cms/issues/2139))
 - Added `craft\errors\InvalidElementException`.
 - Added `craft\models\FieldLayoutTab::getHtmlId()`.
@@ -17,6 +19,9 @@
 - The Plugin Store now shows a “Page not found“ message when there is a routing error.
 - Updated svg-sanitizer to ~0.8.2, which no longer removes seemingly-safe `<use>` elements.
 - Any `id` attributes (and their references) within SVG files output by the `svg()` template function now get namespaced, avoiding potential conflicts between the SVG and other elements on the page.
+
+### Deprecated
+- Deprecated the `environmentVariables` config setting (previously removed). Use the new `aliases` config setting instead. ([#2250](https://github.com/craftcms/cms/issues/2250))
 
 ### Fixed
 - Fixed a bug where long directory/file names could cause the Deprecation Errors utility page to break out from the content container. ([#2231](https://github.com/craftcms/cms/issues/2231))
