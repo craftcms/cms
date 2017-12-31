@@ -812,7 +812,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $site = Craft::$app->getSites()->currentSite;
             $globals['currentSite'] = $site;
             $globals['siteName'] = $site->name;
-            $globals['siteUrl'] = $site->baseUrl;
+            $globals['siteUrl'] = Craft::getAlias($site->baseUrl);
 
             // Global sets (site templates only)
             if ($templateMode === View::TEMPLATE_MODE_SITE) {

@@ -88,7 +88,7 @@
         <div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
             {{ forms.textField({
                 label: "Base URL"|t('app'),
-                instructions: "The base URL for the site"|t('app'),
+                instructions: "The base URL for the site. It can begin with an alias, such as {ex}."|t('app', {ex: '`@web`'}),
                 id: 'base-url',
                 class: 'ltr',
                 name: 'baseUrl',
