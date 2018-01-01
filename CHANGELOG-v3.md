@@ -32,6 +32,7 @@
 - Fixed a bug where you could get a fatal PHP error if you were using the latest 2.0.2 release of the `yii2-queue` library from the command line in Craft. ([#2248](https://github.com/craftcms/cms/issues/2248))
 - Fixed a bug where some field validation errors weren’t showing up if the Edit Field form was submitted without a name. ([#2249](https://github.com/craftcms/cms/issues/2249))
 - Fixed a bug where default field values weren’t being applied to newly-uploaded assets. ([#2238](https://github.com/craftcms/cms/issues/2238))
+- Fixed a bug where the window wasn’t scrolling when dragging things near the edges. ([#2253](https://github.com/craftcms/cms/issues/2253))
 
 ## 3.0.0-RC3 - 2017-12-19
 
