@@ -189,7 +189,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'handle' => $handle,
             'hasUrls' => false,
             'url' => null,
-            'settings' => Json::encode(['path' => $this->_basePath]),
+            'settings' => Json::encode(['path' => '@storage/userphotos']),
             'fieldLayoutId' => null,
             'sortOrder' => $maxSortOrder + 1
         ];

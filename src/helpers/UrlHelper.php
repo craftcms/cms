@@ -18,11 +18,6 @@ use yii\base\Exception;
  */
 class UrlHelper
 {
-    // Properties
-    // =========================================================================
-
-    private static $_x;
-
     // Public Methods
     // =========================================================================
 
@@ -335,7 +330,7 @@ class UrlHelper
         }
 
         if ($currentSite && $currentSite->baseUrl) {
-            $baseUrl = $currentSite->baseUrl;
+            $baseUrl = Craft::getAlias($currentSite->baseUrl);
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();

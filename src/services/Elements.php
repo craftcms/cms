@@ -23,6 +23,7 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
+use craft\errors\InvalidElementException;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -542,6 +543,7 @@ class Elements extends Component
      * @param array            $newAttributes any attributes to apply to the duplicate
      *
      * @return ElementInterface the duplicated element
+     * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws \Throwable if reasons
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
@@ -555,44 +557,39 @@ class Elements extends Component
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
-        /** @var Element $returnElement */
-        $returnElement = null;
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            $class = get_class($element);
+            // Start with $element's site
+            /** @var Element $mainClone */
+            $mainClone = $this->_cloneElement($element);
+            $mainClone->setAttributes($newAttributes);
+            $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
+            $mainClone->id = null;
+            $mainClone->contentId = null;
 
-            $newId = null;
+            if (!$this->saveElement($mainClone, true, false)) {
+                throw new InvalidElementException($mainClone, 'Element '.$element->id.' could not be duplicated for site '.$element->siteId);
+            }
 
+            $mainClone->setScenario($element->getScenario());
             foreach ($supportedSites as $siteInfo) {
-                if ($siteInfo['siteId'] == $element->siteId) {
-                    $siteElement = $element;
-                } else {
-                    $siteElement = $this->getElementById($element->id, $class, $siteInfo['siteId']);
+                if ($siteInfo['siteId'] != $element->siteId) {
+                    $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
 
                     if ($siteElement === null) {
                         throw new Exception('Element '.$element->id.' doesn’t exist in the site '.$siteInfo['siteId']);
                     }
-                }
 
-                /** @var Element $siteClone */
-                $siteClone = $this->_cloneElement($siteElement);
-                $siteClone->setAttributes($newAttributes);
-                $siteClone->setScenario(Element::SCENARIO_ESSENTIALS);
-                $siteClone->id = $newId;
-                $siteClone->contentId = null;
+                    /** @var Element $siteClone */
+                    $siteClone = $this->_cloneElement($siteElement);
+                    $siteClone->setAttributes($newAttributes);
+                    $siteClone->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $siteClone->id = $mainClone->id;
+                    $siteClone->contentId = null;
 
-                if (!$this->saveElement($siteClone, true, false)) {
-                    throw new Exception('Element '.$element->id.' could not be duplicated for site '.$siteInfo['siteId']);
-                }
-
-                if ($newId === null) {
-                    $newId = $siteClone->id;
-                }
-
-                if ($siteInfo['siteId'] == $element->siteId) {
-                    $returnElement = $siteClone;
-                    $returnElement->setScenario($element->getScenario());
+                    if (!$this->saveElement($siteClone, true, false)) {
+                        throw new InvalidElementException($siteClone, 'Element '.$element->id.' could not be duplicated for site '.$siteInfo['siteId']);
+                    }
                 }
             }
 
@@ -603,7 +600,7 @@ class Elements extends Component
             throw $e;
         }
 
-        return $returnElement;
+        return $mainClone;
     }
 
     /**

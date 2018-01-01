@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -463,6 +464,26 @@ class EntriesController extends BaseEntriesController
         if ($duplicate) {
             try {
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
+            } catch (InvalidElementException $e) {
+                /** @var Entry $clone */
+                $clone = $e->element;
+
+                if ($request->getAcceptsJson()) {
+                    return $this->asJson([
+                        'success' => false,
+                        'errors' => $clone->getErrors(),
+                    ]);
+                }
+
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate entry.'));
+
+                // Send the original entry back to the template, with any validation errors on the clone
+                $entry->addErrors($clone->getErrors());
+                Craft::$app->getUrlManager()->setRouteParams([
+                    'entry' => $entry
+                ]);
+
+                return null;
             } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
@@ -841,7 +862,7 @@ class EntriesController extends BaseEntriesController
 
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#tab'.($index + 1),
+                'url' => '#'.$tab->getHtmlId(),
                 'class' => $hasErrors ? 'error' : null
             ];
         }

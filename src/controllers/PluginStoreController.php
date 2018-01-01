@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
@@ -47,14 +48,14 @@ class PluginStoreController extends Controller
      */
     public function actionIndex()
     {
-        $vueRouterBase = '/'.Craft::$app->getConfig()->getGeneral()->cpTrigger.'/plugin-store/';
+        $pluginStoreAppBaseUrl = $this->getVueAppBaseUrl();
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v3/');
         $view->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
         $view->registerJs('window.stripeApiKey = "'.Craft::$app->getPluginStore()->stripeApiKey.'";', View::POS_BEGIN);
         $view->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
-        $view->registerJs('window.vueRouterBase = "'.$vueRouterBase.'";', View::POS_BEGIN);
+        $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = '.Json::encode(Craft::$app->getApi()->getCmsInfo()).';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
@@ -65,7 +66,7 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Connect
+     * Connect to id.craftcms.com.
      *
      * @param string|null $redirect
      *
@@ -102,7 +103,7 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Disconnect
+     * Disconnect from id.craftcms.com.
      *
      * @return Response
      */
@@ -117,10 +118,10 @@ class PluginStoreController extends Controller
             $url = Craft::$app->getPluginStore()->craftIdEndpoint.'/oauth/revoke';
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from craftcms.com.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from id.craftcms.com.'));
         } catch (\Exception $e) {
             Craft::error('Couldn’t revoke token: '.$e->getMessage());
-            Craft::$app->getSession()->setError(Craft::t('app', 'Disconnected from craftcms.com with errors, check the logs.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Disconnected from id.craftcms.com with errors, check the logs.'));
         }
 
         Craft::$app->getPluginStore()->deleteToken();
@@ -130,7 +131,7 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Callback
+     * OAuth callback.
      *
      * @return Response
      */
@@ -151,6 +152,11 @@ class PluginStoreController extends Controller
         return $this->renderTemplate('plugin-store/_special/oauth/callback');
     }
 
+    /**
+     * OAuth modal callback.
+     *
+     * @return Response
+     */
     public function actionModalCallback()
     {
         return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
@@ -159,7 +165,7 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Save token
+     * Saves a token.
      *
      * @return Response
      */
@@ -196,6 +202,12 @@ class PluginStoreController extends Controller
         }
     }
 
+    /**
+     * Returns Craft data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
     public function actionCraftData()
     {
         $this->requireAcceptsJson();
@@ -274,6 +286,12 @@ class PluginStoreController extends Controller
         return $this->asJson($data);
     }
 
+    /**
+     * Saves Craft data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
     public function actionSaveCraftData()
     {
         $this->requirePostRequest();
@@ -289,10 +307,30 @@ class PluginStoreController extends Controller
         return $this->asJson([]);
     }
 
+    /**
+     * Clears Craft data.
+     *
+     * @return Response
+     */
     public function actionClearCraftData()
     {
         Craft::$app->getSession()->remove('pluginStore.craftData');
 
         return $this->asJson(true);
+    }
+
+    /**
+     * Returns the Plugin Store’s Vue App Base URL for Vue Router.
+     *
+     * @return string
+     */
+    private function getVueAppBaseUrl()
+    {
+        $url = UrlHelper::url('plugin-store');
+
+        $hostInfo = Craft::$app->getRequest()->getHostInfo();
+        $hostInfo = StringHelper::ensureRight($hostInfo, '/');
+
+        return  (string) substr($url, strlen($hostInfo) - 1);
     }
 }

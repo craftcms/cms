@@ -68,6 +68,10 @@
                 this.$emit('showResults');
 
                 return filter(this.plugins, o => {
+                    if(o.packageName && includes(o.packageName.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true;
+                    }
+
                     if(o.name && includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }

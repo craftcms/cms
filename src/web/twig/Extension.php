@@ -717,7 +717,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns the contents of a given SVG file
+     * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
      *
      * @param string $svg      The SVG file path or contents
      * @param bool   $sanitize Whether the file should be sanitized first
@@ -742,6 +742,20 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         // Remove the XML declaration
         $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
+
+        // Namespace any IDs
+        if (strpos($svg, 'id=') !== false) {
+            $namespace = StringHelper::randomString(10).'-';
+            $ids = [];
+            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$ids) {
+                $ids[] = $matches[2];
+                return "id={$matches[1]}{$namespace}{$matches[2]}{$matches[1]}";
+            }, $svg);
+            foreach ($ids as $id) {
+                $quotedId = preg_quote($id, '\\');
+                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$namespace}{$id}", $svg);
+            }
+        }
 
         return TemplateHelper::raw($svg);
     }
@@ -798,7 +812,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $site = Craft::$app->getSites()->currentSite;
             $globals['currentSite'] = $site;
             $globals['siteName'] = $site->name;
-            $globals['siteUrl'] = $site->baseUrl;
+            $globals['siteUrl'] = Craft::getAlias($site->baseUrl);
 
             // Global sets (site templates only)
             if ($templateMode === View::TEMPLATE_MODE_SITE) {

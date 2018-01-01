@@ -6,11 +6,12 @@ import UpgradeCraft from '../UpgradeCraft';
 import Developer from '../Developer';
 import FeaturedPlugins from '../FeaturedPlugins';
 import Tests from '../Tests';
+import NotFound from '../NotFound';
 
 Vue.use(VueRouter);
 
 export default new VueRouter({
-    base: window.vueRouterBase,
+    base: window.pluginStoreAppBaseUrl,
     mode: 'history',
     routes: [
         {
@@ -42,6 +43,11 @@ export default new VueRouter({
             path: '/tests',
             name: 'Tests',
             component: Tests,
+        },
+        {
+            path: '*',
+            name: 'NotFound',
+            component: NotFound,
         },
     ]
 });
