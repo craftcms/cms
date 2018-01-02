@@ -174,7 +174,6 @@ class AssetsController extends Controller
             (empty($assetId) && empty($targetFilename)) ||
             ($uploadedFile === null && empty($sourceAssetId))
         ) {
-
             throw new BadRequestHttpException('Incorrect combination of parameters.');
         }
 
