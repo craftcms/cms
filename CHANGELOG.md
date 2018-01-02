@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where the macOS command key icon was showing when copying a user’s password reset URL on Windows.
+
 ## 2.6.3001 - 2018-01-02
 
 ### Changed
