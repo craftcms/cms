@@ -533,7 +533,9 @@ class Entry extends Element
         $labels = parent::attributeLabels();
 
         // Use the entry type's title label
-        $labels['title'] = $this->getType()->titleLabel;
+        if ($titleLabel = $this->getType()->titleLabel) {
+            $labels['title'] = Craft::t('site', $titleLabel);
+        }
 
         return $labels;
     }

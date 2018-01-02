@@ -86,6 +86,11 @@ class Color extends Field implements PreviewableFieldInterface
             return $value;
         }
 
+        // If this is a new entry, look for any default options
+        if ($value === null && $this->isFresh($element) && $this->defaultColor) {
+            $value = $this->defaultColor;
+        }
+
         if (!$value || $value === '#') {
             return null;
         }
@@ -119,11 +124,6 @@ class Color extends Field implements PreviewableFieldInterface
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var ColorData|null $value */
-        // If this is a new entry, look for any default options
-        if ($this->isFresh($element) && $this->defaultColor) {
-            $value = new ColorData($this->defaultColor);
-        }
-
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
             'name' => $this->handle,

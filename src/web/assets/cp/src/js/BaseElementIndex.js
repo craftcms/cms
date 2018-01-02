@@ -1181,6 +1181,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.trigger('selectSource', {sourceKey: this.sourceKey});
         },
 
+        onSelectSite: function() {
+            this.settings.onSelectSite(this.siteId);
+            this.trigger('selectSite', {siteId: this.siteId});
+        },
+
         onUpdateElements: function() {
             this.settings.onUpdateElements();
             this.trigger('updateElements');
@@ -1267,6 +1272,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$siteMenuBtn.html($option.html());
             this._setSite($option.data('site-id'));
+            this.onSelectSite();
         },
 
         _setSite: function(siteId) {
@@ -1641,6 +1647,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
+            onSelectSite: $.noop,
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,

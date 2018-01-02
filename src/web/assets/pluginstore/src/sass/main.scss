@@ -435,6 +435,7 @@ ul.categories {
   border: 1px solid #E3E5E8;
   border-radius: 5px;
   box-sizing: border-box;
+  position: relative;
 
   &:hover {
     cursor: pointer;
@@ -443,6 +444,13 @@ ul.categories {
 
   .plugin-icon {
     margin-right: 14px;
+  }
+  
+  .installed {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    color: #ccc;
   }
 }
 

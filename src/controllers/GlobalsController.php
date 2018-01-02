@@ -202,7 +202,7 @@ class GlobalsController extends Controller
 
             $tabs[] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#tab'.($index + 1),
+                'url' => '#'.$tab->getHtmlId(),
                 'class' => $hasErrors ? 'error' : null
             ];
         }

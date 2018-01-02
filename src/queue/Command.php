@@ -32,6 +32,20 @@ class Command extends \yii\queue\cli\Command
      */
     public $defaultAction = 'info';
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function isWorkerAction($actionID)
+    {
+        return in_array($actionID, ['run', 'listen'], true);
+    }
+
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */

@@ -97,40 +97,16 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     color: #717983;
   }
 
-  #system-name,
-  #account-info {
+  #system-info {
+    position: relative;
     display: flex;
     flex-direction: row;
-    align-items: center;
-    padding: 14px 10px;
+    align-items: top;
+    @include padding(14px, 44px, 14px, 10px);
     min-height: -webkit-min-content;
     min-height: -moz-min-content;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
-
-    .photo-container {
-      width: 32px;
-      height: 32px;
-      @include margin-right(14px);
-
-      & > img {
-        display: block;
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-      }
-    }
-  }
-
-  #system-name {
-    h2 {
-      margin: 0;
-    }
-  }
-
-  #account-info {
-    position: relative;
-    @include padding-right(44px);
 
     &:after {
       position: absolute;
@@ -139,15 +115,61 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       font-size: 19px;
     }
 
-    .user-name {
-      flex: 1;
-      line-height: 16px;
+    #site-icon {
+      width: 32px;
+      height: 32px;
+      @include margin-right(14px);
+
+      img,
+      svg {
+        display: block;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+      }
+
+      svg {
+        @include svg-mask($mediumTextColor);
+      }
     }
+
+    #system-name {
+      flex: 1;
+
+      h2 {
+        margin: 0;
+      }
+
+      #user-info {
+        margin-top: 4px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        #user-photo {
+          width: 14px;
+          height: 14px;
+          @include margin-right(5px);
+
+          img {
+            display: block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+          }
+        }
+      }
+    }
+  }
+
+  #devmode + #system-info {
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 
   nav {
     flex: 1;
-    margin: 4px 0 0;
+    margin: 13px 0 0;
   }
 
   #job-icon {
@@ -506,7 +528,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       }
 
       h1 {
-        line-height: 1.3;
+        line-height: 32px;
         margin-top: 0;
         display: inline;
         white-space: nowrap;
@@ -571,7 +593,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         flex: 0 0 $sidebarWidth;
         width: $sidebarWidth;
         box-sizing: border-box;
-        padding: 24px;
       }
 
       #content-container {
@@ -717,6 +738,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
         .spinner {
           background-image: url(../images/spinner_details.gif);
+        }
+
+        .text {
+          background: transparent;
         }
       }
 
@@ -1305,7 +1330,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 /* Sidebar */
 .sidebar {
   width: $sidebarWidth;
-  padding: 24px;
+  padding: 14px 24px;
   overflow: auto;
   background: $lightBgColor;
   box-sizing: border-box;
@@ -1464,7 +1489,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       .toggle {
         position: absolute;
-        top: 6px;
+        top:px;
       }
 
       ul {

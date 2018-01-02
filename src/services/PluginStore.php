@@ -151,7 +151,6 @@ class PluginStore extends Component
             Craft::$app->getSession()->set('pluginStore.token', $oauthToken);
         } else {
             // Save token to database
-            // $this->_saveToken($oauthToken);
 
             $oauthTokenRecord = OauthTokenRecord::find()
                 ->where(['userId' => $userId])

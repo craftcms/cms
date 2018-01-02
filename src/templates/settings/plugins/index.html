@@ -28,7 +28,7 @@
                     <tr data-name="{{ config.name }}">
                         <th data-title="{{ 'Name'|t('app') }}">
                             <div class="plugin-infos">
-                                <div class="icon">{{ craft.app.plugins.getPluginIconSvg(handle)|raw }}</div>
+                                <div class="icon">{{ svg(craft.app.plugins.getPluginIconSvg(handle)) }}</div>
                                 <div class="details">
                                     <div class="name">
                                         {{ config.name }}

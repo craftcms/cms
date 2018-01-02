@@ -2,8 +2,9 @@
 
 {{ textField({
     label: "File System Path"|t('app'),
-    instructions: "The path to the volume’s directory on the file system. An absolute path ({ex}) is recommended."|t('app', {
-        ex: '“`/path/to/folder`”'
+    instructions: "The path to the volume’s directory on the file system. An absolute path ({ex1}) is recommended. It can begin with an alias, such as {ex2}."|t('app', {
+        ex1: '“`/path/to/folder`”',
+        ex2: '`@webroot`'
     }),
     id: 'path',
     class: 'ltr',

@@ -152,20 +152,22 @@ ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
 error_reporting(E_ALL);
 
-// Determine if Craft is running in Dev Mode
+// Load the general config
 // -----------------------------------------------------------------------------
 
-// Initialize the Config service
 $configService = new Config();
 $configService->env = $environment;
 $configService->configDir = $configPath;
 $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
+$generalConfig = $configService->getConfigFromFile('general');
 
-// We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
+// Determine if Craft is running in Dev Mode
+// -----------------------------------------------------------------------------
+
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = ArrayHelper::getValue($configService->getConfigFromFile('general'), 'devMode', false);
+    $devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
 }
 
 if ($devMode) {
@@ -206,6 +208,16 @@ Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
+
+// Set any custom aliases
+$customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
+if (is_array($customAliases)) {
+    foreach ($customAliases as $name => $value) {
+        if (is_string($value)) {
+            Craft::setAlias($name, $value);
+        }
+    }
+}
 
 // Load the config
 $components = [

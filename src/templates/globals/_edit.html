@@ -33,7 +33,7 @@
     {% if globalSet.getFieldLayout().getFields() | length %}
         <div>
             {% for tab in globalSet.getFieldLayout().getTabs() %}
-                <div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
+                <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
                     {% include "_includes/fields" with {
                         fields:  tab.getFields(),
                         element: globalSet
