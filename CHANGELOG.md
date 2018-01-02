@@ -15,6 +15,9 @@
 - Fixed a bug where some `IOHelper` methods could create a folder with zero permission under specific circumstances.
 - Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable, if the owner element hadn’t been resaved yet. ([#2245](https://github.com/craftcms/cms/issues/2245))
 
+### Security
+- Fixed a Remote Code Execution vulnerability for people that have permissions to upload Assets in the Control Panel.
+
 ## 2.6.3000 - 2017-12-07
 
 ### Changed

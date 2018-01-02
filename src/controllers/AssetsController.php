@@ -25,6 +25,7 @@ use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -198,6 +199,11 @@ class AssetsController extends Controller
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
             } elseif (!empty($sourceAsset)) {
+                // Make sure the extension didn't change.
+                if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
+                    throw new Exception($targetFilename.' doesn\'t have the original file extension.');
+                }
+
                 // Or replace using an existing Asset
                 $tempPath = $sourceAsset->getCopyOfFile();
 
