@@ -352,25 +352,25 @@ class AssetsService extends BaseApplicationComponent
 
 		$folder = $this->findFolder($folderCriteria);
 
-        if (!$folder)
-        {
-            $response = $this->createFolder($sourceTopFolder->id, $folderName);
+		if (!$folder)
+		{
+			$response = $this->createFolder($sourceTopFolder->id, $folderName);
 
-            if ($response->isConflict() || $response->isError()) {
-                // If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
-                $folder = new AssetFolderModel(
-                    array(
-                        'parentId' => $sourceTopFolder->id,
-                        'name' => $folderName,
-                        'sourceId' => null,
-                        'path' => $folderName.'/'
-                    )
-                );
-                $folder->id = craft()->assets->storeFolder($folder);
-            } else {
-                $folder = $this->getFolderById($response->getDataItem('folderId'));
-            }
-        }
+			if ($response->isConflict() || $response->isError()) {
+				// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
+				$folder = new AssetFolderModel(
+					array(
+						'parentId' => $sourceTopFolder->id,
+						'name' => $folderName,
+						'sourceId' => null,
+						'path' => $folderName.'/'
+					)
+				);
+				$folder->id = craft()->assets->storeFolder($folder);
+			} else {
+				$folder = $this->getFolderById($response->getDataItem('folderId'));
+			}
+		}
 
 		return $folder;
 	}
@@ -1412,11 +1412,11 @@ class AssetsService extends BaseApplicationComponent
 				$source->replaceFile($targetFile, $theNewFile);
 				$fileId = $targetFile->id;
 
-                // Fire an 'onReplaceFile' event
-                craft()->assets->onReplaceFile(new Event($this, array(
-                    'asset' => $targetFile
-                )));
-            }
+				// Fire an 'onReplaceFile' event
+				craft()->assets->onReplaceFile(new Event($this, array(
+					'asset' => $targetFile
+				)));
+			}
 			// Falling through to delete the file
 			case AssetConflictResolution::Cancel:
 			{
