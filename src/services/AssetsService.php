@@ -1391,6 +1391,12 @@ class AssetsService extends BaseApplicationComponent
 		{
 			case AssetConflictResolution::Replace:
 			{
+				// Make sure the extension didn't change.
+				if (IOHelper::getExtension($theNewFile->filename) !== IOHelper::getExtension($fileName))
+				{
+					throw new Exception($theNewFile->filename.' doesn\'t have the original file extension.');
+				}
+
 				// Replace the actual file
 				$targetFile = $this->findFile(array(
 					'folderId' => $theNewFile->folderId,
