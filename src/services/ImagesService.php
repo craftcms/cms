@@ -336,9 +336,10 @@ class ImagesService extends BaseApplicationComponent
 
 				// Delete the Orientation entry and re-save the file
 				$ifd0->offsetUnset(PelTag::ORIENTATION);
-				$file->saveFile($filePath);
 
-				return true;
+				// PEL's saveFile won't strip malicious embedded code, so fall-through to
+				// return false on purpose, so it gets cleansed later.
+				$file->saveFile($filePath);
 			}
 		}
 

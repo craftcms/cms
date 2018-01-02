@@ -17,6 +17,7 @@
 
 ### Security
 - Fixed a Remote Code Execution vulnerability for people that have permissions to upload Assets in the Control Panel.
+- Fixed a vulnerability where image cleansing was not working for uploaded JPG files under specific conditions.
 
 ## 2.6.3000 - 2017-12-07
 
