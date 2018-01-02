@@ -96,7 +96,7 @@ class CategoryElementType extends BaseElementType
 				'data'              => array('handle' => $group->handle),
 				'criteria'          => array('groupId' => $group->id),
 				'structureId'       => $group->structureId,
-				'structureEditable' => craft()->userSession->checkPermission('editCategories:'.$group->id),
+				'structureEditable' => !craft()->isConsole() ? craft()->userSession->checkPermission('editCategories:'.$group->id) : true,
 			);
 		}
 

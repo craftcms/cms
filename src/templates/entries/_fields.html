@@ -1,4 +1,4 @@
-{% if entryType.hasTitleField %}
+{% if entryType.hasTitleField or entry.hasErrors('title') %}
 	{% include "entries/_titlefield" %}
 {% endif %}
 

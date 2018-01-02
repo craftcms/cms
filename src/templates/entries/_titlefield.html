@@ -2,15 +2,15 @@
 {% set static = static is defined ? static : false %}
 
 {{ textField({
-	label: entry.getType().titleLabel|t|e,
-	locale: entry.locale,
+	label: entry.getType().titleLabel|t|e ?: 'Title'|t,
+	locale: entryType.hasTitleField ? entry.locale,
 	id: 'title',
 	name: 'title',
 	value: entry.title,
 	errors: (not static ? entry.getErrors('title')),
 	first: true,
 	autofocus: true,
-	required: (not static),
-	disabled: static,
+	required: not static and entryType.hasTitleField,
+	disabled: static or not entryType.hasTitleField,
 	maxlength: 255
 }) }}

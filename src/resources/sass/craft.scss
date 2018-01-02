@@ -1417,7 +1417,6 @@ input.checkbox:indeterminate:focus + label:before,
 .passwordwrapper .password { width: 100%; }
 .passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; @include right(7px); @include alignright; }
 .password { @include padding-right(5em); }
-.password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper,
 .timewrapper { display: inline-block; position: relative; }

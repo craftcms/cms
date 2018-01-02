@@ -793,7 +793,7 @@ class IOHelper
 
 			if (!static::folderExists($folderName, false, $suppressErrors))
 			{
-				if (!static::createFolder($folderName, $suppressErrors))
+				if (!static::createFolder($folderName, null, $suppressErrors))
 				{
 					return false;
 				}
@@ -1160,7 +1160,7 @@ class IOHelper
 					}
 					elseif (static::folderExists($item, false, $suppressErrors))
 					{
-						if (!static::createFolder($itemDest, $suppressErrors))
+						if (!static::createFolder($itemDest, null, $suppressErrors))
 						{
 							Craft::log('Could not create destination folder '.$itemDest, LogLevel::Error);
 						}

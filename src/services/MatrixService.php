@@ -869,7 +869,7 @@ class MatrixService extends BaseApplicationComponent
 		{
 			// First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation
 			// setting
-			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
+			$this->_applyFieldTranslationSetting($owner, $field);
 
 			$blockIds = array();
 			$collapsedBlockIds = array();
@@ -1082,134 +1082,108 @@ class MatrixService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $owner
 	 * @param FieldModel       $field
-	 * @param array            $blocks
 	 *
 	 * @return null
 	 */
-	private function _applyFieldTranslationSetting($owner, $field, $blocks)
+	private function _applyFieldTranslationSetting($owner, $field)
 	{
-		// Does it look like any work is needed here?
-		$applyNewTranslationSetting = false;
-
-		foreach ($blocks as $block)
+		// If the field is translatable, see if there are any global blocks that should be localized
+		if ($field->translatable)
 		{
-			if ($block->id && (
-				($field->translatable && !$block->ownerLocale) ||
-				(!$field->translatable && $block->ownerLocale)
-			))
-			{
-				$applyNewTranslationSetting = true;
-				break;
-			}
-		}
-
-		if ($applyNewTranslationSetting)
-		{
-			// Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
-			// incorrectly
-			$blocksInOtherLocales = array();
-
 			$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
 			$criteria->fieldId = $field->id;
 			$criteria->ownerId = $owner->id;
 			$criteria->status = null;
 			$criteria->localeEnabled = null;
 			$criteria->limit = null;
+			$criteria->ownerLocale = ':empty:';
+			$blocks = $criteria->find();
 
-			if ($field->translatable)
+			if (!empty($blocks))
 			{
-				$criteria->ownerLocale = ':empty:';
+				$originalBlockIds = array();
+				$newBlockIds = array();
+
+				foreach ($blocks as $block)
+				{
+					// Assign the current block to the owner's locale
+					$block->ownerLocale = $owner->locale;
+					$this->saveBlock($block, false);
+
+					// Now duplicate it for the other locales
+					$originalBlockId = $originalBlockIds[] = $block->id;
+
+					foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+					{
+						if ($localeId != $owner->locale)
+						{
+							$block->id = null;
+							$block->getContent()->id = null;
+							$block->locale = $localeId;
+							$block->ownerLocale = $localeId;
+							$this->saveBlock($block, false);
+
+							$newBlockIds[$originalBlockId][$localeId] = $block->id;
+						}
+					}
+				}
+
+				// Duplicate the relations, too.  First by getting all of the
+				// existing relations for the original blocks
+				$relations = craft()->db->createCommand()
+					->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
+					->from('relations')
+					->where(array('in', 'sourceId', $originalBlockIds))
+					->queryAll();
+
+				if (!empty($relations))
+				{
+					// Now duplicate each one for the other locales' new blocks
+					$rows = array();
+
+					foreach ($relations as $relation)
+					{
+						$originalBlockId = $relation['sourceId'];
+
+						// Just to be safe...
+						if (isset($newBlockIds[$originalBlockId]))
+						{
+							foreach ($newBlockIds[$originalBlockId] as $localeId => $newBlockId)
+							{
+								$rows[] = array($relation['fieldId'], $newBlockId, $relation['sourceLocale'], $relation['targetId'], $relation['sortOrder']);
+							}
+						}
+					}
+
+					craft()->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'), $rows);
+				}
 			}
+		}
+		else
+		{
+			// Otherwise, see if the field has any localized blocks that should be deleted
+			$blockIdsToDelete = array();
 
 			foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
 			{
-				if ($localeId == $owner->locale)
+				if ($localeId != $owner->locale)
 				{
-					continue;
-				}
-
-				$criteria->locale = $localeId;
-
-				if (!$field->translatable)
-				{
+					$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
+					$criteria->fieldId = $field->id;
+					$criteria->ownerId = $owner->id;
+					$criteria->status = null;
+					$criteria->localeEnabled = null;
+					$criteria->limit = null;
+					$criteria->locale = $localeId;
 					$criteria->ownerLocale = $localeId;
-				}
 
-				$blocksInOtherLocale = $criteria->find();
-
-				if ($blocksInOtherLocale)
-				{
-					$blocksInOtherLocales[$localeId] = $blocksInOtherLocale;
+					$blockIdsToDelete = array_merge($blockIdsToDelete, $criteria->ids());
 				}
 			}
 
-			if ($blocksInOtherLocales)
+			if (!empty($blockIdsToDelete))
 			{
-				if ($field->translatable)
-				{
-					$newBlockIds = array();
-
-					// Duplicate the other-locale blocks so each locale has their own unique set of blocks
-					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
-					{
-						foreach ($blocksInOtherLocale as $blockInOtherLocale)
-						{
-							$originalBlockId = $blockInOtherLocale->id;
-
-							$blockInOtherLocale->id = null;
-							$blockInOtherLocale->getContent()->id = null;
-							$blockInOtherLocale->ownerLocale = $localeId;
-							$this->saveBlock($blockInOtherLocale, false);
-
-							$newBlockIds[$originalBlockId][$localeId] = $blockInOtherLocale->id;
-						}
-					}
-
-					// Duplicate the relations, too.  First by getting all of the existing relations for the original
-					// blocks
-					$relations = craft()->db->createCommand()
-						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
-						->from('relations')
-						->where(array('in', 'sourceId', array_keys($newBlockIds)))
-						->queryAll();
-
-					if ($relations)
-					{
-						// Now duplicate each one for the other locales' new blocks
-						$rows = array();
-
-						foreach ($relations as $relation)
-						{
-							$originalBlockId = $relation['sourceId'];
-
-							// Just to be safe...
-							if (isset($newBlockIds[$originalBlockId]))
-							{
-								foreach ($newBlockIds[$originalBlockId] as $localeId => $newBlockId)
-								{
-									$rows[] = array($relation['fieldId'], $newBlockId, $relation['sourceLocale'], $relation['targetId'], $relation['sortOrder']);
-								}
-							}
-						}
-
-						craft()->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'), $rows);
-					}
-				}
-				else
-				{
-					// Delete all of these blocks
-					$blockIdsToDelete = array();
-
-					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
-					{
-						foreach ($blocksInOtherLocale as $blockInOtherLocale)
-						{
-							$blockIdsToDelete[] = $blockInOtherLocale->id;
-						}
-					}
-
-					$this->deleteBlockById($blockIdsToDelete);
-				}
+				$this->deleteBlockById($blockIdsToDelete);
 			}
 		}
 	}

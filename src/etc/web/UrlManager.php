@@ -376,6 +376,17 @@ class UrlManager extends \CUrlManager
 	{
 		foreach ($routes as $pattern => $route)
 		{
+			// Does the URL pattern begin with a request type (GET, POST, etc.)?
+			if (preg_match('/^([A-Z]+)\s+(.+)/', $pattern, $match))
+			{
+				if (craft()->getRequest()->getRequestType() !== $match[1])
+				{
+					continue;
+				}
+
+				$pattern = $match[2];
+			}
+
 			// Escape any unescaped forward slashes. Dumb ol' PHP is having trouble with this one when you use single
 			// quotes and don't escape the backslashes.
 			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);

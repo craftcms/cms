@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## 2.6.3001 - 2018-01-02
+
+### Changed
+- URL patterns defined in `craft/config/routes.php` can now begin with a verb (e.g. `POST some/path`) to restrict the route to a specific request type.
+- Edit Entry pages for entries without a user-defined title now show the Title field anyway if it has any validation errors. ([#2242](https://github.com/craftcms/cms/issues/2242))
+- Updated Twig to 1.35.0.
+- Updated SimplePie to 1.5.1.
+- Updated PEL to 0.9.6.
+- Updated svg-sanitize to 0.8.2.
+
+### Fixed
+- Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
+- Fixed a bug where some `IOHelper` methods could create a folder with zero permission under specific circumstances.
+- Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable, if the owner element hadn’t been resaved yet. ([#2245](https://github.com/craftcms/cms/issues/2245))
+
+### Security
+- Fixed a Remote Code Execution vulnerability for people that have permissions to upload Assets in the Control Panel.
+- Fixed a vulnerability where image cleansing was not working for uploaded JPG files under specific conditions.
+
 ## 2.6.3000 - 2017-12-07
 
 ### Changed
