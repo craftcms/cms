@@ -1,8 +1,9 @@
 {% from "_includes/forms" import textField %}
 {% set static = static is defined ? static : false %}
+{% set entryType = entry.getType() %}
 
 {{ textField({
-	label: entry.getType().titleLabel|t|e ?: 'Title'|t,
+	label: entryType.titleLabel|t|e ?: 'Title'|t,
 	locale: entryType.hasTitleField ? entry.locale,
 	id: 'title',
 	name: 'title',
