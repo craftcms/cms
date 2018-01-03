@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.6.3002 - 2018-01-02
+
 ### Fixed
 - Fixed a bug where the macOS command key icon was showing when copying a user’s password reset URL on Windows. ([#2258](https://github.com/craftcms/cms/issues/2258))
 - Fixed an error that broke Edit Entry HUDs.
