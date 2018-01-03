@@ -45,10 +45,12 @@ class PluginStoreController extends Controller
      * Plugin Store index.
      *
      * @return Response
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
-        $pluginStoreAppBaseUrl = $this->getVueAppBaseUrl();
+        $pluginStoreAppBaseUrl = $this->_getVueAppBaseUrl();
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v3/');
@@ -72,7 +74,7 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionConnect(string $redirect = null)
+    public function actionConnect(string $redirect = null): Response
     {
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
@@ -106,8 +108,9 @@ class PluginStoreController extends Controller
      * Disconnect from id.craftcms.com.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
-    public function actionDisconnect()
+    public function actionDisconnect(): Response
     {
         $token = Craft::$app->getPluginStore()->getToken();
 
@@ -134,8 +137,9 @@ class PluginStoreController extends Controller
      * OAuth callback.
      *
      * @return Response
+     * @throws \yii\base\InvalidConfigException
      */
-    public function actionCallback()
+    public function actionCallback(): Response
     {
         $view = $this->getView();
 
@@ -157,7 +161,7 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionModalCallback()
+    public function actionModalCallback(): Response
     {
         return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
             'craftIdAccount' => Craft::$app->getPluginStore()->getCraftIdAccount()
@@ -168,8 +172,9 @@ class PluginStoreController extends Controller
      * Saves a token.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
-    public function actionSaveToken()
+    public function actionSaveToken(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -207,8 +212,9 @@ class PluginStoreController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @throws \yii\base\InvalidConfigException
      */
-    public function actionCraftData()
+    public function actionCraftData(): Response
     {
         $this->requireAcceptsJson();
 
@@ -292,7 +298,7 @@ class PluginStoreController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionSaveCraftData()
+    public function actionSaveCraftData(): Response
     {
         $this->requirePostRequest();
 
@@ -312,19 +318,22 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionClearCraftData()
+    public function actionClearCraftData(): Response
     {
         Craft::$app->getSession()->remove('pluginStore.craftData');
 
         return $this->asJson(true);
     }
 
+    // Private Methods
+    // =========================================================================
+
     /**
      * Returns the Plugin Store’s Vue App Base URL for Vue Router.
      *
      * @return string
      */
-    private function getVueAppBaseUrl()
+    private function _getVueAppBaseUrl(): string
     {
         $url = UrlHelper::url('plugin-store');
 
