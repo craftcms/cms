@@ -15,13 +15,13 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GetEntryEditTemplateEvent extends Event
+class ShowEntryTemplateChoiceEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string The replacement template.
+     * @var string The replacement template, if triggered event sets it.
      * @var string The current request.
      */
     public $template = null;
