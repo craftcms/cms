@@ -739,6 +739,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         .spinner {
           background-image: url(../images/spinner_details.gif);
         }
+
+        .text {
+          background: transparent;
+        }
       }
 
       // for the Dashboard and any other full-page grids:

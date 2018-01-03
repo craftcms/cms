@@ -102,15 +102,15 @@
 
             <div class="menu" data-align="left">
                 <ul>
+                    <li><a href="{{ siteUrl }}" target="_blank">View site</a></li>
+                </ul>
+                <hr>
+                <ul>
                     <li><a href="{{ url('myaccount') }}">My Account</a></li>
                     {% if CraftEdition == CraftClient and currentUser.admin %}
                         <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
                     {% endif %}
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                </ul>
-                <hr>
-                <ul>
-                    <li><a href="{{ siteUrl }}" target="_blank">View site</a></li>
                 </ul>
             </div>
 

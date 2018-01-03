@@ -37,19 +37,11 @@ class Dropdown extends BaseOptionsField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->translatedOptions();
-
-        // If this is a new entry, look for a default option
-        if ($this->isFresh($element)) {
-            $value = $this->defaultValue();
-        }
-
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'options' => $options
-            ]);
+        return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+            'name' => $this->handle,
+            'value' => $value,
+            'options' => $this->translatedOptions(),
+        ]);
     }
 
     // Protected Methods
