@@ -45,7 +45,7 @@ class CopyReferenceTagElementAction extends BaseElementAction
 		activate: function(\$selectedItems)
 		{
 			var message = Craft.t({$prompt}, {
-				ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+				ctrl: (navigator.appVersion.indexOf('Mac') >= 0 ? '⌘' : 'Ctrl-')
 			});
 
 			prompt(message, '{{$elementType}:'+\$selectedItems.find('.element').data('id')+'}');
