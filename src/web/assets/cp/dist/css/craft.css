@@ -1011,7 +1011,6 @@ body.rtl .meta > .field > .input > .datetimewrapper > .datewrapper, body.rtl .me
 .meta > .field > .input > .datetimewrapper > .timewrapper { width: 45%; }
 .meta > .field > .input > .datewrapper, .meta > .field > .input > .timewrapper { display: block; width: 100%; }
 .meta > .field > ul.errors { margin: 0; padding: 0 0 6px; width: 100%; list-style-type: none; }
-.meta .text { background: transparent; }
 
 .meta > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; -webkit-box-shadow: none; box-shadow: none; background: none; }
 body.ltr .meta > .field > .input .select:after { right: 0; }
@@ -1835,6 +1834,7 @@ body.ltr #main-container #main #main-content #details .meta .ui-datepicker { mar
 body.rtl #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
 #main-container #main #main-content #details hr { margin: 0; border-top-color: rgba(0, 0, 20, 0.2); }
 #main-container #main #main-content #details .spinner { background-image: url(../images/spinner_details.gif); }
+#main-container #main #main-content #details .text { background: transparent; }
 #main-container #main #main-content > .grid:only-child { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 
 @media only screen and (max-width: 1223px) { #global-container { position: relative; width: calc(100vw + 225px); }
