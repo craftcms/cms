@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+- Moved the “View site” option up to the first position in the system menu.
+
+## 3.0.0-RC4 - 2018-01-02
+
 ### Added
 - Added the `aliases` config setting, providing an easy way to define custom [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html).
 - Some URL and path settings are now parsed for [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html), including sites’ Base URL settings, volumes’ Base URL settings, and Local volumes’ File System Path settings. If those settings currently begin with a Craft 2-style environment variable tag (e.g. `{variable}`),  they will automatically be converted to the new alias syntax (e.g. `@variable`).
@@ -31,6 +36,8 @@
 - Fixed a bug where validation errors that occurred when duplicating an entry or category would result in a generic error page, rather than the original Edit page with validation errors displayed. ([#2237](https://github.com/craftcms/cms/issues/2237))
 - Fixed a bug where you could get a fatal PHP error if you were using the latest 2.0.2 release of the `yii2-queue` library from the command line in Craft. ([#2248](https://github.com/craftcms/cms/issues/2248))
 - Fixed a bug where some field validation errors weren’t showing up if the Edit Field form was submitted without a name. ([#2249](https://github.com/craftcms/cms/issues/2249))
+- Fixed a bug where default field values weren’t being applied to newly-uploaded assets. ([#2238](https://github.com/craftcms/cms/issues/2238))
+- Fixed a bug where the window wasn’t scrolling when dragging things near the edges. ([#2253](https://github.com/craftcms/cms/issues/2253))
 
 ## 3.0.0-RC3 - 2017-12-19
 

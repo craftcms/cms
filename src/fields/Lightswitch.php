@@ -72,11 +72,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        // If this is a new entry, look for a default option
-        if ($this->isFresh($element)) {
-            $value = $this->default;
-        }
-
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch',
@@ -105,6 +100,11 @@ class Lightswitch extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        // If this is a new entry, look for a default option
+        if ($value === null && $this->isFresh($element)) {
+            $value = $this->default;
+        }
+
         // It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
         return $value == false ? '0' : $value;
     }
