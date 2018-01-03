@@ -39,7 +39,7 @@ class UrlManager extends \yii\web\UrlManager
     const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
 
     /**
-     * @event GetRequestRouteEvent The event that is triggered with  resolution of request route, when it is not for a CP request.
+     * @event GetRequestRouteEvent The event that is triggered with resolution of request route, when it is not for a CP request.
      */
     const EVENT_GET_REQUEST_ROUTE = 'getRequestRoute';
 

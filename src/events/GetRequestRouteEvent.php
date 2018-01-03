@@ -21,7 +21,7 @@ class GetRequestRouteEvent extends Event
     // =========================================================================
 
     /**
-     * @var string The replacement route.
+     * @var string The replacement route, when a triggered event fills it in.
      * @var string The current request.
      */
     public $route = null;
