@@ -3425,10 +3425,6 @@ input.checkbox:focus + label:before,
   @include text-input-styles;
   color: $textColor;
   font-size: 14px;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  -ms-appearance: none;
-  -o-appearance: none;
   appearance: none;
 }
 

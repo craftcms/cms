@@ -1294,7 +1294,7 @@ body.ltr .checkboxfield.has-instructions .instructions { padding-left: 20px; }
 body.rtl .checkboxfield.has-instructions .instructions { padding-right: 20px; }
 
 /* mutliselect */
-.multiselect > select { border: 1px solid rgba(0, 0, 20, 0.1); border-radius: 0; -webkit-transition: border linear 50ms; transition: border linear 50ms; color: #29323d; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; -ms-appearance: none; -o-appearance: none; appearance: none; }
+.multiselect > select { border: 1px solid rgba(0, 0, 20, 0.1); border-radius: 0; -webkit-transition: border linear 50ms; transition: border linear 50ms; color: #29323d; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 
 .multiselect > select:focus { border-color: rgba(0, 0, 20, 0.4); outline: none; }
 
