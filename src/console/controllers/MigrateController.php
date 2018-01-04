@@ -25,7 +25,7 @@ use yii\helpers\Console;
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
  *
- * This controllers provides support for tracking the migration history, updating migrations, and creating new
+ * This controller provides support for tracking the migration history, updating migrations, and creating new
  * migration skeleton files.
  *
  * The migration history is stored in a database table named `migrations`. The table will be automatically
