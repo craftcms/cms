@@ -3420,7 +3420,7 @@ input.checkbox:focus + label:before,
   @include padding-left(20px);
 }
 
-/* mutliselect */
+/* multiselect */
 .multiselect > select {
   @include text-input-styles;
   color: $textColor;
@@ -3435,7 +3435,6 @@ input.checkbox:focus + label:before,
 .multiselect > select option {
   padding: 1px 8px;
 }
-/* end mutliselect */
 
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
