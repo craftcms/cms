@@ -3420,6 +3420,27 @@ input.checkbox:focus + label:before,
   @include padding-left(20px);
 }
 
+/* mutliselect */
+.multiselect > select {
+  @include text-input-styles;
+  color: $textColor;
+  font-size: 14px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  -o-appearance: none;
+  appearance: none;
+}
+
+.multiselect > select:focus {
+  @include text-input-focused-styles;
+}
+
+.multiselect > select option {
+  padding: 1px 8px;
+}
+/* end mutliselect */
+
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
   padding: 5px 7px;
