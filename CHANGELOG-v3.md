@@ -5,6 +5,9 @@
 ### Changed
 - Moved the “View site” option up to the first position in the system menu.
 
+### Fixed
+- Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
+
 ## 3.0.0-RC4 - 2018-01-02
 
 ### Added
