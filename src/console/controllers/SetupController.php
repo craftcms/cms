@@ -98,6 +98,10 @@ class SetupController extends Controller
             $this->stdout(PHP_EOL);
         }
 
+        if (!$this->interactive) {
+            return;
+        }
+
         $this->run('db-creds');
 
         if (Craft::$app->getIsInstalled()) {
