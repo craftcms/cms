@@ -78,7 +78,7 @@
                 <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
             {% endif %}
 
-            <a id="system-info" class="menubtn" role="button" data-menu-anchor="#account-menu-anchor">
+            <a id="system-info" class="menubtn" role="button" data-menu-anchor="#user-info">
                 <div id="site-icon">
                     {% if hasSystemIcon %}
                         <img src="{{ craft.rebrand.icon.url }}" alt="">
@@ -87,7 +87,7 @@
                     {% endif %}
                 </div>
                 <div id="system-name">
-                    <h2>{{ systemName }}</h2>
+                    <h2>{{ systemName }}&nbsp;<span data-icon="downangle"></span></h2>
                     <div id="user-info">
                         {% if currentUser.photoId %}
                             <div id="user-photo">
@@ -97,7 +97,6 @@
                         <div>{{ currentUser.friendlyName }}</div>
                     </div>
                 </div>
-                <div id="account-menu-anchor"></div>
             </a>
 
             <div class="menu" data-align="left">

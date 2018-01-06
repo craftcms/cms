@@ -1695,18 +1695,17 @@ html, body { overflow-x: hidden; }
 #global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden; }
 #global-sidebar .light { color: #717983; }
 #global-sidebar #system-info { position: relative; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: top; -ms-flex-align: top; align-items: top; min-height: -webkit-min-content; min-height: -moz-min-content; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background-clip: padding-box; }
-body.ltr #global-sidebar #system-info { padding: 14px 44px 14px 10px; }
-body.rtl #global-sidebar #system-info { padding: 14px 10px 14px 44px; }
-#global-sidebar #system-info:after { position: absolute; top: calc(50% - 9px); font-size: 19px; }
-body.ltr #global-sidebar #system-info:after { right: 16px; }
-body.rtl #global-sidebar #system-info:after { left: 16px; }
+body.ltr #global-sidebar #system-info { padding: 14px 14px 14px 10px; }
+body.rtl #global-sidebar #system-info { padding: 14px 10px 14px 14px; }
+#global-sidebar #system-info:after { display: none; }
 #global-sidebar #system-info #site-icon { width: 32px; height: 32px; }
-body.ltr #global-sidebar #system-info #site-icon { margin-right: 14px; }
-body.rtl #global-sidebar #system-info #site-icon { margin-left: 14px; }
+body.ltr #global-sidebar #system-info #site-icon { margin: 6px 14px 0 0 ; }
+body.rtl #global-sidebar #system-info #site-icon { margin: 6px 0 0 14px ; }
 #global-sidebar #system-info #site-icon img, #global-sidebar #system-info #site-icon svg { display: block; width: 32px; height: 32px; border-radius: 4px; }
 #global-sidebar #system-info #site-icon svg rect, #global-sidebar #system-info #site-icon svg circle, #global-sidebar #system-info #site-icon svg ellipse, #global-sidebar #system-info #site-icon svg line, #global-sidebar #system-info #site-icon svg polyline, #global-sidebar #system-info #site-icon svg polygon, #global-sidebar #system-info #site-icon svg path, #global-sidebar #system-info #site-icon svg text { fill: #8f98a3; stroke-width: 0; }
 #global-sidebar #system-info #system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #global-sidebar #system-info #system-name h2 { margin: 0; }
+#global-sidebar #system-info #system-name h2 span { white-space: nowrap; }
 #global-sidebar #system-info #system-name #user-info { margin-top: 4px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
 #global-sidebar #system-info #system-name #user-info #user-photo { width: 14px; height: 14px; }
 body.ltr #global-sidebar #system-info #system-name #user-info #user-photo { margin-right: 5px; }
