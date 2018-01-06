@@ -850,6 +850,7 @@ class Matrix extends Component
                 ->status(null)
                 ->enabledForSite(false)
                 ->limit(null)
+                ->siteId($ownerSiteId)
                 ->ownerSiteId(':empty:')
                 ->all();
 
