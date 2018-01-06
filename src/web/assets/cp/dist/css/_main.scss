@@ -3426,14 +3426,14 @@ input.checkbox:focus + label:before,
   color: $textColor;
   font-size: 14px;
   appearance: none;
-}
 
-.multiselect > select:focus {
-  @include text-input-focused-styles;
-}
+  &:focus {
+    @include text-input-focused-styles;
+  }
 
-.multiselect > select option {
-  padding: 1px 8px;
+  option {
+    padding: 1px 8px;
+  }
 }
 
 .text:not(.selectize-text),
