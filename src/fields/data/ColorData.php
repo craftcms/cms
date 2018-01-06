@@ -125,7 +125,7 @@ class ColorData extends BaseObject implements Serializable
      */
     public function getBlue(): int
     {
-        return hexdec(substr($this->_hex, 4, 2));
+        return hexdec(substr($this->_hex, 5, 2));
     }
 
     /**
