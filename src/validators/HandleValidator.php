@@ -66,7 +66,7 @@ class HandleValidator extends Validator
      */
     public $reservedWords = [];
 
-    // Protected Methods
+    // Public Methods
     // =========================================================================
 
     /**
