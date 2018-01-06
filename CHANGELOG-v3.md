@@ -4,6 +4,7 @@
 
 ### Changed
 - Moved the “View site” option up to the first position in the system menu.
+- Improved the style of Multi-select fields. ([#2271](https://github.com/craftcms/cms/pull/2271))
 
 ### Fixed
 - Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
