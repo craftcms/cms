@@ -23,6 +23,11 @@ class HandleValidator extends Validator
     // =========================================================================
 
     /**
+     * @var string
+     */
+    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
+
+    /**
      * @var array
      */
     public static $baseReservedWords = [
@@ -55,11 +60,6 @@ class HandleValidator extends Validator
 
     // Properties
     // =========================================================================
-
-    /**
-     * @var string
-     */
-    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
 
     /**
      * @var array
