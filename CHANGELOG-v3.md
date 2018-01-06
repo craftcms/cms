@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
 - Fixed a bug where default Craft database backups and restores would fail if there was a space in the file path. ([#2274](https://github.com/craftcms/cms/issues/2274))
+- Fixed a bug where non-admins were able to access the Settings page. ([#2275](https://github.com/craftcms/cms/issues/2275))
 
 ## 3.0.0-RC4 - 2018-01-02
 
