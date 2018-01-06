@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable. ([#2245](https://github.com/craftcms/cms/issues/2245))
+- Fixed a bug where the Settings → Users → Fields page wasn’t warning users when leaving the page with unsaved changes. ([#2265](https://github.com/craftcms/cms/issues/2265))
 
 ## 2.6.3002 - 2018-01-02
 
