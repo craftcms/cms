@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable. ([#2245](https://github.com/craftcms/cms/issues/2245))
+
 ## 2.6.3002 - 2018-01-02
 
 ### Fixed
