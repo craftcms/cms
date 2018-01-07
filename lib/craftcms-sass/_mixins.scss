@@ -396,3 +396,101 @@ $elementBorderRadius: 2px;
   outline: none;
   box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
 }
+
+@mixin readable {
+  font-size: 16px;
+  line-height: 22px;
+
+  h1 {
+    margin: 24px 0 16px;
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 600;
+    color: #000;
+  }
+
+  h2 {
+    margin: 24px 0 16px;
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+
+  h3 {
+    margin: 24px 0 16px;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    @include padding-left(2em);
+  }
+
+  ul li {
+    list-style-type: disc;
+  }
+
+  li + li {
+    margin-top: 0.25em;
+  }
+
+  blockquote {
+    margin: 16px 0;
+
+    &:not(.note) {
+      padding: 0 16px;
+      color: $mediumTextColor;
+      @include border-left(4px solid $hairlineColor);
+    }
+
+    &.note {
+      position: relative;
+      border-radius: 4px;
+      padding: 1em;
+      @include padding-left(56px);
+      border: 1px solid;
+
+      &:not(.tip):not(.warning) {
+        border-color: $errorColor;
+        color: #bf503f;
+
+        &:before {
+          content: 'alert';
+          color: $errorColor;
+        }
+      }
+
+      &.tip {
+        border-color: $linkColor;
+        color: $mediumTextColor;
+
+        &:before {
+          content: 'lightbulb';
+          color: $linkColor;
+        }
+      }
+
+      &.warning {
+        border-color: $warningColor;
+        color: #cf783a;
+
+        &:before {
+          content: 'alert';
+          color: $warningColor;
+        }
+      }
+
+      &:before {
+        @include icon;
+        position: absolute;
+        top: 12px;
+        @include left(16px);
+        font-size: 30px;
+        width: 24px;
+      }
+    }
+  }
+}
