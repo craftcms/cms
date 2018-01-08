@@ -114,6 +114,9 @@ class AssetManager extends \yii\web\AssetManager
     {
         list($file, $url) = parent::publishFile($src);
 
+        // A backslash can cause issues on Windows here.
+        $url = str_replace('\\','/', $url);
+
         // Clear out any older instances of the same file
         $this->_clearOldDirs(dirname($file));
 

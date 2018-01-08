@@ -12,12 +12,14 @@
 - More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
 - The `setup/db-creds` console command now supports `--driver`, `--server`, `--port`, `--user`, `--password`, `--database`, and `--schema` options, making it possible to use the command non-interactively. ([#2273](https://github.com/craftcms/cms/issues/2273))
 - Documentation and Changelog are now being opened in a new browser tab. ([#2260](https://github.com/craftcms/cms/issues/2260))
+
 ### Fixed
 - Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
 - Fixed a bug where default Craft database backups and restores would fail if there was a space in the file path. ([#2274](https://github.com/craftcms/cms/issues/2274))
 - Fixed a bug where non-admins were able to access the Settings page. ([#2275](https://github.com/craftcms/cms/issues/2275))
 - Fixed a bug where `craft\fields\data\ColorData::getBlue()` was returning the wrong value. ([#2277](https://github.com/craftcms/cms/pull/2277))
 - Fixed a bug where any occurrences of `$` followed by numeric characters in a database password would be stripped out when running the `setup/db-creds` command. ([#2283](https://github.com/craftcms/cms/issues/2283))
+- Fixed a bug where the login logo was broken on the Control Panel login screen on Windows. ([#2281](https://github.com/craftcms/cms/issues/2281))
 
 ## 3.0.0-RC4 - 2018-01-02
 
