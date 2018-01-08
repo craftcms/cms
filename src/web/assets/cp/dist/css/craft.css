@@ -1596,7 +1596,7 @@ body.rtl .matrixblock.disabled > .actions > .status.off { margin: 4px 0 0 10px ;
 .matrixblock > .checkbox { position: absolute; top: 7px; }
 body.ltr .matrixblock > .checkbox { left: 14px; }
 body.rtl .matrixblock > .checkbox { right: 14px; }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 6px; cursor: default; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; cursor: default; }
 body.ltr .matrixblock > .actions { right: 5px; }
 body.rtl .matrixblock > .actions { left: 5px; }
 .matrixblock > .actions > .status.off { display: none; }
