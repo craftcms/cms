@@ -709,6 +709,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
+Garnish.$scrollContainer = $('#content-container');
 Craft.cp = new Craft.CP();
 
 

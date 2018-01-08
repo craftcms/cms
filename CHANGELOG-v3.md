@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Changed
+- Moved the “View site” option up to the first position in the system menu.
+- Improved the style of Multi-select fields. ([#2271](https://github.com/craftcms/cms/pull/2271))
+- More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
+- The `setup/db-creds` console command now supports `--driver`, `--server`, `--port`, `--user`, `--password`, `--database`, and `--schema` options, making it possible to use the command non-interactively. ([#2273](https://github.com/craftcms/cms/issues/2273))
+- Documentation and Changelog are now being opened in a new browser tab. ([#2260](https://github.com/craftcms/cms/issues/2260))
+### Fixed
+- Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
+- Fixed a bug where default Craft database backups and restores would fail if there was a space in the file path. ([#2274](https://github.com/craftcms/cms/issues/2274))
+- Fixed a bug where non-admins were able to access the Settings page. ([#2275](https://github.com/craftcms/cms/issues/2275))
+- Fixed a bug where `craft\fields\data\ColorData::getBlue()` was returning the wrong value. ([#2277](https://github.com/craftcms/cms/pull/2277))
+
+## 3.0.0-RC4 - 2018-01-02
+
 ### Added
 - Added the `aliases` config setting, providing an easy way to define custom [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html).
 - Some URL and path settings are now parsed for [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html), including sites’ Base URL settings, volumes’ Base URL settings, and Local volumes’ File System Path settings. If those settings currently begin with a Craft 2-style environment variable tag (e.g. `{variable}`),  they will automatically be converted to the new alias syntax (e.g. `@variable`).
@@ -32,6 +46,7 @@
 - Fixed a bug where you could get a fatal PHP error if you were using the latest 2.0.2 release of the `yii2-queue` library from the command line in Craft. ([#2248](https://github.com/craftcms/cms/issues/2248))
 - Fixed a bug where some field validation errors weren’t showing up if the Edit Field form was submitted without a name. ([#2249](https://github.com/craftcms/cms/issues/2249))
 - Fixed a bug where default field values weren’t being applied to newly-uploaded assets. ([#2238](https://github.com/craftcms/cms/issues/2238))
+- Fixed a bug where the window wasn’t scrolling when dragging things near the edges. ([#2253](https://github.com/craftcms/cms/issues/2253))
 
 ## 3.0.0-RC3 - 2017-12-19
 
