@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\GetRequestRouteEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
@@ -36,6 +37,11 @@ class UrlManager extends \yii\web\UrlManager
      * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the front-end site.
      */
     const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
+
+    /**
+     * @event GetRequestRouteEvent The event that is triggered with resolution of request route, when it is not for a CP request.
+     */
+    const EVENT_GET_REQUEST_ROUTE = 'getRequestRoute';
 
     // Properties
     // =========================================================================
@@ -264,6 +270,21 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getRequestRoute(Request $request)
     {
+        if (!$request->isCpRequest) { // don't interfere; CP uses element case below
+
+            // Does a plugin want to set the route based on the request?
+            $eventName = self::EVENT_GET_REQUEST_ROUTE;
+            $event = new GetRequestRouteEvent([
+                'route' => null,
+                'request' => $request
+            ]);
+            $this->trigger($eventName, $event);
+
+            if (($route = $event->route) !== null) {
+                return $route;
+            }
+        }
+
         // Is there a token in the URL?
         if (($route = $this->_getTokenRoute($request)) !== false) {
             return $route;
