@@ -26,7 +26,7 @@
                 <div v-else>
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
 
-                    <div v-else-if="allowPluginStoreInstall">
+                    <div v-else-if="allowUpdates">
                         <form method="post">
                             <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
                             <input type="hidden" name="action" value="pluginstore/install">
@@ -145,8 +145,8 @@
                 return Craft.csrfTokenValue;
             },
 
-            allowPluginStoreInstall() {
-                return window.allowPluginStoreInstall;
+            allowUpdates() {
+                return window.allowAutoUpdates;
             }
 
         },

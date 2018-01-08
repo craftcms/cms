@@ -69,15 +69,6 @@ class GeneralConfig extends BaseObject
      */
     public $allowAutoUpdates = true;
     /**
-     * @var bool Whether or not to allow plugin install in the Plugin Store.
-     *
-     * Possible values are:
-     *
-     * - `true` (install is allowed)
-     * - `false` (install is not allowed)
-     */
-    public $allowPluginStoreInstall = false;
-    /**
      * @var string[] List of file extensions that Craft will allow when a user is uploading files.
      *
      * @see extraAllowedFileExtensions
