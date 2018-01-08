@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the `previewCategory` event to `craft\controllers\CategoriesController`.
+- Added the `previewEntry` event to `craft\controllers\EntriesController`. ([#2259](https://github.com/craftcms/cms/pull/2259))
+
 ### Changed
 - Moved the “View site” option up to the first position in the system menu.
 - Improved the style of Multi-select fields. ([#2271](https://github.com/craftcms/cms/pull/2271))

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Category;
 use craft\errors\InvalidElementException;
+use craft\events\ElementEvent;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -37,6 +38,14 @@ use yii\web\ServerErrorHttpException;
  */
 class CategoriesController extends Controller
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
+     */
+    const EVENT_PREVIEW_CATEGORY = 'previewCategory';
+
     // Public Methods
     // =========================================================================
 
@@ -413,6 +422,13 @@ class CategoriesController extends Controller
         $category = $this->_getCategoryModel();
         $this->_enforceEditCategoryPermissions($category);
         $this->_populateCategoryModel($category);
+
+        // Fire a 'previewCategory' event
+        if ($this->hasEventHandlers(self::EVENT_PREVIEW_CATEGORY)) {
+            $this->trigger(self::EVENT_PREVIEW_CATEGORY, new ElementEvent([
+                'element' => $category,
+            ]));
+        }
 
         return $this->_showCategory($category);
     }
