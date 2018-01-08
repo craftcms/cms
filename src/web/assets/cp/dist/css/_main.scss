@@ -3945,6 +3945,8 @@ body.message .message-container .pane {
 }
 
 /* blocks */
+$titlebarBorderRadius: $paneBorderRadius - 1;
+
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
@@ -3958,8 +3960,8 @@ body.message .message-container .pane {
     margin: 0 -14px 14px;
     width: calc(100% + 28px);
     box-sizing: border-box;
-    border-radius: 2px 2px 0 0;
-    @include padding(6px, 70px, 6px, 33px);
+    border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
+    @include padding(5px, 70px, 5px, 33px);
     border-bottom: 1px solid $hairlineColor;
     background: hsl(212, 10%, 94%);
     color: $lightTextColor;
@@ -4007,7 +4009,7 @@ body.message .message-container .pane {
 
   &.collapsed {
     & > .titlebar {
-      border-radius: 2px;
+      border-radius: $titlebarBorderRadius;
       border-bottom: none;
 
       & > .preview {
