@@ -481,7 +481,7 @@ class AppController extends Controller
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
      *
-     * Also sets an `allowed` key on the given update's releases, based on the `allowAutoUpdates` config setting.
+     * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
      *
      * @param Update $update         The update model
      * @param string $handle         The handle of whatever this update is for
@@ -530,7 +530,7 @@ class AppController extends Controller
 
     /**
      * Returns the latest version that the user is allowed to update to, per the
-     * `performUpdates` permission and `allowAutoUpdates` config setting.
+     * `performUpdates` permission and `allowUpdates` config setting.
      *
      * @param Update $update
      * @param string $currentVersion
@@ -540,25 +540,25 @@ class AppController extends Controller
     private function _latestAllowedVersion(Update $update, string $currentVersion)
     {
         if (Craft::$app->getUser()->checkPermission('performUpdates')) {
-            $allowAutoUpdates = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
+            $allowUpdates = Craft::$app->getConfig()->getGeneral()->allowUpdates;
         } else {
-            $allowAutoUpdates = false;
+            $allowUpdates = false;
         }
 
         $arr['latestAllowedVersion'] = null;
 
-        if ($allowAutoUpdates === true) {
+        if ($allowUpdates === true) {
             return $update->getLatest()->version ?? null;
         }
 
-        if ($allowAutoUpdates === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
+        if ($allowUpdates === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
             $currentMajorMinor = App::majorMinorVersion($currentVersion);
             foreach ($update->releases as $release) {
                 if (App::majorMinorVersion($release->version) === $currentMajorMinor) {
                     return $release->version;
                 }
             }
-        } else if ($allowAutoUpdates === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
+        } else if ($allowUpdates === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
             $currentMajor = App::majorVersion($currentVersion);
             foreach ($update->releases as $release) {
                 if (App::majorVersion($release->version) === $currentMajor) {

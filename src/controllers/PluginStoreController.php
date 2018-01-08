@@ -59,7 +59,7 @@ class PluginStoreController extends Controller
         $view->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
         $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = '.Json::encode(Craft::$app->getApi()->getCmsInfo()).';', View::POS_BEGIN);
-        $view->registerJs('window.allowAutoUpdates = '.Json::encode(Craft::$app->getConfig()->getGeneral()->allowAutoUpdates).';', View::POS_BEGIN);
+        $view->registerJs('window.allowUpdates = '.Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates).';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 

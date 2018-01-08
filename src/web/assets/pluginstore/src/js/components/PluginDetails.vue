@@ -146,7 +146,7 @@
             },
 
             allowUpdates() {
-                return window.allowAutoUpdates;
+                return window.allowUpdates;
             }
 
         },

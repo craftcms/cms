@@ -67,7 +67,7 @@ class GeneralConfig extends BaseObject
      * - `'patch-only'` (only patch updates are allowed - the "Z" in X.Y.Z)
      * - `false` (no updates are allowed)
      */
-    public $allowAutoUpdates = true;
+    public $allowUpdates = true;
     /**
      * @var string[] List of file extensions that Craft will allow when a user is uploading files.
      *
@@ -820,9 +820,9 @@ class GeneralConfig extends BaseObject
      */
     public function init()
     {
-        // Validate allowAutoUpdates
-        if (!in_array($this->allowAutoUpdates, [true, false, self::AUTO_UPDATE_MINOR_ONLY, self::AUTO_UPDATE_PATCH_ONLY], true)) {
-            throw new InvalidConfigException('Unsupported allowAutoUpdates value: '.$this->allowAutoUpdates);
+        // Validate allowUpdates
+        if (!in_array($this->allowUpdates, [true, false, self::AUTO_UPDATE_MINOR_ONLY, self::AUTO_UPDATE_PATCH_ONLY], true)) {
+            throw new InvalidConfigException('Unsupported allowUpdates value: '.$this->allowUpdates);
         }
 
         // Merge extraAllowedFileExtensions into allowedFileExtensions
