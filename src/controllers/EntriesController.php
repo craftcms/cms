@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
+use craft\events\ShowEntryTemplateChoiceEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -43,6 +44,14 @@ use yii\web\ServerErrorHttpException;
  */
 class EntriesController extends BaseEntriesController
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ShowEntryTemplateChoice The event that is triggered when about to use template in editing an Entry.
+     */
+    const EVENT_SHOW_ENTRY_TEMPLATE_CHOICE = 'showEntryTemplateChoice';
+
     // Properties
     // =========================================================================
 
@@ -983,7 +992,15 @@ class EntriesController extends BaseEntriesController
 
         $this->getView()->getTwig()->disableStrictVariables();
 
-        return $this->renderTemplate($sectionSiteSettings[$entry->siteId]->template, [
+        // allow a plugin to choose what template actually to use for the edit
+        $eventName = self::EVENT_SHOW_ENTRY_TEMPLATE_CHOICE;
+        $event = new ShowEntryTemplateChoiceEvent([
+            'template' => $sectionSiteSettings[$entry->siteId]->template,
+            'request' => Craft::$app->request
+        ]);
+        $this->trigger($eventName, $event);
+
+        return $this->renderTemplate($event->template, [
             'entry' => $entry
         ]);
     }
