@@ -1514,6 +1514,7 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: $btn
 .select:not(.selectize) { @include select-container-styles; }
 .select:not(.selectize):after { @include select-arrow-styles; }
 .select:not(.selectize) select { @include select-input-styles; }
+.select:not(.selectize) select option { background: #fff; }
 .select:not(.selectize).fullwidth select { @include select-input-fullwidth-styles; }
 .select:not(.selectize) select:focus { @include select-input-focussed-styles; }
 

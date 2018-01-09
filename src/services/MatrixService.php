@@ -1096,6 +1096,7 @@ class MatrixService extends BaseApplicationComponent
 			$criteria->status = null;
 			$criteria->localeEnabled = null;
 			$criteria->limit = null;
+			$criteria->locale = $owner->locale;
 			$criteria->ownerLocale = ':empty:';
 			$blocks = $criteria->find();
 
@@ -1121,6 +1122,7 @@ class MatrixService extends BaseApplicationComponent
 							$block->getContent()->id = null;
 							$block->locale = $localeId;
 							$block->ownerLocale = $localeId;
+							$block->getContent()->locale = $localeId;
 							$this->saveBlock($block, false);
 
 							$newBlockIds[$originalBlockId][$localeId] = $block->id;
