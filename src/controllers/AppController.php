@@ -91,7 +91,7 @@ class AppController extends Controller
 
         if ($includeDetails) {
             $res['updates'] = [
-                'cms' => $this->_transformUpdate($updates->cms, 'craft', 'Craft CMS', Craft::$app->getVersion()),
+                'cms' => $this->_transformUpdate($updates->cms, 'craft', 'Craft CMS'),
                 'plugins' => [],
             ];
 
@@ -99,7 +99,7 @@ class AppController extends Controller
             foreach ($updates->plugins as $handle => $update) {
                 if (($plugin = $pluginsService->getPlugin($handle)) !== null) {
                     /** @var Plugin $plugin */
-                    $res['updates']['plugins'][] = $this->_transformUpdate($update, $handle, $plugin->name, $plugin->getVersion());
+                    $res['updates']['plugins'][] = $this->_transformUpdate($update, $handle, $plugin->name);
                 }
             }
         }
@@ -486,16 +486,15 @@ class AppController extends Controller
      * @param Update $update         The update model
      * @param string $handle         The handle of whatever this update is for
      * @param string $name           The name of whatever this update is for
-     * @param string $currentVersion The current version of whatever this update is for
      *
      * @return array
      */
-    private function _transformUpdate(Update $update, string $handle, string $name, string $currentVersion): array
+    private function _transformUpdate(Update $update, string $handle, string $name): array
     {
         $arr = $update->toArray();
         $arr['handle'] = $handle;
         $arr['name'] = $name;
-        $arr['latestAllowedVersion'] = $this->_latestAllowedVersion($update, $currentVersion);
+        $arr['latestAllowedVersion'] = $this->_latestAllowedVersion($update);
 
         switch ($update->status) {
             case Update::STATUS_EXPIRED:
@@ -533,11 +532,10 @@ class AppController extends Controller
      * `performUpdates` permission and `allowUpdates` config setting.
      *
      * @param Update $update
-     * @param string $currentVersion
      *
      * @return string|null
      */
-    private function _latestAllowedVersion(Update $update, string $currentVersion)
+    private function _latestAllowedVersion(Update $update)
     {
         if (Craft::$app->getUser()->checkPermission('performUpdates')) {
             $allowUpdates = Craft::$app->getConfig()->getGeneral()->allowUpdates;
@@ -545,26 +543,8 @@ class AppController extends Controller
             $allowUpdates = false;
         }
 
-        $arr['latestAllowedVersion'] = null;
-
         if ($allowUpdates === true) {
             return $update->getLatest()->version ?? null;
-        }
-
-        if ($allowUpdates === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
-            $currentMajorMinor = App::majorMinorVersion($currentVersion);
-            foreach ($update->releases as $release) {
-                if (App::majorMinorVersion($release->version) === $currentMajorMinor) {
-                    return $release->version;
-                }
-            }
-        } else if ($allowUpdates === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
-            $currentMajor = App::majorVersion($currentVersion);
-            foreach ($update->releases as $release) {
-                if (App::majorVersion($release->version) === $currentMajor) {
-                    return $release->version;
-                }
-            }
         }
 
         return null;

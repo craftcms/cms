@@ -25,9 +25,6 @@ class GeneralConfig extends BaseObject
     // Constants
     // =========================================================================
 
-    const AUTO_UPDATE_MINOR_ONLY = 'minor-only';
-    const AUTO_UPDATE_PATCH_ONLY = 'patch-only';
-
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
     const IMAGE_DRIVER_IMAGICK = 'imagick';
@@ -58,13 +55,11 @@ class GeneralConfig extends BaseObject
      */
     public $aliases = [];
     /**
-     * @var bool|string Whether or not to allow auto-updating in Craft. Does not affect manual updates.
+     * @var bool|string Whether or not to allow updating in Craft and the Plugin Store. Does not affect manual updates.
      *
      * Possible values are:
      *
      * - `true` (all updates are allowed)
-     * - `'minor-only'` (only minor and patch updates are allowed - the "Y" and "Z" in X.Y.Z)
-     * - `'patch-only'` (only patch updates are allowed - the "Z" in X.Y.Z)
      * - `false` (no updates are allowed)
      */
     public $allowUpdates = true;
@@ -821,7 +816,7 @@ class GeneralConfig extends BaseObject
     public function init()
     {
         // Validate allowUpdates
-        if (!in_array($this->allowUpdates, [true, false, self::AUTO_UPDATE_MINOR_ONLY, self::AUTO_UPDATE_PATCH_ONLY], true)) {
+        if (!in_array($this->allowUpdates, [true, false], true)) {
             throw new InvalidConfigException('Unsupported allowUpdates value: '.$this->allowUpdates);
         }
 
