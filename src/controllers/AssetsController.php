@@ -207,7 +207,7 @@ class AssetsController extends Controller
                 $tempPath = $sourceAsset->getCopyOfFile();
 
                 // See if we can figure out a definite Asset to replace.
-                if (empty($assetToReplace) && $sourceAsset) {
+                if (empty($assetToReplace)) {
                     $assetToReplace = Asset::find()
                         ->select(['elements.id'])
                         ->folderId($sourceAsset->folderId)
