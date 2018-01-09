@@ -1,15 +1,15 @@
 import Vue from 'vue';
 import { currency } from './filters/currency';
-import { t } from './filters/t';
-import { escapeHtml } from './filters/escapeHtml';
+import { escapeHtml, formatNumber, t } from './filters/craft';
 import router from './router';
 import store from './store';
 import { mapGetters } from 'vuex';
 import GlobalModal from './components/GlobalModal';
 
 Vue.filter('currency', currency);
-Vue.filter('t', t);
 Vue.filter('escapeHtml', escapeHtml);
+Vue.filter('formatNumber', formatNumber);
+Vue.filter('t', t);
 
 window.pluginStoreApp = new Vue({
     el: '#content',

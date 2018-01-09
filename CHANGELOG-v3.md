@@ -22,6 +22,7 @@
 - Fixed a bug where any occurrences of `$` followed by numeric characters in a database password would be stripped out when running the `setup/db-creds` command. ([#2283](https://github.com/craftcms/cms/issues/2283))
 - Fixed a bug where the login logo was broken on the Control Panel login screen on Windows. ([#2281](https://github.com/craftcms/cms/issues/2281))
 - Fixed a bug where D3 language would fallback to english, even when the user had a supported language selected.
+- Fixed “Active Installs“ formatting in the Plugin Store. ([#2183](https://github.com/craftcms/cms/issues/2183))
 
 ## 3.0.0-RC4 - 2018-01-02
 
