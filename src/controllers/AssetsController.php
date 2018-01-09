@@ -197,7 +197,7 @@ class AssetsController extends Controller
                 $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
-            } elseif (!empty($sourceAsset)) {
+            } else if (!empty($sourceAsset)) {
                 // Make sure the extension didn't change.
                 if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
                     throw new Exception($targetFilename.' doesn\'t have the original file extension.');
@@ -537,7 +537,7 @@ class AssetsController extends Controller
                                 $targetPrefixLength)] = $existingFolder->id;
                         }
                     }
-                } elseif ($existingFolder && $force) {
+                } else if ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
                     $targetVolume->deleteDir(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
                 }
