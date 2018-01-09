@@ -3550,6 +3550,10 @@ input:-ms-input-placeholder {
 }
 .select:not(.selectize) select {
   @include select-input-styles;
+
+  option {
+    background: #fff;
+  }
 }
 .select:not(.selectize).fullwidth select {
   @include select-input-fullwidth-styles;
