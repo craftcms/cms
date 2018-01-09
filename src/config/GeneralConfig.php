@@ -55,7 +55,7 @@ class GeneralConfig extends BaseObject
      */
     public $aliases = [];
     /**
-     * @var bool|string Whether or not to allow updating in Craft and the Plugin Store. Does not affect manual updates.
+     * @var bool|string Whether or not to allow updating in Craft and installing in the Plugin Store. Does not affect manual updates.
      *
      * Possible values are:
      *
