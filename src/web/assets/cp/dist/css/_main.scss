@@ -3945,6 +3945,8 @@ body.message .message-container .pane {
 }
 
 /* blocks */
+$titlebarBorderRadius: $paneBorderRadius - 1;
+
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
@@ -3953,109 +3955,119 @@ body.message .message-container .pane {
   border: 1px solid $hairlineColor;
   background: $lightBgColor;
   outline: none;
-}
 
-.matrixblock.disabled {
-  opacity: 1;
-}
+  & > .titlebar {
+    margin: 0 -14px 14px;
+    width: calc(100% + 28px);
+    box-sizing: border-box;
+    border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
+    @include padding(5px, 70px, 5px, 33px);
+    border-bottom: 1px solid $hairlineColor;
+    background: hsl(212, 10%, 94%);
+    color: $lightTextColor;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    word-wrap: normal;
+    cursor: default;
+    user-select: none;
 
-.matrixblock > .titlebar {
-  margin: 0 -14px 14px;
-  width: calc(100% + 28px);
-  box-sizing: border-box;
-  border-radius: 2px 2px 0 0;
-  @include padding(6px, 70px, 6px, 33px);
-  border-bottom: 1px solid $hairlineColor;
-  background: hsl(212, 10%, 94%);
-  color: $lightTextColor;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  word-wrap: normal;
-  cursor: default;
-  user-select: none;
-}
+    & > .blocktype {
+      display: inline;
+      color: $mediumTextColor;
+    }
 
-.matrixblock.collapsed > .titlebar {
-  border-radius: 2px;
-  border-bottom: none;
-}
+    & > .preview {
+      @include margin-left(7px);
+      display: inline;
+      opacity: 0;
+      transition: opacity linear 100ms;
 
-.matrixblock.disabled > .titlebar {
-  @include padding-right(90px);
-}
+      span {
+        opacity: 0.5;
+      }
+    }
+  }
 
-.matrixblock > .titlebar > .blocktype {
-  display: inline;
-  color: $mediumTextColor;
-}
+  &.disabled {
+    opacity: 1;
 
-.matrixblock > .titlebar > .preview {
-  @include margin-left(7px);
-  display: inline;
-  opacity: 0;
-  transition: opacity linear 100ms;
-}
+    & > .titlebar {
+      @include padding-right(90px);
+    }
 
-.matrixblock.collapsed > .titlebar > .preview {
-  opacity: 1;
-}
+    & > .actions {
+      & > .status {
+        &.off {
+          display: inline-block;
+          @include floatleft;
+          @include margin(4px, 10px, 0, 0);
+        }
+      }
+    }
+  }
 
-.matrixblock > .titlebar > .preview span {
-  opacity: 0.5;
-}
+  &.collapsed {
+    & > .titlebar {
+      border-radius: $titlebarBorderRadius;
+      border-bottom: none;
 
-.matrixblock > .checkbox {
-  position: absolute;
-  top: 7px;
-  @include left(14px);
-}
+      & > .preview {
+        opacity: 1;
+      }
+    }
+  }
 
-.matrixblock > .actions > .status.off {
-  display: none;
-}
+  & > .checkbox {
+    position: absolute;
+    top: 7px;
+    @include left(14px);
+  }
 
-.matrixblock.disabled > .actions > .status.off {
-  display: inline-block;
-  @include floatleft;
-  @include margin(4px, 10px, 0, 0);
-}
+  & > .actions {
+    position: absolute;
+    z-index: 1;
+    top: 5px;
+    @include right(5px);
+    cursor: default;
 
-.matrixblock > .actions {
-  position: absolute;
-  z-index: 1;
-  top: 6px;
-  @include right(5px);
-  cursor: default;
-}
+    & > .status {
+      &.off {
+        display: none;
+      }
+    }
 
-.matrixblock > .actions a {
-  padding: 0;
-  @include margin-right(2px);
-  width: 15px;
-  height: 20px;
-  text-align: center;
-  color: rgba(0, 0, 0, 0.25)
-}
+    a {
+      padding: 0;
+      @include margin-right(2px);
+      width: 15px;
+      height: 20px;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.25);
 
-.matrixblock > .actions a:hover {
-  width: 15px;
-  height: 20px;
-  text-align: center;
-  color: $linkColor;
-}
+      &:hover {
+        width: 15px;
+        height: 20px;
+        text-align: center;
+        color: $linkColor;
+      }
 
-.matrixblock > .actions a.settings:after {
-  @include margin-left(3px);
-}
+      &.settings:after {
+        @include margin-left(3px);
+      }
+    }
+  }
 
-.matrixblock > .fields > .field {
-  margin: 15px 0;
-}
+  & > .fields {
+    & > .field {
+      margin: 15px 0;
+    }
+  }
 
-.matrix > .buttons {
-  margin-top: 0;
-  height: 30px;
+  & > .buttons {
+    margin-top: 0;
+    height: 30px;
+  }
 }
 
 /* categories */

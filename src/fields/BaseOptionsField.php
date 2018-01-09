@@ -249,7 +249,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return (string)$value->value;
+        return (string)$value->label;
     }
 
     // Protected Methods
