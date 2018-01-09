@@ -45,7 +45,11 @@ class D3Asset extends AssetBundle
         if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'], true)) {
             $d3Language = $language;
         } else {
-            $languageId = Craft::$app->getLocale()->getLanguageID();
+            if (in_array($language, ['ca', 'de', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'sv', 'zh'], true)) {
+                $languageId = $language;
+            } else {
+                $languageId = Craft::$app->getLocale()->getLanguageID();
+            }
 
             $d3LanguageIds = [
                 'ca' => 'ca-ES',

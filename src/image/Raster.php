@@ -311,7 +311,7 @@ class Raster extends Image
 
                     $y1 = 0;
                     $y2 = $y1 + $targetHeight;
-                } elseif ($newHeight - $targetHeight > 0) {
+                } else if ($newHeight - $targetHeight > 0) {
                     switch ($verticalPosition) {
                         case 'top':
                             $y1 = 0;

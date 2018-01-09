@@ -25,9 +25,6 @@ class GeneralConfig extends BaseObject
     // Constants
     // =========================================================================
 
-    const AUTO_UPDATE_MINOR_ONLY = 'minor-only';
-    const AUTO_UPDATE_PATCH_ONLY = 'patch-only';
-
     const IMAGE_DRIVER_AUTO = 'auto';
     const IMAGE_DRIVER_GD = 'gd';
     const IMAGE_DRIVER_IMAGICK = 'imagick';
@@ -58,16 +55,9 @@ class GeneralConfig extends BaseObject
      */
     public $aliases = [];
     /**
-     * @var bool|string Whether or not to allow auto-updating in Craft. Does not affect manual updates.
-     *
-     * Possible values are:
-     *
-     * - `true` (all updates are allowed)
-     * - `'minor-only'` (only minor and patch updates are allowed - the "Y" and "Z" in X.Y.Z)
-     * - `'patch-only'` (only patch updates are allowed - the "Z" in X.Y.Z)
-     * - `false` (no updates are allowed)
+     * @var bool Whether to allow Craft and plugin updates in the Control Panel, and plugin installation in the Plugin Store.
      */
-    public $allowAutoUpdates = true;
+    public $allowUpdates = true;
     /**
      * @var string[] List of file extensions that Craft will allow when a user is uploading files.
      *
@@ -754,6 +744,7 @@ class GeneralConfig extends BaseObject
     {
         // Check for renamed settings
         $renamedSettings = [
+            'allowAutoUpdates' => 'allowUpdates',
             'defaultFilePermissions' => 'defaultFileMode',
             'defaultFolderPermissions' => 'defaultDirMode',
             'useWriteFileLock' => 'useFileLocks',
@@ -820,11 +811,6 @@ class GeneralConfig extends BaseObject
      */
     public function init()
     {
-        // Validate allowAutoUpdates
-        if (!in_array($this->allowAutoUpdates, [true, false, self::AUTO_UPDATE_MINOR_ONLY, self::AUTO_UPDATE_PATCH_ONLY], true)) {
-            throw new InvalidConfigException('Unsupported allowAutoUpdates value: '.$this->allowAutoUpdates);
-        }
-
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
             $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);

@@ -212,7 +212,7 @@ class AssetIndexer extends Component
         $values = [];
 
         foreach ($indexList as $entry) {
-            $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@'.$entry['timestamp'])), 0, 0];
+            $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@'.$entry['timestamp'])), false, false];
         }
 
         Craft::$app->getDb()->createCommand()
@@ -239,15 +239,15 @@ class AssetIndexer extends Component
         }
 
         // Mark as started.
-        $this->updateIndexEntry($indexEntryModel->id, ['inProgress' => 1]);
+        $this->updateIndexEntry($indexEntryModel->id, ['inProgress' => true]);
 
         try {
             $asset = $this->_indexFileByIndexData($indexEntryModel, $cacheImages);
-            $this->updateIndexEntry($indexEntryModel->id, ['completed' => 1, 'inProgress' => 0, 'recordId' => $asset->id]);
+            $this->updateIndexEntry($indexEntryModel->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
 
             return ['result' => $asset->id];
         } catch (AssetDisallowedExtensionException $exception) {
-            $this->updateIndexEntry($indexEntryModel->id, ['completed' => 1, 'inProgress' => 0]);
+            $this->updateIndexEntry($indexEntryModel->id, ['completed' => true, 'inProgress' => false]);
         }
 
         return ['result' => false];
@@ -279,8 +279,8 @@ class AssetIndexer extends Component
             ->where([
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
-                'completed' => 0,
-                'inProgress' => 0
+                'completed' => false,
+                'inProgress' => false
             ])
             ->one();
 
@@ -333,7 +333,7 @@ class AssetIndexer extends Component
 
         // Load the processed volume IDs for that sessions.
         $volumeIds = (new Query())
-            ->select(['DISTINCT(volumeId)'])
+            ->select(['DISTINCT([[volumeId]])'])
             ->from(['{{%assetindexdata}}'])
             ->where(['sessionId' => $sessionId])
             ->column();
@@ -381,8 +381,8 @@ class AssetIndexer extends Component
             'uri' => $path,
             'size' => $fileInfo['size'],
             'timestamp' => $fileInfo['timestamp'],
-            'inProgress' => 1,
-            'completed' => 0
+            'inProgress' => true,
+            'completed' => false
         ]);
 
         $record = new AssetIndexDataRecord($indexEntry->toArray());
@@ -391,7 +391,7 @@ class AssetIndexer extends Component
         $indexEntry->id = $record->id;
 
         $asset = $this->_indexFileByIndexData($indexEntry, $cacheImages);
-        $this->updateIndexEntry($indexEntry->id, ['completed' => 1, 'inProgress' => 0, 'recordId' => $asset->id]);
+        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
 
         return $asset;
     }

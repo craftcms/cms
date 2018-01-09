@@ -36,7 +36,7 @@ body { font-size: 14px; line-height: 20px; color: #29323d; -webkit-font-smoothin
 
 body.rtl { direction: rtl; }
 
-body, input, select, textarea { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+body, input, select, textarea { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
 .first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, blockquote:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 
@@ -884,17 +884,17 @@ table.editable tbody textarea { display: block; width: 100%; border: none; paddi
 
 table.editable tbody textarea:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
 
-table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
-table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
-table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
-table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
-table.editable tbody tr td.code textarea:-ms-input-placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+table.editable tbody tr td.code textarea:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
-table.editable tbody tr td.code textarea::placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+table.editable tbody tr td.code textarea::placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 
 table.editable + .btn.add { display: block; border-radius: 0 0 2px 2px; border: 1px dashed rgba(0, 0, 20, 0.4); border-top-width: 0; background: none; -webkit-box-shadow: none; box-shadow: none; }
 table.editable + .btn.add:focus { border-style: solid; }
@@ -1293,6 +1293,11 @@ input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none;
 body.ltr .checkboxfield.has-instructions .instructions { padding-left: 20px; }
 body.rtl .checkboxfield.has-instructions .instructions { padding-right: 20px; }
 
+/* multiselect */
+.multiselect > select { border: 1px solid rgba(0, 0, 20, 0.1); border-radius: 0; -webkit-transition: border linear 50ms; transition: border linear 50ms; color: #29323d; font-size: 14px; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+.multiselect > select:focus { border-color: rgba(0, 0, 20, 0.4); outline: none; }
+.multiselect > select option { padding: 1px 8px; }
+
 .text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
 
 .text { background: #fff; }
@@ -1381,6 +1386,7 @@ body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px; }
 body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
 .select:not(.selectize) select::-ms-expand { display: none; }
 .select:not(.selectize) select:-moz-focusring { color: transparent; text-shadow: 0 0 0 #29323d; }
+.select:not(.selectize) select option { background: #fff; }
 
 .select:not(.selectize).fullwidth select { min-width: 100%; }
 
@@ -1570,56 +1576,39 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 
 /* blocks */
 .matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 5px; border: 1px solid #e3e5e8; background: #fafafa; outline: none; }
-
-.matrixblock.disabled { opacity: 1; }
-
-.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 2px 2px 0 0; border-bottom: 1px solid #e3e5e8; background: #eef0f1; color: #b9bfc6; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-body.ltr .matrixblock > .titlebar { padding: 6px 70px 6px 33px; }
-body.rtl .matrixblock > .titlebar { padding: 6px 33px 6px 70px; }
-
-.matrixblock.collapsed > .titlebar { border-radius: 2px; border-bottom: none; }
-
-body.ltr .matrixblock.disabled > .titlebar { padding-right: 90px; }
-body.rtl .matrixblock.disabled > .titlebar { padding-left: 90px; }
-
+.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; border-bottom: 1px solid #e3e5e8; background: #eef0f1; color: #b9bfc6; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 33px; }
+body.rtl .matrixblock > .titlebar { padding: 5px 33px 5px 70px; }
 .matrixblock > .titlebar > .blocktype { display: inline; color: #8f98a3; }
-
 .matrixblock > .titlebar > .preview { display: inline; opacity: 0; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 body.ltr .matrixblock > .titlebar > .preview { margin-left: 7px; }
 body.rtl .matrixblock > .titlebar > .preview { margin-right: 7px; }
-
-.matrixblock.collapsed > .titlebar > .preview { opacity: 1; }
-
 .matrixblock > .titlebar > .preview span { opacity: 0.5; }
-
-.matrixblock > .checkbox { position: absolute; top: 7px; }
-body.ltr .matrixblock > .checkbox { left: 14px; }
-body.rtl .matrixblock > .checkbox { right: 14px; }
-
-.matrixblock > .actions > .status.off { display: none; }
-
+.matrixblock.disabled { opacity: 1; }
+body.ltr .matrixblock.disabled > .titlebar { padding-right: 90px; }
+body.rtl .matrixblock.disabled > .titlebar { padding-left: 90px; }
 .matrixblock.disabled > .actions > .status.off { display: inline-block; }
 body.ltr .matrixblock.disabled > .actions > .status.off { float: left; }
 body.rtl .matrixblock.disabled > .actions > .status.off { float: right; }
 body.ltr .matrixblock.disabled > .actions > .status.off { margin: 4px 10px 0 0 ; }
 body.rtl .matrixblock.disabled > .actions > .status.off { margin: 4px 0 0 10px ; }
-
-.matrixblock > .actions { position: absolute; z-index: 1; top: 6px; cursor: default; }
+.matrixblock.collapsed > .titlebar { border-radius: 4px; border-bottom: none; }
+.matrixblock.collapsed > .titlebar > .preview { opacity: 1; }
+.matrixblock > .checkbox { position: absolute; top: 7px; }
+body.ltr .matrixblock > .checkbox { left: 14px; }
+body.rtl .matrixblock > .checkbox { right: 14px; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; cursor: default; }
 body.ltr .matrixblock > .actions { right: 5px; }
 body.rtl .matrixblock > .actions { left: 5px; }
-
+.matrixblock > .actions > .status.off { display: none; }
 .matrixblock > .actions a { padding: 0; width: 15px; height: 20px; text-align: center; color: rgba(0, 0, 0, 0.25); }
 body.ltr .matrixblock > .actions a { margin-right: 2px; }
 body.rtl .matrixblock > .actions a { margin-left: 2px; }
-
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: #0d78f2; }
-
 body.ltr .matrixblock > .actions a.settings:after { margin-left: 3px; }
 body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
-
 .matrixblock > .fields > .field { margin: 15px 0; }
-
-.matrix > .buttons { margin-top: 0; height: 30px; }
+.matrixblock > .buttons { margin-top: 0; height: 30px; }
 
 /* categories */
 .add-category-form { margin-top: 24px; }
@@ -1690,18 +1679,17 @@ html, body { overflow-x: hidden; }
 #global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden; }
 #global-sidebar .light { color: #717983; }
 #global-sidebar #system-info { position: relative; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: top; -ms-flex-align: top; align-items: top; min-height: -webkit-min-content; min-height: -moz-min-content; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background-clip: padding-box; }
-body.ltr #global-sidebar #system-info { padding: 14px 44px 14px 10px; }
-body.rtl #global-sidebar #system-info { padding: 14px 10px 14px 44px; }
-#global-sidebar #system-info:after { position: absolute; top: calc(50% - 9px); font-size: 19px; }
-body.ltr #global-sidebar #system-info:after { right: 16px; }
-body.rtl #global-sidebar #system-info:after { left: 16px; }
+body.ltr #global-sidebar #system-info { padding: 14px 14px 14px 10px; }
+body.rtl #global-sidebar #system-info { padding: 14px 10px 14px 14px; }
+#global-sidebar #system-info:after { display: none; }
 #global-sidebar #system-info #site-icon { width: 32px; height: 32px; }
-body.ltr #global-sidebar #system-info #site-icon { margin-right: 14px; }
-body.rtl #global-sidebar #system-info #site-icon { margin-left: 14px; }
+body.ltr #global-sidebar #system-info #site-icon { margin: 6px 14px 0 0 ; }
+body.rtl #global-sidebar #system-info #site-icon { margin: 6px 0 0 14px ; }
 #global-sidebar #system-info #site-icon img, #global-sidebar #system-info #site-icon svg { display: block; width: 32px; height: 32px; border-radius: 4px; }
 #global-sidebar #system-info #site-icon svg rect, #global-sidebar #system-info #site-icon svg circle, #global-sidebar #system-info #site-icon svg ellipse, #global-sidebar #system-info #site-icon svg line, #global-sidebar #system-info #site-icon svg polyline, #global-sidebar #system-info #site-icon svg polygon, #global-sidebar #system-info #site-icon svg path, #global-sidebar #system-info #site-icon svg text { fill: #8f98a3; stroke-width: 0; }
 #global-sidebar #system-info #system-name { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 #global-sidebar #system-info #system-name h2 { margin: 0; }
+#global-sidebar #system-info #system-name h2 span { white-space: nowrap; }
 #global-sidebar #system-info #system-name #user-info { margin-top: 4px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
 #global-sidebar #system-info #system-name #user-info #user-photo { width: 14px; height: 14px; }
 body.ltr #global-sidebar #system-info #system-name #user-info #user-photo { margin-right: 5px; }
@@ -2029,7 +2017,7 @@ body.rtl .sidebar nav li a .icon { margin: 0 -10px 0 10px ; }
 .sidebar nav li a .badge { -ms-flex-negative: 1; flex-shrink: 1; padding: 0 6px; font-size: 11px; line-height: 16px; border-radius: 8px; background: #8f98a3; color: #fff; }
 body.ltr .sidebar nav li a .badge { margin: 0 -4px 0 10px ; }
 body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
-.sidebar nav li .toggle { position: absolute; top: px; }
+.sidebar nav li .toggle { position: absolute; top: 10px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
 

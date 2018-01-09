@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 2.6.3003 - 2018-01-09
+
+### Fixed
+- Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable. ([#2245](https://github.com/craftcms/cms/issues/2245))
+- Fixed a bug where the Settings → Users → Fields page wasn’t warning users when leaving the page with unsaved changes. ([#2265](https://github.com/craftcms/cms/issues/2265))
+- Fixed a bug where Dropdown and Radio Buttons fields were displaying their selected option’s value, rather than label, in element index tables. ([#2282](https://github.com/craftcms/cms/issues/2282))
+- Fixed `attribute:*` and `-attribute:*` search queries when the default `subRight` search term option was enabled. ([#2270](https://github.com/craftcms/cms/issues/2270))
+- Fixed a bug where native `<select>` menu options weren’t getting white backgrounds in Firefox or Internet Explorer on Windows 7 when using a Classic theme with a custom window color. ([#2272](https://github.com/craftcms/cms/issues/2272))
+
+## 2.6.3002 - 2018-01-02
+
+### Fixed
+- Fixed a bug where password reset URL prompts were showing the macOS keyboard shortcut on Windows computers. ([#2258](https://github.com/craftcms/cms/issues/2258))
+- Fixed an error that broke Edit Entry HUDs.
+
 ## 2.6.3001 - 2018-01-02
 
 ### Changed

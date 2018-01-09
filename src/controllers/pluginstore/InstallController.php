@@ -14,6 +14,7 @@ use craft\errors\MigrationException;
 use craft\web\Response as CraftResponse;
 use yii\base\Exception as YiiException;
 use yii\web\Response as YiiResponse;
+use yii\web\ForbiddenHttpException;
 
 /**
  * InstallController handles the plugin installation workflow.
@@ -50,6 +51,10 @@ class InstallController extends BaseUpdaterController
 
         // Only admins can install plugins
         $this->requireAdmin();
+
+        if(!Craft::$app->getConfig()->getGeneral()->allowUpdates) {
+            throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
+        }
 
         return true;
     }

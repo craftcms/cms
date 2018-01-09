@@ -1,4 +1,4 @@
-/*!   - 2018-01-01 */
+/*!   - 2018-01-09 */
 (function($){
 
 /** global: Craft */
@@ -174,6 +174,18 @@ $.extend(Craft,
             }
 
             return $.datepicker.formatDate(Craft.datepickerOptions.dateFormat, date);
+        },
+
+        /**
+         * Formats a number.
+         *
+         * @param {string} number
+         * @return string D3 format
+         */
+        formatNumber: function(number, format = ',.0f') {
+            var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
+
+            return formatter(number);
         },
 
         /**

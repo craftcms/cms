@@ -147,9 +147,14 @@ class SearchQuery
                 $token = mb_substr($token, 1);
             }
 
-            if ($token && substr($token, -1) === '*') {
-                $term->subRight = true;
-                $token = mb_substr($token, 0, -1);
+            if ($token) {
+                if (substr($token, -1) === '*') {
+                    $term->subRight = true;
+                    $token = mb_substr($token, 0, -1);
+                }
+            } else {
+                // subRight messes `attr:*` queries up
+                $term->subRight = false;
             }
 
             $term->term = $token;

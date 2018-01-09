@@ -1,5 +1,38 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC5 - 2018-01-09
+
+### Added
+- Added the `allowUpdates` config setting, which can be set to `false` to disable updating Craft and plugins from the Control Panel, as well as installing new plugins from the Plugin Store. ([#2154](https://github.com/craftcms/cms/issues/2154))
+- Added the `previewCategory` event to `craft\controllers\CategoriesController`.
+- Added the `previewEntry` event to `craft\controllers\EntriesController`. ([#2259](https://github.com/craftcms/cms/pull/2259))
+- Added `Craft.formatNumber()` for formatting number based on the user’s language.
+
+### Changed
+- Moved the “View site” option up to the first position in the system menu.
+- Improved the style of Multi-select fields. ([#2271](https://github.com/craftcms/cms/pull/2271))
+- More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
+- The `setup/db-creds` console command now supports `--driver`, `--server`, `--port`, `--user`, `--password`, `--database`, and `--schema` options, making it possible to use the command non-interactively. ([#2273](https://github.com/craftcms/cms/issues/2273))
+- Documentation and Changelog are now being opened in a new browser tab. ([#2260](https://github.com/craftcms/cms/issues/2260))
+
+### Deprecated
+- Deprecated the `allowAutoUpdates` config setting. Use the new `allowUpdates` config setting instead.
+
+### Removed
+- Removed support for `'minor-only'` and `'patch-only'` values for the deprecated `allowAutoUpdates` config setting.
+
+### Fixed
+- Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
+- Fixed a bug where default Craft database backups and restores would fail if there was a space in the file path. ([#2274](https://github.com/craftcms/cms/issues/2274))
+- Fixed a bug where non-admins were able to access the Settings page. ([#2275](https://github.com/craftcms/cms/issues/2275))
+- Fixed a bug where `craft\fields\data\ColorData::getBlue()` was returning the wrong value. ([#2277](https://github.com/craftcms/cms/pull/2277))
+- Fixed a bug where any occurrences of `$` followed by numeric characters in a database password would be stripped out when running the `setup/db-creds` command. ([#2283](https://github.com/craftcms/cms/issues/2283))
+- Fixed a bug where the login logo was broken on the Control Panel login screen on Windows. ([#2281](https://github.com/craftcms/cms/issues/2281))
+- Fixed a bug where it was not possible to index Assets when using PostgreSQL. ([#2284](https://github.com/craftcms/cms/issues/2284))
+- Fixed a bug where the D3 language would fallback to English, even when the user had a different supported language selected.
+- Fixed “Active Installs“ number formatting in the Plugin Store. ([#2183](https://github.com/craftcms/cms/issues/2183))
+- Fixed an error that occurred when attempting to replace an existing asset with another file of the same name.
+
 ## 3.0.0-RC4 - 2018-01-02
 
 ### Added

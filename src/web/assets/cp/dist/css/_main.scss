@@ -404,101 +404,7 @@ strong, b, i em {
 
 /* readable blocks */
 .readable {
-  font-size: 16px;
-  line-height: 22px;
-
-  h1 {
-    margin: 24px 0 16px;
-    font-size: 32px;
-    line-height: 40px;
-    font-weight: 600;
-    color: #000;
-  }
-
-  h2 {
-    margin: 24px 0 16px;
-    font-size: 24px;
-    line-height: 30px;
-    font-weight: 600;
-  }
-
-  h3 {
-    margin: 24px 0 16px;
-    font-size: 20px;
-    line-height: 24px;
-    font-weight: 600;
-  }
-
-  ul,
-  ol {
-    margin: 1em 0;
-    @include padding-left(2em);
-  }
-
-  ul li {
-    list-style-type: disc;
-  }
-
-  li + li {
-    margin-top: 0.25em;
-  }
-
-  blockquote {
-    margin: 16px 0;
-
-    &:not(.note) {
-      padding: 0 16px;
-      color: $mediumTextColor;
-      @include border-left(4px solid $hairlineColor);
-    }
-
-    &.note {
-      position: relative;
-      border-radius: 4px;
-      padding: 1em;
-      @include padding-left(56px);
-      border: 1px solid;
-
-      &:not(.tip):not(.warning) {
-        border-color: $errorColor;
-        color: #bf503f;
-
-        &:before {
-          content: 'alert';
-          color: $errorColor;
-        }
-      }
-
-      &.tip {
-        border-color: $linkColor;
-        color: $mediumTextColor;
-
-        &:before {
-          content: 'lightbulb';
-          color: $linkColor;
-        }
-      }
-
-      &.warning {
-        border-color: $warningColor;
-        color: #cf783a;
-
-        &:before {
-          content: 'alert';
-          color: $warningColor;
-        }
-      }
-
-      &:before {
-        @include icon;
-        position: absolute;
-        top: 12px;
-        @include left(16px);
-        font-size: 30px;
-        width: 24px;
-      }
-    }
-  }
+  @include readable;
 }
 
 /* text styles */
@@ -3420,6 +3326,22 @@ input.checkbox:focus + label:before,
   @include padding-left(20px);
 }
 
+/* multiselect */
+.multiselect > select {
+  @include text-input-styles;
+  color: $textColor;
+  font-size: 14px;
+  appearance: none;
+
+  &:focus {
+    @include text-input-focused-styles;
+  }
+
+  option {
+    padding: 1px 8px;
+  }
+}
+
 .text:not(.selectize-text),
 .selectize-text > .selectize-control > .selectize-input {
   padding: 5px 7px;
@@ -3628,6 +3550,10 @@ input:-ms-input-placeholder {
 }
 .select:not(.selectize) select {
   @include select-input-styles;
+
+  option {
+    background: #fff;
+  }
 }
 .select:not(.selectize).fullwidth select {
   @include select-input-fullwidth-styles;
@@ -4023,6 +3949,8 @@ body.message .message-container .pane {
 }
 
 /* blocks */
+$titlebarBorderRadius: $paneBorderRadius - 1;
+
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
@@ -4031,109 +3959,119 @@ body.message .message-container .pane {
   border: 1px solid $hairlineColor;
   background: $lightBgColor;
   outline: none;
-}
 
-.matrixblock.disabled {
-  opacity: 1;
-}
+  & > .titlebar {
+    margin: 0 -14px 14px;
+    width: calc(100% + 28px);
+    box-sizing: border-box;
+    border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
+    @include padding(5px, 70px, 5px, 33px);
+    border-bottom: 1px solid $hairlineColor;
+    background: hsl(212, 10%, 94%);
+    color: $lightTextColor;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    word-wrap: normal;
+    cursor: default;
+    user-select: none;
 
-.matrixblock > .titlebar {
-  margin: 0 -14px 14px;
-  width: calc(100% + 28px);
-  box-sizing: border-box;
-  border-radius: 2px 2px 0 0;
-  @include padding(6px, 70px, 6px, 33px);
-  border-bottom: 1px solid $hairlineColor;
-  background: hsl(212, 10%, 94%);
-  color: $lightTextColor;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  word-wrap: normal;
-  cursor: default;
-  user-select: none;
-}
+    & > .blocktype {
+      display: inline;
+      color: $mediumTextColor;
+    }
 
-.matrixblock.collapsed > .titlebar {
-  border-radius: 2px;
-  border-bottom: none;
-}
+    & > .preview {
+      @include margin-left(7px);
+      display: inline;
+      opacity: 0;
+      transition: opacity linear 100ms;
 
-.matrixblock.disabled > .titlebar {
-  @include padding-right(90px);
-}
+      span {
+        opacity: 0.5;
+      }
+    }
+  }
 
-.matrixblock > .titlebar > .blocktype {
-  display: inline;
-  color: $mediumTextColor;
-}
+  &.disabled {
+    opacity: 1;
 
-.matrixblock > .titlebar > .preview {
-  @include margin-left(7px);
-  display: inline;
-  opacity: 0;
-  transition: opacity linear 100ms;
-}
+    & > .titlebar {
+      @include padding-right(90px);
+    }
 
-.matrixblock.collapsed > .titlebar > .preview {
-  opacity: 1;
-}
+    & > .actions {
+      & > .status {
+        &.off {
+          display: inline-block;
+          @include floatleft;
+          @include margin(4px, 10px, 0, 0);
+        }
+      }
+    }
+  }
 
-.matrixblock > .titlebar > .preview span {
-  opacity: 0.5;
-}
+  &.collapsed {
+    & > .titlebar {
+      border-radius: $titlebarBorderRadius;
+      border-bottom: none;
 
-.matrixblock > .checkbox {
-  position: absolute;
-  top: 7px;
-  @include left(14px);
-}
+      & > .preview {
+        opacity: 1;
+      }
+    }
+  }
 
-.matrixblock > .actions > .status.off {
-  display: none;
-}
+  & > .checkbox {
+    position: absolute;
+    top: 7px;
+    @include left(14px);
+  }
 
-.matrixblock.disabled > .actions > .status.off {
-  display: inline-block;
-  @include floatleft;
-  @include margin(4px, 10px, 0, 0);
-}
+  & > .actions {
+    position: absolute;
+    z-index: 1;
+    top: 5px;
+    @include right(5px);
+    cursor: default;
 
-.matrixblock > .actions {
-  position: absolute;
-  z-index: 1;
-  top: 6px;
-  @include right(5px);
-  cursor: default;
-}
+    & > .status {
+      &.off {
+        display: none;
+      }
+    }
 
-.matrixblock > .actions a {
-  padding: 0;
-  @include margin-right(2px);
-  width: 15px;
-  height: 20px;
-  text-align: center;
-  color: rgba(0, 0, 0, 0.25)
-}
+    a {
+      padding: 0;
+      @include margin-right(2px);
+      width: 15px;
+      height: 20px;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.25);
 
-.matrixblock > .actions a:hover {
-  width: 15px;
-  height: 20px;
-  text-align: center;
-  color: $linkColor;
-}
+      &:hover {
+        width: 15px;
+        height: 20px;
+        text-align: center;
+        color: $linkColor;
+      }
 
-.matrixblock > .actions a.settings:after {
-  @include margin-left(3px);
-}
+      &.settings:after {
+        @include margin-left(3px);
+      }
+    }
+  }
 
-.matrixblock > .fields > .field {
-  margin: 15px 0;
-}
+  & > .fields {
+    & > .field {
+      margin: 15px 0;
+    }
+  }
 
-.matrix > .buttons {
-  margin-top: 0;
-  height: 30px;
+  & > .buttons {
+    margin-top: 0;
+    height: 30px;
+  }
 }
 
 /* categories */

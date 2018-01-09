@@ -149,13 +149,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             return null;
         }
 
-        if (
-            $this->_listeningForResponse === false &&
-            Craft::$app->getConfig()->getGeneral()->runQueueAutomatically &&
-            !Craft::$app->getRequest()->getIsConsoleRequest()
-        ) {
-            Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
-            $this->_listeningForResponse = true;
+        // Have the response kick off a new queue runner if this is a site request
+        if (Craft::$app->getConfig()->getGeneral()->runQueueAutomatically && !$this->_listeningForResponse) {
+            $request = Craft::$app->getRequest();
+            if ($request->getIsSiteRequest() && !$request->getIsAjax()) {
+                Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
+                $this->_listeningForResponse = true;
+            }
         }
 
         return $id;
@@ -333,9 +333,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function handleResponse()
     {
-        $request = Craft::$app->getRequest();
+        // Prevent this from getting called twice
         $response = Craft::$app->getResponse();
-
         $response->off(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
 
         // Ignore if any jobs are currently reserved
@@ -343,22 +342,15 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             return;
         }
 
-        // Make sure nothing has been output to the browser yet, and there's no pending response body
-        if (!headers_sent() && !ob_get_length() && $response->content === null) {
-            $this->_closeRequestAndRun();
+        // Ignore if this isn't an HTML/XHTML response
+        if (!in_array($response->getContentType(), ['text/html', 'application/xhtml+xml'], true)) {
+            return;
         }
-        // Is this a non-AJAX site request and are we responding with HTML or XHTML?
-        // (CP requests don't need to be told to run pending jobs)
-        else if (
-            $request->getIsSiteRequest() &&
-            !$request->getIsAjax() &&
-            in_array($response->getContentType(), ['text/html', 'application/xhtml+xml'], true)
-        ) {
-            // Just output JS that tells the browser to fire an Ajax request to kick off the worker
-            $url = Json::encode(UrlHelper::actionUrl('queue/run'));
 
-            // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
-            $js = <<<EOD
+        // Include JS that tells the browser to fire an Ajax request to kick off a new queue runner
+        // (Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!)
+        $url = Json::encode(UrlHelper::actionUrl('queue/run'));
+        $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
@@ -387,11 +379,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 </script>
 EOD;
 
-            if ($response->content === null) {
-                $response->content = $js;
-            } else {
-                $response->content .= $js;
-            }
+        if ($response->content === null) {
+            $response->content = $js;
+        } else {
+            $response->content .= $js;
         }
     }
 

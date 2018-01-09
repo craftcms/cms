@@ -174,6 +174,18 @@ $.extend(Craft,
         },
 
         /**
+         * Formats a number.
+         *
+         * @param {string} number
+         * @return string D3 format
+         */
+        formatNumber: function(number, format = ',.0f') {
+            var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
+
+            return formatter(number);
+        },
+
+        /**
          * Escapes some HTML.
          *
          * @param {string} str

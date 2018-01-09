@@ -153,7 +153,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}'.
             ' --if-exists'.
             ' --clean'.
-            ' --file={file}'.
+            ' --file="{file}"'.
             ' --schema={schema}'.
             implode('', $defaultTableIgnoreList);
     }
@@ -171,7 +171,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --port={port}'.
             ' --username={user}'.
             ' --no-password'.
-            ' < {file}';
+            ' < "{file}"';
     }
 
     /**
