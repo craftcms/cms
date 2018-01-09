@@ -31,6 +31,7 @@
 - Fixed a bug where it was not possible to index Assets when using PostgreSQL. ([#2284](https://github.com/craftcms/cms/issues/2284))
 - Fixed a bug where the D3 language would fallback to English, even when the user had a different supported language selected.
 - Fixed “Active Installs“ number formatting in the Plugin Store. ([#2183](https://github.com/craftcms/cms/issues/2183))
+- Fixed an error that occurred when attempting to replace an existing asset with another file of the same name.
 
 ## 3.0.0-RC4 - 2018-01-02
 

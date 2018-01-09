@@ -198,16 +198,15 @@ class AssetsController extends Controller
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
             } else if (!empty($sourceAsset)) {
-                // Make sure the extension didn't change.
-                if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
-                    throw new Exception($targetFilename.' doesn\'t have the original file extension.');
-                }
-
                 // Or replace using an existing Asset
-                $tempPath = $sourceAsset->getCopyOfFile();
 
-                // See if we can figure out a definite Asset to replace.
+                // See if we can find an Asset to replace.
                 if (empty($assetToReplace)) {
+                    // Make sure the extension didn't change
+                    if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
+                        throw new Exception($targetFilename.' doesn\'t have the original file extension.');
+                    }
+
                     $assetToReplace = Asset::find()
                         ->select(['elements.id'])
                         ->folderId($sourceAsset->folderId)
@@ -217,6 +216,7 @@ class AssetsController extends Controller
 
                 // If we have an actual asset for which to replace the file, just do it.
                 if (!empty($assetToReplace)) {
+                    $tempPath = $sourceAsset->getCopyOfFile();
                     $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->filename);
                     Craft::$app->getElements()->deleteElement($sourceAsset);
                 } else {
