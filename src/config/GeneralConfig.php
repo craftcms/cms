@@ -55,12 +55,7 @@ class GeneralConfig extends BaseObject
      */
     public $aliases = [];
     /**
-     * @var bool|string Whether or not to allow updating in Craft and installing in the Plugin Store. Does not affect manual updates.
-     *
-     * Possible values are:
-     *
-     * - `true` (all updates are allowed)
-     * - `false` (no updates are allowed)
+     * @var bool Whether to allow Craft and plugin updates in the Control Panel, and plugin installation in the Plugin Store.
      */
     public $allowUpdates = true;
     /**
@@ -749,6 +744,7 @@ class GeneralConfig extends BaseObject
     {
         // Check for renamed settings
         $renamedSettings = [
+            'allowAutoUpdates' => 'allowUpdates',
             'defaultFilePermissions' => 'defaultFileMode',
             'defaultFolderPermissions' => 'defaultDirMode',
             'useWriteFileLock' => 'useFileLocks',
@@ -815,11 +811,6 @@ class GeneralConfig extends BaseObject
      */
     public function init()
     {
-        // Validate allowUpdates
-        if (!in_array($this->allowUpdates, [true, false], true)) {
-            throw new InvalidConfigException('Unsupported allowUpdates value: '.$this->allowUpdates);
-        }
-
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
             $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);

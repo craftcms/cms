@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `allowUpdates` config setting, which can be set to `false` to disable updating Craft and plugins from the Control Panel, as well as installing new plugins from the Plugin Store. ([#2154](https://github.com/craftcms/cms/issues/2154))
 - Added the `previewCategory` event to `craft\controllers\CategoriesController`.
 - Added the `previewEntry` event to `craft\controllers\EntriesController`. ([#2259](https://github.com/craftcms/cms/pull/2259))
 - Added `Craft.formatNumber()` for formatting number based on the user’s language.
@@ -13,7 +14,12 @@
 - More global sidebar improvements. ([#2213](https://github.com/craftcms/cms/issues/2213))
 - The `setup/db-creds` console command now supports `--driver`, `--server`, `--port`, `--user`, `--password`, `--database`, and `--schema` options, making it possible to use the command non-interactively. ([#2273](https://github.com/craftcms/cms/issues/2273))
 - Documentation and Changelog are now being opened in a new browser tab. ([#2260](https://github.com/craftcms/cms/issues/2260))
-- The `allowAutoUpdates` genral config has been renamed to `allowUpdates`, and now also provides control over plugin installation in the Plugin Store. Support for `minor-only` and `patch-only` has been dropped, the `allowUpdates` config only accepts `true` or `false` values. 
+
+### Deprecated
+- Deprecated the `allowAutoUpdates` config setting. Use the new `allowUpdates` config setting instead.
+
+### Removed
+- Removed support for `'minor-only'` and `'patch-only'` values for the deprecated `allowAutoUpdates` config setting.
 
 ### Fixed
 - Fixed the position of asset folder toggles. ([#2264](https://github.com/craftcms/cms/issues/2264))
