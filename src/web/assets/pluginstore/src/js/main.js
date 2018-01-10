@@ -36,7 +36,7 @@ window.pluginStoreApp = new Vue({
           craftIdDataLoaded: false,
           showModal: false,
           lastOrder: null,
-          statusMessage: 'Loading Plugin Store…'
+          statusMessage: null,
       }
     },
 
@@ -172,13 +172,17 @@ window.pluginStoreApp = new Vue({
             .catch(response => {
                 this.pluginStoreDataLoading = false;
                 this.pluginStoreDataError = true;
-                this.statusMessage = 'The Plugin Store is not available, please try again later.';
+                this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
             });
 
         this.$store.dispatch('getCartState')
     },
 
     mounted() {
+
+        this.pageTitle = this.$options.filters.t("Plugin Store", 'app');
+        this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app');
+
         let $this = this;
 
         if(window.enableCraftId) {

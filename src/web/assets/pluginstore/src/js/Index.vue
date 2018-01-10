@@ -48,7 +48,7 @@
             <div class="ps-grid-main">
                 <template v-if="pluginStoreData.featuredPlugins">
                     <template v-for="featuredPlugin in pluginStoreData.featuredPlugins">
-                        <router-link class="right" :to="'/featured/'+featuredPlugin.id">See all</router-link>
+                        <router-link class="right" :to="'/featured/'+featuredPlugin.id">{{ "See all"|t('app') }}</router-link>
                         <div>
                             <h2>{{ featuredPlugin.title }}</h2>
                             <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins.slice(0, featuredPlugin.limit))"></plugin-grid>
@@ -105,7 +105,7 @@
         },
 
         created() {
-            this.$root.pageTitle = 'Plugin Store';
+            this.$root.pageTitle = this.$options.filters.t("Plugin Store", 'app');
         },
 
         mounted() {

@@ -33,7 +33,7 @@
                             <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
                             <input type="hidden" name="handle" :value="pluginSnippet.handle">
                             <input type="hidden" name="version" :value="pluginSnippet.version">
-                            <input type="submit" class="btn submit" value="Install">
+                            <input type="submit" class="btn submit" :value="'Install'|t('app')">
                         </form>
                     </div>
                 </div>
@@ -69,8 +69,8 @@
                         </ul>
 
                         <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
-                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" target="_blank">Documentation</a></li>
-                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" target="_blank">Changelog</a></li>
+                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" target="_blank">{{ "Documentation"|t('app') }}</a></li>
+                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" target="_blank">{{ "Changelog"|t('app') }}</a></li>
                         </ul>
                     </div>
                 </div>
