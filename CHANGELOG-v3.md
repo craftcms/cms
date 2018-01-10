@@ -6,7 +6,7 @@
 - Added missing translations for the Plugin Store.
 
 ### Fixed
-- Fixed a bug that prevented that prevented the plugin details modal from loading in the Plugin Store.
+- Fixed a bug that prevented the plugin details modal from loading in the Plugin Store.
 
 ## 3.0.0-RC5 - 2018-01-09
 
