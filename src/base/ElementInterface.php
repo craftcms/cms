@@ -675,7 +675,7 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
-     * Returns an array of the element’s normalized custom field values, indexed by their handles.
+     * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values need to be returned.
      *                                    Defaults to null, meaning all fields’ values will be returned.
