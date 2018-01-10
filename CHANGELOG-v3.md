@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug that prevented that prevented the plugin details modal from loading in the Plugin Store.
+
 ## 3.0.0-RC5 - 2018-01-09
 
 ### Added
