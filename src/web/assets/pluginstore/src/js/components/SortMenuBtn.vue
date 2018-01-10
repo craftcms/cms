@@ -21,10 +21,7 @@
 	    data() {
 	      	return {
 	      	    defaultDirection: 'asc',
-				directions: {
-	      	        asc: "Ascending",
-	      	        desc: "Descending",
-				}
+				directions: null,
 			};
 		},
 
@@ -50,6 +47,11 @@
 		},
 
 	    mounted() {
+	        this.directions = {
+                asc: this.$options.filters.t("Ascending", 'app'),
+                desc: this.$options.filters.t("Descending", 'app'),
+            };
+
             if(!this.value.direction) {
                 this.$emit('update:value', {
                     attribute: this.value.attribute,

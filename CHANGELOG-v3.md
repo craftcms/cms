@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added missing translations for the Plugin Store.
+
 ### Fixed
 - Fixed a bug that prevented that prevented the plugin details modal from loading in the Plugin Store.
 
