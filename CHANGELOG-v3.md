@@ -5,6 +5,9 @@
 ### Added
 - Added missing translations for the Plugin Store.
 
+### Changed
+- It’s now possible to reference object properties without typing `object.` in templates parsed with `craft\web\View::renderObjectTemplate()` (e.g. sections’ Entry URI Format settings), even if the property name doesn’t immediately follow a `{` brace.
+
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store.
 

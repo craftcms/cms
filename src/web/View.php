@@ -22,6 +22,7 @@ use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
 use Twig_ExtensionInterface;
+use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -425,6 +426,13 @@ class View extends \yii\web\View
         try {
             $twig = $this->getTwig();
 
+            // Temporarily disable strict variables if it's enabled
+            $strictVariables = $twig->isStrictVariables();
+
+            if ($strictVariables) {
+                $twig->disableStrictVariables();
+            }
+
             // Is this the first time we've parsed this template?
             $cacheKey = md5($template);
             if (!isset($this->_objectTemplates[$cacheKey])) {
@@ -434,21 +442,20 @@ class View extends \yii\web\View
                 $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
             }
 
-            // Temporarily disable strict variables if it's enabled
-            $strictVariables = $twig->isStrictVariables();
-
-            if ($strictVariables) {
-                $twig->disableStrictVariables();
+            // Get the variables to pass to the template
+            if ($object instanceof Arrayable) {
+                $variables = $object->toArray();
+            } else {
+                $variables = [];
             }
+            $variables['object'] = $object;
 
             // Render it!
             $lastRenderingTemplate = $this->_renderingTemplate;
             $this->_renderingTemplate = 'string:'.$template;
             /** @var Template $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            $output = $templateObj->render([
-                'object' => $object
-            ]);
+            $output = $templateObj->render($variables);
 
             $this->_renderingTemplate = $lastRenderingTemplate;
 
