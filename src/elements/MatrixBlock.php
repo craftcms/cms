@@ -25,6 +25,8 @@ use yii\base\InvalidConfigException;
 /**
  * MatrixBlock represents a matrix block element.
  *
+ * @property MatrixBlockType|null $type The block type
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
