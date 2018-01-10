@@ -51,37 +51,42 @@ use yii\validators\Validator;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property FieldLayout|null      $fieldLayout           The field layout used by this element
- * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property int[]                 $supportedSiteIds      The site IDs this element is available in
- * @property string|null           $uriFormat             The URI format used to generate this element’s URL
- * @property string|null           $url                   The element’s full URL
- * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
- * @property string|null           $ref                   The reference string to this element
- * @property string                $indexHtml             The element index HTML
- * @property bool                  $isEditable            Whether the current user can edit the element
- * @property string|null           $cpEditUrl             The element’s CP edit URL
- * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
- * @property string|null           $status                The element’s status
- * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
- * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
- * @property Element|null          $parent                The element’s parent
- * @property mixed                 $route                 The route that should be used when the element’s URI is requested
- * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors             The element’s ancestors
- * @property ElementQueryInterface $descendants           The element’s descendants
  * @property ElementQueryInterface $children              The element’s children
- * @property ElementQueryInterface $siblings              All of the element’s siblings
- * @property Element|null          $prevSibling           The element’s previous sibling
- * @property Element|null          $nextSibling           The element’s next sibling
- * @property bool                  $hasDescendants        Whether the element has descendants
- * @property int                   $totalDescendants      The total number of descendants that the element has
- * @property string|null           $title                 The element’s title
- * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
- * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
  * @property string                $contentTable          The name of the table this element’s content is stored in
+ * @property string|null           $cpEditUrl             The element’s CP edit URL
+ * @property ElementQueryInterface $descendants           The element’s descendants
+ * @property string                $editorHtml            The HTML for the element’s editor HUD
  * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
  * @property string                $fieldContext          The field context this element’s content uses
+ * @property FieldLayout|null      $fieldLayout           The field layout used by this element
+ * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
+ * @property array                 $fieldValues           The element’s normalized custom field values, indexed by their handles
+ * @property bool                  $hasDescendants        Whether the element has descendants
+ * @property bool                  $hasFreshContent       Whether the element’s content is "fresh" (unsaved and without validation errors)
+ * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
+ * @property string                $indexHtml             The element index HTML
+ * @property bool                  $isEditable            Whether the current user can edit the element
+ * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
+ * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
+ * @property Element|null          $nextSibling           The element’s next sibling
+ * @property Element|null          $parent                The element’s parent
+ * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element|null          $prevSibling           The element’s previous sibling
+ * @property string|null           $ref                   The reference string to this element
+ * @property mixed                 $route                 The route that should be used when the element’s URI is requested
+ * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property ElementQueryInterface $siblings              All of the element’s siblings
+ * @property Site                  $site                  Site the element is associated with
+ * @property string|null           $status                The element’s status
+ * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
+ * @property int[]                 $supportedSiteIds      The site IDs this element is available in
+ * @property int[]|array           $supportedSites        The sites this element is associated with
+ * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
+ * @property string|null           $title                 The element’s title
+ * @property int                   $totalDescendants      The total number of descendants that the element has
+ * @property string|null           $uriFormat             The URI format used to generate this element’s URL
+ * @property string|null           $url                   The element’s full URL
  * @mixin ContentBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -1565,7 +1570,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns some eager-loaded elements on a given handle.
+     * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
      *
