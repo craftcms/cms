@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Db;
+use LitEmoji\LitEmoji;
 use yii\db\Schema;
 
 /**
@@ -116,6 +117,17 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        if ($value !== null) {
+            $value = LitEmoji::shortcodeToUnicode($value);
+        }
+        return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
@@ -134,5 +146,26 @@ class PlainText extends Field implements PreviewableFieldInterface
         return [
             ['string', 'max' => $this->charLimit ?: null],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        if ($value !== null) {
+            $value = LitEmoji::unicodeToShortcode($value);
+        }
+        return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        $value = (string)$value;
+        $value = LitEmoji::unicodeToShortcode($value);
+        return $value;
     }
 }
