@@ -18,9 +18,8 @@
                         </ul>
 
                         <ul class="links">
-                            <li><a class="btn" :href="developer.developerUrl">Website</a></li>
-                            <li><a class="btn" :href="developer.developerUrl">Contact</a></li>
-                            <!--<li>{{ developer.plugins.length }} plugins</li>-->
+                            <li><a class="btn" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
+                            <li><a class="btn" :href="developer.developerUrl">{{ "Contact"|t('app') }}</a></li>
                         </ul>
                     </template>
                 </div>

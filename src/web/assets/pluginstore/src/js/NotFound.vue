@@ -8,9 +8,9 @@
 
 <script>
     export default {
-		data() {
-		    return {
-		        statusMessage: 'Page not found.'
+		computed: {
+			statusMessage() {
+			    return this.$options.filters.t("Page not found.", 'app');
 			}
 		}
     };
