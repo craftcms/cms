@@ -1303,8 +1303,8 @@ class User extends Element implements IdentityInterface
             $record->verificationCodeIssuedDate = null;
             $record->lastPasswordChangeDate = $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
-            // If it's an existing user, reset the passwordResetRequired bit.
-            if ($this->id !== null) {
+            // If the user required a password reset *before this request*, then set passwordResetRequired to false
+            if (!$isNew && $record->getOldAttribute('passwordResetRequired')) {
                 $record->passwordResetRequired = $this->passwordResetRequired = false;
             }
 

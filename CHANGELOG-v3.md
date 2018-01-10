@@ -7,6 +7,7 @@
 
 ### Changed
 - It’s now possible to reference object properties without typing `object.` in templates parsed with `craft\web\View::renderObjectTemplate()` (e.g. sections’ Entry URI Format settings), even if the property name doesn’t immediately follow a `{` brace.
+- Craft no longer sets `passwordResetRequired` to `false` when saving a new password on a user, if it had been set to `true` at the same time that the new password was set.
 
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store.
