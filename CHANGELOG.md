@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added support for most Emoji characters in Plain Text fields, for servers running PHP 5.4 or later. ([#1753](https://github.com/craftcms/cms/issues/1753))
+- Added LitEmoji 1.3.
+
 ## 2.6.3003 - 2018-01-09
 
 ### Fixed
