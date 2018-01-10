@@ -1,4 +1,4 @@
-/*!   - 2018-01-09 */
+/*!   - 2018-01-10 */
 (function($){
 
 /** global: Craft */
@@ -182,7 +182,11 @@ $.extend(Craft,
          * @param {string} number
          * @return string D3 format
          */
-        formatNumber: function(number, format = ',.0f') {
+        formatNumber: function(number, format) {
+            if(typeof format == 'undefined') {
+                format = ',.0f';
+            }
+            
             var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
 
             return formatter(number);
