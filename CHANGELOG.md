@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the [onBeforeAuthenticate](https://craftcms.com/docs/plugins/events-reference#userSession-onBeforeAuthenticate) event. ([#2296](https://github.com/craftcms/cms/pull/2296))
 - Added support for most Emoji characters in Plain Text fields, for servers running PHP 5.4 or later. ([#1753](https://github.com/craftcms/cms/issues/1753))
 - Added LitEmoji 1.3.
 
