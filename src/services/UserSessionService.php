@@ -498,10 +498,25 @@ class UserSessionService extends \CWebUser
 		{
 			$this->_identity = new UserIdentity($username, $password);
 
-			// Did we authenticate?
-			if ($this->_identity->authenticate())
+			// Fire an 'onBeforeAuthenticate' event
+			$event = new Event($this, array(
+				'identity' => $this->_identity,
+				'rememberMe' => $rememberMe,
+			));
+
+			$this->onBeforeAuthenticate($event);
+
+			// Should we continue authenticating?
+			if ($event->performAction)
 			{
-				return $this->loginByUserId($this->_identity->getUserModel()->id, $rememberMe, true);
+				// Did we authenticate?
+				if ($this->_identity->authenticate())
+				{
+					// In the case we have got a new value for the 'rememberMe'
+					$rememberMe = $event->params['rememberMe'];
+
+					return $this->loginByUserId($this->_identity->getUserModel()->id, $rememberMe, true);
+				}
 			}
 		}
 
@@ -1197,6 +1212,18 @@ class UserSessionService extends \CWebUser
 
 	// Events
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeAuthenticate' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeAuthenticate(Event $event)
+	{
+		$this->raiseEvent('onBeforeAuthenticate', $event);
+	}
 
 	/**
 	 * Fires an 'onBeforeLogin' event.
