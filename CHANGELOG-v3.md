@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store.
+- Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been made translatable, if it contained any relations. ([#2292](https://github.com/craftcms/cms/issues/2292))
 
 ## 3.0.0-RC5 - 2018-01-09
 
