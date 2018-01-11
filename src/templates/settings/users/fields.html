@@ -14,9 +14,7 @@
 		{{ getCsrfInput() }}
 
 		{% include "_includes/fieldlayoutdesigner" with {
-			fieldLayout: craft.fields.getLayoutByType('User'),
-			customizableTabs: false,
-			pretendTabName: "Profile"|t
+			fieldLayout: craft.fields.getLayoutByType('User')
 		} only %}
 
 		<div class="buttons">

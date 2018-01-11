@@ -157,25 +157,38 @@
 				</div>
 
 				{% if not isNewAccount or CraftEdition == CraftPro %}
-					<div id="profile" class="hidden">
-						{% if not isNewAccount %}
-							{{ forms.field({
-								label: "Photo"|t
-							}, photoInput) }}
+					{% set customLayout = craft.fields.getLayoutByType('User') %}
+					{% for tab in customLayout.tabs %}
+						<div id="custom-{{ tab.id }}" class="hidden">
 
-							<hr>
-						{% endif %}
+							{# show profile image on first tab #}
+							{% if not isNewAccount and loop.first %}
+								{{ forms.field({ label: "Photo"|t }, photoInput) }}
+								<hr>
+							{% endif %}
 
-						{% if CraftEdition == CraftPro %}
 							{% include "_includes/fields" with {
-								fields: craft.fields.getLayoutByType('User').getFields(),
+								fields: tab.getFields(),
 								element: account
 							} only %}
+						</div>
+					{% else %}
+						<div id="profile" class="hidden">
+							{% if not isNewAccount %}
+								{{ forms.field({ label: "Photo"|t }, photoInput) }}
+								<hr>
+							{% endif %}
 
-							{{ saveUserButtons }}
+							{% if CraftEdition == CraftPro %}
+								{% include "_includes/fields" with {
+									fields: craft.fields.getLayoutByType('User').getFields(),
+									element: account
+								} only %}
 
-						{% endif %}
-					</div>
+								{{ saveUserButtons }}
+							{% endif %}
+						</div>
+					{% endfor %}
 				{% endif %}
 
 				{% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}
