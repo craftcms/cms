@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -231,14 +231,18 @@ class UtilitiesController extends Controller
                 'batches' => $batches,
                 'total' => $grandTotal
             ]);
-        } else if (!empty($params['process'])) {
+        }
+
+        if (!empty($params['process'])) {
             // Index the file
             Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['sourceId'], $params['cacheImages']);
 
             return $this->asJson([
                 'success' => true
             ]);
-        } else if (!empty($params['overview'])) {
+        }
+
+        if (!empty($params['overview'])) {
             $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
             $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
             $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
@@ -325,16 +329,16 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:clear-caches');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $caches = Craft::$app->getRequest()->getRequiredBodyParam('caches');
 
-        if (!isset($params['caches'])) {
+        if (!isset($caches)) {
             return $this->asJson([
                 'success' => true
             ]);
         }
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
-            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true)) {
+            if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
                 continue;
             }
 
@@ -490,43 +494,42 @@ class UtilitiesController extends Controller
             return $this->asJson([
                 'batches' => [$batch]
             ]);
+        }
+
+        /** @var ElementInterface $class */
+        $class = $params['type'];
+
+        if ($class::isLocalized()) {
+            $siteIds = Craft::$app->getSites()->getAllSiteIds();
         } else {
-            /** @var ElementInterface $class */
-            $class = $params['type'];
+            $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
+        }
 
-            if ($class::isLocalized()) {
-                $siteIds = Craft::$app->getSites()->getAllSiteIds();
-            } else {
-                $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
-            }
+        $query = $class::find()
+            ->id($params['id'])
+            ->status(null)
+            ->enabledForSite(false);
 
-            $query = $class::find()
-                ->id($params['id'])
-                ->status(null)
-                ->enabledForSite(false);
+        foreach ($siteIds as $siteId) {
+            $query->siteId($siteId);
+            $element = $query->one();
 
-            foreach ($siteIds as $siteId) {
-                $query->siteId($siteId);
-                $element = $query->one();
+            if ($element) {
+                /** @var Element $element */
+                Craft::$app->getSearch()->indexElementAttributes($element);
 
-                if ($element) {
-                    /** @var Element $element */
-                    Craft::$app->getSearch()->indexElementAttributes($element);
+                if ($class::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
+                    $keywords = [];
 
-                    if ($class::hasContent()) {
-                        $fieldLayout = $element->getFieldLayout();
-                        $keywords = [];
-
-                        foreach ($fieldLayout->getFields() as $field) {
-                            /** @var Field $field */
-                            // Set the keywords for the content's site
-                            $fieldValue = $element->getFieldValue($field->handle);
-                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                            $keywords[$field->id] = $fieldSearchKeywords;
-                        }
-
-                        Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
+                    foreach ($fieldLayout->getFields() as $field) {
+                        /** @var Field $field */
+                        // Set the keywords for the content's site
+                        $fieldValue = $element->getFieldValue($field->handle);
+                        $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+                        $keywords[$field->id] = $fieldSearchKeywords;
                     }
+
+                    Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
                 }
             }
         }
@@ -592,6 +595,7 @@ class UtilitiesController extends Controller
      */
     private function _getUtilityIconSvg(string $class): string
     {
+        /** @var UtilityInterface|string $class */
         $iconPath = $class::iconPath();
 
         if ($iconPath === null) {
@@ -600,13 +604,11 @@ class UtilitiesController extends Controller
 
         if (!is_file($iconPath)) {
             Craft::warning("Utility icon file doesn't exist: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultUtilityIconSvg($class);
         }
 
-        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+        if (!FileHelper::isSvg($iconPath)) {
             Craft::warning("Utility icon file is not an SVG: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultUtilityIconSvg($class);
         }
 

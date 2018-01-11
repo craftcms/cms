@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -51,37 +51,42 @@ use yii\validators\Validator;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property FieldLayout|null      $fieldLayout           The field layout used by this element
- * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property int[]                 $supportedSiteIds      The site IDs this element is available in
- * @property string|null           $uriFormat             The URI format used to generate this element’s URL
- * @property string|null           $url                   The element’s full URL
- * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
- * @property string|null           $ref                   The reference string to this element
- * @property string                $indexHtml             The element index HTML
- * @property bool                  $isEditable            Whether the current user can edit the element
- * @property string|null           $cpEditUrl             The element’s CP edit URL
- * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
- * @property string|null           $status                The element’s status
- * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
- * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
- * @property Element|null          $parent                The element’s parent
- * @property mixed                 $route                 The route that should be used when the element’s URI is requested
- * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors             The element’s ancestors
- * @property ElementQueryInterface $descendants           The element’s descendants
  * @property ElementQueryInterface $children              The element’s children
- * @property ElementQueryInterface $siblings              All of the element’s siblings
- * @property Element|null          $prevSibling           The element’s previous sibling
- * @property Element|null          $nextSibling           The element’s next sibling
- * @property bool                  $hasDescendants        Whether the element has descendants
- * @property int                   $totalDescendants      The total number of descendants that the element has
- * @property string|null           $title                 The element’s title
- * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
- * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
  * @property string                $contentTable          The name of the table this element’s content is stored in
+ * @property string|null           $cpEditUrl             The element’s CP edit URL
+ * @property ElementQueryInterface $descendants           The element’s descendants
+ * @property string                $editorHtml            The HTML for the element’s editor HUD
  * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
  * @property string                $fieldContext          The field context this element’s content uses
+ * @property FieldLayout|null      $fieldLayout           The field layout used by this element
+ * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
+ * @property array                 $fieldValues           The element’s normalized custom field values, indexed by their handles
+ * @property bool                  $hasDescendants        Whether the element has descendants
+ * @property bool                  $hasFreshContent       Whether the element’s content is "fresh" (unsaved and without validation errors)
+ * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
+ * @property string                $indexHtml             The element index HTML
+ * @property bool                  $isEditable            Whether the current user can edit the element
+ * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
+ * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
+ * @property Element|null          $nextSibling           The element’s next sibling
+ * @property Element|null          $parent                The element’s parent
+ * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element|null          $prevSibling           The element’s previous sibling
+ * @property string|null           $ref                   The reference string to this element
+ * @property mixed                 $route                 The route that should be used when the element’s URI is requested
+ * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property ElementQueryInterface $siblings              All of the element’s siblings
+ * @property Site                  $site                  Site the element is associated with
+ * @property string|null           $status                The element’s status
+ * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
+ * @property int[]                 $supportedSiteIds      The site IDs this element is available in
+ * @property int[]|array           $supportedSites        The sites this element is associated with
+ * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
+ * @property string|null           $title                 The element’s title
+ * @property int                   $totalDescendants      The total number of descendants that the element has
+ * @property string|null           $uriFormat             The URI format used to generate this element’s URL
+ * @property string|null           $url                   The element’s full URL
  * @mixin ContentBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -263,7 +268,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return new ElementQuery(get_called_class());
+        return new ElementQuery(static::class);
     }
 
     /**
@@ -277,7 +282,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findAll($criteria = null)
+    public static function findAll($criteria = null): array
     {
         return static::findByCondition($criteria, false);
     }
@@ -709,7 +714,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        return $this->title ?: ((string)$this->id ?: static::class);
+        if ($this->title) {
+            return (string)$this->title;
+        }
+        return (string)$this->id ?: static::class;
     }
 
     /**
@@ -839,23 +847,21 @@ abstract class Element extends Component implements ElementInterface
      */
     public function rules()
     {
-        $mainScenarios = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
-
         $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => $mainScenarios],
-            [['siteId'], SiteIdValidator::class, 'on' => $mainScenarios],
-            [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => $mainScenarios],
+            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]],
+            [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]],
+            [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]],
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'string', 'max' => 255, 'on' => $mainScenarios];
-            $rules[] = [['title'], 'required', 'on' => $mainScenarios];
+            $rules[] = [['title'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
         if (static::hasUris()) {
-            $rules[] = [['slug'], SlugValidator::class, 'on' => $mainScenarios];
-            $rules[] = [['slug'], 'string', 'max' => 255, 'on' => $mainScenarios];
-            $rules[] = [['uri'], ElementUriValidator::class, 'on' => $mainScenarios];
+            $rules[] = [['slug'], SlugValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [['slug'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
 
         // Are we validating custom fields?
@@ -879,7 +885,7 @@ abstract class Element extends Component implements ElementInterface
                     } else {
                         if (is_string($rule)) {
                             // "Validator" syntax
-                            $rule = [$field->handle, $rule, 'on' => $mainScenarios];
+                            $rule = [$field->handle, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
                         }
 
                         if (is_array($rule) && isset($rule[0])) {
@@ -909,7 +915,7 @@ abstract class Element extends Component implements ElementInterface
 
                             // Set 'on' to the main scenarios by default
                             if (!array_key_exists('on', $rule)) {
-                                $rule['on'] = $mainScenarios;
+                                $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
                             }
 
                             $rules[] = $rule;
@@ -921,22 +927,11 @@ abstract class Element extends Component implements ElementInterface
             }
 
             if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => $mainScenarios];
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             }
         }
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function scenarios()
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_ESSENTIALS] = ['siteId', 'slug', 'uri'];
-
-        return $scenarios;
     }
 
     /**
@@ -980,7 +975,7 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
-        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+        $value = Db::prepareValueForDb($field->serializeValue($this->getFieldValue($attribute), $this));
 
         // Ignore empty values
         if ($value === null || $value === '') {
@@ -1575,7 +1570,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns some eager-loaded elements on a given handle.
+     * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
      *
@@ -1819,7 +1814,7 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param bool  $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return static|static[]
+     * @return static|static[]|null
      */
     protected static function findByCondition($criteria, bool $one)
     {
@@ -1834,7 +1829,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($one) {
-            /** @var Element $result */
+            /** @var Element|null $result */
             $result = $query->one();
         } else {
             /** @var Element[] $result */
@@ -2050,12 +2045,9 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /** @var Element|false $element */
-        $element = static::find()
+        return static::find()
             ->id($elementIds[$key + $dir])
             ->siteId($query->siteId)
             ->one();
-
-        return $element !== false ? $element : null;
     }
 }

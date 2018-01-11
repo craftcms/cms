@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -264,6 +264,8 @@ interface FieldInterface extends SavableComponentInterface
      * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
      *
      * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
+     *
+     * Whatever this returns should be something [[normalizeValue()]] can handle.
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -11,12 +11,14 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\FieldElementEvent;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
 
@@ -67,8 +69,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     // -------------------------------------------------------------------------
 
     const TRANSLATION_METHOD_NONE = 'none';
-    const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_SITE = 'site';
+    const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
+    const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
 
     // Static
@@ -89,8 +92,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         return [
             self::TRANSLATION_METHOD_NONE,
-            self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_SITE,
+            self::TRANSLATION_METHOD_SITE_GROUP,
+            self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_CUSTOM,
         ];
     }
@@ -108,17 +112,17 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Public Methods
     // =========================================================================
 
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * Use the translated field name as the string representation.
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
             return (string)Craft::t('site', $this->name);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -159,8 +163,9 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'in',
                 'range' => [
                     self::TRANSLATION_METHOD_NONE,
-                    self::TRANSLATION_METHOD_LANGUAGE,
                     self::TRANSLATION_METHOD_SITE,
+                    self::TRANSLATION_METHOD_SITE_GROUP,
+                    self::TRANSLATION_METHOD_LANGUAGE,
                     self::TRANSLATION_METHOD_CUSTOM
                 ]
             ],
@@ -249,10 +254,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         switch ($this->translationMethod) {
             case self::TRANSLATION_METHOD_NONE:
                 return '1';
-            case self::TRANSLATION_METHOD_LANGUAGE:
-                return $element->getSite()->language;
             case self::TRANSLATION_METHOD_SITE:
                 return (string)$element->siteId;
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return (string)$element->getSite()->groupId;
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return $element->getSite()->language;
             default:
                 return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
         }
@@ -337,7 +344,22 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function serializeValue($value, ElementInterface $element = null)
     {
-        return Db::prepareValueForDb($value);
+        // If the object explicitly defines its savable value, use that
+        if ($value instanceof Serializable) {
+            return $value->serialize();
+        }
+
+        // If it's "arrayable", convert to array
+        if ($value instanceof Arrayable) {
+            return $value->toArray();
+        }
+
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+            return Db::prepareDateForDb($value);
+        }
+
+        return $value;
     }
 
     /**

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
@@ -10,9 +10,12 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Plugin;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
@@ -22,7 +25,7 @@ use yii\helpers\Console;
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
  *
- * This controllers provides support for tracking the migration history, updating migrations, and creating new
+ * This controller provides support for tracking the migration history, updating migrations, and creating new
  * migration skeleton files.
  *
  * The migration history is stored in a database table named `migrations`. The table will be automatically
@@ -49,9 +52,9 @@ class MigrateController extends BaseMigrateController
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      *
-     * If [[plugin]] is defined, this will automatically be set to 'plugin'. Otherwise defaults to 'app'.
+     * If --plugin is passed, this will automatically be set to 'plugin'. Otherwise defaults to 'content'.
      */
-    public $type;
+    public $type = MigrationManager::TYPE_CONTENT;
 
     /**
      * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
@@ -83,6 +86,11 @@ class MigrateController extends BaseMigrateController
     {
         $options = parent::options($actionID);
 
+        // Remove options we end up overriding
+        ArrayHelper::removeValue($options, 'migrationPath');
+        ArrayHelper::removeValue($options, 'migrationNamespaces');
+        ArrayHelper::removeValue($options, 'compact');
+
         // Global options
         $options[] = 'type';
         $options[] = 'plugin';
@@ -110,20 +118,14 @@ class MigrateController extends BaseMigrateController
     public function beforeAction($action)
     {
         // Validate $type
-        if ($this->type !== null) {
-            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
-                throw new Exception('Invalid migration type: '.$this->type);
-            }
-        } else {
-            if ($this->plugin) {
-                $this->type = MigrationManager::TYPE_PLUGIN;
-            } else {
-                $this->type = MigrationManager::TYPE_CONTENT;
-            }
+        if ($this->plugin) {
+            $this->type = MigrationManager::TYPE_PLUGIN;
         }
-
+        if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
+            throw new Exception('Invalid migration type: '.$this->type);
+        }
         if ($this->type === MigrationManager::TYPE_PLUGIN) {
-            // Make sure $this->plugin in set to a plugin
+            // Make sure $this->plugin in set to a valid plugin handle
             if (is_string($this->plugin)) {
                 if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
                     throw new Exception('Invalid plugin handle: '.$this->plugin);
@@ -143,7 +145,27 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
-     * @inheritdoc
+     * Creates a new migration.
+     *
+     * This command creates a new migration using the available migration template.
+     * After using this command, developers should modify the created migration
+     * skeleton by filling up the actual migration logic.
+     *
+     * ```
+     * craft migrate/create create_news_section
+     * ```
+     *
+     * By default the migration will be created within the project's migrations/
+     * folder (as a "content migration").
+     *
+     * Use `--plugin=<plugin-handle>` to create a new plugin migration.
+     *
+     * Use `--type=app` to create a new Craft CMS app migration.
+     *
+     * @param string $name the name of the new migration. This should only contain
+     *                     letters, digits, and underscores.
+     *
+     * @throws Exception if the name argument is invalid.
      */
     public function actionCreate($name)
     {
@@ -175,6 +197,102 @@ class MigrateController extends BaseMigrateController
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.'.PHP_EOL, Console::FG_GREEN);
         }
+    }
+
+    /**
+     * Runs all pending Craft, plugin, and content migrations.
+     *
+     * @return int
+     * @throws MigrateException
+     */
+    public function actionAll()
+    {
+        $updatesService = Craft::$app->getUpdates();
+        $db = Craft::$app->getDb();
+
+        // Get the handles in need of an update
+        $handles = $updatesService->getPendingMigrationHandles(true);
+
+        // Anything to update?
+        if (!empty($handles)) {
+
+            // Enable maintenance mode
+            Craft::$app->enableMaintenanceMode();
+
+            // Backup the DB?
+            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            if ($backup) {
+                try {
+                    $backupPath = $db->backup();
+                } catch (\Throwable $e) {
+                    Craft::$app->disableMaintenanceMode();
+                    $this->stderr("Error backing up the database: {$e->getMessage()}".PHP_EOL, Console::FG_RED);
+                    Craft::error("Error backing up the database: {$e->getMessage()}", __METHOD__);
+                    Craft::$app->getErrorHandler()->logException($e);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+            }
+
+            // Run the migrations
+            try {
+                $updatesService->runMigrations($handles);
+            } catch (MigrationException $e) {
+                // Do we have a backup?
+                $restored = false;
+                if (!empty($backupPath)) {
+                    // Attempt a restore
+                    try {
+                        $db->restore($backupPath);
+                        $restored = true;
+                    } catch (\Throwable $restoreException) {
+                        // Just log it
+                        Craft::$app->getErrorHandler()->logException($restoreException);
+                    }
+                }
+
+                $error = 'An error occurred running nuw migrations.';
+                if ($restored) {
+                    $error .= ' The database has been restored to its previous state.';
+                } else if (isset($restoreException)) {
+                    $error .= ' The database could not be restored due to a separate error: '.$restoreException->getMessage();
+                } else {
+                    $error .= ' The database has not been restored.';
+                }
+
+                Craft::$app->disableMaintenanceMode();
+                $this->stderr($error.PHP_EOL, Console::FG_RED);
+                Craft::error($error, __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            Craft::$app->disableMaintenanceMode();
+        }
+
+        $this->stdout('Migrated up successfully.'.PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function actionUp($limit = 0)
+    {
+        $res = parent::actionUp($limit);
+
+        if (in_array($res, [ExitCode::OK, null], true) && empty($this->getNewMigrations())) {
+            // Update any schema versions.
+            switch ($this->type) {
+                case MigrationManager::TYPE_APP:
+                    Craft::$app->getUpdates()->updateCraftVersionInfo();
+                    break;
+                case MigrationManager::TYPE_PLUGIN:
+                    Craft::$app->getUpdates()->setNewPluginInfo($this->plugin);
+                    break;
+            }
+        }
+
+        return $res;
     }
 
     // Protected Methods

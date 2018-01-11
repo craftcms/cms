@@ -313,11 +313,7 @@ class Volumes extends Component
             ->where(['id' => $volumeId])
             ->one();
 
-        if (!$result) {
-            return $this->_volumesById[$volumeId] = null;
-        }
-
-        return $this->_volumesById[$volumeId] = $this->createVolume($result);
+        return $this->_volumesById[$volumeId] = $result ? $this->createVolume($result) : null;
     }
 
     /**
@@ -341,11 +337,7 @@ class Volumes extends Component
             ->where(['handle' => $handle])
             ->one();
 
-        if (!$result) {
-            return $this->_volumesByHandle[$handle] = null;
-        }
-
-        return $this->_volumesByHandle[$handle] = $this->createVolume($result);
+        return $this->_volumesByHandle[$handle] = $result ? $this->createVolume($result) : null;
     }
 
     /**
@@ -445,9 +437,9 @@ class Volumes extends Component
             throw $e;
         }
 
-        if ($isNewVolume && $this->_fetchedAllVolumes) {
-            $this->_volumesById[$volume->id] = $volume;
-        }
+        // Update our caches
+        $this->_volumesById[$volume->id] = $volume;
+        $this->_volumesByHandle[$volume->handle] = $volume;
 
         if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
             $this->_viewableVolumeIds[] = $volume->id;

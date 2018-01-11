@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -129,14 +129,6 @@ class DashboardController extends Controller
         $view->registerAssetBundle(DashboardAsset::class);
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
-        $view->registerTranslations('app', [
-            '1 column',
-            '{num} columns',
-            '{type} Settings',
-            'Widget saved.',
-            'Couldn’t save widget.',
-            'You don’t have any widgets yet.',
-        ]);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
@@ -542,7 +534,7 @@ class DashboardController extends Controller
             'title' => $widget->getTitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
-            'settingsHtml' => (string)$settingsHtml,
+            'settingsHtml' => $settingsHtml,
             'settingsJs' => (string)$settingsJs,
         ];
     }
@@ -564,13 +556,11 @@ class DashboardController extends Controller
 
         if (!is_file($iconPath)) {
             Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+        if (!FileHelper::isSvg($iconPath)) {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
@@ -613,18 +603,18 @@ class DashboardController extends Controller
                 'headHtml' => $view->getHeadHtml(),
                 'footHtml' => $view->getBodyHtml(),
             ]);
-        } else {
-            $allErrors = [];
-
-            foreach ($widget->getErrors() as $attribute => $errors) {
-                foreach ($errors as $error) {
-                    $allErrors[] = $error;
-                }
-            }
-
-            return $this->asJson([
-                'errors' => $allErrors
-            ]);
         }
+
+        $allErrors = [];
+
+        foreach ($widget->getErrors() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $allErrors[] = $error;
+            }
+        }
+
+        return $this->asJson([
+            'errors' => $allErrors
+        ]);
     }
 }

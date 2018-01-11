@@ -107,13 +107,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar = this.$container.find('.toolbar:first');
             this.$toolbarFlexContainer = this.$toolbar.children('.flex');
             this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
-            this.$siteMenuBtn = this.$toolbarFlexContainer.find('.sitemenubtn:first');
+            this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
             this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
             this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
             this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
             this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
             this.$sidebar = this.$container.find('.sidebar:first');
-            this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
+            this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
 
             // Hide sidebar if needed
@@ -127,7 +127,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
                 !Garnish.isMobileBrowser(true)
             ) {
-                this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -165,7 +166,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 if ($option.length) {
-                    this.siteId = $option.data('site-id');
+                    this._setSite($option.data('site-id'));
                 }
                 else {
                     // No site options -- they must not have any site permissions
@@ -190,7 +191,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
             else if (this.settings.criteria && this.settings.criteria.siteId) {
-                this.siteId = this.settings.criteria.siteId;
+                this._setSite(this.settings.criteria.siteId);
             }
 
             // Initialize the search input
@@ -282,7 +283,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.children('nav').children('ul');
+            return this.$sidebar.find('nav ul');
         },
 
         get $sources() {
@@ -360,27 +361,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }, this));
         },
 
-        updateFixedToolbar: function() {
-            this.updateFixedToolbar._pageHeaderHeight = $('#page-header').outerHeight();
+        updateFixedToolbar: function(e) {
+            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
 
-            if (!this.toolbarOffset) {
-                this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
-
-                if (!this.toolbarOffset) {
-                    return;
-                }
-            }
-
-            this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7) {
-                if (!this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
+            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
+                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
+                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
                     this.$toolbar.addClass('fixed');
-                    this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
                 }
 
-                this.$toolbar.css('width', this.$main.width());
+                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
+                    this.$toolbar.css({
+                        top: Craft.cp.$contentContainer.offset().top,
+                        width: this.$main.width()
+                    });
+                }
             }
             else {
                 if (this.$toolbar.hasClass('fixed')) {
@@ -406,6 +401,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $toggle = this._getSourceToggle($source);
 
             if ($toggle.length) {
+                // Remove handlers for the same thing. Just in case.
+                this.removeListener($toggle, 'click', '_handleSourceToggleClick');
+
                 this.addListener($toggle, 'click', '_handleSourceToggleClick');
                 $source.data('hasNestedSources', true);
             } else {
@@ -1112,7 +1110,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 var $extraHeadersContainer = $('#extra-headers');
 
                 if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
+                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
                 }
 
                 var $container = $extraHeadersContainer.find('> .buttons:first');
@@ -1181,6 +1179,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         onSelectSource: function() {
             this.settings.onSelectSource(this.sourceKey);
             this.trigger('selectSource', {sourceKey: this.sourceKey});
+        },
+
+        onSelectSite: function() {
+            this.settings.onSelectSite(this.siteId);
+            this.trigger('selectSite', {siteId: this.siteId});
         },
 
         onUpdateElements: function() {
@@ -1268,12 +1271,55 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.siteMenu.$options.removeClass('sel');
             var $option = $(ev.selectedOption).addClass('sel');
             this.$siteMenuBtn.html($option.html());
+            this._setSite($option.data('site-id'));
+            this.onSelectSite();
+        },
 
-            this.siteId = $option.data('site-id');
+        _setSite: function(siteId) {
+            this.siteId = siteId;
+
+            // Hide any sources that aren't available for this site
+            var $firstVisibleSource;
+            var $source;
+            var selectNewSource = false;
+
+            for (var i = 0; i < this.$sources.length; i++) {
+                $source = this.$sources.eq(i);
+                if (typeof $source.data('sites') === 'undefined' || $source.data('sites').toString().split(',').indexOf(siteId.toString()) !== -1) {
+                    $source.parent().removeClass('hidden');
+                    if (!$firstVisibleSource) {
+                        $firstVisibleSource = $source;
+                    }
+                } else {
+                    $source.parent().addClass('hidden');
+
+                    // Is this the currently selected source?
+                    if (this.$source && this.$source.get(0) == $source.get(0)) {
+                        selectNewSource = true;
+                    }
+                }
+            }
+
+            if (selectNewSource) {
+                this.selectSource($firstVisibleSource);
+            }
+
+            // Hide any empty-nester headings
+            var $headings = this.getSourceContainer().children('.heading');
+            var $heading;
+
+            for (i = 0; i < $headings.length; i++) {
+                $heading = $headings.eq(i);
+                if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
+                    $heading.removeClass('hidden');
+                } else {
+                    $heading.addClass('hidden');
+                }
+            }
 
             if (this.initialized) {
                 // Remember this site for later
-                Craft.setLocalStorage('BaseElementIndex.siteId', this.siteId);
+                Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
 
                 // Update the elements
                 this.updateElements();
@@ -1399,7 +1445,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Batch actions setup
             // -------------------------------------------------------------
 
-            if (this.settings.context === 'index' && response.actions && response.actions.length) {
+            if (response.actions && response.actions.length) {
                 this.actions = response.actions;
                 this.actionsHeadHtml = response.actionsHeadHtml;
                 this.actionsFootHtml = response.actionsFootHtml;
@@ -1465,7 +1511,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
-                checkboxMode: (this.settings.context === 'index' && this.actions),
+                checkboxMode: !!this.actions,
                 onSelectionChange: $.proxy(this, '_handleSelectionChange')
             });
 
@@ -1524,8 +1570,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $btn = $('<div class="btn menubtn" data-icon="settings" title="' + Craft.t('app', 'Actions') + '"/>').appendTo($menuTrigger);
 
                 var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
-                    $safeList = this._createMenuTriggerList(safeMenuActions),
-                    $destructiveList = this._createMenuTriggerList(destructiveMenuActions);
+                    $safeList = this._createMenuTriggerList(safeMenuActions, false),
+                    $destructiveList = this._createMenuTriggerList(destructiveMenuActions, true);
 
                 if ($safeList) {
                     $safeList.appendTo($menu);
@@ -1560,7 +1606,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
         },
 
-        _createMenuTriggerList: function(actions) {
+        _createMenuTriggerList: function(actions, destructive) {
             if (actions && actions.length) {
                 var $ul = $('<ul/>');
 
@@ -1568,6 +1614,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     var actionClass = actions[i].type;
                     $('<li/>').append($('<a/>', {
                         id: Craft.formatInputId(actionClass) + '-actiontrigger',
+                        'class': (destructive ? 'error' : null),
                         'data-action': actionClass,
                         text: actions[i].name
                     })).appendTo($ul);
@@ -1600,6 +1647,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
+            onSelectSite: $.noop,
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,

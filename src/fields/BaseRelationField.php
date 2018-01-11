@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -298,6 +298,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        /** @var ElementQueryInterface $value */
+        return $value->ids();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
@@ -390,7 +399,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $element = $value->first();
+            $element = $value->one();
         } else {
             $element = $value[0] ?? null;
         }
@@ -464,7 +473,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             /** @var Field $existingField */
             $existingField = Craft::$app->getFields()->getFieldById($this->id);
 
-            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
+            if ($existingField && $existingField instanceof self && !$existingField->localizeRelations) {
                 $this->_makeExistingRelationsTranslatable = true;
             }
         }

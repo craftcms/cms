@@ -3,14 +3,17 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.29',
-    'schemaVersion' => '3.0.61',
+    'version' => '3.0.0-RC5',
+    'schemaVersion' => '3.0.77',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'api' => [
+            'class' => craft\services\Api::class,
+        ],
         'assets' => [
             'class' => craft\services\Assets::class,
         ],
@@ -70,6 +73,9 @@ return [
         ],
         'plugins' => [
             'class' => craft\services\Plugins::class,
+        ],
+        'pluginStore' => [
+            'class' => craft\services\PluginStore::class,
         ],
         'queue' => [
             'class' => craft\queue\Queue::class,
@@ -142,7 +148,8 @@ return [
                     'requireEmailVerification' => true,
                     'allowPublicRegistration' => false,
                     'defaultGroup' => null,
-                    'photoVolumeId' => null
+                    'photoVolumeId' => null,
+                    'photoSubpath' => ''
                 ],
             ]
         ],
@@ -175,105 +182,23 @@ return [
         // Dynamically configured components
         // -------------------------------------------------------------------------
 
-        'assetManager' => function() {
+        'cache' => function() {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
 
             $config = [
-                'class' => craft\web\AssetManager::class,
-                'basePath' => $generalConfig->resourceBasePath,
-                'baseUrl' => $generalConfig->resourceBaseUrl,
+                'class' => \yii\caching\FileCache::class,
+                'cachePath' => Craft::$app->getPath()->getCachePath(),
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
+                'defaultDuration' => $generalConfig->cacheDuration,
             ];
-
-            return Craft::createObject($config);
-        },
-
-        'cache' => function() {
-            $configService = Craft::$app->getConfig();
-            $generalConfig = $configService->getGeneral();
-
-            switch ($generalConfig->cacheMethod) {
-                case 'apc':
-                    $config = [
-                        'class' => yii\caching\ApcCache::class,
-                        'useApcu' => true,
-                    ];
-                    break;
-                case 'db':
-                    $dbCacheConfig = $configService->getDbCache();
-                    $config = [
-                        'class' => yii\caching\DbCache::class,
-                        'gcProbability' => $dbCacheConfig->gcProbability,
-                        'cacheTable' => '{{%'.$dbCacheConfig->cacheTableName.'}}',
-                    ];
-                    break;
-                case 'file':
-                    $fileCacheConfig = $configService->getFileCache();
-                    $config = [
-                        'class' => \yii\caching\FileCache::class,
-                        'cachePath' => $fileCacheConfig->cachePath,
-                        'gcProbability' => $fileCacheConfig->gcProbability,
-                        'fileMode' => $generalConfig->defaultFileMode,
-                        'dirMode' => $generalConfig->defaultDirMode,
-                    ];
-                    break;
-                case 'memcache':
-                    $config = [
-                        'class' => yii\caching\MemCache::class,
-                        'servers' => $configService->getMemCache()->servers,
-                        'useMemcached' => true,
-                    ];
-                    break;
-                case 'wincache':
-                    $config = [
-                        'class' => yii\caching\WinCache::class,
-                    ];
-                    break;
-                case 'xcache':
-                    $config = [
-                        'class' => yii\caching\XCache::class,
-                    ];
-                    break;
-                case 'zenddata':
-                    $config = [
-                        'class' => yii\caching\ZendDataCache::class,
-                    ];
-                    break;
-                default:
-                    throw new yii\base\InvalidConfigException('Unsupported cacheMethod config setting value: '.$generalConfig->cacheMethod);
-            }
-
-            $config['defaultDuration'] = $generalConfig->cacheDuration;
 
             return Craft::createObject($config);
         },
 
         'db' => function() {
             $dbConfig = Craft::$app->getConfig()->getDb();
-
-            if ($dbConfig->driver === \craft\config\DbConfig::DRIVER_MYSQL) {
-                $schemaClass = craft\db\mysql\Schema::class;
-            } else {
-                $schemaClass = craft\db\pgsql\Schema::class;
-            }
-
-            return Craft::createObject([
-                'class' => craft\db\Connection::class,
-                'driverName' => $dbConfig->driver,
-                'dsn' => $dbConfig->dsn,
-                'username' => $dbConfig->user,
-                'password' => $dbConfig->password,
-                'charset' => $dbConfig->charset,
-                'tablePrefix' => $dbConfig->tablePrefix,
-                'schemaMap' => [
-                    $dbConfig->driver => [
-                        'class' => $schemaClass,
-                    ]
-                ],
-                'commandClass' => \craft\db\Command::class,
-                'attributes' => $dbConfig->attributes,
-            ]);
+            return craft\db\Connection::createFromConfig($dbConfig);
         },
 
         'mailer' => function() {

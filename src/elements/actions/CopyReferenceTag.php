@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -65,7 +65,7 @@ class CopyReferenceTag extends ElementAction
         activate: function(\$selectedItems)
         {
             var message = Craft.t('app', {$prompt}, {
-                ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+                ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
             });
 
             prompt(message, '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}');

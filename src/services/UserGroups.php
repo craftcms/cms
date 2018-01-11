@@ -2,13 +2,14 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\User;
 use craft\errors\UserGroupNotFoundException;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
@@ -73,6 +74,36 @@ class UserGroups extends Component
         }
 
         return $groups;
+    }
+
+    /**
+     * Returns the user groups that the current user is allowed to assign to another user.
+     *
+     * @param User|null $user The recipient of the user groups. If set, their current groups will be included as well.
+     *
+     * @return UserGroup[]
+     */
+    public function getAssignableGroups(User $user = null): array
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser && !$user) {
+            return [];
+        }
+
+        // If either user is an admin, all groups are fair game
+        if (($currentUser !== null && $currentUser->admin) || ($user !== null && $user->admin)) {
+            return $this->getAllGroups();
+        }
+
+        $assignableGroups = [];
+
+        foreach ($this->getAllGroups() as $group) {
+            if (($currentUser !== null && $currentUser->can('assignUserGroup:'.$group->id)) || ($user !== null && $user->isInGroup($group))) {
+                $assignableGroups[] = $group;
+            }
+        }
+
+        return $assignableGroups;
     }
 
     /**

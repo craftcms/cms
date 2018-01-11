@@ -82,7 +82,7 @@
 
             <div class="fld-tab unused{% if totalUnselected == 0 %} hidden{% endif %}">
                 <div class="tabs">
-                    <div class="tab sel"><span>{{ group.name }}</span></div>
+                    <div class="tab sel{% if customizableTabs %} draggable{% endif %}"><span>{{ group.name }}</span></div>
                 </div>
                 <div class="fld-tabcontent">
                     {% for field in group.fields %}

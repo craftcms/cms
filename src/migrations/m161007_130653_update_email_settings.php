@@ -14,8 +14,6 @@ class m161007_130653_update_email_settings extends Migration
      */
     public function safeUp()
     {
-        $this->delete('{{%systemsettings}}', ['category' => 'mailer']);
-
         $this->replace('{{%systemsettings}}', 'settings', 'daptor', 'dapter', ['category' => 'email']);
     }
 

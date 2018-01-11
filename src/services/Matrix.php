@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -121,11 +121,7 @@ class Matrix extends Component
             ->where(['id' => $blockTypeId])
             ->one();
 
-        if (!$result) {
-            return $this->_blockTypesById[$blockTypeId] = null;
-        }
-
-        return $this->_blockTypesById[$blockTypeId] = new MatrixBlockType($result);
+        return $this->_blockTypesById[$blockTypeId] = $result ? new MatrixBlockType($result) : null;
     }
 
     /**
@@ -662,7 +658,7 @@ class Matrix extends Component
         try {
             // If this is a preexisting element, make sure that the blocks for this field/owner respect the field's translation setting
             if ($query->ownerId) {
-                $this->_applyFieldTranslationSetting($query->ownerId, $query->siteId, $field, $blocks);
+                $this->_applyFieldTranslationSetting($query->ownerId, $query->siteId, $field);
             }
 
             // If the query is set to fetch blocks of a different owner, we're probably duplicating an element
@@ -703,6 +699,8 @@ class Matrix extends Component
 
                 // Delete any blocks that shouldn't be there anymore
                 $deleteBlocksQuery = MatrixBlock::find()
+                    ->status(null)
+                    ->enabledForSite(false)
                     ->ownerId($owner->id)
                     ->fieldId($field->id)
                     ->where(['not', ['elements.id' => $blockIds]]);
@@ -838,152 +836,115 @@ class Matrix extends Component
     /**
      * Applies the field's translation setting to a set of blocks.
      *
-     * @param int           $ownerId
-     * @param int           $ownerSiteId
-     * @param MatrixField   $field
-     * @param MatrixBlock[] $blocks
-     *
-     * @return void
+     * @param int         $ownerId
+     * @param int         $ownerSiteId
+     * @param MatrixField $field
      */
-    private function _applyFieldTranslationSetting(int $ownerId, int $ownerSiteId, MatrixField $field, array $blocks)
+    private function _applyFieldTranslationSetting(int $ownerId, int $ownerSiteId, MatrixField $field)
     {
-        // Does it look like any work is needed here?
-        $applyNewTranslationSetting = false;
-
-        foreach ($blocks as $block) {
-            if ($block->id && (
-                    ($field->localizeBlocks && !$block->ownerSiteId) ||
-                    (!$field->localizeBlocks && $block->ownerSiteId)
-                )
-            ) {
-                $applyNewTranslationSetting = true;
-                break;
-            }
-        }
-
-        if (!$applyNewTranslationSetting) {
-            // All good
-            return;
-        }
-
-        // Get all of the blocks for this field/owner that use the other sites, whose ownerSiteId attribute is set
-        // incorrectly
-        /** @var array $blocksInOtherSites */
-        $blocksInOtherSites = [];
-
-        /** @var MatrixBlockQuery $query */
-        $query = MatrixBlock::find()
-            ->fieldId($field->id)
-            ->ownerId($ownerId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->limit(null);
-
+        // If the field is translatable, see if there are any global blocks that should be localized
         if ($field->localizeBlocks) {
-            $query->ownerSiteId(':empty:');
-        }
-
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            if ($siteId === $ownerSiteId) {
-                continue;
-            }
-
-            $query->siteId($siteId);
-
-            if (!$field->localizeBlocks) {
-                $query->ownerSiteId($siteId);
-            }
-
-            $blocksInOtherSite = $query->all();
-
-            if (!empty($blocksInOtherSite)) {
-                $blocksInOtherSites[$siteId] = $blocksInOtherSite;
-            }
-        }
-
-        if (empty($blocksInOtherSites)) {
-            return;
-        }
-
-        if ($field->localizeBlocks) {
-            $newBlockIds = [];
-
-            // Duplicate the other-site blocks so each site has their own unique set of blocks
-            foreach ($blocksInOtherSites as $siteId => $blocksInOtherSite) {
-                foreach ($blocksInOtherSite as $blockInOtherSite) {
-                    /** @var MatrixBlock $blockInOtherSite */
-                    $originalBlockId = $blockInOtherSite->id;
-
-                    $blockInOtherSite->id = null;
-                    $blockInOtherSite->contentId = null;
-                    $blockInOtherSite->ownerSiteId = (int)$siteId;
-                    Craft::$app->getElements()->saveElement($blockInOtherSite, false);
-
-                    $newBlockIds[$originalBlockId][$siteId] = $blockInOtherSite->id;
-                }
-            }
-
-            // Duplicate the relations, too.  First by getting all of the existing relations for the original
-            // blocks
-            $relations = (new Query())
-                ->select([
-                    'fieldId',
-                    'sourceId',
-                    'sourceSiteId',
-                    'targetId',
-                    'sortOrder'
-                ])
-                ->from(['{{%relations}}'])
-                ->where(['sourceId' => array_keys($newBlockIds)])
+            $blocks = MatrixBlock::find()
+                ->fieldId($field->id)
+                ->ownerId($ownerId)
+                ->status(null)
+                ->enabledForSite(false)
+                ->limit(null)
+                ->siteId($ownerSiteId)
+                ->ownerSiteId(':empty:')
                 ->all();
 
-            if (!empty($relations)) {
-                // Now duplicate each one for the other sites' new blocks
-                $rows = [];
+            if (!empty($blocks)) {
+                $originalBlockIds = [];
+                $newBlockIds = [];
 
-                foreach ($relations as $relation) {
-                    $originalBlockId = $relation['sourceId'];
+                foreach ($blocks as $block) {
+                    // Assign the current block to the owner's locale
+                    $block->ownerSiteId = $ownerSiteId;
+                    Craft::$app->getElements()->saveElement($block, false);
 
-                    // Just to be safe...
-                    if (isset($newBlockIds[$originalBlockId])) {
-                        foreach ($newBlockIds[$originalBlockId] as $siteId => $newBlockId) {
-                            $rows[] = [
-                                $relation['fieldId'],
-                                $newBlockId,
-                                $relation['sourceSiteId'],
-                                $relation['targetId'],
-                                $relation['sortOrder']
-                            ];
+                    // Now duplicate it for the other locales
+                    $originalBlockId = $originalBlockIds[] = $block->id;
+
+                    foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                        if ($siteId != $ownerSiteId) {
+                            $block->id = null;
+                            $block->contentId = null;
+                            $block->siteId = (int)$siteId;
+                            $block->ownerSiteId = (int)$siteId;
+                            Craft::$app->getElements()->saveElement($block, false);
+
+                            $newBlockIds[$originalBlockId][$siteId] = $block->id;
                         }
                     }
                 }
 
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        'relations',
-                        [
-                            'fieldId',
-                            'sourceId',
-                            'sourceSiteId',
-                            'targetId',
-                            'sortOrder'
-                        ],
-                        $rows)
-                    ->execute();
-            }
-        } else {
-            // Delete all of these blocks
-            $deletedBlockIds = [];
+                // Duplicate the relations, too.  First by getting all of the
+                // existing relations for the original blocks
+                $relations = (new Query())
+                    ->select([
+                        'fieldId',
+                        'sourceId',
+                        'sourceSiteId',
+                        'targetId',
+                        'sortOrder'
+                    ])
+                    ->from(['{{%relations}}'])
+                    ->where(['sourceId' => $originalBlockIds])
+                    ->all();
 
-            foreach ($blocksInOtherSites as $blocksInOtherSite) {
-                foreach ($blocksInOtherSite as $blockInOtherSite) {
-                    // Have we already deleted this block?
-                    if (in_array($blockInOtherSite->id, $deletedBlockIds, false)) {
-                        continue;
+                if (!empty($relations)) {
+                    // Now duplicate each one for the other sites' new blocks
+                    $rows = [];
+
+                    foreach ($relations as $relation) {
+                        $originalBlockId = $relation['sourceId'];
+
+                        // Just to be safe...
+                        if (isset($newBlockIds[$originalBlockId])) {
+                            foreach ($newBlockIds[$originalBlockId] as $siteId => $newBlockId) {
+                                $rows[] = [
+                                    $relation['fieldId'],
+                                    $newBlockId,
+                                    $relation['sourceSiteId'],
+                                    $relation['targetId'],
+                                    $relation['sortOrder']
+                                ];
+                            }
+                        }
                     }
 
-                    Craft::$app->getElements()->deleteElement($blockInOtherSite);
-                    $deletedBlockIds[] = $blockInOtherSite->id;
+                    Craft::$app->getDb()->createCommand()
+                        ->batchInsert(
+                            '{{%relations}}',
+                            [
+                                'fieldId',
+                                'sourceId',
+                                'sourceSiteId',
+                                'targetId',
+                                'sortOrder'
+                            ],
+                            $rows)
+                        ->execute();
+                }
+            }
+        } else {
+            // Otherwise, see if the field has any localized blocks that should be deleted
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                if ($siteId != $ownerSiteId) {
+                    $blocks = MatrixBlock::find()
+                        ->fieldId($field->id)
+                        ->ownerId($ownerId)
+                        ->status(null)
+                        ->enabledForSite(false)
+                        ->limit(null)
+                        ->siteId($siteId)
+                        ->ownerSiteId($siteId)
+                        ->all();
+
+                    foreach ($blocks as $block) {
+                        Craft::$app->getElements()->deleteElement($block);
+                    }
                 }
             }
         }

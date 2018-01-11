@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
@@ -235,6 +235,10 @@ class InstallController extends Controller
         $this->stdout('Password: ');
         if (($password = CliPrompt::hiddenPrompt()) === '') {
             $this->stdout('Invalid input.'.PHP_EOL);
+            goto top;
+        }
+        if (!$this->validatePassword($password, $error)) {
+            Console::output($error);
             goto top;
         }
         $this->stdout('Confirm: ');

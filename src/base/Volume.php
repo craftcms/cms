@@ -11,17 +11,9 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
-use craft\errors\AssetException;
-use craft\errors\VolumeObjectExistsException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Config;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
-use League\Flysystem\Filesystem;
 
 /**
  * Volume is the base class for classes representing volumes in terms of objects.
@@ -91,5 +83,17 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl()
+    {
+        if (!$this->hasUrls) {
+            return false;
+        }
+
+        return rtrim(Craft::getAlias($this->url), '/').'/';
     }
 }

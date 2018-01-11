@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -69,14 +69,9 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
         }
 
-
-        if (!$draft->id) {
-            // Attempt to create a new entry
-
-            // Manually validate 'title' since the Elements service will just give it a title automatically.
-            if ($draft->validate(['title'])) {
-                Craft::$app->getElements()->saveElement($draft, false);
-            }
+        // Manually validate 'title' since the Elements service will just give it a title automatically.
+        if (!$draft->id && $draft->validate(['title'])) {
+            Craft::$app->getElements()->saveElement($draft, false);
         }
 
         if (!$draft->id || !Craft::$app->getEntryRevisions()->saveDraft($draft)) {
@@ -302,8 +297,12 @@ class EntryRevisionsController extends BaseEntriesController
     {
         $draft->typeId = Craft::$app->getRequest()->getBodyParam('typeId');
         $draft->slug = Craft::$app->getRequest()->getBodyParam('slug');
-        $draft->postDate = (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== false ? (DateTimeHelper::toDateTime($postDate) ?: null) : $draft->postDate);
-        $draft->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== false ? (DateTimeHelper::toDateTime($expiryDate) ?: null) : $draft->expiryDate);
+        if (($postDate = Craft::$app->getRequest()->getBodyParam('postDate')) !== null) {
+            $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
+        }
+        if (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== null) {
+            $draft->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        }
         $draft->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled');
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 

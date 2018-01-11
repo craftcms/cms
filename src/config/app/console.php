@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'class' => \craft\console\Application::class,
     'bootstrap' => [
         'queue',
     ],

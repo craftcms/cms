@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 use craft\behaviors\ContentBehavior;
@@ -139,9 +139,9 @@ class Craft extends Yii
             return;
         }
 
-        if (Craft::$app->getIsInstalled()) {
+        if (self::$app->getIsInstalled()) {
             // Properties are case-sensitive, so get all the binary-unique field handles
-            if (Craft::$app->getDb()->getIsMysql()) {
+            if (self::$app->getDb()->getIsMysql()) {
                 $column = new Expression('binary [[handle]] as [[handle]]');
             } else {
                 $column = 'handle';
@@ -211,12 +211,12 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/'.self::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = Craft::$app->getConfig()->getConfigFromFile('guzzle');
+        $guzzleConfig = self::$app->getConfig()->getConfigFromFile('guzzle');
 
         // Merge default into guzzle config.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);

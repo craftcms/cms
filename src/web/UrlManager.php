@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -13,6 +13,8 @@ use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
+use craft\web\UrlRule as CraftUrlRule;
+use yii\web\UrlRule as YiiUrlRule;
 
 /**
  * @inheritdoc
@@ -26,12 +28,40 @@ class UrlManager extends \yii\web\UrlManager
     // =========================================================================
 
     /**
-     * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the Control Panel.
+     * @event RegisterUrlRulesEvent The event that is triggered when registering
+     * URL rules for the Control Panel.
+     *
+     * This event gets called during class initialization, so you should always
+     * use a class-level event handler.
+     *
+     * ```php
+     * use craft\events\RegisterUrlRulesEvent;
+     * use craft\web\UrlManager;
+     * use yii\base\Event;
+     *
+     * Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $e) {
+     *     $e->rules['foo'] => 'bar/baz';
+     * });
+     * ```
      */
     const EVENT_REGISTER_CP_URL_RULES = 'registerCpUrlRules';
 
     /**
-     * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the front-end site.
+     * @event RegisterUrlRulesEvent The event that is triggered when registering
+     * URL rules for the front-end site.
+     *
+     * This event gets called during class initialization, so you should always
+     * use a class-level event handler.
+     *
+     * ```php
+     * use craft\events\RegisterUrlRulesEvent;
+     * use craft\web\UrlManager;
+     * use yii\base\Event;
+     *
+     * Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $e) {
+     *     $e->rules['foo'] => 'bar/baz';
+     * });
+     * ```
      */
     const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
 
@@ -187,7 +217,7 @@ class UrlManager extends \yii\web\UrlManager
                     $rule['verb'] = explode(',', $matches[1]);
 
                     if (!isset($rule['mode']) && !in_array('GET', $rule['verb'], true)) {
-                        $rule['mode'] = UrlRule::PARSING_ONLY;
+                        $rule['mode'] = YiiUrlRule::PARSING_ONLY;
                     }
 
                     $key = $matches[4];
@@ -334,7 +364,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedUrlRoute(Request $request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /** @var $rule UrlRule */
+        /** @var $rule YiiUrlRule */
         foreach ($this->rules as $rule) {
 
             $route = $rule->parseRequest($this, $request);
@@ -348,7 +378,7 @@ class UrlManager extends \yii\web\UrlManager
             }
 
             if ($route !== false) {
-                if ($rule->params) {
+                if ($rule instanceof CraftUrlRule && $rule->params) {
                     $this->setRouteParams($rule->params);
                 }
 

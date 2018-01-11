@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -18,7 +18,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
 
 /**
@@ -65,32 +64,40 @@ class Assets extends BaseRelationField
     public $useSingleFolder;
 
     /**
-     * @var int|null The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null Where files should be uploaded to by default, in format
+     * "folder:X", where X is the craft\models\VolumeFolder ID
+     * (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
     /**
-     * @var string|null The subpath that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null The subpath that files should be uploaded to by default
+     * (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var int|null The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null Where files should be restricted to, in format
+     * "folder:X", where X is the craft\models\VolumeFolder ID
+     * (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
     /**
-     * @var string|null The subpath that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null The subpath that files should be restricted to
+     * (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSubpath;
 
     /**
-     * @var bool|null Whether the available assets should be restricted to [[allowedKinds]]
+     * @var bool|null Whether the available assets should be restricted to
+     * [[allowedKinds]]
      */
     public $restrictFiles;
 
     /**
-     * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
+     * @var array|null The file kinds that the field should be restricted to
+     * (only used if [[restrictFiles]] is true)
      */
     public $allowedKinds;
 
@@ -560,7 +567,7 @@ class Assets extends BaseRelationField
                     throw new InvalidSubpathException($subpath);
                 }
 
-                $volume = Craft::$app ->getVolumes()->getVolumeById($volumeId);
+                $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
                 $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
             } else {
                 $folderId = $folder->id;
@@ -615,7 +622,7 @@ class Assets extends BaseRelationField
         }
 
         if (!$uploadSource) {
-            throw new InvalidVolumeException(Craft::t('app', 'This field\'s Volume configuration is invalid.'));
+            throw new InvalidVolumeException(Craft::t('app', 'This field’s Volume configuration is invalid.'));
         }
 
         $assets = Craft::$app->getAssets();
@@ -623,7 +630,11 @@ class Assets extends BaseRelationField
         try {
             $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
         } catch (InvalidVolumeException $exception) {
-            $message = $this->useSingleFolder ? Craft::t('app', 'This field’s single upload location Volume is missing') : Craft::t('app', 'This field’s default upload location Volume is missing');
+            if ($this->useSingleFolder) {
+                $message = Craft::t('app', 'This field’s single upload location Volume is missing');
+            } else {
+                $message = Craft::t('app', 'This field’s default upload location Volume is missing');
+            }
             throw new InvalidVolumeException($message);
         } catch (InvalidSubpathException $exception) {
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}

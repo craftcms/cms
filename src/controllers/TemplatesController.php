@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -114,6 +114,12 @@ class TemplatesController extends Controller
     {
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $reqCheck->dsn = $dbConfig->dsn;
+        $reqCheck->dbDriver = $dbConfig->driver;
+        $reqCheck->dbUser = $dbConfig->user;
+        $reqCheck->dbPassword = $dbConfig->password;
+
         $reqCheck->checkCraft();
 
         if ($reqCheck->result['summary']['errors'] > 0) {

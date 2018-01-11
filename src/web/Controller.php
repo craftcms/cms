@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 
@@ -68,6 +69,25 @@ abstract class Controller extends \yii\web\Controller
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function runAction($id, $params = [])
+    {
+        try {
+            return parent::runAction($id, $params);
+        }
+        catch (\Throwable $e) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                Craft::$app->getErrorHandler()->logException($e);
+                $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
+                return $this->asErrorJson($e->getMessage())
+                    ->setStatusCode($statusCode);
+            }
+            throw $e;
+        }
     }
 
     /**

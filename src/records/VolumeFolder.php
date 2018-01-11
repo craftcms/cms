@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -57,7 +57,7 @@ class VolumeFolder extends ActiveRecord
      */
     public function getParent(): ActiveQueryInterface
     {
-        return $this->hasOne(VolumeFolder::class, ['id' => 'parentId']);
+        return $this->hasOne(__CLASS__, ['id' => 'parentId']);
     }
 
     /**

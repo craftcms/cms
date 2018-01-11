@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -404,7 +404,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $lines = BaseStringy::create($str)->lines();
 
         foreach ($lines as $i => $line) {
-            $lines[$i] = (string)$line;
+            $lines[$i] = $line;
         }
 
         /** @var string[] $lines */
@@ -464,7 +464,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         $string = array_shift($words).implode('', array_map([
-                get_called_class(),
+                static::class,
                 'upperCaseFirst'
             ], $words));
 
@@ -486,7 +486,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         $words = self::_prepStringForCasing($string);
         $string = implode('', array_map([
-            get_called_class(),
+            static::class,
             'upperCaseFirst'
         ], $words));
 
@@ -514,7 +514,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Splits a string into chunks on a given delimiter.
      *
-     * @param string $string The string
+     * @param string $string    The string
      * @param string $delimiter The delimiter to split the string on (defaults to a comma)
      *
      * @return string[] The segments of the string
@@ -912,7 +912,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         // Get the map from Stringy.
-        self::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
+        self::$_asciiCharMap = (new Stringy(''))->getAsciiCharMap();
 
         foreach (Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings as $asciiChar => $values) {
             self::$_asciiCharMap[$asciiChar] = $values;
@@ -953,7 +953,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Otherwise set HTMLPurifier to the actual string encoding
         $config = \HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', (string)static::encoding($string));
+        $config->set('Core.Encoding', static::encoding($string));
 
         // Clean it
         $string = HtmlPurifier::cleanUtf8($string);

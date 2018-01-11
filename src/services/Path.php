@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -138,7 +138,10 @@ class Path extends Component
         $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
 
         if (!is_file($gitignorePath)) {
-            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n");
+            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
+                // Prevent a segfault if this is called recursively
+                'lock' => false,
+            ]);
         }
 
         return $path;
@@ -381,13 +384,7 @@ class Path extends Component
      */
     public function getCachePath(): string
     {
-        $path = Craft::$app->getConfig()->getFileCache()->cachePath;
-        $path = FileHelper::normalizePath(Craft::getAlias($path));
-
-        if (!$path) {
-            $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
-        }
-
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
         FileHelper::createDirectory($path);
 
         return $path;

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -16,6 +16,8 @@ use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\UrlHelper;
+use craft\models\Update;
 use craft\models\UpgradeInfo;
 use craft\models\UpgradePurchase;
 use craft\web\Controller;
@@ -80,50 +82,25 @@ class AppController extends Controller
         $forceRefresh = (bool)$request->getParam('forceRefresh');
         $includeDetails = (bool)$request->getParam('includeDetails');
 
-        try {
-            $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
-        } catch (\Throwable $e) {
-            $updates = false;
-        }
-
-        if (!$updates) {
-            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
-        }
+        $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
 
         $res = [
-            'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
-            'critical' => Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
+            'total' => $updates->getTotal(),
+            'critical' => $updates->getHasCritical(),
         ];
 
         if ($includeDetails) {
-            $res['updates'] = [];
+            $res['updates'] = [
+                'cms' => $this->_transformUpdate($updates->cms, 'craft', 'Craft CMS'),
+                'plugins' => [],
+            ];
 
-            // Craft updates
-            if ($updates->app !== null) {
-                $appUpdateInfo = $updates->app->toArray();
-                $this->_setReleaseAllowances($appUpdateInfo);
-
-                // todo: remove this once the new API stuff is in place
-                $appUpdateInfo['breakpoint'] = false;
-                $appUpdateInfo['expired'] = false;
-
-                $res['updates']['app'] = $appUpdateInfo;
-            }
-
-            // Plugin updates
             $pluginsService = Craft::$app->getPlugins();
-            foreach ($updates->plugins as $pluginUpdate) {
-                /** @var Plugin $plugin */
-                $plugin = $pluginsService->getPluginByPackageName($pluginUpdate->packageName);
-                $pluginUpdateInfo = $pluginUpdate->toArray();
-                $this->_setReleaseAllowances($pluginUpdateInfo);
-
-                // todo: remove this once the new API stuff is in place
-                $pluginUpdateInfo['handle'] = $plugin->id;
-                $pluginUpdateInfo['breakpoint'] = false;
-                $pluginUpdateInfo['expired'] = false;
-
-                $res['updates']['plugins'][] = $pluginUpdateInfo;
+            foreach ($updates->plugins as $handle => $update) {
+                if (($plugin = $pluginsService->getPlugin($handle)) !== null) {
+                    /** @var Plugin $plugin */
+                    $res['updates']['plugins'][] = $this->_transformUpdate($update, $handle, $plugin->name);
+                }
             }
         }
 
@@ -266,9 +243,9 @@ class AppController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else {
-            return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
         }
+
+        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
     }
 
     /**
@@ -288,9 +265,9 @@ class AppController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else {
-            return $this->asErrorJson($response);
         }
+
+        return $this->asErrorJson($response);
     }
 
     /**
@@ -502,31 +479,74 @@ class AppController extends Controller
     // =========================================================================
 
     /**
-     * Sets an `allowed` key on the given update's releases, based on the `allowAutoUpdates` config setting.
+     * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
      *
-     * @param array &$update
+     * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
      *
-     * @return void
+     * @param Update $update         The update model
+     * @param string $handle         The handle of whatever this update is for
+     * @param string $name           The name of whatever this update is for
+     *
+     * @return array
      */
-    private function _setReleaseAllowances(array &$update)
+    private function _transformUpdate(Update $update, string $handle, string $name): array
     {
-        $canPerformUpdates = Craft::$app->getUser()->checkPermission('performUpdates');
-        $allowAutoUpdates = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
+        $arr = $update->toArray();
+        $arr['handle'] = $handle;
+        $arr['name'] = $name;
+        $arr['latestAllowedVersion'] = $this->_latestAllowedVersion($update);
 
-        foreach ($update['releases'] as &$release) {
-            if (!$canPerformUpdates) {
-                $release['allowed'] = false;
-            } else if (is_bool($allowAutoUpdates)) {
-                $release['allowed'] = $allowAutoUpdates;
-            } else if ($allowAutoUpdates === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
-                // Return true if the major and minor versions are still the same
-                $release['allowed'] = (App::majorMinorVersion($release['version']) === App::majorMinorVersion($update['localVersion']));
-            } else if ($allowAutoUpdates === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
-                // Return true if the major version is still the same
-                $release['allowed'] = (App::majorVersion($release['version']) === App::majorVersion($update['localVersion']));
-            } else {
-                $release['allowed'] = false;
-            }
+        switch ($update->status) {
+            case Update::STATUS_EXPIRED:
+                $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
+                    'name' => $name
+                ]);
+                $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
+                    'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency)
+                ]);
+                $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
+                break;
+            case Update::STATUS_BREAKPOINT:
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
+                    'update' => $name.' '.($update->getLatest()->version ?? '')
+                ]);
+            // no break
+            default:
+                if ($arr['latestAllowedVersion'] !== null && $arr['latestAllowedVersion'] === $update->getLatest()->version) {
+                    $arr['ctaText'] = Craft::t('app', 'Update');
+                } else {
+                    $arr['ctaText'] = Craft::t('app', 'Update to {version}', [
+                        'version' => $arr['latestAllowedVersion']
+                    ]);
+                }
         }
+
+        // Find the latest release that we're actually allowed to update to
+
+
+        return $arr;
+    }
+
+    /**
+     * Returns the latest version that the user is allowed to update to, per the
+     * `performUpdates` permission and `allowUpdates` config setting.
+     *
+     * @param Update $update
+     *
+     * @return string|null
+     */
+    private function _latestAllowedVersion(Update $update)
+    {
+        if (Craft::$app->getUser()->checkPermission('performUpdates')) {
+            $allowUpdates = Craft::$app->getConfig()->getGeneral()->allowUpdates;
+        } else {
+            $allowUpdates = false;
+        }
+
+        if ($allowUpdates === true) {
+            return $update->getLatest()->version ?? null;
+        }
+
+        return null;
     }
 }

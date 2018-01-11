@@ -2,12 +2,11 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db;
 
-use Craft;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -124,14 +123,24 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
+     * @return array|null the first row (in terms of an array) of the query result. Null is returned if the query
+     * results in nothing.
      */
     public function one($db = null)
     {
+        $limit = $this->limit;
+        $this->limit = 1;
         try {
-            return parent::one($db);
+            $result = parent::one($db);
+            // Be more like Yii 2.1
+            if ($result === false) {
+                $result = null;
+            }
         } catch (QueryAbortedException $e) {
-            return false;
+            $result = null;
         }
+        $this->limit = $limit;
+        return $result;
     }
 
     /**
@@ -139,11 +148,15 @@ class Query extends \yii\db\Query
      */
     public function scalar($db = null)
     {
+        $limit = $this->limit;
+        $this->limit = 1;
         try {
-            return parent::scalar($db);
+            $result = parent::scalar($db);
         } catch (QueryAbortedException $e) {
-            return false;
+            $result = false;
         }
+        $this->limit = $limit;
+        return $result;
     }
 
     /**
@@ -165,7 +178,7 @@ class Query extends \yii\db\Query
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      *                               If this parameter is not given, the `db` application component will be used.
      *
-     * @return ElementInterface|array|bool The row (in terms of an array) of the query result. False is returned if the query
+     * @return array|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
     public function nth(int $n, YiiConnection $db = null)

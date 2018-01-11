@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -30,7 +30,7 @@ class Path
         // Sanitize
         $path = StringHelper::convertToUtf8($path);
 
-        $segs = preg_split('/[\\/\\\\]/', $path);
+        $segs = array_filter(preg_split('/[\\/\\\\]/', $path));
         $level = 0;
 
         foreach ($segs as $seg) {

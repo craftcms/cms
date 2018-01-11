@@ -174,6 +174,22 @@ $.extend(Craft,
         },
 
         /**
+         * Formats a number.
+         *
+         * @param {string} number
+         * @return string D3 format
+         */
+        formatNumber: function(number, format) {
+            if(typeof format == 'undefined') {
+                format = ',.0f';
+            }
+            
+            var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
+
+            return formatter(number);
+        },
+
+        /**
          * Escapes some HTML.
          *
          * @param {string} str
@@ -1036,7 +1052,6 @@ $.extend(Craft,
          */
         initUiElements: function($container) {
             $('.grid', $container).grid();
-            $('.pane', $container).pane();
             $('.info', $container).infoicon();
             $('.checkbox-select', $container).checkboxselect();
             $('.fieldtoggle', $container).fieldtoggle();
@@ -1351,14 +1366,6 @@ $.extend($.fn,
             });
         },
 
-        pane: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pane')) {
-                    new Craft.Pane(this);
-                }
-            });
-        },
-
         /**
          * Sets the element as a container for a checkbox select.
          */
@@ -1445,15 +1452,8 @@ $.extend($.fn,
                     }
                 }
 
-                var $form;
-
-                // Is this a menu item?
-                if ($btn.data('menu')) {
-                    $form = $btn.data('menu').$anchor.closest('form');
-                }
-                else {
-                    $form = $btn.closest('form');
-                }
+                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.attr('data-action')) {
                     $('<input type="hidden" name="action"/>')

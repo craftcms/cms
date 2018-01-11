@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db\pgsql;
@@ -32,16 +32,6 @@ class Schema extends \yii\db\pgsql\Schema
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        $this->defaultSchema = Craft::$app->getConfig()->getDb()->schema;
-    }
 
     /**
      * Creates a query builder for the database.
@@ -152,7 +142,7 @@ class Schema extends \yii\db\pgsql\Schema
         if (Platform::isWindows()) {
             $envCommand = 'set '.$envCommand.'&&';
         } else {
-            $envCommand .=' ';
+            $envCommand .= ' ';
         }
 
         return $envCommand.
@@ -163,7 +153,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}'.
             ' --if-exists'.
             ' --clean'.
-            ' --file={file}'.
+            ' --file="{file}"'.
             ' --schema={schema}'.
             implode('', $defaultTableIgnoreList);
     }
@@ -181,7 +171,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --port={port}'.
             ' --username={user}'.
             ' --no-password'.
-            ' < {file}';
+            ' < "{file}"';
     }
 
     /**

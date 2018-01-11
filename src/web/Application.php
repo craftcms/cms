@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -13,8 +13,11 @@ use craft\base\Plugin;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\debug\Module as DebugModule;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -82,6 +85,8 @@ class Application extends \yii\web\Application
         parent::init();
 
         $this->_init();
+        $this->ensureResourcePathExists();
+        $this->debugBootstrap();
     }
 
     /**
@@ -141,9 +146,9 @@ class Application extends \yii\web\Application
                 throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', [
                     'url' => "[{$version}]({$url})",
                 ]));
-            } else {
-                throw new ServiceUnavailableHttpException();
             }
+
+            throw new ServiceUnavailableHttpException();
         }
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
@@ -273,9 +278,62 @@ class Application extends \yii\web\Application
         $libPath = Craft::getAlias('@lib');
         Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
-        Craft::setAlias('@bower/jquery.inputmask/dist', $libPath.'/jquery.inputmask');
+        Craft::setAlias('@bower/inputmask/dist', $libPath.'/inputmask');
         Craft::setAlias('@bower/punycode', $libPath.'/punycode');
         Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Ensures that the resources folder exists and is writable.
+     *
+     * @throws InvalidConfigException
+     */
+    protected function ensureResourcePathExists()
+    {
+        $resourceBasePath = Craft::getAlias($this->getConfig()->getGeneral()->resourceBasePath);
+        @FileHelper::createDirectory($resourceBasePath);
+
+        if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
+            throw new InvalidConfigException($resourceBasePath.' doesn’t exist or isn’t writable by PHP.');
+        }
+    }
+
+    /**
+     * Bootstraps the Debug Toolbar if necessary.
+     */
+    protected function debugBootstrap()
+    {
+        $session = $this->getSession();
+
+        if (!$session->getHasSessionId() && !$session->getIsActive()) {
+            return;
+        }
+
+        $isCpRequest = $this->getRequest()->getIsCpRequest();
+
+        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
+        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
+
+        if (!$enableDebugToolbarForCp && !$enableDebugToolbarForSite) {
+            return;
+        }
+
+        // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
+        if (!$isCpRequest) {
+            $svg = rawurlencode(file_get_contents(dirname(__DIR__).'/icons/c.svg'));
+            DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
+        }
+
+        if (($isCpRequest && !$enableDebugToolbarForCp) || (!$isCpRequest && !$enableDebugToolbarForSite)) {
+            return;
+        }
+
+        /** @var DebugModule $module */
+        $module = $this->getModule('debug');
+        $module->bootstrap($this);
     }
 
     // Private Methods
@@ -542,14 +600,15 @@ class Application extends \yii\web\Application
             }
 
             $actionSegs = $request->getActionSegments();
+            $singleAction = $request->getIsSingleActionRequest();
 
             if ($actionSegs && (
                     $actionSegs === ['users', 'login'] ||
-                    $actionSegs === ['users', 'logout'] ||
+                    ($actionSegs === ['users', 'logout'] && $singleAction) ||
+                    ($actionSegs === ['users', 'verify-email'] && $singleAction) ||
+                    ($actionSegs === ['users', 'set-password'] && $singleAction) ||
                     $actionSegs === ['users', 'forgot-password'] ||
                     $actionSegs === ['users', 'send-password-reset-email'] ||
-                    $actionSegs === ['users', 'set-password'] ||
-                    $actionSegs === ['users', 'verify-email'] ||
                     $actionSegs[0] === 'update'
                 )
             ) {

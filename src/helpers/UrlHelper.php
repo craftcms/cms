@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -18,11 +18,6 @@ use yii\base\Exception;
  */
 class UrlHelper
 {
-    // Properties
-    // =========================================================================
-
-    private static $_x;
-
     // Public Methods
     // =========================================================================
 
@@ -335,7 +330,7 @@ class UrlHelper
         }
 
         if ($currentSite && $currentSite->baseUrl) {
-            $baseUrl = $currentSite->baseUrl;
+            $baseUrl = Craft::getAlias($currentSite->baseUrl);
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();
@@ -419,7 +414,7 @@ class UrlHelper
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && $generalConfig->addTrailingSlashesToUrls) {
+                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls) {
                     $url .= '/';
                 }
             } else {

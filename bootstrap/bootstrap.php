@@ -4,7 +4,7 @@
  *
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 use craft\helpers\ArrayHelper;
@@ -152,20 +152,22 @@ ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
 error_reporting(E_ALL);
 
-// Determine if Craft is running in Dev Mode
+// Load the general config
 // -----------------------------------------------------------------------------
 
-// Initialize the Config service
 $configService = new Config();
 $configService->env = $environment;
 $configService->configDir = $configPath;
 $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
+$generalConfig = $configService->getConfigFromFile('general');
 
-// We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
+// Determine if Craft is running in Dev Mode
+// -----------------------------------------------------------------------------
+
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = ArrayHelper::getValue($configService->getConfigFromFile('general'), 'devMode', false);
+    $devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
 }
 
 if ($devMode) {
@@ -207,6 +209,16 @@ Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 
+// Set any custom aliases
+$customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
+if (is_array($customAliases)) {
+    foreach ($customAliases as $name => $value) {
+        if (is_string($value)) {
+            Craft::setAlias($name, $value);
+        }
+    }
+}
+
 // Load the config
 $components = [
     'config' => $configService,
@@ -228,41 +240,4 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-$class = "craft\\{$appType}\\Application";
-/** @var $app craft\web\Application|craft\console\Application */
-$app = new $class($config);
-
-if ($appType === 'web') {
-    // See if the resource base path exists and is writable
-    $resourceBasePath = Craft::getAlias($app->config->getGeneral()->resourceBasePath);
-    @FileHelper::createDirectory($resourceBasePath);
-
-    if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-        exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
-    }
-
-    // See if we should enable the Debug module
-    $session = $app->getSession();
-
-    if ($session->getHasSessionId() || $session->getIsActive()) {
-        $isCpRequest = $app->getRequest()->getIsCpRequest();
-
-        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
-        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
-
-        if ($enableDebugToolbarForCp || $enableDebugToolbarForSite) {
-            // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
-            if (!$isCpRequest) {
-                \yii\debug\Module::setYiiLogo("data:image/svg+xml;utf8,<svg width='30px' height='30px' viewBox='0 0 30 30' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g fill='#DA5B47'><path d='M21.5549104,8.56198524 C21.6709104,8.6498314 21.7812181,8.74275447 21.8889104,8.83706217 L23.6315258,7.47013909 L23.6858335,7.39952371 C23.4189104,7.12998524 23.132295,6.87506217 22.8224489,6.64075447 C18.8236796,3.62275447 12.7813719,4.88598524 9.32737193,9.46275447 C5.87321809,14.0393699 6.31475655,20.195216 10.3135258,23.2138314 C13.578295,25.6779852 18.2047565,25.287216 21.6732181,22.5699852 L21.6693719,22.5630622 L20.0107565,21.2621391 C17.4407565,22.9144468 14.252295,23.0333699 11.9458335,21.2927545 C8.87414116,18.9746006 8.53506424,14.245216 11.188295,10.7293699 C13.8419873,7.21398524 18.4832181,6.24367755 21.5549104,8.56198524'></path></g></svg>");
-            }
-
-            if (($isCpRequest && $enableDebugToolbarForCp) || (!$isCpRequest && $enableDebugToolbarForSite)) {
-                /** @var yii\debug\Module $module */
-                $module = $app->getModule('debug');
-                $module->bootstrap($app);
-            }
-        }
-    }
-}
-
-return $app;
+return Craft::createObject($config);

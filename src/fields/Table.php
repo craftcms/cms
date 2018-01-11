@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -186,6 +186,8 @@ class Table extends Field
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decode($value);
+        } else if ($value === null && $this->isFresh($element) && is_array($this->defaults)) {
+            $value = array_values($this->defaults);
         }
 
         if (is_array($value) && !empty($this->columns)) {
@@ -225,7 +227,7 @@ class Table extends Field
             }
         }
 
-        return parent::serializeValue($value, $element);
+        return $value;
     }
 
     /**
@@ -260,14 +262,6 @@ class Table extends Field
                 }
             }
             unset($column);
-
-            if ($this->isFresh($element)) {
-                $defaults = $this->defaults;
-
-                if (is_array($defaults)) {
-                    $value = array_values($defaults);
-                }
-            }
 
             $id = Craft::$app->getView()->formatInputId($this->handle);
 

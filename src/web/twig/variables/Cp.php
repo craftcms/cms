@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -14,6 +14,7 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 
 /**
@@ -34,6 +35,40 @@ class Cp extends Component
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns the Craft ID account.
+     *
+     * @return array|null
+     */
+    public function craftIdAccount()
+    {
+        try {
+            return Craft::$app->getPluginStore()->getCraftIdAccount();
+        } catch (ServerException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns true if Craft ID is enabled.
+     *
+     * @return string
+     */
+    public function enableCraftId()
+    {
+        return Craft::$app->getPluginStore()->enableCraftId;
+    }
+
+    /**
+     * Returns the Craft ID account URL.
+     *
+     * @return string
+     */
+    public function craftIdAccountUrl()
+    {
+        return Craft::$app->getPluginStore()->craftIdEndpoint.'/account';
+    }
 
     /**
      * Returns the Control Panel nav items.
@@ -128,6 +163,11 @@ class Cp extends Component
                 'label' => Craft::t('app', 'Settings'),
                 'icon' => 'settings'
             ];
+            $navItems[] = [
+                'url' => 'plugin-store',
+                'label' => Craft::t('app', 'Plugin Store'),
+                'icon' => 'plugin'
+            ];
         }
 
         // Allow plugins to modify the nav
@@ -180,54 +220,54 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/sliders.svg')),
+            'icon' => '@app/icons/sliders.svg',
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/world.svg')),
+            'icon' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
         $settings[$label]['routes'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/routes.svg')),
+            'icon' => '@app/icons/routes.svg',
             'label' => Craft::t('app', 'Routes')
         ];
         $settings[$label]['users'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
+            'icon' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')
         ];
         $settings[$label]['email'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/envelope.svg')),
+            'icon' => '@app/icons/envelope.svg',
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/plugin.svg')),
+            'icon' => '@app/icons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/field.svg')),
+            'icon' => '@app/icons/field.svg',
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/newspaper.svg')),
+            'icon' => '@app/icons/newspaper.svg',
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/photo.svg')),
+            'icon' => '@app/icons/photo.svg',
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/globe.svg')),
+            'icon' => '@app/icons/globe.svg',
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/folder-open.svg')),
+            'icon' => '@app/icons/folder-open.svg',
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/tags.svg')),
+            'icon' => '@app/icons/tags.svg',
             'label' => Craft::t('app', 'Tags')
         ];
 
@@ -240,7 +280,7 @@ class Cp extends Component
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/'.$plugin->id,
-                    'iconSvg' => $pluginsService->getPluginIconSvg($plugin->id),
+                    'icon' => $pluginsService->getPluginIconSvg($plugin->id),
                     'label' => $plugin->name
                 ];
             }

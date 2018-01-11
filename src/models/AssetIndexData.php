@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -74,10 +74,9 @@ class AssetIndexData extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'timestamp';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'timestamp';
+        return $attributes;
     }
 
     /**

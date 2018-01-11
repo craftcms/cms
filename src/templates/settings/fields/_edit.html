@@ -26,8 +26,8 @@
         instructions: "What this field will be called in the CP."|t('app'),
         id: 'name',
         name: 'name',
-        value: (field is not empty ? field.name : null),
-        errors: (field is not empty ? field.getErrors('name') : null),
+        value: field.name,
+        errors: field.getErrors('name'),
         required: true,
         translatable: true,
         autofocus: true
@@ -40,8 +40,8 @@
         class: 'code',
         name: 'handle',
         maxlength: 64,
-        value: (field is not empty ? field.handle : null),
-        errors: (field is not empty ? field.getErrors('handle') : null),
+        value: field.handle,
+        errors: field.getErrors('handle'),
         required: true,
     }) }}
 
@@ -51,8 +51,8 @@
         id: 'instructions',
         class: 'nicetext',
         name: 'instructions',
-        value: (field is not empty ? field.instructions : null),
-        errors: (field is not empty ? field.getErrors('instructions') : null),
+        value: field.instructions,
+        errors: field.getErrors('instructions'),
         translatable: true
     }) }}
 
@@ -79,8 +79,9 @@
                     name: 'translationMethod',
                     options: [
                         'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
-                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
                         'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
+                        'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
+                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
                         'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
                     ]|filter,
                     value: field.translationMethod,
@@ -106,7 +107,7 @@
 
     <hr>
 
-    {% for type in allowedFieldTypes %}
+    {% for type in allFieldTypes %}
         {% set isCurrent = (type == className(field)) %}
         <div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
             {% namespace 'types['~type~']' %}

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -189,14 +189,12 @@ class Image
      */
     public static function imageSize(string $filePath): array
     {
-        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
+        if (FileHelper::isSvg($filePath)) {
             $svg = file_get_contents($filePath);
-
             return static::parseSvgSize($svg);
         }
 
         $image = Craft::$app->getImages()->loadImage($filePath);
-
         return [$image->getWidth(), $image->getHeight()];
     }
 
@@ -324,7 +322,7 @@ class Image
             $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+        } else if (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
             $width = floor($viewboxMatch[3]);
             $height = floor($viewboxMatch[4]);
         } else {

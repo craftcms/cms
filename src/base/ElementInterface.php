@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -154,7 +154,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria The element ID or a set of element criteria parameters
      *
-     * @return static Element instance matching the condition, or null if nothing matches.
+     * @return static|null Element instance matching the condition, or null if nothing matches.
      */
     public static function findOne($criteria = null);
 
@@ -199,7 +199,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return static[] an array of Element instances, or an empty array if nothing matches.
      */
-    public static function findAll($criteria = null);
+    public static function findAll($criteria = null): array;
 
     /**
      * Returns all of the possible statuses that elements of this type may have.
@@ -228,6 +228,8 @@ interface ElementInterface extends ComponentInterface
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
+     * - **`sites`** – An array of site IDs that the source should be shown for, on multi-site element indexes. (Optional;
+     *   by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
      * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
@@ -673,7 +675,7 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
-     * Returns an array of the element’s normalized custom field values, indexed by their handles.
+     * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values need to be returned.
      *                                    Defaults to null, meaning all fields’ values will be returned.

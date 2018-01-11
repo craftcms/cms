@@ -51,8 +51,8 @@
 
 {% from _self import permissionList %}
 
-
-{% for category, catPermissions in craft.app.userPermissions.getAllPermissions() %}
+{% set user = userOrGroup and className(userOrGroup) == 'craft\elements\User' ? userOrGroup : null %}
+{% for category, catPermissions in craft.app.userPermissions.getAssignablePermissions(user) %}
     <div class="user-permissions">
         <h3>{{ category }}</h3>
         <div class="select-all"></div>

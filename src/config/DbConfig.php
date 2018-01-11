@@ -2,14 +2,14 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\config;
 
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 
 /**
  * DB config class
@@ -17,7 +17,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbConfig extends Object
+class DbConfig extends BaseObject
 {
     // Constants
     // =========================================================================
@@ -117,8 +117,49 @@ class DbConfig extends Object
      */
     public function init()
     {
+        // If the DSN is already set, parse it
+        if ($this->dsn) {
+            if (($pos = strpos($this->dsn, ':')) === false) {
+                throw new InvalidConfigException('Invalid DSN: '.$this->dsn);
+            }
+            $this->driver = substr($this->dsn, 0, $pos);
+            $params = substr($this->dsn, $pos + 1);
+            foreach (explode(';', $params) as $param) {
+                if (($pos = strpos($param, '=')) === false) {
+                    throw new InvalidConfigException('Invalid DSN param: '.$param);
+                }
+                $paramName = substr($param, 0, $pos);
+                $paramValue = substr($params, $pos + 1);
+                switch ($paramName) {
+                    case 'host':
+                        $this->server = $paramValue;
+                        break;
+                    case 'port':
+                        $this->port = $paramValue;
+                        break;
+                    case 'dbname':
+                        $this->database = $paramValue;
+                        break;
+                    case 'unix_socket':
+                        $this->unixSocket = $paramValue;
+                        break;
+                    case 'charset':
+                        $this->charset = $paramValue;
+                        break;
+                    case 'user': // PG only
+                        $this->user = $paramValue;
+                        break;
+                    case 'password': // PG only
+                        $this->password = $paramValue;
+                        break;
+                    default:
+                        throw new InvalidConfigException('Unsupported DSN param: '.$paramName);
+                }
+            }
+        }
+
         // If $url was set, parse it to set other properties
-        if ($this->url !== null) {
+        if ($this->url) {
             $url = parse_url($this->url);
             if (isset($url['scheme'])) {
                 $scheme = strtolower($url['scheme']);
@@ -179,9 +220,7 @@ class DbConfig extends Object
         }
 
         // Set the DSN
-        if ($this->dsn === null || $this->dsn === '') {
-            $this->updateDsn();
-        }
+        $this->updateDsn();
     }
 
     /**
@@ -189,7 +228,9 @@ class DbConfig extends Object
      */
     public function updateDsn()
     {
-        if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
+        if (!$this->database) {
+            $this->dsn = null;
+        } else if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
             $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
         } else {
             $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\et;
@@ -26,6 +26,11 @@ use yii\base\Exception;
  */
 class EtTransport
 {
+    // Constants
+    // =========================================================================
+
+    const CACHE_DURATION = 86400;
+
     // Properties
     // =========================================================================
 
@@ -165,12 +170,12 @@ class EtTransport
                             }
 
                             // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
-                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-                            $cacheService->set('licensedEdition', $etModel->licensedEdition);
-                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus, self::CACHE_DURATION);
+                            $cacheService->set('licensedEdition', $etModel->licensedEdition, self::CACHE_DURATION);
+                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0, self::CACHE_DURATION);
 
                             if ($etModel->licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                                $cacheService->set('licensedDomain', $etModel->licensedDomain);
+                                $cacheService->set('licensedDomain', $etModel->licensedDomain, self::CACHE_DURATION);
                             }
 
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {

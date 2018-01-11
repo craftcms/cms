@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\feeds;
@@ -67,7 +67,7 @@ class Feeds extends Component
         $offset = ($offset ?: 0);
 
         // Key based on the classname, url, limit and offset.
-        $key = md5(Feeds::className().'.'.$url.'.'.$limit.'.'.$offset);
+        $key = md5(self::class.'.'.$url.'.'.$limit.'.'.$offset);
 
         // See if we have this cached already.
         if (($cached = Craft::$app->getCache()->get($key)) !== false) {

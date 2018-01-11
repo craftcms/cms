@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -181,7 +181,7 @@ class SystemMessages extends Component
         // Combine them to create the final message
         $message = clone $default;
 
-        if ($override !== false) {
+        if ($override) {
             $message->subject = $override['subject'];
             $message->body = $override['body'];
         }

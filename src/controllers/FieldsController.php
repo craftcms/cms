@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -160,19 +160,20 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         if (!$field->id) {
-            $allowedFieldTypes = $allFieldTypes;
+            $compatibleFieldTypes = $allFieldTypes;
         } else {
-            $allowedFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
+            $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /** @var string[]|FieldInterface[] $allowedFieldTypes */
+        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
 
-        foreach ($allowedFieldTypes as $class) {
+        foreach ($allFieldTypes as $class) {
             if ($class === get_class($field) || $class::isSelectable()) {
+                $compatible = in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
-                    'label' => $class::displayName()
+                    'label' => $class::displayName().($compatible ? '' : ' ⚠️'),
                 ];
             }
         }
@@ -232,18 +233,18 @@ class FieldsController extends Controller
             $title = Craft::t('app', 'Create a new field');
         }
 
-        return $this->renderTemplate('settings/fields/_edit', [
-            'fieldId' => $fieldId,
-            'field' => $field,
-            'fieldTypeOptions' => $fieldTypeOptions,
-            'supportedTranslationMethods' => $supportedTranslationMethods,
-            'allowedFieldTypes' => $allowedFieldTypes,
-            'groupId' => $groupId,
-            'groupOptions' => $groupOptions,
-            'crumbs' => $crumbs,
-            'title' => $title,
-            'docsUrl' => 'http://craftcms.com/docs/fields#field-layouts',
-        ]);
+        return $this->renderTemplate('settings/fields/_edit', compact(
+            'fieldId',
+            'field',
+            'allFieldTypes',
+            'fieldTypeOptions',
+            'supportedTranslationMethods',
+            'compatibleFieldTypes',
+            'groupId',
+            'groupOptions',
+            'crumbs',
+            'title'
+        ));
     }
 
     /**

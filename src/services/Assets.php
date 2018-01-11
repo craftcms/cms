@@ -2,27 +2,26 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
 
 use Craft;
 use craft\base\Volume;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
-use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
 use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -66,9 +65,14 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
      */
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
+
+    /**
+     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     */
+    const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
     // Properties
     // =========================================================================
@@ -205,7 +209,7 @@ class Assets extends Component
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new InvalidParamException('Folder '.$folder->id.' doesn\'t have a parent.');
+            throw new InvalidParamException('Folder '.$folder->id.' doesn’t have a parent.');
         }
 
         $existingFolder = $this->findFolder([
@@ -258,7 +262,7 @@ class Assets extends Component
 
         if (!$folder->parentId) {
             throw new AssetLogicException(Craft::t('app',
-                "It's not possible to rename the top folder of a Volume."));
+                'It’s not possible to rename the top folder of a Volume.'));
         }
 
         $conflictingFolder = $this->findFolder([
@@ -539,10 +543,13 @@ class Assets extends Component
      *
      * @param Asset                            $asset
      * @param AssetTransform|string|array|null $transform
+     * @param bool|null                        $generateNow Whether the transformed image should be generated immediately if it doesn’t exist.
+     *                                                      Default is null, meaning it will be left up to the `generateTransformsBeforePageLoad`
+     *                                                      config setting.
      *
      * @return string|null
      */
-    public function getAssetUrl(Asset $asset, $transform = null)
+    public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
     {
         // Maybe a plugin wants to do something here
         $event = new GetAssetUrlEvent([
@@ -571,7 +578,11 @@ class Assets extends Component
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
         }
 
-        if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
+        if ($generateNow === null) {
+            $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        }
+
+        if ($generateNow) {
             try {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
             } catch (ImageException $exception) {
@@ -603,13 +614,51 @@ class Assets extends Component
      */
     public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
     {
+        // Maybe a plugin wants to do something here
+        $event = new GetAssetThumbUrlEvent([
+            'asset' => $asset,
+            'size' => $size,
+            'generate' => $generate,
+        ]);
+        $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
+        $path = $this->getThumbPath($asset, $size, $generate);
+
+        if ($path === false) {
+            return UrlHelper::actionUrl('assets/generate-thumb', [
+                'uid' => $asset->uid,
+                'size' => $size,
+            ]);
+        }
+
+        // Publish the thumb directory (if necessary) and return the thumb's published URL
+        $dir = dirname($path);
+        $name = pathinfo($path, PATHINFO_BASENAME);
+        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true, $name);
+    }
+
+    /**
+     * Returns the CP thumbnail path for a given asset.
+     *
+     * @param Asset $asset
+     * @param int   $size
+     * @param bool  $generate Whether the thumbnail should be generated if it doesn't exist yet.
+     *
+     * @return string|false The thumbnail path, or `false` if it doesn't exist and $generate = false.
+     * @see getThumbUrl()
+     */
+    public function getThumbPath(Asset $asset, int $size, bool $generate = true)
+    {
         $ext = $asset->getExtension();
 
         // If it's not an image, return a generic file extension icon
         if (!Image::canManipulateAsImage($ext)) {
-            $dir = Craft::$app->getPath()->getAssetsIconsPath();
-            $name = strtolower($ext).'.svg';
-            $path = $dir.DIRECTORY_SEPARATOR.$name;
+            $path = Craft::$app->getPath()->getAssetsIconsPath().DIRECTORY_SEPARATOR.strtolower($ext).'.svg';
 
             if (!file_exists($path)) {
                 $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
@@ -629,25 +678,21 @@ class Assets extends Component
                 FileHelper::writeToFile($path, $svg);
             }
 
-            return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+            return $path;
         }
 
         // Make the thumb a JPG if the image format isn't safe for web
         $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
         $dir = Craft::$app->getPath()->getAssetThumbsPath().DIRECTORY_SEPARATOR.$asset->id;
-        $name = "thumb-{$size}x{$size}.{$ext}";
-        $path = $dir.DIRECTORY_SEPARATOR.$name;
+        $path = $dir.DIRECTORY_SEPARATOR."thumb-{$size}x{$size}.{$ext}";
 
         if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
-            // If we're not ready to generate it yet, return the thumb generation URL instead
+            // Bail if we're not ready to generate it yet
             if (!$generate) {
-                return UrlHelper::actionUrl('assets/generate-thumb', [
-                    'uid' => $asset->uid,
-                    'size' => $size,
-                ]);
+                return false;
             }
 
-            // Generate the thumb
+            // Generate it
             FileHelper::createDirectory($dir);
             $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
             Craft::$app->getImages()->loadImage($imageSource, false, $size)
@@ -655,8 +700,7 @@ class Assets extends Component
                 ->saveAs($path);
         }
 
-        // Publish the thumb directory (if necessary) and return the thumb's published URL
-        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
+        return $path;
     }
 
     /**
@@ -761,8 +805,7 @@ class Assets extends Component
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
-        if ($fullPath)
-        {
+        if ($fullPath) {
             // If we don't have a folder matching these, create a new one
             $parts = explode('/', trim($fullPath, '/'));
 

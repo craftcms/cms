@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\i18n;
@@ -12,10 +12,10 @@ use craft\helpers\Localization;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
 use yii\helpers\FormatConverter;
 
 /**
@@ -26,7 +26,7 @@ use yii\helpers\FormatConverter;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Locale extends Object
+class Locale extends BaseObject
 {
     // Constants
     // =========================================================================
@@ -438,24 +438,24 @@ class Locale extends Object
             } else {
                 $config['dateTimeFormats'] = [
                     'short' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_SHORT),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_SHORT),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_SHORT),
+                        'date' => $this->getDateFormat(self::LENGTH_SHORT),
+                        'time' => $this->getTimeFormat(self::LENGTH_SHORT),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_SHORT),
                     ],
                     'medium' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_MEDIUM),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_MEDIUM),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_MEDIUM),
+                        'date' => $this->getDateFormat(self::LENGTH_MEDIUM),
+                        'time' => $this->getTimeFormat(self::LENGTH_MEDIUM),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_MEDIUM),
                     ],
                     'long' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_LONG),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_LONG),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_LONG),
+                        'date' => $this->getDateFormat(self::LENGTH_LONG),
+                        'time' => $this->getTimeFormat(self::LENGTH_LONG),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_LONG),
                     ],
                     'full' => [
-                        'date' => $this->getDateFormat(Locale::LENGTH_FULL),
-                        'time' => $this->getTimeFormat(Locale::LENGTH_FULL),
-                        'datetime' => $this->getDateTimeFormat(Locale::LENGTH_FULL),
+                        'date' => $this->getDateFormat(self::LENGTH_FULL),
+                        'time' => $this->getTimeFormat(self::LENGTH_FULL),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_FULL),
                     ],
                 ];
             }
@@ -540,21 +540,21 @@ class Locale extends Object
             }
 
             return $formatter->format(new DateTime('1970-'.sprintf('%02d', $month).'-01'));
-        } else {
-            $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
+        }
 
-            switch ($length) {
-                case self::LENGTH_ABBREVIATED:
-                    return $this->_data[$which]['abbreviated'][$month - 1];
-                    break; // S
-                case self::LENGTH_SHORT:
-                case self::LENGTH_MEDIUM:
-                    return $this->_data[$which]['medium'][$month - 1];
-                    break; // Sep
-                default:
-                    return $this->_data[$which]['full'][$month - 1];
-                    break; // September
-            }
+        $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
+
+        switch ($length) {
+            case self::LENGTH_ABBREVIATED:
+                return $this->_data[$which]['abbreviated'][$month - 1];
+                break; // S
+            case self::LENGTH_SHORT:
+            case self::LENGTH_MEDIUM:
+                return $this->_data[$which]['medium'][$month - 1];
+                break; // Sep
+            default:
+                return $this->_data[$which]['full'][$month - 1];
+                break; // September
         }
     }
 
@@ -622,23 +622,23 @@ class Locale extends Object
             // 1970-01-09 => Friday (5 + 4)
             // 1970-01-10 => Saturday (6 + 4)
             return $formatter->format(new DateTime('1970-01-'.sprintf('%02d', $day + 4)));
-        } else {
-            $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
+        }
 
-            switch ($length) {
-                case self::LENGTH_ABBREVIATED:
-                    // T
-                    return $this->_data[$which]['abbreviated'][$day];
-                case self::LENGTH_SHORT:
-                    // Tu
-                    return $this->_data[$which]['short'][$day];
-                case self::LENGTH_MEDIUM:
-                    // Tue
-                    return $this->_data[$which]['medium'][$day];
-                default:
-                    // Tuesday
-                    return $this->_data[$which]['full'][$day];
-            }
+        $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
+
+        switch ($length) {
+            case self::LENGTH_ABBREVIATED:
+                // T
+                return $this->_data[$which]['abbreviated'][$day];
+            case self::LENGTH_SHORT:
+                // Tu
+                return $this->_data[$which]['short'][$day];
+            case self::LENGTH_MEDIUM:
+                // Tue
+                return $this->_data[$which]['medium'][$day];
+            default:
+                // Tuesday
+                return $this->_data[$which]['full'][$day];
         }
     }
 

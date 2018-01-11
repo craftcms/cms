@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -21,6 +21,11 @@ class HandleValidator extends Validator
 {
     // Static
     // =========================================================================
+
+    /**
+     * @var string
+     */
+    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
 
     /**
      * @var array
@@ -57,16 +62,11 @@ class HandleValidator extends Validator
     // =========================================================================
 
     /**
-     * @var string
-     */
-    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
-
-    /**
      * @var array
      */
     public $reservedWords = [];
 
-    // Protected Methods
+    // Public Methods
     // =========================================================================
 
     /**

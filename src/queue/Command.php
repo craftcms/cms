@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
@@ -31,6 +31,20 @@ class Command extends \yii\queue\cli\Command
      * @var string
      */
     public $defaultAction = 'info';
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function isWorkerAction($actionID)
+    {
+        return in_array($actionID, ['run', 'listen'], true);
+    }
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -657,7 +657,9 @@ class Categories extends Component
             ) {
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
-                $ancestorQuery = $category->getAncestors();
+                $ancestorQuery = $category->getAncestors()
+                    ->status(null)
+                    ->enabledForSite(false);
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);

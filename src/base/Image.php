@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -10,7 +10,7 @@ namespace craft\base;
 use craft\errors\ImageException;
 use craft\helpers\Image as ImageHelper;
 use craft\image\Svg;
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Base Image class.
@@ -20,7 +20,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class Image extends Object
+abstract class Image extends BaseObject
 {
     /**
      * Returns the width of the image.

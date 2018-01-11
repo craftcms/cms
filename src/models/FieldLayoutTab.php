@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -139,5 +140,15 @@ class FieldLayoutTab extends Model
     public function setFields(array $fields)
     {
         $this->_fields = $fields;
+    }
+
+    /**
+     * Returns the tab’s anchor name.
+     *
+     * @return string
+     */
+    public function getHtmlId(): string
+    {
+        return 'tab-'.StringHelper::toKebabCase($this->name);
     }
 }

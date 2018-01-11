@@ -3,17 +3,13 @@
 {% extends "_layouts/cp" %}
 {% set title = "Globals"|t('app') %}
 
-{% set extraPageHeaderHtml %}
-    <div class="buttons right">
-        <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t('app') }}</a>
-    </div>
-{% endset %}
+{% block actionButton %}
+    <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t('app') }}</a>
+{% endblock %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
-
-{% set docsUrl = 'http://craftcms.com/docs/globals' %}
 
 
 {% set globalSets = craft.app.globals.getAllSets() %}

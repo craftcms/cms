@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -65,7 +65,7 @@ class StructureElement extends ActiveRecord
     public static function find(): StructuredElementQuery
     {
         /** @var StructuredElementQuery $query */
-        $query = Craft::createObject(StructuredElementQuery::class, [get_called_class()]);
+        $query = Craft::createObject(StructuredElementQuery::class, [static::class]);
 
         return $query;
     }

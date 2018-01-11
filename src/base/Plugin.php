@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -121,6 +121,8 @@ class Plugin extends Module implements PluginInterface
             $migrator->addMigrationHistory($name);
         }
 
+        $this->isInstalled = true;
+
         $this->afterInstall();
 
         return null;
@@ -206,17 +208,16 @@ class Plugin extends Module implements PluginInterface
      */
     public function getCpNavItem()
     {
-        if (($iconPath = $this->cpNavIconPath()) !== null) {
-            $iconSvg = file_get_contents($iconPath);
-        } else {
-            $iconSvg = false;
-        }
-
-        return [
+        $ret = [
             'label' => $this->name,
             'url' => $this->id,
-            'iconSvg' => $iconSvg
         ];
+
+        if (($iconPath = $this->cpNavIconPath()) !== null) {
+            $ret['icon'] = $iconPath;
+        }
+
+        return $ret;
     }
 
     // Protected Methods

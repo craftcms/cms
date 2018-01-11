@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\db\mysql;
@@ -153,7 +153,7 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         $defaultArgs =
-            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
             ' --add-drop-table'.
             ' --comments'.
             ' --create-options'.
@@ -167,7 +167,7 @@ class Schema extends \yii\db\mysql\Schema
             $defaultArgs.
             ' --single-transaction'.
             ' --no-data'.
-            ' --result-file={file}'.
+            ' --result-file="{file}"'.
             ' {database}';
 
         $dataDump = 'mysqldump'.
@@ -175,7 +175,7 @@ class Schema extends \yii\db\mysql\Schema
             ' --no-create-info'.
             implode('', $defaultTableIgnoreList).
             ' {database}'.
-            ' >> {file}';
+            ' >> "{file}"';
 
         return $schemaDump.' && '.$dataDump;
     }
@@ -188,9 +188,9 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultRestoreCommand(): string
     {
         return 'mysqldump'.
-            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
             ' {database}'.
-            ' < {file}';
+            ' < "{file}"';
     }
 
     /**

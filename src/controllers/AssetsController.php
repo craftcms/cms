@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -25,6 +25,7 @@ use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -122,7 +123,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n").implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', 'Failed to save the Asset:').implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -173,7 +174,6 @@ class AssetsController extends Controller
             (empty($assetId) && empty($targetFilename)) ||
             ($uploadedFile === null && empty($sourceAssetId))
         ) {
-
             throw new BadRequestHttpException('Incorrect combination of parameters.');
         }
 
@@ -181,11 +181,11 @@ class AssetsController extends Controller
         $assetToReplace = null;
 
         if ($assetId && !$assetToReplace = $assets->getAssetById($assetId)) {
-            throw new NotFoundHttpException("Asset not found.");
+            throw new NotFoundHttpException('Asset not found.');
         }
 
         if ($sourceAssetId && !$sourceAsset = $assets->getAssetById($sourceAssetId)) {
-            throw new NotFoundHttpException("Asset not found.");
+            throw new NotFoundHttpException('Asset not found.');
         }
 
         $this->_requirePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
@@ -197,12 +197,16 @@ class AssetsController extends Controller
                 $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
-            } elseif (!empty($sourceAsset)) {
+            } else if (!empty($sourceAsset)) {
                 // Or replace using an existing Asset
-                $tempPath = $sourceAsset->getCopyOfFile();
 
-                // See if we can figure out a definite Asset to replace.
-                if (empty($assetToReplace) && $sourceAsset) {
+                // See if we can find an Asset to replace.
+                if (empty($assetToReplace)) {
+                    // Make sure the extension didn't change
+                    if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
+                        throw new Exception($targetFilename.' doesn\'t have the original file extension.');
+                    }
+
                     $assetToReplace = Asset::find()
                         ->select(['elements.id'])
                         ->folderId($sourceAsset->folderId)
@@ -212,6 +216,7 @@ class AssetsController extends Controller
 
                 // If we have an actual asset for which to replace the file, just do it.
                 if (!empty($assetToReplace)) {
+                    $tempPath = $sourceAsset->getCopyOfFile();
                     $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->filename);
                     Craft::$app->getElements()->deleteElement($sourceAsset);
                 } else {
@@ -532,7 +537,7 @@ class AssetsController extends Controller
                                 $targetPrefixLength)] = $existingFolder->id;
                         }
                     }
-                } elseif ($existingFolder && $force) {
+                } else if ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
                     $targetVolume->deleteDir(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
                 }
@@ -571,7 +576,7 @@ class AssetsController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to edit does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
         }
 
         $focal = null;
@@ -579,7 +584,7 @@ class AssetsController extends Controller
             $focal = $asset->getFocalPoint();
         }
 
-        $html = Craft::$app->getView()->renderTemplate('_special/image_editor');
+        $html = $this->getView()->renderTemplate('_special/image_editor');
 
         return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }
@@ -668,6 +673,7 @@ class AssetsController extends Controller
             $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
             $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
             $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
+            $imageChanged = $imageCropped || $imageRotated || $imageFlipped;
 
             $imageCopy = $asset->getCopyOfFile();
 
@@ -727,13 +733,26 @@ class AssetsController extends Controller
                 $image->crop($x, $x + $width, $y, $y + $height);
             }
 
-            if ($imageCropped || $imageRotated || $imageFlipped) {
+            if ($imageChanged) {
                 $image->saveAs($imageCopy);
             }
 
             if ($replace) {
+                $nukeTransforms = $asset->focalPoint !== $focal;
                 $asset->focalPoint = $focal;
-                $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+
+                if ($nukeTransforms) {
+                    $transforms = Craft::$app->getAssetTransforms();
+                    $transforms->deleteCreatedTransformsForAsset($asset);
+                    $transforms->deleteTransformIndexDataByAssetId($assetId);
+                }
+
+                // Only replace file if it changed, otherwise just save changed focal points
+                if ($imageChanged) {
+                    $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+                } else if ($focal) {
+                    Craft::$app->getElements()->saveElement($asset);
+                }
             } else {
                 $newAsset = new Asset();
                 $newAsset->avoidFilenameConflicts = true;
@@ -772,7 +791,7 @@ class AssetsController extends Controller
         $asset = $assetService->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to download does not exist.'));
         }
 
         $this->_requirePermissionByAsset('viewVolume', $asset);

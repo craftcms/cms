@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\image;
@@ -16,15 +16,14 @@ use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
-use Imagine\Gd\Image as GdImage;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
+use Imagine\Image\AbstractImage;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface as Imagine;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
-use Imagine\Imagick\Image as ImagickImage;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use yii\base\ErrorException;
 
@@ -60,7 +59,7 @@ class Raster extends Image
     private $_quality = 0;
 
     /**
-     * @var ImagickImage|GdImage|null
+     * @var AbstractImage|null
      */
     private $_image;
 
@@ -110,6 +109,16 @@ class Raster extends Image
         $this->_quality = $generalConfig->defaultImageQuality;
 
         parent::__construct($config);
+    }
+
+    /**
+     * Return the Imagine Image instance
+     *
+     * @return AbstractImage|null
+     */
+    public function getImagineImage()
+    {
+        return $this->_image;
     }
 
     /**
@@ -302,7 +311,7 @@ class Raster extends Image
 
                     $y1 = 0;
                     $y2 = $y1 + $targetHeight;
-                } elseif ($newHeight - $targetHeight > 0) {
+                } else if ($newHeight - $targetHeight > 0) {
                     switch ($verticalPosition) {
                         case 'top':
                             $y1 = 0;
@@ -361,11 +370,13 @@ class Raster extends Image
             $this->_image = $gif;
         } else {
             if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
-                $this->_image->smartResize(new Box($targetWidth,
-                    $targetHeight), false, $this->_quality);
+                $config = Craft::$app->getConfig()->getGeneral();
+                $keepImageProfiles = $config->preserveImageColorProfiles;
+                $keepExifData = $config->preserveExifData;
+
+                $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, $keepExifData, $this->_quality);
             } else {
-                $this->_image->resize(new Box($targetWidth,
-                    $targetHeight), $this->_getResizeFilter());
+                $this->_image->resize(new Box($targetWidth, $targetHeight), $this->_getResizeFilter());
             }
 
             if (Craft::$app->getImages()->getIsImagick()) {
@@ -428,6 +439,20 @@ class Raster extends Image
     public function setQuality(int $quality)
     {
         $this->_quality = $quality;
+
+        return $this;
+    }
+
+    /**
+     * Sets the interlace setting.
+     *
+     * @param string $interlace
+     *
+     * @return static Self reference
+     */
+    public function setInterlace(string $interlace)
+    {
+        $this->_image->interlace($interlace);
 
         return $this;
     }
@@ -621,8 +646,7 @@ class Raster extends Image
             clearstatcache();
 
             // Generate one last time.
-            $this->_image->save($tempFileName,
-                $this->_getSaveOptions($midQuality));
+            $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 
             return $tempFileName;
         }
@@ -630,13 +654,11 @@ class Raster extends Image
         $step++;
 
         if ($newFileSize > $originalSize) {
-            return $this->_autoGuessImageQuality($tempFileName, $originalSize,
-                $extension, $minQuality, $midQuality, $step);
-        } // Too much.
-        else {
-            return $this->_autoGuessImageQuality($tempFileName, $originalSize,
-                $extension, $midQuality, $maxQuality, $step);
+            return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
         }
+
+        // Too much.
+        return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $midQuality, $maxQuality, $step);
     }
 
     /**

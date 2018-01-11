@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -662,7 +662,7 @@ class MigrationHelper
         $db = $migration ? $migration->db : Craft::$app->getDb();
         $rawTableName = $db->getSchema()->getRawTableName($tableName);
 
-        if (MigrationHelper::doesIndexExist($tableName, $columns, $unique)) {
+        if (self::doesIndexExist($tableName, $columns, $unique)) {
             $indexName = $db->getIndexName($tableName, $columns, $unique);
         } else {
             // Maybe it's a FK index?

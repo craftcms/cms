@@ -3,11 +3,11 @@
 namespace craft\volumes;
 
 use Craft;
+use craft\base\FlysystemVolume;
 use craft\base\LocalVolumeInterface;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\base\FlysystemVolume;
 use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
@@ -89,15 +89,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return $this->path;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl()
-    {
-        return rtrim($this->url, '/').'/';
+        return Craft::getAlias($this->path);
     }
 
     /**

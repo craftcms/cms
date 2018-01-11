@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -24,15 +24,23 @@ class UploadedFile extends \yii\web\UploadedFile
      * Returns an instance of the specified uploaded file.  The name can be a plain string or a string like an array
      * element (e.g. 'Post[imageFile]', or 'Post[0][imageFile]').
      *
-     * @param string $name The name of the file input field.
+     * @param string $name                 The name of the file input field
+     * @param bool   $ensureTempFileExists Whether to only return the instance if its temp files still exists
      *
-     * @return UploadedFile|null The instance of the uploaded file. null is returned if no file is uploaded for the
-     *                           specified name.
+     * @return static|null The instance of the uploaded file. null is returned if no file is uploaded for the
+     *                     specified name.
      */
-    public static function getInstanceByName($name)
+    public static function getInstanceByName($name, bool $ensureTempFileExists = true)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return parent::getInstanceByName(self::_normalizeName($name));
+        /** @var static $instance */
+        $instance = parent::getInstanceByName(self::_normalizeName($name));
+        if ($instance === null) {
+            return null;
+        }
+        if ($ensureTempFileExists && !is_uploaded_file($instance->tempName)) {
+            return null;
+        }
+        return $instance;
     }
 
     /**
@@ -43,14 +51,16 @@ class UploadedFile extends \yii\web\UploadedFile
      *
      * @param string $name                  The name of the array of files
      * @param bool   $lookForSingleInstance If set to true, will look for a single instance of the given name.
+     * @param bool   $ensureTempFilesExist  Whether only instances whose temp files still exist should be returned.
      *
      * @return UploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
      *                        found. Please note that this array will contain all files from all subarrays regardless
      *                        how deeply nested they are.
      */
-    public static function getInstancesByName($name, $lookForSingleInstance = true): array
+    public static function getInstancesByName($name, $lookForSingleInstance = true, $ensureTempFilesExist = true): array
     {
         $name = self::_normalizeName($name);
+        /** @var static[] $instances */
         $instances = parent::getInstancesByName($name);
 
         if (empty($instances) && $lookForSingleInstance) {
@@ -59,6 +69,15 @@ class UploadedFile extends \yii\web\UploadedFile
             if ($singleInstance) {
                 $instances[] = $singleInstance;
             }
+        }
+
+        if ($ensureTempFilesExist) {
+            array_filter($instances, function(UploadedFile $instance): bool {
+                return is_uploaded_file($instance->tempName);
+            });
+
+            // Reset the keys
+            $instances = array_values($instances);
         }
 
         return $instances;

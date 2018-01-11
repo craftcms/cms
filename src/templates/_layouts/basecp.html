@@ -49,7 +49,7 @@
             Pro:                   {{ CraftPro }},
             edition:               {{ CraftEdition }},
             isMultiSite:           {{ craft.app.getIsMultiSite() ? 'true' : 'false' }},
-            translations:          {{ view.getTranslations()|json_encode|raw }},
+            translations:          {},
             maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
             isImagick:             {{ craft.app.images.getIsImagick() ? 'true' : 'false' }},
             forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
@@ -74,9 +74,14 @@
                 monthNames: {{ localeData.getMonthNames('full', true)|values|json_encode|raw }},
                 monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
             },
+            primarySiteId: {{ craft.app.isInstalled and not craft.app.updates.isCraftDbMigrationNeeded ? craft.app.sites.primarySite.id : 'null' }},
             sites: [
                 {% for site in craft.app.sites.getAllSites() %}
-                    {id: {{ site.id }}, name: "{{ site.name|t('site')|e('js') }}"}{% if not loop.last %},{% endif %}
+                    {
+                        id: {{ site.id }},
+                        handle: "{{ site.handle|e('js') }}",
+                        name: "{{ site.name|t('site')|e('js') }}"
+                    }{% if not loop.last %},{% endif %}
                 {% endfor %}
             ],
             publishableSections: [

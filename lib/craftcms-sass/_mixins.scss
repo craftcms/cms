@@ -1,0 +1,496 @@
+$hue: 212;
+
+$subnavBgColor: hsl($hue, 20%, 30%);
+$bgColor: hsl($hue, 10%, 93%);
+$lightBgColor: #fafafa;
+
+$textColor: hsl($hue, 20%, 20%);
+$mediumDarkTextColor: hsl($hue, 15%, 40%);
+$mediumTextColor: hsl($hue, 10%, 60%);
+$lightTextColor: hsl($hue, 10%, 75%);
+$linkColor: hsl($hue, 90%, 50%);
+
+$hairlineColor: hsl($hue, 10%, 90%);
+$hairlineColorAlpha: hsla(240, 100%, 4%, 0.1);
+$mediumHairlineColorAlpha: hsla(240, 100%, 4%, 0.2);
+$darkHairlineColorAlpha: hsla(240, 100%, 4%, 0.4);
+
+$lightSelColor: hsl($hue, 10%, 85%);
+$darkSelColor: hsl($hue, 10%, 50%);
+
+$submitColor: #da5a47;
+$submitHoverColor: #bf503f;
+$submitActiveColor: #8c3b2e;
+
+$secondarySubmitColor: hsl($hue, 10%, 60%);
+$secondarySubmitHoverColor: hsl($hue, 10%, 50%);
+$secondarySubmitActiveColor: hsl($hue, 10%, 40%);
+
+$errorColor: #da5a47;
+$warningColor: #e78640;
+$successColor: #00b007;
+$noticeColor: #5286d9;
+
+$btnBorderRadius: 2px;
+$textBorderRadius: 0;
+$paneBorderRadius: 5px;
+$menuBorderRadius: 2px;
+$elementBorderRadius: 2px;
+
+@mixin sans-serif-font {
+  font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+@mixin fixed-width-font {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9em !important;
+}
+
+// Flexbox stuff
+
+// Other
+
+@mixin svg-mask($color) {
+  rect, circle, ellipse, line, polyline, polygon, path, text {
+    fill: $color;
+    stroke-width: 0;
+  }
+}
+
+@mixin icon {
+  font-family: 'Craft';
+  speak: none;
+  -webkit-font-feature-settings: "liga", "dlig";
+  -moz-font-feature-settings: "liga=1, dlig=1";
+  -moz-font-feature-settings: "liga", "dlig";
+  -ms-font-feature-settings: "liga", "dlig";
+  -o-font-feature-settings: "liga", "dlig";
+  font-feature-settings: "liga", "dlig";
+  text-rendering: optimizeLegibility;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  direction: ltr; // Fixes a rendering issue in Chrome/Win
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  display: inline-block;
+  text-align: center;
+  font-style: normal;
+  vertical-align: middle;
+  word-wrap: normal !important;
+  user-select: none;
+}
+
+@mixin clearafter {
+  content: '.';
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+@mixin pane {
+  background: #fff;
+  box-shadow: 0 0 0 1px $hairlineColor;
+}
+
+@mixin light-on-dark-text() {
+  // Make light on dark text sharp on Macs
+  // (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 500;
+}
+
+// RTL stuff
+
+@mixin left($left) {
+  body.ltr & {
+    left: $left;
+  }
+  body.rtl & {
+    right: $left;
+  }
+}
+
+@mixin right($right) {
+  body.ltr & {
+    right: $right;
+  }
+  body.rtl & {
+    left: $right;
+  }
+}
+
+@mixin alignleft {
+  body.ltr & {
+    text-align: left;
+  }
+  body.rtl & {
+    text-align: right;
+  }
+}
+
+@mixin alignright {
+  body.ltr & {
+    text-align: right;
+  }
+  body.rtl & {
+    text-align: left;
+  }
+}
+
+@mixin border-left($params...) {
+  body.ltr & {
+    border-left: $params;
+  }
+  body.rtl & {
+    border-right: $params;
+  }
+}
+
+@mixin border-right($params...) {
+  body.ltr & {
+    border-right: $params;
+  }
+  body.rtl & {
+    border-left: $params;
+  }
+}
+
+@mixin border-radius($tl, $tr, $br, $bl) {
+  body.ltr & {
+    border-radius: $tl $tr $br $bl;
+  }
+  body.rtl & {
+    border-radius: $tr $tl $bl $br;
+  }
+}
+
+@mixin border-top-left-radius($params...) {
+  body.ltr & {
+    border-top-left-radius: $params;
+  }
+  body.rtl & {
+    border-top-right-radius: $params;
+  }
+}
+
+@mixin border-top-right-radius($params...) {
+  body.ltr & {
+    border-top-right-radius: $params;
+  }
+  body.rtl & {
+    border-top-left-radius: $params;
+  }
+}
+
+@mixin border-bottom-left-radius($params...) {
+  body.ltr & {
+    border-bottom-left-radius: $params;
+  }
+  body.rtl & {
+    border-bottom-right-radius: $params;
+  }
+}
+
+@mixin border-bottom-right-radius($params...) {
+  body.ltr & {
+    border-bottom-right-radius: $params;
+  }
+  body.rtl & {
+    border-bottom-left-radius: $params;
+  }
+}
+
+@mixin floatleft {
+  body.ltr & {
+    float: left;
+  }
+  body.rtl & {
+    float: right;
+  }
+}
+
+@mixin floatright {
+  body.ltr & {
+    float: right;
+  }
+  body.rtl & {
+    float: left;
+  }
+}
+
+@mixin margin($t, $r, $b, $l, $important: '') {
+  body.ltr & {
+    margin: $t $r $b $l unquote($important);
+  }
+  body.rtl & {
+    margin: $t $l $b $r unquote($important);
+  }
+}
+
+@mixin margin-left($margin...) {
+  body.ltr & {
+    margin-left: $margin;
+  }
+  body.rtl & {
+    margin-right: $margin;
+  }
+}
+
+@mixin margin-right($margin...) {
+  body.ltr & {
+    margin-right: $margin;
+  }
+  body.rtl & {
+    margin-left: $margin;
+  }
+}
+
+@mixin padding($t, $r, $b, $l) {
+  body.ltr & {
+    padding: $t $r $b $l;
+  }
+  body.rtl & {
+    padding: $t $l $b $r;
+  }
+}
+
+@mixin padding-left($padding...) {
+  body.ltr & {
+    padding-left: $padding;
+  }
+  body.rtl & {
+    padding-right: $padding;
+  }
+}
+
+@mixin padding-right($padding...) {
+  body.ltr & {
+    padding-right: $padding;
+  }
+  body.rtl & {
+    padding-left: $padding;
+  }
+}
+
+// Misc
+
+@mixin h6-styles {
+  margin: 14px 0 3px;
+  font-size: 10px;
+  line-height: 1.2;
+  color: $lightTextColor;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+@mixin token-styles {
+  display: inline-block;
+  border: 1px solid #c1c1c1;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 12px;
+  line-height: 14px;
+  color: $textColor;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+  background: #ddd;
+}
+
+@mixin menu-styles {
+  z-index: 100;
+  border-radius: $menuBorderRadius;
+  padding: 0 14px;
+  overflow: auto;
+  background: #fff;
+  user-select: none;
+  box-shadow: 0 0 0 1px $hairlineColorAlpha, 0 5px 20px rgba(0, 0, 0, 0.25);
+}
+
+@mixin menu-option-styles {
+  margin: 0 -14px;
+  padding: 10px 14px;
+  color: $textColor;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@mixin menu-option-active-styles {
+  color: $textColor;
+  background-color: $lightSelColor;
+}
+
+@mixin text-input-styles {
+  border: 1px solid $hairlineColorAlpha;
+  border-radius: $textBorderRadius;
+  transition: border linear 50ms;
+}
+
+@mixin text-input-focused-styles {
+  border-color: $darkHairlineColorAlpha;
+  outline: none;
+}
+
+@mixin placeholder-styles {
+  color: $lightTextColor;
+}
+
+@mixin select-styles {
+  position: relative;
+  border-radius: $menuBorderRadius;
+  white-space: nowrap;
+}
+
+@mixin select-container-styles {
+  position: relative;
+  background-image: linear-gradient(#fff, hsl($hue, 5%, 98%));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  :not(.flex) > & {
+    display: inline-block;
+  }
+}
+
+@mixin select-arrow-styles {
+  @include icon;
+  position: absolute;
+  z-index: 1;
+  top: calc(50% - 5px);
+  @include right(9px);
+  font-size: 10px;
+  content: 'downangle';
+  user-select: none;
+  pointer-events: none;
+}
+
+@mixin select-input-styles {
+  display: block;
+  position: relative;
+  border: none;
+  @include padding(7px, 22px, 7px, 10px);
+  font-size: 14px;
+  line-height: 18px;
+  color: $textColor;
+  background: none;
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+  transition: box-shadow linear 50ms;
+  appearance: none;
+  // from https://stackoverflow.com/a/15933790/1688568
+  &::-ms-expand {
+    display: none;
+  }
+  // from https://stackoverflow.com/a/19451423/1688568
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 $textColor;
+  }
+}
+
+@mixin select-input-fullwidth-styles {
+  min-width: 100%;
+}
+
+@mixin select-input-focused-styles {
+  outline: none;
+  box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+@mixin readable {
+  font-size: 16px;
+  line-height: 22px;
+
+  h1 {
+    margin: 24px 0 16px;
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 600;
+    color: #000;
+  }
+
+  h2 {
+    margin: 24px 0 16px;
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+
+  h3 {
+    margin: 24px 0 16px;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    @include padding-left(2em);
+  }
+
+  ul li {
+    list-style-type: disc;
+  }
+
+  li + li {
+    margin-top: 0.25em;
+  }
+
+  blockquote {
+    margin: 16px 0;
+
+    &:not(.note) {
+      padding: 0 16px;
+      color: $mediumTextColor;
+      @include border-left(4px solid $hairlineColor);
+    }
+
+    &.note {
+      position: relative;
+      border-radius: 4px;
+      padding: 1em;
+      @include padding-left(56px);
+      border: 1px solid;
+
+      &:not(.tip):not(.warning) {
+        border-color: $errorColor;
+        color: #bf503f;
+
+        &:before {
+          content: 'alert';
+          color: $errorColor;
+        }
+      }
+
+      &.tip {
+        border-color: $linkColor;
+        color: $mediumTextColor;
+
+        &:before {
+          content: 'lightbulb';
+          color: $linkColor;
+        }
+      }
+
+      &.warning {
+        border-color: $warningColor;
+        color: #cf783a;
+
+        &:before {
+          content: 'alert';
+          color: $warningColor;
+        }
+      }
+
+      &:before {
+        @include icon;
+        position: absolute;
+        top: 12px;
+        @include left(16px);
+        font-size: 30px;
+        width: 24px;
+      }
+    }
+  }
+}

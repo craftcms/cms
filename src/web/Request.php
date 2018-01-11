@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\base\RequestTrait;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 
@@ -74,6 +73,11 @@ class Request extends \yii\web\Request
      * @var bool
      */
     private $_isActionRequest = false;
+
+    /**
+     * @var bool
+     */
+    private $_isSingleActionRequest = false;
 
     /**
      * @var bool
@@ -339,8 +343,16 @@ class Request extends \yii\web\Request
     public function getIsActionRequest(): bool
     {
         $this->_checkRequestType();
-
         return $this->_isActionRequest;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request.
+     */
+    public function getIsSingleActionRequest()
+    {
+        $this->_checkRequestType();
+        return $this->_isSingleActionRequest;
     }
 
     /**
@@ -624,10 +636,19 @@ class Request extends \yii\web\Request
      */
     public function getQueryStringWithoutPath(): string
     {
-        parse_str($this->getQueryString(), $queryParams);
+        // Get the full query string
+        $queryString = $this->getQueryString();
+        $parts = explode('&', $queryString);
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-        unset($queryParams[$pathParam]);
-        return http_build_query($queryParams);
+
+        foreach ($parts as $key => $part) {
+            if (strpos($part, $pathParam.'=') === 0) {
+                unset($parts[$key]);
+                break;
+            }
+        }
+
+        return implode('&', $parts);
     }
 
     /**
@@ -907,23 +928,24 @@ class Request extends \yii\web\Request
                 $updatePath = null;
             }
 
-            if (
-                ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
-                ($actionParam = $this->getParam('action')) !== null ||
-                (in_array($this->_path, [
-                    $loginPath,
-                    $logoutPath,
-                    $setPasswordPath,
-                    $updatePath
-                ], true))
-            ) {
+            $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
+            $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
+            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true);
+
+            if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
 
-                /** @noinspection PhpUndefinedVariableInspection */
-                if ($triggerMatch) {
+                // Important we check in this specific order:
+                // 1) /actions/some/action
+                // 2) any/uri?action=some/action
+                // 3) special/uri
+
+                if ($hasTriggerMatch) {
                     $this->_actionSegments = array_slice($this->_segments, 1);
-                } else if (!empty($actionParam)) {
+                    $this->_isSingleActionRequest = true;
+                } else if ($hasActionParam) {
                     $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
+                    $this->_isSingleActionRequest = empty($this->_path);
                 } else {
                     switch ($this->_path) {
                         case $loginPath:
@@ -937,7 +959,9 @@ class Request extends \yii\web\Request
                             break;
                         case $updatePath:
                             $this->_actionSegments = ['updater', 'index'];
+                            break;
                     }
+                    $this->_isSingleActionRequest = true;
                 }
             }
         }

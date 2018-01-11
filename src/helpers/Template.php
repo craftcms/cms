@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -14,7 +14,8 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
-use yii\base\Object;
+use yii\base\BaseObject;
+use yii\base\UnknownMethodException;
 
 /**
  * Class Template
@@ -53,7 +54,7 @@ class Template
 
         if (
             $type !== \Twig_Template::METHOD_CALL &&
-            $object instanceof Object &&
+            $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
             return $isDefinedTest ? true : $object->$item;
@@ -71,7 +72,15 @@ class Template
             return $value;
         }
 
-        return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+        try {
+            return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+        } catch (UnknownMethodException $e) {
+            // Copy twig_get_attribute()'s BadMethodCallException handling
+            if ($ignoreStrictCheck || !$env->isStrictVariables()) {
+                return null;
+            }
+            throw new \Twig_Error_Runtime($e->getMessage(), -1, $source);
+        }
     }
 
     /**
@@ -91,7 +100,7 @@ class Template
         $query->limit = null;
         $total = (int)$query->count();
         $query->limit = $limit;
-        
+
         // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
         if ($total === 0) {
             return [new Paginate(), $query->all()];
@@ -133,10 +142,11 @@ class Template
         $paginateVariable->currentPage = $currentPage;
         $paginateVariable->totalPages = $totalPages;
 
-        // Copy the criteria, set the offset, and get the elements
-        $query = clone $query;
+        // Fetch the elements
+        $originalOffset = $query->offset;
         $query->offset = (int)$offset;
         $elements = $query->all();
+        $query->offset = $originalOffset;
 
         return [$paginateVariable, $elements];
     }

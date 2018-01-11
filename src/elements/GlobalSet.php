@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -106,7 +106,7 @@ class GlobalSet extends Element
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
-            'elementType' => GlobalSet::class
+            'elementType' => __CLASS__
         ];
 
         return $behaviors;
@@ -152,6 +152,10 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+            return UrlHelper::cpUrl('globals/'.$this->getSite()->handle.'/'.$this->handle);
+        }
+
         return UrlHelper::cpUrl('globals/'.$this->handle);
     }
 

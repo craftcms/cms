@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -36,7 +36,7 @@ class Console extends \yii\helpers\Console
         if (static::streamSupportsAnsiColors(\STDOUT)) {
             $args = func_get_args();
             array_shift($args);
-            $string = Console::ansiFormat($string, $args);
+            $string = self::ansiFormat($string, $args);
         }
 
         return parent::stdout($string);

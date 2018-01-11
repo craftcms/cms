@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -158,6 +158,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         if (is_string($value)) {
             $value = Json::decodeIfJson($value);
+        } else if ($value === null && $this->isFresh($element)) {
+            $value = $this->defaultValue();
         }
 
         if ($this->multi) {
@@ -247,7 +249,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return (string)$value->value;
+        return (string)$value->label;
     }
 
     // Protected Methods

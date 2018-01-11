@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -65,9 +65,10 @@ class Search extends Component
     private $_groups;
 
     /**
-     * @var int Because the `keywords` column in the search index table is a B-TREE index on Postgres,
-     *          you can get an "index row size exceeds maximum for index" error with a lot of data. This value
-     *          is a hard limit to truncate search index data for a single row in Postgres.
+     * @var int Because the `keywords` column in the search index table is a
+     * B-TREE index on Postgres, you can get an "index row size exceeds maximum
+     * for index" error with a lot of data. This value is a hard limit to
+     * truncate search index data for a single row in Postgres.
      */
     public $maxPostgresKeywordLength = 2450;
 

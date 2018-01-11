@@ -2,25 +2,23 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\services;
 
 use Craft;
-use craft\config\DbCacheConfig;
 use craft\config\DbConfig;
-use craft\config\FileCacheConfig;
 use craft\config\GeneralConfig;
-use craft\config\MemCacheConfig;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -28,11 +26,8 @@ use yii\base\Object;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property DbConfig        $db        the DB config settings
- * @property DbCacheConfig   $dbCache   the DB Cache config settings
- * @property FileCacheConfig $fileCache the file cache config settings
- * @property GeneralConfig   $general   the general config settings
- * @property MemCacheConfig  $memCache  the Memcached config settings
+ * @property DbConfig      $db        the DB config settings
+ * @property GeneralConfig $general   the general config settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -43,10 +38,7 @@ class Config extends Component
     // =========================================================================
 
     const CATEGORY_DB = 'db';
-    const CATEGORY_DBCACHE = 'dbcache';
-    const CATEGORY_FILECACHE = 'filecache';
     const CATEGORY_GENERAL = 'general';
-    const CATEGORY_MEMCACHE = 'memcache';
 
     // Properties
     // =========================================================================
@@ -71,6 +63,11 @@ class Config extends Component
      */
     private $_configSettings = [];
 
+    /**
+     * @var bool|null
+     */
+    private $_dotEnvPath;
+
     // Public Methods
     // =========================================================================
 
@@ -79,10 +76,11 @@ class Config extends Component
      *
      * @param string $category The config category
      *
-     * @return Object The config settings
+     * @return BaseObject The config settings
      * @throws InvalidParamException if $category is invalid
+     * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
-    public function getConfigSettings(string $category): Object
+    public function getConfigSettings(string $category): BaseObject
     {
         if (isset($this->_configSettings[$category])) {
             return $this->_configSettings[$category];
@@ -92,17 +90,8 @@ class Config extends Component
             case self::CATEGORY_DB:
                 $class = DbConfig::class;
                 break;
-            case self::CATEGORY_DBCACHE:
-                $class = DbCacheConfig::class;
-                break;
-            case self::CATEGORY_FILECACHE:
-                $class = FileCacheConfig::class;
-                break;
             case self::CATEGORY_GENERAL:
                 $class = GeneralConfig::class;
-                break;
-            case self::CATEGORY_MEMCACHE:
-                $class = MemCacheConfig::class;
                 break;
             default:
                 throw new InvalidParamException('Invalid config category: '.$category);
@@ -150,26 +139,6 @@ class Config extends Component
     }
 
     /**
-     * Returns the DB cache config settings.
-     *
-     * @return DbCacheConfig
-     */
-    public function getDbCache(): DbCacheConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_DBCACHE);
-    }
-
-    /**
-     * Returns the file cache config settings.
-     *
-     * @return FileCacheConfig
-     */
-    public function getFileCache(): FileCacheConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_FILECACHE);
-    }
-
-    /**
      * Returns the general config settings.
      *
      * @return GeneralConfig
@@ -177,16 +146,6 @@ class Config extends Component
     public function getGeneral(): GeneralConfig
     {
         return $this->getConfigSettings(self::CATEGORY_GENERAL);
-    }
-
-    /**
-     * Returns the Memcached config settings.
-     *
-     * @return MemCacheConfig
-     */
-    public function getMemCache(): MemCacheConfig
-    {
-        return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
     }
 
     /**
@@ -227,5 +186,43 @@ class Config extends Component
         }
 
         return $mergedConfig;
+    }
+
+    /**
+     * Returns the path to the .env file (regardless of whether it exists).
+     *
+     * @return string
+     */
+    public function getDotEnvPath(): string
+    {
+        return $this->_dotEnvPath ?? ($this->_dotEnvPath = Craft::getAlias('@root/.env'));
+    }
+
+    /**
+     * Sets an environment variable value in the project's .env file.
+     *
+     * @param string $name  The environment variable name
+     * @param string $value The environment variable value
+     *
+     * @throws Exception if the .env file doesn't exist
+     */
+    public function setDotEnvVar($name, $value)
+    {
+        $path = $this->getDotEnvPath();
+
+        if (!file_exists($path)) {
+            throw new Exception("No .env file exists at {$path}");
+        }
+
+        $contents = file_get_contents($path);
+        $qName = preg_quote($name, '/');
+        $qValue = str_replace('$', '\\$', $value);
+        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$qValue}\"", $contents, -1, $count);
+        if ($count === 0) {
+            $contents = rtrim($contents);
+            $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$value}\"".PHP_EOL;
+        }
+
+        FileHelper::writeToFile($path, $contents);
     }
 }

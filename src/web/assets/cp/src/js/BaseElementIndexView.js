@@ -106,7 +106,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Set up lazy-loading
             if (this.settings.batchSize) {
                 if (this.settings.context === 'index') {
-                    this.$scroller = Garnish.$win;
+                    this.$scroller = Craft.cp.$contentContainer;
                 }
                 else {
                     this.$scroller = this.elementIndex.$main;

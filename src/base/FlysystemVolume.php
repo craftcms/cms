@@ -9,7 +9,6 @@
 namespace craft\base;
 
 use Craft;
-use craft\base\Volume;
 use craft\errors\AssetException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;

@@ -2,7 +2,7 @@
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\events;
@@ -22,8 +22,9 @@ class SearchEvent extends BaseEvent
     // =========================================================================
 
     /**
-     * @var int[] The list of element IDs to filter by the search query, or the filtered list of element IDs,
-     *                depending on if this is a beforeSearch or afterSearch event
+     * @var int[] The list of element IDs to filter by the search query, or the
+     * filtered list of element IDs, depending on if this is a beforeSearch or
+     * `afterSearch` event
      */
     public $elementIds = true;
 
