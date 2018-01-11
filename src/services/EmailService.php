@@ -220,6 +220,16 @@ class EmailService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Fires an 'onBeforeSendMailer' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSendMailer(Event $event)
+	{
+		$this->raiseEvent('onBeforeSendMailer', $event);
+	}
+
+	/**
 	 * Fires an 'onSendEmail' event.
 	 *
 	 * @param Event $event
@@ -456,9 +466,20 @@ class EmailService extends BaseApplicationComponent
 				// Explicitly hide the XMailer header.
 				$email->XMailer = ' ';
 
-				if (!$email->Send())
+				// Fire an 'onBeforeSendMailer' event
+				$this->onBeforeSendMailer(new Event($this, array(
+					'user' => $user,
+					'emailModel' => $emailModel,
+					'variables' => $variables,
+					'mailer' => $email,
+				)));
+
+				if ($event->performAction)
 				{
-					$errorMessage = $email->ErrorInfo;
+					if (!$email->Send())
+					{
+						$errorMessage = $email->ErrorInfo;
+					}
 				}
 			}
 			catch(\Exception $e)
