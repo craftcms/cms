@@ -10,14 +10,22 @@ namespace craft\web;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\base\Plugin;
+use craft\debug\DeprecatedPanel;
+use craft\debug\UserPanel;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as DebugModule;
+use yii\debug\panels\AssetPanel;
+use yii\debug\panels\DbPanel;
+use yii\debug\panels\LogPanel;
+use yii\debug\panels\MailPanel;
+use yii\debug\panels\ProfilingPanel;
+use yii\debug\panels\RequestPanel;
+use yii\debug\panels\RouterPanel;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -331,6 +339,30 @@ class Application extends \yii\web\Application
             return;
         }
 
+        $this->setModule('debug', [
+            'class' => DebugModule::class,
+            'allowedIPs' => ['*'],
+            'panels' => [
+                'config' => false,
+                'user' => UserPanel::class,
+                'router' => [
+                    'class' => RouterPanel::class,
+                    'categories' => [
+                        UrlManager::class.'::_getMatchedElementRoute',
+                        UrlManager::class.'::_getMatchedUrlRoute',
+                        UrlManager::class.'::_getTemplateRoute',
+                        UrlManager::class.'::_getTokenRoute',
+                    ]
+                ],
+                'request' => RequestPanel::class,
+                'log' => LogPanel::class,
+                'deprecated' => DeprecatedPanel::class,
+                'profiling' => ProfilingPanel::class,
+                'db' => DbPanel::class,
+                'assets' => AssetPanel::class,
+                'mail' => MailPanel::class,
+            ],
+        ]);
         /** @var DebugModule $module */
         $module = $this->getModule('debug');
         $module->bootstrap($this);
