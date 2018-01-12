@@ -12,6 +12,7 @@
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store. ([#2289](https://github.com/craftcms/cms/issues/2289))
 - Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been made translatable, if it contained any relations. ([#2292](https://github.com/craftcms/cms/issues/2292))
+- Fixed a bug where Debug Toolbar controllers were available even when the Debug Toolbar was supposed to be disabled.
 
 ## 3.0.0-RC5 - 2018-01-09
 
