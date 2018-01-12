@@ -50,6 +50,11 @@ class Search extends Component
     // =========================================================================
 
     /**
+     * @var int The minimum word length that keywords must be in order to use a FULLTEXT search.
+     */
+    public $minFulltextWordLength;
+
+    /**
      * @var
      */
     private $_tokens;
@@ -74,6 +79,22 @@ class Search extends Component
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->minFulltextWordLength === null) {
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $this->minFulltextWordLength = 4;
+            } else {
+                $this->minFulltextWordLength = 1;
+            }
+        }
+    }
 
     /**
      * Indexes the attributes of a given element defined by its element type.
@@ -722,7 +743,7 @@ class Search extends Component
      */
     private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
-        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude;
+        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude && strlen($keywords) >= $this->minFulltextWordLength;
     }
 
     /**
