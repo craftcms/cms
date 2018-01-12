@@ -246,6 +246,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         return (string)$value->label;
     }
 
+    /**
+     * Returns whether the field type supports storing multiple selected options.
+     *
+     * @return bool
+     * @see multi
+     */
+    public function getIsMultiOptionsField(): bool
+    {
+        return $this->multi;
+    }
+
     // Protected Methods
     // =========================================================================
 
