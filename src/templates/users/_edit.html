@@ -71,6 +71,11 @@
 				<div id="account">
 					{% include "users/_accountfields" %}
 
+					{% if not isNewAccount %}
+						{{ forms.field({ label: "Photo"|t }, photoInput) }}
+						<hr>
+					{% endif %}
+
 					{% if isNewAccount %}
 
 						{{ forms.textField({
@@ -160,33 +165,10 @@
 					{% set customLayout = craft.fields.getLayoutByType('User') %}
 					{% for tab in customLayout.tabs %}
 						<div id="custom-{{ tab.id }}" class="hidden">
-
-							{# show profile image on first tab #}
-							{% if not isNewAccount and loop.first %}
-								{{ forms.field({ label: "Photo"|t }, photoInput) }}
-								<hr>
-							{% endif %}
-
 							{% include "_includes/fields" with {
 								fields: tab.getFields(),
 								element: account
 							} only %}
-						</div>
-					{% else %}
-						<div id="profile" class="hidden">
-							{% if not isNewAccount %}
-								{{ forms.field({ label: "Photo"|t }, photoInput) }}
-								<hr>
-							{% endif %}
-
-							{% if CraftEdition == CraftPro %}
-								{% include "_includes/fields" with {
-									fields: craft.fields.getLayoutByType('User').getFields(),
-									element: account
-								} only %}
-
-								{{ saveUserButtons }}
-							{% endif %}
 						</div>
 					{% endfor %}
 				{% endif %}

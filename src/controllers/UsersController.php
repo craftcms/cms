@@ -750,12 +750,6 @@ class UsersController extends BaseController
 						'url'   => '#custom-' . $tab->id,
 					);
 				}
-			} else {
-
-				$variables['tabs']['profile'] = array(
-					'label' => Craft::t('Profile'),
-					'url'   => '#profile',
-				);
 			}
 		}
 
