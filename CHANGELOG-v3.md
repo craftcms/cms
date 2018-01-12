@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `registerSiteTemplateRoots` event to `craft\web\View`, making it possible for plugins and modules to provide templates for the front-end.
 - Added missing translations for the Plugin Store.
 
 ### Changed
