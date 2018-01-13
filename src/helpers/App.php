@@ -75,6 +75,41 @@ class App
     }
 
     /**
+     * Returns the PHP version, without the distribution info.
+     *
+     * @return string
+     */
+    public static function phpVersion(): string
+    {
+        return PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+    }
+
+    /**
+     * Returns a PHP extension version, without the distribution info.
+     *
+     * @param string $name The extension name
+     *
+     * @return string
+     */
+    public static function extensionVersion(string $name): string
+    {
+        $version = phpversion($name);
+        return static::normalizeVersion($version);
+    }
+
+    /**
+     * Removes distribution info from a version
+     *
+     * @param string $version
+     *
+     * @return string
+     */
+    public static function normalizeVersion(string $version): string
+    {
+        return preg_replace('/^([^~+-]+).*$/', '$1', $version);
+    }
+
+    /**
      * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.

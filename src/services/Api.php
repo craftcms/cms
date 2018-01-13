@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\ApiException;
+use craft\helpers\App;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -134,18 +135,18 @@ class Api extends Component
     protected function platformVersions(): array
     {
         $versions = [
-            'php' => PHP_VERSION,
+            'php' => App::phpVersion(),
         ];
 
         $db = Craft::$app->getDb();
-        $versions[$db->getDriverName()] = $db->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        $versions[$db->getDriverName()] = $db->getVersion();
 
         foreach (get_loaded_extensions() as $extension) {
             // Be consistent with Composer extension names (see PlatformRepository::buildPackageName())
             // - `ext-` helps prevent a key conflict if the `pgsql` extension is installed
             // - replace spaces with `-`s for "Zend OPcache"
             $key = 'ext-'.str_replace(' ', '-', $extension);
-            $versions[$key] = phpversion($extension);
+            $versions[$key] = App::extensionVersion($extension);
         }
 
         return $versions;

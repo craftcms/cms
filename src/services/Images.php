@@ -100,6 +100,23 @@ class Images extends Component
     }
 
     /**
+     * Returns the version of the image driver.
+     */
+    public function getVersion(): string
+    {
+        if ($this->getIsGd()) {
+            return App::extensionVersion('gd');
+        }
+
+        $version = App::extensionVersion('imagick');
+        try {
+            $version .= ' (ImageMagick '.$this->getImageMagickApiVersion().')';
+        } catch (\Throwable $e) {
+        }
+        return $version;
+    }
+
+    /**
      * Returns a list of all supported image formats.
      *
      * @return array
