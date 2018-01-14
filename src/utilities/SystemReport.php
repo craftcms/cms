@@ -12,7 +12,6 @@ use craft\base\Utility;
 use craft\helpers\App;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
-use PDO;
 use RequirementsChecker;
 use Twig_Environment;
 use Yii;
@@ -72,7 +71,7 @@ class SystemReport extends Utility
     private static function _appInfo(): array
     {
         return [
-            'PHP version' => PHP_VERSION,
+            'PHP version' => App::phpVersion(),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft '.App::editionName(Craft::$app->getEdition()).' '.Craft::$app->getVersion(),
@@ -98,7 +97,7 @@ class SystemReport extends Utility
             $driverName = 'PostgreSQL';
         }
 
-        return $driverName.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION);
+        return $driverName.' '.$db->getVersion();
     }
 
     /**
@@ -111,10 +110,12 @@ class SystemReport extends Utility
         $imagesService = Craft::$app->getImages();
 
         if ($imagesService->getIsGd()) {
-            return 'GD '.phpversion('gd');
+            $driverName = 'GD';
+        } else {
+            $driverName = 'Imagick';
         }
 
-        return 'Imagick '.phpversion('imagick').', ImageMagick '.$imagesService->getImageMagickApiVersion();
+        return $driverName.' '.$imagesService->getVersion();
     }
 
     /**

@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Composer\Repository\PlatformRepository;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\ApiException;
@@ -129,24 +130,32 @@ class Api extends Component
     }
 
     /**
+     * Returns platform info.
+     *
+     * @param bool $useComposerOverrides Whether to factor in any `config.platform` overrides
+     *
      * @return array
      */
-    protected function platformVersions(): array
+    protected function platformVersions(bool $useComposerOverrides = false): array
     {
-        $versions = [
-            'php' => PHP_VERSION,
-        ];
+        $versions = [];
 
-        $db = Craft::$app->getDb();
-        $versions[$db->getDriverName()] = $db->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION);
-
-        foreach (get_loaded_extensions() as $extension) {
-            // Be consistent with Composer extension names (see PlatformRepository::buildPackageName())
-            // - `ext-` helps prevent a key conflict if the `pgsql` extension is installed
-            // - replace spaces with `-`s for "Zend OPcache"
-            $key = 'ext-'.str_replace(' ', '-', $extension);
-            $versions[$key] = phpversion($extension);
+        // Let Composer's PlatformRepository do most of the work
+        if ($useComposerOverrides) {
+            $jsonPath = Craft::$app->getComposer()->getJsonPath();
+            $config = Json::decode(file_get_contents($jsonPath));
+            $overrides = $config['config']['platform'] ?? [];
+        } else {
+            $overrides = [];
         }
+        $repo = new PlatformRepository([], $overrides);
+        foreach ($repo->getPackages() as $package) {
+            $versions[$package->getName()] = $package->getPrettyVersion();
+        }
+
+        // Also include the DB driver/version
+        $db = Craft::$app->getDb();
+        $versions[$db->getDriverName()] = $db->getVersion();
 
         return $versions;
     }

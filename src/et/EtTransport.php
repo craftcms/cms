@@ -11,11 +11,11 @@ use Craft;
 use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;
 use GuzzleHttp\Exception\RequestException;
-use PDO;
 use yii\base\Exception;
 
 /**
@@ -61,6 +61,8 @@ class EtTransport
         $user = Craft::$app->getUser()->getIdentity();
         $userEmail = $user ? $user->email : '';
 
+        $db = Craft::$app->getDb();
+
         $this->_model = new EtModel([
             'licenseKey' => $this->_getLicenseKey(),
             'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
@@ -74,9 +76,9 @@ class EtTransport
             'showBeta' => Craft::$app->getConfig()->getGeneral()->showBetaUpdates,
             'serverInfo' => [
                 'extensions' => get_loaded_extensions(),
-                'phpVersion' => PHP_VERSION,
-                'databaseType' => Craft::$app->getConfig()->getDb()->driver,
-                'databaseVersion' => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
+                'phpVersion' => App::phpVersion(),
+                'databaseType' => $db->getDriverName(),
+                'databaseVersion' => $db->getVersion(),
                 'proc' => function_exists('proc_open') ? 1 : 0,
             ],
         ]);

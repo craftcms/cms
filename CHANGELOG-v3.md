@@ -3,15 +3,31 @@
 ## Unreleased
 
 ### Added
+- Added the `registerSiteTemplateRoots` event to `craft\web\View`, making it possible for plugins and modules to provide templates for the front-end.
 - Added missing translations for the Plugin Store.
+- Added `craft\db\Connection::getVersion()`.
+- Added `craft\helpers\App::extensionVersion()`.
+- Added `craft\helpers\App::normalizeVersion()`.
+- Added `craft\helpers\App::phpVersion()`.
+- Added `craft\services\Images::getVersion()`.
+- Added `craft\services\Search::minFullTextWordLength`, which can be set from `config/app.php` if MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting is something other than `4`. ([#1736](https://github.com/craftcms/cms/issues/1736))
+- Added `craft\fields\BaseOptionsField::getIsMultiOptionsField()`. ([#2302](https://github.com/craftcms/cms/issues/2302))
 
 ### Changed
 - It’s now possible to reference object properties without typing `object.` in templates parsed with `craft\web\View::renderObjectTemplate()` (e.g. sections’ Entry URI Format settings), even if the property name doesn’t immediately follow a `{` brace.
 - Craft no longer sets `passwordResetRequired` to `false` when saving a new password on a user, if it had been set to `true` at the same time that the new password was set.
+- Platform versions (PHP, extensions, etc.) no longer include server distribution details, when displayed in the System Report utility, or when posting an issue to GitHub from the Craft Support widget.
+
+### Removed
+- Removed `craft\helpers\Search::minWordLength()`.
+- Removed `craft\helpers\Search::stopWords()`.
 
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store. ([#2289](https://github.com/craftcms/cms/issues/2289))
 - Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been made translatable, if it contained any relations. ([#2292](https://github.com/craftcms/cms/issues/2292))
+- Fixed a bug where Debug Toolbar controllers were available even when the Debug Toolbar was supposed to be disabled.
+- Fixed a bug where the `search` param wasn’t returning any results when the search term was less than 4 characters (or whatever MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting was set to). ([#1735](https://github.com/craftcms/cms/issues/1735))
+- Fixed a bug where Multi-select and Checkboxes fields were setting inaccurate `selected` states on the options returned by their `getOptions()` methods. ([#2301](https://github.com/craftcms/cms/issues/2301))
 
 ## 3.0.0-RC5 - 2018-01-09
 
