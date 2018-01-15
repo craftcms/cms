@@ -290,7 +290,6 @@ class UserQuery extends ElementQuery
             'users.locked',
             'users.pending',
             'users.suspended',
-            'users.archived',
             'users.lastLoginDate',
             'users.lockoutDate',
         ]);
@@ -353,7 +352,6 @@ class UserQuery extends ElementQuery
         switch ($status) {
             case User::STATUS_ACTIVE:
                 return [
-                    'users.archived' => false,
                     'users.suspended' => false,
                     'users.locked' => false,
                     'users.pending' => false
@@ -369,10 +367,6 @@ class UserQuery extends ElementQuery
             case User::STATUS_SUSPENDED:
                 return [
                     'users.suspended' => true
-                ];
-            case User::STATUS_ARCHIVED:
-                return [
-                    'users.archived' => true
                 ];
             default:
                 return parent::statusCondition($status);

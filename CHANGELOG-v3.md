@@ -19,8 +19,10 @@
 - Platform versions (PHP, extensions, etc.) no longer include server distribution details, when displayed in the System Report utility, or when posting an issue to GitHub from the Craft Support widget.
 
 ### Removed
+- Removed `craft\elements\User::setActive()`.
 - Removed `craft\helpers\Search::minWordLength()`.
 - Removed `craft\helpers\Search::stopWords()`.
+- Removed `craft\records\User::setActive()`.
 
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store. ([#2289](https://github.com/craftcms/cms/issues/2289))
@@ -28,6 +30,7 @@
 - Fixed a bug where Debug Toolbar controllers were available even when the Debug Toolbar was supposed to be disabled.
 - Fixed a bug where the `search` param wasn’t returning any results when the search term was less than 4 characters (or whatever MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting was set to). ([#1735](https://github.com/craftcms/cms/issues/1735))
 - Fixed a bug where Multi-select and Checkboxes fields were setting inaccurate `selected` states on the options returned by their `getOptions()` methods. ([#2301](https://github.com/craftcms/cms/issues/2301))
+- Fixed a SQL error that could occur due to an `archived` column name conflict when querying for users. ([#2305](https://github.com/craftcms/cms/issues/2305))
 
 ## 3.0.0-RC5 - 2018-01-09
 

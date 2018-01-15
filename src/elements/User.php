@@ -60,7 +60,6 @@ class User extends Element implements IdentityInterface
     const STATUS_LOCKED = 'locked';
     const STATUS_SUSPENDED = 'suspended';
     const STATUS_PENDING = 'pending';
-    const STATUS_ARCHIVED = 'archived';
 
     // Authentication error codes
     // -------------------------------------------------------------------------
@@ -914,17 +913,6 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Sets a user's status to active.
-     *
-     * @return void
-     */
-    public function setActive()
-    {
-        $this->pending = false;
-        $this->archived = false;
-    }
-
-    /**
      * Returns the URL to the user's photo.
      *
      * @param int $size The width and height the photo should be sized to
@@ -1270,17 +1258,12 @@ class User extends Element implements IdentityInterface
             if ($this->pending != $record->pending) {
                 throw new Exception('Unable to change a user’s pending state like this.');
             }
-
-            if ($this->archived != $record->archived) {
-                throw new Exception('Unable to change a user’s archived state like this.');
-            }
         } else {
             $record = new UserRecord();
             $record->id = $this->id;
             $record->locked = $this->locked;
             $record->suspended = $this->suspended;
             $record->pending = $this->pending;
-            $record->archived = $this->archived;
         }
 
         $record->username = $this->username;

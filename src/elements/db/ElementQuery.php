@@ -1368,6 +1368,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 return ['elements.enabled' => true];
             case Element::STATUS_DISABLED:
                 return ['elements.enabled' => false];
+            case Element::STATUS_ARCHIVED:
+                return ['elements.archived' => true];
             default:
                 return false;
         }
