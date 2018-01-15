@@ -908,9 +908,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->archived) {
-            $this->subQuery->andWhere(['elements.archived' => '1']);
+            $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $this->subQuery->andWhere(['elements.archived' => '0']);
+            $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
         }
 
@@ -935,7 +935,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->enabledForSite) {
-            $this->subQuery->andWhere(['elements_sites.enabled' => '1']);
+            $this->subQuery->andWhere(['elements_sites.enabled' => true]);
         }
 
         $this->_applyRelatedToParam();
@@ -1365,9 +1365,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         switch ($status) {
             case Element::STATUS_ENABLED:
-                return ['elements.enabled' => '1'];
+                return ['elements.enabled' => true];
             case Element::STATUS_DISABLED:
-                return ['elements.enabled' => '0'];
+                return ['elements.enabled' => false];
             default:
                 return false;
         }

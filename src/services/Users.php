@@ -877,7 +877,7 @@ class Users extends Component
             ->from(['{{%users}}'])
             ->where([
                 'and',
-                ['pending' => '1'],
+                ['pending' => true],
                 ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
             ])
             ->column();

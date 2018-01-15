@@ -216,9 +216,9 @@ class Elements extends Component
 
         if ($enabledOnly) {
             $query->andWhere([
-                'elements_sites.enabled' => '1',
-                'elements.enabled' => '1',
-                'elements.archived' => '0',
+                'elements_sites.enabled' => true,
+                'elements.enabled' => true,
+                'elements.archived' => false,
             ]);
         }
 

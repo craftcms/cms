@@ -716,7 +716,7 @@ class AssetTransforms extends Component
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
-            ->where(['fileExists' => '0', 'inProgress' => '0'])
+            ->where(['fileExists' => false, 'inProgress' => false])
             ->column();
     }
 

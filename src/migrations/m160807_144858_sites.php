@@ -421,7 +421,7 @@ class m160807_144858_sites extends Migration
                 'translationMethod' => 'site',
             ],
             [
-                'translatable' => '1',
+                'translatable' => true,
             ],
             [], false);
 
