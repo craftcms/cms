@@ -96,7 +96,7 @@ class PlainTextFieldType extends BaseFieldType implements IPreviewableFieldType
 	}
 
 	/**
-	 * @inheritDoc
+	 * @inheritDoc IFieldType::prepValueFromPost()
 	 *
 	 * @param mixed $value
 	 *
