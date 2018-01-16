@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.6.3004 - 2018-01-16
+
 ### Added
 - Added the [onBeforeAuthenticate](https://craftcms.com/docs/plugins/events-reference#userSession-onBeforeAuthenticate) event. ([#1161](https://github.com/craftcms/cms/issues/1161))
 - Added support for most Emoji characters in Plain Text fields, for servers running PHP 5.4 or later. ([#1753](https://github.com/craftcms/cms/issues/1753))
