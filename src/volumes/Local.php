@@ -58,7 +58,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         parent::init();
 
         if ($this->path !== null) {
-            $this->path = FileHelper::normalizePath($this->path);
+            $this->path = str_replace('\\', '/', $this->path);
         }
     }
 
@@ -89,7 +89,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return Craft::getAlias($this->path);
+        return FileHelper::normalizePath(Craft::getAlias($this->path));
     }
 
     /**

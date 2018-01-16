@@ -35,6 +35,7 @@
 - Fixed a bug where Multi-select and Checkboxes fields were setting inaccurate `selected` states on the options returned by their `getOptions()` methods. ([#2301](https://github.com/craftcms/cms/issues/2301))
 - Fixed a SQL error that could occur due to an `archived` column name conflict when querying for users. ([#2305](https://github.com/craftcms/cms/issues/2305))
 - Fixed an error that occurred when calling `addOrderBy()` on an element query, if `orderBy()` had not been called first. ([#2310](https://github.com/craftcms/cms/issues/2310))
+- Fixed a bug where a Volume’s “File System Path” setting would break if you were using an [alias](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html) with a forward slash on Windows. ([#2309](https://github.com/craftcms/cms/issues/2309))
 
 ## 3.0.0-RC5 - 2018-01-09
 
