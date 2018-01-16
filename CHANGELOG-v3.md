@@ -15,6 +15,7 @@
 - Added `craft\services\Composer::getLockPath()`.
 - Added `craft\services\Images::getVersion()`.
 - Added `craft\services\Search::minFullTextWordLength`, which can be set from `config/app.php` if MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting is something other than `4`. ([#1736](https://github.com/craftcms/cms/issues/1736))
+- Added `craft\validators\UrlValidator::$allowAlias`.
 - Added support for `color` columns to `Craft.EditableTable`.
 - Added a `defaultValues` setting to `Craft.EditableTable` JavaScript objects.
 - Added `Craft.ui.createColorInput()`.
@@ -41,6 +42,7 @@
 - Fixed a SQL error that could occur due to an `archived` column name conflict when querying for users. ([#2305](https://github.com/craftcms/cms/issues/2305))
 - Fixed an error that occurred when calling `addOrderBy()` on an element query, if `orderBy()` had not been called first. ([#2310](https://github.com/craftcms/cms/issues/2310))
 - Fixed an error that occurred on Windows servers if a volume’s File System Path setting contained an alias and any backslashes. ([#2309](https://github.com/craftcms/cms/issues/2309))
+- Fixed a bug where Site Base URLs that began with an alias were getting saved as `http://@alias/...`, breaking front-end site URLs. ([#2312](https://github.com/craftcms/cms/issues/2312))
 
 ## 3.0.0-RC5 - 2018-01-09
 

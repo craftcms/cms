@@ -18,6 +18,14 @@ use yii\validators\UrlValidator as YiiUrlValidator;
  */
 class UrlValidator extends YiiUrlValidator
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool Whether the value can begin with an alias
+     */
+    public $allowAlias = false;
+
     // Public Methods
     // =========================================================================
 
@@ -44,6 +52,13 @@ class UrlValidator extends YiiUrlValidator
      */
     public function validateValue($value)
     {
+        if ($this->allowAlias && strncmp($value, '@', 1) === 0) {
+            $value = Craft::getAlias($value);
+            
+            // Prevent validateAttribute() from prepending a default scheme if the alias is missing one
+            $this->defaultScheme = null;
+        }
+
         // Add support for protocol-relative URLs
         if ($this->defaultScheme !== null && strpos($value, '/') === 0) {
             $this->defaultScheme = null;

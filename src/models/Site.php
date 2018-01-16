@@ -108,7 +108,7 @@ class Site extends Model
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
+            [['baseUrl'], UrlValidator::class, 'allowAlias' => true, 'defaultScheme' => 'http'],
         ];
 
         if (Craft::$app->getIsInstalled()) {
