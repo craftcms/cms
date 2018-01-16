@@ -36,6 +36,9 @@
             initColumnsTable: function() {
                 this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
                     rowIdPrefix: 'col',
+                    defaultValues: {
+                        type: 'singleline'
+                    },
                     onAddRow: $.proxy(this, 'onAddColumn'),
                     onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
                 });

@@ -75,7 +75,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
         addRow: function() {
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
-                $tr = this.createRow(rowId, this.columns, this.baseName, {});
+                $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
             new Craft.EditableTable.Row(this, $tr);
@@ -96,6 +96,7 @@ Craft.EditableTable = Garnish.Base.extend(
         textualColTypes: ['singleline', 'multiline', 'number'],
         defaults: {
             rowIdPrefix: '',
+            defaultValues: {},
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },

@@ -87,6 +87,17 @@ class Table extends Field
             $defaults = ['row1' => []];
         }
 
+        $typeOptions = [
+            'checkbox' => Craft::t('app', 'Checkbox'),
+            'lightswitch' => Craft::t('app', 'Lightswitch'),
+            'multiline' => Craft::t('app', 'Multi-line text'),
+            'number' => Craft::t('app', 'Number'),
+            'singleline' => Craft::t('app', 'Single-line Text'),
+        ];
+
+        // Make sure they are sorted alphabetically (post-translation)
+        asort($typeOptions);
+
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
@@ -108,13 +119,7 @@ class Table extends Field
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => [
-                    'singleline' => Craft::t('app', 'Single-line Text'),
-                    'multiline' => Craft::t('app', 'Multi-line text'),
-                    'number' => Craft::t('app', 'Number'),
-                    'checkbox' => Craft::t('app', 'Checkbox'),
-                    'lightswitch' => Craft::t('app', 'Lightswitch'),
-                ]
+                'options' => $typeOptions,
             ],
         ];
 
@@ -122,41 +127,39 @@ class Table extends Field
 
         $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableFieldSettings('.
-            Json::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
-            Json::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
             Json::encode($columns, JSON_UNESCAPED_UNICODE).', '.
             Json::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
-        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField',
+        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
             [
-                [
-                    'label' => Craft::t('app', 'Table Columns'),
-                    'instructions' => Craft::t('app', 'Define the columns your table should have.'),
-                    'id' => 'columns',
-                    'name' => 'columns',
-                    'cols' => $columnSettings,
-                    'rows' => $columns,
-                    'addRowLabel' => Craft::t('app', 'Add a column'),
-                    'initJs' => false
-                ]
-            ]);
+                'label' => Craft::t('app', 'Table Columns'),
+                'instructions' => Craft::t('app', 'Define the columns your table should have.'),
+                'id' => 'columns',
+                'name' => 'columns',
+                'cols' => $columnSettings,
+                'rows' => $columns,
+                'addRowLabel' => Craft::t('app', 'Add a column'),
+                'initJs' => false
+            ]
+        ]);
 
-        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField',
+        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
             [
-                [
-                    'label' => Craft::t('app', 'Default Values'),
-                    'instructions' => Craft::t('app', 'Define the default values for the field.'),
-                    'id' => 'defaults',
-                    'name' => 'defaults',
-                    'cols' => $columns,
-                    'rows' => $defaults,
-                    'initJs' => false
-                ]
-            ]);
+                'label' => Craft::t('app', 'Default Values'),
+                'instructions' => Craft::t('app', 'Define the default values for the field.'),
+                'id' => 'defaults',
+                'name' => 'defaults',
+                'cols' => $columns,
+                'rows' => $defaults,
+                'initJs' => false
+            ]
+        ]);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Table/settings', [
+        return $view->renderTemplate('_components/fieldtypes/Table/settings', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
@@ -254,27 +257,27 @@ class Table extends Field
     {
         $columns = $this->columns;
 
-        if (!empty($columns)) {
-            // Translate the column headings
-            foreach ($columns as &$column) {
-                if (!empty($column['heading'])) {
-                    $column['heading'] = Craft::t('site', $column['heading']);
-                }
-            }
-            unset($column);
-
-            $id = Craft::$app->getView()->formatInputId($this->handle);
-
-            return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable',
-                [
-                    'id' => $id,
-                    'name' => $this->handle,
-                    'cols' => $columns,
-                    'rows' => $value,
-                    'static' => $static
-                ]);
+        if (empty($columns)) {
+            return null;
         }
 
-        return null;
+        // Translate the column headings
+        foreach ($columns as &$column) {
+            if (!empty($column['heading'])) {
+                $column['heading'] = Craft::t('site', $column['heading']);
+            }
+        }
+        unset($column);
+
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($this->handle);
+
+        return $view->renderTemplate('_includes/forms/editableTable', [
+            'id' => $id,
+            'name' => $this->handle,
+            'cols' => $columns,
+            'rows' => $value,
+            'static' => $static
+        ]);
     }
 }
