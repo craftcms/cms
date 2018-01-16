@@ -113,7 +113,7 @@
                         continue;
                     }
 
-                    tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, this.defaultsTableName, defaults[rowId]);
+                    tableHtml += Craft.EditableTable.createRow(rowId, columns, this.defaultsTableName, defaults[rowId]).prop('outerHTML');
                 }
 
                 tableHtml += '</tbody>' +
