@@ -34,6 +34,7 @@
 - Fixed a bug where the `search` param wasn’t returning any results when the search term was less than 4 characters (or whatever MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting was set to). ([#1735](https://github.com/craftcms/cms/issues/1735))
 - Fixed a bug where Multi-select and Checkboxes fields were setting inaccurate `selected` states on the options returned by their `getOptions()` methods. ([#2301](https://github.com/craftcms/cms/issues/2301))
 - Fixed a SQL error that could occur due to an `archived` column name conflict when querying for users. ([#2305](https://github.com/craftcms/cms/issues/2305))
+- Fixed an error that occurred when calling `addOrderBy()` on an element query, if `orderBy()` had not been called first. ([#2310](https://github.com/craftcms/cms/issues/2310))
 
 ## 3.0.0-RC5 - 2018-01-09
 

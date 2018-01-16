@@ -536,6 +536,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function addOrderBy($columns)
+    {
+        // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
+        // then treat this is an orderBy() call.
+        if ($this->orderBy !== null && empty($this->orderBy)) {
+            $this->orderBy = null;
+        }
+        return parent::addOrderBy($columns);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function status($value)
     {
         $this->status = $value;
