@@ -16,6 +16,7 @@ use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\events\AuthenticateUserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -50,6 +51,13 @@ class User extends Element implements IdentityInterface
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
+     *
+     * You may set [[AuthenticateUserEvent::isValid]] to `false` to prevent the user from getting authenticated
+     */
+    const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
@@ -703,67 +711,75 @@ class User extends Element implements IdentityInterface
      */
     public function authenticate(string $password): bool
     {
-        switch ($this->getStatus()) {
-            case self::STATUS_ARCHIVED:
-                $this->authError = self::AUTH_INVALID_CREDENTIALS;
-                break;
-            case self::STATUS_PENDING:
-                $this->authError = self::AUTH_PENDING_VERIFICATION;
-                break;
-            case self::STATUS_SUSPENDED:
-                $this->authError = self::AUTH_ACCOUNT_SUSPENDED;
-                break;
-            case self::STATUS_LOCKED:
-                // Let them know how much time they have to wait (if any) before their account is unlocked.
-                if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
-                    $this->authError = self::AUTH_ACCOUNT_COOLDOWN;
-                } else {
-                    $this->authError = self::AUTH_ACCOUNT_LOCKED;
-                }
-                break;
-            case self::STATUS_ACTIVE:
-                // Validate the password
-                try {
-                    $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-                } catch (InvalidParamException $e) {
-                    $valid = false;
-                }
-                if (!$valid) {
-                    Craft::$app->getUsers()->handleInvalidLogin($this);
-                    // Was that one bad password too many?
-                    if ($this->locked) {
-                        // Will set the authError to either AccountCooldown or AccountLocked
-                        return $this->authenticate($password);
-                    }
+        // Fire a 'beforeAuthenticate' event
+        $event = new AuthenticateUserEvent([
+            'password' => $password,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+
+        if ($event->performAuthentication) {
+            switch ($this->getStatus()) {
+                case self::STATUS_ARCHIVED:
                     $this->authError = self::AUTH_INVALID_CREDENTIALS;
                     break;
-                }
-                // Is a password reset required?
-                if ($this->passwordResetRequired) {
-                    $this->authError = self::AUTH_PASSWORD_RESET_REQUIRED;
+                case self::STATUS_PENDING:
+                    $this->authError = self::AUTH_PENDING_VERIFICATION;
                     break;
-                }
-                $request = Craft::$app->getRequest();
-                if (!$request->getIsConsoleRequest()) {
-                    if ($request->getIsCpRequest()) {
-                        if (!$this->can('accessCp') && $this->authError === null) {
-                            $this->authError = self::AUTH_NO_CP_ACCESS;
+                case self::STATUS_SUSPENDED:
+                    $this->authError = self::AUTH_ACCOUNT_SUSPENDED;
+                    break;
+                case self::STATUS_LOCKED:
+                    // Let them know how much time they have to wait (if any) before their account is unlocked.
+                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
+                        $this->authError = self::AUTH_ACCOUNT_COOLDOWN;
+                    } else {
+                        $this->authError = self::AUTH_ACCOUNT_LOCKED;
+                    }
+                    break;
+                case self::STATUS_ACTIVE:
+                    // Validate the password
+                    try {
+                        $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+                    } catch (InvalidParamException $e) {
+                        $valid = false;
+                    }
+                    if (!$valid) {
+                        Craft::$app->getUsers()->handleInvalidLogin($this);
+                        // Was that one bad password too many?
+                        if ($this->locked) {
+                            // Will set the authError to either AccountCooldown or AccountLocked
+                            return $this->authenticate($password);
                         }
-                        if (
+                        $this->authError = self::AUTH_INVALID_CREDENTIALS;
+                        break;
+                    }
+                    // Is a password reset required?
+                    if ($this->passwordResetRequired) {
+                        $this->authError = self::AUTH_PASSWORD_RESET_REQUIRED;
+                        break;
+                    }
+                    $request = Craft::$app->getRequest();
+                    if (!$request->getIsConsoleRequest()) {
+                        if ($request->getIsCpRequest()) {
+                            if (!$this->can('accessCp') && $this->authError === null) {
+                                $this->authError = self::AUTH_NO_CP_ACCESS;
+                            }
+                            if (
+                                Craft::$app->getIsSystemOn() === false &&
+                                $this->can('accessCpWhenSystemIsOff') === false &&
+                                $this->authError === null
+                            ) {
+                                $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
+                            }
+                        } else if (
                             Craft::$app->getIsSystemOn() === false &&
-                            $this->can('accessCpWhenSystemIsOff') === false &&
+                            $this->can('accessSiteWhenSystemIsOff') === false &&
                             $this->authError === null
                         ) {
-                            $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
+                            $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
                         }
-                    } else if (
-                        Craft::$app->getIsSystemOn() === false &&
-                        $this->can('accessSiteWhenSystemIsOff') === false &&
-                        $this->authError === null
-                    ) {
-                        $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
                     }
-                }
+            }
         }
 
         return $this->authError === null;

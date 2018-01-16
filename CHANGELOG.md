@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+## 2.6.3004 - 2018-01-16
+
 ### Added
+- Added the [onBeforeAuthenticate](https://craftcms.com/docs/plugins/events-reference#userSession-onBeforeAuthenticate) event. ([#1161](https://github.com/craftcms/cms/issues/1161))
 - Added support for most Emoji characters in Plain Text fields, for servers running PHP 5.4 or later. ([#1753](https://github.com/craftcms/cms/issues/1753))
 - Added LitEmoji 1.3.
+
+### Changed
+- Redactor’s toolbar is not fixed anymore. ([#1745](https://github.com/craftcms/cms/issues/1745))
 
 ## 2.6.3003 - 2018-01-09
 

@@ -7,6 +7,8 @@
 - Added the `registerSiteTemplateRoots` event to `craft\web\View`, making it possible for plugins and modules to provide templates for the front-end.
 - Added missing translations for the Plugin Store.
 - Added `craft\db\Connection::getVersion()`.
+- Added `craft\elements\User::EVENT_BEFORE_AUTHENTICATE`.
+- Added `craft\events\AuthenticateUserEvent`.
 - Added `craft\fields\BaseOptionsField::getIsMultiOptionsField()`. ([#2302](https://github.com/craftcms/cms/issues/2302))
 - Added `craft\helpers\App::extensionVersion()`.
 - Added `craft\helpers\App::normalizeVersion()`.
