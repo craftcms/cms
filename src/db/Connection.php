@@ -18,6 +18,7 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
@@ -124,6 +125,17 @@ class Connection extends \yii\db\Connection
     public function getIsPgsql(): bool
     {
         return $this->getDriverName() === DbConfig::DRIVER_PGSQL;
+    }
+
+    /**
+     * Returns the version of the DB.
+     *
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        $version = $this->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        return App::normalizeVersion($version);
     }
 
     /**

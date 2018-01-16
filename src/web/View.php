@@ -22,6 +22,7 @@ use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
 use Twig_ExtensionInterface;
+use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -40,9 +41,14 @@ class View extends \yii\web\View
     // =========================================================================
 
     /**
-     * @event RegisterTemplateRootsEvent The event that is triggered when registering template roots
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering CP template roots
      */
     const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
+
+    /**
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
+     */
+    const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
@@ -121,6 +127,16 @@ class View extends \yii\web\View
      * @var array|null
      */
     private $_cpTemplateRoots;
+
+    /**
+     * @var array|null
+     */
+    private $_siteTemplateRoots;
+
+    /**
+     * @var array|null
+     */
+    private $_templateRoots;
 
     /**
      * @var string|null The root path to look for templates in
@@ -425,6 +441,13 @@ class View extends \yii\web\View
         try {
             $twig = $this->getTwig();
 
+            // Temporarily disable strict variables if it's enabled
+            $strictVariables = $twig->isStrictVariables();
+
+            if ($strictVariables) {
+                $twig->disableStrictVariables();
+            }
+
             // Is this the first time we've parsed this template?
             $cacheKey = md5($template);
             if (!isset($this->_objectTemplates[$cacheKey])) {
@@ -434,21 +457,20 @@ class View extends \yii\web\View
                 $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
             }
 
-            // Temporarily disable strict variables if it's enabled
-            $strictVariables = $twig->isStrictVariables();
-
-            if ($strictVariables) {
-                $twig->disableStrictVariables();
+            // Get the variables to pass to the template
+            if ($object instanceof Arrayable) {
+                $variables = $object->toArray();
+            } else {
+                $variables = [];
             }
+            $variables['object'] = $object;
 
             // Render it!
             $lastRenderingTemplate = $this->_renderingTemplate;
             $this->_renderingTemplate = 'string:'.$template;
             /** @var Template $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            $output = $templateObj->render([
-                'object' => $object
-            ]);
+            $output = $templateObj->render($variables);
 
             $this->_renderingTemplate = $lastRenderingTemplate;
 
@@ -597,9 +619,15 @@ class View extends \yii\web\View
 
         unset($basePaths);
 
+        // Check any registered template roots
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
-            // Check any registered CP template roots
-            foreach ($this->getCpTemplateRoots() as $templateRoot => $basePaths) {
+            $roots = $this->getCpTemplateRoots();
+        } else {
+            $roots = $this->getSiteTemplateRoots();
+        }
+
+        if (!empty($roots)) {
+            foreach ($roots as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
                 if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
@@ -623,24 +651,17 @@ class View extends \yii\web\View
      */
     public function getCpTemplateRoots(): array
     {
-        if ($this->_cpTemplateRoots !== null) {
-            return $this->_cpTemplateRoots;
-        }
+        return $this->_getTemplateRoots('cp');
+    }
 
-        $event = new RegisterTemplateRootsEvent();
-        $this->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $event);
-
-        $this->_cpTemplateRoots = [];
-
-        foreach ($event->roots as $templatePath => $dir) {
-            $templatePath = strtolower(trim($templatePath, '/'));
-            $this->_cpTemplateRoots[$templatePath][] = $dir;
-        }
-
-        // Longest (most specific) first
-        krsort($this->_cpTemplateRoots, SORT_STRING);
-
-        return $this->_cpTemplateRoots;
+    /**
+     * Returns any registered site template roots.
+     *
+     * @return array
+     */
+    public function getSiteTemplateRoots(): array
+    {
+        return $this->_getTemplateRoots('site');
     }
 
     /**
@@ -1439,6 +1460,40 @@ JS;
         }
 
         return $this->_twigOptions;
+    }
+
+    /**
+     * Returns any registered template roots.
+     *
+     * @param string $which 'cp' or 'site'
+     *
+     * @return array
+     */
+    private function _getTemplateRoots(string $which): array
+    {
+        if (isset($this->_templateRoots[$which])) {
+            return $this->_templateRoots[$which];
+        }
+
+        if ($which === 'cp') {
+            $name = self::EVENT_REGISTER_CP_TEMPLATE_ROOTS;
+        } else {
+            $name = self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS;
+        }
+        $event = new RegisterTemplateRootsEvent();
+        $this->trigger($name, $event);
+
+        $roots = [];
+
+        foreach ($event->roots as $templatePath => $dir) {
+            $templatePath = strtolower(trim($templatePath, '/'));
+            $roots[$templatePath][] = $dir;
+        }
+
+        // Longest (most specific) first
+        krsort($roots, SORT_STRING);
+
+        return $this->_templateRoots[$which] = $roots;
     }
 
     /**

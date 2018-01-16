@@ -1716,83 +1716,94 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
   }
 }
 
-/* table views */
-.elements .tableview tr {
-  outline: none;
-}
-
-.elements .tableview th,
-.elements .tableview td {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.elements .tableview td {
-  position: relative;
-}
-
-.elements .tableview td.checkbox-cell {
-  @include padding-right(7px);
-  width: 12px !important;
-}
-
-.elements .tableview td.checkbox-cell + td,
-.elements .tableview td.checkbox-cell + th {
-  @include padding-left(7px);
-}
-
-.elements .tableview tr.sel td:not(.checkbox-cell) {
-  background: $lightSelColor;
-}
-
-.elements .tableview .move {
-  display: block;
-  position: absolute;
-  top: calc(50% - 9px);
-  @include margin-left(-14px);
-  font-size: 11px;
-  text-decoration: none;
-}
-
-.elements .tableview .toggle {
-  display: block;
-  position: absolute;
-  top: 9px;
-  @include margin-left(-20px);
-}
-
-.elements .tableview .move + .toggle {
-  @include margin-left(-34px);
-}
-
-/* thumbs views */
-.elements .thumbsview {
-  @include margin(-14px, 0, 0, -14px);
-}
-
-.elements .thumbsview li {
-  position: relative;
-  @include floatleft;
-  @include margin(14px, 0, 0, 14px);
-  outline: none;
-}
-
-.elements .thumbsview li.has-checkbox .checkbox {
-  position: absolute;
-  top: 106px;
-  @include left(4px);
-}
-
 $checkboxPadding: 20px;
-.elements .thumbsview li.has-checkbox .element.large.hasthumb {
-  &:not(.hasstatus) {
-    @include padding-left($checkboxPadding);
-  }
-  &.hasstatus {
-    @include padding-left($checkboxPadding + $elementStatusPadding);
 
-    .status {
-      @include left($checkboxPadding);
+.elements {
+  // table views
+  .tableview {
+    tr {
+      outline: none;
+
+      &.sel {
+        td {
+          &:not(.checkbox-cell) {
+            background: $lightSelColor;
+          }
+        }
+      }
+    }
+
+    th,
+    td {
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    td {
+      position: relative;
+
+      &.checkbox-cell {
+        @include padding-right(7px);
+        width: 12px !important;
+
+        & + td,
+        & + th {
+          @include padding-left(7px);
+        }
+      }
+    }
+
+    .move {
+      display: block;
+      position: absolute;
+      top: calc(50% - 9px);
+      @include margin-left(-14px);
+      font-size: 11px;
+      text-decoration: none;
+    }
+
+    .toggle {
+      display: block;
+      position: absolute;
+      top: 9px;
+      @include margin-left(-20px);
+    }
+
+    .move + .toggle {
+      @include margin-left(-34px);
+    }
+  }
+
+  // thumbs views
+  .thumbsview {
+    @include margin(-14px, 0, 0, -14px);
+
+    li {
+      position: relative;
+      @include floatleft;
+      @include margin(14px, 0, 0, 14px);
+      outline: none;
+
+      &.has-checkbox {
+        .checkbox {
+          position: absolute;
+          top: 106px;
+          @include left(4px);
+        }
+
+        .element.large.hasthumb {
+          &:not(.hasstatus) {
+            @include padding-left($checkboxPadding);
+          }
+          &.hasstatus {
+            @include padding-left($checkboxPadding + $elementStatusPadding);
+
+            .status {
+              @include left($checkboxPadding);
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -1800,129 +1811,143 @@ $checkboxPadding: 20px;
 .thumbviewhelper {
   margin: -7px;
   padding: 7px;
-}
 
-.thumbviewhelper .thumbsview,
-.thumbviewhelper .thumbsview li {
-  margin: 0 !important;
+  .thumbsview {
+    &,
+    li {
+      margin: 0 !important;
+    }
+  }
 }
 
 /* structures */
 .structure {
   position: relative;
   z-index: 1;
-}
 
-.structure li {
-  @include padding-left(8px);
-}
+  li {
+    @include padding-left(8px);
 
-.structure ul {
-  @include margin-left(-3px);
-}
+    &.collapsed > ul {
+      display: none;
+    }
 
-.structure ul li {
-  @include padding-left(38px);
-  background-repeat: no-repeat;
-  body.ltr & {
-    background-image: url(../images/branch.png);
-    background-position: 0 0;
+    .row:hover > .icon,
+    &.draghelper > .row .move,
+    .add.active {
+      opacity: 1;
+    }
+
+    &.draghelper {
+      & > .row {
+        .add {
+          opacity: 0;
+        }
+
+        .move:before {
+          color: $linkColor;
+        }
+      }
+    }
+
+    &.draginsertion {
+      position: relative;
+      @include margin(-1px, 0, -1px, 8px);
+      @include padding-left(0);
+      height: 2px;
+      background: $linkColor !important;
+      @include border-left(none);
+      border-radius: 1px;
+    }
+
+    .toggle {
+      position: relative;
+      z-index: 1;
+      @include floatleft;
+      @include margin(4px, -8px, 0, -12px);
+    }
+
+    .row:after {
+      @include clearafter;
+    }
+
+    .move,
+    .add {
+      @include margin(5px, 5px, 0, 0);
+      opacity: 0;
+      transition: opacity linear 100ms;
+    }
+
+    .add {
+      padding: 0 5px;
+
+      &:before {
+        content: 'downangle';
+        color: rgba(0, 0, 0, 0.2);
+      }
+
+      &:not(.disabled):hover:before,
+      &.active:before {
+        color: $linkColor;
+      }
+    }
+
+    .checkbox {
+      @include floatleft;
+      @include margin(7px, 0, 0, 7px);
+    }
   }
-  body.rtl & {
-    background-image: url(../images/branch_rtl.png);
-    background-position: 100% 0;
+
+  ul {
+    @include margin-left(-3px);
+
+    li {
+      @include padding-left(38px);
+      background-repeat: no-repeat;
+
+      body.ltr & {
+        background-image: url(../images/branch.png);
+        background-position: 0 0;
+      }
+
+      body.rtl & {
+        background-image: url(../images/branch_rtl.png);
+        background-position: 100% 0;
+      }
+
+      &:not(:last-child):not(.last) {
+        @include padding-left(37px);
+        @include border-left(1px solid $hairlineColor);
+
+        body.ltr & {
+          background-position: -1px 0;
+        }
+
+        body.rtl & {
+          background-position: calc(100% + 1px) 0;
+        }
+      }
+
+      &.draginsertion {
+        @include margin-left(38px);
+      }
+    }
   }
-}
 
-.structure ul li:not(:last-child):not(.last) {
-  @include padding-left(37px);
-  @include border-left(1px solid $hairlineColor);
-  body.ltr & {
-    background-position: -1px 0;
+  .row {
+    &.draghover {
+      .element {
+        z-index: 2;
+        border-radius: 15px;
+        box-shadow: inset 0 0 0 2px $linkColor;
+      }
+    }
+
+    &.droptarget {
+      border-radius: 5px;
+      box-shadow: inset 0 0 0 2px $linkColor;
+    }
   }
-  body.rtl & {
-    background-position: calc(100% + 1px) 0;
-  }
-}
-
-.structure li .toggle {
-  position: relative;
-  z-index: 1;
-  @include floatleft;
-  @include margin(4px, -8px, 0, -12px);
-}
-
-.structure li.collapsed > ul {
-  display: none;
-}
-
-.structure li .row:after {
-  @include clearafter;
-}
-
-.structure li .move,
-.structure li .add {
-  @include margin(5px, 5px, 0, 0);
-  opacity: 0;
-  transition: opacity linear 100ms;
-}
-
-.structure li .add {
-  padding: 0 5px;
-}
-
-.structure li .add:before {
-  content: 'downangle';
-  color: rgba(0, 0, 0, 0.2);
-}
-
-.structure li .add:not(.disabled):hover:before,
-.structure li .add.active:before {
-  color: $linkColor;
-}
-
-.structure li .row:hover > .icon,
-.structure li.draghelper > .row .move,
-.structure li .add.active {
-  opacity: 1;
-}
-
-.structure li .checkbox {
-  @include floatleft;
-  @include margin(7px, 0, 0, 7px);
-}
-
-.structure li.draghelper > .row .add {
-  opacity: 0;
-}
-
-.structure li.draghelper > .row .move:before {
-  color: $linkColor;
-}
-
-.structure li.draginsertion {
-  position: relative;
-  @include margin(-1px, 0, -1px, 8px);
-  @include padding-left(0);
-  height: 2px;
-  background: $linkColor !important;
-  @include border-left(none);
-  border-radius: 1px;
-}
-
-.structure ul li.draginsertion {
-  @include margin-left(38px);
-}
-
-.structure .row.draghover .element {
-  z-index: 2;
-  border-radius: 15px;
-  box-shadow: inset 0 0 0 2px $linkColor;
-}
-
-.structure .row.droptarget {
-  border-radius: 5px;
-  box-shadow: inset 0 0 0 2px $linkColor;
 }
 
 /* element select fields */
@@ -1930,168 +1955,215 @@ $checkboxPadding: 20px;
   position: relative;
   min-height: 37px;
   margin-top: -7px;
-}
 
-.elementselect:after {
-  @include clearafter;
-}
+  &:after {
+    @include clearafter;
+  }
 
-.elementselect .element,
-.elementselect .btn {
-  @include floatleft;
-  @include margin(7px, 7px, 0, 0);
-}
+  .element,
+  .btn {
+    @include floatleft;
+    @include margin(7px, 7px, 0, 0);
+  }
 
-.elementselect .element.small,
-.elementselect .btn {
-  clear: both;
-}
+  .element.small,
+  .btn {
+    clear: both;
+  }
 
-.elementselect .element {
-  z-index: 1;
-}
+  .element {
+    z-index: 1;
+  }
 
-.elementselect .caboose {
-  @include floatleft;
-}
-
-/* editable tables */
-table.editable tbody tr:not(:first-child) th,
-table.editable tbody tr:not(:first-child) td {
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
-}
-
-table.editable thead tr th,
-table.editable tbody tr th {
-  padding: 6px 10px;
-  white-space: nowrap;
-}
-
-table.editable tbody tr td:not(.textual) {
-  padding: 4px 10px;
-}
-
-table.editable thead tr th {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-table.editable thead tr th span.info {
-  margin-left: 5px;
-}
-
-table.editable tbody tr td {
-  vertical-align: middle;
-  text-align: center;
-  background: #fff;
-}
-
-table.editable tbody tr td.textual {
-  vertical-align: top;
-}
-
-// Set a dark border-left for the first <td> that follows a <th>, if there is one.
-// This is a ridiculous CSS hack since there's no operator/pseudo-class that mimics jQuery's next(selector) function.
-// If there was it could have been as simple as: th ??? td:not(.hidden) { dark left border }
-// kudos to Mark Huot for coming up with it!
-table.editable tbody tr th ~ td:not(:first-child) {
-  @include border-left(1px solid #dbdddf);
-}
-
-table.editable tbody tr td:not(:first-child),
-table.editable tbody tr th ~ td:not(.hidden) ~ td {
-  @include border-left(1px solid rgba(0, 0, 0, 0.07));
-}
-
-table.editable tbody tr td.error {
-  box-shadow: inset 0 0 0 1px $errorColor;
-}
-
-table.editable tbody tr td.disabled {
-  position: relative;
-  opacity: 1;
-}
-
-table.editable tbody tr td.disabled:after {
-  content: '.';
-  font-size: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: hsla($hue, 10%, 96%, 0.75);
-  user-select: none;
-}
-
-table.editable tbody tr th,
-table.editable tbody tr td.action {
-  background: $bgColor;
-}
-
-table.editable tbody tr td.action {
-  padding: 4px 7px;
-}
-
-table.editable tbody tr td.action + td.action {
-  @include border-left(none);
-  @include padding-left(0);
-}
-
-table.editable tbody textarea {
-  display: block;
-  width: 100%;
-  border: none;
-  padding: 7px 10px;
-  background: transparent;
-  overflow: hidden;
-}
-
-table.editable tbody textarea:focus {
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  padding: 6px 9px;
-  outline: none;
-}
-
-table.editable tbody tr td.code textarea::-webkit-input-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textareainput:-ms-input-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea::-ms-input-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea:-moz-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea::-moz-placeholder {
-  @include sans-serif-font;
-}
-
-table.editable tbody tr td.code textarea::placeholder {
-  @include sans-serif-font;
-}
-
-table.editable + .btn.add {
-  display: block;
-  border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
-  border: 1px dashed $darkHairlineColorAlpha;
-  border-top-width: 0;
-  background: none;
-  box-shadow: none;
-
-  &:focus {
-    border-style: solid;
+  .caboose {
+    @include floatleft;
   }
 }
 
-.border-box + .buttons,
-.shadow-box + .buttons {
-  margin-top: 7px;
+/* editable tables */
+table.editable {
+  thead,
+  tbody {
+    tr {
+      th {
+        padding: 6px 10px;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  thead {
+    tr {
+      th {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+        span.info {
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      &:not(:first-child) {
+        th,
+        td {
+          border-top: 1px solid rgba(0, 0, 0, 0.07);
+        }
+      }
+
+      td:not(:first-child),
+      th ~ td:not(.hidden) ~ td {
+        @include border-left(1px solid rgba(0, 0, 0, 0.07));
+      }
+
+      th,
+      td.action {
+        background: $bgColor;
+      }
+
+      th {
+        // Set a dark border-left for the first <td> that follows a <th>, if there is one.
+        // This is a ridiculous CSS hack since there's no operator/pseudo-class that mimics jQuery's next(selector) function.
+        // If there was it could have been as simple as: th ??? td:not(.hidden) { dark left border }
+        // kudos to Mark Huot for coming up with it!
+        & ~ td:not(:first-child) {
+          @include border-left(1px solid #dbdddf);
+        }
+      }
+
+      td {
+        vertical-align: middle;
+        text-align: center;
+        background: #fff;
+
+        &.textual {
+          vertical-align: top;
+        }
+
+        &:not(.textual) {
+          padding: 4px 10px;
+        }
+
+        &.error {
+          box-shadow: inset 0 0 0 1px $errorColor;
+        }
+
+        &.disabled {
+          position: relative;
+          opacity: 1;
+
+          &:after {
+            content: '.';
+            font-size: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: hsla($hue, 10%, 96%, 0.75);
+            user-select: none;
+          }
+        }
+
+        &.action {
+          padding: 4px 7px;
+
+          & + td.action {
+            @include border-left(none);
+            @include padding-left(0);
+          }
+        }
+
+        &.code {
+          textarea::-webkit-input-placeholder {
+            @include sans-serif-font;
+          }
+
+          textareainput:-ms-input-placeholder {
+            @include sans-serif-font;
+          }
+
+          textarea::-ms-input-placeholder {
+            @include sans-serif-font;
+          }
+
+          textarea:-moz-placeholder {
+            @include sans-serif-font;
+          }
+
+          textarea::-moz-placeholder {
+            @include sans-serif-font;
+          }
+
+          textarea::placeholder {
+            @include sans-serif-font;
+          }
+        }
+      }
+    }
+
+    textarea,
+    .color-container > input {
+      display: block;
+      width: 100%;
+      border: none;
+      padding: 7px 10px;
+      background: transparent;
+      overflow: hidden;
+
+      &:focus {
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        padding: 6px 9px;
+        outline: none;
+      }
+    }
+
+    .color-container {
+      display: block;
+      position: relative;
+
+      & > .color,
+      & > input {
+        margin-bottom: 0;
+      }
+
+      & > .color {
+        position: absolute;
+        top: 9px;
+        @include left(10px);
+      }
+
+      & > input {
+        @include padding-left(35px);
+
+        &:focus {
+          @include padding-left(34px);
+        }
+      }
+    }
+  }
+
+  & + .btn.add {
+    display: block;
+    border-radius: 0 0 $btnBorderRadius $btnBorderRadius;
+    border: 1px dashed $darkHairlineColorAlpha;
+    border-top-width: 0;
+    background: none;
+    box-shadow: none;
+
+    &:focus {
+      border-style: solid;
+    }
+  }
+}
+
+.border-box,
+.shadow-box {
+  & + .buttons {
+    margin-top: 7px;
+  }
 }
 
 /* ----------------------------------------

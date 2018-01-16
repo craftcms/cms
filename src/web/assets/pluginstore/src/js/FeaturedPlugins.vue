@@ -36,7 +36,7 @@
         created () {
             this.$root.crumbs = [
                 {
-                    label: "Plugin Store",
+                    label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
             ];

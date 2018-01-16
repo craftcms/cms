@@ -31,8 +31,9 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['singleline','multiline','number']) %}
-                        <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+                        {% set textual = (col.type in ['singleline','multiline','number','color']) %}
+                        {% set isCode = col.code is defined or col.type == 'color' %}
+                        <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {%- switch col.type -%}
                                 {% case 'select' -%}
                                     {% include "_includes/forms/select" with {
@@ -54,6 +55,13 @@
                                         name: cellName,
                                         on: value,
                                         value: col.value ?? 1,
+                                        small: true,
+                                        disabled: static
+                                    } only %}
+                                {%- case 'color' -%}
+                                    {% include "_includes/forms/color" with {
+                                        name: cellName,
+                                        value: value,
                                         small: true,
                                         disabled: static
                                     } only %}

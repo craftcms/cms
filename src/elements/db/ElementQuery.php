@@ -536,6 +536,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function addOrderBy($columns)
+    {
+        // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
+        // then treat this is an orderBy() call.
+        if ($this->orderBy !== null && empty($this->orderBy)) {
+            $this->orderBy = null;
+        }
+        return parent::addOrderBy($columns);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function status($value)
     {
         $this->status = $value;
@@ -908,9 +921,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->archived) {
-            $this->subQuery->andWhere(['elements.archived' => '1']);
+            $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $this->subQuery->andWhere(['elements.archived' => '0']);
+            $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
         }
 
@@ -935,7 +948,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->enabledForSite) {
-            $this->subQuery->andWhere(['elements_sites.enabled' => '1']);
+            $this->subQuery->andWhere(['elements_sites.enabled' => true]);
         }
 
         $this->_applyRelatedToParam();
@@ -1365,9 +1378,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         switch ($status) {
             case Element::STATUS_ENABLED:
-                return ['elements.enabled' => '1'];
+                return ['elements.enabled' => true];
             case Element::STATUS_DISABLED:
-                return ['elements.enabled' => '0'];
+                return ['elements.enabled' => false];
+            case Element::STATUS_ARCHIVED:
+                return ['elements.archived' => true];
             default:
                 return false;
         }

@@ -916,7 +916,7 @@ class Matrix extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->batchInsert(
-                            'relations',
+                            '{{%relations}}',
                             [
                                 'fieldId',
                                 'sourceId',

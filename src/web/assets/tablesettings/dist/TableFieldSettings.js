@@ -36,6 +36,9 @@
             initColumnsTable: function() {
                 this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
                     rowIdPrefix: 'col',
+                    defaultValues: {
+                        type: 'singleline'
+                    },
                     onAddRow: $.proxy(this, 'onAddColumn'),
                     onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
                 });
@@ -88,8 +91,7 @@
                     }
                 }
 
-                var tableHtml = '<table id="' + this.defaultsTableId + '" class="editable shadow-box">' +
-                    '<thead>' +
+                var theadHtml = '<thead>' +
                     '<tr>';
 
                 for (var colId in columns) {
@@ -97,26 +99,29 @@
                         continue;
                     }
 
-                    tableHtml += '<th scope="col" class="header">' + (columns[colId].heading ? columns[colId].heading : '&nbsp;') + '</th>';
+                    theadHtml += '<th scope="col" class="header">' + (columns[colId].heading ? columns[colId].heading : '&nbsp;') + '</th>';
                 }
 
-                tableHtml += '<th class="header" colspan="2"></th>' +
+                theadHtml += '<th class="header" colspan="2"></th>' +
                     '</tr>' +
-                    '</thead>' +
-                    '<tbody>';
+                    '</thead>';
+
+                var $table = $('<table/>', {
+                    id: this.defaultsTableId,
+                    'class': 'editable shadow-box'
+                }).append(theadHtml);
+
+                var $tbody = $('<tbody/>').appendTo($table);
 
                 for (var rowId in defaults) {
                     if (!defaults.hasOwnProperty(rowId)) {
                         continue;
                     }
 
-                    tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, this.defaultsTableName, defaults[rowId]);
+                    Craft.EditableTable.createRow(rowId, columns, this.defaultsTableName, defaults[rowId]).appendTo($tbody);
                 }
 
-                tableHtml += '</tbody>' +
-                    '</table>';
-
-                this.defaultsTable.$table.replaceWith(tableHtml);
+                this.defaultsTable.$table.replaceWith($table);
                 this.defaultsTable.destroy();
                 delete this.defaultsTable;
                 this.initDefaultsTable(columns);

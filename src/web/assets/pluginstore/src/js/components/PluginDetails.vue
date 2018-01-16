@@ -33,7 +33,7 @@
                             <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
                             <input type="hidden" name="handle" :value="pluginSnippet.handle">
                             <input type="hidden" name="version" :value="pluginSnippet.version">
-                            <input type="submit" class="btn submit" value="Install">
+                            <input type="submit" class="btn submit" :value="'Install'|t('app')">
                         </form>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         <ul class="plugin-meta-data">
                             <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
                             <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
-                            <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ (plugin.activeInstalls * 10000) | formatNumber }}</strong></li>
+                            <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls | formatNumber }}</strong></li>
                             <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
                             <li v-if="categories.length > 0">
                                 <span>{{ "Categories"|t('app') }}</span>
@@ -69,8 +69,8 @@
                         </ul>
 
                         <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
-                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" target="_blank">Documentation</a></li>
-                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" target="_blank">Changelog</a></li>
+                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" target="_blank">{{ "Documentation"|t('app') }}</a></li>
+                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" target="_blank">{{ "Changelog"|t('app') }}</a></li>
                         </ul>
                     </div>
                 </div>

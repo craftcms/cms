@@ -405,7 +405,7 @@ class EntryQuery extends ElementQuery
         $this->_applyRefParam();
 
         if ($this->orderBy !== null && empty($this->orderBy) && !$this->structureId && !$this->fixedOrder) {
-            $this->orderBy = 'postDate desc';
+            $this->orderBy = ['entries.postDate' => SORT_DESC];
         }
 
         return parent::beforePrepare();
@@ -423,8 +423,8 @@ class EntryQuery extends ElementQuery
                 return [
                     'and',
                     [
-                        'elements.enabled' => '1',
-                        'elements_sites.enabled' => '1'
+                        'elements.enabled' => true,
+                        'elements_sites.enabled' => true
                     ],
                     ['<=', 'entries.postDate', $currentTimeDb],
                     [
@@ -437,8 +437,8 @@ class EntryQuery extends ElementQuery
                 return [
                     'and',
                     [
-                        'elements.enabled' => '1',
-                        'elements_sites.enabled' => '1',
+                        'elements.enabled' => true,
+                        'elements_sites.enabled' => true,
                     ],
                     ['>', 'entries.postDate', $currentTimeDb]
                 ];
@@ -446,8 +446,8 @@ class EntryQuery extends ElementQuery
                 return [
                     'and',
                     [
-                        'elements.enabled' => '1',
-                        'elements_sites.enabled' => '1'
+                        'elements.enabled' => true,
+                        'elements_sites.enabled' => true
                     ],
                     ['not', ['entries.expiryDate' => null]],
                     ['<=', 'entries.expiryDate', $currentTimeDb]

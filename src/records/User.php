@@ -25,7 +25,6 @@ use yii\db\ActiveQueryInterface;
  * @property bool        $locked                     Locked
  * @property bool        $suspended                  Suspended
  * @property bool        $pending                    Pending
- * @property bool        $archived                   Archived
  * @property \DateTime   $lastLoginDate              Last login date
  * @property string      $lastLoginAttemptIp         Last login attempt IP
  * @property \DateTime   $invalidLoginWindowStart    Invalid login window start
@@ -88,14 +87,5 @@ class User extends ActiveRecord
     {
         return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
             ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
-    }
-
-    /**
-     * Sets a user's status to active.
-     */
-    public function setActive()
-    {
-        $this->pending = false;
-        $this->archived = false;
     }
 }

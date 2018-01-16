@@ -8,7 +8,7 @@
                 </div>
 
                 <template v-if="sort">
-                    <sort-menu-btn :attributes="sortMenuBtn.attributes" :value="sort" @update:value="val => $emit('update:sort', val)" />
+                    <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)" />
                 </template>
 
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
@@ -42,14 +42,7 @@
                 selectedAttribute: null,
                 selectedDirection: null,
 
-                sortMenuBtn: {
-                    attributes: {
-                        activeInstalls: "Popularity",
-                        lastUpdate: "Last Update",
-                        name: "Name",
-                        price: "Price",
-                    }
-                },
+                sortMenuBtnAttributes: null,
             }
         },
 
@@ -103,6 +96,15 @@
             },
 
         },
+
+        mounted() {
+            this.sortMenuBtnAttributes = {
+                activeInstalls: this.$options.filters.t("Popularity", 'app'),
+                lastUpdate: this.$options.filters.t("Last Update", 'app'),
+                name: this.$options.filters.t("Name", 'app'),
+                price: this.$options.filters.t("Price", 'app'),
+            };
+        }
 
     }
 </script>

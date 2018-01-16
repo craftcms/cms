@@ -669,7 +669,6 @@ class Install extends Migration
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
             'pending' => $this->boolean()->defaultValue(false)->notNull(),
-            'archived' => $this->boolean()->defaultValue(false)->notNull(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
@@ -1004,10 +1003,10 @@ class Install extends Migration
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
-            'edition' => '0',
+            'edition' => 0,
             'name' => $this->site->name,
-            'on' => '1',
-            'maintenance' => '0',
+            'on' => true,
+            'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo " done\n";

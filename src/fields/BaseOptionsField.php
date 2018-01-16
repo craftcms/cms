@@ -162,31 +162,25 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = $this->defaultValue();
         }
 
+        // Normalize to an array
+        $selectedValues = (array)$value;
+
         if ($this->multi) {
-            // In case the field used to be a single-option field
-            $value = (array)$value;
-
-            // Convert all the values to OptionData objects
-            foreach ($value as &$val) {
+            // Convert the value to a MultiOptionsFieldData object
+            $options = [];
+            foreach ($selectedValues as $val) {
                 $label = $this->optionLabel($val);
-                $val = new OptionData($label, $val, true);
+                $options[] = new OptionData($label, $val, true);
             }
-            unset($val);
-
-            $value = new MultiOptionsFieldData($value);
+            $value = new MultiOptionsFieldData($options);
         } else {
-            // In case the field used to be a multi-option field
-            if (is_array($value)) {
-                $value = reset($value) ?: null;
-            }
-
             // Convert the value to a SingleOptionFieldData object
+            $value = reset($selectedValues) ?: null;
             $label = $this->optionLabel($value);
             $value = new SingleOptionFieldData($label, $value, true);
         }
 
         $options = [];
-        $selectedValues = (array)$value;
 
         if ($this->options) {
             foreach ($this->options as $option) {
@@ -250,6 +244,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         /** @var SingleOptionFieldData $value */
         return (string)$value->label;
+    }
+
+    /**
+     * Returns whether the field type supports storing multiple selected options.
+     *
+     * @return bool
+     * @see multi
+     */
+    public function getIsMultiOptionsField(): bool
+    {
+        return $this->multi;
     }
 
     // Protected Methods
