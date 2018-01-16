@@ -8946,7 +8946,7 @@ var JobProgressIcon = Garnish.Base.extend(
         _progressBar: null,
 
         init: function() {
-            this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+            this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
             this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
             this.$label = $('<span class="label"></span>').appendTo(this.$a);

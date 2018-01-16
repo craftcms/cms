@@ -43,6 +43,7 @@
 - Fixed an error that occurred when calling `addOrderBy()` on an element query, if `orderBy()` had not been called first. ([#2310](https://github.com/craftcms/cms/issues/2310))
 - Fixed an error that occurred on Windows servers if a volume’s File System Path setting contained an alias and any backslashes. ([#2309](https://github.com/craftcms/cms/issues/2309))
 - Fixed a bug where Site Base URLs that began with an alias were getting saved as `http://@alias/...`, breaking front-end site URLs. ([#2312](https://github.com/craftcms/cms/issues/2312))
+- Fixed one rogue bullet. ([#2314](https://github.com/craftcms/cms/issues/2314))
 
 ## 3.0.0-RC5 - 2018-01-09
 
