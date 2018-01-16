@@ -8117,17 +8117,20 @@ Craft.charts.utils = {
  * Color input
  */
 Craft.ColorInput = Garnish.Base.extend({
+    $container: null,
     $input: null,
     $colorContainer: null,
     $colorPreview: null,
     $colorInput: null,
 
-    init: function(id) {
-        this.$input = $('#'+id);
-        this.$colorContainer = this.$input.prev();
+    init: function(container) {
+        this.$container = $(container);
+        this.$input = this.$container.children('input');
+        this.$colorContainer = this.$container.children('.color');
         this.$colorPreview = this.$colorContainer.children();
 
         this.createColorInput();
+        this.updatePreview();
 
         this.addListener(this.$input, 'textchange', 'updatePreview');
     },
@@ -10114,7 +10117,7 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number'],
+        textualColTypes: ['singleline', 'multiline', 'number', 'color'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -10181,6 +10184,14 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createLightswitch({
                                 name: name,
                                 value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            Craft.ui.createColorInput({
+                                name: name,
+                                value: value,
+                                small: true
                             }).appendTo($cell);
                             break;
 
@@ -15760,6 +15771,41 @@ Craft.ui =
 
         createLightswitchField: function(config) {
             return this.createField(this.createLightswitch(config), config);
+        },
+
+        createColorInput: function(config) {
+            var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
+            var small = (config.small || false);
+
+            var $container = $('<div/>', {
+                'class': 'flex color-container'
+            });
+
+            var $colorPreviewContainer = $('<div/>', {
+                'class': 'color static'+(small ? ' small' : '')
+            }).appendTo($container);
+
+            var $colorPreview = $('<div/>', {
+                'class': 'colorpreview',
+                style: config.value ? {backgroundColor: config.value} : null
+            }).appendTo($colorPreviewContainer);
+
+            this.createTextInput({
+                id: id,
+                name: config.name || null,
+                value: config.value || null,
+                size: 10,
+                'class': 'code',
+                autofocus: config.autofocus && Garnish.isMobileBrowser(true),
+                disabled: typeof config.disabled !== 'undefined' ? config.disabled : false
+            }).appendTo($container);
+
+            new Craft.ColorInput($container);
+            return $container;
+        },
+
+        createColorField: function(config) {
+            return this.createField(this.createColorInput(config), config);
         },
 
         createField: function(input, config) {

@@ -331,6 +331,41 @@ Craft.ui =
             return this.createField(this.createLightswitch(config), config);
         },
 
+        createColorInput: function(config) {
+            var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
+            var small = (config.small || false);
+
+            var $container = $('<div/>', {
+                'class': 'flex color-container'
+            });
+
+            var $colorPreviewContainer = $('<div/>', {
+                'class': 'color static'+(small ? ' small' : '')
+            }).appendTo($container);
+
+            var $colorPreview = $('<div/>', {
+                'class': 'colorpreview',
+                style: config.value ? {backgroundColor: config.value} : null
+            }).appendTo($colorPreviewContainer);
+
+            this.createTextInput({
+                id: id,
+                name: config.name || null,
+                value: config.value || null,
+                size: 10,
+                'class': 'code',
+                autofocus: config.autofocus && Garnish.isMobileBrowser(true),
+                disabled: typeof config.disabled !== 'undefined' ? config.disabled : false
+            }).appendTo($container);
+
+            new Craft.ColorInput($container);
+            return $container;
+        },
+
+        createColorField: function(config) {
+            return this.createField(this.createColorInput(config), config);
+        },
+
         createField: function(input, config) {
             var label = (config.label && config.label !== '__blank__' ? config.label : null),
                 siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);

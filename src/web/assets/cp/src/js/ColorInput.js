@@ -4,17 +4,20 @@
  * Color input
  */
 Craft.ColorInput = Garnish.Base.extend({
+    $container: null,
     $input: null,
     $colorContainer: null,
     $colorPreview: null,
     $colorInput: null,
 
-    init: function(id) {
-        this.$input = $('#'+id);
-        this.$colorContainer = this.$input.prev();
+    init: function(container) {
+        this.$container = $(container);
+        this.$input = this.$container.children('input');
+        this.$colorContainer = this.$container.children('.color');
         this.$colorPreview = this.$colorContainer.children();
 
         this.createColorInput();
+        this.updatePreview();
 
         this.addListener(this.$input, 'textchange', 'updatePreview');
     },

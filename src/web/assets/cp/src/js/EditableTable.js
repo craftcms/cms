@@ -93,7 +93,7 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number'],
+        textualColTypes: ['singleline', 'multiline', 'number', 'color'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -160,6 +160,14 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createLightswitch({
                                 name: name,
                                 value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            Craft.ui.createColorInput({
+                                name: name,
+                                value: value,
+                                small: true
                             }).appendTo($cell);
                             break;
 

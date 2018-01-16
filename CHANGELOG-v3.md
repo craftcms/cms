@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “Color” column type option to Table fields.
 - Added the `registerSiteTemplateRoots` event to `craft\web\View`, making it possible for plugins and modules to provide templates for the front-end.
 - Added missing translations for the Plugin Store.
 - Added `craft\db\Connection::getVersion()`.
@@ -14,7 +15,10 @@
 - Added `craft\services\Images::getVersion()`.
 - Added `craft\services\Search::minFullTextWordLength`, which can be set from `config/app.php` if MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting is something other than `4`. ([#1736](https://github.com/craftcms/cms/issues/1736))
 - Added `craft\fields\BaseOptionsField::getIsMultiOptionsField()`. ([#2302](https://github.com/craftcms/cms/issues/2302))
+- Added support for `color` columns to `Craft.EditableTable`.
 - Added a `defaultValues` setting to `Craft.EditableTable` JavaScript objects.
+- Added `Craft.ui.createColorInput()`.
+- Added `Craft.ui.createColorField()`.
 
 ### Changed
 - It’s now possible to reference object properties without typing `object.` in templates parsed with `craft\web\View::renderObjectTemplate()` (e.g. sections’ Entry URI Format settings), even if the property name doesn’t immediately follow a `{` brace.

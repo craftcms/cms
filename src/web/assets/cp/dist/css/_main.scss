@@ -2104,7 +2104,8 @@ table.editable {
       }
     }
 
-    textarea {
+    textarea,
+    .color-container > input {
       display: block;
       width: 100%;
       border: none;
@@ -2116,6 +2117,30 @@ table.editable {
         border: 1px solid rgba(0, 0, 0, 0.15);
         padding: 6px 9px;
         outline: none;
+      }
+    }
+
+    .color-container {
+      display: block;
+      position: relative;
+
+      & > .color,
+      & > input {
+        margin-bottom: 0;
+      }
+
+      & > .color {
+        position: absolute;
+        top: 9px;
+        @include left(10px);
+      }
+
+      & > input {
+        @include padding-left(35px);
+
+        &:focus {
+          @include padding-left(34px);
+        }
       }
     }
   }

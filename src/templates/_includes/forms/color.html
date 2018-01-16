@@ -1,10 +1,12 @@
 {% import "_includes/forms" as forms %}
 
 {% set id = id ?? 'color'~random() %}
+{% set containerId = containerId ?? id~'container' %}
+{% set small = small ?? false %}
 
-<div class="flex"
+<div id="{{ containerId }}" class="flex color-container"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    <div class="color static">
+    <div class="color static{% if small %} small{% endif %}">
         <div class="colorpreview"
             {%- if value %} style="background-color: {{ value }};"{% endif -%}
         ></div>
@@ -21,5 +23,5 @@
 </div>
 
 {%- js %}
-    new Craft.ColorInput('{{ id|namespaceInputId }}');
+    new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
 {% endjs %}

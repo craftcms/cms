@@ -89,6 +89,7 @@ class Table extends Field
 
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
+            'color' => Craft::t('app', 'Color'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
