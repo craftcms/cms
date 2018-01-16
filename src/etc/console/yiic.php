@@ -59,7 +59,7 @@ ini_set('display_errors', 1);
 defined('YII_DEBUG') || define('YII_DEBUG', true);
 defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 
-require_once dirname(__FILE__).'/../../framework/yii.php';
+require_once CRAFT_FRAMEWORK_PATH.'yii.php';
 require_once CRAFT_APP_PATH.'Craft.php';
 require_once CRAFT_APP_PATH.'Info.php';
 
@@ -77,7 +77,7 @@ Yii::$enableIncludePath = false;
 require_once(dirname(__FILE__).'/ConsoleApp.php');
 
 // Because CHttpRequest is one of those stupid Yii files that has multiple classes defined in it.
-require_once(CRAFT_APP_PATH.'framework/web/CHttpRequest.php');
+require_once(CRAFT_FRAMEWORK_PATH.'web/CHttpRequest.php');
 
 Yii::setPathOfAlias('app', CRAFT_APP_PATH);
 Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
