@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC6 - 2018-01-16
 
 ### Added
 - Added the “Color” column type option to Table fields.
