@@ -90,7 +90,7 @@ class Table extends Field
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line Text'),
+            'singleline' => Craft::t('app', 'Single-line text'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
