@@ -2020,8 +2020,7 @@ table.editable {
         td:first-child {
           @include border-bottom-left-radius($paneBorderRadius);
 
-          textarea,
-          .color-container > input {
+          textarea {
             @include border-bottom-left-radius($paneBorderRadius - 1);
           }
         }
@@ -2119,7 +2118,7 @@ table.editable {
     }
 
     textarea,
-    .color-container > .color-input {
+    textarea.text {
       display: block;
       width: 100%;
       border: none;

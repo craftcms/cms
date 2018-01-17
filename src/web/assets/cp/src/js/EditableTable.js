@@ -164,11 +164,28 @@ Craft.EditableTable = Garnish.Base.extend(
                             break;
 
                         case 'color':
-                            Craft.ui.createColorInput({
+                            var $container = $('<div/>', {
+                                'class': 'flex color-container'
+                            });
+
+                            var $colorPreviewContainer = $('<div/>', {
+                                'class': 'color static small'
+                            }).appendTo($container);
+
+                            var $colorPreview = $('<div/>', {
+                                'class': 'color-preview',
+                                style: value ? {backgroundColor: value} : null
+                            }).appendTo($colorPreviewContainer);
+
+                            Craft.ui.createTextarea({
+                                id: 'color' + Math.floor(Math.random() * 1000000000),
                                 name: name,
                                 value: value,
-                                small: true
-                            }).appendTo($cell);
+                                'class': 'color-input'
+                            }).appendTo($container);
+
+                            new Craft.ColorInput($container);
+                            $container.appendTo($cell);
                             break;
 
                         default:

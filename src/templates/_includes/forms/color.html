@@ -11,15 +11,17 @@
             {%- if value %} style="background-color: {{ value }};"{% endif -%}
         ></div>
     </div>
-    {{ forms.text({
-        id: id,
-        name: name ?? null,
-        value: value ?? null,
-        size: 10,
-        class: 'color-input',
-        autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
-        disabled: disabled ?? false
-    }) }}
+    {% block input %}
+        {{ forms.text({
+            id: id,
+            name: name ?? null,
+            value: value ?? null,
+            size: 10,
+            class: 'color-input',
+            autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
+            disabled: disabled ?? false
+        }) }}
+    {% endblock %}
 </div>
 
 {%- js %}
