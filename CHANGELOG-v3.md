@@ -6,6 +6,7 @@
 - Color values within Table fields are now represented by `craft\fields\data\ColorData` objects.
 - Table fields now validate Color cell values.
 - Improved the styling of Table fields.
+- System messages’ Subject and Body templates can now include site templates. ([#2315](https://github.com/craftcms/cms/issues/2315))
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
