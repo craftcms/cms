@@ -194,20 +194,20 @@ class Table extends Field
             $value = array_values($this->defaults);
         }
 
-        if (is_array($value) && !empty($this->columns)) {
-            // Make the values accessible from both the col IDs and the handles
-            foreach ($value as &$row) {
-                foreach ($this->columns as $colId => $col) {
-                    if ($col['handle']) {
-                        $row[$col['handle']] = ($row[$colId] ?? null);
-                    }
-                }
-            }
-
-            return $value;
+        if (!is_array($value) || empty($this->columns)) {
+            return null;
         }
 
-        return null;
+        // Make the values accessible from both the col IDs and the handles
+        foreach ($value as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if ($col['handle']) {
+                    $row[$col['handle']] = ($row[$colId] ?? null);
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
