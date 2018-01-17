@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Sair',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Única linha de texto',
+    'Single-line text' => 'Única linha de texto',
     'Singles' => 'Páginas simples',
     'Site' => 'Site',
     'Site Homepage' => 'Página principal do site',

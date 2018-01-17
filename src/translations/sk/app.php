@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Odhlásiť sa',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Jednoriadkový Text',
+    'Single-line text' => 'Jednoriadkový text',
     'Singles' => 'Samostatné stránky',
     'Site' => 'Web',
     'Site Homepage' => 'Úvodná stránka Webu',

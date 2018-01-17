@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Logg ut',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Én-linjes tekst',
+    'Single-line text' => 'Én-linjes tekst',
     'Singles' => 'Unike sider',
     'Site' => 'Nettsted',
     'Site Homepage' => 'Vis nettsted',

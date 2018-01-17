@@ -944,7 +944,7 @@ return [
     'Sign out' => '로그아웃',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => '싱글라인 텍스트',
+    'Single-line text' => '싱글라인 텍스트',
     'Singles' => '싱글',
     'Site' => '사이트',
     'Site Homepage' => '사이트 홈페이지',

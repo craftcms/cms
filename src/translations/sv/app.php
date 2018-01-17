@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Logga ut',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Enradig text',
+    'Single-line text' => 'Enradig text',
     'Singles' => 'Singlar',
     'Site' => 'Webbplats',
     'Site Homepage' => 'Hemsida',

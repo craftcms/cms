@@ -944,7 +944,7 @@ return [
     'Sign out' => 'تسجيل الخروج',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'نص ذو سطر واحد',
+    'Single-line text' => 'نص ذو سطر واحد',
     'Singles' => 'الفرديات',
     'Site' => 'الموقع',
     'Site Homepage' => 'الصفحة الرئيسية للموقع',
