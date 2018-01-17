@@ -808,6 +808,7 @@ body.ltr .elementselect .caboose { float: left; }
 body.rtl .elementselect .caboose { float: right; }
 
 /* editable tables */
+table.editable th, table.editable td.action { color: #8f98a3; font-weight: normal; background: #ebedef; }
 table.editable thead tr th, table.editable tbody tr th { padding: 6px 10px; white-space: nowrap; }
 table.editable thead tr th { border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
 table.editable thead tr th span.info { margin-left: 5px; }
@@ -818,7 +819,6 @@ body.ltr table.editable tbody tr:last-child td:first-child textarea { border-bot
 body.rtl table.editable tbody tr:last-child td:first-child textarea { border-bottom-right-radius: 4px; }
 body.ltr table.editable tbody tr td:not(:first-child), body.ltr table.editable tbody tr th ~ td:not(.hidden) ~ td { border-left: 1px solid rgba(0, 0, 0, 0.07); }
 body.rtl table.editable tbody tr td:not(:first-child), body.rtl table.editable tbody tr th ~ td:not(.hidden) ~ td { border-right: 1px solid rgba(0, 0, 0, 0.07); }
-table.editable tbody tr th, table.editable tbody tr td.action { background: #ebedef; }
 body.ltr table.editable tbody tr th ~ td:not(:first-child) { border-left: 1px solid #dbdddf; }
 body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px solid #dbdddf; }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
@@ -1529,7 +1529,7 @@ body.rtl .matrixconfigitem .actions { left: 0; }
 
 /* blocks */
 .matrixblock { position: relative; margin-bottom: 10px; padding: 0 14px 14px; border-radius: 5px; border: 1px solid #e3e5e8; background: #fafafa; outline: none; }
-.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; border-bottom: 1px solid #e3e5e8; background: #eef0f1; color: #b9bfc6; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.matrixblock > .titlebar { margin: 0 -14px 14px; width: calc(100% + 28px); -webkit-box-sizing: border-box; box-sizing: border-box; border-radius: 4px 4px 0 0; border-bottom: 1px solid #e3e5e8; background: #ebedef; color: #b9bfc6; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-wrap: normal; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 body.ltr .matrixblock > .titlebar { padding: 5px 70px 5px 33px; }
 body.rtl .matrixblock > .titlebar { padding: 5px 33px 5px 70px; }
 .matrixblock > .titlebar > .blocktype { display: inline; color: #8f98a3; }

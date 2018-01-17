@@ -8,7 +8,7 @@
     <thead>
         <tr>
             {% for col in cols %}
-                <th scope="col" class="header {{ col.class ?? null }}">
+                <th scope="col" class="{{ col.class ?? '' }}">
                     {%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
                     {%- if col.info is defined -%}
                         <span class="info">{{ col.info|md|raw }}</span>
@@ -16,7 +16,7 @@
                 </th>
             {% endfor %}
             {% if not staticRows %}
-                <th class="header" colspan="2"></th>
+                <th colspan="2"></th>
             {% endif %}
         </tr>
     </thead>

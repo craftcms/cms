@@ -1985,6 +1985,13 @@ $checkboxPadding: 20px;
 
 /* editable tables */
 table.editable {
+  th,
+  td.action {
+    color: $mediumTextColor;
+    font-weight: normal;
+    background: $bgColor;
+  }
+
   thead,
   tbody {
     tr {
@@ -2029,11 +2036,6 @@ table.editable {
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
         @include border-left(1px solid rgba(0, 0, 0, 0.07));
-      }
-
-      th,
-      td.action {
-        background: $bgColor;
       }
 
       th {
@@ -4054,7 +4056,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 33px);
     border-bottom: 1px solid $hairlineColor;
-    background: hsl(212, 10%, 94%);
+    background: $bgColor;
     color: $lightTextColor;
     overflow: hidden;
     white-space: nowrap;

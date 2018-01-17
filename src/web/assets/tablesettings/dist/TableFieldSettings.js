@@ -99,10 +99,10 @@
                         continue;
                     }
 
-                    theadHtml += '<th scope="col" class="header">' + (columns[colId].heading ? columns[colId].heading : '&nbsp;') + '</th>';
+                    theadHtml += '<th scope="col">' + (columns[colId].heading ? columns[colId].heading : '&nbsp;') + '</th>';
                 }
 
-                theadHtml += '<th class="header" colspan="2"></th>' +
+                theadHtml += '<th colspan="2"></th>' +
                     '</tr>' +
                     '</thead>';
 
