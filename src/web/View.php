@@ -1089,28 +1089,28 @@ JS;
      *
      * For example, the following HTML:
      *
-     * ```markup
+     * ```html
      * <label for="title">Title</label>
      * <input type="text" name="title" id="title">
      * ```
      *
      * would become this, if it were namespaced with “foo”:
      *
-     * ```markup
+     * ```html
      * <label for="foo-title">Title</label>
      * <input type="text" name="foo[title]" id="foo-title">
      * ```
      *
      * Attributes that are already namespaced will get double-namespaced. For example, the following HTML:
      *
-     * ```markup
+     * ```html
      * <label for="bar-title">Title</label>
      * <input type="text" name="bar[title]" id="title">
      * ```
      *
      * would become:
      *
-     * ```markup
+     * ```html
      * <label for="foo-bar-title">Title</label>
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
