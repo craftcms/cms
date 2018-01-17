@@ -810,6 +810,8 @@ table.editable thead tr th, table.editable tbody tr th { padding: 6px 10px; whit
 table.editable thead tr th { border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
 table.editable thead tr th span.info { margin-left: 5px; }
 table.editable tbody tr:not(:first-child) th, table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0, 0, 0, 0.07); }
+body.ltr table.editable tbody tr:last-child td:first-child textarea, body.ltr table.editable tbody tr:last-child td:first-child .color-container > input { border-bottom-left-radius: 4px; }
+body.rtl table.editable tbody tr:last-child td:first-child textarea, body.rtl table.editable tbody tr:last-child td:first-child .color-container > input { border-bottom-right-radius: 4px; }
 body.ltr table.editable tbody tr td:not(:first-child), body.ltr table.editable tbody tr th ~ td:not(.hidden) ~ td { border-left: 1px solid rgba(0, 0, 0, 0.07); }
 body.rtl table.editable tbody tr td:not(:first-child), body.rtl table.editable tbody tr th ~ td:not(.hidden) ~ td { border-right: 1px solid rgba(0, 0, 0, 0.07); }
 table.editable tbody tr th, table.editable tbody tr td.action { background: #ebedef; }
@@ -832,7 +834,7 @@ table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: s
 table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
-table.editable tbody textarea, table.editable tbody .color-container > input { display: block; width: 100%; border: none; padding: 7px 10px; background: transparent; overflow: hidden; }
+table.editable tbody textarea, table.editable tbody .color-container > input { display: block; width: 100%; border: none; border-radius: 0; padding: 7px 10px; background: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
 table.editable tbody textarea:focus, table.editable tbody .color-container > input:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
 table.editable tbody .color-container { display: block; position: relative; }
 table.editable tbody .color-container > .color, table.editable tbody .color-container > input { margin-bottom: 0; }

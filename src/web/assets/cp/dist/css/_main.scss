@@ -2013,6 +2013,15 @@ table.editable {
         }
       }
 
+      &:last-child {
+        td:first-child {
+          textarea,
+          .color-container > input {
+            @include border-bottom-left-radius($paneBorderRadius - 1);
+          }
+        }
+      }
+
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
         @include border-left(1px solid rgba(0, 0, 0, 0.07));
@@ -2109,9 +2118,11 @@ table.editable {
       display: block;
       width: 100%;
       border: none;
+      border-radius: 0;
       padding: 7px 10px;
       background: transparent;
       overflow: hidden;
+      transition: none;
 
       &:focus {
         border: 1px solid rgba(0, 0, 0, 0.15);

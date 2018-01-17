@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Changed
+- Improved the styling of Table fields.
+
 ## 3.0.0-RC6 - 2018-01-16
 
 ### Added
