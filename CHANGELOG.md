@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where sometimes replacing an Asset file would not delete the existing file.
+
 ## 2.6.3004 - 2018-01-16
 
 ### Added
