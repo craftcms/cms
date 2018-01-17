@@ -67,24 +67,18 @@ class Table extends Field
      */
     public function getSettingsHtml()
     {
-        $columns = $this->columns;
-        $defaults = $this->defaults;
-
-        if (empty($columns)) {
-            $columns = [
+        if (empty($this->columns)) {
+            $this->columns = [
                 'col1' => [
                     'heading' => '',
                     'handle' => '',
                     'type' => 'singleline'
                 ]
             ];
-
-            // Update the actual settings model for getInputHtml()
-            $this->columns = $columns;
         }
 
-        if ($defaults === null) {
-            $defaults = ['row1' => []];
+        if ($this->defaults === null) {
+            $this->defaults = ['row1' => []];
         }
 
         $typeOptions = [
@@ -130,8 +124,8 @@ class Table extends Field
         $view->registerJs('new Craft.TableFieldSettings('.
             Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
             Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($columns, JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($this->columns, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE).', '.
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
@@ -142,7 +136,7 @@ class Table extends Field
                 'id' => 'columns',
                 'name' => 'columns',
                 'cols' => $columnSettings,
-                'rows' => $columns,
+                'rows' => $this->columns,
                 'addRowLabel' => Craft::t('app', 'Add a column'),
                 'initJs' => false
             ]
@@ -154,8 +148,8 @@ class Table extends Field
                 'instructions' => Craft::t('app', 'Define the default values for the field.'),
                 'id' => 'defaults',
                 'name' => 'defaults',
-                'cols' => $columns,
-                'rows' => $defaults,
+                'cols' => $this->columns,
+                'rows' => $this->defaults,
                 'initJs' => false
             ]
         ]);
@@ -198,7 +192,7 @@ class Table extends Field
             return null;
         }
 
-        // Make the values accessible from both the col IDs and the handles
+        // Normalize the values and make them accessible from both the col IDs and the handles
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
                 if ($col['handle']) {
@@ -256,14 +250,12 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)
     {
-        $columns = $this->columns;
-
-        if (empty($columns)) {
+        if (empty($this->columns)) {
             return null;
         }
 
         // Translate the column headings
-        foreach ($columns as &$column) {
+        foreach ($this->columns as &$column) {
             if (!empty($column['heading'])) {
                 $column['heading'] = Craft::t('site', $column['heading']);
             }
@@ -276,7 +268,7 @@ class Table extends Field
         return $view->renderTemplate('_includes/forms/editableTable', [
             'id' => $id,
             'name' => $this->handle,
-            'cols' => $columns,
+            'cols' => $this->columns,
             'rows' => $value,
             'static' => $static
         ]);
