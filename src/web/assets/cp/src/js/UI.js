@@ -344,7 +344,7 @@ Craft.ui =
             }).appendTo($container);
 
             var $colorPreview = $('<div/>', {
-                'class': 'colorpreview',
+                'class': 'color-preview',
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
@@ -353,7 +353,7 @@ Craft.ui =
                 name: config.name || null,
                 value: config.value || null,
                 size: 10,
-                'class': 'code',
+                'class': 'color-input',
                 autofocus: config.autofocus && Garnish.isMobileBrowser(true),
                 disabled: typeof config.disabled !== 'undefined' ? config.disabled : false
             }).appendTo($container);

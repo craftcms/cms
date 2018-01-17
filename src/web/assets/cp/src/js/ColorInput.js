@@ -12,9 +12,9 @@ Craft.ColorInput = Garnish.Base.extend({
 
     init: function(container) {
         this.$container = $(container);
-        this.$input = this.$container.children('input');
+        this.$input = this.$container.children('.color-input');
         this.$colorContainer = this.$container.children('.color');
-        this.$colorPreview = this.$colorContainer.children();
+        this.$colorPreview = this.$colorContainer.children('.color-preview');
 
         this.createColorInput();
         this.updatePreview();

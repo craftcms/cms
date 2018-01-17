@@ -1,4 +1,4 @@
-/*!   - 2018-01-16 */
+/*!   - 2018-01-17 */
 (function($){
 
 /** global: Craft */
@@ -8125,9 +8125,9 @@ Craft.ColorInput = Garnish.Base.extend({
 
     init: function(container) {
         this.$container = $(container);
-        this.$input = this.$container.children('input');
+        this.$input = this.$container.children('.color-input');
         this.$colorContainer = this.$container.children('.color');
-        this.$colorPreview = this.$colorContainer.children();
+        this.$colorPreview = this.$colorContainer.children('.color-preview');
 
         this.createColorInput();
         this.updatePreview();
@@ -15786,7 +15786,7 @@ Craft.ui =
             }).appendTo($container);
 
             var $colorPreview = $('<div/>', {
-                'class': 'colorpreview',
+                'class': 'color-preview',
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
@@ -15795,7 +15795,7 @@ Craft.ui =
                 name: config.name || null,
                 value: config.value || null,
                 size: 10,
-                'class': 'code',
+                'class': 'color-input',
                 autofocus: config.autofocus && Garnish.isMobileBrowser(true),
                 disabled: typeof config.disabled !== 'undefined' ? config.disabled : false
             }).appendTo($container);

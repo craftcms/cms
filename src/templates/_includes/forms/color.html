@@ -7,7 +7,7 @@
 <div id="{{ containerId }}" class="flex color-container"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <div class="color static{% if small %} small{% endif %}">
-        <div class="colorpreview"
+        <div class="color-preview"
             {%- if value %} style="background-color: {{ value }};"{% endif -%}
         ></div>
     </div>
@@ -16,7 +16,7 @@
         name: name ?? null,
         value: value ?? null,
         size: 10,
-        class: 'code',
+        class: 'color-input',
         autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
         disabled: disabled ?? false
     }) }}

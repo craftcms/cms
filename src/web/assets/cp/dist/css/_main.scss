@@ -1153,7 +1153,10 @@ div.btn.submit input {
   background-color: hsla($hue, 10%, 50%, 0.1) !important;
 }
 
-/* color buttons */
+/* color inputs */
+.color-input {
+  @include fixed-width-font;
+}
 .color {
   display: inline-block;
   position: relative;
@@ -1171,14 +1174,14 @@ div.btn.submit input {
       &:hover,
       &:active,
       &.active {
-        .colorpreview {
+        .color-preview {
           box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05);
         }
       }
 
       &:active,
       &.active {
-        .colorpreview {
+        .color-preview {
           background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
         }
       }
@@ -1191,7 +1194,7 @@ div.btn.submit input {
     background-size: 16px;
   }
 
-  .colorpreview {
+  .color-preview {
     top: 0;
     @include left(0);
     width: 100%;
@@ -2116,7 +2119,7 @@ table.editable {
     }
 
     textarea,
-    .color-container > input {
+    .color-container > .color-input {
       display: block;
       width: 100%;
       border: none;
@@ -2138,7 +2141,7 @@ table.editable {
       position: relative;
 
       & > .color,
-      & > input {
+      & > .color-input {
         margin-bottom: 0;
       }
 
@@ -2148,7 +2151,7 @@ table.editable {
         @include left(10px);
       }
 
-      & > input {
+      & > .color-input {
         @include padding-left(35px);
 
         &:focus {
