@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\fields\data\ColorData;
 use craft\helpers\Json;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use yii\db\Schema;
@@ -195,8 +196,9 @@ class Table extends Field
         // Normalize the values and make them accessible from both the col IDs and the handles
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
+                $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
                 if ($col['handle']) {
-                    $row[$col['handle']] = ($row[$colId] ?? null);
+                    $row[$col['handle']] = $row[$colId];
                 }
             }
         }
@@ -238,6 +240,42 @@ class Table extends Field
     // =========================================================================
 
     /**
+     * Normalizes a cell’s value.
+     *
+     * @param string $type  The cell type
+     * @param mixed  $value The cell value
+     *
+     * @return mixed
+     * @see normalizeValue()
+     */
+    private function _normalizeCellValue(string $type, $value)
+    {
+        if ($type === 'color') {
+            if ($value instanceof ColorData) {
+                return $value;
+            }
+
+            if (!$value || $value === '#') {
+                return null;
+            }
+
+            $value = strtolower($value);
+
+            if ($value[0] !== '#') {
+                $value = '#'.$value;
+            }
+
+            if (strlen($value) === 4) {
+                $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
+            }
+
+            return new ColorData($value);
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns the field's input HTML.
      *
      * @param mixed                 $value
@@ -259,6 +297,20 @@ class Table extends Field
             }
         }
         unset($column);
+
+        // Explicitly set each cell value to an array with a 'value' key
+        if (is_array($value)) {
+            foreach ($value as &$row) {
+                foreach (array_keys($this->columns) as $colId) {
+                    if (isset($row[$colId])) {
+                        $row[$colId] = [
+                            'value' => $row[$colId],
+                        ];
+                    }
+                }
+            }
+        }
+        unset($row);
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
