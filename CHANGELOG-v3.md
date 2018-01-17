@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
+- Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.
 
 ## 3.0.0-RC6 - 2018-01-16
 
