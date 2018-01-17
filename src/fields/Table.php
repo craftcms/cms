@@ -209,23 +209,21 @@ class Table extends Field
      */
     public function serializeValue($value, ElementInterface $element = null)
     {
-        if (is_array($value)) {
-            // Drop the string row keys
-            $value = array_values($value);
-
-            // Drop the column handle values
-            if (!empty($this->columns)) {
-                foreach ($value as &$row) {
-                    foreach ($this->columns as $colId => $col) {
-                        if ($col['handle']) {
-                            unset($row[$col['handle']]);
-                        }
-                    }
-                }
-            }
+        if (!is_array($value) || empty($this->columns)) {
+            return null;
         }
 
-        return $value;
+        $serialized = [];
+
+        foreach ($value as $row) {
+            $serializedRow = [];
+            foreach (array_keys($this->columns) as $colId) {
+                $serializedRow[$colId] = parent::serializeValue($row[$colId] ?? null);
+            }
+            $serialized[] = $serializedRow;
+        }
+
+        return $serialized;
     }
 
     /**
