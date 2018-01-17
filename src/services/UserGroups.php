@@ -127,9 +127,9 @@ class UserGroups extends Component
      *
      * @param string $groupHandle
      *
-     * @return UserGroup
+     * @return UserGroup|null
      */
-    public function getGroupByHandle(string $groupHandle): UserGroup
+    public function getGroupByHandle(string $groupHandle)
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['handle' => $groupHandle])

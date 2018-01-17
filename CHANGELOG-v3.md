@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
 - Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.
+- Fixed a PHP error that occurred when calling `craft\services\UserGroups::getGroupByHandle()` and passing an invalid group handle. ([#2317](https://github.com/craftcms/cms/issues/2317))
 
 ## 3.0.0-RC6 - 2018-01-16
 
