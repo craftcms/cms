@@ -4,6 +4,7 @@
 
 ### Changed
 - Color values within Table fields are now represented by `craft\fields\data\ColorData` objects.
+- Table fields now validate Color cell values.
 - Improved the styling of Table fields.
 
 ### Fixed

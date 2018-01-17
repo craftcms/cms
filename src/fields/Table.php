@@ -8,10 +8,12 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
 use craft\helpers\Json;
+use craft\validators\ColorValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use yii\db\Schema;
 
@@ -181,6 +183,35 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function getElementValidationRules(): array
+    {
+        return ['validateTableData'];
+    }
+
+    /**
+     * Validates the table data.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateTableData(ElementInterface $element)
+    {
+        /** @var Element $element */
+        $value = $element->getFieldValue($this->handle);
+
+        if (!empty($value) && !empty($this->columns)) {
+            foreach ($value as $row) {
+                foreach ($this->columns as $colId => $col) {
+                    if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                        $element->addError($this->handle, $error);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
@@ -276,6 +307,29 @@ class Table extends Field
     }
 
     /**
+     * Validates a cell’s value.
+     *
+     * @param string      $type   The cell type
+     * @param mixed       $value  The cell value
+     * @param string|null &$error The error text to set on the element
+     *
+     * @return bool Whether the value is valid
+     * @see normalizeValue()
+     */
+    private function _validateCellValue(string $type, $value, string &$error = null): bool
+    {
+        if ($type === 'color' && $value !== null) {
+            /** @var ColorData $value */
+            $validator = new ColorValidator();
+            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+            $hex = $value->getHex();
+            return $validator->validate($hex, $error);
+        }
+
+        return true;
+    }
+
+    /**
      * Returns the field's input HTML.
      *
      * @param mixed                 $value
@@ -286,6 +340,7 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)
     {
+        /** @var Element $element */
         if (empty($this->columns)) {
             return null;
         }
@@ -299,12 +354,15 @@ class Table extends Field
         unset($column);
 
         // Explicitly set each cell value to an array with a 'value' key
+        $checkForErrors = $element && $element->hasErrors($this->handle);
         if (is_array($value)) {
             foreach ($value as &$row) {
-                foreach (array_keys($this->columns) as $colId) {
+                foreach ($this->columns as $colId => $col) {
                     if (isset($row[$colId])) {
+                        $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
                         $row[$colId] = [
                             'value' => $row[$colId],
+                            'hasErrors' => $hasErrors,
                         ];
                     }
                 }
