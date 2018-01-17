@@ -2015,6 +2015,8 @@ table.editable {
 
       &:last-child {
         td:first-child {
+          @include border-bottom-left-radius($paneBorderRadius);
+
           textarea,
           .color-container > input {
             @include border-bottom-left-radius($paneBorderRadius - 1);

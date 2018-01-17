@@ -810,6 +810,8 @@ table.editable thead tr th, table.editable tbody tr th { padding: 6px 10px; whit
 table.editable thead tr th { border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
 table.editable thead tr th span.info { margin-left: 5px; }
 table.editable tbody tr:not(:first-child) th, table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0, 0, 0, 0.07); }
+body.ltr table.editable tbody tr:last-child td:first-child { border-bottom-left-radius: 5px; }
+body.rtl table.editable tbody tr:last-child td:first-child { border-bottom-right-radius: 5px; }
 body.ltr table.editable tbody tr:last-child td:first-child textarea, body.ltr table.editable tbody tr:last-child td:first-child .color-container > input { border-bottom-left-radius: 4px; }
 body.rtl table.editable tbody tr:last-child td:first-child textarea, body.rtl table.editable tbody tr:last-child td:first-child .color-container > input { border-bottom-right-radius: 4px; }
 body.ltr table.editable tbody tr td:not(:first-child), body.ltr table.editable tbody tr th ~ td:not(.hidden) ~ td { border-left: 1px solid rgba(0, 0, 0, 0.07); }
