@@ -5,6 +5,9 @@
 ### Changed
 - Improved the styling of Table fields.
 
+### Fixed
+- Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
+
 ## 3.0.0-RC6 - 2018-01-16
 
 ### Added

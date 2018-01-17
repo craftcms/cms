@@ -44,7 +44,7 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults = [];
+    public $defaults;
 
     /**
      * @var string The type of database column the field should have in the content table
