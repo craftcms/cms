@@ -98,6 +98,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @var bool Whether the results should be queried in reverse.
+     */
+    public $inReverse = false;
+
+    /**
      * @var bool Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      */
@@ -492,6 +497,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     // Element criteria parameter setters
     // -------------------------------------------------------------------------
+
+    /**
+     * Sets the [[inReverse]] property.
+     *
+     * @param bool $value The property value
+     *
+     * @return static self reference
+     */
+    public function inReverse(bool $value = true)
+    {
+        $this->inReverse = $value;
+        return $this;
+    }
 
     /**
      * @inheritdoc
@@ -1753,9 +1771,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (!$db instanceof \craft\db\Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
-                $orderBy = [
-                    new FixedOrderExpression('elements.id', $filteredElementIds, $db)
-                ];
+                if ($this->inReverse) {
+                    $orderBy = [new FixedOrderExpression('elements.id', array_reverse($filteredElementIds), $db)];
+                } else {
+                    $orderBy = [new FixedOrderExpression('elements.id', $filteredElementIds, $db)];
+                }
 
                 $this->query->orderBy($orderBy);
                 $this->subQuery->orderBy($orderBy);
@@ -1844,6 +1864,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (empty($orderBy)) {
             return;
+        }
+
+        if ($this->inReverse) {
+            foreach ($orderBy as &$direction) {
+                if ($direction instanceof FixedOrderExpression) {
+                    $values = array_reverse($direction->values);
+                    $direction = new FixedOrderExpression($direction->column, $values, $direction->db, $direction->params);
+                } // Can't do anything about custom SQL expressions
+                else if (!$direction instanceof Expression) {
+                    $direction = $direction === SORT_DESC ? SORT_ASC : SORT_DESC;
+                }
+            }
+            unset($direction);
         }
 
         $this->query->orderBy($orderBy);

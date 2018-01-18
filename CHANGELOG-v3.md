@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
+
 ### Changed
 - Color values within Table fields are now represented by `craft\fields\data\ColorData` objects.
 - Table fields now validate Color cell values.
