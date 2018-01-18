@@ -13,6 +13,7 @@
 - Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
 - The Craft version number is now shown at the bottom of the global sidebar. ([#2318](https://github.com/craftcms/cms/issues/2318))
 - The `|group` filter now supports passing an element query in.
+- Route params are no longer returned by `craft\web\Request::getQueryParams()`.
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.

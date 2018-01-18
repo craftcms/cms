@@ -12,6 +12,7 @@ use craft\base\RequestTrait;
 use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -791,6 +792,22 @@ class Request extends \yii\web\Request
     public function getAcceptsJson(): bool
     {
         return $this->accepts('application/json');
+    }
+
+    /**
+     * @inheritdoc
+     * @internal Based on \yii\web\Request::resolve(), but we don't modify $_GET/$this->_queryParams in the process.
+     */
+    public function resolve()
+    {
+        if (($result = Craft::$app->getUrlManager()->parseRequest($this)) === false) {
+            throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
+        }
+
+        list($route, $params) = $result;
+
+        /** @noinspection AdditionOperationOnArraysInspection */
+        return [$route, $params + $this->getQueryParams()];
     }
 
     // Protected Methods
