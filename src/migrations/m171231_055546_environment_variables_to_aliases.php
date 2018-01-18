@@ -78,7 +78,7 @@ class m171231_055546_environment_variables_to_aliases extends Migration
      */
     private function _parseEnvString(string &$str): bool
     {
-        if (preg_match('/^\{(\w+)\}([^\{\}]*)$/', $str, $matches)) {
+        if (preg_match('/^\s*\{(\w+)\}([^\{\}]*)$/', $str, $matches)) {
             $str = '@'.$matches[1].($matches[2] ? '/'.trim(str_replace('\\', '/', $matches[2]), '/') : '');
             return true;
         }
