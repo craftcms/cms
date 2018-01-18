@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
+use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -519,15 +520,22 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Groups an array by a common property.
+     * Groups an array or element query's results by a common property.
      *
-     * @param array  $arr
-     * @param string $item
+     * @param array|ElementQuery $arr
+     * @param string             $item
      *
      * @return array
      */
-    public function groupFilter(array $arr, string $item): array
+    public function groupFilter($arr, string $item): array
     {
+        if ($arr instanceof ElementQuery) {
+            $arr = $arr->all();
+        } else {
+            // Just make sure it's an array
+            $arr = (array)$arr;
+        }
+
         $groups = [];
 
         $template = '{'.$item.'}';

@@ -12,6 +12,7 @@
 - System messages’ Subject and Body templates can now include site templates. ([#2315](https://github.com/craftcms/cms/issues/2315))
 - Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
 - The Craft version number is now shown at the bottom of the global sidebar. ([#2318](https://github.com/craftcms/cms/issues/2318))
+- The `|group` filter now supports passing an element query in.
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
