@@ -517,7 +517,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function asArray(bool $value = true)
     {
         $this->asArray = $value;
-
         return $this;
     }
 
@@ -527,7 +526,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function id($value)
     {
         $this->id = $value;
-
         return $this;
     }
 
@@ -537,7 +535,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function uid($value)
     {
         $this->uid = $value;
-
         return $this;
     }
 
@@ -547,7 +544,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function fixedOrder(bool $value = true)
     {
         $this->fixedOrder = $value;
-
         return $this;
     }
 
@@ -570,7 +566,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function status($value)
     {
         $this->status = $value;
-
         return $this;
     }
 
@@ -580,7 +575,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function archived(bool $value = true)
     {
         $this->archived = $value;
-
         return $this;
     }
 
@@ -590,7 +584,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function dateCreated($value)
     {
         $this->dateCreated = $value;
-
         return $this;
     }
 
@@ -600,7 +593,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function dateUpdated($value)
     {
         $this->dateUpdated = $value;
-
         return $this;
     }
 
@@ -631,7 +623,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function siteId(int $value = null)
     {
         $this->siteId = $value;
-
         return $this;
     }
 
@@ -647,7 +638,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
         $this->site($value);
-
         return $this;
     }
 
@@ -657,7 +647,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function enabledForSite(bool $value = true)
     {
         $this->enabledForSite = $value;
-
         return $this;
     }
 
@@ -673,7 +662,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
         $this->enabledForSite = $value;
-
         return $this;
     }
 
@@ -683,7 +671,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function relatedTo($value)
     {
         $this->relatedTo = $value;
-
         return $this;
     }
 
@@ -693,7 +680,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function title($value)
     {
         $this->title = $value;
-
         return $this;
     }
 
@@ -703,7 +689,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function slug($value)
     {
         $this->slug = $value;
-
         return $this;
     }
 
@@ -713,7 +698,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function uri($value)
     {
         $this->uri = $value;
-
         return $this;
     }
 
@@ -723,7 +707,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function search($value)
     {
         $this->search = $value;
-
         return $this;
     }
 
@@ -733,7 +716,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function ref($value)
     {
         $this->ref = $value;
-
         return $this;
     }
 
@@ -743,7 +725,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function with($value)
     {
         $this->with = $value;
-
         return $this;
     }
 
@@ -753,7 +734,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function withStructure(bool $value = true)
     {
         $this->withStructure = $value;
-
         return $this;
     }
 
@@ -763,7 +743,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function structureId(int $value = null)
     {
         $this->structureId = $value;
-
         return $this;
     }
 
@@ -773,7 +752,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function level($value = null)
     {
         $this->level = $value;
-
         return $this;
     }
 
@@ -783,7 +761,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function ancestorOf($value)
     {
         $this->ancestorOf = $value;
-
         return $this;
     }
 
@@ -793,7 +770,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function ancestorDist(int $value = null)
     {
         $this->ancestorDist = $value;
-
         return $this;
     }
 
@@ -803,7 +779,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function descendantOf($value)
     {
         $this->descendantOf = $value;
-
         return $this;
     }
 
@@ -813,7 +788,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function descendantDist(int $value = null)
     {
         $this->descendantDist = $value;
-
         return $this;
     }
 
@@ -823,7 +797,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function siblingOf($value)
     {
         $this->siblingOf = $value;
-
         return $this;
     }
 
@@ -833,7 +806,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function prevSiblingOf($value)
     {
         $this->prevSiblingOf = $value;
-
         return $this;
     }
 
@@ -843,7 +815,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function nextSiblingOf($value)
     {
         $this->nextSiblingOf = $value;
-
         return $this;
     }
 
@@ -853,7 +824,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function positionedBefore($value)
     {
         $this->positionedBefore = $value;
-
         return $this;
     }
 
@@ -863,7 +833,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function positionedAfter($value)
     {
         $this->positionedAfter = $value;
-
         return $this;
     }
 

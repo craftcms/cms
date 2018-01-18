@@ -108,7 +108,6 @@ class MatrixBlockQuery extends ElementQuery
     public function fieldId($value)
     {
         $this->fieldId = $value;
-
         return $this;
     }
 
@@ -122,7 +121,6 @@ class MatrixBlockQuery extends ElementQuery
     public function ownerId($value)
     {
         $this->ownerId = $value;
-
         return $this;
     }
 
@@ -183,7 +181,6 @@ class MatrixBlockQuery extends ElementQuery
     {
         Craft::$app->getDeprecator()->log('ElementQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
         $this->ownerSite($value);
-
         return $this;
     }
 
@@ -199,7 +196,6 @@ class MatrixBlockQuery extends ElementQuery
         /** @var Element $owner */
         $this->ownerId = $owner->id;
         $this->siteId = $owner->siteId;
-
         return $this;
     }
 
@@ -237,7 +233,6 @@ class MatrixBlockQuery extends ElementQuery
     public function typeId($value)
     {
         $this->typeId = $value;
-
         return $this;
     }
 

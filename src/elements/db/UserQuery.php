@@ -123,7 +123,6 @@ class UserQuery extends ElementQuery
     public function admin(bool $value = true)
     {
         $this->admin = $value;
-
         return $this;
     }
 
@@ -137,7 +136,6 @@ class UserQuery extends ElementQuery
     public function client(bool $value = true)
     {
         $this->client = $value;
-
         return $this;
     }
 
@@ -151,7 +149,6 @@ class UserQuery extends ElementQuery
     public function can($value)
     {
         $this->can = $value;
-
         return $this;
     }
 
@@ -189,7 +186,6 @@ class UserQuery extends ElementQuery
     public function groupId($value)
     {
         $this->groupId = $value;
-
         return $this;
     }
 
@@ -203,7 +199,6 @@ class UserQuery extends ElementQuery
     public function email($value)
     {
         $this->email = $value;
-
         return $this;
     }
 
@@ -217,7 +212,6 @@ class UserQuery extends ElementQuery
     public function username($value)
     {
         $this->username = $value;
-
         return $this;
     }
 
@@ -231,7 +225,6 @@ class UserQuery extends ElementQuery
     public function firstName($value)
     {
         $this->firstName = $value;
-
         return $this;
     }
 
@@ -245,7 +238,6 @@ class UserQuery extends ElementQuery
     public function lastName($value)
     {
         $this->lastName = $value;
-
         return $this;
     }
 
@@ -259,7 +251,6 @@ class UserQuery extends ElementQuery
     public function lastLoginDate($value)
     {
         $this->lastLoginDate = $value;
-
         return $this;
     }
 
