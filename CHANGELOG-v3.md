@@ -19,6 +19,7 @@
 - Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.
 - Fixed a PHP error that occurred when calling `craft\services\UserGroups::getGroupByHandle()` and passing an invalid group handle. ([#2317](https://github.com/craftcms/cms/issues/2317))
 - Fixed a PHP error that occurred if an element query was passed into the `|group` filter. A deprecation error is logged instead now.
+- Fixed a bug where the Debug Toolbar wasn’t loading in the Control Panel if it wasn’t enabled for the front-end as well.
 
 ## 3.0.0-RC6 - 2018-01-16
 
