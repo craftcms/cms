@@ -12,13 +12,13 @@
 - System messages’ Subject and Body templates can now include site templates. ([#2315](https://github.com/craftcms/cms/issues/2315))
 - Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
 - The Craft version number is now shown at the bottom of the global sidebar. ([#2318](https://github.com/craftcms/cms/issues/2318))
-- The `|group` filter now supports passing an element query in.
 - Route params are no longer returned by `craft\web\Request::getQueryParams()`.
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
 - Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.
 - Fixed a PHP error that occurred when calling `craft\services\UserGroups::getGroupByHandle()` and passing an invalid group handle. ([#2317](https://github.com/craftcms/cms/issues/2317))
+- Fixed a PHP error that occurred if an element query was passed into the `|group` filter. A deprecation error is logged instead now.
 
 ## 3.0.0-RC6 - 2018-01-16
 

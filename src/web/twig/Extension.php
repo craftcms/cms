@@ -42,6 +42,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -522,18 +523,21 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Groups an array or element query's results by a common property.
      *
-     * @param array|ElementQuery $arr
-     * @param string             $item
+     * @param array  $arr
+     * @param string $item
      *
      * @return array
+     * @throws \Twig_Error_Runtime if $arr is not of type array or Traversable
      */
     public function groupFilter($arr, string $item): array
     {
         if ($arr instanceof ElementQuery) {
+            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the all() function to fetch the query results before looping over them.');
             $arr = $arr->all();
-        } else {
-            // Just make sure it's an array
-            $arr = (array)$arr;
+        }
+
+        if (!is_array($arr) && !$arr instanceof \Traversable) {
+            throw new \Twig_Error_Runtime('Values passed to the |group filter must be of type array or Traversable.');
         }
 
         $groups = [];
