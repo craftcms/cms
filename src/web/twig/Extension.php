@@ -42,7 +42,6 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -523,8 +522,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Groups an array or element query's results by a common property.
      *
-     * @param array  $arr
-     * @param string $item
+     * @param array|\Traversable $arr
+     * @param string             $item
      *
      * @return array
      * @throws \Twig_Error_Runtime if $arr is not of type array or Traversable
