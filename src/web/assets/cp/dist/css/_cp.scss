@@ -9,7 +9,7 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 $sidebarBgColor: hsl($hue, 20%, 25%);
 $sidebarLinkHoverBgColor: hsla($hue, 20%, 20%, 0.05);
 
-$editionStaticColor: hsl($hue, 20%, 10%);
+$editionStaticColor: hsl($hue, 20%, 5%);
 $editionHoverColor: hsl($hue, 20%, 70%);
 
 html,
@@ -291,76 +291,15 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   }
 }
 
-#edition {
+#app-info {
   padding: 14px 14px 24px;
+  color: $editionStaticColor;
   text-align: center;
 
-  #edition-logo {
-    user-select: none;
-    border: 1px solid $editionStaticColor;
-    border-radius: 3px;
-    display: inline-flex;
-    height: 23px;
-    transition: border-color linear 100ms;
-
-    & > .edition-name,
-    & > .edition-trial {
-      padding: 8px 8px 7px;
-      line-height: 8px;
-      font-weight: 500;
-    }
-
-    & > .edition-name {
-      color: $editionStaticColor;
-      letter-spacing: 2.2px;
-      padding-right: 5.8px;
-      text-transform: uppercase;
-      transition: color linear 100ms;
-    }
-
-    & > .edition-trial {
-      display: inline-block;
-      position: relative;
-      @include margin-left(5px);
-      @include padding-left(5px);
-      background: $editionStaticColor;
-      color: $sidebarBgColor;
-      border-radius: 0 1px 1px 0;
-      letter-spacing: 1px;
-      @include padding-right(7px);
-      text-transform: lowercase;
-      transition: background linear 100ms;
-
-      &:before {
-        display: block;
-        position: absolute;
-        top: 0;
-        content: '.';
-        font-size: 0;
-        width: 0;
-        height: 0;
-        border-style: solid;
-        transition: border-color linear 100ms;
-
-        body.ltr & {
-          left: -10px;
-          border-width: 0 10px 23px 0;
-          border-color: transparent $editionStaticColor transparent transparent;
-        }
-
-        body.rtl & {
-          right: -10px;
-          border-width: 0 0 23px 10px;
-          border-color: transparent transparent transparent $editionStaticColor;
-        }
-      }
-    }
-  }
-
-  &.hot {
-    cursor: pointer;
-
+  #edition {
     &:hover {
+      cursor: pointer;
+
       #edition-logo {
         border-color: $editionHoverColor;
 
@@ -383,6 +322,73 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
       }
     }
+
+    #edition-logo {
+      user-select: none;
+      border: 1px solid $editionStaticColor;
+      border-radius: 3px;
+      display: inline-flex;
+      height: 23px;
+      transition: border-color linear 100ms;
+
+      & > .edition-name,
+      & > .edition-trial {
+        padding: 8px 8px 7px;
+        line-height: 8px;
+        font-weight: 500;
+      }
+
+      & > .edition-name {
+        letter-spacing: 2.2px;
+        padding-right: 5.8px;
+        text-transform: uppercase;
+        transition: color linear 100ms;
+      }
+
+      & > .edition-trial {
+        display: inline-block;
+        position: relative;
+        @include margin-left(5px);
+        @include padding-left(5px);
+        background: $editionStaticColor;
+        color: $sidebarBgColor;
+        border-radius: 0 1px 1px 0;
+        letter-spacing: 1px;
+        @include padding-right(7px);
+        text-transform: lowercase;
+        transition: background linear 100ms;
+
+        &:before {
+          display: block;
+          position: absolute;
+          top: 0;
+          content: '.';
+          font-size: 0;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          transition: border-color linear 100ms;
+
+          body.ltr & {
+            left: -10px;
+            border-width: 0 10px 23px 0;
+            border-color: transparent $editionStaticColor transparent transparent;
+          }
+
+          body.rtl & {
+            right: -10px;
+            border-width: 0 0 23px 10px;
+            border-color: transparent transparent transparent $editionStaticColor;
+          }
+        }
+      }
+    }
+  }
+
+  #version {
+    margin-top: 5px;
+    font-size: 12px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 
