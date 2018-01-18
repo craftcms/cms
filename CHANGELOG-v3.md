@@ -7,6 +7,7 @@
 - Table fields now validate Color cell values.
 - Improved the styling of Table fields.
 - System messages’ Subject and Body templates can now include site templates. ([#2315](https://github.com/craftcms/cms/issues/2315))
+- Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.

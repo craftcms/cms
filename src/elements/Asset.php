@@ -24,6 +24,7 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetTransformException;
 use craft\errors\FileException;
+use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
@@ -31,6 +32,7 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
+use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
@@ -674,7 +676,13 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        return Craft::$app->getAssets()->getAssetUrl($this, $transform);
+        try {
+            return Craft::$app->getAssets()->getAssetUrl($this, $transform);
+        } catch (VolumeObjectNotFoundException $e) {
+            Craft::error("Could not determine asset's URL ({$this->id}): {$e->getMessage()}");
+            Craft::$app->getErrorHandler()->logException($e);
+            return UrlHelper::actionUrl('not-found');
+        }
     }
 
     /**
