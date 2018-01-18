@@ -1809,41 +1809,45 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
-            // In case $this->orderBy was set directly instead of via orderBy()
-            $orderBy = $this->normalizeOrderBy($this->orderBy);
-            $orderByColumns = array_keys($orderBy);
+        if (empty($this->orderBy) || $this->orderBy === ['score' => SORT_ASC] || !empty($this->query->orderBy)) {
+            return;
+        }
 
-            $orderColumnMap = [];
+        // In case $this->orderBy was set directly instead of via orderBy()
+        $orderBy = $this->normalizeOrderBy($this->orderBy);
+        $orderByColumns = array_keys($orderBy);
 
-            if (is_array($this->customFields)) {
-                // Add the field column prefixes
-                foreach ($this->customFields as $field) {
-                    if ($field::hasContentColumn()) {
-                        $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
-                    }
-                }
-            }
+        $orderColumnMap = [];
 
-            // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
-            $orderColumnMap['id'] = 'elements.id';
-
-            foreach ($orderColumnMap as $orderValue => $columnName) {
-                // Are we ordering by this column name?
-                $pos = array_search($orderValue, $orderByColumns, true);
-
-                if ($pos !== false) {
-                    // Swap it with the mapped column name
-                    $orderByColumns[$pos] = $columnName;
-                    $orderBy = array_combine($orderByColumns, $orderBy);
+        if (is_array($this->customFields)) {
+            // Add the field column prefixes
+            foreach ($this->customFields as $field) {
+                if ($field::hasContentColumn()) {
+                    $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
                 }
             }
         }
 
-        if (!empty($orderBy)) {
-            $this->query->orderBy($orderBy);
-            $this->subQuery->orderBy($orderBy);
+        // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
+        $orderColumnMap['id'] = 'elements.id';
+
+        foreach ($orderColumnMap as $orderValue => $columnName) {
+            // Are we ordering by this column name?
+            $pos = array_search($orderValue, $orderByColumns, true);
+
+            if ($pos !== false) {
+                // Swap it with the mapped column name
+                $orderByColumns[$pos] = $columnName;
+                $orderBy = array_combine($orderByColumns, $orderBy);
+            }
         }
+
+        if (empty($orderBy)) {
+            return;
+        }
+
+        $this->query->orderBy($orderBy);
+        $this->subQuery->orderBy($orderBy);
     }
 
     /**
