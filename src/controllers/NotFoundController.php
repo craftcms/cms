@@ -14,12 +14,17 @@ class NotFoundController extends Controller
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     protected $allowAnonymous = true;
 
     // Public Methods
     // =========================================================================
+
     /**
-     * Just throw an exception.
+     * Just return a 404 error.
      *
      * @throws NotFoundHttpException
      */
