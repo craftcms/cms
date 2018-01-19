@@ -13,6 +13,7 @@
 - Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
 - The Craft version number is now shown at the bottom of the global sidebar. ([#2318](https://github.com/craftcms/cms/issues/2318))
 - Route params are no longer returned by `craft\web\Request::getQueryParams()`.
+- It’s now possible to specify default row values for editable tables by passing a `defaultValues` object to `_includes/forms/editableTable.html`.
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
