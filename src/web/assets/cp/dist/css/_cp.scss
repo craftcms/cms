@@ -1534,15 +1534,6 @@ nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
   @include left(60px);
 }
 
-//> .sidebar {
-//  @include padding(0, 0, 0, 0);
-//  @include margin(0, 0, 0, 0);
-//}
-//
-//> nav li a {
-//  @include margin-left(0);
-//}
-
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 only screen and (-moz-min-device-pixel-ratio: 1.5),
