@@ -189,7 +189,7 @@ Craft.CP = Garnish.Base.extend(
         updateSidebarMenuLabel: function() {
             var $item = this.$sidebar.find('a.sel:first');
             var $label = $item.children('.label');
-            $('#sidebar-toggle').text($label.length ? $label.text() : $item.text());
+            $('#selected-sidebar-item-label').text($label.length ? $label.text() : $item.text());
             Garnish.$bod.removeClass('showing-sidebar');
         },
 

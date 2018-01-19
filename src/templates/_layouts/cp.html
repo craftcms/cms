@@ -243,7 +243,7 @@
                     {% block main %}
                         {# sidebar #}
                         {% if sidebar is not empty %}
-                            <a id="sidebar-toggle">&nbsp;</a>
+                            <a id="sidebar-toggle"><span id="selected-sidebar-item-label"></span>&nbsp;<span data-icon="downangle"></span></a>
                             <div id="sidebar" class="sidebar">
                                 {{ sidebar|raw }}
                             </div>
