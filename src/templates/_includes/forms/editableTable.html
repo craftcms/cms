@@ -1,7 +1,9 @@
-{%- set static = (static is defined ? static : false) %}
-{%- set staticRows = static ? true : (staticRows is defined ? staticRows : false) %}
-{%- set cols = (cols is defined ? cols : []) %}
-{%- set rows = (rows is defined ? rows : []) -%}
+{%- set static = static ?? false %}
+{%- set staticRows = static or (staticRows ?? false) %}
+{%- set cols = cols ?? [] %}
+{%- set rows = rows ?? [] %}
+{%- set initJs = not static and (initJs ?? true) -%}
+
 
 <table id="{{ id }}" class="shadow-box editable"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
@@ -93,11 +95,11 @@
     <div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
 {% endif %}
 
-{% if not static and (initJs is not defined or initJs) %}
+{% if initJs %}
+    {% set jsId = id|namespaceInputId|e('js') %}
+    {% set jsName = name|namespaceInputName|e('js') %}
+    {% set jsCols = cols|json_encode %}
     {% js %}
-        new Craft.EditableTable(
-            "{{ id   | namespaceInputId   | e('js') }}",
-            "{{ name | namespaceInputName | e('js') }}",
-            {{ cols|json_encode|raw }});
+        new Craft.EditableTable("{{ jsId }}", "{{ jsName }}", {{ jsCols|raw }});
     {% endjs %}
 {% endif %}
