@@ -239,6 +239,9 @@
             </div>
         {% endif %}
 
+        {# Give plugins a chance to add other things here #}
+        {% hook "cp.users.edit.content" %}
+
         <input type="submit" class="hidden">
     </form>
 {% endblock %}

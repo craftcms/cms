@@ -4,6 +4,9 @@
 
 ### Added
 - Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
+- Added the `cp.categories.edit.content` template hook to the `categories/_edit.html` template.
+- Added the `cp.entries.edit.content` template hook to the `entries/_edit.html` template.
+- Added the `cp.users.edit.content` template hook to the `users/_edit.html` template.
 
 ### Changed
 - Color values within Table fields are now represented by `craft\fields\data\ColorData` objects.

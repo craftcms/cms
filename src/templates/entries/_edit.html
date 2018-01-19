@@ -178,6 +178,9 @@
             static: isVersion
         } %}
     </div>
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.content" %}
 {% endblock %}
 
 {% block details %}
