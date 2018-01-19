@@ -40,7 +40,7 @@ body.rtl .route .template:before { margin: 0 0 0 5px ; }
 
 .modal.route-settings .body { height: calc(100% - 130px); overflow: auto; }
 
-.modal.route-settings .body .uri { width: auto; padding-top: 0; padding-bottom: 0; cursor: text; }
+.modal.route-settings .body .uri { width: auto; cursor: text; }
 
 .modal.route-settings .body .uri .token { cursor: default; }
 
