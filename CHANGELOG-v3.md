@@ -18,6 +18,7 @@
 - Route params are no longer returned by `craft\web\Request::getQueryParams()`.
 - It’s now possible to specify default row values for editable tables by passing a `defaultValues` object to `_includes/forms/editableTable.html`.
 - Improved the appearance of the “sidebar” menu button for mobile views. ([#2323](https://github.com/craftcms/cms/issues/2323))
+- It’s now possible to modify the variables that will be passed to a template from the `beforeRenderTemplate` and `beforeRenderPageTemplate` events on `craft\web\View`, by modifying `craft\events\TemplateEvent::variables`.
 
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.

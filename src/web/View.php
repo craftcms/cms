@@ -1287,12 +1287,12 @@ JS;
     /**
      * Performs actions before a template is rendered.
      *
-     * @param mixed $template  The name of the template to render
-     * @param array $variables The variables that should be available to the template
+     * @param mixed $template   The name of the template to render
+     * @param array &$variables The variables that should be available to the template
      *
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array $variables): bool
+    public function beforeRenderTemplate(string $template, array &$variables): bool
     {
         // Fire a 'beforeRenderTemplate' event
         $event = new TemplateEvent([
@@ -1300,6 +1300,7 @@ JS;
             'variables' => $variables,
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+        $variables = $event->variables;
         return $event->isValid;
     }
 
@@ -1329,19 +1330,20 @@ JS;
     /**
      * Performs actions before a page template is rendered.
      *
-     * @param mixed $template  The name of the template to render
-     * @param array $variables The variables that should be available to the template
+     * @param mixed $template   The name of the template to render
+     * @param array &$variables The variables that should be available to the template
      *
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array $variables): bool
+    public function beforeRenderPageTemplate(string $template, array &$variables): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         $event = new TemplateEvent([
             'template' => $template,
-            'variables' => $variables,
+            'variables' => &$variables,
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+        $variables = $event->variables;
         return $event->isValid;
     }
 
