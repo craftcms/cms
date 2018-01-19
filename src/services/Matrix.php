@@ -651,7 +651,12 @@ class Matrix extends Component
             return;
         }
 
-        $blocks = $query->all();
+        if (($blocks = $query->getCachedResult()) === null) {
+            $query = clone $query;
+            $query->status = null;
+            $query->enabledForSite = false;
+            $blocks = $query->all();
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
