@@ -1,4 +1,4 @@
-/*!   - 2018-01-17 */
+/*!   - 2018-01-19 */
 (function($){
 
 /** global: Craft */
@@ -10187,7 +10187,8 @@ Craft.EditableTable = Garnish.Base.extend(
                         case 'lightswitch':
                             Craft.ui.createLightswitch({
                                 name: name,
-                                value: value
+                                value: col.value || '1',
+                                on: !!value
                             }).appendTo($cell);
                             break;
 
@@ -10220,7 +10221,7 @@ Craft.EditableTable = Garnish.Base.extend(
                             $('<textarea/>', {
                                 'name': name,
                                 'rows': 1,
-                                'value': value,
+                                'val': value,
                                 'placeholder': col.placeholder
                             }).appendTo($cell);
                     }
@@ -10305,6 +10306,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     if (col.type === 'singleline' || col.type === 'number') {
                         this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
+                        $textarea.trigger('textchange');
                     }
 
                     textareasByColId[colId] = $textarea;
