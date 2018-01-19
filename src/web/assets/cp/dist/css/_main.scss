@@ -4094,7 +4094,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
         &.off {
           display: inline-block;
           @include floatleft;
-          @include margin(4px, 10px, 0, 0);
+          @include margin(6px, 10px, 0, 0);
         }
       }
     }
@@ -4120,7 +4120,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
   & > .actions {
     position: absolute;
     z-index: 1;
-    top: 5px;
+    top: 4px;
     @include right(5px);
     cursor: default;
 

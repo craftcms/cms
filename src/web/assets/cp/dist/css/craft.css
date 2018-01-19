@@ -1543,14 +1543,14 @@ body.rtl .matrixblock.disabled > .titlebar { padding-left: 90px; }
 .matrixblock.disabled > .actions > .status.off { display: inline-block; }
 body.ltr .matrixblock.disabled > .actions > .status.off { float: left; }
 body.rtl .matrixblock.disabled > .actions > .status.off { float: right; }
-body.ltr .matrixblock.disabled > .actions > .status.off { margin: 4px 10px 0 0 ; }
-body.rtl .matrixblock.disabled > .actions > .status.off { margin: 4px 0 0 10px ; }
+body.ltr .matrixblock.disabled > .actions > .status.off { margin: 6px 10px 0 0 ; }
+body.rtl .matrixblock.disabled > .actions > .status.off { margin: 6px 0 0 10px ; }
 .matrixblock.collapsed > .titlebar { border-radius: 4px; border-bottom: none; }
 .matrixblock.collapsed > .titlebar > .preview { opacity: 1; }
 .matrixblock > .checkbox { position: absolute; top: 7px; }
 body.ltr .matrixblock > .checkbox { left: 14px; }
 body.rtl .matrixblock > .checkbox { right: 14px; }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; cursor: default; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 4px; cursor: default; }
 body.ltr .matrixblock > .actions { right: 5px; }
 body.rtl .matrixblock > .actions { left: 5px; }
 .matrixblock > .actions > .status.off { display: none; }
