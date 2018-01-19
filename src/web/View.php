@@ -459,7 +459,7 @@ class View extends \yii\web\View
 
             // Get the variables to pass to the template
             if ($object instanceof Arrayable) {
-                $variables = $object->toArray();
+                $variables = $object->toArray([], [], false);
             } else {
                 $variables = [];
             }
