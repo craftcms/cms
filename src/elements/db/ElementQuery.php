@@ -1242,7 +1242,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function last(array $attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use nth() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use inReverse().one() instead.');
         $this->_setAttributes($attributes);
         $count = $this->count();
         $offset = $this->offset;
