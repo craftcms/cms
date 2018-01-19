@@ -39,9 +39,9 @@ use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
 /**
- * Class AssetTransforms service.
+ * Asset Transforms service.
  *
- * An instance of the AssetTransforms service is globally accessible in Craft via [[Application::assetTransforms `Craft::$app->getAssetTransforms()`]].
+ * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|<code>Craft::$app->assetTransforms</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

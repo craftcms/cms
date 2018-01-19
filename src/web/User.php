@@ -17,9 +17,9 @@ use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 
 /**
- * The User service provides APIs for managing the user authentication status.
+ * The User component provides APIs for managing the user authentication status.
  *
- * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
+ * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|<code>Craft::$app->user</code>]].
  *
  * @property bool             $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity           The logged-in user.

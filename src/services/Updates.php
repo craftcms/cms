@@ -17,9 +17,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Updates service.
+ * Updates service.
  *
- * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
+ * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|<code>Craft::$app->updates</code>]].
  *
  * @property bool $isCraftDbMigrationNeeded       Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema

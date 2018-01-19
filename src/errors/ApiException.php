@@ -18,7 +18,7 @@ use yii\base\Exception;
 class ApiException extends Exception
 {
     /**
-     * @inheritdoc
+     * Constructor.
      *
      * @param string          $message
      * @param int             $code

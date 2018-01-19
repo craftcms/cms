@@ -22,9 +22,9 @@ use yii\base\Event;
 use yii\web\Response;
 
 /**
- * Class TemplateCaches service.
+ * Template Caches service.
  *
- * An instance of the TemplateCaches service is globally accessible in Craft via [[Application::templateCaches `Craft::$app->getTemplateCaches()`]].
+ * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|<code>Craft::$app->templateCaches</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -102,14 +102,14 @@ interface FieldInterface extends SavableComponentInterface
      * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php
-     * return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [
+     * return Craft::$app->view->renderTemplate('myplugin/_fieldinput', [
      *     'name'  => $name,
      *     'value' => $value
      * ]);
      * ```
      *
      * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs() namespaced]],
+     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
      * however your JavaScript code will be left untouched.
      *
      * For example, if getInputHtml() returns the following HTML:
@@ -151,13 +151,13 @@ interface FieldInterface extends SavableComponentInterface
      * public function getInputHtml($value, $element)
      * {
      *     // Come up with an ID value based on $name
-     *     $id = Craft::$app->getView()->formatInputId($name);
+     *     $id = Craft::$app->view->formatInputId($name);
      *
      *     // Figure out what that ID is going to be namespaced into
-     *     $namespacedId = Craft::$app->getView()->namespaceInputId($id);
+     *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *
      *     // Render and return the input template
-     *     return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [
+     *     return Craft::$app->view->renderTemplate('myplugin/_fieldinput', [
      *         'name'         => $name,
      *         'id'           => $id,
      *         'namespacedId' => $namespacedId,
@@ -179,7 +179,7 @@ interface FieldInterface extends SavableComponentInterface
      * The same principles also apply if you’re including your JavaScript code with
      * [[\craft\web\View::registerJs()]].
      *
-     * @param mixed                 $value           The field’s value. This will either be the [[normalizeValue() normalized value]],
+     * @param mixed                 $value           The field’s value. This will either be the [[normalizeValue()|normalized value]],
      *                                               raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element         The element the field is associated with, if there is one
      *

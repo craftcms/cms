@@ -28,7 +28,7 @@ use yii\helpers\Inflector;
 /**
  * The Plugins service provides APIs for managing plugins.
  *
- * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `Craft::$app->getPlugins()`]].
+ * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|<code>Craft::$app->plugins</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

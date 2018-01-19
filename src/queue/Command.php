@@ -36,7 +36,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     * @inheritdoc
+     *
      */
     protected function isWorkerAction($actionID)
     {
@@ -47,7 +47,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     * @inheritdoc
+     *
      */
     public function beforeAction($action)
     {
@@ -67,7 +67,7 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * @inheritdoc
+     *
      */
     public function actions()
     {

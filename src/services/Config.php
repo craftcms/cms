@@ -24,7 +24,7 @@ use yii\base\InvalidParamException;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
+ * An instance of the Config service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConfig()|<code>Craft::$app->config</code>]].
  *
  * @property DbConfig      $db        the DB config settings
  * @property GeneralConfig $general   the general config settings

@@ -60,17 +60,16 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends or appends a value to an array.
      *
-     * @param array &$arr
-     * @param mixed $value
-     *
-     * @param bool  $prepend
+     * @param array &$array  the array to be prepended/appended to
+     * @param mixed $value   the value to prepend/append to the array
+     * @param bool  $prepend `true` will prepend the value; `false` will append it
      */
-    public static function prependOrAppend(array &$arr, $value, bool $prepend)
+    public static function prependOrAppend(array &$array, $value, bool $prepend)
     {
         if ($prepend) {
-            array_unshift($arr, $value);
+            array_unshift($array, $value);
         } else {
-            $arr[] = $value;
+            $array[] = $value;
         }
     }
 

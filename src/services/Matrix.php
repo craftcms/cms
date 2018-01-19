@@ -31,7 +31,7 @@ use yii\base\Exception;
 /**
  * The Matrix service provides APIs for managing Matrix fields.
  *
- * An instance of the Matrix service is globally accessible in Craft via [[Application::matrix `Craft::$app->getMatrix()`]].
+ * An instance of the Matrix service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMatrix()|<code>Craft::$app->matrix</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

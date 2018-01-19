@@ -24,7 +24,7 @@ class DeprecatedPanel extends Panel
     // =========================================================================
 
     /**
-     * @inheritdoc
+     *
      */
     public function getName()
     {
@@ -32,7 +32,7 @@ class DeprecatedPanel extends Panel
     }
 
     /**
-     * @inheritdoc
+     *
      */
     public function getSummary()
     {
@@ -42,8 +42,6 @@ class DeprecatedPanel extends Panel
     }
 
     /**
-     * @inheritdoc
-     *
      * @throws NotFoundHttpException if a `trace` parameter is in the query string, but its value isn’t a valid deprecation error log’s ID
      */
     public function getDetail()
@@ -75,7 +73,7 @@ class DeprecatedPanel extends Panel
     }
 
     /**
-     * @inheritdoc
+     *
      */
     public function save()
     {

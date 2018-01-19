@@ -14,9 +14,9 @@ use yii\base\InvalidParamException;
 use yii\helpers\Inflector;
 
 /**
- * Class Security service.
+ * Security component.
  *
- * An instance of the Security service is globally accessible in Craft via [[Application::security `Craft::$app->getSecurity()`]].
+ * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|<code>Craft::$app->security</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -87,10 +87,10 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Deprecated wrapper for [[\craft\config\GeneralConfig::securityKey Craft::$app->config->general->securityKey]].
+     * Deprecated wrapper for [[\craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]].
      *
      * @return string
-     * @deprecated in 3.0.0-beta.27. Use [[\craft\config\GeneralConfig::securityKey Craft::$app->config->general->securityKey]] instead.
+     * @deprecated in 3.0.0-beta.27. Use [[\craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]] instead.
      */
     public function getValidationKey(): string
     {

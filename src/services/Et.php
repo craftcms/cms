@@ -18,9 +18,9 @@ use craft\models\UpgradePurchase;
 use yii\base\Component;
 
 /**
- * Class Et service.
+ * ET service.
  *
- * An instance of the Et service is globally accessible in Craft via [[Application::et `Craft::$app->getEt()`]].
+ * An instance of the ET service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEt()|<code>Craft::$app->et</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -14,7 +14,7 @@ use yii\base\Component;
 /**
  * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of the Entries service is globally accessible in Craft via [[Application::entries `Craft::$app->getEntries()`]].
+ * An instance of the Entries service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntries()|<code>Craft::$app->entries</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -28,7 +28,7 @@ class Entries extends Component
      * Returns an entry by its ID.
      *
      * ```php
-     * $entry = Craft::$app->getEntries()->getEntryById($entryId);
+     * $entry = Craft::$app->entries->getEntryById($entryId);
      * ```
      *
      * @param int      $entryId The entry’s ID.
