@@ -868,7 +868,7 @@ ul.icons li a:hover {
 
   &:active,
   &.active {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0,0,0,0.15);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15);
   }
 
   &:not(.submit) {
@@ -1157,6 +1157,7 @@ div.btn.submit input {
 .color-input {
   @include fixed-width-font;
 }
+
 .color {
   display: inline-block;
   position: relative;
@@ -3631,12 +3632,15 @@ input:-ms-input-placeholder {
 .select:not(.selectize) select {
   @include select-styles;
 }
+
 .select:not(.selectize) {
   @include select-container-styles;
 }
+
 .select:not(.selectize):after {
   @include select-arrow-styles;
 }
+
 .select:not(.selectize) select {
   @include select-input-styles;
 
@@ -3644,9 +3648,11 @@ input:-ms-input-placeholder {
     background: #fff;
   }
 }
+
 .select:not(.selectize).fullwidth select {
   @include select-input-fullwidth-styles;
 }
+
 .select:not(.selectize) select:focus {
   @include select-input-focused-styles;
 }
@@ -3654,6 +3660,7 @@ input:-ms-input-placeholder {
 .select:not(.selectize).small:after {
   top: 9px;
 }
+
 .select:not(.selectize).small select {
   padding-top: 4px;
   padding-bottom: 4px;
