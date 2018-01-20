@@ -642,6 +642,7 @@ class Assets extends Component
                 'uid' => $asset->uid,
                 'width' => $width,
                 'height' => $height,
+                'v' => $asset->dateModified->getTimestamp(),
             ]);
         }
 
