@@ -15,7 +15,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $saveBtn: null,
         $spinner: null,
 
-        $languageSelect: null,
+        $siteSelect: null,
         $siteSpinner: null,
 
         hud: null,
@@ -160,18 +160,25 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             this.$siteSpinner.removeClass('hidden');
 
+            this.reloadForm({ siteId: newSiteId }, $.proxy(function(textStatus) {
+                this.$siteSpinner.addClass('hidden');
+                if (textStatus !== 'success') {
+                    // Reset the site select
+                    this.$siteSelect.val(this.siteId);
+                }
+            }, this));
+        },
 
-            var data = this.getBaseData();
-            data.siteId = newSiteId;
+        reloadForm: function(data, callback) {
+            data = $.extend(this.getBaseData(), data);
 
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
-                this.$siteSpinner.addClass('hidden');
-
                 if (textStatus === 'success') {
                     this.updateForm(response);
                 }
-                else {
-                    this.$languageSelect.val(this.siteId);
+
+                if (callback) {
+                    callback(textStatus);
                 }
             }, this));
         },
