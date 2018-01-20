@@ -19,10 +19,6 @@
 {% includecssresource "css/profile.css" %}
 
 
-{% set photoInput %}
-	{% include 'users/_userphoto' with {account: account} only %}
-{% endset %}
-
 {% set saveUserButtons %}
 
 	<div class="buttons">
@@ -70,6 +66,14 @@
 
 				<div id="account">
 					{% include "users/_accountfields" %}
+
+					{% if not isNewAccount %}
+						{{ forms.field({
+							label: "Photo"|t
+						}, include('users/_userphoto', {account: account}, with_context = false)) }}
+					{% endif %}
+
+					<hr>
 
 					{% if isNewAccount %}
 
@@ -156,26 +160,15 @@
 					{{ saveUserButtons }}
 				</div>
 
-				{% if not isNewAccount or CraftEdition == CraftPro %}
-					<div id="profile" class="hidden">
-						{% if not isNewAccount %}
-							{{ forms.field({
-								label: "Photo"|t
-							}, photoInput) }}
-
-							<hr>
-						{% endif %}
-
-						{% if CraftEdition == CraftPro %}
+				{% if CraftEdition == CraftPro %}
+					{% for tab in account.getFieldLayout().getTabs() %}
+						<div id="tab{{ loop.index }}" class="hidden">
 							{% include "_includes/fields" with {
-								fields: craft.fields.getLayoutByType('User').getFields(),
+								fields: tab.getFields(),
 								element: account
 							} only %}
-
-							{{ saveUserButtons }}
-
-						{% endif %}
-					</div>
+						</div>
+					{% endfor %}
 				{% endif %}
 
 				{% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}

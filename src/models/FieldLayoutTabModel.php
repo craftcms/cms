@@ -69,7 +69,7 @@ class FieldLayoutTabModel extends BaseModel
 	/**
 	 * Returns the tab’s fields.
 	 *
-	 * @return array The tab’s fields.
+	 * @return FieldLayoutFieldModel[] The tab’s fields.
 	 */
 	public function getFields()
 	{

@@ -728,25 +728,51 @@ class UsersController extends BaseController
 		}
 
 		// ---------------------------------------------------------------------
+
 		$variables['selectedTab'] = 'account';
 
 		$variables['tabs'] = array(
-				'account' => array(
-						'label' => Craft::t('Account'),
-						'url'   => '#account',
-				)
+			'account' => array(
+				'label' => Craft::t('Account'),
+				'url'   => '#account',
+			)
 		);
 
-		// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-		if (!$variables['isNewAccount'] || ($craftEdition == Craft::Pro && $variables['account']->getFieldLayout()->getFields()))
+		// Only show custom fields if it's Craft Pro
+		if ($craftEdition == Craft::Pro)
 		{
-			$variables['tabs']['profile'] = array(
-					'label' => Craft::t('Profile'),
-					'url'   => '#profile',
-			);
+			foreach ($variables['account']->getFieldLayout()->getTabs() as $index => $tab)
+			{
+				$fields = $tab->getFields();
+
+				// Skip if the tab doesn't have any fields
+				if (empty($fields))
+				{
+					continue;
+				}
+
+				// Do any of the fields on this tab have errors?
+				$hasErrors = false;
+
+				if ($variables['account']->hasErrors())
+				{
+					foreach ($fields as $field)
+					{
+						if ($variables['account']->getErrors($field->getField()->handle))
+						{
+							$hasErrors = true;
+							break;
+						}
+					}
+				}
+
+				$variables['tabs']['tab'.($index+1)] = array(
+					'label' => Craft::t($tab->name),
+					'url'   => '#tab'.($index+1),
+					'class' => ($hasErrors ? 'error' : null)
+				);
+			}
 		}
-
-
 
 		// Show the permission tab for the users that can change them on Craft Client+ editions (unless
 		// you're on Client and you're the admin account. No need to show since we always need an admin on Client)
@@ -756,8 +782,8 @@ class UsersController extends BaseController
 		)
 		{
 			$variables['tabs']['perms'] = array(
-					'label' => Craft::t('Permissions'),
-					'url'   => '#perms',
+				'label' => Craft::t('Permissions'),
+				'url'   => '#perms',
 			);
 		}
 
