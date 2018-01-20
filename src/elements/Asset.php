@@ -936,7 +936,40 @@ class Asset extends Element
             $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
         }
 
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html = '';
+
+        if ($this->getSupportsImageEditor()) {
+            // Are they allowed to edit the image?
+            $user = Craft::$app->getUser();
+            $editable = (
+                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
+                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
+            );
+
+            $assetsService = Craft::$app->getAssets();
+            $srcsets = [];
+            $thumbSizes = [
+                [380, 190],
+                [760, 380],
+            ];
+            foreach ($thumbSizes as list($width, $height)) {
+                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
+                $srcsets[] = $thumbUrl.' '.$width.'w';
+            }
+
+            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">' .
+                '<div class="image-preview">' .
+                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">' .
+                '</div>';
+
+            if ($editable) {
+                $html .= '<div class="btn">'.Craft::t('app', 'Edit').'</div>';
+            }
+
+            $html .= '</div>';
+        }
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'newFilename',

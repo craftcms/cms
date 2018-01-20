@@ -1046,6 +1046,14 @@ body.rtl .hud .tip-right { left: -15px; }
 .hud .elementeditor { max-width: 600px; }
 .hud .elementeditor .hud-header { text-align: center; }
 .hud .elementeditor .main { padding: 8px 0; }
+.hud .elementeditor .main .meta .image-preview-container { position: relative; margin: -8px 0 8px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; height: 190px; background: #222; }
+.hud .elementeditor .main .meta .image-preview-container .image-preview { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-align: center; -ms-flex-align: center; align-items: center; width: 100%; }
+.hud .elementeditor .main .meta .image-preview-container .image-preview img { display: block; }
+.hud .elementeditor .main .meta .image-preview-container.editable { cursor: pointer; }
+.hud .elementeditor .main .meta .image-preview-container.editable .btn { opacity: 0; position: absolute; top: 10px; background: rgba(34, 34, 34, 0.9); color: #fff; border: 1px solid rgba(153, 153, 153, 0.9); background-clip: padding-box; -webkit-box-shadow: none; box-shadow: none; -webkit-transition: opacity linear 100ms; transition: opacity linear 100ms; }
+body.ltr .hud .elementeditor .main .meta .image-preview-container.editable .btn { right: 10px; }
+body.rtl .hud .elementeditor .main .meta .image-preview-container.editable .btn { left: 10px; }
+.hud .elementeditor .main .meta .image-preview-container.editable:hover .btn { opacity: 1; }
 .hud .elementeditor .main .meta .field { padding-left: 24px; padding-right: 24px; }
 
 /* element selector modals */
@@ -1771,6 +1779,7 @@ body.rtl #main-container #main #main-content #details { -webkit-box-shadow: inse
 #main-container #main #main-content #details .meta > .field.has-errors { margin: 0 -24px !important; padding: 0 24px; }
 #main-container #main #main-content #details .meta .text::-webkit-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text:-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
+#main-container #main #main-content #details .meta .text::-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text::placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 body.ltr #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 0 0 -8px ; }
 body.rtl #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }

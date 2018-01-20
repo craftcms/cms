@@ -1,4 +1,4 @@
-/*!   - 2018-01-19 */
+/*!   - 2018-01-20 */
 (function($){
 
 /** global: Craft */
@@ -1522,7 +1522,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $saveBtn: null,
         $spinner: null,
 
-        $languageSelect: null,
+        $siteSelect: null,
         $siteSpinner: null,
 
         hud: null,
@@ -1667,18 +1667,25 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             this.$siteSpinner.removeClass('hidden');
 
+            this.reloadForm({ siteId: newSiteId }, $.proxy(function(textStatus) {
+                this.$siteSpinner.addClass('hidden');
+                if (textStatus !== 'success') {
+                    // Reset the site select
+                    this.$siteSelect.val(this.siteId);
+                }
+            }, this));
+        },
 
-            var data = this.getBaseData();
-            data.siteId = newSiteId;
+        reloadForm: function(data, callback) {
+            data = $.extend(this.getBaseData(), data);
 
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
-                this.$siteSpinner.addClass('hidden');
-
                 if (textStatus === 'success') {
                     this.updateForm(response);
                 }
-                else {
-                    this.$languageSelect.val(this.siteId);
+
+                if (callback) {
+                    callback(textStatus);
                 }
             }, this));
         },
@@ -4857,6 +4864,39 @@ Craft.AdminTable = Garnish.Base.extend(
             onDeleteItem: $.noop
         }
     });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Asset index class
+ */
+Craft.AssetEditor = Craft.BaseElementEditor.extend(
+    {
+        updateForm: function(response) {
+            this.base(response);
+
+            if (this.$element.data('id')) {
+                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .image-preview-container.editable');
+
+                if ($imageEditorTrigger.length) {
+                    this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
+                }
+            }
+
+        },
+
+        showImageEditor: function()
+        {
+            new Craft.AssetImageEditor(this.$element.data('id'), {
+                onSave: $.proxy(this, 'reloadForm'),
+                allowDegreeFractions: Craft.isImagick
+            });
+        }
+
+    });
+
+// Register it!
+Craft.registerElementEditorClass('craft\\elements\\Asset', Craft.AssetEditor);
 
 /** global: Craft */
 /** global: Garnish */

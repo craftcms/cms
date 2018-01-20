@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Asset editor HUDs now show image previews. ([#837](https://github.com/craftcms/cms/issues/837))
+- It’s now possible to access the Image Editor from Assets fields and asset indexes by double-clicking on an asset and clicking on the image preview within the HUD that opens up. ([#1324](https://github.com/craftcms/cms/issues/1324))
 - Added `craft\elements\Asset::getSupportsImageEditor()`.
 - Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
 - Added `craft\events\GetAssetThumbUrlEvent::width` and `height`, which should be used instead of `size`.
