@@ -731,22 +731,27 @@ class UsersController extends BaseController
 		$variables['selectedTab'] = 'account';
 
 		$variables['tabs'] = array(
-				'account' => array(
-						'label' => Craft::t('Account'),
-						'url'   => '#account',
-				)
+			'account' => array(
+				'label' => Craft::t('Account'),
+				'url'   => '#account',
+			)
 		);
 
 		// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
 		if (!$variables['isNewAccount'] || ($craftEdition == Craft::Pro && $variables['account']->getFieldLayout()->getFields()))
 		{
-			$variables['tabs']['profile'] = array(
-					'label' => Craft::t('Profile'),
-					'url'   => '#profile',
-			);
+			$tabs = $variables['account']->getFieldLayout()->getTabs();
+
+			if (!empty($tabs)) {
+				foreach ($tabs as $tab) {
+
+					$variables['tabs']['custom-' . $tab->id] = array(
+						'label' => Craft::t($tab->name),
+						'url'   => '#custom-' . $tab->id,
+					);
+				}
+			}
 		}
-
-
 
 		// Show the permission tab for the users that can change them on Craft Client+ editions (unless
 		// you're on Client and you're the admin account. No need to show since we always need an admin on Client)
