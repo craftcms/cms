@@ -35,6 +35,7 @@
 - Fixed a bug where disabled Matrix blocks were getting deleted on multi-site installs, and when their owner elements were re-saved via Resave Elements jobs. ([#2320](https://github.com/craftcms/cms/issues/2320))
 - Fixed the styling of the URL pattern input in route settings modals.
 - Fixed a bug where properties of objects passed to `craft\web\View::renderObjectTemplate()` whose values were objects were getting converted to arrays.
+- Fixed a bug where HUDs could get themselves into infinite repositioning loops.
 
 ## 3.0.0-RC6 - 2018-01-16
 
