@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\elements\Asset::getSupportsImageEditor()`.
 - Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
 - Added the `cp.categories.edit.content` template hook to the `categories/_edit.html` template.
 - Added the `cp.entries.edit.content` template hook to the `entries/_edit.html` template.

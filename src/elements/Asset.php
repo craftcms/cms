@@ -863,6 +863,17 @@ class Asset extends Element
     }
 
     /**
+     * Returns whether this asset can be edited by the image editor.
+     *
+     * @return bool
+     */
+    public function getSupportsImageEditor(): bool
+    {
+        $ext = $this->getExtension();
+        return (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext));
+    }
+
+    /**
      * Return the Asset's focal point or null if not an image.
      *
      * @return null|array
@@ -1107,12 +1118,9 @@ class Asset extends Element
     {
         $attributes = [];
 
-        if ($context === 'index') {
-            // Eligible for the image editor?
-            $ext = $this->getExtension();
-            if (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext)) {
-                $attributes['data-editable-image'] = null;
-            }
+        // Eligible for the image editor?
+        if ($context === 'index' && $this->getSupportsImageEditor()) {
+            $attributes['data-editable-image'] = null;
         }
 
         return $attributes;
