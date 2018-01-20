@@ -17,9 +17,9 @@ use craft\records\Route as RouteRecord;
 use yii\base\Component;
 
 /**
- * Class Routes service.
+ * Routes service.
  *
- * An instance of the Routes service is globally accessible in Craft via [[Application::routes `Craft::$app->getRoutes()`]].
+ * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|<code>Craft::$app->routes</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

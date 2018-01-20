@@ -322,9 +322,11 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * @inheritdoc
+     * Returns the initial state for the updater JS.
      *
      * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
+     *
+     * @return array
      */
     protected function initialState(bool $force = false): array
     {

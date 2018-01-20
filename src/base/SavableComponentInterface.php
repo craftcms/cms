@@ -81,13 +81,13 @@ interface SavableComponentInterface extends ComponentInterface
      * `src/templates/_settings.html`, passing the settings to it:
      *
      * ```php
-     * return Craft::$app->getView()->renderTemplate('plugin-handle/_widget-settings', [
+     * return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
      *     'widget' => $this
      * ]);
      * ```
      *
      * If you need to tie any JavaScript code to your settings, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs() namespaced]],
+     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
      * however your JavaScript code will be left untouched.
      *
      * For example, if getSettingsHtml() returns the following HTML:
@@ -133,10 +133,10 @@ interface SavableComponentInterface extends ComponentInterface
      *     $id = Craft::$app->getView()->formatInputId('foo');
      *
      *     // Figure out what that ID is going to be namespaced into
-     *     $namespacedId = Craft::$app->getView()->namespaceInputId($id);
+     *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *
      *     // Render and return the input template
-     *     return Craft::$app->getView()->renderTemplate('plugin-handle/_widget-settings', [
+     *     return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
      *         'id'           => $id,
      *         'namespacedId' => $namespacedId,
      *         'widget'       => $this

@@ -44,7 +44,7 @@ use yii\base\Exception;
 /**
  * The Elements service provides APIs for managing elements.
  *
- * An instance of the Elements service is globally accessible in Craft via [[Application::elements `Craft::$app->getElements()`]].
+ * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|<code>Craft::$app->elements</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -304,7 +304,7 @@ class Elements extends Component
      * Those tasks include:
      *
      * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
-     * - Ensuring the element has a title if its type [[Element::hasTitles() has titles]], and giving it a
+     * - Ensuring the element has a title if its type [[Element::hasTitles()|has titles]], and giving it a
      *   default title in the event that $validateContent is set to `false`
      * - Saving a row in the `elements` table
      * - Assigning the element’s ID on the element model, if it’s a new element

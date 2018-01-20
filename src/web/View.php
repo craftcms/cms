@@ -537,7 +537,7 @@ class View extends \yii\web\View
      * - TemplateName.htm
      * - TemplateName/default.htm
      *
-     * The actual directory that those files will depend on the current [[setTemplateMode() template mode]]
+     * The actual directory that those files will depend on the current [[setTemplateMode()|template mode]]
      * (probably `templates/` if it’s a front-end site request, and `vendor/craftcms/cms/src/templates/` if it’s a Control
      * Panel request).
      *
@@ -1082,7 +1082,7 @@ JS;
      * Renames HTML input names so they belong to a namespace.
      *
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
-     * that they will live within the passed-in $namespace (or the [[getNamespace() active namespace]]).
+     * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      *
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
      * attributes will get namespaced as well, by prepending the namespace and a dash to their values.
@@ -1116,7 +1116,7 @@ JS;
      * ```
      *
      * @param string      $html            The template with the inputs.
-     * @param string|null $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string|null $namespace       The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param bool        $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
      *
      * @return string The HTML with namespaced input names.
@@ -1160,7 +1160,7 @@ JS;
      * but only to a single value, which is passed directly into this method.
      *
      * @param string      $inputName The input name that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      *
      * @return string The namespaced input name.
      */
@@ -1184,7 +1184,7 @@ JS;
      * but only to a single value, which is passed directly into this method.
      *
      * @param string      $inputId   The input ID that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      *
      * @return string The namespaced input ID.
      */
@@ -1226,13 +1226,11 @@ JS;
     /**
      * Queues up a method to be called by a given template hook.
      *
-     * For example, if you place this in your plugin’s [[BasePlugin::init() init()]] method:
+     * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
      *
      * ```php
-     * Craft::$app->getView()->hook('myAwesomeHook', function(&$context)
-     * {
+     * Craft::$app->view->hook('myAwesomeHook', function(&$context) {
      *     $context['foo'] = 'bar';
-     *
      *     return 'Hey!';
      * });
      * ```
@@ -1261,7 +1259,7 @@ JS;
     /**
      * Invokes a template hook.
      *
-     * This is called by [[HookNode `{% hook %]]` tags).
+     * This is called by [[HookNode|<code>{% hook %}</code> tags]].
      *
      * @param string $hook     The hook name.
      * @param array  &$context The current template context.

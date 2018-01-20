@@ -26,7 +26,7 @@ use yii\db\Schema;
 /**
  * Handles search operations.
  *
- * An instance of the Search service is globally accessible in Craft via [[Application::search `Craft::$app->getSearch()`]].
+ * An instance of the Search service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSearch()|<code>Craft::$app->search</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

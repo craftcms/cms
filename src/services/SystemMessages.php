@@ -16,9 +16,9 @@ use craft\records\SystemMessage as EmailMessageRecord;
 use yii\base\Component;
 
 /**
- * SystemMessages service.
+ * System Messages service.
  *
- * An instance of the SystemMessages service is globally accessible in Craft via [[Application::systemMessages `Craft::$app->getSystemMessages()`]].
+ * An instance of the System Messages service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemMessages()|<code>Craft::$app->systemMessages</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

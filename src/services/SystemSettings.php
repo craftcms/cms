@@ -13,9 +13,9 @@ use craft\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
 /**
- * Class SystemSettings service.
+ * System Settings service.
  *
- * An instance of the SystemSettings service is globally accessible in Craft via [[Application::systemSettings `Craft::$app->getSystemSettings()`]].
+ * An instance of the System Settings service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemSettings()|<code>Craft::$app->systemSettings</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

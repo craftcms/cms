@@ -121,7 +121,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * @inheritdoc
+     *
      */
     public function status($id)
     {

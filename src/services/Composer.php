@@ -24,9 +24,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Composer service.
+ * Composer service.
  *
- * An instance of the Composer service is globally accessible in Craft via [[Application::composer `Craft::$app->getComposer()`]].
+ * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|<code>Craft::$app->composer</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -19,9 +19,9 @@ use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 
 /**
- * Class PluginStore service.
+ * Plugin Store service.
  *
- * An instance of the PluginStore service is globally accessible in Craft via [[Application::pluginStore `Craft::$app->getPluginStore()`]].
+ * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|<code>Craft::$app->pluginStore</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

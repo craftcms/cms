@@ -24,9 +24,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Categories service.
+ * Categories service.
  *
- * An instance of the Categories service is globally accessible in Craft via [[Application::categories `Craft::$app->getCategories()`]].
+ * An instance of the Categories service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getCategories()|<code>Craft::$app->categories</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
