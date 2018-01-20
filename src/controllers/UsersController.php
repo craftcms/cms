@@ -728,6 +728,7 @@ class UsersController extends BaseController
 		}
 
 		// ---------------------------------------------------------------------
+
 		$variables['selectedTab'] = 'account';
 
 		$variables['tabs'] = array(
@@ -737,19 +738,39 @@ class UsersController extends BaseController
 			)
 		);
 
-		// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-		if (!$variables['isNewAccount'] || ($craftEdition == Craft::Pro && $variables['account']->getFieldLayout()->getFields()))
+		// Only show custom fields if it's Craft Pro
+		if ($craftEdition == Craft::Pro)
 		{
-			$tabs = $variables['account']->getFieldLayout()->getTabs();
+			foreach ($variables['account']->getFieldLayout()->getTabs() as $index => $tab)
+			{
+				$fields = $tab->getFields();
 
-			if (!empty($tabs)) {
-				foreach ($tabs as $tab) {
-
-					$variables['tabs']['custom-' . $tab->id] = array(
-						'label' => Craft::t($tab->name),
-						'url'   => '#custom-' . $tab->id,
-					);
+				// Skip if the tab doesn't have any fields
+				if (empty($fields))
+				{
+					continue;
 				}
+
+				// Do any of the fields on this tab have errors?
+				$hasErrors = false;
+
+				if ($variables['account']->hasErrors())
+				{
+					foreach ($fields as $field)
+					{
+						if ($variables['account']->getErrors($field->getField()->handle))
+						{
+							$hasErrors = true;
+							break;
+						}
+					}
+				}
+
+				$variables['tabs']['tab'.($index+1)] = array(
+					'label' => Craft::t($tab->name),
+					'url'   => '#tab'.($index+1),
+					'class' => ($hasErrors ? 'error' : null)
+				);
 			}
 		}
 
@@ -761,8 +782,8 @@ class UsersController extends BaseController
 		)
 		{
 			$variables['tabs']['perms'] = array(
-					'label' => Craft::t('Permissions'),
-					'url'   => '#perms',
+				'label' => Craft::t('Permissions'),
+				'url'   => '#perms',
 			);
 		}
 
