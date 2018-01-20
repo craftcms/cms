@@ -810,19 +810,20 @@ class AssetsController extends Controller
     /**
      * Generates a thumbnail.
      *
-     * @param string $uid  The asset's UID
-     * @param int    $size The thumbnail size
+     * @param string $uid    The asset's UID
+     * @param int    $width  The thumbnail width
+     * @param int    $height The thumbnail height
      *
      * @return Response
      */
-    public function actionGenerateThumb(string $uid, int $size): Response
+    public function actionGenerateThumb(string $uid, int $width, int $height): Response
     {
         $asset = Asset::find()->uid($uid)->one();
         if (!$asset) {
             return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: '.$uid));
         }
         try {
-            $url = Craft::$app->getAssets()->getThumbUrl($asset, $size, true);
+            $url = Craft::$app->getAssets()->getThumbUrl($asset, $width, $height, true);
         } catch (\Exception $e) {
             return $this->_handleImageException($e);
         }

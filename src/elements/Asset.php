@@ -690,7 +690,7 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        return Craft::$app->getAssets()->getThumbUrl($this, $size, false);
+        return Craft::$app->getAssets()->getThumbUrl($this, $size, $size, false);
     }
 
     /**
