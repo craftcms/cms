@@ -28,6 +28,9 @@
 ### Deprecated
 - Deprecated `craft\events\GetAssetThumbUrlEvent::size`. Use `width` and `height` instead.
 
+### Removed
+- Removed `craft\web\assets\imageeditor\ImageEditorAsset`. The image editor is available globally throughout the Control Panel now.
+
 ### Fixed
 - Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
 - Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.

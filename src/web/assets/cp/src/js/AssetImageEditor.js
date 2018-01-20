@@ -577,7 +577,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }.bind(this));
 
             // Straighten slider
-            this.straighteningInput = new SlideRuleInput("slide-rule", {
+            this.straighteningInput = new Craft.SlideRuleInput("slide-rule", {
                 onStart: function() {
                     this._showGrid();
                 }.bind(this),
@@ -913,7 +913,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Perform the straightening with input slider.
          *
-         * @param {SlideRuleInput} slider
+         * @param {Craft.SlideRuleInput} slider
          */
         straighten: function(slider) {
             if (!this.animationInProgress) {
