@@ -23,9 +23,9 @@ use yii\base\Component;
 Craft::$app->requireEdition(Craft::Client);
 
 /**
- * Class UserPermissions service.
+ * User Permissions service.
  *
- * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `Craft::$app->getUserPermissions()`]].
+ * An instance of the User Permissions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserPermissions()|<code>Craft::$app->userPermissions</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

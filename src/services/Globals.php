@@ -18,9 +18,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Globals service.
+ * Globals service.
  *
- * An instance of the Globals service is globally accessible in Craft via [[Application::globals `Craft::$app->getGlobals()`]].
+ * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|<code>Craft::$app->globals</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

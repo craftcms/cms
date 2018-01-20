@@ -19,9 +19,9 @@ use craft\web\twig\Extension;
 use yii\base\Component;
 
 /**
- * Class Deprecator service.
+ * Deprecator service.
  *
- * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `Craft::$app->getDeprecator()`]].
+ * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|<code>Craft::$app->deprecator</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

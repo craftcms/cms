@@ -42,9 +42,9 @@ use yii\base\Component;
 use yii\base\InvalidParamException;
 
 /**
- * Class Assets service.
+ * Assets service.
  *
- * An instance of the Assets service is globally accessible in Craft via [[Application::assets `Craft::$app->getAssets()`]].
+ * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|<code>Craft::$app->assets</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

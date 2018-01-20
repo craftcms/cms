@@ -23,7 +23,7 @@ use yii\base\Exception;
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
  *
- * An instance of the API service is globally accessible in Craft via [[Application::api `Craft::$app->getApi()`]].
+ * An instance of the API service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getApi()|<code>Craft::$app->api</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

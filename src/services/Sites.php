@@ -32,9 +32,9 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
- * Class Sites service.
+ * Sites service.
  *
- * An instance of the Sites service is globally accessible in Craft via [[Application::sites `Craft::$app->getSites()`]].
+ * An instance of the Sites service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSites()|<code>Craft::$app->sites</code>]].
  *
  * @property int[] $allSiteIds         All of the site IDs
  * @property int[] $editableSiteIds    All of the site IDs that are editable by the current user

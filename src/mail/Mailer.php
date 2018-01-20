@@ -17,7 +17,7 @@ use yii\mail\MessageInterface;
 /**
  * The Mailer component provides APIs for sending email in Craft.
  *
- * An instance of the Email service is globally accessible in Craft via [[Application::email `Craft::$app->getMailer()`]].
+ * An instance of the Mailer component is globally accessible in Craft via [[\craft\web\Application::mailer|<code>Craft::$app->mailer</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,7 +50,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * by providing the corresponding language strings.
      *
      * ```php
-     * Craft::$app->getMailer()->composeFromKey('account_activation', [
+     * Craft::$app->mailer->composeFromKey('account_activation', [
      *     'link' => $activationUrl
      * ]);
      * ```

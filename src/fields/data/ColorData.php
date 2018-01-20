@@ -41,9 +41,10 @@ class ColorData extends BaseObject implements Serializable
     // =========================================================================
 
     /**
-     * @param string $hex The hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * Constructor.
      *
-     * @inheritdoc
+     * @param string $hex    hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * @param array  $config name-value pairs that will be used to initialize the object properties
      */
     public function __construct(string $hex, array $config = [])
     {
