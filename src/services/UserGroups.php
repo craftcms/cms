@@ -19,9 +19,9 @@ use yii\base\Component;
 Craft::$app->requireEdition(Craft::Pro);
 
 /**
- * Class UserGroups service.
+ * User Groups service.
  *
- * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `Craft::$app->getUserGroups()`]].
+ * An instance of the User Groups service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserGroups()|<code>Craft::$app->userGroups</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -127,9 +127,9 @@ class UserGroups extends Component
      *
      * @param string $groupHandle
      *
-     * @return UserGroup
+     * @return UserGroup|null
      */
-    public function getGroupByHandle(string $groupHandle): UserGroup
+    public function getGroupByHandle(string $groupHandle)
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['handle' => $groupHandle])

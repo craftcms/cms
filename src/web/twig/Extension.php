@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
+use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -519,15 +520,25 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Groups an array by a common property.
+     * Groups an array or element query's results by a common property.
      *
-     * @param array  $arr
-     * @param string $item
+     * @param array|\Traversable $arr
+     * @param string             $item
      *
      * @return array
+     * @throws \Twig_Error_Runtime if $arr is not of type array or Traversable
      */
-    public function groupFilter(array $arr, string $item): array
+    public function groupFilter($arr, string $item): array
     {
+        if ($arr instanceof ElementQuery) {
+            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the all() function to fetch the query results before looping over them.');
+            $arr = $arr->all();
+        }
+
+        if (!is_array($arr) && !$arr instanceof \Traversable) {
+            throw new \Twig_Error_Runtime('Values passed to the |group filter must be of type array or Traversable.');
+        }
+
         $groups = [];
 
         $template = '{'.$item.'}';

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\LocalVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\AssetTransformException;
 use craft\errors\ValidationException;
@@ -39,9 +40,9 @@ use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
 /**
- * Class AssetTransforms service.
+ * Asset Transforms service.
  *
- * An instance of the AssetTransforms service is globally accessible in Craft via [[Application::assetTransforms `Craft::$app->getAssetTransforms()`]].
+ * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|<code>Craft::$app->assetTransforms</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -716,7 +717,7 @@ class AssetTransforms extends Component
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
-            ->where(['fileExists' => '0', 'inProgress' => '0'])
+            ->where(['fileExists' => false, 'inProgress' => false])
             ->column();
     }
 
@@ -833,41 +834,50 @@ class AssetTransforms extends Component
 
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
-        if (!$volume instanceof LocalVolumeInterface) {
-            if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
+        try {
+            if (!$volume instanceof LocalVolumeInterface) {
+                if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
 
-                // Delete it just in case it's a 0-byter
-                try {
-                    FileHelper::removeFile($imageSourcePath);
-                } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage(), __METHOD__);
-                }
+                    // Delete it just in case it's a 0-byter
+                    try {
+                        FileHelper::removeFile($imageSourcePath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage(), __METHOD__);
+                    }
 
-                $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
-                $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                    $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+                    $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
 
-                $volume->saveFileLocally($asset->getUri(), $tempPath);
+                    $volume->saveFileLocally($asset->getUri(), $tempPath);
 
-                if (!is_file($tempPath) || filesize($tempPath) === 0) {
+                    if (!is_file($tempPath) || filesize($tempPath) === 0) {
+                        try {
+                            FileHelper::removeFile($tempPath);
+                        } catch (ErrorException $e) {
+                            Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
+                        }
+                        throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
+                            ['file' => $asset->filename]));
+                    }
+
+                    $this->storeLocalSource($tempPath, $imageSourcePath);
+
+                    // Delete the leftover data.
+                    $this->queueSourceForDeletingIfNecessary($imageSourcePath);
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
                         Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                     }
-                    throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
-                        ['file' => $asset->filename]));
-                }
-
-                $this->storeLocalSource($tempPath, $imageSourcePath);
-
-                // Delete the leftover data.
-                $this->queueSourceForDeletingIfNecessary($imageSourcePath);
-                try {
-                    FileHelper::removeFile($tempPath);
-                } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                 }
             }
+        } catch (AssetException $exception) {
+            // Make sure we throw a new exception
+            $imageSourcePath = false;
+        }
+
+        if (!is_file($imageSourcePath)) {
+            throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist,");
         }
 
         $asset->setTransformSource($imageSourcePath);
@@ -1318,8 +1328,7 @@ class AssetTransforms extends Component
 
         $images = Craft::$app->getImages();
         if (StringHelper::toLowerCase($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
-            $image = $images->loadImage($imageSource, true,
-                max($transform->width, $transform->height));
+            $image = $images->loadImage($imageSource, true, max($transform->width, $transform->height));
         } else {
             $image = $images->loadImage($imageSource);
         }

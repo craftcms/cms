@@ -98,6 +98,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @var bool Whether the results should be queried in reverse.
+     */
+    public $inReverse = false;
+
+    /**
      * @var bool Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      */
@@ -494,12 +499,24 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * Sets the [[inReverse]] property.
+     *
+     * @param bool $value The property value
+     *
+     * @return static self reference
+     */
+    public function inReverse(bool $value = true)
+    {
+        $this->inReverse = $value;
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function asArray(bool $value = true)
     {
         $this->asArray = $value;
-
         return $this;
     }
 
@@ -509,7 +526,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function id($value)
     {
         $this->id = $value;
-
         return $this;
     }
 
@@ -519,7 +535,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function uid($value)
     {
         $this->uid = $value;
-
         return $this;
     }
 
@@ -529,8 +544,20 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function fixedOrder(bool $value = true)
     {
         $this->fixedOrder = $value;
-
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addOrderBy($columns)
+    {
+        // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
+        // then treat this is an orderBy() call.
+        if ($this->orderBy !== null && empty($this->orderBy)) {
+            $this->orderBy = null;
+        }
+        return parent::addOrderBy($columns);
     }
 
     /**
@@ -539,7 +566,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function status($value)
     {
         $this->status = $value;
-
         return $this;
     }
 
@@ -549,7 +575,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function archived(bool $value = true)
     {
         $this->archived = $value;
-
         return $this;
     }
 
@@ -559,7 +584,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function dateCreated($value)
     {
         $this->dateCreated = $value;
-
         return $this;
     }
 
@@ -569,7 +593,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function dateUpdated($value)
     {
         $this->dateUpdated = $value;
-
         return $this;
     }
 
@@ -600,7 +623,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function siteId(int $value = null)
     {
         $this->siteId = $value;
-
         return $this;
     }
 
@@ -616,7 +638,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
         $this->site($value);
-
         return $this;
     }
 
@@ -626,7 +647,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function enabledForSite(bool $value = true)
     {
         $this->enabledForSite = $value;
-
         return $this;
     }
 
@@ -642,7 +662,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
         $this->enabledForSite = $value;
-
         return $this;
     }
 
@@ -652,7 +671,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function relatedTo($value)
     {
         $this->relatedTo = $value;
-
         return $this;
     }
 
@@ -662,7 +680,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function title($value)
     {
         $this->title = $value;
-
         return $this;
     }
 
@@ -672,7 +689,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function slug($value)
     {
         $this->slug = $value;
-
         return $this;
     }
 
@@ -682,7 +698,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function uri($value)
     {
         $this->uri = $value;
-
         return $this;
     }
 
@@ -692,7 +707,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function search($value)
     {
         $this->search = $value;
-
         return $this;
     }
 
@@ -702,7 +716,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function ref($value)
     {
         $this->ref = $value;
-
         return $this;
     }
 
@@ -712,7 +725,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function with($value)
     {
         $this->with = $value;
-
         return $this;
     }
 
@@ -722,7 +734,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function withStructure(bool $value = true)
     {
         $this->withStructure = $value;
-
         return $this;
     }
 
@@ -732,7 +743,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function structureId(int $value = null)
     {
         $this->structureId = $value;
-
         return $this;
     }
 
@@ -742,7 +752,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function level($value = null)
     {
         $this->level = $value;
-
         return $this;
     }
 
@@ -752,7 +761,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function ancestorOf($value)
     {
         $this->ancestorOf = $value;
-
         return $this;
     }
 
@@ -762,7 +770,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function ancestorDist(int $value = null)
     {
         $this->ancestorDist = $value;
-
         return $this;
     }
 
@@ -772,7 +779,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function descendantOf($value)
     {
         $this->descendantOf = $value;
-
         return $this;
     }
 
@@ -782,7 +788,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function descendantDist(int $value = null)
     {
         $this->descendantDist = $value;
-
         return $this;
     }
 
@@ -792,7 +797,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function siblingOf($value)
     {
         $this->siblingOf = $value;
-
         return $this;
     }
 
@@ -802,7 +806,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function prevSiblingOf($value)
     {
         $this->prevSiblingOf = $value;
-
         return $this;
     }
 
@@ -812,7 +815,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function nextSiblingOf($value)
     {
         $this->nextSiblingOf = $value;
-
         return $this;
     }
 
@@ -822,7 +824,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function positionedBefore($value)
     {
         $this->positionedBefore = $value;
-
         return $this;
     }
 
@@ -832,7 +833,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function positionedAfter($value)
     {
         $this->positionedAfter = $value;
-
         return $this;
     }
 
@@ -908,9 +908,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->archived) {
-            $this->subQuery->andWhere(['elements.archived' => '1']);
+            $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
-            $this->subQuery->andWhere(['elements.archived' => '0']);
+            $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
         }
 
@@ -935,7 +935,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->enabledForSite) {
-            $this->subQuery->andWhere(['elements_sites.enabled' => '1']);
+            $this->subQuery->andWhere(['elements_sites.enabled' => true]);
         }
 
         $this->_applyRelatedToParam();
@@ -1242,7 +1242,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function last(array $attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use nth() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use inReverse().one() instead.');
         $this->_setAttributes($attributes);
         $count = $this->count();
         $offset = $this->offset;
@@ -1365,9 +1365,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         switch ($status) {
             case Element::STATUS_ENABLED:
-                return ['elements.enabled' => '1'];
+                return ['elements.enabled' => true];
             case Element::STATUS_DISABLED:
-                return ['elements.enabled' => '0'];
+                return ['elements.enabled' => false];
+            case Element::STATUS_ARCHIVED:
+                return ['elements.archived' => true];
             default:
                 return false;
         }
@@ -1738,9 +1740,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (!$db instanceof \craft\db\Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
-                $orderBy = [
-                    new FixedOrderExpression('elements.id', $filteredElementIds, $db)
-                ];
+                if ($this->inReverse) {
+                    $orderBy = [new FixedOrderExpression('elements.id', array_reverse($filteredElementIds), $db)];
+                } else {
+                    $orderBy = [new FixedOrderExpression('elements.id', $filteredElementIds, $db)];
+                }
 
                 $this->query->orderBy($orderBy);
                 $this->subQuery->orderBy($orderBy);
@@ -1794,41 +1798,58 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
-            // In case $this->orderBy was set directly instead of via orderBy()
-            $orderBy = $this->normalizeOrderBy($this->orderBy);
-            $orderByColumns = array_keys($orderBy);
+        if (empty($this->orderBy) || $this->orderBy === ['score' => SORT_ASC] || !empty($this->query->orderBy)) {
+            return;
+        }
 
-            $orderColumnMap = [];
+        // In case $this->orderBy was set directly instead of via orderBy()
+        $orderBy = $this->normalizeOrderBy($this->orderBy);
+        $orderByColumns = array_keys($orderBy);
 
-            if (is_array($this->customFields)) {
-                // Add the field column prefixes
-                foreach ($this->customFields as $field) {
-                    if ($field::hasContentColumn()) {
-                        $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
-                    }
-                }
-            }
+        $orderColumnMap = [];
 
-            // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
-            $orderColumnMap['id'] = 'elements.id';
-
-            foreach ($orderColumnMap as $orderValue => $columnName) {
-                // Are we ordering by this column name?
-                $pos = array_search($orderValue, $orderByColumns, true);
-
-                if ($pos !== false) {
-                    // Swap it with the mapped column name
-                    $orderByColumns[$pos] = $columnName;
-                    $orderBy = array_combine($orderByColumns, $orderBy);
+        if (is_array($this->customFields)) {
+            // Add the field column prefixes
+            foreach ($this->customFields as $field) {
+                if ($field::hasContentColumn()) {
+                    $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
                 }
             }
         }
 
-        if (!empty($orderBy)) {
-            $this->query->orderBy($orderBy);
-            $this->subQuery->orderBy($orderBy);
+        // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
+        $orderColumnMap['id'] = 'elements.id';
+
+        foreach ($orderColumnMap as $orderValue => $columnName) {
+            // Are we ordering by this column name?
+            $pos = array_search($orderValue, $orderByColumns, true);
+
+            if ($pos !== false) {
+                // Swap it with the mapped column name
+                $orderByColumns[$pos] = $columnName;
+                $orderBy = array_combine($orderByColumns, $orderBy);
+            }
         }
+
+        if (empty($orderBy)) {
+            return;
+        }
+
+        if ($this->inReverse) {
+            foreach ($orderBy as &$direction) {
+                if ($direction instanceof FixedOrderExpression) {
+                    $values = array_reverse($direction->values);
+                    $direction = new FixedOrderExpression($direction->column, $values, $direction->db, $direction->params);
+                } // Can't do anything about custom SQL expressions
+                else if (!$direction instanceof Expression) {
+                    $direction = $direction === SORT_DESC ? SORT_ASC : SORT_DESC;
+                }
+            }
+            unset($direction);
+        }
+
+        $this->query->orderBy($orderBy);
+        $this->subQuery->orderBy($orderBy);
     }
 
     /**

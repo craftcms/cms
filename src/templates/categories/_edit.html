@@ -98,6 +98,9 @@
             {% endfor %}
         </div>
     </div>
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.categories.edit.content" %}
 {% endblock %}
 
 {% block details %}

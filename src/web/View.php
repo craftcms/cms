@@ -459,7 +459,7 @@ class View extends \yii\web\View
 
             // Get the variables to pass to the template
             if ($object instanceof Arrayable) {
-                $variables = $object->toArray();
+                $variables = $object->toArray([], [], false);
             } else {
                 $variables = [];
             }
@@ -537,7 +537,7 @@ class View extends \yii\web\View
      * - TemplateName.htm
      * - TemplateName/default.htm
      *
-     * The actual directory that those files will depend on the current [[setTemplateMode() template mode]]
+     * The actual directory that those files will depend on the current [[setTemplateMode()|template mode]]
      * (probably `templates/` if it’s a front-end site request, and `vendor/craftcms/cms/src/templates/` if it’s a Control
      * Panel request).
      *
@@ -1082,41 +1082,41 @@ JS;
      * Renames HTML input names so they belong to a namespace.
      *
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
-     * that they will live within the passed-in $namespace (or the [[getNamespace() active namespace]]).
+     * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      *
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
      * attributes will get namespaced as well, by prepending the namespace and a dash to their values.
      *
      * For example, the following HTML:
      *
-     * ```markup
+     * ```html
      * <label for="title">Title</label>
      * <input type="text" name="title" id="title">
      * ```
      *
      * would become this, if it were namespaced with “foo”:
      *
-     * ```markup
+     * ```html
      * <label for="foo-title">Title</label>
      * <input type="text" name="foo[title]" id="foo-title">
      * ```
      *
      * Attributes that are already namespaced will get double-namespaced. For example, the following HTML:
      *
-     * ```markup
+     * ```html
      * <label for="bar-title">Title</label>
      * <input type="text" name="bar[title]" id="title">
      * ```
      *
      * would become:
      *
-     * ```markup
+     * ```html
      * <label for="foo-bar-title">Title</label>
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
      * @param string      $html            The template with the inputs.
-     * @param string|null $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string|null $namespace       The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param bool        $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
      *
      * @return string The HTML with namespaced input names.
@@ -1160,7 +1160,7 @@ JS;
      * but only to a single value, which is passed directly into this method.
      *
      * @param string      $inputName The input name that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      *
      * @return string The namespaced input name.
      */
@@ -1184,7 +1184,7 @@ JS;
      * but only to a single value, which is passed directly into this method.
      *
      * @param string      $inputId   The input ID that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      *
      * @return string The namespaced input ID.
      */
@@ -1226,13 +1226,11 @@ JS;
     /**
      * Queues up a method to be called by a given template hook.
      *
-     * For example, if you place this in your plugin’s [[BasePlugin::init() init()]] method:
+     * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
      *
      * ```php
-     * Craft::$app->getView()->hook('myAwesomeHook', function(&$context)
-     * {
+     * Craft::$app->view->hook('myAwesomeHook', function(&$context) {
      *     $context['foo'] = 'bar';
-     *
      *     return 'Hey!';
      * });
      * ```
@@ -1261,7 +1259,7 @@ JS;
     /**
      * Invokes a template hook.
      *
-     * This is called by [[HookNode `{% hook %]]` tags).
+     * This is called by [[HookNode|<code>{% hook %}</code> tags]].
      *
      * @param string $hook     The hook name.
      * @param array  &$context The current template context.
@@ -1287,12 +1285,12 @@ JS;
     /**
      * Performs actions before a template is rendered.
      *
-     * @param mixed $template  The name of the template to render
-     * @param array $variables The variables that should be available to the template
+     * @param mixed $template   The name of the template to render
+     * @param array &$variables The variables that should be available to the template
      *
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array $variables): bool
+    public function beforeRenderTemplate(string $template, array &$variables): bool
     {
         // Fire a 'beforeRenderTemplate' event
         $event = new TemplateEvent([
@@ -1300,6 +1298,7 @@ JS;
             'variables' => $variables,
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+        $variables = $event->variables;
         return $event->isValid;
     }
 
@@ -1329,19 +1328,20 @@ JS;
     /**
      * Performs actions before a page template is rendered.
      *
-     * @param mixed $template  The name of the template to render
-     * @param array $variables The variables that should be available to the template
+     * @param mixed $template   The name of the template to render
+     * @param array &$variables The variables that should be available to the template
      *
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array $variables): bool
+    public function beforeRenderPageTemplate(string $template, array &$variables): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         $event = new TemplateEvent([
             'template' => $template,
-            'variables' => $variables,
+            'variables' => &$variables,
         ]);
         $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+        $variables = $event->variables;
         return $event->isValid;
     }
 

@@ -75,7 +75,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
         addRow: function() {
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
-                $tr = this.createRow(rowId, this.columns, this.baseName, {});
+                $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
             new Craft.EditableTable.Row(this, $tr);
@@ -93,9 +93,10 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number'],
+        textualColTypes: ['singleline', 'multiline', 'number', 'color'],
         defaults: {
             rowIdPrefix: '',
+            defaultValues: {},
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },
@@ -158,15 +159,41 @@ Craft.EditableTable = Garnish.Base.extend(
                         case 'lightswitch':
                             Craft.ui.createLightswitch({
                                 name: name,
-                                value: value
+                                value: col.value || '1',
+                                on: !!value
                             }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            var $container = $('<div/>', {
+                                'class': 'flex color-container'
+                            });
+
+                            var $colorPreviewContainer = $('<div/>', {
+                                'class': 'color static small'
+                            }).appendTo($container);
+
+                            var $colorPreview = $('<div/>', {
+                                'class': 'color-preview',
+                                style: value ? {backgroundColor: value} : null
+                            }).appendTo($colorPreviewContainer);
+
+                            Craft.ui.createTextarea({
+                                id: 'color' + Math.floor(Math.random() * 1000000000),
+                                name: name,
+                                value: value,
+                                'class': 'color-input'
+                            }).appendTo($container);
+
+                            new Craft.ColorInput($container);
+                            $container.appendTo($cell);
                             break;
 
                         default:
                             $('<textarea/>', {
                                 'name': name,
                                 'rows': 1,
-                                'value': value,
+                                'val': value,
                                 'placeholder': col.placeholder
                             }).appendTo($cell);
                     }
@@ -251,6 +278,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     if (col.type === 'singleline' || col.type === 'number') {
                         this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
+                        $textarea.trigger('textchange');
                     }
 
                     textareasByColId[colId] = $textarea;

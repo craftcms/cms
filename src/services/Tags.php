@@ -17,9 +17,9 @@ use craft\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
 
 /**
- * Class Tags service.
+ * Tags service.
  *
- * An instance of the Tags service is globally accessible in Craft via [[Application::tags `Craft::$app->getTags()`]].
+ * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|<code>Craft::$app->tags</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

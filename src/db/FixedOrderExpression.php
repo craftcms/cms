@@ -17,6 +17,24 @@ use yii\db\Expression;
  */
 class FixedOrderExpression extends Expression
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string $column The column name that contains the values
+     */
+    public $column;
+
+    /**
+     * @var array The column values, in the order in which the rows should be returned in
+     */
+    public $values;
+
+    /**
+     * @var Connection The DB connection
+     */
+    public $db;
+
     // Public Methods
     // =========================================================================
 
@@ -31,6 +49,10 @@ class FixedOrderExpression extends Expression
      */
     public function __construct(string $column, array $values, Connection $db, array $params = [], array $config = [])
     {
+        $this->column = $column;
+        $this->values = $values;
+        $this->db = $db;
+
         $expression = $db->getQueryBuilder()->fixedOrder($column, $values);
         parent::__construct($expression, $params, $config);
     }

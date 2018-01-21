@@ -142,7 +142,6 @@ class EntryQuery extends ElementQuery
     public function editable(bool $value = true)
     {
         $this->editable = $value;
-
         return $this;
     }
 
@@ -181,7 +180,6 @@ class EntryQuery extends ElementQuery
     public function sectionId($value)
     {
         $this->sectionId = $value;
-
         return $this;
     }
 
@@ -219,7 +217,6 @@ class EntryQuery extends ElementQuery
     public function typeId($value)
     {
         $this->typeId = $value;
-
         return $this;
     }
 
@@ -233,7 +230,6 @@ class EntryQuery extends ElementQuery
     public function authorId($value)
     {
         $this->authorId = $value;
-
         return $this;
     }
 
@@ -271,7 +267,6 @@ class EntryQuery extends ElementQuery
     public function authorGroupId($value)
     {
         $this->authorGroupId = $value;
-
         return $this;
     }
 
@@ -285,7 +280,6 @@ class EntryQuery extends ElementQuery
     public function postDate($value)
     {
         $this->postDate = $value;
-
         return $this;
     }
 
@@ -349,7 +343,6 @@ class EntryQuery extends ElementQuery
     public function expiryDate($value)
     {
         $this->expiryDate = $value;
-
         return $this;
     }
 
@@ -405,7 +398,7 @@ class EntryQuery extends ElementQuery
         $this->_applyRefParam();
 
         if ($this->orderBy !== null && empty($this->orderBy) && !$this->structureId && !$this->fixedOrder) {
-            $this->orderBy = 'postDate desc';
+            $this->orderBy = ['entries.postDate' => SORT_DESC];
         }
 
         return parent::beforePrepare();
@@ -423,8 +416,8 @@ class EntryQuery extends ElementQuery
                 return [
                     'and',
                     [
-                        'elements.enabled' => '1',
-                        'elements_sites.enabled' => '1'
+                        'elements.enabled' => true,
+                        'elements_sites.enabled' => true
                     ],
                     ['<=', 'entries.postDate', $currentTimeDb],
                     [
@@ -437,8 +430,8 @@ class EntryQuery extends ElementQuery
                 return [
                     'and',
                     [
-                        'elements.enabled' => '1',
-                        'elements_sites.enabled' => '1',
+                        'elements.enabled' => true,
+                        'elements_sites.enabled' => true,
                     ],
                     ['>', 'entries.postDate', $currentTimeDb]
                 ];
@@ -446,8 +439,8 @@ class EntryQuery extends ElementQuery
                 return [
                     'and',
                     [
-                        'elements.enabled' => '1',
-                        'elements_sites.enabled' => '1'
+                        'elements.enabled' => true,
+                        'elements_sites.enabled' => true
                     ],
                     ['not', ['entries.expiryDate' => null]],
                     ['<=', 'entries.expiryDate', $currentTimeDb]

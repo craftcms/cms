@@ -189,7 +189,7 @@ Craft.CP = Garnish.Base.extend(
         updateSidebarMenuLabel: function() {
             var $item = this.$sidebar.find('a.sel:first');
             var $label = $item.children('.label');
-            $('#sidebar-toggle').text($label.length ? $label.text() : $item.text());
+            $('#selected-sidebar-item-label').text($label.length ? $label.text() : $item.text());
             Garnish.$bod.removeClass('showing-sidebar');
         },
 
@@ -750,7 +750,7 @@ var JobProgressIcon = Garnish.Base.extend(
         _progressBar: null,
 
         init: function() {
-            this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+            this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
             this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
             this.$label = $('<span class="label"></span>').appendTo(this.$a);

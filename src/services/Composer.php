@@ -24,9 +24,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Composer service.
+ * Composer service.
  *
- * An instance of the Composer service is globally accessible in Craft via [[Application::composer `Craft::$app->getComposer()`]].
+ * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|<code>Craft::$app->composer</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -60,6 +60,22 @@ class Composer extends Component
     }
 
     /**
+     * Returns the path to composer.lock, if it exists.
+     *
+     * @return string|null
+     * @throws Exception if composer.json can't be located
+     */
+    public function getLockPath()
+    {
+        $jsonPath = $this->getJsonPath();
+        // Logic based on \Composer\Factory::createComposer()
+        $lockPath = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
+            ? substr($jsonPath, 0, -4).'lock'
+            : $jsonPath.'.lock';
+        return file_exists($lockPath) ? $lockPath : null;
+    }
+
+    /**
      * Installs a given set of packages with Composer.
      *
      * @param array            $requirements Package name/version pairs
@@ -88,18 +104,18 @@ class Composer extends Component
         // Ensure there's a home var
         $this->_ensureHomeVar();
 
+        // Update composer.json with the new (optimized) requirements
+        $optimized = Craft::$app->getApi()->getOptimizedComposerRequirements($requirements, []);
+        $this->updateRequirements($jsonPath, $optimized, false);
+
+        // Run the installer
+        $composer = $this->createComposer($io, $jsonPath);
+        $installer = Installer::create($io, $composer)
+            ->setPreferDist()
+            ->setSkipSuggest()
+            ->setUpdate();
+
         try {
-            // Update composer.json
-            $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
-            $this->updateRequirements($jsonPath, $requirements, $sortPackages);
-
-            // Run the installer
-            $composer = $this->createComposer($io, $jsonPath);
-            $installer = Installer::create($io, $composer)
-                ->setPreferDist()
-                ->setSkipSuggest()
-                ->setUpdate();
-
             $status = $installer->run();
         } catch (\Throwable $exception) {
             $status = 1;
@@ -108,10 +124,16 @@ class Composer extends Component
         // Change the working directory back
         chdir($wd);
 
+        // Return composer.json to normal
+        file_put_contents($jsonPath, $backup);
+
         if ($status !== 0) {
-            file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
         }
+
+        // Update composer.json with the new (non-optimized) requirements
+        $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
+        $this->updateRequirements($jsonPath, $requirements, $sortPackages);
     }
 
     /**

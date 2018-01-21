@@ -100,7 +100,6 @@ class TagQuery extends ElementQuery
     public function groupId($value)
     {
         $this->groupId = $value;
-
         return $this;
     }
 

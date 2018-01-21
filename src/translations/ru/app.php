@@ -945,7 +945,7 @@ return [
     'Sign out' => 'Выйти',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Однострочный текст',
+    'Single-line text' => 'Однострочный текст',
     'Singles' => 'Синглы',
     'Site' => 'Сайт',
     'Site Homepage' => 'Домашняя страница сайта',

@@ -1,6 +1,6 @@
 /** global: Garnish */
 
-SlideRuleInput = Garnish.Base.extend({
+Craft.SlideRuleInput = Garnish.Base.extend({
 
     $container: null,
     $options: null,
@@ -11,7 +11,7 @@ SlideRuleInput = Garnish.Base.extend({
     startPositionX: null,
 
     init: function(id, settings) {
-        this.setSettings(settings, SlideRuleInput.defaultSettings);
+        this.setSettings(settings, Craft.SlideRuleInput.defaultSettings);
 
         this.value = 0;
         this.graduationsMin = -70;

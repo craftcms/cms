@@ -3,24 +3,80 @@
 ## Unreleased
 
 ### Added
+- Asset editor HUDs now show image previews. ([#837](https://github.com/craftcms/cms/issues/837))
+- It’s now possible to access the Image Editor from Assets fields and asset indexes by double-clicking on an asset and clicking on the image preview within the HUD that opens up. ([#1324](https://github.com/craftcms/cms/issues/1324))
+- Added `craft\elements\Asset::getSupportsImageEditor()`.
+- Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
+- Added `craft\events\GetAssetThumbUrlEvent::width` and `height`, which should be used instead of `size`.
+- Added the `cp.categories.edit.content` template hook to the `categories/_edit.html` template.
+- Added the `cp.entries.edit.content` template hook to the `entries/_edit.html` template.
+- Added the `cp.users.edit.content` template hook to the `users/_edit.html` template.
+
+### Changed
+- Color values within Table fields are now represented by `craft\fields\data\ColorData` objects.
+- Table fields now validate Color cell values.
+- Improved the styling of Table fields.
+- System messages’ Subject and Body templates can now include site templates. ([#2315](https://github.com/craftcms/cms/issues/2315))
+- Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
+- The Craft version number is now shown at the bottom of the global sidebar. ([#2318](https://github.com/craftcms/cms/issues/2318))
+- Route params are no longer returned by `craft\web\Request::getQueryParams()`.
+- It’s now possible to specify default row values for editable tables by passing a `defaultValues` object to `_includes/forms/editableTable.html`.
+- Improved the appearance of the “sidebar” menu button for mobile views. ([#2323](https://github.com/craftcms/cms/issues/2323))
+- It’s now possible to modify the variables that will be passed to a template from the `beforeRenderTemplate` and `beforeRenderPageTemplate` events on `craft\web\View`, by modifying `craft\events\TemplateEvent::variables`.
+- Replaced the `$size` argument with `$width` and `$height` arguments on `craft\services\Assets::getThumbUrl()` and `getThumbPath()`.
+
+### Deprecated
+- Deprecated `craft\events\GetAssetThumbUrlEvent::size`. Use `width` and `height` instead.
+
+### Removed
+- Removed `craft\web\assets\imageeditor\ImageEditorAsset`. The image editor is available globally throughout the Control Panel now.
+
+### Fixed
+- Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
+- Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.
+- Fixed a PHP error that occurred when calling `craft\services\UserGroups::getGroupByHandle()` and passing an invalid group handle. ([#2317](https://github.com/craftcms/cms/issues/2317))
+- Fixed a PHP error that occurred if an element query was passed into the `|group` filter. A deprecation error is logged instead now.
+- Fixed a bug where the Debug Toolbar wasn’t loading in the Control Panel if it wasn’t enabled for the front-end as well.
+- Fixed a bug where disabled Matrix blocks were getting deleted on multi-site installs, and when their owner elements were re-saved via Resave Elements jobs. ([#2320](https://github.com/craftcms/cms/issues/2320))
+- Fixed the styling of the URL pattern input in route settings modals.
+- Fixed a bug where properties of objects passed to `craft\web\View::renderObjectTemplate()` whose values were objects were getting converted to arrays.
+- Fixed a bug where HUDs could get themselves into infinite repositioning loops.
+- Fixed a bug where the Updates utility would show awkwardly-labeled “Update to” buttons, that triggered a non-update, if the `allowUpdates` config setting was disabled.
+
+## 3.0.0-RC6 - 2018-01-16
+
+### Added
+- Added the “Color” column type option to Table fields.
 - Added the `registerSiteTemplateRoots` event to `craft\web\View`, making it possible for plugins and modules to provide templates for the front-end.
 - Added missing translations for the Plugin Store.
 - Added `craft\db\Connection::getVersion()`.
+- Added `craft\elements\User::EVENT_BEFORE_AUTHENTICATE`.
+- Added `craft\events\AuthenticateUserEvent`.
+- Added `craft\fields\BaseOptionsField::getIsMultiOptionsField()`. ([#2302](https://github.com/craftcms/cms/issues/2302))
 - Added `craft\helpers\App::extensionVersion()`.
 - Added `craft\helpers\App::normalizeVersion()`.
 - Added `craft\helpers\App::phpVersion()`.
+- Added `craft\services\Api::getOptimizedComposerRequirements()`.
+- Added `craft\services\Composer::getLockPath()`.
 - Added `craft\services\Images::getVersion()`.
 - Added `craft\services\Search::minFullTextWordLength`, which can be set from `config/app.php` if MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting is something other than `4`. ([#1736](https://github.com/craftcms/cms/issues/1736))
-- Added `craft\fields\BaseOptionsField::getIsMultiOptionsField()`. ([#2302](https://github.com/craftcms/cms/issues/2302))
+- Added `craft\validators\UrlValidator::$allowAlias`.
+- Added support for `color` columns to `Craft.EditableTable`.
+- Added a `defaultValues` setting to `Craft.EditableTable` JavaScript objects.
+- Added `Craft.ui.createColorInput()`.
+- Added `Craft.ui.createColorField()`.
 
 ### Changed
 - It’s now possible to reference object properties without typing `object.` in templates parsed with `craft\web\View::renderObjectTemplate()` (e.g. sections’ Entry URI Format settings), even if the property name doesn’t immediately follow a `{` brace.
 - Craft no longer sets `passwordResetRequired` to `false` when saving a new password on a user, if it had been set to `true` at the same time that the new password was set.
 - Platform versions (PHP, extensions, etc.) no longer include server distribution details, when displayed in the System Report utility, or when posting an issue to GitHub from the Craft Support widget.
+- Improved Composer’s performance when updating or installing Craft/plugins in the Control Panel.
 
 ### Removed
+- Removed `craft\elements\User::setActive()`.
 - Removed `craft\helpers\Search::minWordLength()`.
 - Removed `craft\helpers\Search::stopWords()`.
+- Removed `craft\records\User::setActive()`.
 
 ### Fixed
 - Fixed a bug that prevented the plugin details modal from loading in the Plugin Store. ([#2289](https://github.com/craftcms/cms/issues/2289))
@@ -28,6 +84,11 @@
 - Fixed a bug where Debug Toolbar controllers were available even when the Debug Toolbar was supposed to be disabled.
 - Fixed a bug where the `search` param wasn’t returning any results when the search term was less than 4 characters (or whatever MySQL’s [ft_min_word_len](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_ft_min_word_len) setting was set to). ([#1735](https://github.com/craftcms/cms/issues/1735))
 - Fixed a bug where Multi-select and Checkboxes fields were setting inaccurate `selected` states on the options returned by their `getOptions()` methods. ([#2301](https://github.com/craftcms/cms/issues/2301))
+- Fixed a SQL error that could occur due to an `archived` column name conflict when querying for users. ([#2305](https://github.com/craftcms/cms/issues/2305))
+- Fixed an error that occurred when calling `addOrderBy()` on an element query, if `orderBy()` had not been called first. ([#2310](https://github.com/craftcms/cms/issues/2310))
+- Fixed an error that occurred on Windows servers if a volume’s File System Path setting contained an alias and any backslashes. ([#2309](https://github.com/craftcms/cms/issues/2309))
+- Fixed a bug where Site Base URLs that began with an alias were getting saved as `http://@alias/...`, breaking front-end site URLs. ([#2312](https://github.com/craftcms/cms/issues/2312))
+- Fixed one rogue bullet. ([#2314](https://github.com/craftcms/cms/issues/2314))
 
 ## 3.0.0-RC5 - 2018-01-09
 

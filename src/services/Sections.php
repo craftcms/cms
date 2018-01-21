@@ -28,9 +28,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Sections service.
+ * Sections service.
  *
- * An instance of the Sections service is globally accessible in Craft via [[Application::sections `Craft::$app->getSections()`]].
+ * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|<code>Craft::$app->sections</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

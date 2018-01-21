@@ -8,9 +8,12 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\fields\data\ColorData;
 use craft\helpers\Json;
+use craft\validators\ColorValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use yii\db\Schema;
 
@@ -44,7 +47,7 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults = [];
+    public $defaults;
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -67,25 +70,31 @@ class Table extends Field
      */
     public function getSettingsHtml()
     {
-        $columns = $this->columns;
-        $defaults = $this->defaults;
-
-        if (empty($columns)) {
-            $columns = [
+        if (empty($this->columns)) {
+            $this->columns = [
                 'col1' => [
                     'heading' => '',
                     'handle' => '',
                     'type' => 'singleline'
                 ]
             ];
-
-            // Update the actual settings model for getInputHtml()
-            $this->columns = $columns;
         }
 
-        if ($defaults === null) {
-            $defaults = ['row1' => []];
+        if ($this->defaults === null) {
+            $this->defaults = ['row1' => []];
         }
+
+        $typeOptions = [
+            'checkbox' => Craft::t('app', 'Checkbox'),
+            'color' => Craft::t('app', 'Color'),
+            'lightswitch' => Craft::t('app', 'Lightswitch'),
+            'multiline' => Craft::t('app', 'Multi-line text'),
+            'number' => Craft::t('app', 'Number'),
+            'singleline' => Craft::t('app', 'Single-line text'),
+        ];
+
+        // Make sure they are sorted alphabetically (post-translation)
+        asort($typeOptions);
 
         $columnSettings = [
             'heading' => [
@@ -108,13 +117,7 @@ class Table extends Field
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => [
-                    'singleline' => Craft::t('app', 'Single-line Text'),
-                    'multiline' => Craft::t('app', 'Multi-line text'),
-                    'number' => Craft::t('app', 'Number'),
-                    'checkbox' => Craft::t('app', 'Checkbox'),
-                    'lightswitch' => Craft::t('app', 'Lightswitch'),
-                ]
+                'options' => $typeOptions,
             ],
         ];
 
@@ -122,41 +125,39 @@ class Table extends Field
 
         $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableFieldSettings('.
-            Json::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
-            Json::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($columns, JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($defaults, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($this->columns, JSON_UNESCAPED_UNICODE).', '.
+            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE).', '.
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
-        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField',
+        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
             [
-                [
-                    'label' => Craft::t('app', 'Table Columns'),
-                    'instructions' => Craft::t('app', 'Define the columns your table should have.'),
-                    'id' => 'columns',
-                    'name' => 'columns',
-                    'cols' => $columnSettings,
-                    'rows' => $columns,
-                    'addRowLabel' => Craft::t('app', 'Add a column'),
-                    'initJs' => false
-                ]
-            ]);
+                'label' => Craft::t('app', 'Table Columns'),
+                'instructions' => Craft::t('app', 'Define the columns your table should have.'),
+                'id' => 'columns',
+                'name' => 'columns',
+                'cols' => $columnSettings,
+                'rows' => $this->columns,
+                'addRowLabel' => Craft::t('app', 'Add a column'),
+                'initJs' => false
+            ]
+        ]);
 
-        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField',
+        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
             [
-                [
-                    'label' => Craft::t('app', 'Default Values'),
-                    'instructions' => Craft::t('app', 'Define the default values for the field.'),
-                    'id' => 'defaults',
-                    'name' => 'defaults',
-                    'cols' => $columns,
-                    'rows' => $defaults,
-                    'initJs' => false
-                ]
-            ]);
+                'label' => Craft::t('app', 'Default Values'),
+                'instructions' => Craft::t('app', 'Define the default values for the field.'),
+                'id' => 'defaults',
+                'name' => 'defaults',
+                'cols' => $this->columns,
+                'rows' => $this->defaults,
+                'initJs' => false
+            ]
+        ]);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Table/settings', [
+        return $view->renderTemplate('_components/fieldtypes/Table/settings', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
@@ -182,6 +183,35 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function getElementValidationRules(): array
+    {
+        return ['validateTableData'];
+    }
+
+    /**
+     * Validates the table data.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateTableData(ElementInterface $element)
+    {
+        /** @var Element $element */
+        $value = $element->getFieldValue($this->handle);
+
+        if (!empty($value) && !empty($this->columns)) {
+            foreach ($value as $row) {
+                foreach ($this->columns as $colId => $col) {
+                    if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                        $element->addError($this->handle, $error);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
@@ -190,20 +220,21 @@ class Table extends Field
             $value = array_values($this->defaults);
         }
 
-        if (is_array($value) && !empty($this->columns)) {
-            // Make the values accessible from both the col IDs and the handles
-            foreach ($value as &$row) {
-                foreach ($this->columns as $colId => $col) {
-                    if ($col['handle']) {
-                        $row[$col['handle']] = ($row[$colId] ?? null);
-                    }
-                }
-            }
-
-            return $value;
+        if (!is_array($value) || empty($this->columns)) {
+            return null;
         }
 
-        return null;
+        // Normalize the values and make them accessible from both the col IDs and the handles
+        foreach ($value as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
+                if ($col['handle']) {
+                    $row[$col['handle']] = $row[$colId];
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -211,23 +242,21 @@ class Table extends Field
      */
     public function serializeValue($value, ElementInterface $element = null)
     {
-        if (is_array($value)) {
-            // Drop the string row keys
-            $value = array_values($value);
-
-            // Drop the column handle values
-            if (!empty($this->columns)) {
-                foreach ($value as &$row) {
-                    foreach ($this->columns as $colId => $col) {
-                        if ($col['handle']) {
-                            unset($row[$col['handle']]);
-                        }
-                    }
-                }
-            }
+        if (!is_array($value) || empty($this->columns)) {
+            return null;
         }
 
-        return $value;
+        $serialized = [];
+
+        foreach ($value as $row) {
+            $serializedRow = [];
+            foreach (array_keys($this->columns) as $colId) {
+                $serializedRow[$colId] = parent::serializeValue($row[$colId] ?? null);
+            }
+            $serialized[] = $serializedRow;
+        }
+
+        return $serialized;
     }
 
     /**
@@ -242,6 +271,65 @@ class Table extends Field
     // =========================================================================
 
     /**
+     * Normalizes a cell’s value.
+     *
+     * @param string $type  The cell type
+     * @param mixed  $value The cell value
+     *
+     * @return mixed
+     * @see normalizeValue()
+     */
+    private function _normalizeCellValue(string $type, $value)
+    {
+        if ($type === 'color') {
+            if ($value instanceof ColorData) {
+                return $value;
+            }
+
+            if (!$value || $value === '#') {
+                return null;
+            }
+
+            $value = strtolower($value);
+
+            if ($value[0] !== '#') {
+                $value = '#'.$value;
+            }
+
+            if (strlen($value) === 4) {
+                $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
+            }
+
+            return new ColorData($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Validates a cell’s value.
+     *
+     * @param string      $type   The cell type
+     * @param mixed       $value  The cell value
+     * @param string|null &$error The error text to set on the element
+     *
+     * @return bool Whether the value is valid
+     * @see normalizeValue()
+     */
+    private function _validateCellValue(string $type, $value, string &$error = null): bool
+    {
+        if ($type === 'color' && $value !== null) {
+            /** @var ColorData $value */
+            $validator = new ColorValidator();
+            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+            $hex = $value->getHex();
+            return $validator->validate($hex, $error);
+        }
+
+        return true;
+    }
+
+    /**
      * Returns the field's input HTML.
      *
      * @param mixed                 $value
@@ -252,29 +340,45 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)
     {
-        $columns = $this->columns;
-
-        if (!empty($columns)) {
-            // Translate the column headings
-            foreach ($columns as &$column) {
-                if (!empty($column['heading'])) {
-                    $column['heading'] = Craft::t('site', $column['heading']);
-                }
-            }
-            unset($column);
-
-            $id = Craft::$app->getView()->formatInputId($this->handle);
-
-            return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable',
-                [
-                    'id' => $id,
-                    'name' => $this->handle,
-                    'cols' => $columns,
-                    'rows' => $value,
-                    'static' => $static
-                ]);
+        /** @var Element $element */
+        if (empty($this->columns)) {
+            return null;
         }
 
-        return null;
+        // Translate the column headings
+        foreach ($this->columns as &$column) {
+            if (!empty($column['heading'])) {
+                $column['heading'] = Craft::t('site', $column['heading']);
+            }
+        }
+        unset($column);
+
+        // Explicitly set each cell value to an array with a 'value' key
+        $checkForErrors = $element && $element->hasErrors($this->handle);
+        if (is_array($value)) {
+            foreach ($value as &$row) {
+                foreach ($this->columns as $colId => $col) {
+                    if (isset($row[$colId])) {
+                        $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
+                        $row[$colId] = [
+                            'value' => $row[$colId],
+                            'hasErrors' => $hasErrors,
+                        ];
+                    }
+                }
+            }
+        }
+        unset($row);
+
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($this->handle);
+
+        return $view->renderTemplate('_includes/forms/editableTable', [
+            'id' => $id,
+            'name' => $this->handle,
+            'cols' => $this->columns,
+            'rows' => $value,
+            'static' => $static
+        ]);
     }
 }

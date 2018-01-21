@@ -27,7 +27,18 @@ class GetAssetThumbUrlEvent extends Event
     public $asset;
 
     /**
+     * @var int Requested thumbnail width
+     */
+    public $width;
+
+    /**
+     * @var int Requested thumbnail height
+     */
+    public $height;
+
+    /**
      * @var int Requested thumbnail size (width and height)
+     * @deprecated in 3.0.0-RC7. Use [[width]] and [[height]] instead
      */
     public $size;
 

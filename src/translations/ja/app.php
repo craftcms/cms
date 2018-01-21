@@ -944,7 +944,7 @@ return [
     'Sign out' => 'ログアウト',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => '一行テキスト',
+    'Single-line text' => '一行テキスト',
     'Singles' => 'シングル',
     'Site' => 'サイト',
     'Site Homepage' => 'ホームページ',

@@ -133,7 +133,13 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function createUrl($params)
     {
-        return $this->createAbsoluteUrl($params);
+        $params = (array)$params;
+        unset($params[$this->routeParam]);
+
+        $route = trim($params[0], '/');
+        unset($params[0]);
+
+        return UrlHelper::actionUrl($route, $params);
     }
 
     /**

@@ -12,6 +12,7 @@ use craft\base\RequestTrait;
 use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -26,7 +27,7 @@ use yii\web\BadRequestHttpException;
  * @property bool   $isCpRequest            Whether the Control Panel was requested.
  * @property bool   $isSiteRequest          Whether the front end site was requested.
  * @property bool   $isActionRequest        Whether a specific controller action was requested.
- * @property array  $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
+ * @property array  $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
  * @property bool   $isLivePreview          Whether this is a Live Preview request.
  * @property string $hostName               The host name from the current request URL.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
@@ -356,7 +357,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
+     * Returns the segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
      *
      * @return array|null The action path segments, or `null` if this isn’t an action request.
      */
@@ -456,13 +457,13 @@ class Request extends \yii\web\Request
      * If the parameter does not exist, the second parameter passed to this method will be returned.
      *
      * ```php
-     * $foo = Craft::$app->getRequest()->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
+     * $foo = Craft::$app->request->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
      * ```
      *
      * You can also specify a nested parameter using a dot-delimited string.
      *
      * ```php
-     * $bar = Craft::$app->getRequest()->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
+     * $bar = Craft::$app->request->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
      * ```
      *
      * @param string $name         The parameter name.
@@ -542,13 +543,13 @@ class Request extends \yii\web\Request
      * If the GET parameter does not exist, the second parameter to this method will be returned.
      *
      * ```php
-     * $foo = Craft::$app->getRequest()->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
+     * $foo = Craft::$app->request->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
      * ```
      *
      * You can also specify a nested parameter using a dot-delimited string.
      *
      * ```php
-     * $bar = Craft::$app->getRequest()->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
+     * $bar = Craft::$app->request->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
      * ```
      *
      * @param string     $name         The GET parameter name.
@@ -791,6 +792,22 @@ class Request extends \yii\web\Request
     public function getAcceptsJson(): bool
     {
         return $this->accepts('application/json');
+    }
+
+    /**
+     * @inheritdoc
+     * @internal Based on \yii\web\Request::resolve(), but we don't modify $_GET/$this->_queryParams in the process.
+     */
+    public function resolve()
+    {
+        if (($result = Craft::$app->getUrlManager()->parseRequest($this)) === false) {
+            throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
+        }
+
+        list($route, $params) = $result;
+
+        /** @noinspection AdditionOperationOnArraysInspection */
+        return [$route, $params + $this->getQueryParams()];
     }
 
     // Protected Methods

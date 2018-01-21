@@ -16,8 +16,6 @@ use yii\web\AssetBundle;
 /**
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
  *
- * An instance of the HttpSession service is globally accessible in Craft via [[Application::httpSession `Craft::$app->getSession()`]].
- *
  * @property Session $owner
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -56,7 +54,7 @@ class SessionBehavior extends Behavior
      * Stores a notice in the user’s flash data.
      *
      * The message will be stored on the session, and can be retrieved by calling
-     * [[getFlash() `getFlash('notice')`]] or [[getAllFlashes()]].
+     * [[getFlash()|<code>getFlash('notice')</code>]] or [[getAllFlashes()]].
      *
      * Only one flash notice can be stored at a time.
      *
@@ -73,7 +71,7 @@ class SessionBehavior extends Behavior
      * Stores an error message in the user’s flash data.
      *
      * The message will be stored on the session, and can be retrieved by calling
-     * [[getFlash() `getFlash('error')`]] or [[getAllFlashes()]].
+     * [[getFlash()|<code>getFlash('error')</code>]] or [[getAllFlashes()]].
      *
      * Only one flash error message can be stored at a time.
      *

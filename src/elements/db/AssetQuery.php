@@ -149,7 +149,6 @@ class AssetQuery extends ElementQuery
     public function volumeId($value)
     {
         $this->volumeId = $value;
-
         return $this;
     }
 
@@ -178,7 +177,6 @@ class AssetQuery extends ElementQuery
     public function folderId($value)
     {
         $this->folderId = $value;
-
         return $this;
     }
 
@@ -192,7 +190,6 @@ class AssetQuery extends ElementQuery
     public function filename($value)
     {
         $this->filename = $value;
-
         return $this;
     }
 
@@ -206,7 +203,6 @@ class AssetQuery extends ElementQuery
     public function kind($value)
     {
         $this->kind = $value;
-
         return $this;
     }
 
@@ -220,7 +216,6 @@ class AssetQuery extends ElementQuery
     public function width(int $value = null)
     {
         $this->width = $value;
-
         return $this;
     }
 
@@ -234,7 +229,6 @@ class AssetQuery extends ElementQuery
     public function height(int $value = null)
     {
         $this->height = $value;
-
         return $this;
     }
 
@@ -248,7 +242,6 @@ class AssetQuery extends ElementQuery
     public function size(int $value = null)
     {
         $this->size = $value;
-
         return $this;
     }
 
@@ -262,7 +255,6 @@ class AssetQuery extends ElementQuery
     public function dateModified($value)
     {
         $this->dateModified = $value;
-
         return $this;
     }
 
@@ -276,7 +268,6 @@ class AssetQuery extends ElementQuery
     public function includeSubfolders(bool $value = true)
     {
         $this->includeSubfolders = $value;
-
         return $this;
     }
 
@@ -290,7 +281,6 @@ class AssetQuery extends ElementQuery
     public function withTransforms(array $value = null)
     {
         $this->withTransforms = $value;
-
         return $this;
     }
 

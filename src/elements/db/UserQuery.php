@@ -123,7 +123,6 @@ class UserQuery extends ElementQuery
     public function admin(bool $value = true)
     {
         $this->admin = $value;
-
         return $this;
     }
 
@@ -137,7 +136,6 @@ class UserQuery extends ElementQuery
     public function client(bool $value = true)
     {
         $this->client = $value;
-
         return $this;
     }
 
@@ -151,7 +149,6 @@ class UserQuery extends ElementQuery
     public function can($value)
     {
         $this->can = $value;
-
         return $this;
     }
 
@@ -189,7 +186,6 @@ class UserQuery extends ElementQuery
     public function groupId($value)
     {
         $this->groupId = $value;
-
         return $this;
     }
 
@@ -203,7 +199,6 @@ class UserQuery extends ElementQuery
     public function email($value)
     {
         $this->email = $value;
-
         return $this;
     }
 
@@ -217,7 +212,6 @@ class UserQuery extends ElementQuery
     public function username($value)
     {
         $this->username = $value;
-
         return $this;
     }
 
@@ -231,7 +225,6 @@ class UserQuery extends ElementQuery
     public function firstName($value)
     {
         $this->firstName = $value;
-
         return $this;
     }
 
@@ -245,7 +238,6 @@ class UserQuery extends ElementQuery
     public function lastName($value)
     {
         $this->lastName = $value;
-
         return $this;
     }
 
@@ -259,7 +251,6 @@ class UserQuery extends ElementQuery
     public function lastLoginDate($value)
     {
         $this->lastLoginDate = $value;
-
         return $this;
     }
 
@@ -290,7 +281,6 @@ class UserQuery extends ElementQuery
             'users.locked',
             'users.pending',
             'users.suspended',
-            'users.archived',
             'users.lastLoginDate',
             'users.lockoutDate',
         ]);
@@ -301,9 +291,9 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->admin) {
-            $this->subQuery->andWhere(['users.admin' => '1']);
+            $this->subQuery->andWhere(['users.admin' => true]);
         } else if ($this->client) {
-            $this->subQuery->andWhere(['users.client' => '1']);
+            $this->subQuery->andWhere(['users.client' => true]);
         } else {
             $this->_applyCanParam();
         }
@@ -353,26 +343,21 @@ class UserQuery extends ElementQuery
         switch ($status) {
             case User::STATUS_ACTIVE:
                 return [
-                    'users.archived' => '0',
-                    'users.suspended' => '0',
-                    'users.locked' => '0',
-                    'users.pending' => '0'
+                    'users.suspended' => false,
+                    'users.locked' => false,
+                    'users.pending' => false
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.pending' => '1'
+                    'users.pending' => true
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.locked' => '1'
+                    'users.locked' => true
                 ];
             case User::STATUS_SUSPENDED:
                 return [
-                    'users.suspended' => '1'
-                ];
-            case User::STATUS_ARCHIVED:
-                return [
-                    'users.archived' => '1'
+                    'users.suspended' => true
                 ];
             default:
                 return parent::statusCondition($status);
@@ -426,11 +411,11 @@ class UserQuery extends ElementQuery
         if (!empty($permittedUserIds)) {
             $condition = [
                 'or',
-                ['users.admin' => '1'],
+                ['users.admin' => true],
                 ['elements.id' => $permittedUserIds]
             ];
         } else {
-            $condition = ['users.admin' => '1'];
+            $condition = ['users.admin' => true];
         }
 
         $this->subQuery->andWhere($condition);

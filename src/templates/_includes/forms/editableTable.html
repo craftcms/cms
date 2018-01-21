@@ -1,14 +1,16 @@
-{%- set static = (static is defined ? static : false) %}
-{%- set staticRows = static ? true : (staticRows is defined ? staticRows : false) %}
-{%- set cols = (cols is defined ? cols : []) %}
-{%- set rows = (rows is defined ? rows : []) -%}
+{%- set static = static ?? false %}
+{%- set staticRows = static or (staticRows ?? false) %}
+{%- set cols = cols ?? [] %}
+{%- set rows = rows ?? [] %}
+{%- set initJs = not static and (initJs ?? true) -%}
+
 
 <table id="{{ id }}" class="shadow-box editable"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
             {% for col in cols %}
-                <th scope="col" class="header {{ col.class ?? null }}">
+                <th scope="col" class="{{ col.class ?? '' }}">
                     {%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
                     {%- if col.info is defined -%}
                         <span class="info">{{ col.info|md|raw }}</span>
@@ -16,7 +18,7 @@
                 </th>
             {% endfor %}
             {% if not staticRows %}
-                <th class="header" colspan="2"></th>
+                <th colspan="2"></th>
             {% endif %}
         </tr>
     </thead>
@@ -31,8 +33,9 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['singleline','multiline','number']) %}
-                        <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+                        {% set textual = (col.type in ['singleline','multiline','number','color']) %}
+                        {% set isCode = col.code is defined or col.type == 'color' %}
+                        <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {%- switch col.type -%}
                                 {% case 'select' -%}
                                     {% include "_includes/forms/select" with {
@@ -57,6 +60,23 @@
                                         small: true,
                                         disabled: static
                                     } only %}
+                                {%- case 'color' -%}
+                                    {% embed "_includes/forms/color" with {
+                                        name: cellName,
+                                        value: value,
+                                        small: true,
+                                        disabled: static
+                                    } only %}
+                                        {% block input %}
+                                            {% include "_includes/forms/textarea" with {
+                                                id: id,
+                                                name: name,
+                                                value: value,
+                                                class: 'color-input',
+                                                disabled: disabled
+                                            } only %}
+                                        {% endblock %}
+                                    {% endembed %}
                                 {%- default -%}
                                     <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                             {%- endswitch -%}
@@ -75,11 +95,14 @@
     <div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
 {% endif %}
 
-{% if not static and (initJs is not defined or initJs) %}
+{% if initJs %}
+    {% set jsId = id|namespaceInputId|e('js') %}
+    {% set jsName = name|namespaceInputName|e('js') %}
+    {% set jsCols = cols|json_encode %}
+    {% set defaultValues = defaultValues ?? null %}
     {% js %}
-        new Craft.EditableTable(
-            "{{ id   | namespaceInputId   | e('js') }}",
-            "{{ name | namespaceInputName | e('js') }}",
-            {{ cols|json_encode|raw }});
+        new Craft.EditableTable("{{ jsId }}", "{{ jsName }}", {{ jsCols|raw }}, {
+            defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }}
+        });
     {% endjs %}
 {% endif %}

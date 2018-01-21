@@ -17,7 +17,7 @@ use yii\mail\MessageInterface;
 /**
  * The Mailer component provides APIs for sending email in Craft.
  *
- * An instance of the Email service is globally accessible in Craft via [[Application::email `Craft::$app->getMailer()`]].
+ * An instance of the Mailer component is globally accessible in Craft via [[\craft\web\Application::mailer|<code>Craft::$app->mailer</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,7 +50,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * by providing the corresponding language strings.
      *
      * ```php
-     * Craft::$app->getMailer()->composeFromKey('account_activation', [
+     * Craft::$app->mailer->composeFromKey('account_activation', [
      *     'link' => $activationUrl
      * ]);
      * ```
@@ -94,17 +94,21 @@ class Mailer extends \yii\swiftmailer\Mailer
             $subjectTemplate = $systemMessage->subject;
             $textBodyTemplate = $systemMessage->body;
 
+            // Use the site template mode
             $view = Craft::$app->getView();
             $templateMode = $view->getTemplateMode();
+            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+
+            // Use the message language
             $language = Craft::$app->language;
-
-            $variables = $message->variables ?: [];
-            $variables['emailKey'] = $message->key;
-
             if ($message->language !== null) {
                 Craft::$app->language = $message->language;
             }
 
+            $variables = $message->variables ?: [];
+            $variables['emailKey'] = $message->key;
+
+            // Render the subject and textBody
             // Don't let Twig use the HTML escaping strategy on the subject or plain text portion body of the email.
             /** @var \Twig_Extension_Escaper $ext */
             $ext = $view->getTwig()->getExtension(\Twig_Extension_Escaper::class);
@@ -115,7 +119,6 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Is there a custom HTML template set?
             if (Craft::$app->getEdition() >= Craft::Client && $this->template) {
-                $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
                 $template = $this->template;
             } else {
                 // Default to the _special/email.html template

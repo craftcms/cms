@@ -35,7 +35,7 @@ use yii\db\Exception as DbException;
 /**
  * The Users service provides APIs for managing users.
  *
- * An instance of the Users service is globally accessible in Craft via [[Application::users `Craft::$app->getUsers()`]].
+ * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|<code>Craft::$app->users</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -140,7 +140,7 @@ class Users extends Component
      * Returns a user by their ID.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserById($userId);
+     * $user = Craft::$app->users->getUserById($userId);
      * ```
      *
      * @param int $userId The user’s ID.
@@ -157,7 +157,7 @@ class Users extends Component
      * Returns a user by their username or email.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+     * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
      * ```
      *
      * @param string $usernameOrEmail The user’s username or email.
@@ -181,7 +181,7 @@ class Users extends Component
      * Returns a user by their UID.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserByUid($userUid);
+     * $user = Craft::$app->users->getUserByUid($userUid);
      * ```
      *
      * @param string $uid The user’s UID.
@@ -556,12 +556,12 @@ class Users extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->setActive();
+            $userRecord->pending = false;
             $userRecord->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = null;
             $userRecord->save();
 
-            $user->setActive();
+            $user->pending = false;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
@@ -877,7 +877,7 @@ class Users extends Component
             ->from(['{{%users}}'])
             ->where([
                 'and',
-                ['pending' => '1'],
+                ['pending' => true],
                 ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
             ])
             ->column();

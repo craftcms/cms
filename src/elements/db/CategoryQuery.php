@@ -83,7 +83,6 @@ class CategoryQuery extends ElementQuery
     public function editable(bool $value = true)
     {
         $this->editable = $value;
-
         return $this;
     }
 
@@ -122,7 +121,6 @@ class CategoryQuery extends ElementQuery
     public function groupId($value)
     {
         $this->groupId = $value;
-
         return $this;
     }
 

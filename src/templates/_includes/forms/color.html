@@ -1,25 +1,29 @@
 {% import "_includes/forms" as forms %}
 
 {% set id = id ?? 'color'~random() %}
+{% set containerId = containerId ?? id~'container' %}
+{% set small = small ?? false %}
 
-<div class="flex"
+<div id="{{ containerId }}" class="flex color-container"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    <div class="color static">
-        <div class="colorpreview"
+    <div class="color static{% if small %} small{% endif %}">
+        <div class="color-preview"
             {%- if value %} style="background-color: {{ value }};"{% endif -%}
         ></div>
     </div>
-    {{ forms.text({
-        id: id,
-        name: name ?? null,
-        value: value ?? null,
-        size: 10,
-        class: 'code',
-        autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
-        disabled: disabled ?? false
-    }) }}
+    {% block input %}
+        {{ forms.text({
+            id: id,
+            name: name ?? null,
+            value: value ?? null,
+            size: 10,
+            class: 'color-input',
+            autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
+            disabled: disabled ?? false
+        }) }}
+    {% endblock %}
 </div>
 
 {%- js %}
-    new Craft.ColorInput('{{ id|namespaceInputId }}');
+    new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
 {% endjs %}
