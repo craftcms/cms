@@ -41,6 +41,7 @@
 - Fixed the styling of the URL pattern input in route settings modals.
 - Fixed a bug where properties of objects passed to `craft\web\View::renderObjectTemplate()` whose values were objects were getting converted to arrays.
 - Fixed a bug where HUDs could get themselves into infinite repositioning loops.
+- Fixed a bug where the Updates utility would show awkwardly-labeled “Update to” buttons, that triggered a non-update, if the `allowUpdates` config setting was disabled.
 
 ## 3.0.0-RC6 - 2018-01-16
 

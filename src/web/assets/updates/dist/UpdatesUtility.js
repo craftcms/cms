@@ -135,6 +135,7 @@
             $contents: null,
             $releaseContainer: null,
             $showAllLink: null,
+            latestAllowedVersion: null,
 
             licenseHud: null,
             $licenseSubmitBtn: null,

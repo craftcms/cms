@@ -512,17 +512,16 @@ class AppController extends Controller
                 ]);
             // no break
             default:
-                if ($arr['latestAllowedVersion'] !== null && $arr['latestAllowedVersion'] === $update->getLatest()->version) {
-                    $arr['ctaText'] = Craft::t('app', 'Update');
-                } else {
-                    $arr['ctaText'] = Craft::t('app', 'Update to {version}', [
-                        'version' => $arr['latestAllowedVersion']
-                    ]);
+                if ($arr['latestAllowedVersion'] !== null) {
+                    if ($arr['latestAllowedVersion'] === $update->getLatest()->version) {
+                        $arr['ctaText'] = Craft::t('app', 'Update');
+                    } else if ($arr['latest']) {
+                        $arr['ctaText'] = Craft::t('app', 'Update to {version}', [
+                            'version' => $arr['latestAllowedVersion']
+                        ]);
+                    }
                 }
         }
-
-        // Find the latest release that we're actually allowed to update to
-
 
         return $arr;
     }
