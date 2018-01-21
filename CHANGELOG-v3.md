@@ -43,6 +43,7 @@
 - Fixed a bug where properties of objects passed to `craft\web\View::renderObjectTemplate()` whose values were objects were getting converted to arrays.
 - Fixed a bug where HUDs could get themselves into infinite repositioning loops.
 - Fixed a bug where the Updates utility would show awkwardly-labeled “Update to” buttons, that triggered a non-update, if the `allowUpdates` config setting was disabled.
+- Fixed a bug where Matrix field settings would show the same sub-field settings for all new, unsaved block types, if there were any validation errors on the field.
 
 ## 3.0.0-RC6 - 2018-01-16
 
