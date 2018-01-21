@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
-use craft\config\GeneralConfig;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\MigrationException;
 use craft\helpers\App;
@@ -84,14 +83,20 @@ class AppController extends Controller
 
         $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
 
+        $allowUpdates = (
+            Craft::$app->getConfig()->getGeneral()->allowUpdates &&
+            Craft::$app->getUser()->checkPermission('performUpdates')
+        );
+
         $res = [
             'total' => $updates->getTotal(),
             'critical' => $updates->getHasCritical(),
+            'allowUpdates' => $allowUpdates,
         ];
 
         if ($includeDetails) {
             $res['updates'] = [
-                'cms' => $this->_transformUpdate($updates->cms, 'craft', 'Craft CMS'),
+                'cms' => $this->_transformUpdate($allowUpdates, $updates->cms, 'craft', 'Craft CMS'),
                 'plugins' => [],
             ];
 
@@ -99,7 +104,7 @@ class AppController extends Controller
             foreach ($updates->plugins as $handle => $update) {
                 if (($plugin = $pluginsService->getPlugin($handle)) !== null) {
                     /** @var Plugin $plugin */
-                    $res['updates']['plugins'][] = $this->_transformUpdate($update, $handle, $plugin->name);
+                    $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $update, $handle, $plugin->name);
                 }
             }
         }
@@ -483,69 +488,40 @@ class AppController extends Controller
      *
      * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
      *
-     * @param Update $update         The update model
-     * @param string $handle         The handle of whatever this update is for
-     * @param string $name           The name of whatever this update is for
+     * @param bool   $allowUpdates Whether updates are allowed
+     * @param Update $update       The update model
+     * @param string $handle       The handle of whatever this update is for
+     * @param string $name         The name of whatever this update is for
      *
      * @return array
      */
-    private function _transformUpdate(Update $update, string $handle, string $name): array
+    private function _transformUpdate(bool $allowUpdates, Update $update, string $handle, string $name): array
     {
         $arr = $update->toArray();
         $arr['handle'] = $handle;
         $arr['name'] = $name;
-        $arr['latestAllowedVersion'] = $this->_latestAllowedVersion($update);
+        $arr['latestVersion'] = $update->getLatest()->version ?? null;
 
-        switch ($update->status) {
-            case Update::STATUS_EXPIRED:
-                $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
-                    'name' => $name
-                ]);
-                $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
-                    'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency)
-                ]);
-                $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
-                break;
-            case Update::STATUS_BREAKPOINT:
+        if ($update->status === Update::STATUS_EXPIRED) {
+            $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
+                'name' => $name
+            ]);
+            $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
+                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency)
+            ]);
+            $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
+        } else {
+            if ($update->status === Update::STATUS_BREAKPOINT) {
                 $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
                     'update' => $name.' '.($update->getLatest()->version ?? '')
                 ]);
-            // no break
-            default:
-                if ($arr['latestAllowedVersion'] !== null) {
-                    if ($arr['latestAllowedVersion'] === $update->getLatest()->version) {
-                        $arr['ctaText'] = Craft::t('app', 'Update');
-                    } else if ($arr['latest']) {
-                        $arr['ctaText'] = Craft::t('app', 'Update to {version}', [
-                            'version' => $arr['latestAllowedVersion']
-                        ]);
-                    }
-                }
+            }
+
+            if ($allowUpdates) {
+                $arr['ctaText'] = Craft::t('app', 'Update');
+            }
         }
 
         return $arr;
-    }
-
-    /**
-     * Returns the latest version that the user is allowed to update to, per the
-     * `performUpdates` permission and `allowUpdates` config setting.
-     *
-     * @param Update $update
-     *
-     * @return string|null
-     */
-    private function _latestAllowedVersion(Update $update)
-    {
-        if (Craft::$app->getUser()->checkPermission('performUpdates')) {
-            $allowUpdates = Craft::$app->getConfig()->getGeneral()->allowUpdates;
-        } else {
-            $allowUpdates = false;
-        }
-
-        if ($allowUpdates === true) {
-            return $update->getLatest()->version ?? null;
-        }
-
-        return null;
     }
 }
