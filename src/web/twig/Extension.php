@@ -627,6 +627,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getFunctions(): array
     {
         return [
+            new \Twig_SimpleFunction('alias', [Craft::class, 'getAlias']),
             new \Twig_SimpleFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
             new \Twig_SimpleFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new \Twig_SimpleFunction('ceil', 'ceil'),
