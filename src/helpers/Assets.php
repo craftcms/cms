@@ -157,6 +157,20 @@ class Assets
     }
 
     /**
+     * Generates a default asset title based on its filename.
+     *
+     * @param string $filename The asset's filename
+     *
+     * @return string
+     */
+    public static function filename2Title(string $filename): string
+    {
+        $filename = StringHelper::toLowerCase($filename);
+        $filename = str_replace(['.', '_', '-'], ' ', $filename);
+        return StringHelper::toTitleCase($filename);
+    }
+
+    /**
      * Mirror a folder structure on a Volume.
      *
      * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.

@@ -9,6 +9,7 @@
 - Added `craft\elements\Asset::getSupportsImageEditor()`.
 - Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
 - Added `craft\events\GetAssetThumbUrlEvent::width` and `height`, which should be used instead of `size`.
+- Added `craft\helpers\Assets::filename2Title()`.
 - Added the `cp.categories.edit.content` template hook to the `categories/_edit.html` template.
 - Added the `cp.entries.edit.content` template hook to the `entries/_edit.html` template.
 - Added the `cp.users.edit.content` template hook to the `users/_edit.html` template.
@@ -45,6 +46,7 @@
 - Fixed a bug where the Updates utility would show awkwardly-labeled “Update to” buttons, that triggered a non-update, if the `allowUpdates` config setting was disabled.
 - Fixed a bug where Matrix field settings would show the same sub-field settings for all new, unsaved block types, if there were any validation errors on the field.
 - Fixed a bug where selecting a Default checkbox on a Dropdown or Radio Buttons field within a Matrix field could deselect the Default checkbox from other Dropdown or Radio Buttons fields within the same Matrix field. ([#2261](https://github.com/craftcms/cms/issues/2261))
+- Fixed a bug where words in assets’ default titles were getting separated by hyphens instead of spaces. ([#2324](https://github.com/craftcms/cms/issues/2324))
 
 ## 3.0.0-RC6 - 2018-01-16
 

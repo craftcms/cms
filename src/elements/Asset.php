@@ -30,7 +30,6 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
@@ -1076,7 +1075,7 @@ class Asset extends Element
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
-            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
+            $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
