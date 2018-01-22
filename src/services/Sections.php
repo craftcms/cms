@@ -329,6 +329,28 @@ class Sections extends Component
     /**
      * Saves a section.
      *
+     * ```php
+     * use craft\models\Section;
+     * use craft\models\Section_SiteSettings;
+     *
+     * $section = new Section([
+     *     'name' => 'News',
+     *     'handle' => 'news',
+     *     'type' => Section::TYPE_CHANNEL,
+     *     'siteSettings' => [
+     *         new Section_SiteSettings([
+     *             'siteId' => Craft::$app->sites->getPrimarySite()->id,
+     *             'enabledByDefault' => true,
+     *             'hasUrls' => true,
+     *             'uriFormat' => 'foo/{slug}',
+     *             'template' => 'foo/_entry',
+     *         ]),
+     *     ]
+     * ]);
+     *
+     * $success = Craft::$app->sections->saveSection($section);
+     * ```
+     *
      * @param Section $section       The section to be saved
      * @param bool    $runValidation Whether the section should be validated
      *
