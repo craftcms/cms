@@ -566,7 +566,6 @@ class Sections extends Component
                             'sectionId' => $section->id,
                             'status' => null,
                             'enabledForSite' => false,
-                            'limit' => null,
                         ]
                     ]));
                 }
