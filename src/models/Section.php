@@ -149,8 +149,7 @@ class Section extends Model
     /**
      * Sets the section's site-specific settings.
      *
-     * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects with the site ID for the site
-     *                                             settings as the key for each, e.g. [$siteId => $siteSettings]
+     * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
      *
      * @return void
      */
