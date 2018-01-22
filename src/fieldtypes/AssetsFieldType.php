@@ -436,12 +436,7 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 		}
 
-		if ($errors)
-		{
-			return $errors;
-		}
-
-		return true;
+		return empty($errors) ? true : $errors;
 	}
 
 	/**
