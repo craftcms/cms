@@ -1,4 +1,4 @@
-/*!   - 2018-01-20 */
+/*!   - 2018-01-21 */
 (function($){
 
 /** global: Craft */
@@ -12588,13 +12588,14 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
-        radioCheckboxes: {},
+        radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
+            this.radioCheckboxes = {};
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
