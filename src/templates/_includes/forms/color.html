@@ -9,36 +9,38 @@
 {% set disabled = disabled ?? false -%}
 {% set useTextarea = useTextarea ?? false -%}
 
-<div id="{{ containerId }}" class="flex color-container"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    <div class="color static{% if small %} small{% endif %}">
-        <div class="color-preview"
-            {%- if value %} style="background-color: {{ value }};"{% endif -%}
-        ></div>
+{% spaceless %}
+    <div id="{{ containerId }}" class="flex color-container"
+            {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+        <div class="color static{% if small %} small{% endif %}">
+            <div class="color-preview"
+                {%- if value %} style="background-color: {{ value }};"{% endif -%}
+            ></div>
+        </div>
+        {% if useTextarea %}
+            {{ forms.textarea({
+                rows: 1,
+                id: id,
+                name: name,
+                value: value,
+                class: 'color-input',
+                autofocus: autofocus,
+                disabled: disabled
+            }) }}
+        {% else %}
+            {{ forms.text({
+                id: id,
+                name: name,
+                value: value,
+                size: 10,
+                class: 'color-input',
+                autofocus: autofocus,
+                disabled: disabled
+            }) }}
+        {% endif %}
     </div>
-    {% if useTextarea %}
-        {{ forms.textarea({
-            rows: 1,
-            id: id,
-            name: name,
-            value: value,
-            class: 'color-input',
-            autofocus: autofocus,
-            disabled: disabled
-        }) }}
-    {% else %}
-        {{ forms.text({
-            id: id,
-            name: name,
-            value: value,
-            size: 10,
-            class: 'color-input',
-            autofocus: autofocus,
-            disabled: disabled
-        }) }}
-    {% endif %}
-</div>
+{% endspaceless -%}
 
-{%- js %}
+{% js %}
     new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
-{% endjs %}
+{% endjs -%}
