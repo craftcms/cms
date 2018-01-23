@@ -60,6 +60,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     // =========================================================================
 
     /**
+     * @var int|null Min blocks
+     */
+    public $minBlocks;
+
+    /**
      * @var int|null Max blocks
      */
     public $maxBlocks;
@@ -83,7 +88,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['maxBlocks'], 'integer', 'min' => 0];
+        $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
 
         return $rules;
     }
@@ -413,8 +418,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'validateBlocks',
             [
                 ArrayValidator::class,
+                'min' => $this->minBlocks ?: null,
                 'max' => $this->maxBlocks ?: null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
+                'skipOnEmpty' => false,
             ],
         ];
     }
