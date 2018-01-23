@@ -94,7 +94,7 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number', 'color'],
+        textualColTypes: ['color', 'multiline', 'number', 'singleline'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -140,28 +140,11 @@ Craft.EditableTable = Garnish.Base.extend(
                     }
 
                     switch (col.type) {
-                        case 'select':
-                            Craft.ui.createSelect({
-                                name: name,
-                                options: col.options,
-                                value: value,
-                                'class': 'small'
-                            }).appendTo($cell);
-                            break;
-
                         case 'checkbox':
                             Craft.ui.createCheckbox({
                                 name: name,
                                 value: col.value || '1',
                                 checked: !!value
-                            }).appendTo($cell);
-                            break;
-
-                        case 'lightswitch':
-                            Craft.ui.createLightswitch({
-                                name: name,
-                                value: col.value || '1',
-                                on: !!value
                             }).appendTo($cell);
                             break;
 
@@ -188,6 +171,23 @@ Craft.EditableTable = Garnish.Base.extend(
 
                             new Craft.ColorInput($container);
                             $container.appendTo($cell);
+                            break;
+
+                        case 'lightswitch':
+                            Craft.ui.createLightswitch({
+                                name: name,
+                                value: col.value || '1',
+                                on: !!value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'select':
+                            Craft.ui.createSelect({
+                                name: name,
+                                options: col.options,
+                                value: value,
+                                'class': 'small'
+                            }).appendTo($cell);
                             break;
 
                         default:

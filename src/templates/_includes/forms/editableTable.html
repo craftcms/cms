@@ -33,31 +33,15 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['singleline','multiline','number','color']) %}
+                        {% set textual = (col.type in ['color', 'multiline', 'number', 'singleline']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
                         <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {%- switch col.type -%}
-                                {% case 'select' -%}
-                                    {% include "_includes/forms/select" with {
-                                        class:    'small',
-                                        name:     cellName,
-                                        options:  cell.options ?? col.options,
-                                        value:    value,
-                                        disabled: static
-                                    } only %}
                                 {%- case 'checkbox' -%}
                                     {% include "_includes/forms/checkbox" with {
                                         name: cellName,
                                         value:  col.value ?? 1,
                                         checked: value is not empty,
-                                        disabled: static
-                                    } only %}
-                                {%- case 'lightswitch' -%}
-                                    {% include "_includes/forms/lightswitch" with {
-                                        name: cellName,
-                                        on: value,
-                                        value: col.value ?? 1,
-                                        small: true,
                                         disabled: static
                                     } only %}
                                 {%- case 'color' -%}
@@ -77,6 +61,22 @@
                                             } only %}
                                         {% endblock %}
                                     {% endembed %}
+                                {%- case 'lightswitch' -%}
+                                    {% include "_includes/forms/lightswitch" with {
+                                        name: cellName,
+                                        on: value,
+                                        value: col.value ?? 1,
+                                        small: true,
+                                        disabled: static
+                                    } only %}
+                                {% case 'select' -%}
+                                    {% include "_includes/forms/select" with {
+                                        class:    'small',
+                                        name:     cellName,
+                                        options:  cell.options ?? col.options,
+                                        value:    value,
+                                        disabled: static
+                                    } only %}
                                 {%- default -%}
                                     <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                             {%- endswitch -%}
