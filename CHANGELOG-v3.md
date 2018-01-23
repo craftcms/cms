@@ -58,6 +58,7 @@
 - Fixed a bug where words in assets’ default titles were getting separated by hyphens instead of spaces. ([#2324](https://github.com/craftcms/cms/issues/2324))
 - Fixed a bug where it was possible to get a section into a strange state if the sites it was enabled for were completely replaced by different sites in one fell swoop.
 - Fixed a bug where a red bar remained visible at the top of the Control Panel after resolving a domain mismatch alert. ([#2328](https://github.com/craftcms/cms/issues/2328))
+- Fixed a bug where various category, entry, and user actions would remember the currently-selected tab, when they shouldn’t have. ([#2334](https://github.com/craftcms/cms/issues/2334))
 
 ## 3.0.0-RC6 - 2018-01-16
 
