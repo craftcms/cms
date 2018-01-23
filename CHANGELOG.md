@@ -2,12 +2,14 @@
 
 ## Unreleased
 
+## 2.6.3005 - 2018-01-23
+
 ### Changed
 - Users’ field layouts can now have multiple tabs. ([#892](https://github.com/craftcms/cms/issues/892))
 - Assets fields now fail validation if a file was not uploaded successfully.
 
 ### Fixed
-- Fixed a bug where replacing an Asset file would not delete the existing file in some cases.t
+- Fixed a bug where replacing an Asset file would not delete the existing file in some cases.
 
 ## 2.6.3004 - 2018-01-16
 
