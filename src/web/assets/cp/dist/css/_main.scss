@@ -2163,6 +2163,15 @@ table.editable {
         }
       }
     }
+
+    .datewrapper,
+    .timewrapper {
+      width: 100%;
+
+      .text:placeholder-shown + div[data-icon] {
+        @include left(10px);
+      }
+    }
   }
 
   & + .btn.add {

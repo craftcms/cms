@@ -12,9 +12,11 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
+use craft\web\assets\timepicker\TimepickerAsset;
 use yii\db\Schema;
 
 /**
@@ -60,6 +62,25 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        // Convert default date cell values to ISO8601 strings
+        if (!empty($this->columns) && $this->defaults !== null) {
+            foreach ($this->columns as $colId => $col) {
+                if (in_array($col['type'], ['date', 'time'], true)) {
+                    foreach ($this->defaults as &$row) {
+                        $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentColumnType(): string
     {
         return $this->columnType;
@@ -87,10 +108,12 @@ class Table extends Field
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
+            'date' => Craft::t('app', 'Date'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
             'singleline' => Craft::t('app', 'Single-line text'),
+            'time' => Craft::t('app', 'Time'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -123,6 +146,7 @@ class Table extends Field
 
         $view = Craft::$app->getView();
 
+        $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableFieldSettings('.
             Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
@@ -169,6 +193,8 @@ class Table extends Field
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
+
         $input = '<input type="hidden" name="'.$this->handle.'" value="">';
 
         $tableHtml = $this->_getInputHtml($value, $element, false);
@@ -281,26 +307,31 @@ class Table extends Field
      */
     private function _normalizeCellValue(string $type, $value)
     {
-        if ($type === 'color') {
-            if ($value instanceof ColorData) {
-                return $value;
-            }
+        switch ($type) {
+            case 'color':
+                if ($value instanceof ColorData) {
+                    return $value;
+                }
 
-            if (!$value || $value === '#') {
-                return null;
-            }
+                if (!$value || $value === '#') {
+                    return null;
+                }
 
-            $value = strtolower($value);
+                $value = strtolower($value);
 
-            if ($value[0] !== '#') {
-                $value = '#'.$value;
-            }
+                if ($value[0] !== '#') {
+                    $value = '#'.$value;
+                }
 
-            if (strlen($value) === 4) {
-                $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
-            }
+                if (strlen($value) === 4) {
+                    $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
+                }
 
-            return new ColorData($value);
+                return new ColorData($value);
+
+            case 'date':
+            case 'time':
+                return DateTimeHelper::toDateTime($value) ?: null;
         }
 
         return $value;

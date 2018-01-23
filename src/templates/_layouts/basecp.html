@@ -38,6 +38,7 @@
             actionTrigger:         "{{ craft.app.config.general.actionTrigger|e('js') }}",
             path:                  "{{ craft.app.request.getPathInfo()|e('js') }}",
             language:              "{{ craft.app.language|e('js') }}",
+            timezone:              "{{ craft.app.getTimeZone()|e('js') }}",
             siteId:                {{ craft.app.sites.currentSite.id ?? 'null' }},
             orientation:           "{{ orientation|e('js') }}",
             left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",

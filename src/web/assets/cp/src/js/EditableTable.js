@@ -94,7 +94,7 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['color', 'multiline', 'number', 'singleline'],
+        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -156,6 +156,13 @@ Craft.EditableTable = Garnish.Base.extend(
                             }).appendTo($cell);
                             break;
 
+                        case 'date':
+                            Craft.ui.createDateInput({
+                                name: name,
+                                value: value
+                            }).appendTo($cell);
+                            break;
+
                         case 'lightswitch':
                             Craft.ui.createLightswitch({
                                 name: name,
@@ -170,6 +177,13 @@ Craft.EditableTable = Garnish.Base.extend(
                                 options: col.options,
                                 value: value,
                                 'class': 'small'
+                            }).appendTo($cell);
+                            break;
+
+                        case 'time':
+                            Craft.ui.createTimeInput({
+                                name: name,
+                                value: value
                             }).appendTo($cell);
                             break;
 

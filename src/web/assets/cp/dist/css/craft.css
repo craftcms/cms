@@ -849,6 +849,9 @@ body.ltr table.editable tbody .color-container > .color-input { padding-left: 35
 body.rtl table.editable tbody .color-container > .color-input { padding-right: 35px; }
 body.ltr table.editable tbody .color-container > .color-input:focus { padding-left: 34px; }
 body.rtl table.editable tbody .color-container > .color-input:focus { padding-right: 34px; }
+table.editable tbody .datewrapper, table.editable tbody .timewrapper { width: 100%; }
+body.ltr table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.ltr table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { left: 10px; }
+body.rtl table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.rtl table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { right: 10px; }
 table.editable + .btn.add { display: block; border-radius: 0 0 2px 2px; border: 1px dashed rgba(0, 0, 20, 0.4); border-top-width: 0; background: none; -webkit-box-shadow: none; box-shadow: none; }
 table.editable + .btn.add:focus { border-style: solid; }
 

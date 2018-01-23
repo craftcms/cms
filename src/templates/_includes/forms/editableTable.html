@@ -33,7 +33,7 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['color', 'multiline', 'number', 'singleline']) %}
+                        {% set textual = (col.type in ['color', 'date', 'multiline', 'number', 'singleline', 'time']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
                         <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {%- switch col.type -%}
@@ -51,6 +51,12 @@
                                         small: true,
                                         disabled: static
                                     } only %}
+                                {%- case 'date' -%}
+                                    {% include "_includes/forms/date" with {
+                                        name: cellName,
+                                        value: value,
+                                        disabled: static
+                                    } only %}
                                 {%- case 'lightswitch' -%}
                                     {% include "_includes/forms/lightswitch" with {
                                         name: cellName,
@@ -64,6 +70,12 @@
                                         class: 'small',
                                         name: cellName,
                                         options: cell.options ?? col.options,
+                                        value: value,
+                                        disabled: static
+                                    } only %}
+                                {%- case 'time' -%}
+                                    {% include "_includes/forms/time" with {
+                                        name: cellName,
                                         value: value,
                                         disabled: static
                                     } only %}
