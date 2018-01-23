@@ -51,9 +51,24 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private $_failedFiles = array();
 
+	/**
+	 * Whether there were uploaded files with errors.
+	 *
+	 * @var bool
+	 */
+	private $_hasErrors = false;
+
 	// Public Methods
 	// =========================================================================
 
+	public function init()
+	{
+		$this->_failedFiles['disallowed'] = array();
+		$this->_failedFiles['tooBig'] = array();
+		$this->_failedFiles['error'] = array();
+
+		parent::init();
+	}
 	/**
 	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
@@ -196,7 +211,8 @@ class AssetsFieldType extends BaseElementFieldType
 			{
 				$uploadedFiles[] = array(
 					'filename' => $file->getName(),
-					'location' => $file->getTempName()
+					'location' => $file->getTempName(),
+					'error' => $file->getError()
 				);
 			}
 		}
@@ -219,7 +235,8 @@ class AssetsFieldType extends BaseElementFieldType
 
 				if (!in_array($extension, $allowedExtensions))
 				{
-					$this->_failedFiles[] = $file['filename'];
+					$this->_failedFiles['disallowed'][] = $file['filename'];
+					$this->_hasErrors = true;
 				}
 			}
 
@@ -229,12 +246,28 @@ class AssetsFieldType extends BaseElementFieldType
 
 				if (!in_array($extension, $allowedExtensions))
 				{
-					$this->_failedFiles[] = $file['filename'];
+					$this->_failedFiles['disallowed'][] = $file['filename'];
+					$this->_hasErrors = true;
+				}
+
+				// Handle potential upload errors
+				if (!empty($file['error'])) {
+					$this->_hasErrors = true;
+
+					switch ($file['error']) {
+						case UPLOAD_ERR_INI_SIZE:
+						case UPLOAD_ERR_FORM_SIZE:
+							$this->_failedFiles['tooBig'][] = $file['filename'];
+							break;
+						default:
+							$this->_failedFiles['error'][] = $file['filename'];
+							Craft::log('There was an upload error while uploading '.$file['filename'], LogLevel::Warning, true);
+					}
 				}
 			}
 		}
 
-		if (!empty($this->_failedFiles))
+		if ($this->_hasErrors)
 		{
 			return true;
 		}
@@ -386,19 +419,24 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 		}
 
-		foreach ($this->_failedFiles as $file)
-		{
-			$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file));
+		$messages = array(
+			'disallowed' => '"{filename}" is not allowed in this field.',
+			'tooBig' => 'The uploaded file "{filename}" is too big.',
+			'error' => 'There was an error while uploading "{filename}".'
+		);
+
+		foreach ($this->_failedFiles as $errorType => $files) {
+			// Just to make sure
+			if (!isset($messages[$errorType])) {
+				$errorType = 'error';
+			}
+
+			foreach ($files as $file) {
+				$errors[] = Craft::t($messages[$errorType], array('filename' => $file));
+			}
 		}
 
-		if ($errors)
-		{
-			return $errors;
-		}
-		else
-		{
-			return true;
-		}
+		return empty($errors) ? true : $errors;
 	}
 
 	/**
