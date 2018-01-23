@@ -34,6 +34,7 @@
 - `craft\models\EntryType::getSection()` now throws a `yii\base\InvalidConfigException` if its `sectionId` property is null or invalid.
 - Renamed `craft\helpers\UrlHelper::urlWithProtocol()` to `urlWithScheme()`.
 - Renamed `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()` to `getSchemeForTokenizedUrl()`.
+- `craft\helpers\StringHelper::toString()` will now call the object’s `__toString()` method if it has one, even if it implements `IteratorAggregate`.s
 
 ### Deprecated
 - Deprecated `craft\events\GetAssetThumbUrlEvent::size`. Use `width` and `height` instead.
@@ -59,6 +60,7 @@
 - Fixed a bug where it was possible to get a section into a strange state if the sites it was enabled for were completely replaced by different sites in one fell swoop.
 - Fixed a bug where a red bar remained visible at the top of the Control Panel after resolving a domain mismatch alert. ([#2328](https://github.com/craftcms/cms/issues/2328))
 - Fixed a bug where various category, entry, and user actions would remember the currently-selected tab, when they shouldn’t have. ([#2334](https://github.com/craftcms/cms/issues/2334))
+- Fixed an error that occurred if an object was passed into `craft\helpers\StringHelper::toString()` that didn’t have a `__toString()` method.
 
 ## 3.0.0-RC6 - 2018-01-16
 
