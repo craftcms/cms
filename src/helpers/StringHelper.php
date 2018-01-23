@@ -811,10 +811,6 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toString($object, string $glue = ','): string
     {
-        if (is_string($object)) {
-            return $object;
-        }
-
         if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
             return (string)$object;
         }
