@@ -36,6 +36,7 @@
 - Deprecated `craft\events\GetAssetThumbUrlEvent::size`. Use `width` and `height` instead.
 
 ### Removed
+- Removed `craft\models\MatrixSettings`.
 - Removed `craft\web\assets\imageeditor\ImageEditorAsset`. The image editor is available globally throughout the Control Panel now.
 
 ### Fixed
