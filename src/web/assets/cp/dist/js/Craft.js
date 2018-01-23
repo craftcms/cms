@@ -12745,7 +12745,8 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createLightswitch({
                                 name: name,
                                 value: col.value || '1',
-                                on: !!value
+                                on: !!value,
+                                small: true
                             }).appendTo($cell);
                             break;
 
