@@ -1,4 +1,4 @@
-/*!   - 2018-01-21 */
+/*!   - 2018-01-22 */
 (function($){
 
 /** global: Craft */
@@ -11180,6 +11180,13 @@ Craft.CP = Garnish.Base.extend(
                             if (textStatus === 'success') {
                                 if (response.success) {
                                     $transferDomainLink.parent().remove();
+
+                                    // Was that the last one?
+                                    if (this.$alerts.children().length === 0) {
+                                        this.$alerts.remove();
+                                        this.$alerts = null;
+                                    }
+
                                     this.displayNotice(Craft.t('app', 'License transferred.'));
                                 }
                                 else {
