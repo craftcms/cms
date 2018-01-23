@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Çıkış',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Tek-satır Metin',
+    'Single-line text' => 'Tek-satır metin',
     'Singles' => 'Tekiller',
     'Site' => 'Site',
     'Site Homepage' => 'Site Ana Sayfası',

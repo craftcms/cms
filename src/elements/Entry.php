@@ -557,13 +557,16 @@ class Entry extends Element
      */
     public function getSupportedSites(): array
     {
+        $section = $this->getSection();
         $sites = [];
 
-        foreach ($this->getSection()->getSiteSettings() as $siteSettings) {
-            $sites[] = [
-                'siteId' => $siteSettings->siteId,
-                'enabledByDefault' => $siteSettings->enabledByDefault
-            ];
+        foreach ($section->getSiteSettings() as $siteSettings) {
+            if ($section->propagateEntries || $siteSettings->siteId == $this->siteId) {
+                $sites[] = [
+                    'siteId' => $siteSettings->siteId,
+                    'enabledByDefault' => $siteSettings->enabledByDefault
+                ];
+            }
         }
 
         return $sites;

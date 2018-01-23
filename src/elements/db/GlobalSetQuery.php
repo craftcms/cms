@@ -67,7 +67,6 @@ class GlobalSetQuery extends ElementQuery
     public function editable(bool $value = true)
     {
         $this->editable = $value;
-
         return $this;
     }
 
@@ -81,7 +80,6 @@ class GlobalSetQuery extends ElementQuery
     public function handle($value)
     {
         $this->handle = $value;
-
         return $this;
     }
 

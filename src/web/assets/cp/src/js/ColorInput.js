@@ -12,14 +12,14 @@ Craft.ColorInput = Garnish.Base.extend({
 
     init: function(container) {
         this.$container = $(container);
-        this.$input = this.$container.children('input');
+        this.$input = this.$container.children('.color-input');
         this.$colorContainer = this.$container.children('.color');
-        this.$colorPreview = this.$colorContainer.children();
+        this.$colorPreview = this.$colorContainer.children('.color-preview');
 
         this.createColorInput();
-        this.updatePreview();
+        this.handleTextChange();
 
-        this.addListener(this.$input, 'textchange', 'updatePreview');
+        this.addListener(this.$input, 'textchange', 'handleTextChange');
     },
 
     createColorInput: function() {
@@ -46,10 +46,10 @@ Craft.ColorInput = Garnish.Base.extend({
     updateColor: function() {
         this.$input.val(this.$colorInput.val());
         this.$input.data('garnish-textchange-value', this.$colorInput.val());
-        this.updatePreview();
+        this.handleTextChange();
     },
 
-    updatePreview: function() {
+    handleTextChange: function() {
         var val = this.$input.val();
 
         // If empty, set the preview to transparent
@@ -66,6 +66,10 @@ Craft.ColorInput = Garnish.Base.extend({
         }
 
         this.$colorPreview.css('background-color', val);
+
+        if (this.$colorInput) {
+            this.$colorInput.val(val);
+        }
     }
 }, {
     _browserSupportsColorInputs: null,

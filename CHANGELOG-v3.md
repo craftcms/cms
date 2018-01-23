@@ -1,5 +1,73 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC7 - 2018-01-23
+
+### Added
+- Asset editor HUDs now show image previews. ([#837](https://github.com/craftcms/cms/issues/837))
+- It’s now possible to access the Image Editor from Assets fields and asset indexes by double-clicking on an asset and clicking on the image preview within the HUD that opens up. ([#1324](https://github.com/craftcms/cms/issues/1324))
+- Added the “Propagate entries across all enabled sites?” section setting. If disabled, entries will only be associated with the site they were created on. ([#2330](https://github.com/craftcms/cms/issues/2330))
+- Added the “Min Blocks” setting to Matrix fields. ([#850](https://github.com/craftcms/cms/issues/850))
+- Added the “Date” and “Time” column type options to Table fields.
+- Added the `alias()` Twig function, which translates a path/URL alias (`@someAlias/sub/path`) into an actual path/URL. ([#2327](https://github.com/craftcms/cms/issues/2327))
+- Added `craft\elements\Asset::getSupportsImageEditor()`.
+- Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
+- Added `craft\events\GetAssetThumbUrlEvent::width` and `height`, which should be used instead of `size`.
+- Added `craft\helpers\Assets::filename2Title()`.
+- Added `craft\models\CategoryGroup_SiteSettings::getSite()`.
+- Added `craft\models\Section::propagateEntries`.
+- Added `craft\models\Section_SiteSettings::getSite()`.
+- Added the `cp.categories.edit.content` template hook to the `categories/_edit.html` template.
+- Added the `cp.entries.edit.content` template hook to the `entries/_edit.html` template.
+- Added the `cp.users.edit.content` template hook to the `users/_edit.html` template.
+- Added support for `date` and `time` columns to `Craft.EditableTable`.
+- Added `Craft.ui.createDateInput()`.
+- Added `Craft.ui.createDateField()`.
+- Added `Craft.ui.createTimeInput()`.
+- Added `Craft.ui.createTimeField()`.
+
+### Changed
+- Color values within Table fields are now represented by `craft\fields\data\ColorData` objects.
+- Table fields now validate Color cell values.
+- Improved the styling of Table fields.
+- System messages’ Subject and Body templates can now include site templates. ([#2315](https://github.com/craftcms/cms/issues/2315))
+- Improved handling of missing Asset files when generating transforms. ([#2316](https://github.com/craftcms/cms/issues/2316))
+- The Craft version number is now shown at the bottom of the global sidebar. ([#2318](https://github.com/craftcms/cms/issues/2318))
+- Route params are no longer returned by `craft\web\Request::getQueryParams()`.
+- It’s now possible to specify default row values for editable tables by passing a `defaultValues` object to `_includes/forms/editableTable.html`.
+- Improved the appearance of the “sidebar” menu button for mobile views. ([#2323](https://github.com/craftcms/cms/issues/2323))
+- It’s now possible to modify the variables that will be passed to a template from the `beforeRenderTemplate` and `beforeRenderPageTemplate` events on `craft\web\View`, by modifying `craft\events\TemplateEvent::variables`.
+- Replaced the `$size` argument with `$width` and `$height` arguments on `craft\services\Assets::getThumbUrl()` and `getThumbPath()`.
+- `craft\models\EntryType::getSection()` now throws a `yii\base\InvalidConfigException` if its `sectionId` property is null or invalid.
+- Renamed `craft\helpers\UrlHelper::urlWithProtocol()` to `urlWithScheme()`.
+- Renamed `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()` to `getSchemeForTokenizedUrl()`.
+- `craft\helpers\StringHelper::toString()` will now call the object’s `__toString()` method if it has one, even if it implements `IteratorAggregate`.s
+
+### Deprecated
+- Deprecated `craft\events\GetAssetThumbUrlEvent::size`. Use `width` and `height` instead.
+
+### Removed
+- Removed `craft\models\MatrixSettings`.
+- Removed `craft\web\assets\imageeditor\ImageEditorAsset`. The image editor is available globally throughout the Control Panel now.
+
+### Fixed
+- Fixed a bug where Table fields’ Default Values setting didn’t start with one row by default.
+- Fixed a bug where color inputs’ color pickers weren’t preselecting the current input value.
+- Fixed a PHP error that occurred when calling `craft\services\UserGroups::getGroupByHandle()` and passing an invalid group handle. ([#2317](https://github.com/craftcms/cms/issues/2317))
+- Fixed a PHP error that occurred if an element query was passed into the `|group` filter. A deprecation error is logged instead now.
+- Fixed a bug where the Debug Toolbar wasn’t loading in the Control Panel if it wasn’t enabled for the front-end as well.
+- Fixed a bug where disabled Matrix blocks were getting deleted on multi-site installs, and when their owner elements were re-saved via Resave Elements jobs. ([#2320](https://github.com/craftcms/cms/issues/2320))
+- Fixed the styling of the URL pattern input in route settings modals.
+- Fixed a bug where properties of objects passed to `craft\web\View::renderObjectTemplate()` whose values were objects were getting converted to arrays.
+- Fixed a bug where HUDs could get themselves into infinite repositioning loops.
+- Fixed a bug where the Updates utility would show awkwardly-labeled “Update to” buttons, that triggered a non-update, if the `allowUpdates` config setting was disabled.
+- Fixed a bug where Matrix field settings would show the same sub-field settings for all new, unsaved block types, if there were any validation errors on the field.
+- Fixed a bug where selecting a Default checkbox on a Dropdown or Radio Buttons field within a Matrix field could deselect the Default checkbox from other Dropdown or Radio Buttons fields within the same Matrix field. ([#2261](https://github.com/craftcms/cms/issues/2261))
+- Fixed a bug where words in assets’ default titles were getting separated by hyphens instead of spaces. ([#2324](https://github.com/craftcms/cms/issues/2324))
+- Fixed a bug where it was possible to get a section into a strange state if the sites it was enabled for were completely replaced by different sites in one fell swoop.
+- Fixed a bug where a red bar remained visible at the top of the Control Panel after resolving a domain mismatch alert. ([#2328](https://github.com/craftcms/cms/issues/2328))
+- Fixed a bug where various category, entry, and user actions would remember the currently-selected tab, when they shouldn’t have. ([#2334](https://github.com/craftcms/cms/issues/2334))
+- Fixed an error that occurred if an object was passed into `craft\helpers\StringHelper::toString()` that didn’t have a `__toString()` method.
+
 ## 3.0.0-RC6 - 2018-01-16
 
 ### Added

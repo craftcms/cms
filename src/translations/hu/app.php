@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Kijelentkezés',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'Egysoros szöveg',
+    'Single-line text' => 'Egysoros szöveg',
     'Singles' => 'Egyedi bejegyzések',
     'Site' => 'Webhely',
     'Site Homepage' => 'Főoldal',

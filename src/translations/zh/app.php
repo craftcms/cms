@@ -944,7 +944,7 @@ return [
     'Sign out' => '注销',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => '单行文本',
+    'Single-line text' => '单行文本',
     'Singles' => '单独',
     'Site' => '站点',
     'Site Homepage' => '站点主页',

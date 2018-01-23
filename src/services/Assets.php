@@ -605,19 +605,27 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail URL for a given asset.
      *
-     * @param Asset $asset
-     * @param int   $size
-     * @param bool  $generate Whether the thumbnail should be generated if it doesn't exist yet.
+     * @param Asset    $asset  asset to return a thumb for
+     * @param int      $width  width of the returned thumb
+     * @param int|null $height height of the returned thumb (defaults to $width if null)
+     * @param bool     $generate whether to generate a thumb in none exists yet
      *
      * @return string
      * @see Asset::getThumbUrl()
      */
-    public function getThumbUrl(Asset $asset, int $size, bool $generate = false): string
+    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false): string
     {
+        if ($height === null) {
+            $height = $width;
+        }
+
         // Maybe a plugin wants to do something here
+        // todo: remove the `size` key in 4.0
         $event = new GetAssetThumbUrlEvent([
             'asset' => $asset,
-            'size' => $size,
+            'width' => $width,
+            'height' => $height,
+            'size' => max($width, $height),
             'generate' => $generate,
         ]);
         $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
@@ -627,12 +635,14 @@ class Assets extends Component
             return $event->url;
         }
 
-        $path = $this->getThumbPath($asset, $size, $generate);
+        $path = $this->getThumbPath($asset, $width, $height, $generate);
 
         if ($path === false) {
             return UrlHelper::actionUrl('assets/generate-thumb', [
                 'uid' => $asset->uid,
-                'size' => $size,
+                'width' => $width,
+                'height' => $height,
+                'v' => $asset->dateModified->getTimestamp(),
             ]);
         }
 
@@ -645,14 +655,15 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail path for a given asset.
      *
-     * @param Asset $asset
-     * @param int   $size
-     * @param bool  $generate Whether the thumbnail should be generated if it doesn't exist yet.
+     * @param Asset    $asset  asset to return a thumb for
+     * @param int      $width  width of the returned thumb
+     * @param int|null $height height of the returned thumb (defaults to $width if null)
+     * @param bool     $generate whether to generate a thumb in none exists yet
      *
-     * @return string|false The thumbnail path, or `false` if it doesn't exist and $generate = false.
+     * @return string|false thumbnail path, or `false` if it doesn't exist and $generate is `false`
      * @see getThumbUrl()
      */
-    public function getThumbPath(Asset $asset, int $size, bool $generate = true)
+    public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true)
     {
         $ext = $asset->getExtension();
 
@@ -681,10 +692,14 @@ class Assets extends Component
             return $path;
         }
 
+        if ($height === null) {
+            $height = $width;
+        }
+
         // Make the thumb a JPG if the image format isn't safe for web
         $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
         $dir = Craft::$app->getPath()->getAssetThumbsPath().DIRECTORY_SEPARATOR.$asset->id;
-        $path = $dir.DIRECTORY_SEPARATOR."thumb-{$size}x{$size}.{$ext}";
+        $path = $dir.DIRECTORY_SEPARATOR."thumb-{$width}x{$height}.{$ext}";
 
         if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
             // Bail if we're not ready to generate it yet
@@ -695,8 +710,9 @@ class Assets extends Component
             // Generate it
             FileHelper::createDirectory($dir);
             $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
-            Craft::$app->getImages()->loadImage($imageSource, false, $size)
-                ->scaleToFit($size, $size)
+            $svgSize = max($width, $height);
+            Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
+                ->scaleToFit($width, $height)
                 ->saveAs($path);
         }
 

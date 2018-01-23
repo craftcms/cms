@@ -24,13 +24,14 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetTransformException;
 use craft\errors\FileException;
+use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
+use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
@@ -674,7 +675,13 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        return Craft::$app->getAssets()->getAssetUrl($this, $transform);
+        try {
+            return Craft::$app->getAssets()->getAssetUrl($this, $transform);
+        } catch (VolumeObjectNotFoundException $e) {
+            Craft::error("Could not determine asset's URL ({$this->id}): {$e->getMessage()}");
+            Craft::$app->getErrorHandler()->logException($e);
+            return UrlHelper::actionUrl('not-found');
+        }
     }
 
     /**
@@ -682,7 +689,7 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        return Craft::$app->getAssets()->getThumbUrl($this, $size, false);
+        return Craft::$app->getAssets()->getThumbUrl($this, $size, $size, false);
     }
 
     /**
@@ -855,6 +862,17 @@ class Asset extends Element
     }
 
     /**
+     * Returns whether this asset can be edited by the image editor.
+     *
+     * @return bool
+     */
+    public function getSupportsImageEditor(): bool
+    {
+        $ext = $this->getExtension();
+        return (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext));
+    }
+
+    /**
      * Return the Asset's focal point or null if not an image.
      *
      * @return null|array
@@ -917,7 +935,40 @@ class Asset extends Element
             $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
         }
 
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html = '';
+
+        if ($this->getSupportsImageEditor()) {
+            // Are they allowed to edit the image?
+            $user = Craft::$app->getUser();
+            $editable = (
+                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
+                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
+            );
+
+            $assetsService = Craft::$app->getAssets();
+            $srcsets = [];
+            $thumbSizes = [
+                [380, 190],
+                [760, 380],
+            ];
+            foreach ($thumbSizes as list($width, $height)) {
+                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
+                $srcsets[] = $thumbUrl.' '.$width.'w';
+            }
+
+            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">' .
+                '<div class="image-preview">' .
+                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">' .
+                '</div>';
+
+            if ($editable) {
+                $html .= '<div class="btn">'.Craft::t('app', 'Edit').'</div>';
+            }
+
+            $html .= '</div>';
+        }
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'newFilename',
@@ -1024,7 +1075,7 @@ class Asset extends Element
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
-            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
+            $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
@@ -1099,12 +1150,9 @@ class Asset extends Element
     {
         $attributes = [];
 
-        if ($context === 'index') {
-            // Eligible for the image editor?
-            $ext = $this->getExtension();
-            if (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext)) {
-                $attributes['data-editable-image'] = null;
-            }
+        // Eligible for the image editor?
+        if ($context === 'index' && $this->getSupportsImageEditor()) {
+            $attributes['data-editable-image'] = null;
         }
 
         return $attributes;

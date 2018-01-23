@@ -13,7 +13,6 @@
 ]) %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
-{% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
 {% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
 
@@ -41,7 +40,7 @@
                             {{ "Save and continue editing"|t('app') }}
                         </a>
                     </li>
-                    <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                    <li><a class="formsubmit" data-redirect="{{ 'users/new#'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -238,6 +237,9 @@
                 {% endif %}
             </div>
         {% endif %}
+
+        {# Give plugins a chance to add other things here #}
+        {% hook "cp.users.edit.content" %}
 
         <input type="submit" class="hidden">
     </form>

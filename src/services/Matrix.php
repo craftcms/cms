@@ -636,10 +636,9 @@ class Matrix extends Component
      * @param MatrixField      $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
      *
-     * @return bool Whether the field was saved successfully.
      * @throws \Throwable if reasons
      */
-    public function saveField(MatrixField $field, ElementInterface $owner): bool
+    public function saveField(MatrixField $field, ElementInterface $owner)
     {
         /** @var Element $owner */
         /** @var MatrixBlockQuery $query */
@@ -649,10 +648,15 @@ class Matrix extends Component
         // Skip if the query's site ID is different than the element's
         // (Indicates that the value as copied from another site for element propagation)
         if ($query->siteId != $owner->siteId) {
-            return false;
+            return;
         }
 
-        $blocks = $query->all();
+        if (($blocks = $query->getCachedResult()) === null) {
+            $query = clone $query;
+            $query->status = null;
+            $query->enabledForSite = false;
+            $blocks = $query->all();
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -731,8 +735,6 @@ class Matrix extends Component
                 Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
             }
         }
-
-        return true;
     }
 
     /**

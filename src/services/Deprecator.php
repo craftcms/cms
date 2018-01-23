@@ -15,6 +15,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
+use craft\web\twig\Extension;
 use yii\base\Component;
 
 /**
@@ -245,7 +246,13 @@ class Deprecator extends Component
         } else if ($this->_isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
             $templateTrace = 2;
-        } else if (isset($traces[1]['class'], $traces[1]['function']) && $traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') {
+        } else if (
+            isset($traces[1]['class'], $traces[1]['function']) &&
+            (
+                ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
+                ($traces[1]['class'] === Extension::class && $traces[1]['function'] === 'groupFilter')
+            )
+        ) {
             // special case for deprecated looping through element queries
             $templateTrace = 1;
         }

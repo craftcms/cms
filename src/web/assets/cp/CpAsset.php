@@ -11,6 +11,7 @@ use craft\web\AssetBundle;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
+use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
@@ -49,6 +50,7 @@ class CpAsset extends AssetBundle
             VelocityAsset::class,
             FileUploadAsset::class,
             XregexpAsset::class,
+            FabricAsset::class,
         ];
 
         $this->css = [

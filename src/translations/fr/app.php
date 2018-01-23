@@ -944,7 +944,7 @@ return [
     'Sign out' => 'Déconnexion',
     'Similar issues on GitHub' => 'Problèmes similaires sur GitHub',
     'Similar questions on Stack Exchange' => 'Questions similaires sur Stack Exchange',
-    'Single-line Text' => 'Texte d’une ligne',
+    'Single-line text' => 'Texte d’une ligne',
     'Singles' => 'Éléments individuels',
     'Site' => 'Site',
     'Site Homepage' => 'Page d’accueil du site',

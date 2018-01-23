@@ -68,7 +68,7 @@
                         <ul>
                             <li><a class="formsubmit"
                                    data-action="entry-revisions/publish-draft"
-                                   data-redirect="{{ entry.getCpEditUrl()|hash }}">
+                                   data-redirect="{{ (entry.getCpEditUrl()~'#')|hash }}">
                                     {{ "Publish draft"|t('app') }}
                                 </a></li>
                         </ul>
@@ -83,7 +83,7 @@
                             <li><a class="formsubmit"
                                    data-action="entry-revisions/delete-draft"
                                    data-confirm="{{ 'Are you sure you want to delete this draft?'|t('app') }}"
-                                   data-redirect="{{ entry.getCpEditUrl()|hash }}">
+                                   data-redirect="{{ (entry.getCpEditUrl()~'#')|hash }}">
                                     {{ 'Delete draft'|t('app') }}
                                 </a></li>
                         </ul>
@@ -134,20 +134,20 @@
                     {% endif %}
 
                     {% if not isSingle %}
-                        <li><a class="formsubmit" data-redirect="{{ ('entries/'~sectionHandle~'/new'~(nextEntryParams ? '?'~nextEntryParams|join('&')))|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                        <li><a class="formsubmit" data-redirect="{{ ('entries/'~sectionHandle~'/new'~(nextEntryParams ? '?'~nextEntryParams|join('&'))~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                     {% endif %}
 
-                    <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
+                    <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}#')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
 
                     {% if not isSingle and entry.id %}
-                        <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
+                        <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ (continueEditingUrl~'#')|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
                     {% endif %}
                 </ul>
 
                 {% if not isSingle and not isVersion and canDeleteEntry %}
                     <hr>
                     <ul>
-                        <li><a class="formsubmit error" data-action="entries/delete-entry" data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}" data-redirect="{{ 'entries'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                        <li><a class="formsubmit error" data-action="entries/delete-entry" data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}" data-redirect="{{ 'entries#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
                     </ul>
                 {% endif %}
             </div>
@@ -178,6 +178,9 @@
             static: isVersion
         } %}
     </div>
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.content" %}
 {% endblock %}
 
 {% block details %}

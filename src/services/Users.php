@@ -1087,13 +1087,13 @@ class Users extends Component
             'id' => $user->uid
         ];
 
-        $protocol = UrlHelper::getProtocolForTokenizedUrl();
+        $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
         if ($user->can('accessCp')) {
             // Only use getCpUrl() if the base CP URL has been explicitly set,
             // so UrlHelper won't use HTTP_HOST
             if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $protocol);
+                return UrlHelper::cpUrl($path, $params, $scheme);
             }
 
             $path = $generalConfig->cpTrigger.'/'.$path;
@@ -1101,6 +1101,6 @@ class Users extends Component
 
         // todo: should we factor in the user's preferred language (as we did in v2)?
         $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        return UrlHelper::siteUrl($path, $params, $protocol, $siteId);
+        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }

@@ -27,7 +27,7 @@ class MatrixBlockType extends Model
     // =========================================================================
 
     /**
-     * @var int|null ID
+     * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
     public $id;
 

@@ -868,7 +868,7 @@ ul.icons li a:hover {
 
   &:active,
   &.active {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0,0,0,0.15);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15);
   }
 
   &:not(.submit) {
@@ -1153,7 +1153,11 @@ div.btn.submit input {
   background-color: hsla($hue, 10%, 50%, 0.1) !important;
 }
 
-/* color buttons */
+/* color inputs */
+.color-input {
+  @include fixed-width-font;
+}
+
 .color {
   display: inline-block;
   position: relative;
@@ -1171,14 +1175,14 @@ div.btn.submit input {
       &:hover,
       &:active,
       &.active {
-        .colorpreview {
+        .color-preview {
           box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(0, 0, 0, 0.05);
         }
       }
 
       &:active,
       &.active {
-        .colorpreview {
+        .color-preview {
           background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
         }
       }
@@ -1191,7 +1195,7 @@ div.btn.submit input {
     background-size: 16px;
   }
 
-  .colorpreview {
+  .color-preview {
     top: 0;
     @include left(0);
     width: 100%;
@@ -1982,6 +1986,13 @@ $checkboxPadding: 20px;
 
 /* editable tables */
 table.editable {
+  th,
+  td.action {
+    color: $mediumTextColor;
+    font-weight: normal;
+    background: $bgColor;
+  }
+
   thead,
   tbody {
     tr {
@@ -2013,14 +2024,20 @@ table.editable {
         }
       }
 
+      &:last-child {
+        td:first-child {
+          @include border-bottom-left-radius($paneBorderRadius);
+
+          textarea,
+          input.text {
+            @include border-bottom-left-radius($paneBorderRadius - 1);
+          }
+        }
+      }
+
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
         @include border-left(1px solid rgba(0, 0, 0, 0.07));
-      }
-
-      th,
-      td.action {
-        background: $bgColor;
       }
 
       th {
@@ -2105,13 +2122,16 @@ table.editable {
     }
 
     textarea,
-    .color-container > input {
+    textarea.text,
+    input.text {
       display: block;
       width: 100%;
       border: none;
+      border-radius: 0;
       padding: 7px 10px;
       background: transparent;
       overflow: hidden;
+      transition: none;
 
       &:focus {
         border: 1px solid rgba(0, 0, 0, 0.15);
@@ -2125,22 +2145,31 @@ table.editable {
       position: relative;
 
       & > .color,
-      & > input {
+      & > .color-input {
         margin-bottom: 0;
       }
 
       & > .color {
         position: absolute;
-        top: 9px;
+        top: calc(50% - 8px);
         @include left(10px);
       }
 
-      & > input {
+      & > .color-input {
         @include padding-left(35px);
 
         &:focus {
           @include padding-left(34px);
         }
+      }
+    }
+
+    .datewrapper,
+    .timewrapper {
+      width: 100%;
+
+      .text:placeholder-shown + div[data-icon] {
+        @include left(10px);
       }
     }
   }
@@ -2804,7 +2833,50 @@ ul.tree,
 
   .main {
     padding: 8px 0;
+
     .meta {
+      .image-preview-container {
+        position: relative;
+        margin: -8px 0 8px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 190px;
+        background: #222;
+
+        .image-preview {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+
+          img {
+            display: block;
+          }
+        }
+
+        &.editable {
+          cursor: pointer;
+
+          .btn {
+            opacity: 0;
+            position: absolute;
+            top: 10px;
+            @include right(10px);
+            background: rgba(34, 34, 34, 0.9);
+            color: #fff;
+            border: 1px solid rgba(153, 153, 153, 0.9);
+            background-clip: padding-box;
+            box-shadow: none;
+            transition: opacity linear 100ms;
+          }
+
+          &:hover .btn {
+            opacity: 1;
+          }
+        }
+      }
+
       .field {
         padding-left: 24px;
         padding-right: 24px;
@@ -3614,12 +3686,15 @@ input:-ms-input-placeholder {
 .select:not(.selectize) select {
   @include select-styles;
 }
+
 .select:not(.selectize) {
   @include select-container-styles;
 }
+
 .select:not(.selectize):after {
   @include select-arrow-styles;
 }
+
 .select:not(.selectize) select {
   @include select-input-styles;
 
@@ -3627,9 +3702,11 @@ input:-ms-input-placeholder {
     background: #fff;
   }
 }
+
 .select:not(.selectize).fullwidth select {
   @include select-input-fullwidth-styles;
 }
+
 .select:not(.selectize) select:focus {
   @include select-input-focused-styles;
 }
@@ -3637,6 +3714,7 @@ input:-ms-input-placeholder {
 .select:not(.selectize).small:after {
   top: 9px;
 }
+
 .select:not(.selectize).small select {
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4039,7 +4117,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 33px);
     border-bottom: 1px solid $hairlineColor;
-    background: hsl(212, 10%, 94%);
+    background: $bgColor;
     color: $lightTextColor;
     overflow: hidden;
     white-space: nowrap;
@@ -4077,7 +4155,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
         &.off {
           display: inline-block;
           @include floatleft;
-          @include margin(4px, 10px, 0, 0);
+          @include margin(6px, 10px, 0, 0);
         }
       }
     }
@@ -4103,7 +4181,7 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
   & > .actions {
     position: absolute;
     z-index: 1;
-    top: 5px;
+    top: 4px;
     @include right(5px);
     cursor: default;
 

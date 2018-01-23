@@ -944,7 +944,7 @@ return [
     'Sign out' => 'התנתק',
     'Similar issues on GitHub' => 'Similar issues on GitHub',
     'Similar questions on Stack Exchange' => 'Similar questions on Stack Exchange',
-    'Single-line Text' => 'טקסט עם שורה אחת',
+    'Single-line text' => 'טקסט עם שורה אחת',
     'Singles' => 'דפים בודדים',
     'Site' => 'אתר',
     'Site Homepage' => 'דף הבית של האתר',

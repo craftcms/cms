@@ -41,27 +41,27 @@ html.noscroll, html.noscroll body {
 }
 
 .modal.imageeditor .icon.rotate-left::before {
-  background: url("images/rotate-left.svg");
+  background: url(../images/image-editor/rotate-left.svg);
 }
 
 .modal.imageeditor .icon.rotate-right::before {
-  background-image: url("images/rotate-right.svg");
+  background-image: url(../images/image-editor/rotate-right.svg);
 }
 
 .modal.imageeditor .icon.flip-vertical::before {
-  background: url("images/flip-vertical.svg");
+  background: url(../images/image-editor/flip-vertical.svg);
 }
 
 .modal.imageeditor .icon.flip-horizontal::before {
-  background-image: url("images/flip-horizontal.svg");
+  background-image: url(../images/image-editor/flip-horizontal.svg);
 }
 
 .modal.imageeditor .icon.constraint::before {
-  background-image: url("images/unconstrained.svg");
+  background-image: url(../images/image-editor/unconstrained.svg);
 }
 
 .modal.imageeditor .icon.focal-point::before {
-  background-image: url("images/focal-point.svg");
+  background-image: url(../images/image-editor/focal-point.svg);
 }
 
 .modal.imageeditor .body {
@@ -93,15 +93,15 @@ html.noscroll, html.noscroll body {
 }
 
 .modal.imageeditor .body .tabs ul li[data-view="rotate"] i {
-  background-image: url("images/rotate-left.svg");
+  background-image: url(../images/image-editor/rotate-left.svg);
 }
 
 .modal.imageeditor .body .tabs ul li[data-view="crop"] i {
-  background-image: url("images/crop.svg");
+  background-image: url(../images/image-editor/crop.svg);
 }
 
 .modal.imageeditor .body .tabs ul li[data-view="filters"] i {
-  background-image: url("images/filters.svg");
+  background-image: url(../images/image-editor/filters.svg);
 }
 
 .modal.imageeditor .body .tabs ul li.selected {

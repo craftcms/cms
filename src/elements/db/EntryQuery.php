@@ -142,7 +142,6 @@ class EntryQuery extends ElementQuery
     public function editable(bool $value = true)
     {
         $this->editable = $value;
-
         return $this;
     }
 
@@ -181,7 +180,6 @@ class EntryQuery extends ElementQuery
     public function sectionId($value)
     {
         $this->sectionId = $value;
-
         return $this;
     }
 
@@ -219,7 +217,6 @@ class EntryQuery extends ElementQuery
     public function typeId($value)
     {
         $this->typeId = $value;
-
         return $this;
     }
 
@@ -233,7 +230,6 @@ class EntryQuery extends ElementQuery
     public function authorId($value)
     {
         $this->authorId = $value;
-
         return $this;
     }
 
@@ -271,7 +267,6 @@ class EntryQuery extends ElementQuery
     public function authorGroupId($value)
     {
         $this->authorGroupId = $value;
-
         return $this;
     }
 
@@ -285,7 +280,6 @@ class EntryQuery extends ElementQuery
     public function postDate($value)
     {
         $this->postDate = $value;
-
         return $this;
     }
 
@@ -349,7 +343,6 @@ class EntryQuery extends ElementQuery
     public function expiryDate($value)
     {
         $this->expiryDate = $value;
-
         return $this;
     }
 

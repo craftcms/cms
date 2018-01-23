@@ -811,17 +811,23 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toString($object, string $glue = ','): string
     {
+        if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
+            return (string)$object;
+        }
+
         if (is_array($object) || $object instanceof \IteratorAggregate) {
             $stringValues = [];
 
             foreach ($object as $value) {
-                $stringValues[] = static::toString($value, $glue);
+                if (($value = static::toString($value, $glue)) !== '') {
+                    $stringValues[] = $value;
+                }
             }
 
             return implode($glue, $stringValues);
         }
 
-        return (string)$object;
+        return '';
     }
 
     /**
