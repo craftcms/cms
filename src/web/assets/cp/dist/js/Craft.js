@@ -1,4 +1,4 @@
-/*!   - 2018-01-22 */
+/*!   - 2018-01-23 */
 (function($){
 
 /** global: Craft */
@@ -12672,7 +12672,7 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number', 'color'],
+        textualColTypes: ['color', 'multiline', 'number', 'singleline'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -12718,20 +12718,20 @@ Craft.EditableTable = Garnish.Base.extend(
                     }
 
                     switch (col.type) {
-                        case 'select':
-                            Craft.ui.createSelect({
-                                name: name,
-                                options: col.options,
-                                value: value,
-                                'class': 'small'
-                            }).appendTo($cell);
-                            break;
-
                         case 'checkbox':
                             Craft.ui.createCheckbox({
                                 name: name,
                                 value: col.value || '1',
                                 checked: !!value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            Craft.ui.createColorInput({
+                                name: name,
+                                value: value,
+                                small: true,
+                                useTextarea: true
                             }).appendTo($cell);
                             break;
 
@@ -12743,29 +12743,13 @@ Craft.EditableTable = Garnish.Base.extend(
                             }).appendTo($cell);
                             break;
 
-                        case 'color':
-                            var $container = $('<div/>', {
-                                'class': 'flex color-container'
-                            });
-
-                            var $colorPreviewContainer = $('<div/>', {
-                                'class': 'color static small'
-                            }).appendTo($container);
-
-                            var $colorPreview = $('<div/>', {
-                                'class': 'color-preview',
-                                style: value ? {backgroundColor: value} : null
-                            }).appendTo($colorPreviewContainer);
-
-                            Craft.ui.createTextarea({
-                                id: 'color' + Math.floor(Math.random() * 1000000000),
+                        case 'select':
+                            Craft.ui.createSelect({
                                 name: name,
+                                options: col.options,
                                 value: value,
-                                'class': 'color-input'
-                            }).appendTo($container);
-
-                            new Craft.ColorInput($container);
-                            $container.appendTo($cell);
+                                'class': 'small'
+                            }).appendTo($cell);
                             break;
 
                         default:
@@ -18520,14 +18504,21 @@ Craft.ui =
 
         createColorInput: function(config) {
             var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
-            var small = (config.small || false);
+            var containerId = config.containerId || id + '-container';
+            var name = config.name || null;
+            var value = config.value || null;
+            var small = config.small || false;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+            var useTextarea = config.useTextarea || false;
 
             var $container = $('<div/>', {
+                id: containerId,
                 'class': 'flex color-container'
             });
 
             var $colorPreviewContainer = $('<div/>', {
-                'class': 'color static'+(small ? ' small' : '')
+                'class': 'color static' + (small ? ' small' : '')
             }).appendTo($container);
 
             var $colorPreview = $('<div/>', {
@@ -18535,15 +18526,27 @@ Craft.ui =
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
-            this.createTextInput({
-                id: id,
-                name: config.name || null,
-                value: config.value || null,
-                size: 10,
-                'class': 'color-input',
-                autofocus: config.autofocus && Garnish.isMobileBrowser(true),
-                disabled: typeof config.disabled !== 'undefined' ? config.disabled : false
-            }).appendTo($container);
+            var $input = useTextarea
+                ? this.createTextarea({
+                    rows: 1,
+                    id: id,
+                    name: name,
+                    value: value,
+                    'class': 'color-input',
+                    autofocus: autofocus,
+                    disabled: disabled
+                })
+                : this.createTextInput({
+                    id: id,
+                    name: name,
+                    value: value,
+                    size: 10,
+                    'class': 'color-input',
+                    autofocus: autofocus,
+                    disabled: disabled
+                });
+
+            $input.appendTo($container);
 
             new Craft.ColorInput($container);
             return $container;
