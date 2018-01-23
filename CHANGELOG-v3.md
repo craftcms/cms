@@ -26,6 +26,7 @@
 - Improved the appearance of the “sidebar” menu button for mobile views. ([#2323](https://github.com/craftcms/cms/issues/2323))
 - It’s now possible to modify the variables that will be passed to a template from the `beforeRenderTemplate` and `beforeRenderPageTemplate` events on `craft\web\View`, by modifying `craft\events\TemplateEvent::variables`.
 - Replaced the `$size` argument with `$width` and `$height` arguments on `craft\services\Assets::getThumbUrl()` and `getThumbPath()`.
+- `craft\models\EntryType::getSection()` now throws a `yii\base\InvalidConfigException` if its `sectionId` property is null or invalid.
 
 ### Deprecated
 - Deprecated `craft\events\GetAssetThumbUrlEvent::size`. Use `width` and `height` instead.
