@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\db\Query;
 use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -105,6 +106,20 @@ class Section extends Model
      */
     public function validateSiteSettings(string $attribute)
     {
+        // If this is an existing section, make sure they aren't moving it to a
+        // completely different set of sites in one fell swoop
+        if ($this->id) {
+            $currentSiteIds = (new Query())
+                ->select(['siteId'])
+                ->from(['{{%sections_sites}}'])
+                ->where(['sectionId' => $this->id])
+                ->column();
+
+            if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
+                $this->addError($attribute, Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
+            }
+        }
+
         $validates = true;
 
         foreach ($this->getSiteSettings() as $siteSettings) {

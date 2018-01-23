@@ -47,6 +47,7 @@
 - Fixed a bug where Matrix field settings would show the same sub-field settings for all new, unsaved block types, if there were any validation errors on the field.
 - Fixed a bug where selecting a Default checkbox on a Dropdown or Radio Buttons field within a Matrix field could deselect the Default checkbox from other Dropdown or Radio Buttons fields within the same Matrix field. ([#2261](https://github.com/craftcms/cms/issues/2261))
 - Fixed a bug where words in assets’ default titles were getting separated by hyphens instead of spaces. ([#2324](https://github.com/craftcms/cms/issues/2324))
+- Fixed a bug where it was possible to get a section into a strange state if the sites it was enabled for were completely replaced by different sites in one fell swoop.
 
 ## 3.0.0-RC6 - 2018-01-16
 

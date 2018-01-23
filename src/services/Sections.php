@@ -553,22 +553,21 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             if (!$isNewSection) {
-                // Get the most-primary site that this section was already enabled in
-                /** @noinspection PhpUndefinedVariableInspection */
-                $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
+                // Find a site that the section was already enabled in, and still is
+                $oldSiteIds = array_keys($allOldSiteSettingsRecords);
+                $newSiteIds = array_keys($section->getSiteSettings());
+                $persistentSiteIds = array_intersect($newSiteIds, $oldSiteIds);
 
-                if (!empty($siteIds)) {
-                    Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
-                            'siteId' => $siteIds[0],
-                            'sectionId' => $section->id,
-                            'status' => null,
-                            'enabledForSite' => false,
-                        ]
-                    ]));
-                }
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'siteId' => $persistentSiteIds[0],
+                        'sectionId' => $section->id,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ]
+                ]));
             }
 
             $transaction->commit();
