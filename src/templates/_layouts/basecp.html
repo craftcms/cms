@@ -64,7 +64,7 @@
             fileKinds:             {{ craft.io.getFileKinds()|json_encode|raw }},
             datepickerOptions: {
                 constrainInput: false,
-                dateFormat: "{{ craft.app.locale.getDateFormat('short', 'jui')|e('js') }}",
+                dateFormat: "{{ localeData.getDateFormat('short', 'jui')|e('js') }}",
                 prevText: '{{ "Prev"|t('app')|e('js') }}',
                 nextText: '{{ "Next"|t('app')|e('js') }}',
                 firstDay: {{ currentUser.getPreference('weekStartDay') ?? craft.app.config.general.defaultWeekStartDay }},
@@ -73,6 +73,17 @@
                 dayNamesMin: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
                 monthNames: {{ localeData.getMonthNames('full', true)|values|json_encode|raw }},
                 monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
+            },
+            timepickerOptions: {
+                timeFormat: '{{ localeData.getTimeFormat('short', 'php') }}',
+                closeOnWindowScroll: false,
+                orientation: '{{ orientation == 'ltr' ? 'l' : 'r' }}',
+                lang: {
+                    am: '{{ localeData.getAMName()|lower }}',
+                    AM: '{{ localeData.getAMName() }}',
+                    pm: '{{ localeData.getPMName()|lower }}',
+                    PM: '{{ localeData.getPMName() }}'
+                }
             },
             primarySiteId: {{ craft.app.isInstalled and not craft.app.updates.isCraftDbMigrationNeeded ? craft.app.sites.primarySite.id : 'null' }},
             sites: [
