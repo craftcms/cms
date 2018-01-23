@@ -71,6 +71,11 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
+     * @var bool Propagate entries
+     */
+    public $propagateEntries = true;
+
+    /**
      * @var Section_SiteSettings[]|null
      */
     private $_siteSettings;

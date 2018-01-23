@@ -147,6 +147,7 @@ class SectionsController extends Controller
         $section->handle = $request->getBodyParam('handle');
         $section->type = $request->getBodyParam('type');
         $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
+        $section->propagateEntries = $request->getBodyParam('propagateEntries', true);
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $request->getBodyParam('maxLevels');

@@ -214,7 +214,13 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
-        if ($variables['showSites'] = (Craft::$app->getIsMultiSite() && count($section->getSiteSettings()) > 1)) {
+        $variables['showSites'] = (
+            Craft::$app->getIsMultiSite() &&
+            count($section->getSiteSettings()) > 1 &&
+            ($section->propagateEntries || $entry->id === null)
+        );
+
+        if ($variables['showSites']) {
             $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name).' – ';
         } else {
             $variables['revisionLabel'] = '';

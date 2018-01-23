@@ -392,17 +392,23 @@ class Sections extends Component
                 'handle',
                 'type',
                 'enableVersioning',
+                'propagateEntries',
             ]));
         } else {
             $sectionRecord = new SectionRecord();
         }
 
         // Main section settings
+        if ($section->type !== Section::TYPE_CHANNEL) {
+            $section->propagateEntries = false;
+        }
+
         /** @var SectionRecord $sectionRecord */
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
         $sectionRecord->enableVersioning = (bool)$section->enableVersioning;
+        $sectionRecord->propagateEntries = (bool)$section->propagateEntries;
 
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
@@ -553,21 +559,42 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             if (!$isNewSection) {
-                // Find a site that the section was already enabled in, and still is
-                $oldSiteIds = array_keys($allOldSiteSettingsRecords);
-                $newSiteIds = array_keys($section->getSiteSettings());
-                $persistentSiteIds = array_intersect($newSiteIds, $oldSiteIds);
+                if ($section->propagateEntries) {
+                    // Find a site that the section was already enabled in, and still is
+                    $oldSiteIds = array_keys($allOldSiteSettingsRecords);
+                    $newSiteIds = array_keys($allSiteSettings);
+                    $persistentSiteIds = array_intersect($newSiteIds, $oldSiteIds);
 
-                Craft::$app->getQueue()->push(new ResaveElements([
-                    'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
-                        'siteId' => $persistentSiteIds[0],
-                        'sectionId' => $section->id,
-                        'status' => null,
-                        'enabledForSite' => false,
-                    ]
-                ]));
+                    Craft::$app->getQueue()->push(new ResaveElements([
+                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                            'section' => $section->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'siteId' => $persistentSiteIds[0],
+                            'sectionId' => $section->id,
+                            'status' => null,
+                            'enabledForSite' => false,
+                        ]
+                    ]));
+                } else {
+                    // Resave entries for each site
+                    foreach ($allSiteSettings as $siteId => $siteSettings) {
+                        Craft::$app->getQueue()->push(new ResaveElements([
+                            'description' => Craft::t('app', 'Resaving {section} entries ({site})', [
+                                'section' => $section->name,
+                                'site' => $siteSettings->getSite()->name,
+                            ]),
+                            'elementType' => Entry::class,
+                            'criteria' => [
+                                'siteId' => $siteId,
+                                'sectionId' => $section->id,
+                                'status' => null,
+                                'enabledForSite' => false,
+                            ]
+                        ]));
+                    }
+                }
             }
 
             $transaction->commit();
@@ -879,19 +906,42 @@ class Sections extends Component
         if (!$isNewEntryType) {
             // Re-save the entries of this type
             $section = $entryType->getSection();
-            $siteIds = array_keys($section->getSiteSettings());
+            $allSiteSettings = $section->getSiteSettings();
 
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'description' => Craft::t('app', 'Resaving {type} entries', ['type' => $entryType->name]),
-                'elementType' => Entry::class,
-                'criteria' => [
-                    'siteId' => $siteIds[0],
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
-            ]));
+            if ($section->propagateEntries) {
+                $siteIds = array_keys($allSiteSettings);
+
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'description' => Craft::t('app', 'Resaving {type} entries', [
+                        'type' => $entryType->name,
+                    ]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'siteId' => $siteIds[0],
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ]
+                ]));
+            } else {
+                foreach ($allSiteSettings as $siteId => $siteSettings) {
+                    Craft::$app->getQueue()->push(new ResaveElements([
+                        'description' => Craft::t('app', 'Resaving {type} entries ({site})', [
+                            'type' => $entryType->name,
+                            'site' => $siteSettings->getSite()->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'siteId' => $siteId,
+                            'sectionId' => $section->id,
+                            'typeId' => $entryType->id,
+                            'status' => null,
+                            'enabledForSite' => false,
+                        ]
+                    ]));
+                }
+            }
         }
 
         return true;
@@ -1026,6 +1076,7 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
+                'sections.propagateEntries',
                 'structures.maxLevels',
             ])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
