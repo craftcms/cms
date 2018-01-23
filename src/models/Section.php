@@ -94,25 +94,28 @@ class Section extends Model
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
             [['name', 'handle', 'type', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
+            [['siteSettings'], 'validateSiteSettings'],
         ];
     }
 
     /**
-     * @inheritdoc
+     * Validates the site settings.
+     *
+     * @param string $attribute
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validateSiteSettings(string $attribute)
     {
-        $validates = parent::validate($attributeNames, $clearErrors);
+        $validates = true;
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
-            foreach ($this->getSiteSettings() as $siteSettings) {
-                if (!$siteSettings->validate(null, $clearErrors)) {
-                    $validates = false;
-                }
+        foreach ($this->getSiteSettings() as $siteSettings) {
+            if (!$siteSettings->validate()) {
+                $validates = false;
             }
         }
 
-        return $validates;
+        if (!$validates) {
+            $this->addError($attribute, Craft::t('app', 'Correct the errors listed above.'));
+        }
     }
 
     /**
