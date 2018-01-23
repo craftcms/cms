@@ -12730,8 +12730,7 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createColorInput({
                                 name: name,
                                 value: value,
-                                small: true,
-                                useTextarea: true
+                                small: true
                             }).appendTo($cell);
                             break;
 
@@ -12828,7 +12827,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea', this.$tds[i]);
+                    var $textarea = $('textarea, input.text', this.$tds[i]);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -18510,7 +18509,6 @@ Craft.ui =
             var small = config.small || false;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
             var disabled = config.disabled || false;
-            var useTextarea = config.useTextarea || false;
 
             var $container = $('<div/>', {
                 id: containerId,
@@ -18526,27 +18524,15 @@ Craft.ui =
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
-            var $input = useTextarea
-                ? this.createTextarea({
-                    rows: 1,
-                    id: id,
-                    name: name,
-                    value: value,
-                    'class': 'color-input',
-                    autofocus: autofocus,
-                    disabled: disabled
-                })
-                : this.createTextInput({
-                    id: id,
-                    name: name,
-                    value: value,
-                    size: 10,
-                    'class': 'color-input',
-                    autofocus: autofocus,
-                    disabled: disabled
-                });
-
-            $input.appendTo($container);
+            var $input = this.createTextInput({
+                id: id,
+                name: name,
+                value: value,
+                size: 10,
+                'class': 'color-input',
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
 
             new Craft.ColorInput($container);
             return $container;

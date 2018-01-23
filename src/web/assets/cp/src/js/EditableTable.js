@@ -152,8 +152,7 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createColorInput({
                                 name: name,
                                 value: value,
-                                small: true,
-                                useTextarea: true
+                                small: true
                             }).appendTo($cell);
                             break;
 
@@ -250,7 +249,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea', this.$tds[i]);
+                    var $textarea = $('textarea, input.text', this.$tds[i]);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');

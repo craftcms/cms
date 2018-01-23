@@ -7,7 +7,6 @@
 {% set small = small ?? false -%}
 {% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
 {% set disabled = disabled ?? false -%}
-{% set useTextarea = useTextarea ?? false -%}
 
 {% spaceless %}
     <div id="{{ containerId }}" class="flex color-container"
@@ -17,27 +16,15 @@
                 {%- if value %} style="background-color: {{ value }};"{% endif -%}
             ></div>
         </div>
-        {% if useTextarea %}
-            {{ forms.textarea({
-                rows: 1,
-                id: id,
-                name: name,
-                value: value,
-                class: 'color-input',
-                autofocus: autofocus,
-                disabled: disabled
-            }) }}
-        {% else %}
-            {{ forms.text({
-                id: id,
-                name: name,
-                value: value,
-                size: 10,
-                class: 'color-input',
-                autofocus: autofocus,
-                disabled: disabled
-            }) }}
-        {% endif %}
+        {{ forms.text({
+            id: id,
+            name: name,
+            value: value,
+            size: 10,
+            class: 'color-input',
+            autofocus: autofocus,
+            disabled: disabled
+        }) }}
     </div>
 {% endspaceless -%}
 

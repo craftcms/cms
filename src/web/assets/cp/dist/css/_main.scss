@@ -2028,7 +2028,8 @@ table.editable {
         td:first-child {
           @include border-bottom-left-radius($paneBorderRadius);
 
-          textarea {
+          textarea,
+          input.text {
             @include border-bottom-left-radius($paneBorderRadius - 1);
           }
         }
@@ -2121,7 +2122,8 @@ table.editable {
     }
 
     textarea,
-    textarea.text {
+    textarea.text,
+    input.text {
       display: block;
       width: 100%;
       border: none;
@@ -2149,7 +2151,7 @@ table.editable {
 
       & > .color {
         position: absolute;
-        top: 9px;
+        top: calc(50% - 8px);
         @include left(10px);
       }
 

@@ -339,7 +339,6 @@ Craft.ui =
             var small = config.small || false;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
             var disabled = config.disabled || false;
-            var useTextarea = config.useTextarea || false;
 
             var $container = $('<div/>', {
                 id: containerId,
@@ -355,27 +354,15 @@ Craft.ui =
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
-            var $input = useTextarea
-                ? this.createTextarea({
-                    rows: 1,
-                    id: id,
-                    name: name,
-                    value: value,
-                    'class': 'color-input',
-                    autofocus: autofocus,
-                    disabled: disabled
-                })
-                : this.createTextInput({
-                    id: id,
-                    name: name,
-                    value: value,
-                    size: 10,
-                    'class': 'color-input',
-                    autofocus: autofocus,
-                    disabled: disabled
-                });
-
-            $input.appendTo($container);
+            var $input = this.createTextInput({
+                id: id,
+                name: name,
+                value: value,
+                size: 10,
+                'class': 'color-input',
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
 
             new Craft.ColorInput($container);
             return $container;

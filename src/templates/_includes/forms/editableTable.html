@@ -49,8 +49,7 @@
                                         name: cellName,
                                         value: value,
                                         small: true,
-                                        disabled: static,
-                                        useTextarea: true
+                                        disabled: static
                                     } only %}
                                 {%- case 'lightswitch' -%}
                                     {% include "_includes/forms/lightswitch" with {
@@ -62,10 +61,10 @@
                                     } only %}
                                 {% case 'select' -%}
                                     {% include "_includes/forms/select" with {
-                                        class:    'small',
-                                        name:     cellName,
-                                        options:  cell.options ?? col.options,
-                                        value:    value,
+                                        class: 'small',
+                                        name: cellName,
+                                        options: cell.options ?? col.options,
+                                        value: value,
                                         disabled: static
                                     } only %}
                                 {%- default -%}
