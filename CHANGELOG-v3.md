@@ -10,6 +10,8 @@
 - Added `craft\elements\db\ElementQuery::inReverse()`, which can be used to reverse the order that elements are returned in.
 - Added `craft\events\GetAssetThumbUrlEvent::width` and `height`, which should be used instead of `size`.
 - Added `craft\helpers\Assets::filename2Title()`.
+- Added `craft\models\CategoryGroup_SiteSettings::getSite()`.
+- Added `craft\models\Section_SiteSettings::getSite()`.
 - Added the `cp.categories.edit.content` template hook to the `categories/_edit.html` template.
 - Added the `cp.entries.edit.content` template hook to the `entries/_edit.html` template.
 - Added the `cp.users.edit.content` template hook to the `users/_edit.html` template.
