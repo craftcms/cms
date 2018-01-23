@@ -402,7 +402,7 @@ class Sections extends Component
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
-        $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
+        $sectionRecord->enableVersioning = (bool)$section->enableVersioning;
 
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
