@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC7 - 2018-01-23
 
 ### Added
 - Asset editor HUDs now show image previews. ([#837](https://github.com/craftcms/cms/issues/837))
