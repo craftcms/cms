@@ -79,7 +79,7 @@ class UrlHelper
      */
     public static function urlWithParams(string $url, $params): string
     {
-        $params = self::_normalizeParams($params, $anchor);
+        $params = self::_normalizeParams($params, $fragment);
 
         if ($params) {
             if (StringHelper::contains($url, '?')) {
@@ -91,8 +91,8 @@ class UrlHelper
             $url .= $params;
         }
 
-        if ($anchor) {
-            $url .= $anchor;
+        if ($fragment) {
+            $url .= $fragment;
         }
 
         return $url;
@@ -357,7 +357,7 @@ class UrlHelper
     private static function _createUrl(string $path, $params, string $protocol = null, bool $cpUrl, bool $mustShowScriptName): string
     {
         // Normalize the params
-        $params = self::_normalizeParams($params, $anchor);
+        $params = self::_normalizeParams($params, $fragment);
 
         // Were there already any query string params in the path?
         if (($qpos = mb_strpos($path, '?')) !== false) {
@@ -433,8 +433,8 @@ class UrlHelper
             $url .= '?'.$params;
         }
 
-        if ($anchor) {
-            $url .= $anchor;
+        if ($fragment) {
+            $url .= $fragment;
         }
 
         return $url;
@@ -444,16 +444,16 @@ class UrlHelper
      * Normalizes query string params.
      *
      * @param string|array|null $params
-     * @param string|null       &$anchor
+     * @param string|null       &$fragment
      *
      * @return string
      */
-    private static function _normalizeParams($params, &$anchor = null): string
+    private static function _normalizeParams($params, &$fragment = null): string
     {
         if (is_array($params)) {
             // See if there's an anchor
             if (isset($params['#'])) {
-                $anchor = '#'.$params['#'];
+                $fragment = '#'.$params['#'];
                 unset($params['#']);
             }
 
