@@ -5,6 +5,7 @@
 ### Changed
 - Improved the error output when running `migrate` commands with a missing or invalid `--plugin` argument. ([#2342](https://github.com/craftcms/cms/pull/2342))
 - Matrix fields only one block type will now auto-create the minimum number of blocks required by the field, per the Min Blocks setting, for new elements. ([#850](https://github.com/craftcms/cms/issues/850))
+- Matrix fields with only one block type, and equal values for the Min Blocks and Max Blocks settings, now hide the UI for adding and deleting blocks.
 
 ## 3.0.0-RC7 - 2018-01-23
 
