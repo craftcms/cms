@@ -131,6 +131,8 @@ class MigrateController extends BaseMigrateController
                     throw new Exception('Invalid plugin handle: '.$this->plugin);
                 }
                 $this->plugin = $plugin;
+            } else {
+                throw new Exception('You must pass --plugin when --type="plugin"');
             }
         }
 
