@@ -399,6 +399,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 ->all();
         }
 
+        // Safe to set the default blocks?
+        if ($this->isFresh($element) && $this->minBlocks != 0 && count($blockTypeInfo) === 1 && $value === []) {
+            $blockType = $this->getBlockTypes()[0];
+
+            for ($i = 0; $i < $this->minBlocks; $i++) {
+                $block = new MatrixBlock();
+                $block->fieldId = $this->id;
+                $block->typeId = $blockType->id;
+                $block->fieldLayoutId = $blockType->fieldLayoutId;
+                $block->siteId = $element->siteId;
+                $value[] = $block;
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
             [
                 'id' => $id,
