@@ -29,16 +29,18 @@
                                 <li{% if not block.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable">{{ "Disable"|t('app') }}</a></li>
                                 <li{% if block.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable">{{ "Enable"|t('app') }}</a></li>
                             </ul>
-                            <hr class="padded">
-                            <ul class="padded">
-                                {% for blockType in blockTypes %}
-                                    <li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
-                                {% endfor %}
-                            </ul>
-                            <hr class="padded">
-                            <ul class="padded">
-                                <li><a data-icon="remove" data-action="delete">{{ "Delete"|t('app') }}</a></li>
-                            </ul>
+                            {% if not staticBlocks %}
+                                <hr class="padded">
+                                <ul class="padded">
+                                    {% for blockType in blockTypes %}
+                                        <li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                                <hr class="padded">
+                                <ul class="padded">
+                                    <li><a data-icon="remove" data-action="delete">{{ "Delete"|t('app') }}</a></li>
+                                </ul>
+                            {% endif %}
                         </div>
                         <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
                     </div>
@@ -54,7 +56,7 @@
             </div>
         {% endfor %}
     </div>
-    {% if not static %}
+    {% if not static and not staticBlocks %}
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}

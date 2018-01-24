@@ -377,6 +377,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
+        $staticBlocks = ($this->minBlocks != 0 && $this->minBlocks == $this->maxBlocks && count($blockTypeInfo) === 1);
+
         Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
         Craft::$app->getView()->registerJs('new Craft.MatrixInput('.
@@ -399,13 +401,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 ->all();
         }
 
+        // Safe to set the default blocks?
+        if ($this->isFresh($element) && $this->minBlocks != 0 && count($blockTypeInfo) === 1 && $value === []) {
+            $blockType = $this->getBlockTypes()[0];
+
+            for ($i = 0; $i < $this->minBlocks; $i++) {
+                $block = new MatrixBlock();
+                $block->fieldId = $this->id;
+                $block->typeId = $blockType->id;
+                $block->fieldLayoutId = $blockType->fieldLayoutId;
+                $block->siteId = $element->siteId;
+                $value[] = $block;
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
             [
                 'id' => $id,
                 'name' => $this->handle,
                 'blockTypes' => $this->getBlockTypes(),
                 'blocks' => $value,
-                'static' => false
+                'static' => false,
+                'staticBlocks' => $staticBlocks,
             ]);
     }
 
@@ -516,7 +533,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'name' => $id,
             'blockTypes' => $this->getBlockTypes(),
             'blocks' => $value,
-            'static' => true
+            'static' => true,
+            'staticBlocks' => true,
         ]);
     }
 
