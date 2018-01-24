@@ -172,6 +172,18 @@ class Query extends \yii\db\Query
     }
 
     /**
+     * @inheritdoc
+     */
+    public function exists($db = null)
+    {
+        try {
+            return parent::exists($db);
+        } catch (QueryAbortedException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Executes the query and returns a single row of result at a given offset.
      *
      * @param int                $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
