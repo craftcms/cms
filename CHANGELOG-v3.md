@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC7.1 - 2018-01-24
 
 ### Changed
 - Improved the error output when running `migrate` commands with a missing or invalid `--plugin` argument. ([#2342](https://github.com/craftcms/cms/pull/2342))
