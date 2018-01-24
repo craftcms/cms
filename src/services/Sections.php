@@ -400,7 +400,7 @@ class Sections extends Component
 
         // Main section settings
         if ($section->type !== Section::TYPE_CHANNEL) {
-            $section->propagateEntries = false;
+            $section->propagateEntries = true;
         }
 
         /** @var SectionRecord $sectionRecord */
