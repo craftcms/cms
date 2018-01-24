@@ -127,7 +127,7 @@ class MigrateController extends BaseMigrateController
         if ($this->type === MigrationManager::TYPE_PLUGIN) {
             // Make sure $this->plugin in set to a valid plugin handle
             if (empty($this->plugin)) {
-                $this->stderr('You must specify the plugin using the --plugin option.'.PHP_EOL, Console::FG_RED);
+                $this->stderr('You must specify the plugin handle using the --plugin option.'.PHP_EOL, Console::FG_RED);
                 return false;
             }
             if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
