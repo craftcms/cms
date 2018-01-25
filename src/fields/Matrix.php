@@ -440,6 +440,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
                 'skipOnEmpty' => false,
+                'on' => Element::SCENARIO_LIVE,
             ],
         ];
     }

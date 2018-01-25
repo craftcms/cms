@@ -18,6 +18,7 @@
 ### Fixed
 - Fixed a bug where saving a Single or Structure section with more than one site enabled would result in all of the section’s entries getting deleted, in all but one of the sites. ([#2345](https://github.com/craftcms/cms/issues/2345))
 - Fixed an error that occurred if a QueryAbortedException was thrown when calling `craft\db\Query::exists()`. ([#2346](https://github.com/craftcms/cms/issues/2346))
+- Fixed a bug where Matrix fields with a Min Blocks value were enforcing their Min Blocks setting even if the element wasn’t live yet, which made it impossible for them to be added to a Global Set. ([#2350](https://github.com/craftcms/cms/issues/2350))
 
 ## 3.0.0-RC7 - 2018-01-23
 
