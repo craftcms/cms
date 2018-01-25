@@ -1,4 +1,11 @@
-<?php namespace craft\queue;
+<?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
+ */
+
+namespace craft\queue;
 
 use yii\queue\cli\VerboseBehavior as VerboseBehaviorBase;
 use yii\queue\ExecEvent;
@@ -21,10 +28,12 @@ class VerboseBehavior extends VerboseBehaviorBase
         }
 
         $description = $event->job->getDescription();
-        $extra = "attempt: $event->attempt";
+        $extra       = "attempt: $event->attempt";
+
         if ($pid = $event->sender->getWorkerPid()) {
             $extra .= ", pid: $pid";
         }
+
         return " [$event->id] $description ($extra)";
     }
 }
