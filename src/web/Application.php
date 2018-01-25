@@ -315,29 +315,20 @@ class Application extends \yii\web\Application
     protected function debugBootstrap()
     {
         $session = $this->getSession();
-
         if (!$session->getHasSessionId() && !$session->getIsActive()) {
             return;
         }
 
         $isCpRequest = $this->getRequest()->getIsCpRequest();
-
-        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
-        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
-
-        if (!$enableDebugToolbarForCp && !$enableDebugToolbarForSite) {
+        if (
+            ($isCpRequest && !$session->get('enableDebugToolbarForCp')) ||
+            (!$isCpRequest && !$session->get('enableDebugToolbarForSite'))
+        ) {
             return;
         }
 
-        // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
-        if (!$isCpRequest) {
-            $svg = rawurlencode(file_get_contents(dirname(__DIR__).'/icons/c.svg'));
-            DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
-        }
-
-        if (($isCpRequest && !$enableDebugToolbarForCp) || (!$isCpRequest && !$enableDebugToolbarForSite)) {
-            return;
-        }
+        $svg = rawurlencode(file_get_contents(dirname(__DIR__).'/icons/c.svg'));
+        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
