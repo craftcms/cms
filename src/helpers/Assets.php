@@ -294,12 +294,7 @@ class Assets
     public static function getFileKindLabel(string $kind): string
     {
         self::_buildFileKinds();
-
-        if (isset(self::$_fileKinds[$kind]['label'])) {
-            return self::$_fileKinds[$kind]['label'];
-        }
-
-        return null;
+        return self::$_fileKinds[$kind]['label'] ?? Asset::KIND_UNKNOWN;
     }
 
     /**
