@@ -471,7 +471,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach ($value->all() as $block) {
             /** @var MatrixBlock $block */
-            if ($element->enabled && $block->enabled) {
+            if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
             if (!$block->validate()) {
