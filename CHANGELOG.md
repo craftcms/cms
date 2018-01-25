@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated jQuery to 3.3.1 and added the [jQuery Migrate](https://github.com/jquery/jquery-migrate) plugin to maintain backwards compatibility with jQuery 2.
+
 ## 2.6.3005 - 2018-01-23
 
 ### Changed
