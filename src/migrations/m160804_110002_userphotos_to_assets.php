@@ -311,7 +311,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'volumeId' => $volumeId,
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
-                    'kind' => 'image',
+                    'kind' => Asset::KIND_IMAGE,
                     'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],

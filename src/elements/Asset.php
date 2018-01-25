@@ -82,6 +82,29 @@ class Asset extends Element
     const SCENARIO_CREATE = 'create';
     const SCENARIO_REPLACE = 'replace';
 
+    // File kinds
+    // -------------------------------------------------------------------------
+
+    const KIND_ACCESS = 'access';
+    const KIND_AUDIO = 'audio';
+    const KIND_COMPRESSED = 'compressed';
+    const KIND_EXCEL = 'excel';
+    const KIND_FLASH = 'flash';
+    const KIND_HTML = 'html';
+    const KIND_ILLUSTRATOR = 'illustrator';
+    const KIND_IMAGE = 'image';
+    const KIND_JAVASCRIPT = 'javascript';
+    const KIND_JSON = 'json';
+    const KIND_PDF = 'pdf';
+    const KIND_PHOTOSHOP = 'photoshop';
+    const KIND_PHP = 'php';
+    const KIND_POWERPOINT = 'powerpoint';
+    const KIND_TEXT = 'text';
+    const KIND_VIDEO = 'video';
+    const KIND_WORD = 'word';
+    const KIND_XML = 'xml';
+    const KIND_UNKNOWN = 'unknown';
+
     // Static
     // =========================================================================
 
@@ -583,7 +606,7 @@ class Asset extends Element
      */
     public function getImg()
     {
-        if ($this->kind === 'image' && $this->getHasUrls()) {
+        if ($this->kind === self::KIND_IMAGE && $this->getHasUrls()) {
             $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
             return Template::raw($img);
@@ -879,7 +902,7 @@ class Asset extends Element
      */
     public function getFocalPoint()
     {
-        if ($this->kind !== 'image') {
+        if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
 
@@ -1171,7 +1194,7 @@ class Asset extends Element
      */
     private function _getDimension(string $dimension, $transform)
     {
-        if ($this->kind !== 'image') {
+        if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
 
@@ -1288,7 +1311,7 @@ class Asset extends Element
         if ($tempPath) {
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
-            if ($this->kind === 'image') {
+            if ($this->kind === self::KIND_IMAGE) {
                 list ($this->_width, $this->_height) = Image::imageSize($tempPath);
             } else {
                 $this->_width = null;

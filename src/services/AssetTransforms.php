@@ -973,7 +973,7 @@ class AssetTransforms extends Component
             return $asset->getExtension();
         }
 
-        if ($asset->kind === 'image') {
+        if ($asset->kind === Asset::KIND_IMAGE) {
             // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
             // we fallback to jpg
             $images = Craft::$app->getImages();
