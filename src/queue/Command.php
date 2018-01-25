@@ -32,6 +32,13 @@ class Command extends \yii\queue\cli\Command
      */
     public $defaultAction = 'info';
 
+    /**
+     * @inheritdoc
+     */
+    public $verboseConfig = [
+        'class' => VerboseBehavior::class,
+    ];
+
     // Protected Methods
     // =========================================================================
 
