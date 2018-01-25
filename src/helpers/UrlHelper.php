@@ -334,7 +334,11 @@ class UrlHelper
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();
-            $baseUrl = $request->getHostInfo().$request->getBaseUrl();
+            if ($request->getIsConsoleRequest()) {
+                $baseUrl = '';
+            } else {
+                $baseUrl = $request->getHostInfo().$request->getBaseUrl();
+            }
         }
 
         return rtrim($baseUrl, '/').'/';
@@ -386,9 +390,16 @@ class UrlHelper
                 if ($showScriptName) {
                     $baseUrl .= $request->getScriptFilename();
                 }
+            } else if ($request->getIsConsoleRequest()) {
+                // No way to know for sure, so just guess
+                $baseUrl = '/';
+
+                if ($showScriptName) {
+                    $baseUrl .= $request->getScriptFilename();
+                }
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $request->getHostInfo();
+                $baseUrl = $baseUrl = $request->getHostInfo();
 
                 if ($showScriptName) {
                     $baseUrl .= $request->getScriptUrl();
