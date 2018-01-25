@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed an error that could occur when calling `craft\helpers\UrlHelper` methods from the console. ([#2347](https://github.com/craftcms/cms/issues/2347))
+- Fixed a bug where Matrix fields with equal Min Blocks and Max Blocks settings weren’t creating default blocks for existing elements. ([#2353](https://github.com/craftcms/cms/issues/2353))
 
 ## 3.0.0-RC7.1 - 2018-01-24
 
