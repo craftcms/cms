@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Changed
+- Craft now logs any output from Composer commands it runs, even if nothing bad happened.
+
 ## 3.0.0-RC7.1 - 2018-01-24
 
 ### Changed

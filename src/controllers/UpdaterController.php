@@ -139,6 +139,7 @@ class UpdaterController extends BaseUpdaterController
 
         try {
             Craft::$app->getComposer()->install($this->data['current'], $io);
+            Craft::info("Reverted Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
             $this->data['reverted'] = true;
         } catch (\Throwable $e) {
             Craft::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
