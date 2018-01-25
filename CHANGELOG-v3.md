@@ -11,6 +11,7 @@
 - Fixed a bug where Matrix fields were enforcing required sub-field validation when the parent element was enabled globally but not for the current site.
 - Fixed a bug where the Debug Toolbar was showing the Yii logo instead of the Craft logo in the Control Panel. ([#2348](https://github.com/craftcms/cms/issues/2348))
 - Fixed a bug where Single entries’ titles were always reset to their section name when saving their section’s settings. ([#2349](https://github.com/craftcms/cms/issues/2349))
+- Fixed a bug where Singles’ dynamic entry title formats were not getting applied.
 
 ## 3.0.0-RC7.1 - 2018-01-24
 

@@ -892,7 +892,9 @@ EOD;
         if ($section->type == Section::TYPE_SINGLE) {
             $this->authorId = null;
             $this->expiryDate = null;
-        } else if (!$entryType->hasTitleField) {
+        }
+
+        if (!$entryType->hasTitleField) {
             // Set the dynamic title
             $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
