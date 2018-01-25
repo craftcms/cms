@@ -1158,10 +1158,10 @@ class Sections extends Component
             $entry->sectionId = $section->id;
             $entry->typeId = $firstEntryType->id;
             $entry->fieldLayoutId = $firstEntryType->fieldLayoutId;
+            $entry->title = $section->name;
         }
 
         // (Re)save it with an updated title, slug, and URI format.
-        $entry->title = $section->name;
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getElements()->saveElement($entry)) {
             throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI');
