@@ -18,7 +18,7 @@ use yii\queue\ExecEvent;
 class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
 {
     /**
-     * @inheritdoc
+     *
      */
     protected function jobTitle(ExecEvent $event)
     {
