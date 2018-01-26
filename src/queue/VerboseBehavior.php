@@ -7,19 +7,18 @@
 
 namespace craft\queue;
 
-use yii\queue\cli\VerboseBehavior as VerboseBehaviorBase;
 use yii\queue\ExecEvent;
-
 
 /**
  * Verbose Behavior
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
-class VerboseBehavior extends VerboseBehaviorBase
+class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
 {
     /**
-     * @param \yii\queue\ExecEvent $event
-     *
-     * @return string
+     * @inheritdoc
      */
     protected function jobTitle(ExecEvent $event)
     {
@@ -28,12 +27,12 @@ class VerboseBehavior extends VerboseBehaviorBase
         }
 
         $description = $event->job->getDescription();
-        $extra       = "attempt: $event->attempt";
+        $extra = 'attempt: '.$event->attempt;
 
         if ($pid = $event->sender->getWorkerPid()) {
-            $extra .= ", pid: $pid";
+            $extra .= ', pid: '.$pid;
         }
 
-        return " [$event->id] $description ($extra)";
+        return " [{$event->id}] {$description} ({$extra})";
     }
 }
