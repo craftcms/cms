@@ -844,8 +844,9 @@ $checkboxPadding: 20px;
 }
 
 /* element select fields */
-.elementselect { position: relative; min-height: 37px; margin-top: -7px; }
+.elementselect { position: relative; min-height: 37px; }
 .elementselect:after { @include clearafter; }
+.elementselect .elements { margin-top: -7px; }
 .elementselect .element,
 .elementselect .btn { @include floatleft; @include margin(7px, 7px, 0, 0); }
 .elementselect .element.small,

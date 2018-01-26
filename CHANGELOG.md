@@ -7,6 +7,9 @@
 - Tab and field names in Field Layout Designers are no longer displayed in all-uppercase. ([#2360](https://github.com/craftcms/cms/issues/2360))
 - Fields in Field Layout Designers now have tool tips that reveal their handles. ([#2360](https://github.com/craftcms/cms/issues/2360))
 
+### Fixed
+- Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
+
 ## 2.6.3005 - 2018-01-23
 
 ### Changed
