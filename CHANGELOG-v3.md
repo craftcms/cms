@@ -5,6 +5,10 @@
 ### Changed
 - Craft now logs any output from Composer commands it runs, even if nothing bad happened.
 
+### Deprecated
+- Deprecated `craft\helpers\UrlHelper::urlWithProtocol()` (previously removed).
+- Deprecated `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()` (previously removed).
+
 ### Fixed
 - Fixed an error that could occur when calling `craft\helpers\UrlHelper` methods from the console. ([#2347](https://github.com/craftcms/cms/issues/2347))
 - Fixed a bug where Matrix fields with equal Min Blocks and Max Blocks settings weren’t creating default blocks for existing elements. ([#2353](https://github.com/craftcms/cms/issues/2353))

@@ -344,6 +344,38 @@ class UrlHelper
         return rtrim($baseUrl, '/').'/';
     }
 
+    // Deprecated Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a URL with a specific protocol.
+     *
+     * @param string $url
+     * @param string $protocol
+     *
+     * @return string
+     * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
+     */
+    public static function urlWithProtocol(string $url, string $protocol): string
+    {
+        Craft::$app->getDeprecator()->log('UrlHelper::urlWithProtocol()', 'UrlHelper::urlWithProtocol() is deprecated. Use urlWithScheme() instead.');
+        return static::urlWithScheme($url, $protocol);
+    }
+
+    /**
+     * Returns what the scheme part of the URL should be (http/https)
+     * for any tokenized URLs in Craft (email verification links, password reset
+     * urls, share entry URLs, etc.
+     *
+     * @return string
+     * @deprecated in 3.0. Use [[getSchemeForTokenizedUrl()]] instead.
+     */
+    public static function getProtocolForTokenizedUrl(): string
+    {
+        Craft::$app->getDeprecator()->log('UrlHelper::getProtocolForTokenizedUrl()', 'UrlHelper::getProtocolForTokenizedUrl() is deprecated. Use getSchemeForTokenizedUrl() instead.');
+        return static::getSchemeForTokenizedUrl();
+    }
+
     // Private Methods
     // =========================================================================
 
