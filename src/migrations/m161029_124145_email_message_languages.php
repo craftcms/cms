@@ -23,7 +23,7 @@ class m161029_124145_email_message_languages extends Migration
         }
 
         // Add the new language column and populate from site/language mapping
-        $this->addColumn('{{%emailmessages}}', 'language', $this->string());
+        $this->addColumn('{{%emailmessages}}', 'language', $this->string()->after('id'));
 
         $siteResults = (new Query())
             ->select(['id', 'language'])

@@ -15,7 +15,7 @@ class m180122_213433_propagate_entries_setting extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%sections}}', 'propagateEntries', $this->boolean()->defaultValue(true)->notNull());
+        $this->addColumn('{{%sections}}', 'propagateEntries', $this->boolean()->after('enableVersioning')->defaultValue(true)->notNull());
     }
 
     /**
