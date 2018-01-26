@@ -241,7 +241,7 @@ class Table extends Field
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
-            $value = Json::decode($value);
+            $value = Json::decodeIfJson($value);
         } else if ($value === null && $this->isFresh($element) && is_array($this->defaults)) {
             $value = array_values($this->defaults);
         }

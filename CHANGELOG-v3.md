@@ -17,6 +17,7 @@
 - Fixed a bug where Single entries’ titles were always reset to their section name when saving their section’s settings. ([#2349](https://github.com/craftcms/cms/issues/2349))
 - Fixed a bug where Singles’ dynamic entry title formats were not getting applied.
 - Fixed an error that occurred when calling `craft\helpers\Assets::getFileKindLabel()` if the file kind was unknown. ([#2354](https://github.com/craftcms/cms/issues/2354))
+- Fixed an error that occurred if a textual field was converted to a Table field. ([#2365](https://github.com/craftcms/cms/issues/2365))
 
 ## 3.0.0-RC7.1 - 2018-01-24
 
