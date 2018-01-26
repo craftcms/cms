@@ -4,6 +4,7 @@
 
 ### Changed
 - Updated jQuery to 3.3.1 and added the [jQuery Migrate](https://github.com/jquery/jquery-migrate) plugin to maintain backwards compatibility with jQuery 2.
+- Tab and field names in Field Layout Designers are no longer displayed in all-uppercase. ([#2360](https://github.com/craftcms/cms/issues/2360))
 
 ## 2.6.3005 - 2018-01-23
 
