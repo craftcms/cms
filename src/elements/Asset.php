@@ -916,6 +916,35 @@ class Asset extends Element
         return ['x' => 0.5, 'y' => 0.5];
     }
 
+    /**
+     * Return the Asset's focal point as percentage, or null if not an image.
+     *
+     * @param bool $includePercentSign
+     *
+     * @return array|null
+     */
+    public function getFocalPointPercentage ($includePercentSign = false)
+    {
+        $focalPoint = $this->getFocalPoint();
+
+        if ( empty($focalPoint) ) {
+            return null;
+        }
+
+        $x = $focalPoint['x'] * 100;
+        $y = $focalPoint['y'] * 100;
+
+        if ( $includePercentSign ) {
+            $x = $x . '%';
+            $y = $y . '%';
+        }
+
+        return [
+            'x' => $x,
+            'y' => $y
+        ];
+    }
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
