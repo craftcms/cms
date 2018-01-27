@@ -62,14 +62,6 @@ class Command extends \yii\queue\cli\Command
             return false;
         }
 
-        // Set the log target to queue.log
-        $logDispatcher = Craft::$app->getLog();
-        if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
-            /** @var FileTarget $logTarget */
-            $logTarget = $logDispatcher->targets[0];
-            $logTarget->logFile = Craft::getAlias('@storage/logs/queue.log');
-        }
-
         return true;
     }
 
