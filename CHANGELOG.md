@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
+- Fixed some unexpected behavior when saving a Matrix block for a field that had recently been made translatable. ([#2245](https://github.com/craftcms/cms/issues/2245))
 
 ## 2.6.3005 - 2018-01-23
 
