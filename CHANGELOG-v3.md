@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft now logs any output from Composer commands it runs, even if nothing bad happened.
+- Message translations registered with `craft\web\View::registerTranslations()` now get `<script>` tags added at the `POS_BEGIN` position, reducing the chance that they’re not ready in time for scripts that rely on them.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::urlWithProtocol()` (previously removed).
