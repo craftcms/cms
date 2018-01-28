@@ -19,6 +19,7 @@
 - Fixed a bug where Singles’ dynamic entry title formats were not getting applied.
 - Fixed an error that occurred when calling `craft\helpers\Assets::getFileKindLabel()` if the file kind was unknown. ([#2354](https://github.com/craftcms/cms/issues/2354))
 - Fixed an error that occurred if a textual field was converted to a Table field. ([#2365](https://github.com/craftcms/cms/issues/2365))
+- Fixed an error that occurred when submitting a front-end login form with an invalid username and an empty password. ([#2367](https://github.com/craftcms/cms/issues/2367))
 
 ## 3.0.0-RC7.1 - 2018-01-24
 
