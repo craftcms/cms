@@ -181,6 +181,19 @@ class ResourcesService extends BaseApplicationComponent
 
 				case 'assetthumbs':
 				{
+					// Only service asset thumbs for logged-in Control Panel requests.
+					if (craft()->request->isSiteRequest())
+					{
+						// Missing status code.
+						throw new HttpException(404);
+					}
+
+					if (!craft()->request->isCpRequest() || !craft()->userSession->isLoggedIn())
+					{
+						// Unauthorized status code.
+						throw new HttpException(401);
+					}
+
 					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
 					{
 						return $this->_getBrokenImageThumbPath();
