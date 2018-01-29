@@ -163,7 +163,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 					if (!response.exactMatch)
 					{
 						var $li = $('<li/>').appendTo($ul);
-						$('<a data-icon="+"/>').appendTo($li).text(Craft.escapeHtml(data.search));
+						$('<a data-icon="+"/>').appendTo($li).text(data.search);
 					}
 
 					$ul.find('> li:first-child > a').addClass('hover');
@@ -199,7 +199,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element);
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
-		$('<span class="label">'+title+'</span>').appendTo($element);
+		$('<span class="label"/>').text(title).appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
 		this.$addTagInput.css('margin-'+Craft.left, margin+'px');
