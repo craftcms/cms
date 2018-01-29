@@ -20,10 +20,16 @@ use yii\queue\ExecEvent;
  */
 class QueueLogBehaviour extends VerboseBehavior
 {
+    // Properties
+    // =========================================================================
+
     /**
      * @var float timestamp
      */
     private $_jobStartedAt;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc
@@ -90,6 +96,9 @@ class QueueLogBehaviour extends VerboseBehavior
         $error = $event->error->getMessage();
         Craft::error(sprintf('%s - Error (time: %s): %s', parent::jobTitle($event), $duration, $error), __METHOD__);
     }
+
+    // Private Methods
+    // =========================================================================
 
     /**
      * Returns the job execution time in seconds.
