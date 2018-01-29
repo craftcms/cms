@@ -28,6 +28,11 @@ class QueueLogBehaviour extends VerboseBehavior
      */
     private $_jobStartedAt;
 
+    /**
+     * @var bool Whether any jobs have executed yet
+     */
+    private $_jobExecuted = false;
+
     // Public Methods
     // =========================================================================
 
@@ -44,36 +49,14 @@ class QueueLogBehaviour extends VerboseBehavior
     }
 
     /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        $logDispatcher = Craft::$app->getLog();
-
-        foreach ($logDispatcher->targets as $target) {
-            // Don't log global vars
-            $target->logVars = [];
-
-            // Set log target to queue.log
-            if ($target instanceof FileTarget) {
-                $target->logFile = Craft::getAlias('@storage/logs/queue.log');
-            }
-
-            // Prevent verbose system logs
-            if (!Craft::$app->getConfig()->getGeneral()->devMode) {
-                $target->except = ['yii\*'];
-                $target->setLevels(['info', 'warning', 'error']);
-            }
-        }
-    }
-
-    /**
      * @param ExecEvent $event
      */
     public function beforeExec(ExecEvent $event)
     {
+        if (!$this->_jobExecuted) {
+            $this->_changeLogFile();
+        }
+
         $this->_jobStartedAt = microtime(true);
         Craft::info(sprintf('%s - Started', parent::jobTitle($event)), __METHOD__);
     }
@@ -99,6 +82,30 @@ class QueueLogBehaviour extends VerboseBehavior
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Changes the file that logs will get flushed to.
+     */
+    private function _changeLogFile()
+    {
+        $logDispatcher = Craft::$app->getLog();
+
+        foreach ($logDispatcher->targets as $target) {
+            // Don't log global vars
+            $target->logVars = [];
+
+            // Set log target to queue.log
+            if ($target instanceof FileTarget) {
+                $target->logFile = Craft::getAlias('@storage/logs/queue.log');
+            }
+
+            // Prevent verbose system logs
+            if (!Craft::$app->getConfig()->getGeneral()->devMode) {
+                $target->except = ['yii\*'];
+                $target->setLevels(['info', 'warning', 'error']);
+            }
+        }
+    }
 
     /**
      * Returns the job execution time in seconds.
