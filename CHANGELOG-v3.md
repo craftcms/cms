@@ -2,10 +2,14 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\queue\QueueLogBehavior`.
+
 ### Changed
 - Craft now logs any output from Composer commands it runs, even if nothing bad happened.
 - Message translations registered with `craft\web\View::registerTranslations()` now get `<script>` tags added at the `POS_BEGIN` position, reducing the chance that they’re not ready in time for scripts that rely on them.
 - Improved the console output when running `queue/run -v` or `queue/listen -v` from the terminal. ([#2355](https://github.com/craftcms/cms/pull/2355))
+- Queue logs now include start/stop/error info about executed jobs. ([#2366](https://github.com/craftcms/cms/pull/2366))
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::urlWithProtocol()` (previously removed).
