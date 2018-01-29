@@ -10,6 +10,8 @@ namespace craft\console;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\errors\MissingComponentException;
+use craft\queue\QueueLogBehaviour;
+use yii\base\Component;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
@@ -91,5 +93,22 @@ class Application extends \yii\console\Application
     public function getUser()
     {
         return $this->get('user');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function get($id, $throwException = true)
+    {
+        // Is this the first time the queue component is requested?
+        $isFirstQueue = $id === 'queue' && !$this->has($id, true);
+
+        $component = parent::get($id, $throwException);
+
+        if ($isFirstQueue && $component instanceof Component) {
+            $component->attachBehavior('queueLogger', QueueLogBehaviour::class);
+        }
+
+        return $component;
     }
 }

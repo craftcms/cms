@@ -16,6 +16,8 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use craft\queue\QueueLogBehaviour;
+use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as DebugModule;
@@ -289,6 +291,23 @@ class Application extends \yii\web\Application
         Craft::setAlias('@bower/inputmask/dist', $libPath.'/inputmask');
         Craft::setAlias('@bower/punycode', $libPath.'/punycode');
         Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function get($id, $throwException = true)
+    {
+        // Is this the first time the queue component is requested?
+        $isFirstQueue = $id === 'queue' && !$this->has($id, true);
+
+        $component = parent::get($id, $throwException);
+
+        if ($isFirstQueue && $component instanceof Component) {
+            $component->attachBehavior('queueLogger', QueueLogBehaviour::class);
+        }
+
+        return $component;
     }
 
     // Protected Methods
