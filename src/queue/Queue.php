@@ -84,6 +84,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->on(self::EVENT_AFTER_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = null;
         });
+
+        $this->attachBehavior('queue_logger', QueueLogBehaviour::class);
+
     }
 
     /**
