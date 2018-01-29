@@ -86,6 +86,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         });
 
         $this->attachBehavior('queue_logger', QueueLogBehaviour::class);
+
     }
 
     /**

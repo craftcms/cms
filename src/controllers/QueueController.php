@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
-use yii\log\FileTarget;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;

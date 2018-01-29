@@ -1,23 +1,29 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: os
- * Date: 26.01.18
- * Time: 12:33
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
 
+use Craft;
 use craft\log\FileTarget;
 use yii\queue\ErrorEvent;
 use yii\queue\ExecEvent;
 
+/**
+ * Queue Log Behavior
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
+ */
 class QueueLogBehaviour extends VerboseBehavior
 {
     /**
      * @var float timestamp
      */
-    private $jobStartedAt;
+    private $_jobStartedAt;
 
     /**
      * @inheritdoc
@@ -39,20 +45,23 @@ class QueueLogBehaviour extends VerboseBehavior
     {
         parent::init();
 
-        // Set the log target to queue.log
         $logDispatcher = \Craft::$app->getLog();
+
         foreach ($logDispatcher->targets as $target) {
+
+            // Don't log global vars
+            $target->logVars = [];
+
+            // Set log target to queue.log
             if ($target instanceof FileTarget) {
                 $target->logFile = \Craft::getAlias('@storage/logs/queue.log');
-                $target->logVars = [];
             }
-        }
 
-        // Prevent verbose query logs
-        if (!\Craft::$app->getConfig()->getGeneral()->devMode) {
-            $DbConnection = \Craft::$app->getDb();
-            $DbConnection->enableLogging   = false;
-            $DbConnection->enableProfiling = false;
+            // Prevent verbose system logs
+            if (!\Craft::$app->getConfig()->getGeneral()->devMode) {
+                $target->except = ['yii\*'];
+                $target->setLevels(['info', 'warning', 'error']);
+            }
         }
     }
 
@@ -62,9 +71,9 @@ class QueueLogBehaviour extends VerboseBehavior
      */
     public function beforeExec(ExecEvent $event)
     {
-        $this->jobStartedAt = microtime(true);
+        $this->_jobStartedAt = microtime(true);
 
-        \Craft::info(sprintf(
+        Craft::info(sprintf(
             "%s - Started",
             parent::jobTitle($event)
         ));
@@ -75,10 +84,10 @@ class QueueLogBehaviour extends VerboseBehavior
      */
     public function afterExec(ExecEvent $event)
     {
-        $duration = $this->getDuration();
+        $duration = $this->getDurationFormatted();
 
-        \Craft::info(sprintf(
-            "%s - Done (%s s)",
+        Craft::info(sprintf(
+            "%s - Done (%s)",
             parent::jobTitle($event),
             $duration
         ));
@@ -89,26 +98,24 @@ class QueueLogBehaviour extends VerboseBehavior
      */
     public function afterError(ErrorEvent $event)
     {
-        $duration = $this->getDuration();
+        $duration = $this->getDurationFormatted();
         $error    = $event->error->getMessage();
 
-        \Craft::error(sprintf(
-            "%s - Error (%s s): %s",
+        Craft::error(sprintf(
+            "%s - Error (%s): %s",
             parent::jobTitle($event),
             $duration,
             $error
         ));
-
     }
-
 
     /**
+     * Job execution duration in seconds
+     *
      * @return string
      */
-    protected function getDuration(): string
+    protected function getDurationFormatted(): string
     {
-        return number_format(round(microtime(true) - $this->jobStartedAt, 3), 3);
+        return number_format(round(microtime(true) - $this->_jobStartedAt, 3), 3) . ' s';
     }
-
-
 }
