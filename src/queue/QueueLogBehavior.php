@@ -18,7 +18,7 @@ use yii\queue\ExecEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class QueueLogBehaviour extends VerboseBehavior
+class QueueLogBehavior extends VerboseBehavior
 {
     // Properties
     // =========================================================================

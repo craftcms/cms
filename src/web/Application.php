@@ -16,7 +16,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
-use craft\queue\QueueLogBehaviour;
+use craft\queue\QueueLogBehavior;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
@@ -304,7 +304,7 @@ class Application extends \yii\web\Application
         $component = parent::get($id, $throwException);
 
         if ($isFirstQueue && $component instanceof Component) {
-            $component->attachBehavior('queueLogger', QueueLogBehaviour::class);
+            $component->attachBehavior('queueLogger', QueueLogBehavior::class);
         }
 
         return $component;
