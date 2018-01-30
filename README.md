@@ -8,7 +8,7 @@ Learn more about Craft at [craftcms.com](https://craftcms.com).
 
 ## How to Install Craft 3
 
-See the Craft 3 documentation for [installation](https://github.com/craftcms/docs/blob/master/en/installation.md) and [updating](https://github.com/craftcms/docs/blob/master/en/upgrade.md) instructions.
+See the Craft 3 documentation for [installation](https://github.com/craftcms/docs/blob/v3/en/installation.md) and [updating](https://github.com/craftcms/docs/blob/v3/en/upgrade.md) instructions.
 
 ## Resources
 
