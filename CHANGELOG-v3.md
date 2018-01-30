@@ -5,6 +5,7 @@
 ### Added
 - Added the `clone()` template function. ([#2375](https://github.com/craftcms/cms/issues/2375))
 - Added `craft\base\ApplicationTrait::updateTargetLanguage()`.
+- Added `craft\elements\Asset::setFocalPoint()`.
 - Added `craft\queue\QueueLogBehavior`.
 
 ### Changed
@@ -12,6 +13,7 @@
 - Message translations registered with `craft\web\View::registerTranslations()` now get `<script>` tags added at the `POS_BEGIN` position, reducing the chance that they’re not ready in time for scripts that rely on them.
 - Improved the console output when running `queue/run -v` or `queue/listen -v` from the terminal. ([#2355](https://github.com/craftcms/cms/pull/2355))
 - Queue logs now include start/stop/error info about executed jobs. ([#2366](https://github.com/craftcms/cms/pull/2366))
+- `craft\elements\Asset::focalPoint` is now a shortcut for `getFocalPoint()`, so the value will either be an array with `x` and `y` keys, or `null` if the asset isn’t an image.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::urlWithProtocol()` (previously removed).

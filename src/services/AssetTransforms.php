@@ -576,7 +576,7 @@ class AssetTransforms extends Component
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.
         // Focal points make transforms non-reusable, though
-        if ($asset->getExtension() === $index->detectedFormat && !$asset->focalPoint) {
+        if ($asset->getExtension() === $index->detectedFormat && !$asset->getFocalPoint()) {
             $possibleLocations = [$this->_getUnnamedTransformFolderName($transform)];
 
             if ($transform->getIsNamedTransform()) {
@@ -1348,12 +1348,12 @@ class AssetTransforms extends Component
                 $image->resize($transform->width, $transform->height);
                 break;
             default:
-                if ($asset->focalPoint) {
-                    $position = $asset->getFocalPoint();
-                } else if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                    $position = 'center-center';
-                } else {
-                    $position = $transform->position;
+                if (($position = $asset->getFocalPoint()) === null) {
+                    if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+                        $position = 'center-center';
+                    } else {
+                        $position = $transform->position;
+                    }
                 }
                 $image->scaleAndCrop($transform->width, $transform->height, true, $position);
         }

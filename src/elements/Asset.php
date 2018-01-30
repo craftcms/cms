@@ -48,9 +48,10 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property bool           $hasThumb Whether the file has a thumbnail
- * @property int|float|null $height   the image height
- * @property int|float|null $width    the image width
+ * @property array|null     $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property bool           $hasThumb   whether the file has a thumbnail
+ * @property int|float|null $height     the image height
+ * @property int|float|null $width      the image width
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -398,11 +399,6 @@ class Asset extends Element
     public $size;
 
     /**
-     * @var string|null Focal point
-     */
-    public $focalPoint;
-
-    /**
      * @var \DateTime|null Date modified
      */
     public $dateModified;
@@ -462,6 +458,11 @@ class Asset extends Element
      * @var int|float|null Height
      */
     private $_height;
+
+    /**
+     * @var array|null Focal point
+     */
+    private $_focalPoint;
 
     /**
      * @var AssetTransform|null
@@ -896,9 +897,9 @@ class Asset extends Element
     }
 
     /**
-     * Return the Asset's focal point or null if not an image.
+     * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
-     * @return null|array
+     * @return array|null
      */
     public function getFocalPoint()
     {
@@ -906,14 +907,38 @@ class Asset extends Element
             return null;
         }
 
-        if (!empty($this->focalPoint)) {
-            $focal = explode(';', $this->focalPoint);
-            if (count($focal) === 2) {
-                return ['x' => $focal[0], 'y' => $focal[1]];
+        return $this->_focalPoint ?? ['x' => 0.5, 'y' => 0.5];
+    }
+
+    /**
+     * Sets the asset's focal point.
+     *
+     * @param $value string|array|null
+     *
+     * @throws \InvalidArgumentException if $value is invalid
+     */
+    public function setFocalPoint($value)
+    {
+        if (is_array($value)) {
+            if (!isset($value['x'], $value['y'])) {
+                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
             }
+            $value = [
+                'x' => (float)$value['x'],
+                'y' => (float)$value['y']
+            ];
+        } else if ($value !== null) {
+            $focal = explode(';', $value);
+            if (count($focal) !== 2) {
+                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+            }
+            $value = [
+                'x' => (float)$focal[0],
+                'y' => (float)$focal[1]
+            ];
         }
 
-        return ['x' => 0.5, 'y' => 0.5];
+        $this->_focalPoint = $value;
     }
 
     // Indexes, etc.
@@ -979,9 +1004,9 @@ class Asset extends Element
                 $srcsets[] = $thumbUrl.' '.$width.'w';
             }
 
-            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">' .
-                '<div class="image-preview">' .
-                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">' .
+            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">'.
+                '<div class="image-preview">'.
+                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">'.
                 '</div>';
 
             if ($editable) {
@@ -1027,8 +1052,9 @@ class Asset extends Element
     public function attributes()
     {
         $attributes = parent::attributes();
-        $attributes[] = 'width';
+        $attributes[] = 'focalPoint';
         $attributes[] = 'height';
+        $attributes[] = 'width';
 
         return $attributes;
     }
@@ -1144,6 +1170,11 @@ class Asset extends Element
             $record->width = $this->_width;
             $record->height = $this->_height;
             $record->dateModified = $this->dateModified;
+
+            if ($focal = $this->getFocalPoint()) {
+                $record->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
+            }
+
             $record->save(false);
         }
 

@@ -579,10 +579,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
         }
 
-        $focal = null;
-        if ($asset->focalPoint) {
-            $focal = $asset->getFocalPoint();
-        }
+        $focal = $asset->getFocalPoint();
 
         $html = $this->getView()->renderTemplate('_special/image_editor');
 
@@ -726,7 +723,10 @@ class AssetsController extends Controller
                 $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
                 $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
 
-                $focal = number_format($fx / $width, 4).';'.number_format($fy / $height, 4);
+                $focal = [
+                    'x' => $fx / $width,
+                    'y' => $fy / $height
+                ];
             }
 
             if ($imageCropped) {
@@ -738,8 +738,8 @@ class AssetsController extends Controller
             }
 
             if ($replace) {
-                $nukeTransforms = $asset->focalPoint !== $focal;
-                $asset->focalPoint = $focal;
+                $nukeTransforms = $asset->getFocalPoint() !== $focal;
+                $asset->setFocalPoint($focal);
 
                 if ($nukeTransforms) {
                     $transforms = Craft::$app->getAssetTransforms();
@@ -762,7 +762,7 @@ class AssetsController extends Controller
                 $newAsset->filename = $asset->filename;
                 $newAsset->newFolderId = $folder->id;
                 $newAsset->volumeId = $folder->volumeId;
-                $newAsset->focalPoint = $focal;
+                $newAsset->setFocalPoint($focal);
 
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
