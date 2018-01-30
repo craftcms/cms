@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\ApplicationTrait::updateTargetLanguage()`.
 - Added `craft\queue\QueueLogBehavior`.
 
 ### Changed
