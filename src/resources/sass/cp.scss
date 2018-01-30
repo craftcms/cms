@@ -335,7 +335,7 @@ $fldGuideColor: #f4f3fb;
 
 .fieldlayoutform,
 .fld-tab,
-.fld-field { color: $fldChalkColor; font-style: italic; text-transform: uppercase; }
+.fld-field { color: $fldChalkColor; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png);
 	body.ltr & { background-position: 25px 24px; }

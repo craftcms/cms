@@ -33,11 +33,6 @@ class ElementsService extends BaseApplicationComponent
 	 */
 	private $_elementCleanup = array();
 
-	/**
-	 * @var
-	 */
-	private $_listeningForRequestEnd = false;
-
 	// Public Methods
 	// =========================================================================
 
@@ -1685,12 +1680,6 @@ class ElementsService extends BaseApplicationComponent
 				'hasContent' => $elementType->hasContent(),
 				'contentTable' => $element->getContentTable(),
 			);
-
-			if (!$this->_listeningForRequestEnd)
-			{
-				craft()->attachEventHandler('onEndRequest', array($this, 'handleRequestEnd'));
-				$this->_listeningForRequestEnd = true;
-			}
 		}
 
 		return $success;

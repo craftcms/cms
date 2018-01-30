@@ -479,7 +479,7 @@ body.rtl #upgrademodal-checkout .spinner#coupon-spinner { left: -24px; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }
 
 /* field layout forms */
-.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; font-style: italic; text-transform: uppercase; }
+.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png); }
 body.ltr .fieldlayoutform { background-position: 25px 24px; }
