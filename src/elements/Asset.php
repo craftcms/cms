@@ -682,6 +682,9 @@ class Asset extends Element
      */
     public function getUrl($transform = null)
     {
+        // Normalize empty transform values
+        $transform = $transform ?: null;
+
         if (!$this->getHasUrls()) {
             return null;
         }
