@@ -694,7 +694,9 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * @inheritdoc
+	 * Raised right AFTER the application processes the request.
+	 *
+	 * @param \CEvent $event The event parameter.
 	 */
 	public function onEndRequest($event)
 	{
