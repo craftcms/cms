@@ -632,6 +632,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new \Twig_SimpleFunction('ceil', 'ceil'),
             new \Twig_SimpleFunction('className', 'get_class'),
+            new \Twig_SimpleFunction('clone', [$this, 'cloneFunction']),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
@@ -666,6 +667,17 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         return null;
+    }
+
+    /**
+     * Returns a clone of the given variable.
+     *
+     * @param mixed $var
+     * @return mixed
+     */
+    public function cloneFunction($var)
+    {
+        return clone $var;
     }
 
     /**

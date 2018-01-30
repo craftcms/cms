@@ -36,11 +36,11 @@ class m150403_185142_volumes extends Migration
         }
 
         if (!$this->db->columnExists('{{%volumes}}', 'url')) {
-            $this->addColumn('{{%volumes}}', 'url', 'string');
+            $this->addColumn('{{%volumes}}', 'url', $this->string()->after('type'));
         }
 
         if (!$this->db->columnExists('{{%assetindexdata}}', 'timestamp')) {
-            $this->addColumn('{{%assetindexdata}}', 'timestamp', 'datetime');
+            $this->addColumn('{{%assetindexdata}}', 'timestamp', $this->dateTime()->after('size'));
         }
 
         if ($this->db->columnExists('{{%assets}}', 'sourceId')) {

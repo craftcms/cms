@@ -377,7 +377,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
-        $staticBlocks = ($this->minBlocks != 0 && $this->minBlocks == $this->maxBlocks && count($blockTypeInfo) === 1);
+        $createDefaultBlocks = $this->minBlocks != 0 && count($blockTypeInfo) === 1;
+        $staticBlocks = $createDefaultBlocks && $this->minBlocks == $this->maxBlocks;
 
         Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
@@ -402,10 +403,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         // Safe to set the default blocks?
-        if ($this->isFresh($element) && $this->minBlocks != 0 && count($blockTypeInfo) === 1 && $value === []) {
+        if ($createDefaultBlocks) {
             $blockType = $this->getBlockTypes()[0];
 
-            for ($i = 0; $i < $this->minBlocks; $i++) {
+            for ($i = count($value); $i < $this->minBlocks; $i++) {
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
@@ -440,6 +441,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
                 'skipOnEmpty' => false,
+                'on' => Element::SCENARIO_LIVE,
             ],
         ];
     }
@@ -469,7 +471,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach ($value->all() as $block) {
             /** @var MatrixBlock $block */
-            if ($element->enabled && $block->enabled) {
+            if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
             if (!$block->validate()) {

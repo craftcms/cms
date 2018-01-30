@@ -124,6 +124,7 @@ abstract class BaseUpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->install($this->data['requirements'], $io);
+            Craft::info("Updated Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
@@ -145,6 +146,7 @@ abstract class BaseUpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->uninstall($packages, $io);
+            Craft::info("Updated Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
             $this->data['removed'] = true;
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
@@ -166,6 +168,7 @@ abstract class BaseUpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->optimize($io);
+            Craft::info("Optimized the Composer autoloader.\nOutput: ".$io->getOutput(), __METHOD__);
         } catch (\Throwable $e) {
             Craft::error('Error optimizing the Composer autoloader: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);

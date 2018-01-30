@@ -3143,6 +3143,7 @@ ul.tree,
   .add {
     position: relative;
     z-index: 1;
+    @include margin(7px, 7px, 0, 0);
     display: inline-block;
     width: 12em;
 

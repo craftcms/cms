@@ -144,7 +144,7 @@ class Assets extends Component
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
-        if (AssetsHelper::getFileKindByExtension($pathOnServer) === 'image') {
+        if (AssetsHelper::getFileKindByExtension($pathOnServer) === Asset::KIND_IMAGE) {
             Image::cleanImageByPath($pathOnServer);
         }
 

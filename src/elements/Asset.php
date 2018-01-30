@@ -48,9 +48,10 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property bool           $hasThumb Whether the file has a thumbnail
- * @property int|float|null $height   the image height
- * @property int|float|null $width    the image width
+ * @property array|null     $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property bool           $hasThumb   whether the file has a thumbnail
+ * @property int|float|null $height     the image height
+ * @property int|float|null $width      the image width
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -81,6 +82,29 @@ class Asset extends Element
     const SCENARIO_INDEX = 'index';
     const SCENARIO_CREATE = 'create';
     const SCENARIO_REPLACE = 'replace';
+
+    // File kinds
+    // -------------------------------------------------------------------------
+
+    const KIND_ACCESS = 'access';
+    const KIND_AUDIO = 'audio';
+    const KIND_COMPRESSED = 'compressed';
+    const KIND_EXCEL = 'excel';
+    const KIND_FLASH = 'flash';
+    const KIND_HTML = 'html';
+    const KIND_ILLUSTRATOR = 'illustrator';
+    const KIND_IMAGE = 'image';
+    const KIND_JAVASCRIPT = 'javascript';
+    const KIND_JSON = 'json';
+    const KIND_PDF = 'pdf';
+    const KIND_PHOTOSHOP = 'photoshop';
+    const KIND_PHP = 'php';
+    const KIND_POWERPOINT = 'powerpoint';
+    const KIND_TEXT = 'text';
+    const KIND_VIDEO = 'video';
+    const KIND_WORD = 'word';
+    const KIND_XML = 'xml';
+    const KIND_UNKNOWN = 'unknown';
 
     // Static
     // =========================================================================
@@ -375,11 +399,6 @@ class Asset extends Element
     public $size;
 
     /**
-     * @var string|null Focal point
-     */
-    public $focalPoint;
-
-    /**
      * @var \DateTime|null Date modified
      */
     public $dateModified;
@@ -439,6 +458,11 @@ class Asset extends Element
      * @var int|float|null Height
      */
     private $_height;
+
+    /**
+     * @var array|null Focal point
+     */
+    private $_focalPoint;
 
     /**
      * @var AssetTransform|null
@@ -583,7 +607,7 @@ class Asset extends Element
      */
     public function getImg()
     {
-        if ($this->kind === 'image' && $this->getHasUrls()) {
+        if ($this->kind === self::KIND_IMAGE && $this->getHasUrls()) {
             $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
             return Template::raw($img);
@@ -873,24 +897,56 @@ class Asset extends Element
     }
 
     /**
-     * Return the Asset's focal point or null if not an image.
+     * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
-     * @return null|array
+     * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
+     *
+     * @return array|string|null
      */
-    public function getFocalPoint()
+    public function getFocalPoint(bool $asCss = false)
     {
-        if ($this->kind !== 'image') {
+        if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
 
-        if (!empty($this->focalPoint)) {
-            $focal = explode(';', $this->focalPoint);
-            if (count($focal) === 2) {
-                return ['x' => $focal[0], 'y' => $focal[1]];
-            }
+        $focal = $this->_focalPoint ?? ['x' => 0.5, 'y' => 0.5];
+
+        if ($asCss) {
+            return ($focal['x']*100).'% '.($focal['y']*100).'%';
         }
 
-        return ['x' => 0.5, 'y' => 0.5];
+        return $focal;
+    }
+
+    /**
+     * Sets the asset's focal point.
+     *
+     * @param $value string|array|null
+     *
+     * @throws \InvalidArgumentException if $value is invalid
+     */
+    public function setFocalPoint($value)
+    {
+        if (is_array($value)) {
+            if (!isset($value['x'], $value['y'])) {
+                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+            }
+            $value = [
+                'x' => (float)$value['x'],
+                'y' => (float)$value['y']
+            ];
+        } else if ($value !== null) {
+            $focal = explode(';', $value);
+            if (count($focal) !== 2) {
+                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+            }
+            $value = [
+                'x' => (float)$focal[0],
+                'y' => (float)$focal[1]
+            ];
+        }
+
+        $this->_focalPoint = $value;
     }
 
     // Indexes, etc.
@@ -956,9 +1012,9 @@ class Asset extends Element
                 $srcsets[] = $thumbUrl.' '.$width.'w';
             }
 
-            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">' .
-                '<div class="image-preview">' .
-                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">' .
+            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">'.
+                '<div class="image-preview">'.
+                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">'.
                 '</div>';
 
             if ($editable) {
@@ -1004,8 +1060,9 @@ class Asset extends Element
     public function attributes()
     {
         $attributes = parent::attributes();
-        $attributes[] = 'width';
+        $attributes[] = 'focalPoint';
         $attributes[] = 'height';
+        $attributes[] = 'width';
 
         return $attributes;
     }
@@ -1121,6 +1178,11 @@ class Asset extends Element
             $record->width = $this->_width;
             $record->height = $this->_height;
             $record->dateModified = $this->dateModified;
+
+            if ($focal = $this->getFocalPoint()) {
+                $record->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
+            }
+
             $record->save(false);
         }
 
@@ -1171,7 +1233,7 @@ class Asset extends Element
      */
     private function _getDimension(string $dimension, $transform)
     {
-        if ($this->kind !== 'image') {
+        if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
 
@@ -1288,7 +1350,7 @@ class Asset extends Element
         if ($tempPath) {
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
-            if ($this->kind === 'image') {
+            if ($this->kind === self::KIND_IMAGE) {
                 list ($this->_width, $this->_height) = Image::imageSize($tempPath);
             } else {
                 $this->_width = null;

@@ -15,7 +15,7 @@ class m171126_105927_disabled_plugins extends Migration
     public function safeUp()
     {
         if (!$this->db->columnExists('{{%plugins}}', 'enabled')) {
-            $this->addColumn('{{%plugins}}', 'enabled', $this->boolean()->defaultValue(false)->notNull());
+            $this->addColumn('{{%plugins}}', 'enabled', $this->boolean()->after('licenseKeyStatus')->defaultValue(false)->notNull());
             $this->update('{{%plugins}}', ['enabled' => true]);
         }
 

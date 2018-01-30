@@ -227,10 +227,6 @@ class TagsController extends Controller
 
         array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
 
-        foreach ($return as &$tag) {
-            $tag['title'] = Html::encode($tag['title']);
-        }
-
         return $this->asJson([
             'tags' => $return,
             'exactMatch' => $exactMatch

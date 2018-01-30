@@ -1,5 +1,37 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC8 - 2018-01-30
+
+### Added
+- Added the `clone()` template function. ([#2375](https://github.com/craftcms/cms/issues/2375))
+- Added `craft\base\ApplicationTrait::updateTargetLanguage()`.
+- Added `craft\elements\Asset::setFocalPoint()`.
+- Added `craft\queue\QueueLogBehavior`.
+
+### Changed
+- Craft now logs any output from Composer commands it runs, even if nothing bad happened.
+- Message translations registered with `craft\web\View::registerTranslations()` now get `<script>` tags added at the `POS_BEGIN` position, reducing the chance that they’re not ready in time for scripts that rely on them.
+- Improved the console output when running `queue/run -v` or `queue/listen -v` from the terminal. ([#2355](https://github.com/craftcms/cms/pull/2355))
+- Queue logs now include start/stop/error info about executed jobs. ([#2366](https://github.com/craftcms/cms/pull/2366))
+- `craft\elements\Asset::focalPoint` is now a shortcut for `getFocalPoint()`, so the value will either be an array with `x` and `y` keys, or `null` if the asset isn’t an image.
+- `craft\elements\Asset::getFocalPoint()` now has a `$asCss` argument that can be set to `true` to get the focal point returned in CSS syntax (e.g. `"50% 25%"`). ([#2356](https://github.com/craftcms/cms/pull/2356))
+
+### Deprecated
+- Deprecated `craft\helpers\UrlHelper::urlWithProtocol()` (previously removed).
+- Deprecated `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()` (previously removed).
+
+### Fixed
+- Fixed an error that could occur when calling `craft\helpers\UrlHelper` methods from the console. ([#2347](https://github.com/craftcms/cms/issues/2347))
+- Fixed a bug where Matrix fields with equal Min Blocks and Max Blocks settings weren’t creating default blocks for existing elements. ([#2353](https://github.com/craftcms/cms/issues/2353))
+- Fixed a bug where Matrix fields were enforcing required sub-field validation when the parent element was enabled globally but not for the current site.
+- Fixed a bug where the Debug Toolbar was showing the Yii logo instead of the Craft logo in the Control Panel. ([#2348](https://github.com/craftcms/cms/issues/2348))
+- Fixed a bug where Single entries’ titles were always reset to their section name when saving their section’s settings. ([#2349](https://github.com/craftcms/cms/issues/2349))
+- Fixed a bug where Singles’ dynamic entry title formats were not getting applied.
+- Fixed an error that occurred when calling `craft\helpers\Assets::getFileKindLabel()` if the file kind was unknown. ([#2354](https://github.com/craftcms/cms/issues/2354))
+- Fixed an error that occurred if a textual field was converted to a Table field. ([#2365](https://github.com/craftcms/cms/issues/2365))
+- Fixed an error that occurred when submitting a front-end login form with an invalid username and an empty password. ([#2367](https://github.com/craftcms/cms/issues/2367))
+- Fixed a bug where tags weren’t getting slugs. ([#883](https://github.com/craftcms/cms/issues/883))
+
 ## 3.0.0-RC7.1 - 2018-01-24
 
 ### Changed
@@ -10,6 +42,7 @@
 ### Fixed
 - Fixed a bug where saving a Single or Structure section with more than one site enabled would result in all of the section’s entries getting deleted, in all but one of the sites. ([#2345](https://github.com/craftcms/cms/issues/2345))
 - Fixed an error that occurred if a QueryAbortedException was thrown when calling `craft\db\Query::exists()`. ([#2346](https://github.com/craftcms/cms/issues/2346))
+- Fixed a bug where Matrix fields with a Min Blocks value were enforcing their Min Blocks setting even if the element wasn’t live yet, which made it impossible for them to be added to a Global Set. ([#2350](https://github.com/craftcms/cms/issues/2350))
 
 ## 3.0.0-RC7 - 2018-01-23
 

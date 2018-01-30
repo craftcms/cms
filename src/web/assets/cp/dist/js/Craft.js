@@ -1,4 +1,4 @@
-/*!   - 2018-01-23 */
+/*!   - 2018-01-30 */
 (function($){
 
 /** global: Craft */
@@ -10863,6 +10863,14 @@ Craft.CP = Garnish.Base.extend(
                 this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
                 this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('target', '_blank')
+                }
+            });
         },
 
         initConfirmUnloadForms: function() {
@@ -18059,7 +18067,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="plus"/>').appendTo($li).text(Craft.escapeHtml(data.search));
+                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');

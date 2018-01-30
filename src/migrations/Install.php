@@ -9,6 +9,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\elements\Asset;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
@@ -130,7 +131,7 @@ class Install extends Migration
             'volumeId' => $this->integer(),
             'folderId' => $this->integer()->notNull(),
             'filename' => $this->string()->notNull(),
-            'kind' => $this->string(50)->notNull()->defaultValue('unknown'),
+            'kind' => $this->string(50)->notNull()->defaultValue(Asset::KIND_UNKNOWN),
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
@@ -495,10 +496,10 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
-            'enabledByDefault' => $this->boolean()->defaultValue(true)->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'uriFormat' => $this->text(),
             'template' => $this->string(500),
+            'enabledByDefault' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

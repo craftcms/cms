@@ -1,6 +1,19 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3006 - 2018-01-30
+
+### Changed
+- Updated jQuery to 3.3.1 and added the [jQuery Migrate](https://github.com/jquery/jquery-migrate) plugin to maintain backwards compatibility with jQuery 2.
+- Tab and field names in Field Layout Designers are no longer displayed in all-uppercase. ([#2360](https://github.com/craftcms/cms/issues/2360))
+- Fields in Field Layout Designers now have tool tips that reveal their handles. ([#2360](https://github.com/craftcms/cms/issues/2360))
+- Asset thumbnails can now only be generated on Control Panel requests by logged-in users.
+- The Control Panel now prevents referrer information from being sent when following links, on [supporting browsers](https://caniuse.com/#search=referrer).
+- Links within the Control Panel that point to a different hostname now open in a new window. ([#1206](https://github.com/craftcms/cms/issues/1206))
+
+### Fixed
+- Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
+- Fixed a bug where Tags fields were encoding special characters on tag creation, and double/triple-encoding tag names in the UI. ([#2369](https://github.com/craftcms/cms/issues/2369))
+- Fixed a bug where Craft might not delete elements for locales that they no longer support if Dev Mode is enabled.
 
 ## 2.6.3005 - 2018-01-23
 

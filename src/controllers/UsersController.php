@@ -115,8 +115,7 @@ class UsersController extends Controller
 
         if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword($password, '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-
+            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
             return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
@@ -1745,8 +1744,7 @@ class UsersController extends Controller
         $currentHashedPassword = $currentUser->password;
         $currentPassword = Craft::$app->getRequest()->getRequiredParam('password');
 
-        return Craft::$app->getSecurity()->validatePassword($currentPassword,
-            $currentHashedPassword);
+        return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
     }
 
     /**

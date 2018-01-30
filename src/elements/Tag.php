@@ -62,6 +62,14 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function hasUris(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isLocalized(): bool
     {
         return true;

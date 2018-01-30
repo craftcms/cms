@@ -20,8 +20,8 @@ class m170217_120224_asset_indexing_columns extends Migration
             return true;
         }
 
-        $this->addColumn('{{%assetindexdata}}', 'inProgress', $this->boolean()->defaultValue(false));
-        $this->addColumn('{{%assetindexdata}}', 'completed', $this->boolean()->defaultValue(false));
+        $this->addColumn('{{%assetindexdata}}', 'inProgress', $this->boolean()->after('recordId')->defaultValue(false));
+        $this->addColumn('{{%assetindexdata}}', 'completed', $this->boolean()->after('inProgress')->defaultValue(false));
 
         MigrationHelper::dropIndexIfExists('{{%assetindexdata}}', ['sessionId', 'volumeId', 'offset'], true, $this);
 

@@ -14,7 +14,7 @@ class m171013_142500_transform_interlace extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%assettransforms}}', 'interlace', $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'));
+        $this->addColumn('{{%assettransforms}}', 'interlace', $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->after('quality')->notNull()->defaultValue('none'));
     }
 
     /**

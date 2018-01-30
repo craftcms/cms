@@ -15,7 +15,7 @@ class m171012_151440_primary_site extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%sites}}', 'primary', $this->boolean()->defaultValue(false)->notNull());
+        $this->addColumn('{{%sites}}', 'primary', $this->boolean()->after('groupId')->defaultValue(false)->notNull());
 
         $primarySiteId = (new Query())
             ->select(['id'])
