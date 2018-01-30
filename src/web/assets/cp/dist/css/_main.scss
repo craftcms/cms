@@ -1958,13 +1958,10 @@ $checkboxPadding: 20px;
 .elementselect {
   position: relative;
   min-height: 37px;
+  margin-top: -7px;
 
   &:after {
     @include clearafter;
-  }
-
-  .elements {
-    margin-top: -7px;
   }
 
   .element,
@@ -3146,6 +3143,7 @@ ul.tree,
   .add {
     position: relative;
     z-index: 1;
+    @include margin(7px, 7px, 0, 0);
     display: inline-block;
     width: 12em;
 
