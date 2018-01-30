@@ -923,20 +923,20 @@ class Asset extends Element
      *
      * @return array|null
      */
-    public function getFocalPointPercentage ($includePercentSign = false)
+    public function getFocalPointPercentage($includePercentSign = false)
     {
         $focalPoint = $this->getFocalPoint();
 
-        if ( empty($focalPoint) ) {
+        if (empty($focalPoint)) {
             return null;
         }
 
         $x = $focalPoint['x'] * 100;
         $y = $focalPoint['y'] * 100;
 
-        if ( $includePercentSign ) {
-            $x = $x . '%';
-            $y = $y . '%';
+        if ($includePercentSign) {
+            $x = $x.'%';
+            $y = $y.'%';
         }
 
         return [
@@ -1008,9 +1008,9 @@ class Asset extends Element
                 $srcsets[] = $thumbUrl.' '.$width.'w';
             }
 
-            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">' .
-                '<div class="image-preview">' .
-                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">' .
+            $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">'.
+                '<div class="image-preview">'.
+                '<img sizes="'.$thumbSizes[0][0].'px" srcset="'.implode(', ', $srcsets).'" alt="">'.
                 '</div>';
 
             if ($editable) {
