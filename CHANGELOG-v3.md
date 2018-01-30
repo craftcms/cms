@@ -14,6 +14,7 @@
 - Improved the console output when running `queue/run -v` or `queue/listen -v` from the terminal. ([#2355](https://github.com/craftcms/cms/pull/2355))
 - Queue logs now include start/stop/error info about executed jobs. ([#2366](https://github.com/craftcms/cms/pull/2366))
 - `craft\elements\Asset::focalPoint` is now a shortcut for `getFocalPoint()`, so the value will either be an array with `x` and `y` keys, or `null` if the asset isn’t an image.
+- `craft\elements\Asset::getFocalPoint()` now has a `$asCss` argument that can be set to `true` to get the focal point returned in CSS syntax (e.g. `"50% 25%"`). ([#2356](https://github.com/craftcms/cms/pull/2356))
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::urlWithProtocol()` (previously removed).

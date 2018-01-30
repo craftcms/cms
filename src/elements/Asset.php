@@ -899,15 +899,23 @@ class Asset extends Element
     /**
      * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
-     * @return array|null
+     * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
+     *
+     * @return array|string|null
      */
-    public function getFocalPoint()
+    public function getFocalPoint(bool $asCss = false)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
         }
 
-        return $this->_focalPoint ?? ['x' => 0.5, 'y' => 0.5];
+        $focal = $this->_focalPoint ?? ['x' => 0.5, 'y' => 0.5];
+
+        if ($asCss) {
+            return ($focal['x']*100).'% '.($focal['y']*100).'%';
+        }
+
+        return $focal;
     }
 
     /**
