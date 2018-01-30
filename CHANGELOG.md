@@ -7,6 +7,7 @@
 - Tab and field names in Field Layout Designers are no longer displayed in all-uppercase. ([#2360](https://github.com/craftcms/cms/issues/2360))
 - Fields in Field Layout Designers now have tool tips that reveal their handles. ([#2360](https://github.com/craftcms/cms/issues/2360))
 - Asset thumbnails can now only be generated on Control Panel requests by logged-in users.
+- The Control Panel now prevents referrer information from being sent when following links, on [supporting browsers](https://caniuse.com/#search=referrer).
 
 ### Fixed
 - Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
