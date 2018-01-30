@@ -245,6 +245,14 @@ Craft.CP = Garnish.Base.extend(
 		{
 			this.addListener(this.$edition, 'click', 'showUpgradeModal');
 		}
+
+		// Open outbound links in new windows
+		// hat tip: https://stackoverflow.com/a/2911045/1688568
+		$('a').each(function() {
+			if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+				$(this).attr('target', '_blank')
+			}
+		});
 	},
 
 	submitPrimaryForm: function()

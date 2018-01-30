@@ -8,6 +8,7 @@
 - Fields in Field Layout Designers now have tool tips that reveal their handles. ([#2360](https://github.com/craftcms/cms/issues/2360))
 - Asset thumbnails can now only be generated on Control Panel requests by logged-in users.
 - The Control Panel now prevents referrer information from being sent when following links, on [supporting browsers](https://caniuse.com/#search=referrer).
+- Links within the Control Panel that point to a different hostname now open in a new window. ([#1206](https://github.com/craftcms/cms/issues/1206))
 
 ### Fixed
 - Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
