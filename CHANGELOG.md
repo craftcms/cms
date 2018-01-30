@@ -1,6 +1,6 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3006 - 2018-01-30
 
 ### Changed
 - Updated jQuery to 3.3.1 and added the [jQuery Migrate](https://github.com/jquery/jquery-migrate) plugin to maintain backwards compatibility with jQuery 2.
