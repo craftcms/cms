@@ -796,8 +796,9 @@ body.rtl .structure ul li.draginsertion { margin-right: 38px; }
 .structure .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px #0d78f2; box-shadow: inset 0 0 0 2px #0d78f2; }
 
 /* element select fields */
-.elementselect { position: relative; min-height: 37px; margin-top: -7px; }
+.elementselect { position: relative; min-height: 37px; }
 .elementselect:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+.elementselect .elements { margin-top: -7px; }
 body.ltr .elementselect .element, body.ltr .elementselect .btn { float: left; }
 body.rtl .elementselect .element, body.rtl .elementselect .btn { float: right; }
 body.ltr .elementselect .element, body.ltr .elementselect .btn { margin: 7px 7px 0 0 ; }
