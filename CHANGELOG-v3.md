@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `clone()` template function. ([#2375](https://github.com/craftcms/cms/issues/2375))
 - Added `craft\base\ApplicationTrait::updateTargetLanguage()`.
 - Added `craft\queue\QueueLogBehavior`.
 
