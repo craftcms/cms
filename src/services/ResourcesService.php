@@ -182,13 +182,13 @@ class ResourcesService extends BaseApplicationComponent
 				case 'assetthumbs':
 				{
 					// Only service asset thumbs for logged-in Control Panel requests.
-					if (craft()->request->isSiteRequest())
+					if (!craft()->request->isCpRequest())
 					{
 						// Missing status code.
 						throw new HttpException(404);
 					}
 
-					if (!craft()->request->isCpRequest() || !craft()->userSession->isLoggedIn())
+					if (!craft()->userSession->isLoggedIn())
 					{
 						// Unauthorized status code.
 						throw new HttpException(401);
