@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC8 - 2018-01-30
 
 ### Added
 - Added the `clone()` template function. ([#2375](https://github.com/craftcms/cms/issues/2375))
