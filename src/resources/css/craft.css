@@ -885,11 +885,9 @@ body.rtl .structure ul li.draginsertion { margin-right: 38px; }
 .structure .row.droptarget { border-radius: 5px; -webkit-box-shadow: inset 0 0 0 2px #0d78f2; -moz-box-shadow: inset 0 0 0 2px #0d78f2; box-shadow: inset 0 0 0 2px #0d78f2; }
 
 /* element select fields */
-.elementselect { position: relative; min-height: 37px; }
+.elementselect { position: relative; min-height: 37px; margin-top: -7px; }
 
 .elementselect:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
-
-.elementselect .elements { margin-top: -7px; }
 
 body.ltr .elementselect .element, body.ltr .elementselect .btn { float: left; }
 body.rtl .elementselect .element, body.rtl .elementselect .btn { float: right; }
@@ -1340,6 +1338,8 @@ body.rtl .menu hr.padded { margin-right: 10px; }
 .tagselect .element.small { clear: none; }
 
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
+body.ltr .tagselect .add { margin: 7px 7px 0 0 ; }
+body.rtl .tagselect .add { margin: 7px 0 0 7px ; }
 
 body.ltr .tagselect .add .text { padding-right: 30px; }
 body.rtl .tagselect .add .text { padding-left: 30px; }

@@ -844,9 +844,8 @@ $checkboxPadding: 20px;
 }
 
 /* element select fields */
-.elementselect { position: relative; min-height: 37px; }
+.elementselect { position: relative; min-height: 37px; margin-top: -7px; }
 .elementselect:after { @include clearafter; }
-.elementselect .elements { margin-top: -7px; }
 .elementselect .element,
 .elementselect .btn { @include floatleft; @include margin(7px, 7px, 0, 0); }
 .elementselect .element.small,
@@ -1251,7 +1250,7 @@ body #redactor-modal-overlay {
 
 /* tag select fields */
 .tagselect .element.small { clear: none; }
-.tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
+.tagselect .add { position: relative; z-index: 1; @include margin(7px, 7px, 0, 0); display: inline-block; width: 12em; }
 .tagselect .add .text { @include padding-right(30px); }
 .tagselect .add .spinner { position: absolute; top: 0; @include right(5px); }
 body.ltr .tagselect.elementselect .element,
