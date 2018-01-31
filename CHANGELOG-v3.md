@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
+
 ### Fixed
 - Fixed an error that occurred if an empty, non-null value was passed into `craft\elements\Asset::getUrl()`. ([#2376](https://github.com/craftcms/cms/issues/2376))
 
