@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
+use Composer\Semver\Comparator;
+use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
@@ -473,6 +475,11 @@ class UpdaterController extends BaseUpdaterController
             $fromVersion = $plugin->getVersion();
         }
 
-        return version_compare($toVersion, $fromVersion, '>');
+        // Normalize the versions in case only one of them starts with a 'v' or something
+        $vp = new VersionParser();
+        $toVersion = $vp->normalize($toVersion);
+        $fromVersion = $vp->normalize($fromVersion);
+
+        return Comparator::greaterThan($toVersion, $fromVersion);
     }
 }

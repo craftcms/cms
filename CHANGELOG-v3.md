@@ -14,6 +14,7 @@
 ### Fixed
 - Fixed an error that occurred if an empty, non-null value was passed into `craft\elements\Asset::getUrl()`. ([#2376](https://github.com/craftcms/cms/issues/2376))
 - Fixed a bug where error messages concerning upgrading/downgrading Craft to incompatible versions were including broken links to supported Craft versions.
+- Fixed a bug where updating a plugin could immediately abort with a “Nothing to update” message, if the plugin’s version numbers weren’t formatted consistently. ([#2378](https://github.com/craftcms/cms/issues/2378))
 
 ## 3.0.0-RC8 - 2018-01-30
 
