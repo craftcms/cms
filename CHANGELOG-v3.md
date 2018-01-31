@@ -5,8 +5,15 @@
 ### Added
 - Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
 
+### Removed
+- Removed `craft\helpers\App::craftDownloadUrl()`.
+- Removed `craft\helpers\App::majorMinorVersion()`.
+- Removed `craft\helpers\App::majorVersion()`.
+- Removed `craft\helpers\App::normalizeVersionNumber()`.
+
 ### Fixed
 - Fixed an error that occurred if an empty, non-null value was passed into `craft\elements\Asset::getUrl()`. ([#2376](https://github.com/craftcms/cms/issues/2376))
+- Fixed a bug where error messages concerning upgrading/downgrading Craft to incompatible versions were including broken links to supported Craft versions.
 
 ## 3.0.0-RC8 - 2018-01-30
 

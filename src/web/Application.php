@@ -151,10 +151,9 @@ class Application extends \yii\web\Application
 
             if ($request->getIsCpRequest()) {
                 $version = $this->getInfo()->version;
-                $url = App::craftDownloadUrl($version);
 
-                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', [
-                    'url' => "[{$version}]({$url})",
+                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
+                    'version' => $version,
                 ]));
             }
 
@@ -543,9 +542,8 @@ class Application extends \yii\web\Application
         ) {
             // Did we skip a breakpoint?
             if ($this->getUpdates()->getWasCraftBreakpointSkipped()) {
-                $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
-                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
-                    'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
+                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
+                    'version' => $this->minVersionRequired,
                     'targetVersion' => Craft::$app->getVersion(),
                 ]));
             }
