@@ -292,20 +292,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function __construct(string $elementType, array $config = [])
     {
         $this->elementType = $elementType;
+
+        // Use ** as a placeholder for "all the default columns"
+        $config['select'] = $config['select'] ?? ['**'];
+
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        if ($this->select === null) {
-            // Use ** as a placeholder for "all the default columns"
-            $this->select = ['**'];
-        }
     }
 
     /**
