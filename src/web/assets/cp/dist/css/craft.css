@@ -2010,7 +2010,7 @@ body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #main-container #main #main-content #details .spinner { background-image: url(../images/spinner_details_2x.gif); }
   #upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
   #upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; } }
-.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; font-style: italic; text-transform: uppercase; }
+.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png); }
 body.ltr .fieldlayoutform { background-position: 25px 24px; }
