@@ -563,7 +563,7 @@ class Sections extends Component
                     // Find a site that the section was already enabled in, and still is
                     $oldSiteIds = array_keys($allOldSiteSettingsRecords);
                     $newSiteIds = array_keys($allSiteSettings);
-                    $persistentSiteIds = array_intersect($newSiteIds, $oldSiteIds);
+                    $persistentSiteIds = array_values(array_intersect($newSiteIds, $oldSiteIds));
 
                     Craft::$app->getQueue()->push(new ResaveElements([
                         'description' => Craft::t('app', 'Resaving {section} entries', [
