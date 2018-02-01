@@ -1,6 +1,6 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3007 - 2018-01-31
 
 ### Fixed
 - Fixed some jQuery deprecation errors in the Control Panel.
