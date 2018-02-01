@@ -14,6 +14,7 @@
 - Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
 - Fixed a bug where Tags fields were encoding special characters on tag creation, and double/triple-encoding tag names in the UI. ([#2369](https://github.com/craftcms/cms/issues/2369))
 - Fixed a bug where Craft might not delete elements for locales that they no longer support if Dev Mode is enabled.
+- Fixed some jQuery deprecation errors in the Control Panel.
 
 ## 2.6.3005 - 2018-01-23
 
