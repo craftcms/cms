@@ -770,7 +770,10 @@ class UsersController extends Controller
         // Show the permission tab for the users that can change them on Craft Client+ editions (unless
         // you're on Client and you're the admin account. No need to show since we always need an admin on Client)
         if (
-            ($edition === Craft::Pro && Craft::$app->getUser()->checkPermission('assignUserPermissions')) ||
+            ($edition === Craft::Pro && (
+                Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
+                Craft::$app->getUser()->checkPermission('assignUserGroups')
+            )) ||
             ($edition === Craft::Client && $isClientAccount && Craft::$app->getUser()->getIsAdmin())
         ) {
             $tabs['perms'] = [
@@ -1784,11 +1787,14 @@ class UsersController extends Controller
      */
     private function _processUserGroupsPermissions(User $user)
     {
+        if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
+            return;
+        }
+
         $request = Craft::$app->getRequest();
         $edition = Craft::$app->getEdition();
-        $userSession = Craft::$app->getUser();
 
-        if ($edition >= Craft::Client && $userSession->checkPermission('assignUserPermissions')) {
+        if ($edition >= Craft::Client && $currentUser->can('assignUserPermissions')) {
             // Save any user permissions
             if ($user->admin) {
                 $permissions = [];
@@ -1826,7 +1832,7 @@ class UsersController extends Controller
         }
 
         // Only Craft Pro has user groups
-        if ($edition === Craft::Pro && $userSession->checkPermission('assignUserGroups')) {
+        if ($edition === Craft::Pro && $currentUser->can('assignUserGroups')) {
             // Save any user groups
             $groupIds = $request->getBodyParam('groups');
 
@@ -1848,8 +1854,11 @@ class UsersController extends Controller
                     if (!in_array($groupId, $oldGroupIds, false)) {
                         $hasNewGroups = true;
 
-                        // Make sure the current user even has permission to assign it
-                        if (!$userSession->checkPermission('assignUserGroup:'.$groupId)) {
+                        // Make sure the current user is in the group or has permission to assign it
+                        if (
+                            !$currentUser->isInGroup($groupId) &&
+                            !$currentUser->can('assignUserGroup:'.$groupId)
+                        ) {
                             throw new ForbiddenHttpException("Your account doesn't have permission to assign user group {$groupId} to a user.");
                         }
                     }
