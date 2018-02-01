@@ -17,6 +17,7 @@
 - Fixed a bug where updating a plugin could immediately abort with a “Nothing to update” message, if the plugin’s version numbers weren’t formatted consistently. ([#2378](https://github.com/craftcms/cms/issues/2378))
 - Fixed an error that could occur when saving a section that isn’t enabled for the first listed site. ([#2385](https://github.com/craftcms/cms/issues/2385))
 - Fixed a bug where you would get a PHP error when using `craft\validators\UrlValidator` if the [intl extension](https://secure.php.net/manual/en/book.intl.php) was loaded, but was not compiled with the `INTL_IDNA_VARIANT_UTS46` constant.
+- Fixed an error that occurred when attempting to edit an entry, if the latest revision of the entry was created by a deleted user. ([#2390](https://github.com/craftcms/cms/issues/2390))
 
 ## 3.0.0-RC8 - 2018-01-30
 

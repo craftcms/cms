@@ -165,7 +165,10 @@ class EntryRevisions extends Component
             $allDrafts = $this->getDraftsByEntryId($entryId, $siteId);
 
             foreach ($allDrafts as $draft) {
-                if ($draft->creatorId == $user->id || $user->can('editPeerEntryDrafts:'.$draft->sectionId)) {
+                if (
+                    ($draft->creatorId && $draft->creatorId == $user->id) ||
+                    $user->can('editPeerEntryDrafts:'.$draft->sectionId)
+                ) {
                     $editableDrafts[] = $draft;
                 }
             }

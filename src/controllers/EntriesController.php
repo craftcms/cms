@@ -839,7 +839,9 @@ class EntriesController extends BaseEntriesController
             $currentVersion = reset($versions);
 
             if ($currentVersion !== false) {
-                $variables['currentVersionCreator'] = $currentVersion->getCreator();
+                if ($currentVersion->creatorId) {
+                    $variables['currentVersionCreator'] = $currentVersion->getCreator();
+                }
                 $variables['currentVersionEditTime'] = $currentVersion->dateUpdated;
 
                 // Are we editing the "current" version?
