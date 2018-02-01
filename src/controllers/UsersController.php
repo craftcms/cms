@@ -1882,8 +1882,11 @@ class UsersController extends BaseController
 						{
 							$hasNewGroups = true;
 
-							// Make sure the current user even has permission to assign it
-							if (!$currentUser->can('assignUserGroup:'.$groupId))
+							// Make sure the current user is in the group or has permission to assign it
+							if (
+								!$currentUser->isInGroup($groupId) &&
+								!$currentUser->can('assignUserGroup:'.$groupId)
+							)
 							{
 								throw new HttpException(403, "Your account doesn't have permission to assign user group {$groupId} to a user.");
 							}

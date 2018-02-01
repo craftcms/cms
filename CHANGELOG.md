@@ -4,6 +4,7 @@
 
 ### Changed
 - The Edit User page now shows the Permissions tab for users that have the “Assign user groups” permission, even if they don’t have the “Assign user permissions” permission.
+- Users with the “Assign user groups” permission no longer need explicit permission to assign a user group, if they already belong to it. ([#2087](https://github.com/craftcms/cms/issues/2087))
 
 ## 2.6.3007 - 2018-01-31
 
