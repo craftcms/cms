@@ -15,6 +15,7 @@
 - Fixed a bug where Tags fields were encoding special characters on tag creation, and double/triple-encoding tag names in the UI. ([#2369](https://github.com/craftcms/cms/issues/2369))
 - Fixed a bug where Craft might not delete elements for locales that they no longer support if Dev Mode is enabled.
 - Fixed some jQuery deprecation errors in the Control Panel.
+- Fixed a bug where Control Panel panes with sidebars weren’t expanding to the height of their content. ([#2379](https://github.com/craftcms/cms/issues/2379))
 
 ## 2.6.3005 - 2018-01-23
 

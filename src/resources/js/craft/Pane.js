@@ -157,7 +157,7 @@ Craft.Pane = Garnish.Base.extend(
 	{
 		if (true || this.$pane.hasClass('showing-sidebar'))
 		{
-			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - this.$tabsContainer.height() - 48;
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - (this.$tabsContainer.height() || 0) - 48;
 		}
 		else
 		{
@@ -172,8 +172,8 @@ Craft.Pane = Garnish.Base.extend(
 		this.updateSidebarStyles._styles = {};
 
 		this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
-		this.updateSidebarStyles._paneOffset = this.$pane.offset().top + this.$tabsContainer.height();
-		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height();
+		this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() || 0);
+		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() || 0);
 		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
 		// Have we scrolled passed the top of the pane?
