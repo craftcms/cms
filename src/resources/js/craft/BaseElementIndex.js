@@ -263,7 +263,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (!Garnish.isMobileBrowser(true))
 			{
-				this.$search.focus();
+				this.$search.trigger('focus');
 			}
 
 			this.stopSearching();
@@ -275,7 +275,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Auto-focus the Search box
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$search.focus();
+			this.$search.trigger('focus');
 		}
 
 		// Initialize the sort menu

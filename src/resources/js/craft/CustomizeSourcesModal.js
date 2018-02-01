@@ -451,7 +451,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 	select: function()
 	{
 		this.base();
-		this.$labelInput.focus();
+		this.$labelInput.trigger('focus');
 	},
 
 	createSettings: function()

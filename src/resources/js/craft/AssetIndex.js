@@ -787,7 +787,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			if (!$parentSource.hasClass('expanded'))
 			{
-				$parentSource.children('.toggle').click();
+				$parentSource.children('.toggle').trigger('click');
 			}
 		}
 
@@ -842,7 +842,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			}
 			if (!this.isIndexBusy)
 			{
-				this.$uploadButton.parent().find('input[name=assets-upload]').click();
+				this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
 			}
 		}, this));
 
@@ -1273,7 +1273,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// Collapse any temp-expanded drop targets that aren't parents of this one
 		this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-		this.dropTargetFolder.siblings('.toggle').click();
+		this.dropTargetFolder.siblings('.toggle').trigger('click');
 
 		// Keep a record of that
 		this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -1283,7 +1283,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if ($source.parent().hasClass('expanded'))
 		{
-			$source.siblings('.toggle').click();
+			$source.siblings('.toggle').trigger('click');
 		}
 	},
 

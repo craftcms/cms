@@ -214,7 +214,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 		this.killSearchMenu();
 		this.$addTagInput.val('');
-		this.$addTagInput.focus();
+		this.$addTagInput.trigger('focus');
 
 		if (!id)
 		{
