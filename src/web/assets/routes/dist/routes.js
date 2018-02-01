@@ -282,7 +282,7 @@
                 }
                 else {
                     setTimeout($.proxy(function() {
-                        this.$uriInput.focus();
+                        this.$uriInput.trigger('focus');
                     }, this), 100);
                 }
 

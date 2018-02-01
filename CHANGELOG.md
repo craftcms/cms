@@ -1,5 +1,11 @@
 # Craft CMS Changelog
 
+## 2.6.3007 - 2018-01-31
+
+### Fixed
+- Fixed some jQuery deprecation errors in the Control Panel.
+- Fixed a bug where Control Panel panes with sidebars weren’t expanding to the height of their content. ([#2379](https://github.com/craftcms/cms/issues/2379))
+
 ## 2.6.3006 - 2018-01-30
 
 ### Changed
