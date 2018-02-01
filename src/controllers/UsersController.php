@@ -777,7 +777,10 @@ class UsersController extends BaseController
 		// Show the permission tab for the users that can change them on Craft Client+ editions (unless
 		// you're on Client and you're the admin account. No need to show since we always need an admin on Client)
 		if (
-			($craftEdition == Craft::Pro && craft()->userSession->getUser()->can('assignUserPermissions')) ||
+			($craftEdition == Craft::Pro && (
+				craft()->userSession->getUser()->can('assignUserPermissions') ||
+				craft()->userSession->getUser()->can('assignUserGroups')
+			)) ||
 			($craftEdition == Craft::Client && $isClientAccount && craft()->userSession->isAdmin())
 		)
 		{

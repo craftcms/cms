@@ -1,5 +1,10 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+### Changed
+- The Edit User page now shows the Permissions tab for users that have the “Assign user groups” permission, even if they don’t have the “Assign user permissions” permission.
+
 ## 2.6.3007 - 2018-01-31
 
 ### Fixed

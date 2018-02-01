@@ -171,10 +171,10 @@
 					{% endfor %}
 				{% endif %}
 
-				{% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}
+				{% if CraftEdition >= CraftClient and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
 					<div id="perms" class="hidden">
 
-						{% if CraftEdition == CraftPro %}
+						{% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
 							<h2>{{ "User Groups"|t }}</h2>
 
 							{% set assignableGroups = craft.userGroups.getAssignableGroups(account) %}
@@ -209,26 +209,28 @@
 							<hr>
 						{% endif %}
 
-						<h2>{{ "Permissions"|t }}</h2>
+						{% if currentUser.can('assignUserPermissions') %}
+							<h2>{{ "Permissions"|t }}</h2>
 
-						{% if currentUser.admin and CraftEdition == CraftPro %}
-							{{ forms.checkboxField({
-								label: '<strong>' ~ "Admin"|t ~ '</strong>',
-								name: 'admin',
-								id: 'admin',
-								checked: account.admin,
-								reverseToggle: 'permissions'
-							}) }}
+							{% if currentUser.admin and CraftEdition == CraftPro %}
+								{{ forms.checkboxField({
+									label: '<strong>' ~ "Admin"|t ~ '</strong>',
+									name: 'admin',
+									id: 'admin',
+									checked: account.admin,
+									reverseToggle: 'permissions'
+								}) }}
+							{% endif %}
+
+							<input type="hidden" name="permissions" value="">
+
+							<div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
+								{% include "_includes/permissions" with {
+									userOrGroup: (account.admin ? null : account),
+									groupPermissions: craft.userPermissions.getGroupPermissionsByUserId(account.id)
+								} only %}
+							</div>
 						{% endif %}
-
-						<input type="hidden" name="permissions" value="">
-
-						<div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
-							{% include "_includes/permissions" with {
-								userOrGroup: (account.admin ? null : account),
-								groupPermissions: craft.userPermissions.getGroupPermissionsByUserId(account.id)
-							} only %}
-						</div>
 
 						{{ saveUserButtons }}
 
