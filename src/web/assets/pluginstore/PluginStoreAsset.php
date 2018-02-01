@@ -32,7 +32,7 @@ class PluginStoreAsset extends AssetBundle
             'css/main.css',
         ];
         $this->js = [
-            'js/main.js',
+            'js/main.min.js',
         ];
 
         parent::init();
