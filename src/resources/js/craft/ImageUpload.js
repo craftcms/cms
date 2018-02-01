@@ -214,7 +214,7 @@ Craft.ImageHandler = Garnish.Base.extend(
 
 		this.addListener($(settings.uploadButton), 'click', function(ev)
 		{
-			$(ev.currentTarget).siblings('input[type=file]').click();
+			$(ev.currentTarget).siblings('input[type=file]').trigger('click');
 		});
 
 	},

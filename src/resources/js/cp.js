@@ -187,7 +187,7 @@ Craft.CP = Garnish.Base.extend(
 			});
 		}
 
-		Garnish.$doc.on('ready', $.proxy(function()
+		Garnish.$doc.ready($.proxy(function()
 		{
 			// Look for forms that we should watch for changes on
 			this.$confirmUnloadForms = $('form[data-confirm-unload]');
@@ -265,7 +265,7 @@ Craft.CP = Garnish.Base.extend(
 			$('<input type="hidden" name="redirect" value="'+this.$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo(this.$primaryForm);
 		}
 
-		this.$primaryForm.submit();
+		this.$primaryForm.trigger('submit');
 	},
 
 	updateSidebarMenuLabel: function()

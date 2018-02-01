@@ -68,7 +68,7 @@ Craft.Structure = Garnish.Base.extend(
 
 	initToggle: function($toggle)
 	{
-		$toggle.click($.proxy(function(ev)
+		$toggle.on('click', $.proxy(function(ev)
 		{
 			var $li = $(ev.currentTarget).closest('li'),
 				elementId = $li.children('.row').find('.element:first').data('id'),

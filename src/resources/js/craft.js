@@ -1,4 +1,4 @@
-/*! Craft  - 2018-01-29 */
+/*! Craft  - 2018-01-31 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -927,7 +927,7 @@ $.extend(Craft,
 
 		$elem.on('mousedown'+namespace, function() {
 			$elem.addClass('no-outline');
-			$elem.focus();
+			$elem.trigger('focus');
 		})
 		.on('keydown'+namespace+' blur'+namespace, function(event) {
 			if (event.keyCode != Garnish.SHIFT_KEY && event.keyCode != Garnish.CTRL_KEY && event.keyCode != Garnish.CMD_KEY)
@@ -1483,7 +1483,7 @@ $.extend($.fn,
 					.appendTo($form);
 			}
 
-			$form.submit();
+			$form.trigger('submit');
 		});
 	},
 
@@ -1776,7 +1776,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (!Garnish.isMobileBrowser(true))
 			{
-				this.$search.focus();
+				this.$search.trigger('focus');
 			}
 
 			this.stopSearching();
@@ -1788,7 +1788,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Auto-focus the Search box
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$search.focus();
+			this.$search.trigger('focus');
 		}
 
 		// Initialize the sort menu
@@ -4258,7 +4258,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			// Auto-focus the Search box
 			if (!Garnish.isMobileBrowser(true))
 			{
-				this.elementIndex.$search.focus();
+				this.elementIndex.$search.trigger('focus');
 			}
 		}
 
@@ -5616,7 +5616,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			if (!$parentSource.hasClass('expanded'))
 			{
-				$parentSource.children('.toggle').click();
+				$parentSource.children('.toggle').trigger('click');
 			}
 		}
 
@@ -5671,7 +5671,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			}
 			if (!this.isIndexBusy)
 			{
-				this.$uploadButton.parent().find('input[name=assets-upload]').click();
+				this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
 			}
 		}, this));
 
@@ -6102,7 +6102,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// Collapse any temp-expanded drop targets that aren't parents of this one
 		this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-		this.dropTargetFolder.siblings('.toggle').click();
+		this.dropTargetFolder.siblings('.toggle').trigger('click');
 
 		// Keep a record of that
 		this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -6112,7 +6112,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if ($source.parent().hasClass('expanded'))
 		{
-			$source.siblings('.toggle').click();
+			$source.siblings('.toggle').trigger('click');
 		}
 	},
 
@@ -6965,7 +6965,7 @@ Craft.AuthManager = Garnish.Base.extend(
 					{
 						// Auto-focus the renew button
 						setTimeout(function() {
-							$renewSessionBtn.focus();
+							$renewSessionBtn.trigger('focus');
 						}, 100);
 					}
 				}
@@ -7087,7 +7087,7 @@ Craft.AuthManager = Garnish.Base.extend(
 					{
 						// Auto-focus the password input
 						setTimeout($.proxy(function() {
-							this.$passwordInput.focus();
+							this.$passwordInput.trigger('focus');
 						}, this), 100);
 					}
 				}, this),
@@ -7223,7 +7223,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
 					if (!Garnish.isMobileBrowser(true))
 					{
-						this.$passwordInput.focus();
+						this.$passwordInput.trigger('focus');
 					}
 				}
 			}
@@ -8961,7 +8961,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 	select: function()
 	{
 		this.base();
-		this.$labelInput.focus();
+		this.$labelInput.trigger('focus');
 	},
 
 	createSettings: function()
@@ -9488,7 +9488,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 
 				if (!this.$deleteActionRadios.first().prop('checked'))
 				{
-					this.$deleteActionRadios.first().click();
+					this.$deleteActionRadios.first().trigger('click');
 				}
 				else
 				{
@@ -9559,7 +9559,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		// Auto-focus the first radio
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$deleteActionRadios.first().focus();
+			this.$deleteActionRadios.first().trigger('focus');
 		}
 
 		this.base();
@@ -9664,7 +9664,7 @@ Craft.EditableTable = Garnish.Base.extend(
 		this.sorter.addItems($tr);
 
 		// Focus the first input in the row
-		$tr.find('input,textarea,select').first().focus();
+		$tr.find('input,textarea,select').first().trigger('focus');
 
 		// onAddRow callback
 		this.settings.onAddRow($tr);
@@ -10247,7 +10247,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			}
 
 			// Focus on the first text input
-			$hudContents.find('.text:first').focus();
+			$hudContents.find('.text:first').trigger('focus');
 
 			this.addListener(this.$cancelBtn, 'click', function() {
 				this.hud.hide();
@@ -10528,7 +10528,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 	{
 		// Don't let handleFormSubmit() interrupt this time
 		this.disable();
-		this.$form.submit();
+		this.$form.trigger('submit');
 		this.enable();
 	}
 });
@@ -10629,7 +10629,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 	{
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$passwordInput.focus();
+			this.$passwordInput.trigger('focus');
 		}
 	},
 
@@ -12855,7 +12855,7 @@ Craft.ImageHandler = Garnish.Base.extend(
 
 		this.addListener($(settings.uploadButton), 'click', function(ev)
 		{
-			$(ev.currentTarget).siblings('input[type=file]').click();
+			$(ev.currentTarget).siblings('input[type=file]').trigger('click');
 		});
 
 	},
@@ -13470,7 +13470,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		this.trigger('beforeEnter');
 
-		$(document.activeElement).blur();
+		$(document.activeElement).trigger('blur');
 
 		if (!this.$editor)
 		{
@@ -13962,7 +13962,7 @@ Craft.Pane = Garnish.Base.extend(
 	{
 		if (true || this.$pane.hasClass('showing-sidebar'))
 		{
-			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - this.$tabsContainer.height() - 48;
+			this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - (this.$tabsContainer.height() || 0) - 48;
 		}
 		else
 		{
@@ -13977,8 +13977,8 @@ Craft.Pane = Garnish.Base.extend(
 		this.updateSidebarStyles._styles = {};
 
 		this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
-		this.updateSidebarStyles._paneOffset = this.$pane.offset().top + this.$tabsContainer.height();
-		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height();
+		this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() || 0);
+		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() || 0);
 		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
 		// Have we scrolled passed the top of the pane?
@@ -14059,7 +14059,7 @@ Craft.PasswordInput = Garnish.Base.extend(
 			// Swap the inputs, while preventing the focus animation
 			$input.addClass('focus');
 			this.$currentInput.replaceWith($input);
-			$input.focus();
+			$input.trigger('focus');
 			$input.removeClass('focus');
 
 			// Restore the input value
@@ -14556,7 +14556,7 @@ Craft.Structure = Garnish.Base.extend(
 
 	initToggle: function($toggle)
 	{
-		$toggle.click($.proxy(function(ev)
+		$toggle.on('click', $.proxy(function(ev)
 		{
 			var $li = $(ev.currentTarget).closest('li'),
 				elementId = $li.children('.row').find('.element:first').data('id'),
@@ -15863,7 +15863,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 				$header
 					.addClass('ordered '+selectedSortDir)
-					.click($.proxy(this, '_handleSelectedSortHeaderClick'));
+					.on('click', $.proxy(this, '_handleSelectedSortHeaderClick'));
 			}
 			else
 			{
@@ -15874,7 +15874,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 				{
 					$header
 						.addClass('orderable')
-						.click($.proxy(this, '_handleUnselectedSortHeaderClick'));
+						.on('click', $.proxy(this, '_handleUnselectedSortHeaderClick'));
 				}
 			}
 		}
@@ -16430,7 +16430,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 		this.killSearchMenu();
 		this.$addTagInput.val('');
-		this.$addTagInput.focus();
+		this.$addTagInput.trigger('focus');
 
 		if (!id)
 		{

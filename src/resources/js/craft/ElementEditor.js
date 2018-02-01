@@ -161,7 +161,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			}
 
 			// Focus on the first text input
-			$hudContents.find('.text:first').focus();
+			$hudContents.find('.text:first').trigger('focus');
 
 			this.addListener(this.$cancelBtn, 'click', function() {
 				this.hud.hide();

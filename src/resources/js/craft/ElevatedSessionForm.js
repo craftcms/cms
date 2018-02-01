@@ -75,7 +75,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
 	{
 		// Don't let handleFormSubmit() interrupt this time
 		this.disable();
-		this.$form.submit();
+		this.$form.trigger('submit');
 		this.enable();
 	}
 });

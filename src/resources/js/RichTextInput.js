@@ -147,7 +147,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		if (this.redactor.opts.toolbarFixed && !Craft.RichTextInput.scrollPageOnReady)
 		{
-			Garnish.$doc.on('ready', function() {
+			Garnish.$doc.ready(function() {
 				Garnish.$doc.trigger('scroll');
 			});
 

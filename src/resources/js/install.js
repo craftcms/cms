@@ -217,7 +217,7 @@ Craft.Installer = Garnish.Base.extend(
 	focusFirstInput: function()
 	{
 		setTimeout($.proxy(function() {
-			this.$currentScreen.find('input:first').focus();
+			this.$currentScreen.find('input:first').trigger('focus');
 		}, this), Craft.Installer.duration);
 	}
 

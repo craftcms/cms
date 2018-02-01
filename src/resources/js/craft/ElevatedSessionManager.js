@@ -94,7 +94,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 	{
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$passwordInput.focus();
+			this.$passwordInput.trigger('focus');
 		}
 	},
 

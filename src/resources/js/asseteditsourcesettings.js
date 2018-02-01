@@ -10,7 +10,7 @@ var $s3AccessKeyIdInput = $('.s3-key-id'),
     $s3BucketLocationInput = $('.s3-bucket-location'),
     refreshingS3Buckets = false;
 
-$s3RefreshBucketsBtn.click(function()
+$s3RefreshBucketsBtn.on('click', function()
 {
     if ($s3RefreshBucketsBtn.hasClass('disabled'))
     {
@@ -71,7 +71,7 @@ $s3RefreshBucketsBtn.click(function()
     });
 });
 
-$s3BucketSelect.change(function()
+$s3BucketSelect.on('change', function()
 {
     if (refreshingS3Buckets)
     {
@@ -97,7 +97,7 @@ var $rackspaceUsernameInput = $('.rackspace-username'),
     $rackspaceUrlPrefixInput = $('.rackspace-url-prefix'),
     refreshingRackspaceContainers = false;
 
-$rackspaceRefreshRegionBtn.click(function()
+$rackspaceRefreshRegionBtn.on('click', function()
 {
 	if ($rackspaceRefreshRegionBtn.hasClass('disabled'))
 	{
@@ -149,7 +149,7 @@ $rackspaceRefreshRegionBtn.click(function()
 	});
 });
 
-$rackspaceRefreshContainersBtn.click(function()
+$rackspaceRefreshContainersBtn.on('click', function()
 {
 	if ($rackspaceRegionSelect.val() == '-')
 	{
@@ -216,7 +216,7 @@ $rackspaceRefreshContainersBtn.click(function()
     });
 });
 
-$rackspaceContainerSelect.change(function()
+$rackspaceContainerSelect.on('change', function()
 {
     if (refreshingRackspaceContainers)
     {
@@ -238,7 +238,7 @@ var $googleAccessKeyIdInput = $('.google-key-id'),
     $googleUrlPrefixInput = $('.google-url-prefix'),
     refreshingGoogleBuckets = false;
 
-$googleRefreshBucketsBtn.click(function()
+$googleRefreshBucketsBtn.on('click', function()
 {
     if ($googleRefreshBucketsBtn.hasClass('disabled'))
     {
@@ -299,7 +299,7 @@ $googleRefreshBucketsBtn.click(function()
     });
 });
 
-$googleBucketSelect.change(function()
+$googleBucketSelect.on('change', function()
 {
     if (refreshingGoogleBuckets)
     {
@@ -322,7 +322,7 @@ var changeExpiryValue = function ()
 	parent.find('[type=hidden]').val(combinedValue);
 };
 
-$('.expires-amount').keyup(changeExpiryValue).change(changeExpiryValue);
-$('.expires-period select').change(changeExpiryValue);
+$('.expires-amount').on('keyup', changeExpiryValue).on('change', changeExpiryValue);
+$('.expires-period select').on('change', changeExpiryValue);
 
 })(jQuery);
