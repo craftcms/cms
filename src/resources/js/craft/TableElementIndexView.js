@@ -79,7 +79,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 				$header
 					.addClass('ordered '+selectedSortDir)
-					.click($.proxy(this, '_handleSelectedSortHeaderClick'));
+					.on('click', $.proxy(this, '_handleSelectedSortHeaderClick'));
 			}
 			else
 			{
@@ -90,7 +90,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 				{
 					$header
 						.addClass('orderable')
-						.click($.proxy(this, '_handleUnselectedSortHeaderClick'));
+						.on('click', $.proxy(this, '_handleUnselectedSortHeaderClick'));
 				}
 			}
 		}

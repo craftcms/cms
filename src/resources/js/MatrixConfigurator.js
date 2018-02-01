@@ -270,7 +270,7 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 		if (!Garnish.isMobileBrowser())
 		{
 			setTimeout($.proxy(function() {
-				this.$nameInput.focus();
+				this.$nameInput.trigger('focus');
 			}, this), 100);
 		}
 
@@ -593,7 +593,7 @@ Field = Garnish.Base.extend(
 		if (!Garnish.isMobileBrowser())
 		{
 			setTimeout($.proxy(function() {
-				this.$nameInput.focus();
+				this.$nameInput.trigger('focus');
 			}, this), 100);
 		}
 	},

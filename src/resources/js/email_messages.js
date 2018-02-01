@@ -129,7 +129,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 				this.addListener(this.$cancelBtn, 'click', 'cancel');
 
 				setTimeout($.proxy(function() {
-					this.$subjectInput.focus();
+					this.$subjectInput.trigger('focus');
 				}, this), 100);
 			}
 

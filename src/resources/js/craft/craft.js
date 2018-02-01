@@ -924,7 +924,7 @@ $.extend(Craft,
 
 		$elem.on('mousedown'+namespace, function() {
 			$elem.addClass('no-outline');
-			$elem.focus();
+			$elem.trigger('focus');
 		})
 		.on('keydown'+namespace+' blur'+namespace, function(event) {
 			if (event.keyCode != Garnish.SHIFT_KEY && event.keyCode != Garnish.CTRL_KEY && event.keyCode != Garnish.CMD_KEY)
@@ -1480,7 +1480,7 @@ $.extend($.fn,
 					.appendTo($form);
 			}
 
-			$form.submit();
+			$form.trigger('submit');
 		});
 	},
 

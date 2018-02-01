@@ -91,7 +91,7 @@ Craft.EditableTable = Garnish.Base.extend(
 		this.sorter.addItems($tr);
 
 		// Focus the first input in the row
-		$tr.find('input,textarea,select').first().focus();
+		$tr.find('input,textarea,select').first().trigger('focus');
 
 		// onAddRow callback
 		this.settings.onAddRow($tr);

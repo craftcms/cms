@@ -307,7 +307,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		{
 			setTimeout($.proxy(function()
 			{
-				this.$urlInput.focus();
+				this.$urlInput.trigger('focus');
 			}, this), 100);
 		}
 

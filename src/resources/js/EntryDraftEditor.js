@@ -73,7 +73,7 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 
 		if (!Garnish.isMobileBrowser(true))
 		{
-			this.$nameInput.focus();
+			this.$nameInput.trigger('focus');
 		}
 	},
 
