@@ -1800,7 +1800,14 @@ class UsersController extends BaseController
 	 */
 	private function _processUserGroupsPermissions(UserModel $user)
 	{
-		if (craft()->getEdition() >= Craft::Client && craft()->userSession->checkPermission('assignUserPermissions'))
+		$currentUser = craft()->userSession->getUser();
+
+		if (!$currentUser)
+		{
+			return;
+		}
+
+		if (craft()->getEdition() >= Craft::Client && $currentUser->can('assignUserPermissions'))
 		{
 			// Save any user permissions
 			if ($user->admin)
@@ -1830,7 +1837,7 @@ class UsersController extends BaseController
 						$hasNewPermissions = true;
 
 						// Make sure the current user even has permission to assign it
-						if (!craft()->userSession->checkPermission($permission))
+						if (!$currentUser->can($permission))
 						{
 							throw new HttpException(403, "Your account doesn't have permission to assign the {$permission} permission to a user.");
 						}
@@ -1847,7 +1854,7 @@ class UsersController extends BaseController
 		}
 
 		// Only Craft Pro has user groups
-		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('assignUserGroups'))
+		if (craft()->getEdition() == Craft::Pro && $currentUser->can('assignUserGroups'))
 		{
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');
@@ -1873,7 +1880,7 @@ class UsersController extends BaseController
 							$hasNewGroups = true;
 
 							// Make sure the current user even has permission to assign it
-							if (!craft()->userSession->checkPermission('assignUserGroup:'.$groupId))
+							if (!$currentUser->can('assignUserGroup:'.$groupId))
 							{
 								throw new HttpException(403, "Your account doesn't have permission to assign user group {$groupId} to a user.");
 							}
