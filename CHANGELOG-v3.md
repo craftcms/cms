@@ -7,7 +7,6 @@
 - Added `craft\elements\Asset::getHasFocalPoint()`.
 
 ### Changed
-- The `requireUserAgentAndIpForSession` config setting is now `false` by default. (Setting it to `true` from `config/general.php` for production environments is recommended.)
 - `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
 - The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
 
