@@ -1,4 +1,4 @@
-/*!   - 2018-01-20 */
+/*!   - 2018-02-01 */
 (function($){
 
 /** global: Craft */
@@ -973,7 +973,7 @@ $.extend(Craft,
 
             $elem.on('mousedown' + namespace, function() {
                     $elem.addClass('no-outline');
-                    $elem.focus();
+                    $elem.trigger('focus');
                 })
                 .on('keydown' + namespace + ' blur' + namespace, function(event) {
                     if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
@@ -1479,7 +1479,7 @@ $.extend($.fn,
                         .appendTo($form);
                 }
 
-                $form.submit();
+                $form.trigger('submit');
             });
         },
 
@@ -1650,7 +1650,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 }
 
                 // Focus on the first text input
-                $hudContents.find('.text:first').focus();
+                $hudContents.find('.text:first').trigger('focus');
 
                 this.addListener(this.$cancelBtn, 'click', function() {
                     this.hud.hide();
@@ -2069,7 +2069,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.$search.focus();
+                    this.$search.trigger('focus');
                 }
 
                 this.stopSearching();
@@ -2080,7 +2080,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Auto-focus the Search box
             if (!Garnish.isMobileBrowser(true)) {
-                this.$search.focus();
+                this.$search.trigger('focus');
             }
 
             // Initialize the sort menu
@@ -4362,7 +4362,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             else {
                 // Auto-focus the Search box
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.elementIndex.$search.focus();
+                    this.elementIndex.$search.trigger('focus');
                 }
             }
 
@@ -8054,7 +8054,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 var $parentSource = $($parentSources[i]);
 
                 if (!$parentSource.hasClass('expanded')) {
-                    $parentSource.children('.toggle').click();
+                    $parentSource.children('.toggle').trigger('click');
                 }
             }
 
@@ -8103,7 +8103,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     return;
                 }
                 if (!this.isIndexBusy) {
-                    this.$uploadButton.parent().find('input[name=assets-upload]').click();
+                    this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
                 }
             }, this));
 
@@ -8503,7 +8503,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             // Collapse any temp-expanded drop targets that aren't parents of this one
             this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-            this.dropTargetFolder.siblings('.toggle').click();
+            this.dropTargetFolder.siblings('.toggle').trigger('click');
 
             // Keep a record of that
             this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -8511,7 +8511,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _collapseFolder: function($source) {
             if ($source.parent().hasClass('expanded')) {
-                $source.siblings('.toggle').click();
+                $source.siblings('.toggle').trigger('click');
             }
         },
 
@@ -9332,7 +9332,7 @@ Craft.AuthManager = Garnish.Base.extend(
                         if (!Garnish.isMobileBrowser(true)) {
                             // Auto-focus the renew button
                             setTimeout(function() {
-                                $renewSessionBtn.focus();
+                                $renewSessionBtn.trigger('focus');
                             }, 100);
                         }
                     }
@@ -9436,7 +9436,7 @@ Craft.AuthManager = Garnish.Base.extend(
                         if (!Garnish.isMobileBrowser(true)) {
                             // Auto-focus the password input
                             setTimeout($.proxy(function() {
-                                this.$passwordInput.focus();
+                                this.$passwordInput.trigger('focus');
                             }, this), 100);
                         }
                     }, this),
@@ -9549,7 +9549,7 @@ Craft.AuthManager = Garnish.Base.extend(
                         Garnish.shake(this.loginModal.$container);
 
                         if (!Garnish.isMobileBrowser(true)) {
-                            this.$passwordInput.focus();
+                            this.$passwordInput.trigger('focus');
                         }
                     }
                 }
@@ -10693,7 +10693,7 @@ Craft.ColorInput = Garnish.Base.extend({
             .insertAfter(this.$input);
 
         this.addListener(this.$colorContainer, 'click', function() {
-            this.$colorInput.click();
+            this.$colorInput.trigger('click');
         });
 
         this.addListener(this.$colorInput, 'change', 'updateColor');
@@ -10863,6 +10863,14 @@ Craft.CP = Garnish.Base.extend(
                 this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
                 this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('target', '_blank')
+                }
+            });
         },
 
         initConfirmUnloadForms: function() {
@@ -10926,7 +10934,7 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.submit();
+            this.$primaryForm.trigger('submit');
         },
 
         updateSidebarMenuLabel: function() {
@@ -11180,6 +11188,13 @@ Craft.CP = Garnish.Base.extend(
                             if (textStatus === 'success') {
                                 if (response.success) {
                                     $transferDomainLink.parent().remove();
+
+                                    // Was that the last one?
+                                    if (this.$alerts.children().length === 0) {
+                                        this.$alerts.remove();
+                                        this.$alerts = null;
+                                    }
+
                                     this.displayNotice(Craft.t('app', 'License transferred.'));
                                 }
                                 else {
@@ -12284,7 +12299,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
         select: function() {
             this.base();
-            this.$labelInput.focus();
+            this.$labelInput.trigger('focus');
         },
 
         createSettings: function() {
@@ -12477,7 +12492,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
                     this.updateSizeAndPosition();
 
                     if (!this.$deleteActionRadios.first().prop('checked')) {
-                        this.$deleteActionRadios.first().click();
+                        this.$deleteActionRadios.first().trigger('click');
                     }
                     else {
                         this.validateDeleteInputs();
@@ -12537,7 +12552,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         onFadeIn: function() {
             // Auto-focus the first radio
             if (!Garnish.isMobileBrowser(true)) {
-                this.$deleteActionRadios.first().focus();
+                this.$deleteActionRadios.first().trigger('focus');
             }
 
             this.base();
@@ -12588,13 +12603,14 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
-        radioCheckboxes: {},
+        radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
+            this.radioCheckboxes = {};
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
@@ -12653,7 +12669,7 @@ Craft.EditableTable = Garnish.Base.extend(
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
-            $tr.find('input,textarea,select').first().focus();
+            $tr.find('input,textarea,select').first().trigger('focus');
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -12664,7 +12680,7 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number', 'color'],
+        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -12710,6 +12726,38 @@ Craft.EditableTable = Garnish.Base.extend(
                     }
 
                     switch (col.type) {
+                        case 'checkbox':
+                            Craft.ui.createCheckbox({
+                                name: name,
+                                value: col.value || '1',
+                                checked: !!value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            Craft.ui.createColorInput({
+                                name: name,
+                                value: value,
+                                small: true
+                            }).appendTo($cell);
+                            break;
+
+                        case 'date':
+                            Craft.ui.createDateInput({
+                                name: name,
+                                value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'lightswitch':
+                            Craft.ui.createLightswitch({
+                                name: name,
+                                value: col.value || '1',
+                                on: !!value,
+                                small: true
+                            }).appendTo($cell);
+                            break;
+
                         case 'select':
                             Craft.ui.createSelect({
                                 name: name,
@@ -12719,45 +12767,11 @@ Craft.EditableTable = Garnish.Base.extend(
                             }).appendTo($cell);
                             break;
 
-                        case 'checkbox':
-                            Craft.ui.createCheckbox({
+                        case 'time':
+                            Craft.ui.createTimeInput({
                                 name: name,
-                                value: col.value || '1',
-                                checked: !!value
+                                value: value
                             }).appendTo($cell);
-                            break;
-
-                        case 'lightswitch':
-                            Craft.ui.createLightswitch({
-                                name: name,
-                                value: col.value || '1',
-                                on: !!value
-                            }).appendTo($cell);
-                            break;
-
-                        case 'color':
-                            var $container = $('<div/>', {
-                                'class': 'flex color-container'
-                            });
-
-                            var $colorPreviewContainer = $('<div/>', {
-                                'class': 'color static small'
-                            }).appendTo($container);
-
-                            var $colorPreview = $('<div/>', {
-                                'class': 'color-preview',
-                                style: value ? {backgroundColor: value} : null
-                            }).appendTo($colorPreviewContainer);
-
-                            Craft.ui.createTextarea({
-                                id: 'color' + Math.floor(Math.random() * 1000000000),
-                                name: name,
-                                value: value,
-                                'class': 'color-input'
-                            }).appendTo($container);
-
-                            new Craft.ColorInput($container);
-                            $container.appendTo($cell);
                             break;
 
                         default:
@@ -12836,7 +12850,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea', this.$tds[i]);
+                    var $textarea = $('textarea, input.text', this.$tds[i]);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -13154,7 +13168,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
         submitForm: function() {
             // Don't let handleFormSubmit() interrupt this time
             this.disable();
-            this.$form.submit();
+            this.$form.trigger('submit');
             this.enable();
         }
     });
@@ -13244,7 +13258,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
         focusPasswordInput: function() {
             if (!Garnish.isMobileBrowser(true)) {
-                this.$passwordInput.focus();
+                this.$passwordInput.trigger('focus');
             }
         },
 
@@ -15037,7 +15051,7 @@ Craft.ImageUpload = Garnish.Base.extend(
 
         initButtons: function() {
             this.$container.find(this.settings.uploadButtonSelector).on('click', $.proxy(function(ev) {
-                this.$container.find(this.settings.fileInputSelector).click();
+                this.$container.find(this.settings.fileInputSelector).trigger('click');
             }, this));
 
             this.$container.find(this.settings.deleteButtonSelector).on('click', $.proxy(function(ev) {
@@ -15486,7 +15500,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this.trigger('beforeEnter');
 
-            $(document.activeElement).blur();
+            $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
                 this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
@@ -15811,7 +15825,7 @@ Craft.PasswordInput = Garnish.Base.extend(
                 // Swap the inputs, while preventing the focus animation
                 $input.addClass('focus');
                 this.$currentInput.replaceWith($input);
-                $input.focus();
+                $input.trigger('focus');
                 $input.removeClass('focus');
 
                 // Restore the input value
@@ -16455,7 +16469,7 @@ Craft.Structure = Garnish.Base.extend(
         },
 
         initToggle: function($toggle) {
-            $toggle.click($.proxy(function(ev) {
+            $toggle.on('click', $.proxy(function(ev) {
                 var $li = $(ev.currentTarget).closest('li'),
                     elementId = $li.children('.row').find('.element:first').data('id'),
                     viewStateKey = $.inArray(elementId, this.state.collapsedElementIds);
@@ -17610,7 +17624,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
                     $header
                         .addClass('ordered ' + selectedSortDir)
-                        .click($.proxy(this, '_handleSelectedSortHeaderClick'));
+                        .on('click', $.proxy(this, '_handleSelectedSortHeaderClick'));
                 }
                 else {
                     // Is this attribute sortable?
@@ -17619,7 +17633,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     if ($sortAttribute.length) {
                         $header
                             .addClass('orderable')
-                            .click($.proxy(this, '_handleUnselectedSortHeaderClick'));
+                            .on('click', $.proxy(this, '_handleUnselectedSortHeaderClick'));
                     }
                 }
             }
@@ -18053,7 +18067,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="plus"/>').appendTo($li).text(Craft.escapeHtml(data.search));
+                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');
@@ -18123,7 +18137,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.killSearchMenu();
             this.$addTagInput.val('');
-            this.$addTagInput.focus();
+            this.$addTagInput.trigger('focus');
 
             if (!id) {
                 // We need to create the tag first
@@ -18512,14 +18526,20 @@ Craft.ui =
 
         createColorInput: function(config) {
             var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
-            var small = (config.small || false);
+            var containerId = config.containerId || id + '-container';
+            var name = config.name || null;
+            var value = config.value || null;
+            var small = config.small || false;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
 
             var $container = $('<div/>', {
+                id: containerId,
                 'class': 'flex color-container'
             });
 
             var $colorPreviewContainer = $('<div/>', {
-                'class': 'color static'+(small ? ' small' : '')
+                'class': 'color static' + (small ? ' small' : '')
             }).appendTo($container);
 
             var $colorPreview = $('<div/>', {
@@ -18527,14 +18547,14 @@ Craft.ui =
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
-            this.createTextInput({
+            var $input = this.createTextInput({
                 id: id,
-                name: config.name || null,
-                value: config.value || null,
+                name: name,
+                value: value,
                 size: 10,
                 'class': 'color-input',
-                autofocus: config.autofocus && Garnish.isMobileBrowser(true),
-                disabled: typeof config.disabled !== 'undefined' ? config.disabled : false
+                autofocus: autofocus,
+                disabled: disabled
             }).appendTo($container);
 
             new Craft.ColorInput($container);
@@ -18543,6 +18563,93 @@ Craft.ui =
 
         createColorField: function(config) {
             return this.createField(this.createColorInput(config), config);
+        },
+
+        createDateInput: function(config) {
+            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000))+'-date';
+            var name = config.name || null;
+            var inputName = name ? name+'[date]' : null;
+            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            var formattedValue = value ? Craft.formatDate(value) : null;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                'class': 'datewrapper'
+            });
+
+            var $input = this.createTextInput({
+                id: id,
+                name: inputName,
+                value: formattedValue,
+                placeholder: ' ',
+                autocomplete: false,
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            $('<div data-icon="date"></div>').appendTo($container);
+
+            if (name) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: name+'[timezone]',
+                    val: Craft.timezone
+                }).appendTo($container);
+            }
+
+            $input.datepicker($.extend({
+                defaultDate: value || new Date()
+            }, Craft.datepickerOptions));
+
+            return $container;
+        },
+
+        createDateField: function(config) {
+            return this.createField(this.createDateInput(config), config);
+        },
+
+        createTimeInput: function(config) {
+            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000))+'-time';
+            var name = config.name || null;
+            var inputName = name ? name+'[time]' : null;
+            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                'class': 'timewrapper'
+            });
+
+            var $input = this.createTextInput({
+                id: id,
+                name: inputName,
+                placeholder: ' ',
+                autocomplete: false,
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            $('<div data-icon="time"></div>').appendTo($container);
+
+            if (name) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: name+'[timezone]',
+                    val: Craft.timezone
+                }).appendTo($container);
+            }
+
+            $input.timepicker(Craft.timepickerOptions);
+            if (value) {
+                $input.timepicker('setTime', value.getHours()*3600 + value.getMinutes()*60 + value.getSeconds());
+            }
+
+            return $container;
+        },
+
+        createTimeField: function(config) {
+            return this.createField(this.createTimeInput(config), config);
         },
 
         createField: function(input, config) {

@@ -214,7 +214,13 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
-        if ($variables['showSites'] = (Craft::$app->getIsMultiSite() && count($section->getSiteSettings()) > 1)) {
+        $variables['showSites'] = (
+            Craft::$app->getIsMultiSite() &&
+            count($section->getSiteSettings()) > 1 &&
+            ($section->propagateEntries || $entry->id === null)
+        );
+
+        if ($variables['showSites']) {
             $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name).' – ';
         } else {
             $variables['revisionLabel'] = '';
@@ -430,7 +436,7 @@ class EntriesController extends BaseEntriesController
             $this->enforceEditEntryPermissions($entry);
 
             // Set the language to the user's preferred language so DateFormatter returns the right format
-            Craft::$app->language = Craft::$app->getTargetLanguage(true);
+            Craft::$app->updateTargetLanguage(true);
 
             $this->_populateEntryModel($entry);
         }
@@ -833,7 +839,9 @@ class EntriesController extends BaseEntriesController
             $currentVersion = reset($versions);
 
             if ($currentVersion !== false) {
-                $variables['currentVersionCreator'] = $currentVersion->getCreator();
+                if ($currentVersion->creatorId) {
+                    $variables['currentVersionCreator'] = $currentVersion->getCreator();
+                }
                 $variables['currentVersionEditTime'] = $currentVersion->dateUpdated;
 
                 // Are we editing the "current" version?

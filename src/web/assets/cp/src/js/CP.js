@@ -120,6 +120,14 @@ Craft.CP = Garnish.Base.extend(
                 this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
                 this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('target', '_blank')
+                }
+            });
         },
 
         initConfirmUnloadForms: function() {
@@ -183,7 +191,7 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.submit();
+            this.$primaryForm.trigger('submit');
         },
 
         updateSidebarMenuLabel: function() {
@@ -437,6 +445,13 @@ Craft.CP = Garnish.Base.extend(
                             if (textStatus === 'success') {
                                 if (response.success) {
                                     $transferDomainLink.parent().remove();
+
+                                    // Was that the last one?
+                                    if (this.$alerts.children().length === 0) {
+                                        this.$alerts.remove();
+                                        this.$alerts = null;
+                                    }
+
                                     this.displayNotice(Craft.t('app', 'License transferred.'));
                                 }
                                 else {

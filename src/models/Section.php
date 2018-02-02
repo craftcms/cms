@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\db\Query;
 use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -70,6 +71,11 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
+     * @var bool Propagate entries
+     */
+    public $propagateEntries = true;
+
+    /**
      * @var Section_SiteSettings[]|null
      */
     private $_siteSettings;
@@ -94,25 +100,42 @@ class Section extends Model
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
             [['name', 'handle', 'type', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
+            [['siteSettings'], 'validateSiteSettings'],
         ];
     }
 
     /**
-     * @inheritdoc
+     * Validates the site settings.
+     *
+     * @param string $attribute
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validateSiteSettings(string $attribute)
     {
-        $validates = parent::validate($attributeNames, $clearErrors);
+        // If this is an existing section, make sure they aren't moving it to a
+        // completely different set of sites in one fell swoop
+        if ($this->id) {
+            $currentSiteIds = (new Query())
+                ->select(['siteId'])
+                ->from(['{{%sections_sites}}'])
+                ->where(['sectionId' => $this->id])
+                ->column();
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
-            foreach ($this->getSiteSettings() as $siteSettings) {
-                if (!$siteSettings->validate(null, $clearErrors)) {
-                    $validates = false;
-                }
+            if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
+                $this->addError($attribute, Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
             }
         }
 
-        return $validates;
+        $validates = true;
+
+        foreach ($this->getSiteSettings() as $siteSettings) {
+            if (!$siteSettings->validate()) {
+                $validates = false;
+            }
+        }
+
+        if (!$validates) {
+            $this->addError($attribute, Craft::t('app', 'Correct the errors listed above.'));
+        }
     }
 
     /**
@@ -149,8 +172,7 @@ class Section extends Model
     /**
      * Sets the section's site-specific settings.
      *
-     * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects with the site ID for the site
-     *                                             settings as the key for each, e.g. [$siteId => $siteSettings]
+     * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
      *
      * @return void
      */

@@ -110,7 +110,7 @@ class EntryRevisionsController extends BaseEntriesController
             throw new NotFoundHttpException('Entry draft not found');
         }
 
-        if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
+        if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
             // Make sure they have permission to be doing this
             $this->requirePermission('editPeerEntryDrafts:'.$draft->sectionId);
         }
@@ -142,7 +142,7 @@ class EntryRevisionsController extends BaseEntriesController
             throw new NotFoundHttpException('Entry draft not found');
         }
 
-        if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
+        if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
             $this->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
         }
 
@@ -191,7 +191,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Is this another user's draft?
-        if ($draft->creatorId != $userId) {
+        if (!$draft->creatorId || $draft->creatorId != $userId) {
             $this->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
         }
 

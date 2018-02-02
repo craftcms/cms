@@ -974,7 +974,7 @@ if (typeof Craft.translations[{$jsCategory}] === 'undefined') {
 {$js}
 JS;
 
-        $this->registerJs($js, self::POS_END);
+        $this->registerJs($js, self::POS_BEGIN);
     }
 
     /**

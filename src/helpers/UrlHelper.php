@@ -79,7 +79,7 @@ class UrlHelper
      */
     public static function urlWithParams(string $url, $params): string
     {
-        $params = self::_normalizeParams($params, $anchor);
+        $params = self::_normalizeParams($params, $fragment);
 
         if ($params) {
             if (StringHelper::contains($url, '?')) {
@@ -91,8 +91,8 @@ class UrlHelper
             $url .= $params;
         }
 
-        if ($anchor) {
-            $url .= $anchor;
+        if ($fragment) {
+            $url .= $fragment;
         }
 
         return $url;
@@ -108,8 +108,8 @@ class UrlHelper
      */
     public static function urlWithToken(string $url, string $token): string
     {
-        $protocol = static::getProtocolForTokenizedUrl();
-        $url = static::urlWithProtocol($url, $protocol);
+        $scheme = static::getSchemeForTokenizedUrl();
+        $url = static::urlWithScheme($url, $scheme);
 
         return static::urlWithParams($url, [
             Craft::$app->getConfig()->getGeneral()->tokenParam => $token
@@ -120,18 +120,18 @@ class UrlHelper
      * Returns a URL with a specific protocol.
      *
      * @param string $url
-     * @param string $protocol
+     * @param string $scheme
      *
      * @return string
      */
-    public static function urlWithProtocol(string $url, string $protocol): string
+    public static function urlWithScheme(string $url, string $scheme): string
     {
-        if (!$url || !$protocol) {
+        if (!$url || !$scheme) {
             return $url;
         }
 
         if (static::isProtocolRelativeUrl($url)) {
-            return $protocol.':'.$url;
+            return $scheme.':'.$url;
         }
 
         if (static::isRootRelativeUrl($url)) {
@@ -139,7 +139,7 @@ class UrlHelper
             $url = Craft::$app->getRequest()->getHostInfo().$url;
         }
 
-        return preg_replace('/^https?:/', $protocol.':', $url);
+        return preg_replace('/^https?:/', $scheme.':', $url);
     }
 
     /**
@@ -147,12 +147,12 @@ class UrlHelper
      *
      * @param string            $path
      * @param array|string|null $params
-     * @param string|null       $protocol
+     * @param string|null       $scheme
      * @param bool              $mustShowScriptName
      *
      * @return string
      */
-    public static function url(string $path = '', $params = null, string $protocol = null, bool $mustShowScriptName = false): string
+    public static function url(string $path = '', $params = null, string $scheme = null, bool $mustShowScriptName = false): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -160,8 +160,8 @@ class UrlHelper
                 $path = static::urlWithParams($path, $params);
             }
 
-            if ($protocol !== null) {
-                $path = static::urlWithProtocol($path, $protocol);
+            if ($scheme !== null) {
+                $path = static::urlWithScheme($path, $scheme);
             }
 
             return $path;
@@ -179,11 +179,11 @@ class UrlHelper
         }
 
         // Stick with SSL if the current request is over SSL and a protocol wasn't defined
-        if ($protocol === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
-            $protocol = 'https';
+        if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+            $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, $mustShowScriptName);
     }
 
     /**
@@ -191,16 +191,16 @@ class UrlHelper
      *
      * @param string            $path
      * @param array|string|null $params
-     * @param string|null       $protocol
+     * @param string|null       $scheme
      *
      * @return string
      */
-    public static function cpUrl(string $path = '', $params = null, string $protocol = null): string
+    public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
     {
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
 
-        return self::_createUrl($path, $params, $protocol, true, false);
+        return self::_createUrl($path, $params, $scheme, true, false);
     }
 
     /**
@@ -208,13 +208,13 @@ class UrlHelper
      *
      * @param string            $path
      * @param array|string|null $params
-     * @param string|null       $protocol
+     * @param string|null       $scheme
      * @param int|null          $siteId
      *
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
-    public static function siteUrl(string $path = '', $params = null, string $protocol = null, int $siteId = null): string
+    public static function siteUrl(string $path = '', $params = null, string $scheme = null, int $siteId = null): string
     {
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
@@ -233,7 +233,7 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
-        $url = self::_createUrl($path, $params, $protocol, false, false);
+        $url = self::_createUrl($path, $params, $scheme, false, false);
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
@@ -247,16 +247,16 @@ class UrlHelper
     /**
      * @param string            $path
      * @param array|string|null $params
-     * @param string|null       $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the current
+     * @param string|null       $scheme The protocol to use (e.g. http, https). If empty, the protocol used for the current
      *                                    request will be used.
      *
      * @return string
      */
-    public static function actionUrl(string $path = '', $params = null, string $protocol = null): string
+    public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
     {
         $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/'.trim($path, '/');
 
-        return static::url($path, $params, $protocol, true);
+        return static::url($path, $params, $scheme, true);
     }
 
     /**
@@ -281,13 +281,13 @@ class UrlHelper
     }
 
     /**
-     * Returns what the protocol/schema part of the URL should be (http/https)
+     * Returns what the scheme part of the URL should be (http/https)
      * for any tokenized URLs in Craft (email verification links, password reset
      * urls, share entry URLs, etc.
      *
      * @return string
      */
-    public static function getProtocolForTokenizedUrl(): string
+    public static function getSchemeForTokenizedUrl(): string
     {
         $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
@@ -334,10 +334,46 @@ class UrlHelper
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();
-            $baseUrl = $request->getHostInfo().$request->getBaseUrl();
+            if ($request->getIsConsoleRequest()) {
+                $baseUrl = '';
+            } else {
+                $baseUrl = $request->getHostInfo().$request->getBaseUrl();
+            }
         }
 
         return rtrim($baseUrl, '/').'/';
+    }
+
+    // Deprecated Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a URL with a specific protocol.
+     *
+     * @param string $url
+     * @param string $protocol
+     *
+     * @return string
+     * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
+     */
+    public static function urlWithProtocol(string $url, string $protocol): string
+    {
+        Craft::$app->getDeprecator()->log('UrlHelper::urlWithProtocol()', 'UrlHelper::urlWithProtocol() is deprecated. Use urlWithScheme() instead.');
+        return static::urlWithScheme($url, $protocol);
+    }
+
+    /**
+     * Returns what the scheme part of the URL should be (http/https)
+     * for any tokenized URLs in Craft (email verification links, password reset
+     * urls, share entry URLs, etc.
+     *
+     * @return string
+     * @deprecated in 3.0. Use [[getSchemeForTokenizedUrl()]] instead.
+     */
+    public static function getProtocolForTokenizedUrl(): string
+    {
+        Craft::$app->getDeprecator()->log('UrlHelper::getProtocolForTokenizedUrl()', 'UrlHelper::getProtocolForTokenizedUrl() is deprecated. Use getSchemeForTokenizedUrl() instead.');
+        return static::getSchemeForTokenizedUrl();
     }
 
     // Private Methods
@@ -348,16 +384,16 @@ class UrlHelper
      *
      * @param string            $path
      * @param array|string|null $params
-     * @param string|null       $protocol
+     * @param string|null       $scheme
      * @param bool              $cpUrl
      * @param bool              $mustShowScriptName
      *
      * @return string
      */
-    private static function _createUrl(string $path, $params, string $protocol = null, bool $cpUrl, bool $mustShowScriptName): string
+    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $mustShowScriptName): string
     {
         // Normalize the params
-        $params = self::_normalizeParams($params, $anchor);
+        $params = self::_normalizeParams($params, $fragment);
 
         // Were there already any query string params in the path?
         if (($qpos = mb_strpos($path, '?')) !== false) {
@@ -377,18 +413,25 @@ class UrlHelper
                 // Make sure it ends in a slash
                 $baseUrl = StringHelper::ensureRight($baseUrl, '/');
 
-                if ($protocol !== null) {
+                if ($scheme !== null) {
                     // Make sure we're using the right protocol
-                    $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
+                    $baseUrl = static::urlWithScheme($baseUrl, $scheme);
                 }
 
                 // Should we be adding that script name in?
                 if ($showScriptName) {
                     $baseUrl .= $request->getScriptFilename();
                 }
+            } else if ($request->getIsConsoleRequest()) {
+                // No way to know for sure, so just guess
+                $baseUrl = '/';
+
+                if ($showScriptName) {
+                    $baseUrl .= $request->getScriptFilename();
+                }
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $request->getHostInfo();
+                $baseUrl = $baseUrl = $request->getHostInfo();
 
                 if ($showScriptName) {
                     $baseUrl .= $request->getScriptUrl();
@@ -396,8 +439,8 @@ class UrlHelper
                     $baseUrl .= $request->getBaseUrl();
                 }
 
-                if ($protocol !== null) {
-                    $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
+                if ($scheme !== null) {
+                    $baseUrl = static::urlWithScheme($baseUrl, $scheme);
                 }
             }
         } else {
@@ -433,8 +476,8 @@ class UrlHelper
             $url .= '?'.$params;
         }
 
-        if ($anchor) {
-            $url .= $anchor;
+        if ($fragment) {
+            $url .= $fragment;
         }
 
         return $url;
@@ -444,16 +487,16 @@ class UrlHelper
      * Normalizes query string params.
      *
      * @param string|array|null $params
-     * @param string|null       &$anchor
+     * @param string|null       &$fragment
      *
      * @return string
      */
-    private static function _normalizeParams($params, &$anchor = null): string
+    private static function _normalizeParams($params, &$fragment = null): string
     {
         if (is_array($params)) {
             // See if there's an anchor
             if (isset($params['#'])) {
-                $anchor = '#'.$params['#'];
+                $fragment = '#'.$params['#'];
                 unset($params['#']);
             }
 

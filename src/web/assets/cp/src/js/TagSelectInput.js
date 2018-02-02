@@ -139,7 +139,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="plus"/>').appendTo($li).text(Craft.escapeHtml(data.search));
+                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');
@@ -209,7 +209,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.killSearchMenu();
             this.$addTagInput.val('');
-            this.$addTagInput.focus();
+            this.$addTagInput.trigger('focus');
 
             if (!id) {
                 // We need to create the tag first

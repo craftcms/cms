@@ -159,6 +159,34 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
+     * Sets the target application language.
+     *
+     * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
+     *                                   If null, it will be based on whether it's a CP or console request.
+     */
+    public function updateTargetLanguage(bool $useUserLanguage = null)
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        // Defend against an infinite _setLanguage() loop
+        if ($this->_gettingLanguage === true) {
+            // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+            $fallbackLanguage = $this->_getFallbackLanguage();
+            $this->_gettingLanguage = false;
+            $this->language = $fallbackLanguage;
+            return;
+        }
+
+        $this->_gettingLanguage = true;
+
+        if ($useUserLanguage === null) {
+            $request = $this->getRequest();
+            $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
+        }
+
+        $this->language = $this->getTargetLanguage($useUserLanguage);
+    }
+
+    /**
      * Returns the target app language.
      *
      * @param bool $useUserLanguage Whether the user's preferred language should be used.
@@ -1167,32 +1195,11 @@ trait ApplicationTrait
         $this->getPlugins()->loadPlugins();
 
         // Set the language
-        $this->_setLanguage();
+        $this->updateTargetLanguage();
 
         // Fire an 'afterInit' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
-        }
-    }
-
-    /**
-     * Sets the target application language.
-     */
-    private function _setLanguage()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        // Defend against an infinite _setLanguage() loop
-        if ($this->_gettingLanguage === false) {
-            $this->_gettingLanguage = true;
-            $request = $this->getRequest();
-            $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
-            $targetLanguage = $this->getTargetLanguage($useUserLanguage);
-            $this->language = $targetLanguage;
-        } else {
-            // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-            $fallbackLanguage = $this->_getFallbackLanguage();
-            $this->_gettingLanguage = false;
-            $this->language = $fallbackLanguage;
         }
     }
 

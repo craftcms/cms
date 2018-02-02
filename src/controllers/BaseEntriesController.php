@@ -68,7 +68,7 @@ abstract class BaseEntriesController extends Controller
                 case EntryDraft::class:
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
-                    if ($entry->creatorId != $userSessionService->getIdentity()->id) {
+                    if (!$entry->creatorId || $entry->creatorId != $userSessionService->getIdentity()->id) {
                         $this->requirePermission('editPeerEntryDrafts'.$permissionSuffix);
                     }
 

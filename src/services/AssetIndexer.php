@@ -474,7 +474,7 @@ class AssetIndexer extends Component
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
         // All sorts of fun stuff for images.
-        if ($asset->kind === 'image') {
+        if ($asset->kind === Asset::KIND_IMAGE) {
             $dimensions = null;
             $tempPath = null;
 

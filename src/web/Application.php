@@ -16,6 +16,8 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use craft\queue\QueueLogBehavior;
+use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as DebugModule;
@@ -149,10 +151,9 @@ class Application extends \yii\web\Application
 
             if ($request->getIsCpRequest()) {
                 $version = $this->getInfo()->version;
-                $url = App::craftDownloadUrl($version);
 
-                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', [
-                    'url' => "[{$version}]({$url})",
+                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
+                    'version' => $version,
                 ]));
             }
 
@@ -291,6 +292,23 @@ class Application extends \yii\web\Application
         Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function get($id, $throwException = true)
+    {
+        // Is this the first time the queue component is requested?
+        $isFirstQueue = $id === 'queue' && !$this->has($id, true);
+
+        $component = parent::get($id, $throwException);
+
+        if ($isFirstQueue && $component instanceof Component) {
+            $component->attachBehavior('queueLogger', QueueLogBehavior::class);
+        }
+
+        return $component;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -315,29 +333,20 @@ class Application extends \yii\web\Application
     protected function debugBootstrap()
     {
         $session = $this->getSession();
-
         if (!$session->getHasSessionId() && !$session->getIsActive()) {
             return;
         }
 
         $isCpRequest = $this->getRequest()->getIsCpRequest();
-
-        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
-        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
-
-        if (!$enableDebugToolbarForCp && !$enableDebugToolbarForSite) {
+        if (
+            ($isCpRequest && !$session->get('enableDebugToolbarForCp')) ||
+            (!$isCpRequest && !$session->get('enableDebugToolbarForSite'))
+        ) {
             return;
         }
 
-        // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
-        if (!$isCpRequest) {
-            $svg = rawurlencode(file_get_contents(dirname(__DIR__).'/icons/c.svg'));
-            DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
-        }
-
-        if (($isCpRequest && !$enableDebugToolbarForCp) || (!$isCpRequest && !$enableDebugToolbarForSite)) {
-            return;
-        }
+        $svg = rawurlencode(file_get_contents(dirname(__DIR__).'/icons/c.svg'));
+        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
@@ -533,9 +542,8 @@ class Application extends \yii\web\Application
         ) {
             // Did we skip a breakpoint?
             if ($this->getUpdates()->getWasCraftBreakpointSkipped()) {
-                $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
-                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
-                    'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
+                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
+                    'version' => $this->minVersionRequired,
                     'targetVersion' => Craft::$app->getVersion(),
                 ]));
             }

@@ -60,6 +60,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     // =========================================================================
 
     /**
+     * @var int|null Min blocks
+     */
+    public $minBlocks;
+
+    /**
      * @var int|null Max blocks
      */
     public $maxBlocks;
@@ -83,7 +88,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['maxBlocks'], 'integer', 'min' => 0];
+        $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
 
         return $rules;
     }
@@ -130,7 +135,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new MatrixBlockType();
-                $blockType->id = (int)$key;
+                $blockType->id = $key;
                 $blockType->fieldId = $this->id;
                 $blockType->name = $config['name'];
                 $blockType->handle = $config['handle'];
@@ -372,6 +377,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
+        $createDefaultBlocks = $this->minBlocks != 0 && count($blockTypeInfo) === 1;
+        $staticBlocks = $createDefaultBlocks && $this->minBlocks == $this->maxBlocks;
+
         Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
         Craft::$app->getView()->registerJs('new Craft.MatrixInput('.
@@ -394,13 +402,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 ->all();
         }
 
+        // Safe to set the default blocks?
+        if ($createDefaultBlocks) {
+            $blockType = $this->getBlockTypes()[0];
+
+            for ($i = count($value); $i < $this->minBlocks; $i++) {
+                $block = new MatrixBlock();
+                $block->fieldId = $this->id;
+                $block->typeId = $blockType->id;
+                $block->fieldLayoutId = $blockType->fieldLayoutId;
+                $block->siteId = $element->siteId;
+                $value[] = $block;
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
             [
                 'id' => $id,
                 'name' => $this->handle,
                 'blockTypes' => $this->getBlockTypes(),
                 'blocks' => $value,
-                'static' => false
+                'static' => false,
+                'staticBlocks' => $staticBlocks,
             ]);
     }
 
@@ -413,8 +436,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'validateBlocks',
             [
                 ArrayValidator::class,
+                'min' => $this->minBlocks ?: null,
                 'max' => $this->maxBlocks ?: null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
+                'skipOnEmpty' => false,
+                'on' => Element::SCENARIO_LIVE,
             ],
         ];
     }
@@ -444,7 +471,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach ($value->all() as $block) {
             /** @var MatrixBlock $block */
-            if ($element->enabled && $block->enabled) {
+            if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
             if (!$block->validate()) {
@@ -508,7 +535,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'name' => $id,
             'blockTypes' => $this->getBlockTypes(),
             'blocks' => $value,
-            'static' => true
+            'static' => true,
+            'staticBlocks' => true,
         ]);
     }
 

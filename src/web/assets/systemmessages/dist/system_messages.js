@@ -115,7 +115,7 @@
                         this.addListener(this.$cancelBtn, 'click', 'cancel');
 
                         setTimeout($.proxy(function() {
-                            this.$subjectInput.focus();
+                            this.$subjectInput.trigger('focus');
                         }, this), 100);
                     }
 

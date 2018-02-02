@@ -6,12 +6,12 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\volumes\Local;
 use yii\base\Exception;
 
@@ -52,7 +52,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
-        $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
+        $this->addColumn('{{%users}}', 'photoId', $this->integer()->after('username')->null());
         $this->addForeignKey(null, '{{%users}}', ['photoId'], '{{%assets}}', ['id'], 'SET NULL', null);
 
         echo "    > Setting the photoId value\n";
@@ -298,7 +298,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => StringHelper::toTitleCase(pathinfo($user['photo'], PATHINFO_FILENAME))
+                        'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
                         ->insert('{{%content}}', $contentData)
@@ -311,7 +311,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'volumeId' => $volumeId,
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
-                    'kind' => 'image',
+                    'kind' => Asset::KIND_IMAGE,
                     'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],

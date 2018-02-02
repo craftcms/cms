@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+### Changed
+- The Edit User page now shows the Permissions tab for users that have the “Assign user groups” permission, even if they don’t have the “Assign user permissions” permission.
+- Users with the “Assign user groups” permission no longer need explicit permission to assign a user group, if they already belong to it. ([#2087](https://github.com/craftcms/cms/issues/2087))
+
+## 2.6.3007 - 2018-01-31
+
+### Fixed
+- Fixed some jQuery deprecation errors in the Control Panel.
+- Fixed a bug where Control Panel panes with sidebars weren’t expanding to the height of their content. ([#2379](https://github.com/craftcms/cms/issues/2379))
+
+## 2.6.3006 - 2018-01-30
+
+### Changed
+- Updated jQuery to 3.3.1 and added the [jQuery Migrate](https://github.com/jquery/jquery-migrate) plugin to maintain backwards compatibility with jQuery 2.
+- Tab and field names in Field Layout Designers are no longer displayed in all-uppercase. ([#2360](https://github.com/craftcms/cms/issues/2360))
+- Fields in Field Layout Designers now have tool tips that reveal their handles. ([#2360](https://github.com/craftcms/cms/issues/2360))
+- Asset thumbnails can now only be generated on Control Panel requests by logged-in users.
+- The Control Panel now prevents referrer information from being sent when following links, on [supporting browsers](https://caniuse.com/#search=referrer).
+- Links within the Control Panel that point to a different hostname now open in a new window. ([#1206](https://github.com/craftcms/cms/issues/1206))
+
+### Fixed
+- Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
+- Fixed a bug where Tags fields were encoding special characters on tag creation, and double/triple-encoding tag names in the UI. ([#2369](https://github.com/craftcms/cms/issues/2369))
+- Fixed a bug where Craft might not delete elements for locales that they no longer support if Dev Mode is enabled.
+
+## 2.6.3005 - 2018-01-23
+
+### Changed
+- Users’ field layouts can now have multiple tabs. ([#892](https://github.com/craftcms/cms/issues/892))
+- Assets fields now fail validation if a file was not uploaded successfully.
+
+### Fixed
+- Fixed a bug where replacing an Asset file would not delete the existing file in some cases.
+
 ## 2.6.3004 - 2018-01-16
 
 ### Added

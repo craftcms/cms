@@ -51,7 +51,7 @@ class GeneralConfig extends BaseObject
      */
     public $addTrailingSlashesToUrls = false;
     /**
-     * @var array Any custom Yii aliases that should be defined for every request.
+     * @var array Any custom Yii [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html) that should be defined for every request.
      */
     public $aliases = [];
     /**
@@ -331,7 +331,7 @@ class GeneralConfig extends BaseObject
      *
      * See [[\yii\web\Request::ipHeaders]] for more details.
      *
-     * If not set, the default [[\yii\web\Request::ipHeaders]] value will be used.
+     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
      */
     public $ipHeaders;
     /**
@@ -515,7 +515,7 @@ class GeneralConfig extends BaseObject
      * @var bool Whether Craft should require the existence of a user agent string and IP address when creating a new user
      * session.
      */
-    public $requireUserAgentAndIpForSession = true;
+    public $requireUserAgentAndIpForSession = false;
     /**
      * @var string The path to the root directory that should store published CP resources.
      */

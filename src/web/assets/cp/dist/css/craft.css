@@ -815,8 +815,8 @@ table.editable thead tr th span.info { margin-left: 5px; }
 table.editable tbody tr:not(:first-child) th, table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0, 0, 0, 0.07); }
 body.ltr table.editable tbody tr:last-child td:first-child { border-bottom-left-radius: 5px; }
 body.rtl table.editable tbody tr:last-child td:first-child { border-bottom-right-radius: 5px; }
-body.ltr table.editable tbody tr:last-child td:first-child textarea { border-bottom-left-radius: 4px; }
-body.rtl table.editable tbody tr:last-child td:first-child textarea { border-bottom-right-radius: 4px; }
+body.ltr table.editable tbody tr:last-child td:first-child textarea, body.ltr table.editable tbody tr:last-child td:first-child input.text { border-bottom-left-radius: 4px; }
+body.rtl table.editable tbody tr:last-child td:first-child textarea, body.rtl table.editable tbody tr:last-child td:first-child input.text { border-bottom-right-radius: 4px; }
 body.ltr table.editable tbody tr td:not(:first-child), body.ltr table.editable tbody tr th ~ td:not(.hidden) ~ td { border-left: 1px solid rgba(0, 0, 0, 0.07); }
 body.rtl table.editable tbody tr td:not(:first-child), body.rtl table.editable tbody tr th ~ td:not(.hidden) ~ td { border-right: 1px solid rgba(0, 0, 0, 0.07); }
 body.ltr table.editable tbody tr th ~ td:not(:first-child) { border-left: 1px solid #dbdddf; }
@@ -838,17 +838,20 @@ table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: s
 table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
-table.editable tbody textarea, table.editable tbody textarea.text { display: block; width: 100%; border: none; border-radius: 0; padding: 7px 10px; background: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
-table.editable tbody textarea:focus, table.editable tbody textarea.text:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
+table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text { display: block; width: 100%; border: none; border-radius: 0; padding: 7px 10px; background: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
+table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
 table.editable tbody .color-container { display: block; position: relative; }
 table.editable tbody .color-container > .color, table.editable tbody .color-container > .color-input { margin-bottom: 0; }
-table.editable tbody .color-container > .color { position: absolute; top: 9px; }
+table.editable tbody .color-container > .color { position: absolute; top: calc(50% - 8px); }
 body.ltr table.editable tbody .color-container > .color { left: 10px; }
 body.rtl table.editable tbody .color-container > .color { right: 10px; }
 body.ltr table.editable tbody .color-container > .color-input { padding-left: 35px; }
 body.rtl table.editable tbody .color-container > .color-input { padding-right: 35px; }
 body.ltr table.editable tbody .color-container > .color-input:focus { padding-left: 34px; }
 body.rtl table.editable tbody .color-container > .color-input:focus { padding-right: 34px; }
+table.editable tbody .datewrapper, table.editable tbody .timewrapper { width: 100%; }
+body.ltr table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.ltr table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { left: 10px; }
+body.rtl table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.rtl table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { right: 10px; }
 table.editable + .btn.add { display: block; border-radius: 0 0 2px 2px; border: 1px dashed rgba(0, 0, 20, 0.4); border-top-width: 0; background: none; -webkit-box-shadow: none; box-shadow: none; }
 table.editable + .btn.add:focus { border-style: solid; }
 
@@ -1143,6 +1146,8 @@ body.rtl .menu hr.padded { margin-right: 10px; }
 .tagselect .elements { display: inline; }
 .tagselect .element.small { clear: none; }
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
+body.ltr .tagselect .add { margin: 7px 7px 0 0 ; }
+body.rtl .tagselect .add { margin: 7px 0 0 7px ; }
 body.ltr .tagselect .add .text { padding-right: 30px; }
 body.rtl .tagselect .add .text { padding-left: 30px; }
 .tagselect .add .spinner { position: absolute; top: 0; }
@@ -2005,7 +2010,7 @@ body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #main-container #main #main-content #details .spinner { background-image: url(../images/spinner_details_2x.gif); }
   #upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
   #upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; } }
-.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; font-style: italic; text-transform: uppercase; }
+.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png); }
 body.ltr .fieldlayoutform { background-position: 25px 24px; }

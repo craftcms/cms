@@ -329,6 +329,28 @@ class Sections extends Component
     /**
      * Saves a section.
      *
+     * ```php
+     * use craft\models\Section;
+     * use craft\models\Section_SiteSettings;
+     *
+     * $section = new Section([
+     *     'name' => 'News',
+     *     'handle' => 'news',
+     *     'type' => Section::TYPE_CHANNEL,
+     *     'siteSettings' => [
+     *         new Section_SiteSettings([
+     *             'siteId' => Craft::$app->sites->getPrimarySite()->id,
+     *             'enabledByDefault' => true,
+     *             'hasUrls' => true,
+     *             'uriFormat' => 'foo/{slug}',
+     *             'template' => 'foo/_entry',
+     *         ]),
+     *     ]
+     * ]);
+     *
+     * $success = Craft::$app->sections->saveSection($section);
+     * ```
+     *
      * @param Section $section       The section to be saved
      * @param bool    $runValidation Whether the section should be validated
      *
@@ -370,17 +392,23 @@ class Sections extends Component
                 'handle',
                 'type',
                 'enableVersioning',
+                'propagateEntries',
             ]));
         } else {
             $sectionRecord = new SectionRecord();
         }
 
         // Main section settings
+        if ($section->type !== Section::TYPE_CHANNEL) {
+            $section->propagateEntries = true;
+        }
+
         /** @var SectionRecord $sectionRecord */
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
-        $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
+        $sectionRecord->enableVersioning = (bool)$section->enableVersioning;
+        $sectionRecord->propagateEntries = (bool)$section->propagateEntries;
 
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
@@ -531,22 +559,41 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             if (!$isNewSection) {
-                // Get the most-primary site that this section was already enabled in
-                /** @noinspection PhpUndefinedVariableInspection */
-                $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
+                if ($section->propagateEntries) {
+                    // Find a site that the section was already enabled in, and still is
+                    $oldSiteIds = array_keys($allOldSiteSettingsRecords);
+                    $newSiteIds = array_keys($allSiteSettings);
+                    $persistentSiteIds = array_values(array_intersect($newSiteIds, $oldSiteIds));
 
-                if (!empty($siteIds)) {
                     Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
+                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                            'section' => $section->name,
+                        ]),
                         'elementType' => Entry::class,
                         'criteria' => [
-                            'siteId' => $siteIds[0],
+                            'siteId' => $persistentSiteIds[0],
                             'sectionId' => $section->id,
                             'status' => null,
                             'enabledForSite' => false,
-                            'limit' => null,
                         ]
                     ]));
+                } else {
+                    // Resave entries for each site
+                    foreach ($allSiteSettings as $siteId => $siteSettings) {
+                        Craft::$app->getQueue()->push(new ResaveElements([
+                            'description' => Craft::t('app', 'Resaving {section} entries ({site})', [
+                                'section' => $section->name,
+                                'site' => $siteSettings->getSite()->name,
+                            ]),
+                            'elementType' => Entry::class,
+                            'criteria' => [
+                                'siteId' => $siteId,
+                                'sectionId' => $section->id,
+                                'status' => null,
+                                'enabledForSite' => false,
+                            ]
+                        ]));
+                    }
                 }
             }
 
@@ -859,19 +906,42 @@ class Sections extends Component
         if (!$isNewEntryType) {
             // Re-save the entries of this type
             $section = $entryType->getSection();
-            $siteIds = array_keys($section->getSiteSettings());
+            $allSiteSettings = $section->getSiteSettings();
 
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'description' => Craft::t('app', 'Resaving {type} entries', ['type' => $entryType->name]),
-                'elementType' => Entry::class,
-                'criteria' => [
-                    'siteId' => $siteIds[0],
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
-            ]));
+            if ($section->propagateEntries) {
+                $siteIds = array_keys($allSiteSettings);
+
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'description' => Craft::t('app', 'Resaving {type} entries', [
+                        'type' => $entryType->name,
+                    ]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'siteId' => $siteIds[0],
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ]
+                ]));
+            } else {
+                foreach ($allSiteSettings as $siteId => $siteSettings) {
+                    Craft::$app->getQueue()->push(new ResaveElements([
+                        'description' => Craft::t('app', 'Resaving {type} entries ({site})', [
+                            'type' => $entryType->name,
+                            'site' => $siteSettings->getSite()->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'siteId' => $siteId,
+                            'sectionId' => $section->id,
+                            'typeId' => $entryType->id,
+                            'status' => null,
+                            'enabledForSite' => false,
+                        ]
+                    ]));
+                }
+            }
         }
 
         return true;
@@ -1006,6 +1076,7 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
+                'sections.propagateEntries',
                 'structures.maxLevels',
             ])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
@@ -1087,10 +1158,10 @@ class Sections extends Component
             $entry->sectionId = $section->id;
             $entry->typeId = $firstEntryType->id;
             $entry->fieldLayoutId = $firstEntryType->fieldLayoutId;
+            $entry->title = $section->name;
         }
 
         // (Re)save it with an updated title, slug, and URI format.
-        $entry->title = $section->name;
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getElements()->saveElement($entry)) {
             throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI');

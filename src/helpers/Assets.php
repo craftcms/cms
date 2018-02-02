@@ -157,6 +157,20 @@ class Assets
     }
 
     /**
+     * Generates a default asset title based on its filename.
+     *
+     * @param string $filename The asset's filename
+     *
+     * @return string
+     */
+    public static function filename2Title(string $filename): string
+    {
+        $filename = StringHelper::toLowerCase($filename);
+        $filename = str_replace(['.', '_', '-'], ' ', $filename);
+        return StringHelper::toTitleCase($filename);
+    }
+
+    /**
      * Mirror a folder structure on a Volume.
      *
      * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
@@ -280,12 +294,7 @@ class Assets
     public static function getFileKindLabel(string $kind): string
     {
         self::_buildFileKinds();
-
-        if (isset(self::$_fileKinds[$kind]['label'])) {
-            return self::$_fileKinds[$kind]['label'];
-        }
-
-        return null;
+        return self::$_fileKinds[$kind]['label'] ?? Asset::KIND_UNKNOWN;
     }
 
     /**
@@ -307,7 +316,7 @@ class Assets
             }
         }
 
-        return 'unknown';
+        return Asset::KIND_UNKNOWN;
     }
 
     /**
@@ -341,7 +350,7 @@ class Assets
     {
         if (self::$_fileKinds === null) {
             self::$_fileKinds = [
-                'access' => [
+                Asset::KIND_ACCESS => [
                     'label' => Craft::t('app', 'Access'),
                     'extensions' => [
                         'adp',
@@ -352,7 +361,7 @@ class Assets
                         'accdr',
                     ]
                 ],
-                'audio' => [
+                Asset::KIND_AUDIO => [
                     'label' => Craft::t('app', 'Audio'),
                     'extensions' => [
                         '3gp',
@@ -388,7 +397,7 @@ class Assets
                         'wv',
                     ]
                 ],
-                'compressed' => [
+                Asset::KIND_COMPRESSED => [
                     'label' => Craft::t('app', 'Compressed'),
                     'extensions' => [
                         'bz2',
@@ -403,7 +412,7 @@ class Assets
                         'zipx',
                     ]
                 ],
-                'excel' => [
+                Asset::KIND_EXCEL => [
                     'label' => Craft::t('app', 'Excel'),
                     'extensions' => [
                         'xls',
@@ -413,7 +422,7 @@ class Assets
                         'xltm',
                     ]
                 ],
-                'flash' => [
+                Asset::KIND_FLASH => [
                     'label' => Craft::t('app', 'Flash'),
                     'extensions' => [
                         'fla',
@@ -423,20 +432,20 @@ class Assets
                         'swc',
                     ]
                 ],
-                'html' => [
+                Asset::KIND_HTML => [
                     'label' => Craft::t('app', 'HTML'),
                     'extensions' => [
                         'html',
                         'htm',
                     ]
                 ],
-                'illustrator' => [
+                Asset::KIND_ILLUSTRATOR => [
                     'label' => Craft::t('app', 'Illustrator'),
                     'extensions' => [
                         'ai',
                     ]
                 ],
-                'image' => [
+                Asset::KIND_IMAGE => [
                     'label' => Craft::t('app', 'Image'),
                     'extensions' => [
                         'jfif',
@@ -459,34 +468,34 @@ class Assets
                         'svg',
                     ]
                 ],
-                'javascript' => [
+                Asset::KIND_JAVASCRIPT => [
                     'label' => Craft::t('app', 'JavaScript'),
                     'extensions' => [
                         'js',
                     ]
                 ],
-                'json' => [
+                Asset::KIND_JSON => [
                     'label' => Craft::t('app', 'JSON'),
                     'extensions' => [
                         'json',
                     ]
                 ],
-                'pdf' => [
+                Asset::KIND_PDF => [
                     'label' => Craft::t('app', 'PDF'),
                     'extensions' => ['pdf']
                 ],
-                'photoshop' => [
+                Asset::KIND_PHOTOSHOP => [
                     'label' => Craft::t('app', 'Photoshop'),
                     'extensions' => [
                         'psd',
                         'psb',
                     ]
                 ],
-                'php' => [
+                Asset::KIND_PHP => [
                     'label' => Craft::t('app', 'PHP'),
                     'extensions' => ['php']
                 ],
-                'powerpoint' => [
+                Asset::KIND_POWERPOINT => [
                     'label' => Craft::t('app', 'PowerPoint'),
                     'extensions' => [
                         'pps',
@@ -498,14 +507,14 @@ class Assets
                         'potx',
                     ]
                 ],
-                'text' => [
+                Asset::KIND_TEXT => [
                     'label' => Craft::t('app', 'Text'),
                     'extensions' => [
                         'txt',
                         'text',
                     ]
                 ],
-                'video' => [
+                Asset::KIND_VIDEO => [
                     'label' => Craft::t('app', 'Video'),
                     'extensions' => [
                         'avchd',
@@ -537,7 +546,7 @@ class Assets
                         'vob',
                     ]
                 ],
-                'word' => [
+                Asset::KIND_WORD => [
                     'label' => Craft::t('app', 'Word'),
                     'extensions' => [
                         'doc',
@@ -547,7 +556,7 @@ class Assets
                         'dotm',
                     ]
                 ],
-                'xml' => [
+                Asset::KIND_XML => [
                     'label' => Craft::t('app', 'XML'),
                     'extensions' => [
                         'xml',

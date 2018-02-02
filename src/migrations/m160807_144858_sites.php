@@ -379,8 +379,8 @@ class m160807_144858_sites extends Migration
             $this->dropColumn($tables['i18n'], 'nestedUrlFormat');
 
             // Create hasUrls and template columns in the i18n table
-            $this->addColumn($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(true));
-            $this->addColumn($tables['i18n'], 'template', $this->string(500));
+            $this->addColumn($tables['i18n'], 'hasUrls', $this->boolean()->after('siteId')->notNull()->defaultValue(true));
+            $this->addColumn($tables['i18n'], 'template', $this->string(500)->after('uriFormat'));
 
             // Move the hasUrls and template values into the i18n table
             $results = (new Query())
@@ -403,17 +403,8 @@ class m160807_144858_sites extends Migration
         // Field translation methods
         // ---------------------------------------------------------------------
 
-        $this->addColumn(
-            '{{%fields}}',
-            'translationMethod',
-            $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none')
-        );
-
-        $this->addColumn(
-            '{{%fields}}',
-            'translationKeyFormat',
-            $this->text()
-        );
+        $this->addColumn('{{%fields}}', 'translationMethod', $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->after('instructions')->notNull()->defaultValue('none'));
+        $this->addColumn('{{%fields}}', 'translationKeyFormat', $this->text()->after('translationMethod'));
 
         $this->update(
             '{{%fields}}',
@@ -546,7 +537,7 @@ class m160807_144858_sites extends Migration
     protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
     {
         // Ignore NOT NULL for now
-        $type = $this->integer();
+        $type = $this->integer()->after($localeColumn);
         $this->addColumn($table, $column, $type);
 
         // Set the values

@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
+use Composer\Semver\Comparator;
+use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
@@ -139,6 +141,7 @@ class UpdaterController extends BaseUpdaterController
 
         try {
             Craft::$app->getComposer()->install($this->data['current'], $io);
+            Craft::info("Reverted Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
             $this->data['reverted'] = true;
         } catch (\Throwable $e) {
             Craft::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
@@ -472,6 +475,11 @@ class UpdaterController extends BaseUpdaterController
             $fromVersion = $plugin->getVersion();
         }
 
-        return version_compare($toVersion, $fromVersion, '>');
+        // Normalize the versions in case only one of them starts with a 'v' or something
+        $vp = new VersionParser();
+        $toVersion = $vp->normalize($toVersion);
+        $fromVersion = $vp->normalize($fromVersion);
+
+        return Comparator::greaterThan($toVersion, $fromVersion);
     }
 }

@@ -14,7 +14,7 @@ class m170126_000000_assets_focal_point extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%assets}}', 'focalPoint', $this->string(20)->null());
+        $this->addColumn('{{%assets}}', 'focalPoint', $this->string(20)->after('size')->null());
     }
 
     /**
