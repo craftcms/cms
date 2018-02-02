@@ -6,6 +6,7 @@
 - Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
 
 ### Changed
+- The `requireUserAgentAndIpForSession` config setting is now `false` by default. (Setting it to `true` from `config/general.php` for production environments is recommended.)
 - `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
 
 ### Removed
