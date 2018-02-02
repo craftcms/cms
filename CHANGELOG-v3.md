@@ -9,6 +9,10 @@
 ### Changed
 - The `requireUserAgentAndIpForSession` config setting is now `false` by default. (Setting it to `true` from `config/general.php` for production environments is recommended.)
 - `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+- The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
+
+### Deprecated
+- Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
 
 ### Removed
 - Removed `craft\helpers\App::craftDownloadUrl()`.
@@ -26,6 +30,7 @@
 - Fixed a bug where `craft\web\Request::getUserIP()` was ignoring the `ipHeaders` config setting.
 - Fixed an error that could occur when calling `craft\web\Request::getUserIP()` if `$_SERVER['REMOTE_ADDR']` wasn’t set.
 - Fixed a bug where all image assets were getting an explicit focal point at 50%-50% when uploaded or saved without an explicit focal point.
+- Fixed a bug where Composer’s autoloader may not be generated after running the Control Panel updater.
 
 ## 3.0.0-RC8 - 2018-01-30
 

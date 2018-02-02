@@ -75,7 +75,7 @@ class RemoveController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function postComposerOptimizeState(): array
+    protected function postComposerInstallState(): array
     {
         return $this->actionState(self::ACTION_FINISH, [
             'status' => Craft::t('app', 'The plugin was removed successfully.'),

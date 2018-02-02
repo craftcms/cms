@@ -148,7 +148,7 @@ class UpdaterController extends BaseUpdaterController
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io);
         }
 
-        return $this->sendNextAction(self::ACTION_COMPOSER_OPTIMIZE);
+        return $this->send($this->postComposerInstallState());
     }
 
     /**
@@ -372,7 +372,7 @@ class UpdaterController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function postComposerOptimizeState(): array
+    protected function postComposerInstallState(): array
     {
         // Was this after a revert?
         if ($this->data['reverted']) {
