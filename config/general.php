@@ -44,8 +44,5 @@ return [
     'production' => [
         // Base site URL
         'siteUrl' => null,
-
-        // Only allow user sessions for requests with a valid user agent & IP
-        'requireUserAgentAndIpForSession' => true,
     ],
 ];
