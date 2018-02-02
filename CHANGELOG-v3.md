@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
+- Added `craft\elements\Asset::getHasFocalPoint()`.
 
 ### Changed
 - The `requireUserAgentAndIpForSession` config setting is now `false` by default. (Setting it to `true` from `config/general.php` for production environments is recommended.)
@@ -24,6 +25,7 @@
 - Fixed an error that occurred when attempting to edit an entry, if the latest revision of the entry was created by a deleted user. ([#2390](https://github.com/craftcms/cms/issues/2390))
 - Fixed a bug where `craft\web\Request::getUserIP()` was ignoring the `ipHeaders` config setting.
 - Fixed an error that could occur when calling `craft\web\Request::getUserIP()` if `$_SERVER['REMOTE_ADDR']` wasn’t set.
+- Fixed a bug where all image assets were getting an explicit focal point at 50%-50% when uploaded or saved without an explicit focal point.
 
 ## 3.0.0-RC8 - 2018-01-30
 

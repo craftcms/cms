@@ -900,6 +900,16 @@ class Asset extends Element
     }
 
     /**
+     * Returns whether a user-defined focal point is set on the asset.
+     *
+     * @return bool
+     */
+    public function getHasFocalPoint(): bool
+    {
+        return $this->_focalPoint !== null;
+    }
+
+    /**
      * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
      * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
@@ -1171,19 +1181,20 @@ class Asset extends Element
                 $record->id = $this->id;
             }
 
-
             $record->filename = $this->filename;
             $record->volumeId = $this->volumeId;
             $record->folderId = $this->folderId;
             $record->kind = $this->kind;
             $record->size = $this->size;
-            $record->focalPoint = $this->focalPoint;
             $record->width = $this->_width;
             $record->height = $this->_height;
             $record->dateModified = $this->dateModified;
 
-            if ($focal = $this->getFocalPoint()) {
+            if ($this->getHasFocalPoint()) {
+                $focal = $this->getFocalPoint();
                 $record->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
+            } else {
+                $record->focalPoint = null;
             }
 
             $record->save(false);
