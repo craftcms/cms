@@ -331,7 +331,7 @@ class GeneralConfig extends BaseObject
      *
      * See [[\yii\web\Request::ipHeaders]] for more details.
      *
-     * If not set, the default [[\yii\web\Request::ipHeaders]] value will be used.
+     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
      */
     public $ipHeaders;
     /**

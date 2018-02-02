@@ -5,6 +5,9 @@
 ### Added
 - Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
 
+### Changed
+- `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+
 ### Removed
 - Removed `craft\helpers\App::craftDownloadUrl()`.
 - Removed `craft\helpers\App::majorMinorVersion()`.
@@ -18,6 +21,8 @@
 - Fixed an error that could occur when saving a section that isn’t enabled for the first listed site. ([#2385](https://github.com/craftcms/cms/issues/2385))
 - Fixed a bug where you would get a PHP error when using `craft\validators\UrlValidator` if the [intl extension](https://secure.php.net/manual/en/book.intl.php) was loaded, but was not compiled with the `INTL_IDNA_VARIANT_UTS46` constant.
 - Fixed an error that occurred when attempting to edit an entry, if the latest revision of the entry was created by a deleted user. ([#2390](https://github.com/craftcms/cms/issues/2390))
+- Fixed a bug where `craft\web\Request::getUserIP()` was ignoring the `ipHeaders` config setting.
+- Fixed an error that could occur when calling `craft\web\Request::getUserIP()` if `$_SERVER['REMOTE_ADDR']` wasn’t set.
 
 ## 3.0.0-RC8 - 2018-01-30
 
