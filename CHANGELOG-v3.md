@@ -8,6 +8,7 @@
 
 ### Changed
 - `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+- `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
 - The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
 
 ### Deprecated

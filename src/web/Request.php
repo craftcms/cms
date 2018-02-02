@@ -666,21 +666,26 @@ class Request extends \yii\web\Request
 
     /**
      * @inheritdoc
+     *
+     * @param int $filterOptions bitwise disjunction of flags that should be passed to
+     *                           [filter_var()](http://php.net/manual/en/function.filter-var.php)
+     *                           when validating the IP address. Options include `FILTER_FLAG_IPV4`,
+     *                           `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getUserIP()
+    public function getUserIP(int $filterOptions = 0)
     {
         if ($this->_ipAddress === null) {
             foreach ($this->ipHeaders as $ipHeader) {
                 if ($this->headers->has($ipHeader)) {
                     foreach (explode(',', $this->headers->get($ipHeader)) as $ip) {
-                        if ($ip = $this->_validateIp($ip)) {
+                        if ($ip = $this->_validateIp($ip, $filterOptions)) {
                             return $this->_ipAddress = $ip;
                         }
                     }
                 }
             }
 
-            $this->_ipAddress = $this->getRemoteIP() ?? false;
+            $this->_ipAddress = $this->getRemoteIP($filterOptions) ?? false;
         }
 
         return $this->_ipAddress ?: null;
@@ -688,11 +693,16 @@ class Request extends \yii\web\Request
 
     /**
      * @inheritdoc
+     *
+     * @param int $filterOptions bitwise disjunction of flags that should be passed to
+     *                           [filter_var()](http://php.net/manual/en/function.filter-var.php)
+     *                           when validating the IP address. Options include `FILTER_FLAG_IPV4`,
+     *                           `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getRemoteIP()
+    public function getRemoteIP(int $filterOptions = 0)
     {
         $ip = parent::getRemoteIP();
-        return $ip ? $this->_validateIp($ip) : null;
+        return $ip ? $this->_validateIp($ip, $filterOptions) : null;
     }
 
     /**
@@ -1041,12 +1051,13 @@ class Request extends \yii\web\Request
 
     /**
      * @param string $ip
+     * @param int    $filterOptions
      *
      * @return string|null
      */
-    private function _validateIp(string $ip)
+    private function _validateIp(string $ip, int $filterOptions)
     {
         $ip = trim($ip);
-        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false ? $ip : null;
+        return filter_var($ip, FILTER_VALIDATE_IP, $filterOptions) !== false ? $ip : null;
     }
 }
