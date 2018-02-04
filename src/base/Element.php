@@ -888,40 +888,40 @@ abstract class Element extends Component implements ElementInterface
                             $rule = [$field->handle, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
                         }
 
-                        if (is_array($rule) && isset($rule[0])) {
-                            if (!isset($rule[1])) {
-                                // ["Validator"] syntax
-                                array_unshift($rule, $field->handle);
-                            }
-
-                            if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
-                                // InlineValidator assumes that the closure is on the model being validated
-                                // so it won’t pass a reference to the element
-                                $rule = [
-                                    $rule[0],
-                                    'validateCustomFieldAttribute',
-                                    'params' => [
-                                        $field,
-                                        $rule[1],
-                                        $rule['params'] ?? null,
-                                    ]
-                                ];
-                            }
-
-                            // Set 'isEmpty' to the field's isEmpty() method by default
-                            if (!array_key_exists('isEmpty', $rule)) {
-                                $rule['isEmpty'] = [$field, 'isEmpty'];
-                            }
-
-                            // Set 'on' to the main scenarios by default
-                            if (!array_key_exists('on', $rule)) {
-                                $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
-                            }
-
-                            $rules[] = $rule;
-                        } else {
+                        if (!is_array($rule) || !isset($rule[0])) {
                             throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
                         }
+
+                        if (!isset($rule[1])) {
+                            // ["Validator"] syntax
+                            array_unshift($rule, $field->handle);
+                        }
+
+                        if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
+                            // InlineValidator assumes that the closure is on the model being validated
+                            // so it won’t pass a reference to the element
+                            $rule = [
+                                $rule[0],
+                                'validateCustomFieldAttribute',
+                                'params' => [
+                                    $field,
+                                    $rule[1],
+                                    $rule['params'] ?? null,
+                                ]
+                            ];
+                        }
+
+                        // Set 'isEmpty' to the field's isEmpty() method by default
+                        if (!array_key_exists('isEmpty', $rule)) {
+                            $rule['isEmpty'] = [$field, 'isEmpty'];
+                        }
+
+                        // Set 'on' to the main scenarios by default
+                        if (!array_key_exists('on', $rule)) {
+                            $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
+                        }
+
+                        $rules[] = $rule;
                     }
                 }
             }
