@@ -41,6 +41,11 @@ class Composer extends Component
      */
     public $composerRepoUrl = 'https://composer.craftcms.com/';
 
+    /**
+     * @var bool
+     */
+    public $disablePackagist = true;
+
     // Public Methods
     // =========================================================================
 
@@ -358,7 +363,7 @@ class Composer extends Component
             }
 
             // Disable Packagist if it's not already disabled
-            if (!$this->findDisablePackagist($config)) {
+            if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
                 $config['repositories'][] = ['packagist.org' => false];
             }
         }
