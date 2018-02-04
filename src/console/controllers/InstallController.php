@@ -58,6 +58,8 @@ class InstallController extends Controller
      */
     public $language;
 
+    public $defaultAction = 'craft';
+
     // Public Methods
     // =========================================================================
 
@@ -83,7 +85,7 @@ class InstallController extends Controller
     /**
      * Runs the install migration
      */
-    public function actionIndex()
+    public function actionCraft()
     {
         if (Craft::$app->getIsInstalled()) {
             $this->stdout('Craft is already installed!'.PHP_EOL, Console::FG_YELLOW);
