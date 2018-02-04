@@ -125,8 +125,6 @@ class InstallController extends Controller
         $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'validator' => [$this, 'validateSiteUrl']]);
         $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
 
-        $this->stdout('Installing Craft...'.PHP_EOL, Console::FG_YELLOW);
-
         $site = new Site([
             'name' => $siteName,
             'handle' => 'default',
@@ -143,17 +141,22 @@ class InstallController extends Controller
         ]);
 
         // Run the install migration
+        $this->stdout('*** installing Craft'.PHP_EOL, Console::FG_YELLOW);
+        $start = microtime(true);
         $migrator = Craft::$app->getMigrator();
+        $result = $migrator->migrateUp($migration);
 
-        if ($migrator->migrateUp($migration) !== false) {
-            $this->stdout('Success!'.PHP_EOL, Console::FG_GREEN);
+        if ($result === false) {
+            $this->stdout('*** failed to install Craft'.PHP_EOL.PHP_EOL, Console::FG_RED);
+            return;
+        }
 
-            // Mark all existing migrations as applied
-            foreach ($migrator->getNewMigrations() as $name) {
-                $migrator->addMigrationHistory($name);
-            }
-        } else {
-            $this->stderr('There was a problem installing Craft.'.PHP_EOL, Console::FG_RED);
+        $time = sprintf('%.3f', microtime(true) - $start);
+        $this->stdout("*** installed Craft successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
+
+        // Mark all existing migrations as applied
+        foreach ($migrator->getNewMigrations() as $name) {
+            $migrator->addMigrationHistory($name);
         }
     }
 
@@ -164,14 +167,18 @@ class InstallController extends Controller
      */
     public function actionPlugin(string $handle)
     {
+        $this->stdout("*** installing {$handle}".PHP_EOL, Console::FG_YELLOW);
+        $start = microtime(true);
+
         try {
             Craft::$app->plugins->installPlugin($handle);
-            $this->stdout($handle.' sucessfully installed!'.PHP_EOL);
-        } catch (InvalidPluginException $e) {
-            $this->stderr('Could not find a plugin with the handle: '.$handle.PHP_EOL);
-        } catch (Exception $e) {
-            $this->stderr("There was a problem installing {$handle}: ".$e->getMessage().PHP_EOL);
+        } catch (\Throwable $e) {
+            $this->stdout("*** failed to install {$handle}: {$e->getMessage()}".PHP_EOL.PHP_EOL, Console::FG_RED);
+            return;
         }
+
+        $time = sprintf('%.3f', microtime(true) - $start);
+        $this->stdout("*** installed {$handle} successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
     }
 
     public function validateUsername(string $value, string &$error = null): bool
