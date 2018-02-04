@@ -34,6 +34,7 @@
 - Fixed an error that could occur when calling `craft\web\Request::getUserIP()` if `$_SERVER['REMOTE_ADDR']` wasn’t set.
 - Fixed a bug where all image assets were getting an explicit focal point at 50%-50% when uploaded or saved without an explicit focal point.
 - Fixed a bug where Composer’s autoloader may not be generated after running the Control Panel updater.
+- Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, if the field had nested relational fields that were set to manage relations on a per-site basis. ([#2391](https://github.com/craftcms/cms/issues/2391))
 
 ## 3.0.0-RC8 - 2018-01-30
 

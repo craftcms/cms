@@ -12,9 +12,11 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\errors\MatrixBlockTypeNotFoundException;
+use craft\fields\BaseRelationField;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Html;
 use craft\helpers\MigrationHelper;
@@ -846,88 +848,71 @@ class Matrix extends Component
     {
         // If the field is translatable, see if there are any global blocks that should be localized
         if ($field->localizeBlocks) {
-            $blocks = MatrixBlock::find()
+            $blockQuery = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->ownerId($ownerId)
                 ->status(null)
                 ->enabledForSite(false)
                 ->limit(null)
                 ->siteId($ownerSiteId)
-                ->ownerSiteId(':empty:')
-                ->all();
+                ->ownerSiteId(':empty:');
+            $blocks = $blockQuery->all();
 
             if (!empty($blocks)) {
-                $originalBlockIds = [];
-                $newBlockIds = [];
-
+                // Find any relational fields on these blocks
+                $relationFields = [];
                 foreach ($blocks as $block) {
-                    // Assign the current block to the owner's locale
-                    $block->ownerSiteId = $ownerSiteId;
-                    Craft::$app->getElements()->saveElement($block, false);
-
-                    // Now duplicate it for the other locales
-                    $originalBlockId = $originalBlockIds[] = $block->id;
-
-                    foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                        if ($siteId != $ownerSiteId) {
-                            $block->id = null;
-                            $block->contentId = null;
-                            $block->siteId = (int)$siteId;
-                            $block->ownerSiteId = (int)$siteId;
-                            Craft::$app->getElements()->saveElement($block, false);
-
-                            $newBlockIds[$originalBlockId][$siteId] = $block->id;
+                    if (isset($relationFields[$block->typeId])) {
+                        continue;
+                    }
+                    $relationFields[$block->typeId] = [];
+                    foreach ($block->getType()->getFields() as $typeField) {
+                        if ($typeField instanceof BaseRelationField) {
+                            $relationFields[$block->typeId][] = $typeField->handle;
                         }
                     }
                 }
 
-                // Duplicate the relations, too.  First by getting all of the
-                // existing relations for the original blocks
-                $relations = (new Query())
-                    ->select([
-                        'fieldId',
-                        'sourceId',
-                        'sourceSiteId',
-                        'targetId',
-                        'sortOrder'
-                    ])
-                    ->from(['{{%relations}}'])
-                    ->where(['sourceId' => $originalBlockIds])
-                    ->all();
+                // Prefetch the blocks in all the other sites, in case they have
+                // any localized content
+                $otherSiteBlocks = [];
+                $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
+                foreach ($allSiteIds as $siteId) {
+                    if ($siteId != $ownerSiteId) {
+                        /** @var MatrixBlock[] $siteBlocks */
+                        $siteBlocks = $otherSiteBlocks[$siteId] = $blockQuery->siteId($siteId)->all();
 
-                if (!empty($relations)) {
-                    // Now duplicate each one for the other sites' new blocks
-                    $rows = [];
-
-                    foreach ($relations as $relation) {
-                        $originalBlockId = $relation['sourceId'];
-
-                        // Just to be safe...
-                        if (isset($newBlockIds[$originalBlockId])) {
-                            foreach ($newBlockIds[$originalBlockId] as $siteId => $newBlockId) {
-                                $rows[] = [
-                                    $relation['fieldId'],
-                                    $newBlockId,
-                                    $relation['sourceSiteId'],
-                                    $relation['targetId'],
-                                    $relation['sortOrder']
-                                ];
+                        // Hard-set the relation IDs
+                        foreach ($siteBlocks as $block) {
+                            if (isset($relationFields[$block->typeId])) {
+                                foreach ($relationFields[$block->typeId] as $handle) {
+                                    /** @var ElementQueryInterface $relationQuery */
+                                    $relationQuery = $block->getFieldValue($handle);
+                                    $block->setFieldValue($handle, $relationQuery->ids());
+                                }
                             }
                         }
                     }
+                }
 
-                    Craft::$app->getDb()->createCommand()
-                        ->batchInsert(
-                            '{{%relations}}',
-                            [
-                                'fieldId',
-                                'sourceId',
-                                'sourceSiteId',
-                                'targetId',
-                                'sortOrder'
-                            ],
-                            $rows)
-                        ->execute();
+                // Explicitly assign the current site's blocks to the current site
+                foreach ($blocks as $block) {
+                    $block->ownerSiteId = $ownerSiteId;
+                    Craft::$app->getElements()->saveElement($block, false);
+                }
+
+                // Now save the other sites' blocks as new site-specific blocks
+                foreach ($otherSiteBlocks as $siteId => $siteBlocks) {
+                    foreach ($siteBlocks as $block) {
+                        //$originalBlockId = $block->id;
+
+                        $block->id = null;
+                        $block->contentId = null;
+                        $block->siteId = (int)$siteId;
+                        $block->ownerSiteId = (int)$siteId;
+                        Craft::$app->getElements()->saveElement($block, false);
+                        //$newBlockIds[$originalBlockId][$siteId] = $block->id;
+                    }
                 }
             }
         } else {
