@@ -13,6 +13,7 @@
 - The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
 - The `install/index` command has been renamed to `install/craft`. (It’s still the default action though.)
 - Improved the console output for the `install/craft` and `install/plugin` commands.
+- When saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, any nested translatable fields will now retain their per-site values when Matrix duplicates the current blocks for each of the element’s sites.
 
 ### Deprecated
 - Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
