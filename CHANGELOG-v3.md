@@ -8,12 +8,12 @@
 - Added `craft\services\Composer::$disablePackagist`, which can be set to `false` from `config/app.php` to prevent the Control Panel updater from disabling Packagist.
 
 ### Changed
-- `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
-- `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
 - The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
+- When saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, any nested translatable fields will now retain their per-site values when Matrix duplicates the current blocks for each of the element’s sites.
 - The `install/index` command has been renamed to `install/craft`. (It’s still the default action though.)
 - Improved the console output for the `install/craft` and `install/plugin` commands.
-- When saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, any nested translatable fields will now retain their per-site values when Matrix duplicates the current blocks for each of the element’s sites.
+- `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+- `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
 
 ### Deprecated
 - Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
