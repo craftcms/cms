@@ -15,6 +15,7 @@
 - `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
 - `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
 - `craft\web\View::renderObjectTemplate()` now has a `$variables` argument, for setting any variables that should be available to the template in addition to the object’s properties.
+- Fixed an error that could occur when saving a new element with a Matrix field. ([#2389](https://github.com/craftcms/cms/issues/2389))
 
 ### Deprecated
 - Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
