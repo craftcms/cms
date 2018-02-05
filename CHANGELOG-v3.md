@@ -6,6 +6,7 @@
 - Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
 - Added `craft\elements\Asset::getHasFocalPoint()`.
 - Added `craft\services\Composer::$disablePackagist`, which can be set to `false` from `config/app.php` to prevent the Control Panel updater from disabling Packagist.
+- Added the `getThumbPath` event to `craft\services\Assets`. ([#2398](https://github.com/craftcms/cms/issues/2398))
 
 ### Changed
 - The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
@@ -19,6 +20,7 @@
 
 ### Deprecated
 - Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
+- Deprecated the `getAssetThumbUrl` event on `craft\services\Assets`. Use the new `getThumbPath` event instead.
 
 ### Removed
 - Removed `craft\helpers\App::craftDownloadUrl()`.

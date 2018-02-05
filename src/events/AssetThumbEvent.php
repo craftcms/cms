@@ -11,19 +11,18 @@ use craft\elements\Asset;
 use yii\base\Event;
 
 /**
- * Get Asset thumb url event class
+ * Asset Thumbnail event
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- * @deprecated in 3.0.0-RC9
  */
-class GetAssetThumbUrlEvent extends Event
+class AssetThumbEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Asset The Asset which the thumbnail should be for.
+     * @var Asset The Asset a thumbnail was requested for
      */
     public $asset;
 
@@ -38,18 +37,15 @@ class GetAssetThumbUrlEvent extends Event
     public $height;
 
     /**
-     * @var int Requested thumbnail size (width and height)
-     * @deprecated in 3.0.0-RC7. Use [[width]] and [[height]] instead
-     */
-    public $size;
-
-    /**
-     * @var bool Whether the thumbnail should be generated if it doesn't exist yet.
+     * @var bool Whether the thumbnail should be generated if it doesn't exist yet
      */
     public $generate;
 
     /**
-     * @var string|null Url to requested Asset that should be used instead.
+     * @var string|false|null Thumbnail path that should be used in place of the
+     * Craft-defined thumbnail path, or `false` if one doesn't exist yet and
+     * [[generate]] is `false`. Leave `null` if Craft’s thumbnail generation
+     * should be used.
      */
-    public $url;
+    public $path;
 }
