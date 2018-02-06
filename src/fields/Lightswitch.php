@@ -101,7 +101,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     public function normalizeValue($value, ElementInterface $element = null)
     {
         // If this is a new entry, look for a default option
-        if ($value === null && $this->isFresh($element)) {
+        if ($value === null) {
             $value = $this->default;
         }
 
