@@ -40,6 +40,9 @@ abstract class Component extends Model implements ComponentInterface
         return array_pop($classNameParts);
     }
 
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */

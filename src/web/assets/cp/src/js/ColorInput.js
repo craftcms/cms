@@ -37,7 +37,7 @@ Craft.ColorInput = Garnish.Base.extend({
             .insertAfter(this.$input);
 
         this.addListener(this.$colorContainer, 'click', function() {
-            this.$colorInput.click();
+            this.$colorInput.trigger('click');
         });
 
         this.addListener(this.$colorInput, 'change', 'updateColor');

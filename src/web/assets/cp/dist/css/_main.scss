@@ -2227,7 +2227,7 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: #27AE60;
+  background-color: $green;
 }
 
 /* green */
@@ -2235,7 +2235,7 @@ ul.tree,
 .status.orange,
 .status.locked,
 .status.pending {
-  background-color: #F2842D;
+  background-color: $orange;
 }
 
 /* orange */
@@ -2244,41 +2244,41 @@ ul.tree,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: #D0021B;
+  background-color: $red;
 }
 
 /* red */
 
 .status.yellow {
-  background-color: #F1C40E;
+  background-color: $yellow;
 }
 
 .status.pink {
-  background-color: #FF50F2;
+  background-color: $pink;
 }
 
 .status.purple {
-  background-color: #9B59B6;
+  background-color: $purple;
 }
 
 .status.blue {
-  background-color: #0D99F2;
+  background-color: $blue;
 }
 
 .status.turquoise {
-  background-color: #2CE0BD;
+  background-color: $turquoise;
 }
 
 .status.light {
-  background-color: #CCD1D6;
+  background-color: $light;
 }
 
 .status.grey {
-  background-color: #98A3AE;
+  background-color: $grey;
 }
 
 .status.black {
-  background-color: #32475E;
+  background-color: $black;
 }
 
 .status.disabled {

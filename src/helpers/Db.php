@@ -46,7 +46,6 @@ class Db
         Schema::TYPE_FLOAT,
         Schema::TYPE_DOUBLE,
         Schema::TYPE_DECIMAL,
-        Schema::TYPE_BOOLEAN,
     ];
 
     /**

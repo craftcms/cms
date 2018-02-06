@@ -73,7 +73,6 @@ class Api extends Component
 
         $requestBody = [
             'request' => [
-                'ip' => $request->getUserIP(),
                 'hostname' => $request->getHostName(),
                 'port' => $request->getPort(),
             ],
@@ -83,6 +82,10 @@ class Api extends Component
             'platform' => $this->platformVersions(),
             'cms' => $this->getCmsInfo(),
         ];
+
+        if ($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            $requestBody['request']['ip'] = $ip;
+        }
 
         if (!empty($pluginInfo = $this->pluginInfo())) {
             $requestBody['plugins'] = $pluginInfo;

@@ -242,7 +242,7 @@
 
                 if (!Garnish.isMobileBrowser()) {
                     setTimeout($.proxy(function() {
-                        this.$nameInput.focus();
+                        this.$nameInput.trigger('focus');
                     }, this), 100);
                 }
 
@@ -538,7 +538,7 @@
 
                 if (!Garnish.isMobileBrowser()) {
                     setTimeout($.proxy(function() {
-                        this.$nameInput.focus();
+                        this.$nameInput.trigger('focus');
                     }, this), 100);
                 }
             },

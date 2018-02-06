@@ -46,6 +46,18 @@ class Request extends \yii\web\Request
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public $ipHeaders = [
+        'Client-IP',
+        'X-Forwarded-For',
+        'X-Forwarded',
+        'X-Cluster-Client-IP',
+        'Forwarded-For',
+        'Forwarded',
+    ];
+
+    /**
      * @var
      */
     private $_fullPath;
@@ -653,63 +665,44 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
-     * variations in how different ISPs handle IP addresses in headers between hops.
+     * @inheritdoc
      *
-     * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
-     * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
-     *
-     * @return string The IP address.
+     * @param int $filterOptions bitwise disjunction of flags that should be passed to
+     *                           [filter_var()](http://php.net/manual/en/function.filter-var.php)
+     *                           when validating the IP address. Options include `FILTER_FLAG_IPV4`,
+     *                           `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getUserIP(): string
+    public function getUserIP(int $filterOptions = 0)
     {
         if ($this->_ipAddress === null) {
-            $ipMatch = false;
-
-            // Check for shared internet/ISP IP
-            if (!empty($_SERVER['HTTP_CLIENT_IP']) && $this->_validateIp($_SERVER['HTTP_CLIENT_IP'])) {
-                $ipMatch = $_SERVER['HTTP_CLIENT_IP'];
-            } else {
-                // Check for IPs passing through proxies
-                if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-                    // Check if multiple IPs exist in var
-                    $ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-
-                    foreach ($ipList as $ip) {
-                        if ($this->_validateIp($ip)) {
-                            $ipMatch = $ip;
+            foreach ($this->ipHeaders as $ipHeader) {
+                if ($this->headers->has($ipHeader)) {
+                    foreach (explode(',', $this->headers->get($ipHeader)) as $ip) {
+                        if ($ip = $this->_validateIp($ip, $filterOptions)) {
+                            return $this->_ipAddress = $ip;
                         }
                     }
                 }
             }
 
-            if (!$ipMatch) {
-                if (!empty($_SERVER['HTTP_X_FORWARDED']) && $this->_validateIp($_SERVER['HTTP_X_FORWARDED'])) {
-                    $ipMatch = $_SERVER['HTTP_X_FORWARDED'];
-                } else {
-                    if (!empty($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) && $this->_validateIp($_SERVER['HTTP_X_CLUSTER_CLIENT_IP'])) {
-                        $ipMatch = $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
-                    } else {
-                        if (!empty($_SERVER['HTTP_FORWARDED_FOR']) && $this->_validateIp($_SERVER['HTTP_FORWARDED_FOR'])) {
-                            $ipMatch = $_SERVER['HTTP_FORWARDED_FOR'];
-                        } else {
-                            if (!empty($_SERVER['HTTP_FORWARDED']) && $this->_validateIp($_SERVER['HTTP_FORWARDED'])) {
-                                $ipMatch = $_SERVER['HTTP_FORWARDED'];
-                            }
-                        }
-                    }
-                }
-
-                // The only one we're guaranteed to be accurate.
-                if (!$ipMatch) {
-                    $ipMatch = $_SERVER['REMOTE_ADDR'];
-                }
-            }
-
-            $this->_ipAddress = $ipMatch;
+            $this->_ipAddress = $this->getRemoteIP($filterOptions) ?? false;
         }
 
-        return $this->_ipAddress;
+        return $this->_ipAddress ?: null;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param int $filterOptions bitwise disjunction of flags that should be passed to
+     *                           [filter_var()](http://php.net/manual/en/function.filter-var.php)
+     *                           when validating the IP address. Options include `FILTER_FLAG_IPV4`,
+     *                           `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
+     */
+    public function getRemoteIP(int $filterOptions = 0)
+    {
+        $ip = parent::getRemoteIP();
+        return $ip ? $this->_validateIp($ip, $filterOptions) : null;
     }
 
     /**
@@ -1058,12 +1051,13 @@ class Request extends \yii\web\Request
 
     /**
      * @param string $ip
+     * @param int    $filterOptions
      *
-     * @return bool
+     * @return string|null
      */
-    private function _validateIp(string $ip): bool
+    private function _validateIp(string $ip, int $filterOptions)
     {
-        return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
+        $ip = trim($ip);
+        return filter_var($ip, FILTER_VALIDATE_IP, $filterOptions) !== false ? $ip : null;
     }
 }

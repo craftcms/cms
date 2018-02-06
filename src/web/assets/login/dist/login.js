@@ -77,7 +77,7 @@
                 this.passwordInputInterval = setInterval($.proxy(this, 'validate'), 250);
 
                 this.addListener(this.$sslIcon, 'click', function() {
-                    this.$submitBtn.click();
+                    this.$submitBtn.trigger('click');
                 });
             },
 
@@ -186,7 +186,7 @@
                 event.preventDefault();
 
                 if (!Garnish.isMobileBrowser()) {
-                    this.$loginNameInput.focus();
+                    this.$loginNameInput.trigger('focus');
                 }
 
                 if (this.$error) {

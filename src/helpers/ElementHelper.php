@@ -142,16 +142,14 @@ class ElementHelper
     private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
     {
         /** @var Element $element */
+        $variables = [];
+
         // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
         if (!$element->id && strpos($uriFormat, '{id') !== false) {
-            $element->id = $element->tempId = 'id-'.StringHelper::randomString(10);
+            $variables['id'] = $element->tempId = 'id-'.StringHelper::randomString(10);
         }
 
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
-
-        if ($element->tempId) {
-            $element->id = null;
-        }
 
         // Remove any leading/trailing/double slashes
         $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);

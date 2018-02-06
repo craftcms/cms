@@ -6,13 +6,14 @@ mix.webpackConfig({
         'vue-router': 'VueRouter',
         'vuex': 'Vuex',
         'axios': 'axios'
-    },
+    }
 });
 
 const sourcePath = 'src/web/assets/pluginstore/src';
 const distPath = 'src/web/assets/pluginstore/dist';
 
-mix.js(sourcePath + '/js/main.js', distPath + '/js/')
+mix
+    .js(sourcePath + '/js/main.js', distPath + '/js/main.min.js')
     .sass(sourcePath + '/sass/main.scss', distPath + '/css/')
         .options({
             processCssUrls: false

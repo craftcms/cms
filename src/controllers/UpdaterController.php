@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
+use Composer\Semver\Comparator;
+use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
@@ -146,7 +148,7 @@ class UpdaterController extends BaseUpdaterController
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io);
         }
 
-        return $this->sendNextAction(self::ACTION_COMPOSER_OPTIMIZE);
+        return $this->send($this->postComposerInstallState());
     }
 
     /**
@@ -370,7 +372,7 @@ class UpdaterController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function postComposerOptimizeState(): array
+    protected function postComposerInstallState(): array
     {
         // Was this after a revert?
         if ($this->data['reverted']) {
@@ -473,6 +475,11 @@ class UpdaterController extends BaseUpdaterController
             $fromVersion = $plugin->getVersion();
         }
 
-        return version_compare($toVersion, $fromVersion, '>');
+        // Normalize the versions in case only one of them starts with a 'v' or something
+        $vp = new VersionParser();
+        $toVersion = $vp->normalize($toVersion);
+        $fromVersion = $vp->normalize($fromVersion);
+
+        return Comparator::greaterThan($toVersion, $fromVersion);
     }
 }

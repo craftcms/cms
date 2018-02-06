@@ -1,5 +1,49 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC9 - 2018-02-06
+
+### Added
+- Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
+- Added `craft\elements\Asset::getHasFocalPoint()`.
+- Added `craft\services\Composer::$disablePackagist`, which can be set to `false` from `config/app.php` to prevent the Control Panel updater from disabling Packagist.
+- Added the `getThumbPath` event to `craft\services\Assets`. ([#2398](https://github.com/craftcms/cms/issues/2398))
+
+### Changed
+- The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
+- When saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, any nested translatable fields will now retain their per-site values when Matrix duplicates the current blocks for each of the element’s sites.
+- The `install/index` command has been renamed to `install/craft`. (It’s still the default action though.)
+- Improved the console output for the `install/craft` and `install/plugin` commands.
+- `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+- `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
+- `craft\web\View::renderObjectTemplate()` now has a `$variables` argument, for setting any variables that should be available to the template in addition to the object’s properties.
+- Fixed an error that could occur when saving a new element with a Matrix field. ([#2389](https://github.com/craftcms/cms/issues/2389))
+- Lightswitch fields that don’t have a value yet will now be assigned the default field value, even for existing elements. ([#2404](https://github.com/craftcms/cms/issues/2404))
+
+### Deprecated
+- Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
+- Deprecated the `getAssetThumbUrl` event on `craft\services\Assets`. Use the new `getThumbPath` event instead.
+
+### Removed
+- Removed `craft\helpers\App::craftDownloadUrl()`.
+- Removed `craft\helpers\App::majorMinorVersion()`.
+- Removed `craft\helpers\App::majorVersion()`.
+- Removed `craft\helpers\App::normalizeVersionNumber()`.
+
+### Fixed
+- Fixed an error that occurred if an empty, non-null value was passed into `craft\elements\Asset::getUrl()`. ([#2376](https://github.com/craftcms/cms/issues/2376))
+- Fixed a bug where error messages concerning upgrading/downgrading Craft to incompatible versions were including broken links to supported Craft versions.
+- Fixed a bug where updating a plugin could immediately abort with a “Nothing to update” message, if the plugin’s version numbers weren’t formatted consistently. ([#2378](https://github.com/craftcms/cms/issues/2378))
+- Fixed an error that could occur when saving a section that isn’t enabled for the first listed site. ([#2385](https://github.com/craftcms/cms/issues/2385))
+- Fixed a bug where you would get a PHP error when using `craft\validators\UrlValidator` if the [intl extension](https://secure.php.net/manual/en/book.intl.php) was loaded, but was not compiled with the `INTL_IDNA_VARIANT_UTS46` constant.
+- Fixed an error that occurred when attempting to edit an entry, if the latest revision of the entry was created by a deleted user. ([#2390](https://github.com/craftcms/cms/issues/2390))
+- Fixed a bug where `craft\web\Request::getUserIP()` was ignoring the `ipHeaders` config setting.
+- Fixed an error that could occur when calling `craft\web\Request::getUserIP()` if `$_SERVER['REMOTE_ADDR']` wasn’t set.
+- Fixed a bug where all image assets were getting an explicit focal point at 50%-50% when uploaded or saved without an explicit focal point.
+- Fixed a bug where Composer’s autoloader may not be generated after running the Control Panel updater.
+- Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, if the field had nested relational fields that were set to manage relations on a per-site basis. ([#2391](https://github.com/craftcms/cms/issues/2391))
+- Fixed a bug where jQuery Timepicker asset bundle was not depending on the jQuery bundle.
+- Fixed a bug where field types that stored boolean data (e.g. Lightswitch fields) were being validated as numbers.
+
 ## 3.0.0-RC8 - 2018-01-30
 
 ### Added

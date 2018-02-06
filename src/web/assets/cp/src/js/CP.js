@@ -191,7 +191,7 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.submit();
+            this.$primaryForm.trigger('submit');
         },
 
         updateSidebarMenuLabel: function() {

@@ -75,7 +75,7 @@ class BaseEntryRevisionModel extends Entry
      */
     public function getCreator()
     {
-        return Craft::$app->getUsers()->getUserById($this->creatorId);
+        return $this->creatorId ? Craft::$app->getUsers()->getUserById($this->creatorId) : null;
     }
 
     /**

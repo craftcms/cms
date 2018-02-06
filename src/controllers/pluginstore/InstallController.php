@@ -191,7 +191,7 @@ class InstallController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function postComposerOptimizeState(): array
+    protected function postComposerInstallState(): array
     {
         // Was this after a remove?
         if ($this->data['removed']) {

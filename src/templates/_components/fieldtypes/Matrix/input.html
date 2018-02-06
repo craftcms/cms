@@ -32,13 +32,13 @@
                             {% if not staticBlocks %}
                                 <hr class="padded">
                                 <ul class="padded">
-                                    {% for blockType in blockTypes %}
-                                        <li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
-                                    {% endfor %}
+                                    <li><a class="error" data-icon="remove" data-action="delete">{{ "Delete"|t('app') }}</a></li>
                                 </ul>
                                 <hr class="padded">
                                 <ul class="padded">
-                                    <li><a data-icon="remove" data-action="delete">{{ "Delete"|t('app') }}</a></li>
+                                    {% for blockType in blockTypes %}
+                                        <li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+                                    {% endfor %}
                                 </ul>
                             {% endif %}
                         </div>

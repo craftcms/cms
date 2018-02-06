@@ -682,6 +682,9 @@ class Asset extends Element
      */
     public function getUrl($transform = null)
     {
+        // Normalize empty transform values
+        $transform = $transform ?: null;
+
         if (!$this->getHasUrls()) {
             return null;
         }
@@ -894,6 +897,16 @@ class Asset extends Element
     {
         $ext = $this->getExtension();
         return (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext));
+    }
+
+    /**
+     * Returns whether a user-defined focal point is set on the asset.
+     *
+     * @return bool
+     */
+    public function getHasFocalPoint(): bool
+    {
+        return $this->_focalPoint !== null;
     }
 
     /**
@@ -1168,19 +1181,20 @@ class Asset extends Element
                 $record->id = $this->id;
             }
 
-
             $record->filename = $this->filename;
             $record->volumeId = $this->volumeId;
             $record->folderId = $this->folderId;
             $record->kind = $this->kind;
             $record->size = $this->size;
-            $record->focalPoint = $this->focalPoint;
             $record->width = $this->_width;
             $record->height = $this->_height;
             $record->dateModified = $this->dateModified;
 
-            if ($focal = $this->getFocalPoint()) {
+            if ($this->getHasFocalPoint()) {
+                $focal = $this->getFocalPoint();
                 $record->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
+            } else {
+                $record->focalPoint = null;
             }
 
             $record->save(false);

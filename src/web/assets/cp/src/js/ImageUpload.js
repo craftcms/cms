@@ -44,7 +44,7 @@ Craft.ImageUpload = Garnish.Base.extend(
 
         initButtons: function() {
             this.$container.find(this.settings.uploadButtonSelector).on('click', $.proxy(function(ev) {
-                this.$container.find(this.settings.fileInputSelector).click();
+                this.$container.find(this.settings.fileInputSelector).trigger('click');
             }, this));
 
             this.$container.find(this.settings.deleteButtonSelector).on('click', $.proxy(function(ev) {

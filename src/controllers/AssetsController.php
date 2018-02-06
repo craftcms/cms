@@ -579,7 +579,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
         }
 
-        $focal = $asset->getFocalPoint();
+        $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
         $html = $this->getView()->renderTemplate('_special/image_editor');
 
@@ -738,10 +738,11 @@ class AssetsController extends Controller
             }
 
             if ($replace) {
-                $nukeTransforms = $asset->getFocalPoint() !== $focal;
+                $oldFocal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
+                $focalChanged = $focal !== $oldFocal;
                 $asset->setFocalPoint($focal);
 
-                if ($nukeTransforms) {
+                if ($focalChanged) {
                     $transforms = Craft::$app->getAssetTransforms();
                     $transforms->deleteCreatedTransformsForAsset($asset);
                     $transforms->deleteTransformIndexDataByAssetId($assetId);
@@ -750,7 +751,7 @@ class AssetsController extends Controller
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
                     $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-                } else if ($focal) {
+                } else if ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
             } else {

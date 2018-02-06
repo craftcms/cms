@@ -21,6 +21,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetThumbEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
@@ -71,8 +72,14 @@ class Assets extends Component
 
     /**
      * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     * @deprecated in 3.0.0-RC9. Use [[EVENT_GET_THUMB_PATH]] instead.
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
+
+    /**
+     * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
+     */
+    const EVENT_GET_THUMB_PATH = 'getThumbPath';
 
     // Properties
     // =========================================================================
@@ -620,19 +627,22 @@ class Assets extends Component
         }
 
         // Maybe a plugin wants to do something here
-        // todo: remove the `size` key in 4.0
-        $event = new GetAssetThumbUrlEvent([
-            'asset' => $asset,
-            'width' => $width,
-            'height' => $height,
-            'size' => max($width, $height),
-            'generate' => $generate,
-        ]);
-        $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+        // todo: remove this in Craft 4
+        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_THUMB_URL)) {
+            Craft::$app->getDeprecator()->log('Assets::getAssetThumbUrl', 'The `getAssetThumbUrl` event on craft\services\Assets has been deprecated. Use the `generateThumbPath` event to generate custom asset thumbnails instead.');
+            $event = new GetAssetThumbUrlEvent([
+                'asset' => $asset,
+                'width' => $width,
+                'height' => $height,
+                'size' => max($width, $height),
+                'generate' => $generate,
+            ]);
+            $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
 
-        // If a plugin set the url, we'll just use that.
-        if ($event->url !== null) {
-            return $event->url;
+            // If a plugin set the url, we'll just use that.
+            if ($event->url !== null) {
+                return $event->url;
+            }
         }
 
         $path = $this->getThumbPath($asset, $width, $height, $generate);
@@ -665,6 +675,20 @@ class Assets extends Component
      */
     public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true)
     {
+        // Maybe a plugin wants to do something here
+        $event = new AssetThumbEvent([
+            'asset' => $asset,
+            'width' => $width,
+            'height' => $height,
+            'generate' => $generate,
+        ]);
+        $this->trigger(self::EVENT_GET_THUMB_PATH, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->path !== null) {
+            return $event->path;
+        }
+
         $ext = $asset->getExtension();
 
         // If it's not an image, return a generic file extension icon

@@ -19,8 +19,28 @@ use yii\db\Connection as YiiConnection;
  */
 class Query extends \yii\db\Query
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the query's init cycle
+     */
+    const EVENT_INIT = 'init';
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->hasEventHandlers(self::EVENT_INIT)) {
+            $this->trigger(self::EVENT_INIT);
+        }
+    }
 
     /**
      * Returns whether a given table has been joined in this query.

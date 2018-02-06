@@ -75,7 +75,7 @@
                     }
 
                     this.$trigger.addClass('disabled');
-                    this.$trigger.blur();
+                    this.$trigger.trigger('blur');
                 }
             },
 
@@ -98,7 +98,7 @@
                         }
 
                         this.$trigger.removeClass('disabled');
-                        this.$trigger.focus();
+                        this.$trigger.trigger('focus');
                     }, this)
                 });
             }

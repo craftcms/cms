@@ -128,10 +128,10 @@
             {% endfor %}
         {% endif %}
 
-        {% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}
+        {% if CraftEdition >= CraftClient and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
             <div id="perms" class="hidden">
 
-                {% if CraftEdition == CraftPro %}
+                {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
                     <h2>{{ "User Groups"|t('app') }}</h2>
 
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
@@ -166,26 +166,28 @@
                     <hr>
                 {% endif %}
 
-                <h2>{{ "Permissions"|t('app') }}</h2>
+                {% if currentUser.can('assignUserPermissions') %}
+                    <h2>{{ "Permissions"|t('app') }}</h2>
 
-                {% if currentUser.admin and CraftEdition == CraftPro %}
-                    {{ forms.checkboxField({
-                        label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
-                        name: 'admin',
-                        id: 'admin',
-                        checked: user.admin,
-                        reverseToggle: 'permissions'
-                    }) }}
+                    {% if currentUser.admin and CraftEdition == CraftPro %}
+                        {{ forms.checkboxField({
+                            label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
+                            name: 'admin',
+                            id: 'admin',
+                            checked: user.admin,
+                            reverseToggle: 'permissions'
+                        }) }}
+                    {% endif %}
+
+                    <input type="hidden" name="permissions" value="">
+
+                    <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
+                        {% include "_includes/permissions" with {
+                            userOrGroup: (user.admin ? null : user),
+                            groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : []
+                        } only %}
+                    </div>
                 {% endif %}
-
-                <input type="hidden" name="permissions" value="">
-
-                <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
-                    {% include "_includes/permissions" with {
-                        userOrGroup: (user.admin ? null : user),
-                        groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : []
-                    } only %}
-                </div>
 
             </div>
         {% endif %}

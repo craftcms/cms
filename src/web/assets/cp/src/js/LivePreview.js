@@ -131,7 +131,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this.trigger('beforeEnter');
 
-            $(document.activeElement).blur();
+            $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
                 this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);

@@ -52,7 +52,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             else {
                 // Auto-focus the Search box
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.elementIndex.$search.focus();
+                    this.elementIndex.$search.trigger('focus');
                 }
             }
 

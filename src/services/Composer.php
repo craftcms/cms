@@ -41,6 +41,11 @@ class Composer extends Component
      */
     public $composerRepoUrl = 'https://composer.craftcms.com/';
 
+    /**
+     * @var bool
+     */
+    public $disablePackagist = true;
+
     // Public Methods
     // =========================================================================
 
@@ -113,7 +118,9 @@ class Composer extends Component
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setUpdate();
+            ->setUpdate()
+            ->setDumpAutoloader()
+            ->setOptimizeAutoloader(true);
 
         try {
             $status = $installer->run();
@@ -191,7 +198,9 @@ class Composer extends Component
             // Run the installer
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
-                ->setUpdateWhitelist($packages);
+                ->setUpdateWhitelist($packages)
+                ->setDumpAutoloader()
+                ->setOptimizeAutoloader(true);
 
             $status = $installer->run();
         } catch (\Throwable $exception) {
@@ -214,6 +223,7 @@ class Composer extends Component
      *
      * @return void
      * @throws \Throwable if something goes wrong
+     * @deprecated
      */
     public function optimize(IOInterface $io = null)
     {
@@ -353,7 +363,7 @@ class Composer extends Component
             }
 
             // Disable Packagist if it's not already disabled
-            if (!$this->findDisablePackagist($config)) {
+            if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
                 $config['repositories'][] = ['packagist.org' => false];
             }
         }

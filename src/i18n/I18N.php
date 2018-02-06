@@ -160,7 +160,7 @@ class I18N extends \yii\i18n\I18N
             return $this->_appLocales;
         }
 
-        $this->_appLocales = [new Locale('en-US')];
+        $this->_appLocales = [new Locale(Craft::$app->sourceLanguage)];
 
         // Scan the translations/ dir for the others
         $dir = Craft::$app->getPath()->getCpTranslationsPath();
@@ -169,7 +169,7 @@ class I18N extends \yii\i18n\I18N
             throw new Exception("Unable to open directory: $dir");
         }
         while (($subDir = readdir($handle)) !== false) {
-            if ($subDir === '.' || $subDir === '..' || $subDir === 'en-US') {
+            if ($subDir === '.' || $subDir === '..' || $subDir === Craft::$app->sourceLanguage) {
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$subDir;
