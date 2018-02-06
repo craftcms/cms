@@ -41,6 +41,7 @@
 - Fixed a bug where Composer’s autoloader may not be generated after running the Control Panel updater.
 - Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, if the field had nested relational fields that were set to manage relations on a per-site basis. ([#2391](https://github.com/craftcms/cms/issues/2391))
 - Fixed a bug where jQuery Timepicker asset bundle was not depending on the jQuery bundle.
+- Fixed a bug where field types that stored boolean data (e.g. Lightswitch fields) were being validated as numbers.
 
 ## 3.0.0-RC8 - 2018-01-30
 
