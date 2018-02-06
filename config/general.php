@@ -12,7 +12,7 @@ return [
         // Default Week Start Day (0 = Sunday, 1 = Monday...)
         'defaultWeekStartDay' => 0,
 
-        // Enable CSRF Protection (recommended, is enabled by default in Craft 3)
+        // Enable CSRF Protection (recommended)
         'enableCsrfProtection' => true,
 
         // Whether "index.php" should be visible in URLs
