@@ -31,13 +31,13 @@
 							</ul>
 							<hr class="padded">
 							<ul class="padded">
-								{% for blockType in blockTypes %}
-									<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t({ type: blockType.name|t }) }}</a></li>
-								{% endfor %}
+								<li><a data-icon="remove" data-action="delete">{{ "Delete"|t }}</a></li>
 							</ul>
 							<hr class="padded">
 							<ul class="padded">
-								<li><a data-icon="remove" data-action="delete">{{ "Delete"|t }}</a></li>
+								{% for blockType in blockTypes %}
+									<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t({ type: blockType.name|t }) }}</a></li>
+								{% endfor %}
 							</ul>
 						</div>
 						<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>

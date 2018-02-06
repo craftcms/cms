@@ -56,7 +56,13 @@ class UserGroupsService extends BaseApplicationComponent
 
 		foreach ($this->getAllGroups() as $group)
 		{
-			if (($currentUser && $currentUser->can('assignUserGroup:'.$group->id)) || ($user && $user->isInGroup($group)))
+			if (
+				($currentUser && (
+					$currentUser->isInGroup($group) ||
+					$currentUser->can('assignUserGroup:'.$group->id)
+				)) ||
+				($user && $user->isInGroup($group))
+			)
 			{
 				$assignableGroups[] = $group;
 			}
