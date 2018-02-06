@@ -27,8 +27,10 @@
                     <div class="menu">
                         <ul class="padded">
                             <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
-                            {% for status, label in elementInstance.statuses() %}
-                                <li><a data-status="{{ status }}"><span class="status {{ status }}"></span>{{ label }}</a></li>
+                            {% for status, info in elementInstance.statuses() %}
+                                {% set label = info.label ?? info %}
+                                {% set color = info.color ?? '' %}
+                                <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>

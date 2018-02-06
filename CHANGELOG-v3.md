@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Changed
+- Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
+
 ## 3.0.0-RC9 - 2018-02-06
 
 ### Added
