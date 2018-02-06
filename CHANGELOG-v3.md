@@ -13,7 +13,7 @@
 - When saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, any nested translatable fields will now retain their per-site values when Matrix duplicates the current blocks for each of the element’s sites.
 - The `install/index` command has been renamed to `install/craft`. (It’s still the default action though.)
 - Improved the console output for the `install/craft` and `install/plugin` commands.
-- `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+- `craft\web\Request::getUserIP()` and `getRemoteIP()` now return `null` if the IP is invalid.
 - `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
 - `craft\web\View::renderObjectTemplate()` now has a `$variables` argument, for setting any variables that should be available to the template in addition to the object’s properties.
 - Fixed an error that could occur when saving a new element with a Matrix field. ([#2389](https://github.com/craftcms/cms/issues/2389))
