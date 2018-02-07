@@ -1,5 +1,10 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft would not save newly-assigned license keys if a `craft/config/license.key` file existed, even if it didn’t contain a valid license key.
+
 ## 2.6.3008 - 2018-02-06
 
 ### Changed
