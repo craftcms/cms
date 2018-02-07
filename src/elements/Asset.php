@@ -43,6 +43,7 @@ use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -925,7 +926,7 @@ class Asset extends Element
         $focal = $this->_focalPoint ?? ['x' => 0.5, 'y' => 0.5];
 
         if ($asCss) {
-            return ($focal['x']*100).'% '.($focal['y']*100).'%';
+            return ($focal['x'] * 100).'% '.($focal['y'] * 100).'%';
         }
 
         return $focal;
@@ -1006,14 +1007,8 @@ class Asset extends Element
 
         $html = '';
 
-        if ($this->getSupportsImageEditor()) {
-            // Are they allowed to edit the image?
-            $user = Craft::$app->getUser();
-            $editable = (
-                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
-                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
-            );
-
+        // See if we can show a thumbnail
+        try {
             $assetsService = Craft::$app->getAssets();
             $srcsets = [];
             $thumbSizes = [
@@ -1021,9 +1016,17 @@ class Asset extends Element
                 [760, 380],
             ];
             foreach ($thumbSizes as list($width, $height)) {
-                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
+                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
                 $srcsets[] = $thumbUrl.' '.$width.'w';
             }
+
+            // Is the image editable, and is the user allowed to edit?
+            $user = Craft::$app->getUser();
+            $editable = (
+                $this->getSupportsImageEditor() &&
+                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
+                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
+            );
 
             $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">'.
                 '<div class="image-preview">'.
@@ -1035,6 +1038,8 @@ class Asset extends Element
             }
 
             $html .= '</div>';
+        } catch (NotSupportedException $e) {
+            // NBD
         }
 
         $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [

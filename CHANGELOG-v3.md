@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Assets::getIconPath()`.
+
 ### Changed
+- Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
 - Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
+- `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
 
 ## 3.0.0-RC9 - 2018-02-06
 
