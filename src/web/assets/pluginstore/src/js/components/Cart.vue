@@ -27,7 +27,7 @@
                         </td>
                         <td>
                             <strong>{{ plugin.price|currency }}</strong>
-                            <div class="light">{{ "{price} per year for updates"|t('app', { price: $root.$options.filters.currency(plugin.updatePrice) }) }}</div>
+                            <div class="light">{{ "{price} per year for updates"|t('app', { price: $root.$options.filters.currency(plugin.renewalPrice) }) }}</div>
                         </td>
                         <td class="thin">
                             <a class="btn" @click="removeFromCart(plugin)">
@@ -99,7 +99,7 @@
                         </td>
                         <td>
                             <strong>{{ plugin.price|currency }}</strong>
-                            <div class="light">{{ plugin.updatePrice|currency }} per year for updates</div>
+                            <div class="light">{{ plugin.renewalPrice|currency }} per year for updates</div>
                         </td>
                         <td class="thin">
                             <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>
