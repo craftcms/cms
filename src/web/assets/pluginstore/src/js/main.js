@@ -123,18 +123,22 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                let $accountInfoMenu = $('#account-info').data('menubtn').menu.$container;
+                let $accountInfo = $('#account-info');
 
-                if(craftId) {
-                    $('.craftid-connected').removeClass('hidden');
-                    $('.craftid-disconnected').addClass('hidden');
-                    $('.craftid-connected', $accountInfoMenu).removeClass('hidden');
-                    $('.craftid-disconnected', $accountInfoMenu).addClass('hidden');
-                } else {
-                    $('.craftid-connected').addClass('hidden');
-                    $('.craftid-disconnected').removeClass('hidden');
-                    $('.craftid-connected', $accountInfoMenu).addClass('hidden');
-                    $('.craftid-disconnected', $accountInfoMenu).removeClass('hidden');
+                if($accountInfo.length) {
+                    let $accountInfoMenu = $('#account-info').data('menubtn').menu.$container;
+
+                    if(craftId) {
+                        $('.craftid-connected').removeClass('hidden');
+                        $('.craftid-disconnected').addClass('hidden');
+                        $('.craftid-connected', $accountInfoMenu).removeClass('hidden');
+                        $('.craftid-disconnected', $accountInfoMenu).addClass('hidden');
+                    } else {
+                        $('.craftid-connected').addClass('hidden');
+                        $('.craftid-disconnected').removeClass('hidden');
+                        $('.craftid-connected', $accountInfoMenu).addClass('hidden');
+                        $('.craftid-disconnected', $accountInfoMenu).removeClass('hidden');
+                    }
                 }
 
                 this.$store.dispatch('updateCraftId', { craftId });
