@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\base\FieldInterface;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
@@ -38,6 +39,11 @@ class FieldLayoutBehavior extends Behavior
      * @var FieldLayout|null The field layout associated with the owner
      */
     private $_fieldLayout;
+
+    /**
+     * @var FieldInterface[]|null The fields associated with the owner's field layout
+     */
+    private $_fields;
 
     // Public Methods
     // =========================================================================
@@ -148,5 +154,35 @@ class FieldLayoutBehavior extends Behavior
     public function setFieldLayout(FieldLayout $fieldLayout)
     {
         $this->_fieldLayout = $fieldLayout;
+    }
+
+    /**
+     * Returns the fields associated with the owner's field layout.
+     *
+     * @return FieldInterface[]
+     */
+    public function getFields(): array
+    {
+        if ($this->_fields !== null) {
+            return $this->_fields;
+        }
+
+        try {
+            $id = $this->getFieldLayoutId();
+        } catch (InvalidConfigException $e) {
+            return [];
+        }
+
+        return $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($id);
+    }
+
+    /**
+     * Sets the fields associated with the owner's field layout
+     *
+     * @param FieldInterface[] $fields
+     */
+    public function setFields(array $fields)
+    {
+        $this->_fields = $fields;
     }
 }

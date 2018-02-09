@@ -7,6 +7,7 @@
 - Added support for calling `distinct()` on element queries. ([#2414](https://github.com/craftcms/cms/issues/2414))
 - Added `craft\services\Assets::getIconPath()`.
 - Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.
+- Added `craft\behaviors\FieldLayoutBehavior::getFields()` and `setFields()`.
 
 ### Changed
 - Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
