@@ -167,8 +167,8 @@ class GlobalSet extends Element
      */
     public function beforeDelete(): bool
     {
-        if ($this->fieldLayoutId !== null) {
-            Craft::$app->getFields()->deleteLayoutById($this->fieldLayoutId);
+        if (($fieldLayout = $this->getFieldLayout()) !== null) {
+            Craft::$app->getFields()->deleteLayout($fieldLayout);
         }
 
         return parent::beforeDelete();

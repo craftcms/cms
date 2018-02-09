@@ -1157,7 +1157,6 @@ class Sections extends Component
             $entry->siteId = $firstSiteSettings->siteId;
             $entry->sectionId = $section->id;
             $entry->typeId = $firstEntryType->id;
-            $entry->fieldLayoutId = $firstEntryType->fieldLayoutId;
             $entry->title = $section->name;
         }
 

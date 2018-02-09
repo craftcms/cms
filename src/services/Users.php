@@ -428,7 +428,6 @@ class Users extends Component
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
             $photo->volumeId = $volumeId;
-            $photo->fieldLayoutId = $volume->fieldLayoutId;
 
             // Save photo.
             $elementsService = Craft::$app->getElements();

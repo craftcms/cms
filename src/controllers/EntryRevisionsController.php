@@ -311,8 +311,6 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
         }
 
-        $draft->fieldLayoutId = $draft->getType()->fieldLayoutId;
-
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 

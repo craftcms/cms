@@ -618,6 +618,20 @@ class Asset extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        if (($fieldLayout = parent::getFieldLayout()) !== null) {
+            return $fieldLayout;
+        }
+
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+        return $volume->getFieldLayout();
+    }
+
+    /**
      * Returns the asset’s volume folder.
      *
      * @return VolumeFolder

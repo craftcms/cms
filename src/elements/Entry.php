@@ -626,6 +626,14 @@ class Entry extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+    }
+
+    /**
      * Returns the entry's section.
      *
      * @return Section
@@ -848,8 +856,7 @@ EOD;
             ]);
         }
 
-        // Set the field layout ID and render the custom fields
-        $this->fieldLayoutId = $entryType->fieldLayoutId;
+        // Render the custom fields
         $html .= parent::getEditorHtml();
 
         return $html;
@@ -903,9 +910,6 @@ EOD;
             // Default the post date to the current date/time
             $this->postDate = DateTimeHelper::currentUTCDateTime();
         }
-
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $entryType->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }

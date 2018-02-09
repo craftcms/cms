@@ -134,6 +134,14 @@ class Tag extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
      * Returns the tag's group.
      *
      * @return TagGroup
@@ -181,17 +189,6 @@ class Tag extends Element
 
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
-
-        return parent::beforeSave($isNew);
-    }
 
     /**
      * @inheritdoc

@@ -864,7 +864,6 @@ class EntriesController extends BaseEntriesController
 
         $variables['entry']->typeId = $typeId;
         $variables['entryType'] = $variables['entry']->getType();
-        $variables['entry']->fieldLayoutId = $variables['entryType']->fieldLayoutId;
 
         // Define the content tabs
         // ---------------------------------------------------------------------
@@ -948,7 +947,6 @@ class EntriesController extends BaseEntriesController
             $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
         }
 
-        $entry->fieldLayoutId = $entry->getType()->fieldLayoutId;
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 

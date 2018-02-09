@@ -410,7 +410,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->siteId = $element->siteId;
                 $value[] = $block;
             }
@@ -690,7 +689,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $block = new MatrixBlock();
             $block->fieldId = $this->id;
             $block->typeId = $blockType->id;
-            $block->fieldLayoutId = $blockType->fieldLayoutId;
 
             if ($element) {
                 $block->setOwner($element);
@@ -803,7 +801,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->ownerId = $ownerId;
                 $block->siteId = $element->siteId;
 

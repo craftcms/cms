@@ -251,7 +251,6 @@ class TagsController extends Controller
 
         $tag = new Tag();
         $tag->groupId = $group->id;
-        $tag->fieldLayoutId = $group->fieldLayoutId;
         $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields

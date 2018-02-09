@@ -220,6 +220,14 @@ class MatrixBlock extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+    }
+
+    /**
      * Returns the block type.
      *
      * @return MatrixBlockType|null
@@ -359,17 +367,6 @@ class MatrixBlock extends Element
 
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getType()->fieldLayoutId;
-
-        return parent::beforeSave($isNew);
-    }
 
     /**
      * @inheritdoc
