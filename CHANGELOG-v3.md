@@ -6,11 +6,14 @@
 - Added the `setup/db` command, as an alias for `setup/db-creds`.
 - Added support for calling `distinct()` on element queries. ([#2414](https://github.com/craftcms/cms/issues/2414))
 - Added `craft\services\Assets::getIconPath()`.
+- Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.
 
 ### Changed
 - Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
 - Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
 - `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
+- `craft\behaviors\FieldLayoutBehavior` can now be configured with a `fieldLayoutId` attribute, set to either a field layout ID, the name of a method on the owner that will return the ID, or a closure that will return the ID. (`idAttribute` is still supported as well.)
+- `craft\behaviors\FieldLayoutBehavior::getFieldLayout()` will now throw an exception if its `fieldLayoutId` attribute was set to an invalid ID.
 
 ### Fixed
 - Prevent filename conflicts when uploading Assets via front-end forms.
