@@ -27,6 +27,7 @@ use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\base\InvalidConfigException;
 use yii\mutex\FileMutex;
 use yii\queue\db\Queue;
 use yii\web\BadRequestHttpException;
@@ -661,6 +662,8 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
+            return false;
+        } catch (InvalidConfigException $e) {
             return false;
         }
     }

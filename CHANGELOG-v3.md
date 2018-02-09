@@ -12,6 +12,7 @@
 
 ### Fixed
 - Prevent filename conflicts when uploading Assets via front-end forms.
+- Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.
 
 ## 3.0.0-RC9 - 2018-02-06
 

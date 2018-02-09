@@ -16,6 +16,7 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use Seld\CliPrompt\CliPrompt;
+use yii\base\InvalidConfigException;
 use yii\console\Controller;
 
 /**
@@ -170,7 +171,12 @@ EOD;
      */
     public function actionDbCreds()
     {
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        try {
+            $dbConfig = Craft::$app->getConfig()->getDb();
+        } catch (InvalidConfigException $e) {
+            $dbConfig = new DbConfig();
+        }
+
         $firstTime = true;
 
         top:
