@@ -1610,7 +1610,9 @@ JS;
         }
 
         if ($element::hasStatuses()) {
-            $html .= '<span class="status '.$context['element']->getStatus().'"></span>';
+            $status = $element->getStatus();
+            $statusClasses = $status.' '.($element::statuses()[$status]['color'] ?? '');
+            $html .= '<span class="status '.$statusClasses.'"></span>';
         }
 
         $html .= $imgHtml;
