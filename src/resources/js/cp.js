@@ -199,56 +199,58 @@ Craft.CP = Garnish.Base.extend(
 			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
 			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
 
-			// Look for forms that we should watch for changes on
-			this.$confirmUnloadForms = $('form[data-confirm-unload]');
+			Garnish.requestAnimationFrame($.proxy(function() {
+				// Look for forms that we should watch for changes on
+				this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
-			if (this.$confirmUnloadForms.length)
-			{
-				if (!Craft.forceConfirmUnload)
+				if (this.$confirmUnloadForms.length)
 				{
-					this.initialFormValues = [];
-				}
-
-				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
-				{
-					var $form = $(this.$confirmUnloadForms);
-
 					if (!Craft.forceConfirmUnload)
 					{
-						this.initialFormValues[i] = $form.serialize();
+						this.initialFormValues = [];
 					}
 
-					this.addListener($form, 'submit', function()
-					{
-						this.removeListener(Garnish.$win, 'beforeunload');
-					});
-				}
-
-				this.addListener(Garnish.$win, 'beforeunload', function(ev)
-				{
 					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
 					{
-						if (
-							Craft.forceConfirmUnload ||
-							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
-						)
+						var $form = $(this.$confirmUnloadForms);
+
+						if (!Craft.forceConfirmUnload)
 						{
-							var message = Craft.t('Any changes will be lost if you leave this page.');
-
-							if (ev)
-							{
-								ev.originalEvent.returnValue = message;
-							}
-							else
-							{
-								window.event.returnValue = message;
-							}
-
-							return message;
+							this.initialFormValues[i] = $form.serialize();
 						}
+
+						this.addListener($form, 'submit', function()
+						{
+							this.removeListener(Garnish.$win, 'beforeunload');
+						});
 					}
-				});
-			}
+
+					this.addListener(Garnish.$win, 'beforeunload', function(ev)
+					{
+						for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+						{
+							if (
+								Craft.forceConfirmUnload ||
+								this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
+							)
+							{
+								var message = Craft.t('Any changes will be lost if you leave this page.');
+
+								if (ev)
+								{
+									ev.originalEvent.returnValue = message;
+								}
+								else
+								{
+									window.event.returnValue = message;
+								}
+
+								return message;
+							}
+						}
+					});
+				}
+			}, this));
 		}, this));
 	},
 
