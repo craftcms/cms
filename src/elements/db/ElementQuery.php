@@ -890,6 +890,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->customFields = null;
         }
 
+        if ($this->distinct) {
+            $this->query->distinct();
+        }
+
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
         }
