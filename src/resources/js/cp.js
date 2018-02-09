@@ -142,20 +142,6 @@ Craft.CP = Garnish.Base.extend(
 		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		Garnish.$doc.ready($.proxy(function()
-		{
-			// Set up the window resize listener
-			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-			this.onWindowResize();
-
-			// Fade the notification out two seconds after page load
-			var $errorNotifications = this.$notificationContainer.children('.error'),
-				$otherNotifications = this.$notificationContainer.children(':not(.error)');
-
-			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
-			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
-		}, this));
-
 		// Alerts
 		if (this.$alerts.length)
 		{
@@ -187,8 +173,32 @@ Craft.CP = Garnish.Base.extend(
 			});
 		}
 
+		if (this.$edition.hasClass('hot'))
+		{
+			this.addListener(this.$edition, 'click', 'showUpgradeModal');
+		}
+
+		// Open outbound links in new windows
+		// hat tip: https://stackoverflow.com/a/2911045/1688568
+		$('a').each(function() {
+			if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+				$(this).attr('target', '_blank')
+			}
+		});
+
 		Garnish.$doc.ready($.proxy(function()
 		{
+			// Set up the window resize listener
+			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+			this.onWindowResize();
+
+			// Fade the notification out two seconds after page load
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+
 			// Look for forms that we should watch for changes on
 			this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
@@ -240,19 +250,6 @@ Craft.CP = Garnish.Base.extend(
 				});
 			}
 		}, this));
-
-		if (this.$edition.hasClass('hot'))
-		{
-			this.addListener(this.$edition, 'click', 'showUpgradeModal');
-		}
-
-		// Open outbound links in new windows
-		// hat tip: https://stackoverflow.com/a/2911045/1688568
-		$('a').each(function() {
-			if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
-				$(this).attr('target', '_blank')
-			}
-		});
 	},
 
 	submitPrimaryForm: function()
