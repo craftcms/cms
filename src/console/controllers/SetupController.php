@@ -158,7 +158,7 @@ EOD;
      */
     public function actionSecurityKey()
     {
-        $this->stdout(PHP_EOL.'Generating a security key...'.PHP_EOL, Console::FG_YELLOW);
+        $this->stdout(PHP_EOL.'Generating a security key... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if ($this->_setEnvVar('SECURITY_KEY', $key)) {
             Craft::$app->getConfig()->getGeneral()->securityKey = $key;
@@ -320,7 +320,7 @@ EOD;
         Craft::$app->setIsInstalled(null);
 
         $this->stdout('success!'.PHP_EOL, Console::FG_GREEN);
-        $this->stdout('Saving database credentials to your .env file...'.PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
 
         if (
             $this->_setEnvVar('DB_DRIVER', $dbConfig->driver) &&
@@ -370,11 +370,11 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm("A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+            if ($this->confirm(PHP_EOL."A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
                 FileHelper::writeToFile($path, '');
                 $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect.".PHP_EOL, Console::FG_YELLOW);
             } else {
-                $this->stdout('Action aborted.'.PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(PHP_EOL.'Action aborted.'.PHP_EOL, Console::FG_YELLOW);
                 return false;
             }
         }
