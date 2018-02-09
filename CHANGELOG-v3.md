@@ -14,6 +14,7 @@
 ### Fixed
 - Prevent filename conflicts when uploading Assets via front-end forms.
 - Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.
+- Fixed a bug where passing `null` or an empty array to an element query’s `orderBy()` method would still result in the default `orderBy` param being applied.
 
 ## 3.0.0-RC9 - 2018-02-06
 

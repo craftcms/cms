@@ -971,6 +971,21 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function orderBy($columns)
+    {
+        parent::orderBy($columns);
+
+        // If $columns normalizes to an empty array, just set it to null
+        if ($this->orderBy === []) {
+            $this->orderBy = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function count($q = '*', $db = null)
     {
         // Cached?
