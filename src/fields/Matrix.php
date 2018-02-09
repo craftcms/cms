@@ -79,6 +79,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     private $_blockTypes;
 
+    /**
+     * @var MatrixBlockType[]|null The block types' fields
+     */
+    private $_blockTypeFields;
+
     // Public Methods
     // =========================================================================
 
@@ -109,6 +114,54 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         return $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
+    }
+
+    /**
+     * Returns all of the block types' fields.
+     *
+     * @return FieldInterface[]
+     */
+    public function getBlockTypeFields(): array
+    {
+        if ($this->_blockTypeFields !== null) {
+            return $this->_blockTypeFields;
+        }
+
+        if (empty($blockTypes = $this->getBlockTypes())) {
+            return $this->_blockTypeFields = [];
+        }
+
+        // Get the fields & layout IDs
+        $contexts = [];
+        $layoutIds = [];
+        foreach ($blockTypes as $blockType) {
+            $contexts[] = 'matrixBlockType:'.$blockType->id;
+            $layoutIds[] = $blockType->fieldLayoutId;
+        }
+
+        /** @var Field[] $fieldsById */
+        $fieldsById = ArrayHelper::index(Craft::$app->getFields()->getAllFields($contexts), 'id');
+
+        // Get all the field IDs grouped by layout ID
+        $fieldIdsByLayoutId = Craft::$app->getFields()->getFieldIdsByLayoutIds($layoutIds);
+
+        // Assemble the fields
+        $this->_blockTypeFields = [];
+
+        foreach ($blockTypes as $blockType) {
+            if (isset($fieldIdsByLayoutId[$blockType->fieldLayoutId])) {
+                $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+
+                foreach ($fieldIdsByLayoutId[$blockType->fieldLayoutId] as $fieldId) {
+                    if (isset($fieldsById[$fieldId])) {
+                        $fieldsById[$fieldId]->columnPrefix = $fieldColumnPrefix;
+                        $this->_blockTypeFields[] = $fieldsById[$fieldId];
+                    }
+                }
+            }
+        }
+
+        return $this->_blockTypeFields;
     }
 
     /**

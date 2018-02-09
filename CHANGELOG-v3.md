@@ -8,9 +8,12 @@
 - Added `craft\services\Assets::getIconPath()`.
 - Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.
 - Added `craft\behaviors\FieldLayoutBehavior::getFields()` and `setFields()`.
+- Added `craft\fields\Matrix::getBlockTypeFields()`.
+- Added `craft\services\Fields::getFieldIdsByLayoutIds()`.
 
 ### Changed
 - Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
+- Craft no longer executes two queries per block type when preparing a Matrix block query. ([#2410](https://github.com/craftcms/cms/issues/2410))
 - Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
 - It is no longer necessary to set the `fieldLayoutId` attribute when programmatically creating assets, categories, entries, Matrix blocks, tags, or users.
 - `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
