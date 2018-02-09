@@ -10,6 +10,9 @@
 - Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
 - `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
 
+### Fixed
+- Prevent filename conflicts when uploading Assets via front-end forms.
+
 ## 3.0.0-RC9 - 2018-02-06
 
 ### Added
