@@ -236,9 +236,7 @@ class CategoryElementType extends BaseElementType
 	 */
 	public function getDefaultTableAttributes($source = null)
 	{
-		$attributes = array('link');
-
-		return $attributes;
+		return array('link');
 	}
 
 	/**

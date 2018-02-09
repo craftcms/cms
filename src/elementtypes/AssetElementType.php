@@ -260,9 +260,7 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getDefaultTableAttributes($source = null)
 	{
-		$attributes = array('filename', 'size', 'dateModified');
-
-		return $attributes;
+		return array('filename', 'size', 'dateModified');
 	}
 
 	/**
