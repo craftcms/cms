@@ -210,25 +210,14 @@ class UserElementType extends BaseElementType
 	 */
 	public function defineAvailableTableAttributes()
 	{
-
-		if (craft()->config->get('useEmailAsUsername'))
-		{
-			// Start with Email and don't even give Username as an option
-			$attributes = array(
-				'email' => array('label' => Craft::t('Email')),
-			);
-		}
-		else
-		{
-			$attributes = array(
-				'username' => array('label' => Craft::t('Username')),
-				'email'    => array('label' => Craft::t('Email')),
-			);
-		}
-
-		$attributes['fullName'] = array('label' => Craft::t('Full Name'));
-		$attributes['firstName'] = array('label' => Craft::t('First Name'));
-		$attributes['lastName'] = array('label' => Craft::t('Last Name'));
+		$attributes = array(
+			'user' => array('label' => Craft::t('User')),
+			'email' => array('label' => Craft::t('Email')),
+			'username' => array('label' => Craft::t('Username')),
+			'fullName' => array('label' => Craft::t('Full Name')),
+			'firstName' => array('label' => Craft::t('First Name')),
+			'lastName' => array('label' => Craft::t('Last Name')),
+		);
 
 		if (craft()->isLocalized())
 		{
@@ -261,16 +250,7 @@ class UserElementType extends BaseElementType
 	 */
 	public function getDefaultTableAttributes($source = null)
 	{
-		if (craft()->config->get('useEmailAsUsername'))
-		{
-			$attributes = array('fullName', 'dateCreated', 'lastLoginDate');
-		}
-		else
-		{
-			$attributes = array('fullName', 'email', 'dateCreated', 'lastLoginDate');
-		}
-
-		return $attributes;
+		return array('fullName', 'email', 'dateCreated', 'lastLoginDate');
 	}
 
 	/**

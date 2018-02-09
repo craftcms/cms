@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The first column on user index tables is now labeled “User”, and there are now always dedicated “Username” and “Email” columns available. ([#2417](https://github.com/craftcms/cms/issues/2417))
+
 ### Fixed
 - Fixed a bug where Craft would not save newly-assigned license keys if a `craft/config/license.key` file existed, even if it didn’t contain a valid license key.
 - Fixed a bug where the “Save” button wasn’t visible on custom field layout tabs on Edit User pages.
