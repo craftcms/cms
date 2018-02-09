@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `setup/db` command, as an alias for `setup/db-creds`.
 - Added `craft\services\Assets::getIconPath()`.
 
 ### Changed

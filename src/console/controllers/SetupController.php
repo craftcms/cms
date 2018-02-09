@@ -336,6 +336,14 @@ EOD;
         }
     }
 
+    /**
+     * Alias for setup/db-creds.
+     */
+    public function actionDb()
+    {
+        return $this->actionDbCreds();
+    }
+
     // Private Methods
     // =========================================================================
 
