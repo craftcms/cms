@@ -13,6 +13,7 @@
 
 ### Changed
 - Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
+- Assets fields now prevent filename conflicts when new files are uploaded from front-end forms.
 - Craft no longer executes two queries per block type when preparing a Matrix block query. ([#2410](https://github.com/craftcms/cms/issues/2410))
 - Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
 - It is no longer necessary to set the `fieldLayoutId` attribute when programmatically creating assets, categories, entries, Matrix blocks, tags, or users.
@@ -21,7 +22,6 @@
 - `craft\behaviors\FieldLayoutBehavior::getFieldLayout()` will now throw an exception if its `fieldLayoutId` attribute was set to an invalid ID.
 
 ### Fixed
-- Prevent filename conflicts when uploading Assets via front-end forms.
 - Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.
 - Fixed a bug where passing `null` or an empty array to an element query’s `orderBy()` method would still result in the default `orderBy` param being applied.
 - Fixed a bug where Table fields would forget if they were saved without any rows in their Default Values setting, and bring back an empty row. ([#2418](https://github.com/craftcms/cms/issues/2418))
