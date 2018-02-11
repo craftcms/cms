@@ -1009,6 +1009,30 @@ class Fields extends Component
     }
 
     /**
+     * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
+     *
+     * @param int[] $layoutIds The field layout IDs
+     *
+     * @return array
+     */
+    public function getFieldIdsByLayoutIds(array $layoutIds): array
+    {
+        $results = (new Query())
+            ->select(['flf.layoutId', 'fields.id'])
+            ->from(['{{%fields}} fields'])
+            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
+            ->where(['flf.layoutId' => $layoutIds])
+            ->all();
+
+        $fieldIdsByLayoutId = [];
+        foreach ($results as $result) {
+            $fieldIdsByLayoutId[$result['layoutId']][] = $result['id'];
+        }
+
+        return $fieldIdsByLayoutId;
+    }
+
+    /**
      * Returns the fields in a field layout, identified by its ID.
      *
      * @param int $layoutId The field layout’s ID

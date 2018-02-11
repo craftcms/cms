@@ -16,6 +16,7 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use Seld\CliPrompt\CliPrompt;
+use yii\base\InvalidConfigException;
 use yii\console\Controller;
 
 /**
@@ -75,7 +76,7 @@ class SetupController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'db-creds') {
+        if ($actionID === 'db-creds' || $actionID === 'db') {
             $options[] = 'driver';
             $options[] = 'server';
             $options[] = 'port';
@@ -157,7 +158,7 @@ EOD;
      */
     public function actionSecurityKey()
     {
-        $this->stdout(PHP_EOL.'Generating a security key...'.PHP_EOL, Console::FG_YELLOW);
+        $this->stdout(PHP_EOL.'Generating a security key... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if ($this->_setEnvVar('SECURITY_KEY', $key)) {
             Craft::$app->getConfig()->getGeneral()->securityKey = $key;
@@ -170,7 +171,12 @@ EOD;
      */
     public function actionDbCreds()
     {
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        try {
+            $dbConfig = Craft::$app->getConfig()->getDb();
+        } catch (InvalidConfigException $e) {
+            $dbConfig = new DbConfig();
+        }
+
         $firstTime = true;
 
         top:
@@ -314,7 +320,7 @@ EOD;
         Craft::$app->setIsInstalled(null);
 
         $this->stdout('success!'.PHP_EOL, Console::FG_GREEN);
-        $this->stdout('Saving database credentials to your .env file...'.PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
 
         if (
             $this->_setEnvVar('DB_DRIVER', $dbConfig->driver) &&
@@ -328,6 +334,14 @@ EOD;
         ) {
             $this->stdout('done'.PHP_EOL, Console::FG_YELLOW);
         }
+    }
+
+    /**
+     * Alias for setup/db-creds.
+     */
+    public function actionDb()
+    {
+        return $this->actionDbCreds();
     }
 
     // Private Methods
@@ -364,11 +378,11 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm("A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+            if ($this->confirm(PHP_EOL."A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
                 FileHelper::writeToFile($path, '');
                 $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect.".PHP_EOL, Console::FG_YELLOW);
             } else {
-                $this->stdout('Action aborted.'.PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(PHP_EOL.'Action aborted.'.PHP_EOL, Console::FG_YELLOW);
                 return false;
             }
         }

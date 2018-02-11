@@ -83,7 +83,7 @@ class Api extends Component
             'cms' => $this->getCmsInfo(),
         ];
 
-        if ($ip = $request->getUserIP()) {
+        if ($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             $requestBody['request']['ip'] = $ip;
         }
 

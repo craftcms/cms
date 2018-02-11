@@ -3,11 +3,52 @@
 ## Unreleased
 
 ### Added
-- Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
+- Added the `setup/db` command, as an alias for `setup/db-creds`.
+- Added support for calling `distinct()` on element queries. ([#2414](https://github.com/craftcms/cms/issues/2414))
+- Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.
+- Added `craft\behaviors\FieldLayoutBehavior::getFields()` and `setFields()`.
+- Added `craft\fields\Matrix::getBlockTypeFields()`.
+- Added `craft\services\Assets::getIconPath()`.
+- Added `craft\services\Fields::getFieldIdsByLayoutIds()`.
 
 ### Changed
-- The `requireUserAgentAndIpForSession` config setting is now `false` by default. (Setting it to `true` from `config/general.php` for production environments is recommended.)
-- `craft\web\Request::getRemoteIP()` now returns `null` if `$_SERVER['REMOTE_ADDR']` is invalid or in the private IP range.
+- Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
+- Assets fields now prevent filename conflicts when new files are uploaded from front-end forms.
+- Craft no longer executes two queries per block type when preparing a Matrix block query. ([#2410](https://github.com/craftcms/cms/issues/2410))
+- Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
+- It is no longer necessary to set the `fieldLayoutId` attribute when programmatically creating assets, categories, entries, Matrix blocks, tags, or users.
+- `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
+- `craft\behaviors\FieldLayoutBehavior` can now be configured with a `fieldLayoutId` attribute, set to either a field layout ID, the name of a method on the owner that will return the ID, or a closure that will return the ID. (`idAttribute` is still supported as well.)
+- `craft\behaviors\FieldLayoutBehavior::getFieldLayout()` will now throw an exception if its `fieldLayoutId` attribute was set to an invalid ID.
+
+### Fixed
+- Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.
+- Fixed a bug where passing `null` or an empty array to an element query’s `orderBy()` method would still result in the default `orderBy` param being applied.
+- Fixed a bug where Table fields would forget if they were saved without any rows in their Default Values setting, and bring back an empty row. ([#2418](https://github.com/craftcms/cms/issues/2418))
+- Fixed a bug where the `install/craft` console command no longer accepted `--email`, `--username`, `--password`, `--siteName`, `--siteUrl`, or `--language` options. ([#2422](https://github.com/craftcms/cms/issues/2422))
+
+## 3.0.0-RC9 - 2018-02-06
+
+### Added
+- Added the `init` event to `craft\db\Query`. ([#2377](https://github.com/craftcms/cms/issues/2377))
+- Added `craft\elements\Asset::getHasFocalPoint()`.
+- Added `craft\services\Composer::$disablePackagist`, which can be set to `false` from `config/app.php` to prevent the Control Panel updater from disabling Packagist.
+- Added the `getThumbPath` event to `craft\services\Assets`. ([#2398](https://github.com/craftcms/cms/issues/2398))
+
+### Changed
+- The Control Panel updater now optimizes the Composer autoloader in the same step as it installs/updates/removes Composer dependencies.
+- When saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, any nested translatable fields will now retain their per-site values when Matrix duplicates the current blocks for each of the element’s sites.
+- The `install/index` command has been renamed to `install/craft`. (It’s still the default action though.)
+- Improved the console output for the `install/craft` and `install/plugin` commands.
+- `craft\web\Request::getUserIP()` and `getRemoteIP()` now return `null` if the IP is invalid.
+- `craft\web\Request::getUserIP()` and `getRemoveIP()` now accept a `$filterOptions` argument.
+- `craft\web\View::renderObjectTemplate()` now has a `$variables` argument, for setting any variables that should be available to the template in addition to the object’s properties.
+- Fixed an error that could occur when saving a new element with a Matrix field. ([#2389](https://github.com/craftcms/cms/issues/2389))
+- Lightswitch fields that don’t have a value yet will now be assigned the default field value, even for existing elements. ([#2404](https://github.com/craftcms/cms/issues/2404))
+
+### Deprecated
+- Deprecated `craft\services\Composer::optimize()`. (It will be removed in 3.0.0-RC10.)
+- Deprecated the `getAssetThumbUrl` event on `craft\services\Assets`. Use the new `getThumbPath` event instead.
 
 ### Removed
 - Removed `craft\helpers\App::craftDownloadUrl()`.
@@ -24,6 +65,11 @@
 - Fixed an error that occurred when attempting to edit an entry, if the latest revision of the entry was created by a deleted user. ([#2390](https://github.com/craftcms/cms/issues/2390))
 - Fixed a bug where `craft\web\Request::getUserIP()` was ignoring the `ipHeaders` config setting.
 - Fixed an error that could occur when calling `craft\web\Request::getUserIP()` if `$_SERVER['REMOTE_ADDR']` wasn’t set.
+- Fixed a bug where all image assets were getting an explicit focal point at 50%-50% when uploaded or saved without an explicit focal point.
+- Fixed a bug where Composer’s autoloader may not be generated after running the Control Panel updater.
+- Fixed a SQL error that occurred when saving an element with a Matrix field that had recently been set to manage blocks on a per-site basis, if the field had nested relational fields that were set to manage relations on a per-site basis. ([#2391](https://github.com/craftcms/cms/issues/2391))
+- Fixed a bug where jQuery Timepicker asset bundle was not depending on the jQuery bundle.
+- Fixed a bug where field types that stored boolean data (e.g. Lightswitch fields) were being validated as numbers.
 
 ## 3.0.0-RC8 - 2018-01-30
 
@@ -272,7 +318,7 @@
 - Fixed a bug where it was not possible to delete disabled Matrix blocks. ([#2219](https://github.com/craftcms/cms/issues/2219))
 - Fixed a SQL error that could occur when storing template caches. ([#1792](https://github.com/craftcms/cms/issues/1792))
 - Fixed a layout issue on small screens. ([#2224](https://github.com/craftcms/cms/issues/2224))
-- Fixed a bug where Craft would issue unsaved data warnings when unloading pages, even if nothing had actually changed, in some cases. ([#2225](https://github.com/craftcms/cms/issues/2225))
+- Fixed a bug where Craft would issue unsaved data warnings when leaving edit pages, even if nothing had actually changed, in some cases. ([#2225](https://github.com/craftcms/cms/issues/2225))
 - Fixed a bug where element index pages weren’t loading more elements when the content area was scrolled to the bottom. ([#2228](https://github.com/craftcms/cms/issues/2228))
 
 ## 3.0.0-RC2 - 2017-12-12

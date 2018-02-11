@@ -225,6 +225,10 @@
                     '<li class="hidden"><a data-icon="enabled" data-action="enable">' + Craft.t('app', 'Enable') + '</a></li>' +
                     '</ul>' +
                     '<hr class="padded"/>' +
+                    '<ul class="padded">' +
+                    '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
+                    '</ul>' +
+                    '<hr class="padded"/>' +
                     '<ul class="padded">';
 
                 for (var i = 0; i < this.blockTypes.length; i++) {
@@ -233,10 +237,6 @@
                 }
 
                 html +=
-                    '</ul>' +
-                    '<hr class="padded"/>' +
-                    '<ul class="padded">' +
-                    '<li><a class="error" data-icon="remove" data-action="delete">' + Craft.t('app', 'Delete') + '</a></li>' +
                     '</ul>' +
                     '</div>' +
                     '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '" role="button"></a> ' +

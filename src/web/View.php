@@ -424,14 +424,15 @@ class View extends \yii\web\View
      * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
      * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
      *
-     * @param string $template The source template string.
-     * @param mixed  $object   The object that should be passed into the template.
+     * @param string $template  the source template string
+     * @param mixed  $object    the object that should be passed into the template
+     * @param array  $variables any additional variables that should be available to the template
      *
      * @return string The rendered template.
      * @throws Exception in case of failure
      * @throws \RuntimeException in case of failure
      */
-    public function renderObjectTemplate(string $template, $object): string
+    public function renderObjectTemplate(string $template, $object, array $variables = []): string
     {
         // If there are no dynamic tags, just return the template
         if (!StringHelper::contains($template, '{')) {
@@ -459,9 +460,7 @@ class View extends \yii\web\View
 
             // Get the variables to pass to the template
             if ($object instanceof Arrayable) {
-                $variables = $object->toArray([], [], false);
-            } else {
-                $variables = [];
+                $variables = array_merge($object->toArray([], [], false), $variables);
             }
             $variables['object'] = $object;
 
@@ -1611,7 +1610,9 @@ JS;
         }
 
         if ($element::hasStatuses()) {
-            $html .= '<span class="status '.$context['element']->getStatus().'"></span>';
+            $status = $element->getStatus();
+            $statusClasses = $status.' '.($element::statuses()[$status]['color'] ?? '');
+            $html .= '<span class="status '.$statusClasses.'"></span>';
         }
 
         $html .= $imgHtml;

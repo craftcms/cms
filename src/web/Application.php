@@ -220,23 +220,12 @@ class Application extends \yii\web\Application
     /**
      * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
      *
-     * @return string|false
+     * @return string
      */
-    public function getTranslatedBrowserLanguage()
+    public function getTranslatedBrowserLanguage(): string
     {
-        $browserLanguages = $this->getRequest()->getAcceptableLanguages();
-
-        if (!empty($browserLanguages)) {
-            $appLanguages = $this->getI18n()->getAppLocaleIds();
-
-            foreach ($browserLanguages as $language) {
-                if (in_array($language, $appLanguages, true)) {
-                    return $language;
-                }
-            }
-        }
-
-        return false;
+        $languages = $this->getI18n()->getAppLocaleIds();
+        return $this->getRequest()->getPreferredLanguage($languages);
     }
 
     /**

@@ -43,6 +43,7 @@ use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -617,6 +618,20 @@ class Asset extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        if (($fieldLayout = parent::getFieldLayout()) !== null) {
+            return $fieldLayout;
+        }
+
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+        return $volume->getFieldLayout();
+    }
+
+    /**
      * Returns the asset’s volume folder.
      *
      * @return VolumeFolder
@@ -900,6 +915,16 @@ class Asset extends Element
     }
 
     /**
+     * Returns whether a user-defined focal point is set on the asset.
+     *
+     * @return bool
+     */
+    public function getHasFocalPoint(): bool
+    {
+        return $this->_focalPoint !== null;
+    }
+
+    /**
      * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
      * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
@@ -915,7 +940,7 @@ class Asset extends Element
         $focal = $this->_focalPoint ?? ['x' => 0.5, 'y' => 0.5];
 
         if ($asCss) {
-            return ($focal['x']*100).'% '.($focal['y']*100).'%';
+            return ($focal['x'] * 100).'% '.($focal['y'] * 100).'%';
         }
 
         return $focal;
@@ -996,14 +1021,8 @@ class Asset extends Element
 
         $html = '';
 
-        if ($this->getSupportsImageEditor()) {
-            // Are they allowed to edit the image?
-            $user = Craft::$app->getUser();
-            $editable = (
-                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
-                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
-            );
-
+        // See if we can show a thumbnail
+        try {
             $assetsService = Craft::$app->getAssets();
             $srcsets = [];
             $thumbSizes = [
@@ -1011,9 +1030,17 @@ class Asset extends Element
                 [760, 380],
             ];
             foreach ($thumbSizes as list($width, $height)) {
-                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
+                $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
                 $srcsets[] = $thumbUrl.' '.$width.'w';
             }
+
+            // Is the image editable, and is the user allowed to edit?
+            $user = Craft::$app->getUser();
+            $editable = (
+                $this->getSupportsImageEditor() &&
+                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
+                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
+            );
 
             $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">'.
                 '<div class="image-preview">'.
@@ -1025,6 +1052,8 @@ class Asset extends Element
             }
 
             $html .= '</div>';
+        } catch (NotSupportedException $e) {
+            // NBD
         }
 
         $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
@@ -1171,19 +1200,20 @@ class Asset extends Element
                 $record->id = $this->id;
             }
 
-
             $record->filename = $this->filename;
             $record->volumeId = $this->volumeId;
             $record->folderId = $this->folderId;
             $record->kind = $this->kind;
             $record->size = $this->size;
-            $record->focalPoint = $this->focalPoint;
             $record->width = $this->_width;
             $record->height = $this->_height;
             $record->dateModified = $this->dateModified;
 
-            if ($focal = $this->getFocalPoint()) {
+            if ($this->getHasFocalPoint()) {
+                $focal = $this->getFocalPoint();
                 $record->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
+            } else {
+                $record->focalPoint = null;
             }
 
             $record->save(false);

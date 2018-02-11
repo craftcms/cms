@@ -31,6 +31,9 @@ abstract class BaseUpdaterController extends Controller
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
     const ACTION_COMPOSER_REMOVE = 'composer-remove';
+    /**
+     * @deprecated
+     */
     const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
 
@@ -131,7 +134,7 @@ abstract class BaseUpdaterController extends Controller
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to install the updates.'), $e, $io);
         }
 
-        return $this->sendNextAction(self::ACTION_COMPOSER_OPTIMIZE);
+        return $this->send($this->postComposerInstallState());
     }
 
     /**
@@ -154,13 +157,14 @@ abstract class BaseUpdaterController extends Controller
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io);
         }
 
-        return $this->sendNextAction(self::ACTION_COMPOSER_OPTIMIZE);
+        return $this->send($this->postComposerInstallState());
     }
 
     /**
      * Optimizes the Composer autoloader.
      *
      * @return Response
+     * @deprecated
      */
     public function actionComposerOptimize(): Response
     {
@@ -172,7 +176,7 @@ abstract class BaseUpdaterController extends Controller
         } catch (\Throwable $e) {
             Craft::error('Error optimizing the Composer autoloader: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            $continueOption = $this->postComposerOptimizeState();
+            $continueOption = $this->postComposerInstallState();
             $continueOption['label'] = Craft::t('app', 'Continue');
             return $this->send([
                 'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),
@@ -184,7 +188,7 @@ abstract class BaseUpdaterController extends Controller
             ]);
         }
 
-        return $this->send($this->postComposerOptimizeState());
+        return $this->send($this->postComposerInstallState());
     }
 
     /**
@@ -228,11 +232,11 @@ abstract class BaseUpdaterController extends Controller
     abstract protected function initialState(): array;
 
     /**
-     * Returns the state data for after [[actionComposerOptimize()]] is done.
+     * Returns the state data for after [[actionComposerInstall()]] is done.
      *
      * @return array
      */
-    abstract protected function postComposerOptimizeState(): array;
+    abstract protected function postComposerInstallState(): array;
 
     /**
      * Returns the return URL that should be passed with a finished state.
@@ -397,8 +401,6 @@ abstract class BaseUpdaterController extends Controller
                 return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
                     'command' => '`composer remove`'
                 ]);
-            case self::ACTION_COMPOSER_OPTIMIZE:
-                return Craft::t('app', 'Optimizing…');
             case self::ACTION_FINISH:
                 return Craft::t('app', 'Finishing up…');
             default:

@@ -515,7 +515,7 @@ class GeneralConfig extends BaseObject
      * @var bool Whether Craft should require the existence of a user agent string and IP address when creating a new user
      * session.
      */
-    public $requireUserAgentAndIpForSession = false;
+    public $requireUserAgentAndIpForSession = true;
     /**
      * @var string The path to the root directory that should store published CP resources.
      */

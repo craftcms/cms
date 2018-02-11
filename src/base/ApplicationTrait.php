@@ -27,6 +27,7 @@ use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\base\InvalidConfigException;
 use yii\mutex\FileMutex;
 use yii\queue\db\Queue;
 use yii\web\BadRequestHttpException;
@@ -662,6 +663,8 @@ trait ApplicationTrait
             return true;
         } catch (DbConnectException $e) {
             return false;
+        } catch (InvalidConfigException $e) {
+            return false;
         }
     }
 
@@ -1248,11 +1251,8 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         // See if we have the CP translated in one of the user's browsers preferred language(s)
-        if (
-            $this instanceof WebApplication &&
-            ($language = $this->getTranslatedBrowserLanguage()) !== false
-        ) {
-            return $language;
+        if ($this instanceof WebApplication) {
+            return $this->getTranslatedBrowserLanguage();
         }
 
         // Default to the source language.

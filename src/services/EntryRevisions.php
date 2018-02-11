@@ -566,9 +566,6 @@ class EntryRevisions extends Component
             // Nope. Use the entry's current type instead
             $revision->typeId = $entry->typeId;
         }
-
-        // Set the field layout ID based on the entry type
-        $revision->fieldLayoutId = $revision->getType()->fieldLayoutId;
     }
 
     /**

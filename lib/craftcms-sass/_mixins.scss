@@ -1,36 +1,57 @@
 $hue: 212;
 
+// status colors
+$green: #27AE60;
+$orange: #F2842D;
+$red: #D0021B;
+$yellow: #F1C40E;
+$pink: #FF50F2;
+$purple: #9B59B6;
+$blue: #0D99F2;
+$turquoise: #2CE0BD;
+$light: #CCD1D6;
+$grey: #98A3AE;
+$black: #32475E;
+
+// BG colors
 $subnavBgColor: hsl($hue, 20%, 30%);
 $bgColor: hsl($hue, 10%, 93%);
 $lightBgColor: #fafafa;
 
+// text colors
 $textColor: hsl($hue, 20%, 20%);
 $mediumDarkTextColor: hsl($hue, 15%, 40%);
 $mediumTextColor: hsl($hue, 10%, 60%);
 $lightTextColor: hsl($hue, 10%, 75%);
 $linkColor: hsl($hue, 90%, 50%);
 
+// hairline colors
 $hairlineColor: hsl($hue, 10%, 90%);
 $hairlineColorAlpha: hsla(240, 100%, 4%, 0.1);
 $mediumHairlineColorAlpha: hsla(240, 100%, 4%, 0.2);
 $darkHairlineColorAlpha: hsla(240, 100%, 4%, 0.4);
 
+// selection colors
 $lightSelColor: hsl($hue, 10%, 85%);
 $darkSelColor: hsl($hue, 10%, 50%);
 
+// submit button colors
 $submitColor: #da5a47;
 $submitHoverColor: #bf503f;
 $submitActiveColor: #8c3b2e;
 
+// secondary submit button colors
 $secondarySubmitColor: hsl($hue, 10%, 60%);
 $secondarySubmitHoverColor: hsl($hue, 10%, 50%);
 $secondarySubmitActiveColor: hsl($hue, 10%, 40%);
 
+// alert/notice colors
 $errorColor: #da5a47;
 $warningColor: #e78640;
 $successColor: #00b007;
 $noticeColor: #5286d9;
 
+// UI element styles
 $btnBorderRadius: 2px;
 $textBorderRadius: 0;
 $paneBorderRadius: 5px;

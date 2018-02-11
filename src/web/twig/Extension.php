@@ -105,8 +105,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('css', 'registerCss', true, false, false, true),
-            new RegisterResourceTokenParser('js', 'registerJs', true, true, true, false),
+            new RegisterResourceTokenParser('css', 'registerCss', [
+                'allowTagPair' => true,
+                'allowOptions' => true,
+            ]),
+            new RegisterResourceTokenParser('js', 'registerJs', [
+                'allowTagPair' => true,
+                'allowPosition' => true,
+                'allowRuntimePosition' => true,
+            ]),
             new NamespaceTokenParser(),
             new NavTokenParser(),
             new PaginateTokenParser(),
@@ -118,17 +125,57 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new SwitchTokenParser(),
 
             // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss', true, false, false, true, '{% css %}'),
-            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, '{% css %}'),
-            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', false, false, false, true, '{% do view.registerCssFile("/url/to/file.css") %}'),
-            new RegisterResourceTokenParser('includeJs', 'registerJs', true, true, true, false, '{% js %}'),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', false, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
+            new RegisterResourceTokenParser('includeCss', 'registerCss', [
+                'allowTagPair' => true,
+                'allowOptions' => true,
+                'newCode' => '{% css %}',
+            ]),
+            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', [
+                'allowTagPair' => true,
+                'allowOptions' => true,
+                'newCode' => '{% css %}',
+            ]),
+            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', [
+                'allowOptions' => true,
+                'newCode' => '{% do view.registerCssFile("/url/to/file.css") %}',
+            ]),
+            new RegisterResourceTokenParser('includeJs', 'registerJs', [
+                'allowTagPair' => true,
+                'allowPosition' => true,
+                'allowRuntimePosition' => true,
+                'newCode' => '{% js %}',
+            ]),
+            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', [
+                'allowPosition' => true,
+                'allowOptions' => true,
+                'newCode' => '{% do view.registerJsFile("/url/to/file.js") %}',
+            ]),
 
-            new RegisterResourceTokenParser('includecss', 'registerCss', true, false, false, true, '{% css %}'),
-            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, '{% css %}'),
-            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', false, false, false, true, '{% do view.registerCssFile("/url/to/file.css") %}'),
-            new RegisterResourceTokenParser('includejs', 'registerJs', true, true, true, false, '{% js %}'),
-            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', false, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
+            new RegisterResourceTokenParser('includecss', 'registerCss', [
+                'allowTagPair' => true,
+                'allowOptions' => true,
+                'newCode' => '{% css %}',
+            ]),
+            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', [
+                'allowTagPair' => true,
+                'allowOptions' => true,
+                'newCode' => '{% css %}',
+            ]),
+            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', [
+                'allowOptions' => true,
+                'newCode' => '{% do view.registerCssFile("/url/to/file.css") %}',
+            ]),
+            new RegisterResourceTokenParser('includejs', 'registerJs', [
+                'allowTagPair' => true,
+                'allowPosition' => true,
+                'allowRuntimePosition' => true,
+                'newCode' => '{% js %}',
+            ]),
+            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', [
+                'allowPosition' => true,
+                'allowOptions' => true,
+                'newCode' => '{% do view.registerJsFile("/url/to/file.js") %}',
+            ]),
         ];
     }
 

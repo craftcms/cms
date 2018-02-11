@@ -66,6 +66,10 @@ class Table extends Field
     {
         parent::init();
 
+        if ($this->defaults === '') {
+            $this->defaults = [];
+        }
+
         // Convert default date cell values to ISO8601 strings
         if (!empty($this->columns) && $this->defaults !== null) {
             foreach ($this->columns as $colId => $col) {
