@@ -25,6 +25,7 @@
 - Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.
 - Fixed a bug where passing `null` or an empty array to an element query’s `orderBy()` method would still result in the default `orderBy` param being applied.
 - Fixed a bug where Table fields would forget if they were saved without any rows in their Default Values setting, and bring back an empty row. ([#2418](https://github.com/craftcms/cms/issues/2418))
+- Fixed a bug where the `install/craft` console command no longer accepted `--email`, `--username`, `--password`, `--siteName`, `--siteUrl`, or `--language` options. ([#2422](https://github.com/craftcms/cms/issues/2422))
 
 ## 3.0.0-RC9 - 2018-02-06
 

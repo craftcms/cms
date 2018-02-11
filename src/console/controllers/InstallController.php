@@ -70,7 +70,7 @@ class InstallController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'index') {
+        if ($actionID === 'craft') {
             $options[] = 'email';
             $options[] = 'username';
             $options[] = 'password';
