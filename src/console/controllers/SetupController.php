@@ -76,7 +76,7 @@ class SetupController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'db-creds') {
+        if ($actionID === 'db-creds' || $actionID === 'db') {
             $options[] = 'driver';
             $options[] = 'server';
             $options[] = 'port';
