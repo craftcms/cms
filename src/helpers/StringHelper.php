@@ -728,8 +728,7 @@ class StringHelper
 	/**
 	 * Encrypts and base64-encodes a string.
 	 *
-	 * @param string $str     The string.
-	 * @param bool   $encrypt Whether the string should be encrypted.
+	 * @param string $str The string.
 	 *
 	 * @return string
 	 * @see decdec()
