@@ -755,7 +755,7 @@ class StringHelper
 
 		if (strncmp($str, 'crypt:', 6) === 0)
 		{
-			return $str = craft()->security->decrypt(substr($str, 6));
+			$str = craft()->security->decrypt(substr($str, 6));
 		}
 
 		return $str;
