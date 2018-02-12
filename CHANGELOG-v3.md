@@ -20,6 +20,7 @@
 - `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
 - `craft\behaviors\FieldLayoutBehavior` can now be configured with a `fieldLayoutId` attribute, set to either a field layout ID, the name of a method on the owner that will return the ID, or a closure that will return the ID. (`idAttribute` is still supported as well.)
 - `craft\behaviors\FieldLayoutBehavior::getFieldLayout()` will now throw an exception if its `fieldLayoutId` attribute was set to an invalid ID.
+- `craft\services\Security::encryptByKey()` and `decryptByKey()` no longer require the `$inputKey` argument. If omitted or `null`, the `securityKey` config setting will be used.
 
 ### Fixed
 - Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.

@@ -950,7 +950,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encenc(string $str): string
     {
-        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str, Craft::$app->getConfig()->getGeneral()->securityKey));
+        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str));
     }
 
     /**
@@ -967,7 +967,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         if (strncmp($str, 'crypt:', 6) === 0) {
-            $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6), Craft::$app->getConfig()->getGeneral()->securityKey);
+            $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
         }
 
         return $str;
