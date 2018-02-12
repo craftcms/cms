@@ -198,6 +198,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
             new \Twig_SimpleFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
+            new \Twig_SimpleFilter('encenc', [$this, 'encencFilter']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
             new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
@@ -564,6 +565,18 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         return $value;
+    }
+
+    /**
+     * Encrypts and base64-encodes a string.
+     *
+     * @param string $str the string
+     *
+     * @return string
+     */
+    public function encencFilter(string $str): string
+    {
+        return StringHelper::encenc($str);
     }
 
     /**

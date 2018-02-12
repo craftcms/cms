@@ -8,6 +8,7 @@
 namespace craft\mail\transportadapters;
 
 use Craft;
+use craft\helpers\StringHelper;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -68,6 +69,18 @@ class Smtp extends BaseTransportAdapter
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->password) {
+            $this->password = StringHelper::decdec($this->password);
+        }
+    }
 
     /**
      * @inheritdoc

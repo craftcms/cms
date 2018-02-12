@@ -8,6 +8,7 @@
 namespace craft\mail\transportadapters;
 
 use Craft;
+use craft\helpers\StringHelper;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -48,6 +49,18 @@ class Gmail extends BaseTransportAdapter
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->password) {
+            $this->password = StringHelper::decdec($this->password);
+        }
+    }
 
     /**
      * @inheritdoc

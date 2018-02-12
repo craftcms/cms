@@ -40,7 +40,7 @@
         label: "Password"|t('app'),
         id: 'password',
         name: 'password',
-        value: adapter.password,
+        value: adapter.password ? adapter.password|encenc,
         errors: adapter.getErrors('password')
     }) }}
 </div>
