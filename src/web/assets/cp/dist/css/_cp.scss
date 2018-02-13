@@ -297,7 +297,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   text-align: center;
 
   #edition {
-    &:hover {
+    &.hot:hover {
       cursor: pointer;
 
       #edition-logo {

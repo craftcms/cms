@@ -247,7 +247,7 @@ class PluginStoreController extends Controller
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
-        if ($etResponse) {
+        if (isset($etResponse->data->editions)) {
             $upgradeInfo = $etResponse->data;
 
             $data['countries'] = $upgradeInfo->countries;
@@ -341,6 +341,6 @@ class PluginStoreController extends Controller
         $hostInfo = Craft::$app->getRequest()->getHostInfo();
         $hostInfo = StringHelper::ensureRight($hostInfo, '/');
 
-        return  (string) substr($url, strlen($hostInfo) - 1);
+        return (string)substr($url, strlen($hostInfo) - 1);
     }
 }

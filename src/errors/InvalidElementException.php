@@ -46,6 +46,6 @@ class InvalidElementException extends Exception
      */
     public function getName(): string
     {
-        return 'Invalid Element';
+        return 'Invalid element';
     }
 }

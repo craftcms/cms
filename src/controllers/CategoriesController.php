@@ -704,7 +704,6 @@ class CategoriesController extends Controller
             } else {
                 $variables['category'] = new Category();
                 $variables['category']->groupId = $variables['group']->id;
-                $variables['category']->fieldLayoutId = $variables['group']->fieldLayoutId;
                 $variables['category']->enabled = true;
                 $variables['category']->siteId = $site->id;
             }

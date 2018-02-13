@@ -890,6 +890,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->customFields = null;
         }
 
+        if ($this->distinct) {
+            $this->query->distinct();
+        }
+
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
         }
@@ -966,6 +970,21 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $this->_createElements($rows);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function orderBy($columns)
+    {
+        parent::orderBy($columns);
+
+        // If $columns normalizes to an empty array, just set it to null
+        if ($this->orderBy === []) {
+            $this->orderBy = null;
+        }
+
+        return $this;
     }
 
     /**

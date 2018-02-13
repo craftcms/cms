@@ -10,7 +10,6 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
@@ -303,26 +302,9 @@ class MatrixBlockQuery extends ElementQuery
      */
     protected function customFields(): array
     {
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->fieldId);
-
-        // Preload all of the fields up front to save ourselves some DB queries, and discard
-        $contexts = [];
-        foreach ($blockTypes as $blockType) {
-            $contexts[] = 'matrixBlockType:'.$blockType->id;
-        }
-        Craft::$app->getFields()->getAllFields($contexts);
-
-        // Now assemble the actual fields list
-        $fields = [];
-        foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
-            foreach ($blockType->getFields() as $field) {
-                /** @var Field $field */
-                $field->columnPrefix = $fieldColumnPrefix;
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
+        // This method won't get called if $this->fieldId isn't set to a single int
+        /** @var MatrixField $matrixField */
+        $matrixField = Craft::$app->getFields()->getFieldById($this->fieldId);
+        return $matrixField->getBlockTypeFields();
     }
 }

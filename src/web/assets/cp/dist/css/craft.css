@@ -1694,12 +1694,12 @@ body.ltr #global-sidebar #nav li ul li a { padding-left: 60px; }
 body.rtl #global-sidebar #nav li ul li a { padding-right: 60px; }
 
 #app-info { padding: 14px 14px 24px; color: #0a0d0f; text-align: center; }
-#app-info #edition:hover { cursor: pointer; }
-#app-info #edition:hover #edition-logo { border-color: #a3b1c2; }
-#app-info #edition:hover #edition-logo > .edition-name { color: #a3b1c2; }
-#app-info #edition:hover #edition-logo > .edition-trial { background: #a3b1c2; }
-body.ltr #app-info #edition:hover #edition-logo > .edition-trial:before { border-color: transparent #a3b1c2 transparent transparent; }
-body.rtl #app-info #edition:hover #edition-logo > .edition-trial:before { border-color: transparent transparent transparent #a3b1c2; }
+#app-info #edition.hot:hover { cursor: pointer; }
+#app-info #edition.hot:hover #edition-logo { border-color: #a3b1c2; }
+#app-info #edition.hot:hover #edition-logo > .edition-name { color: #a3b1c2; }
+#app-info #edition.hot:hover #edition-logo > .edition-trial { background: #a3b1c2; }
+body.ltr #app-info #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent #a3b1c2 transparent transparent; }
+body.rtl #app-info #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent transparent transparent #a3b1c2; }
 #app-info #edition #edition-logo { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; border: 1px solid #0a0d0f; border-radius: 3px; display: -webkit-inline-box; display: -ms-inline-flexbox; display: inline-flex; height: 23px; -webkit-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 #app-info #edition #edition-logo > .edition-name, #app-info #edition #edition-logo > .edition-trial { padding: 8px 8px 7px; line-height: 8px; font-weight: 500; }
 #app-info #edition #edition-logo > .edition-name { letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; -webkit-transition: color linear 100ms; transition: color linear 100ms; }

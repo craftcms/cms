@@ -12,7 +12,6 @@ use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\debug\DeprecatedPanel;
 use craft\debug\UserPanel;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
@@ -545,15 +544,15 @@ class Application extends \yii\web\Application
         }
 
         // We'll also let update actions go through
-        if (
-            $request->getIsActionRequest() &&
-            (
-                ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
-                $request->getActionSegments() === ['app', 'migrate']
-            )
-        ) {
-            $action = implode('/', $request->getActionSegments());
-            return $this->runAction($action);
+        if ($request->getIsActionRequest()) {
+            $actionSegments = $request->getActionSegments();
+            if (
+                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['pluginstore', 'install', 'migrate']
+            ) {
+                return $this->runAction(implode('/', $actionSegments));
+            }
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

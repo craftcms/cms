@@ -14,11 +14,9 @@ use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\AssetTransformException;
-use craft\errors\ValidationException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\events\AssetEvent;
 use craft\events\AssetTransformEvent;
 use craft\events\AssetTransformImageEvent;
 use craft\events\GenerateTransformEvent;
@@ -37,7 +35,6 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
-use yii\base\InvalidConfigException;
 
 /**
  * Asset Transforms service.
@@ -190,7 +187,6 @@ class AssetTransforms extends Component
      * @param bool           $runValidation Whether the transform should be validated
      *
      * @throws AssetTransformException If attempting to update a non-existing transform.
-     * @throws ValidationException     If the validation failed.
      * @return bool
      */
     public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool

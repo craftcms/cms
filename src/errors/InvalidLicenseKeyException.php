@@ -45,6 +45,6 @@ class InvalidLicenseKeyException extends Exception
      */
     public function getName(): string
     {
-        return 'Invalid License Key';
+        return 'Invalid license key';
     }
 }

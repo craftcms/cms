@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
+use Craft;
 use craft\web\twig\nodes\RegisterResourceNode;
 
 /**
@@ -21,63 +22,57 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     // =========================================================================
 
     /**
-     * @var string|null The tag name
+     * @var string The tag name
      */
-    private $_tag;
+    public $tag;
 
     /**
-     * @var string|null The View method the tag represents
+     * @var string The View method the tag represents
      */
-    private $_method;
+    public $method;
 
     /**
      * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS
      */
-    private $_allowTagPair;
+    public $allowTagPair = false;
 
     /**
-     * @var bool|null Whether the tag can specify the position of the resource
+     * @var bool Whether the tag can specify the position of the resource
      */
-    private $_allowPosition;
+    public $allowPosition = false;
 
     /**
      * @var bool Whether the tag can specify a runtime-based position (load/ready)
      */
-    private $_allowRuntimePosition;
+    public $allowRuntimePosition = false;
 
     /**
-     * @var bool|null Whether the tag can specify additional options
+     * @var bool Whether the tag can specify additional options
      */
-    private $_allowOptions;
+    public $allowOptions = false;
 
     /**
      * @var string|null The new template code that should be used if this tag is deprecated
+     * @todo Remove this in Craft 4
      */
-    private $_newCode;
+    public $newCode;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * @param string      $tag                  The tag name
-     * @param string      $method               The View method the tag represents
-     * @param bool        $allowTagPair         Whether the tag supports a tag pair mode for capturing the JS/CSS
-     * @param bool        $allowPosition        Whether the tag can specify the position of the resource
-     * @param bool        $allowRuntimePosition Whether the tag can specify a runtime-based position (load/ready)
-     * @param bool        $allowOptions         Whether the tag can specify additional options
-     * @param string|null $newCode              The new template code that should be used if this tag is deprecated
-     *
-     * @todo Remove the|null $newCode stuff in Craft 4
+     * @param string $tag    the tag name
+     * @param string $method the View method the tag represents
+     * @param array  $config name-value pairs that will be used to initialize the object properties
      */
-    public function __construct(string $tag, string $method, bool $allowTagPair = false, bool $allowPosition = false, bool $allowRuntimePosition = false, bool $allowOptions = false, string $newCode = null)
+    public function __construct(string $tag, string $method, array $config = [])
     {
-        $this->_tag = $tag;
-        $this->_method = $method;
-        $this->_allowTagPair = $allowTagPair;
-        $this->_allowPosition = $allowPosition;
-        $this->_allowRuntimePosition = $allowRuntimePosition;
-        $this->_allowOptions = $allowOptions;
-        $this->_newCode = $newCode;
+        $this->tag = $tag;
+        $this->method = $method;
+
+        if (!empty($config)) {
+            Craft::configure($this, $config);
+        }
     }
 
     /**
@@ -86,8 +81,8 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         // Is this the deprecated version?
-        if ($this->_newCode !== null) {
-            \Craft::$app->getDeprecator()->log($this->_tag, "{% {$this->_tag} %} is now deprecated. Use {$this->_newCode} instead.");
+        if ($this->newCode !== null) {
+            \Craft::$app->getDeprecator()->log($this->tag, "{% {$this->tag} %} is now deprecated. Use {$this->newCode} instead.");
         }
 
         $lineno = $token->getLine();
@@ -97,7 +92,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
 
         // Is this a tag pair?
         if (
-            $this->_allowTagPair &&
+            $this->allowTagPair &&
             (
                 $this->_testPositionParam($stream) ||
                 $this->_testOptionsParam($stream) ||
@@ -112,12 +107,12 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         // Is there a position param?
-        if ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) {
+        if ($this->allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) {
             $stream->next();
             $nameToken = $stream->expect(\Twig_Token::NAME_TYPE,
                 ['head', 'beginBody', 'endBody']);
             $position = $nameToken->getValue();
-        } else if ($this->_allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on')) {
+        } else if ($this->allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on')) {
             $stream->next();
             $nameToken = $stream->expect(\Twig_Token::NAME_TYPE,
                 ['ready', 'load']);
@@ -127,7 +122,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         // Is there an options param?
-        if ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with')) {
+        if ($this->allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with')) {
             $stream->next();
             $nodes['options'] = $expressionParser->parseExpression();
         }
@@ -145,9 +140,9 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
 
         // Pass everything off to the RegisterResourceNode
         $attributes = [
-            'method' => $this->_method,
-            'allowOptions' => $this->_allowOptions,
-            'allowPosition' => $this->_allowPosition,
+            'method' => $this->method,
+            'allowOptions' => $this->allowOptions,
+            'allowPosition' => $this->allowPosition,
             'capture' => $capture,
             'position' => $position,
             'first' => $first
@@ -161,7 +156,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     public function getTag()
     {
-        return $this->_tag;
+        return $this->tag;
     }
 
     /**
@@ -171,7 +166,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     public function decideBlockEnd(\Twig_Token $token): bool
     {
-        return $token->test('end'.strtolower($this->_tag));
+        return $token->test('end'.strtolower($this->tag));
     }
 
     // Private Methods
@@ -187,8 +182,8 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     private function _testPositionParam(\Twig_TokenStream $stream): bool
     {
         return (
-            ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) ||
-            ($this->_allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on'))
+            ($this->allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) ||
+            ($this->allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on'))
         );
     }
 
@@ -201,7 +196,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     private function _testOptionsParam(\Twig_TokenStream $stream): bool
     {
-        return ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with'));
+        return ($this->allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with'));
     }
 
     /**
@@ -213,7 +208,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     private function _testFirstParam(\Twig_TokenStream $stream): bool
     {
-        return ($this->_newCode !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
+        return ($this->newCode !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
     }
 
     /**

@@ -12,12 +12,8 @@ use yii\base\Exception;
 /**
  * Class InvalidSubpathException
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/ Craft License Agreement
- * @see       http://craftcms.com
- * @package   craft.app.exceptions
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 class InvalidSubpathException extends Exception
 {
@@ -42,5 +38,13 @@ class InvalidSubpathException extends Exception
         }
 
         parent::__construct($message, $code);
+    }
+
+    /**
+     * @return string the user-friendly name of this exception
+     */
+    public function getName()
+    {
+        return 'Invalid subpath';
     }
 }

@@ -9,6 +9,9 @@ namespace craft\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
+use craft\base\Plugin;
+use craft\errors\MigrateException;
+use craft\errors\MigrationException;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
@@ -427,7 +430,78 @@ abstract class BaseUpdaterController extends Controller
         return $state;
     }
 
-    // Protected Methods
+    /**
+     * Runs the migrations for a given list of handles.
+     *
+     * @param string[] $handles
+     * @param string|null $restoreAction
+     *
+     * @return Response|null
+     */
+    protected function runMigrations(array $handles, string $restoreAction = null)
+    {
+        try {
+            Craft::$app->getUpdates()->runMigrations($handles);
+        } catch (MigrateException $e) {
+            $ownerName = $e->ownerName;
+            $ownerHandle = $e->ownerHandle;
+            /** @var \Throwable $e */
+            $e = $e->getPrevious();
+
+            if ($e instanceof MigrationException) {
+                /** @var \Throwable|null $previous */
+                $previous = $e->getPrevious();
+                $migration = $e->migration;
+                $output = $e->output;
+                $error = get_class($migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
+                $e = $previous ?? $e;
+            } else {
+                $migration = $output = null;
+                $error = 'Migration failed: '.$e->getMessage();
+            }
+
+            Craft::error($error, __METHOD__);
+
+            $options = [];
+
+            // Do we have a database backup to restore?
+            if ($restoreAction !== null && !empty($this->data['dbBackupPath'])) {
+                if (!empty($this->data['install'])) {
+                    $restoreLabel = Craft::t('app', 'Revert update');
+                } else {
+                    $restoreLabel = Craft::t('app', 'Restore database');
+                }
+                $options[] = $this->actionOption($restoreLabel, $restoreAction);
+            }
+
+            if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
+                /** @var Plugin $plugin */
+                $email = $plugin->developerEmail;
+            }
+            $email = $email ?? 'support@craftcms.com';
+
+            $options[] = [
+                'label' => Craft::t('app', 'Send for help'),
+                'submit' => true,
+                'email' => $email,
+                'subject' => $ownerName.' update failure',
+            ];
+
+            $eName = $e instanceof Exception ? $e->getName() : get_class($e);
+
+            return $this->send([
+                'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
+                'errorDetails' => $eName.': '.$e->getMessage().
+                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
+                    ($output ? "\n\nOutput:\n\n".$output : ''),
+                'options' => $options,
+            ]);
+        }
+
+        return null;
+    }
+
+    // Private Methods
     // =========================================================================
 
     /**

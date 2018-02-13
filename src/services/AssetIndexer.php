@@ -460,7 +460,6 @@ class AssetIndexer extends Component
         if (!$asset) {
             $asset = new Asset();
             $asset->volumeId = $volume->id;
-            $asset->fieldLayoutId = $volume->fieldLayoutId;
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;

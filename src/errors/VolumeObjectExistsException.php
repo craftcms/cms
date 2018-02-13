@@ -10,13 +10,16 @@ namespace craft\errors;
 /**
  * Class VolumeFileExistsException
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/ Craft License Agreement
- * @see       http://craftcms.com
- * @package   craft.app.exceptions
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 class VolumeObjectExistsException extends VolumeException
 {
+    /**
+     * @return string the user-friendly name of this exception
+     */
+    public function getName()
+    {
+        return 'Volume object exists';
+    }
 }

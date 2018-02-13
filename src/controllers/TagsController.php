@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -251,7 +250,6 @@ class TagsController extends Controller
 
         $tag = new Tag();
         $tag->groupId = $group->id;
-        $tag->fieldLayoutId = $group->fieldLayoutId;
         $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields

@@ -9,11 +9,9 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
-use craft\errors\InvalidPluginException;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
-use yii\base\Exception;
 use yii\console\Controller;
 use yii\helpers\Console;
 
@@ -70,7 +68,7 @@ class InstallController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'index') {
+        if ($actionID === 'craft') {
             $options[] = 'email';
             $options[] = 'username';
             $options[] = 'password';

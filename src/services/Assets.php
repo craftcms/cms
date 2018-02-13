@@ -13,7 +13,6 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
-use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
@@ -41,6 +40,7 @@ use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Temp;
 use yii\base\Component;
 use yii\base\InvalidParamException;
+use yii\base\NotSupportedException;
 
 /**
  * Assets service.
@@ -71,7 +71,7 @@ class Assets extends Component
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
     /**
-     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     * @event      GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
      * @deprecated in 3.0.0-RC9. Use [[EVENT_GET_THUMB_PATH]] instead.
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
@@ -143,8 +143,6 @@ class Assets extends Component
      * @param string $pathOnServer
      * @param string $filename
      *
-     *
-     * @throws ActionCancelledException If something prevented the Asset replacement via Event.
      * @throws FileException            If there was a problem with the actual file.
      * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void
@@ -612,15 +610,17 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail URL for a given asset.
      *
-     * @param Asset    $asset  asset to return a thumb for
-     * @param int      $width  width of the returned thumb
-     * @param int|null $height height of the returned thumb (defaults to $width if null)
-     * @param bool     $generate whether to generate a thumb in none exists yet
+     * @param Asset    $asset          asset to return a thumb for
+     * @param int      $width          width of the returned thumb
+     * @param int|null $height         height of the returned thumb (defaults to $width if null)
+     * @param bool     $generate       whether to generate a thumb in none exists yet
+     * @param bool     $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      *
      * @return string
+     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @see Asset::getThumbUrl()
      */
-    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false): string
+    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false, bool $fallbackToIcon = true): string
     {
         if ($height === null) {
             $height = $width;
@@ -645,7 +645,7 @@ class Assets extends Component
             }
         }
 
-        $path = $this->getThumbPath($asset, $width, $height, $generate);
+        $path = $this->getThumbPath($asset, $width, $height, $generate, $fallbackToIcon);
 
         if ($path === false) {
             return UrlHelper::actionUrl('assets/generate-thumb', [
@@ -665,15 +665,17 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail path for a given asset.
      *
-     * @param Asset    $asset  asset to return a thumb for
-     * @param int      $width  width of the returned thumb
-     * @param int|null $height height of the returned thumb (defaults to $width if null)
-     * @param bool     $generate whether to generate a thumb in none exists yet
+     * @param Asset    $asset          asset to return a thumb for
+     * @param int      $width          width of the returned thumb
+     * @param int|null $height         height of the returned thumb (defaults to $width if null)
+     * @param bool     $generate       whether to generate a thumb in none exists yet
+     * @param bool     $fallbackToIcon whether to return the path to a generic icon if a thumbnail can't be generated
      *
      * @return string|false thumbnail path, or `false` if it doesn't exist and $generate is `false`
+     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @see getThumbUrl()
      */
-    public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true)
+    public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true, bool $fallbackToIcon = true)
     {
         // Maybe a plugin wants to do something here
         $event = new AssetThumbEvent([
@@ -693,27 +695,11 @@ class Assets extends Component
 
         // If it's not an image, return a generic file extension icon
         if (!Image::canManipulateAsImage($ext)) {
-            $path = Craft::$app->getPath()->getAssetsIconsPath().DIRECTORY_SEPARATOR.strtolower($ext).'.svg';
-
-            if (!file_exists($path)) {
-                $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
-                $extLength = strlen($ext);
-                if ($extLength <= 3) {
-                    $textSize = '26';
-                } else if ($extLength === 4) {
-                    $textSize = '22';
-                } else {
-                    if ($extLength > 5) {
-                        $ext = substr($ext, 0, 4).'…';
-                    }
-                    $textSize = '18';
-                }
-                $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">".strtoupper($ext).'</text>';
-                $svg = str_replace('<!-- EXT -->', $textNode, $svg);
-                FileHelper::writeToFile($path, $svg);
+            if (!$fallbackToIcon) {
+                throw new NotSupportedException("A thumbnail can't be generated for the asset.");
             }
 
-            return $path;
+            return $this->getIconPath($asset);
         }
 
         if ($height === null) {
@@ -740,6 +726,44 @@ class Assets extends Component
                 ->saveAs($path);
         }
 
+        return $path;
+    }
+
+    /**
+     * Returns a generic file extension icon path, that can be used as a fallback
+     * for assets that don't have a normal thumbnail.
+     *
+     * @param Asset $asset
+     *
+     * @return string
+     */
+    public function getIconPath(Asset $asset): string
+    {
+        $ext = $asset->getExtension();
+        $path = Craft::$app->getPath()->getAssetsIconsPath().DIRECTORY_SEPARATOR.strtolower($ext).'.svg';
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
+
+        $extLength = strlen($ext);
+        if ($extLength <= 3) {
+            $textSize = '26';
+        } else if ($extLength === 4) {
+            $textSize = '22';
+        } else {
+            if ($extLength > 5) {
+                $ext = substr($ext, 0, 4).'…';
+            }
+            $textSize = '18';
+        }
+
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">".strtoupper($ext).'</text>';
+        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+
+        FileHelper::writeToFile($path, $svg);
         return $path;
     }
 

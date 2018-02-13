@@ -7,9 +7,6 @@
 
 namespace craft\queue;
 
-use Craft;
-use yii\log\FileTarget;
-
 /**
  * Manages application db-queue.
  *

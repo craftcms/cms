@@ -13,9 +13,9 @@ use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\errors\DbConnectException;
+use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
@@ -27,9 +27,9 @@ use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\base\InvalidConfigException;
 use yii\mutex\FileMutex;
 use yii\queue\db\Queue;
-use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -412,7 +412,7 @@ trait ApplicationTrait
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      *
      * @return void
-     * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
+     * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
     public function requireEdition(int $edition, bool $orBetter = true)
     {
@@ -422,7 +422,7 @@ trait ApplicationTrait
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
                 $editionName = App::editionName($edition);
-                throw new BadRequestHttpException("Craft {$editionName} is required for this");
+                throw new WrongEditionException("Craft {$editionName} is required for this");
             }
         }
     }
@@ -661,6 +661,8 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
+            return false;
+        } catch (InvalidConfigException $e) {
             return false;
         }
     }
@@ -1184,9 +1186,6 @@ trait ApplicationTrait
     {
         $this->getLog();
 
-        // Set the edition components
-        $this->_setEditionComponents();
-
         // Set the timezone
         $this->_setTimeZone();
 
@@ -1254,26 +1253,5 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
-    }
-
-    /**
-     * Sets the edition components.
-     *
-     * @return void
-     */
-    private function _setEditionComponents()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        // Set the appropriate edition components
-        $edition = $this->getEdition();
-
-        if ($edition === Craft::Client || $edition === Craft::Pro) {
-            $basePath = $this->getBasePath().'/config/app';
-            $config = ArrayHelper::merge(
-                require $basePath.'/client.php',
-                $edition === Craft::Pro ? require $basePath.'/pro.php' : []
-            );
-            Craft::configure($this, $config);
-        }
     }
 }

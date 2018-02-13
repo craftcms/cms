@@ -8,6 +8,8 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\base\FieldInterface;
+use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
@@ -29,17 +31,38 @@ class FieldLayoutBehavior extends Behavior
     public $elementType;
 
     /**
-     * @var string The name of the attribute on the owner class that is used to store the field layout’s ID
+     * @var int|string|callable The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
      */
-    public $idAttribute = 'fieldLayoutId';
+    private $_fieldLayoutId;
 
     /**
      * @var FieldLayout|null The field layout associated with the owner
      */
     private $_fieldLayout;
 
+    /**
+     * @var FieldInterface[]|null The fields associated with the owner's field layout
+     */
+    private $_fields;
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Was this configured with an idAttribute instead of fieldLayoutId?
+        if (!isset($config['fieldLayoutId'])) {
+            $idAttribute = ArrayHelper::remove($config, 'idAttribute', 'fieldLayoutId');
+            $this->_fieldLayoutId = function() use ($idAttribute) {
+                return $this->owner->{$idAttribute};
+            };
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -54,31 +77,71 @@ class FieldLayoutBehavior extends Behavior
             throw new InvalidConfigException('The element type has not been set.');
         }
 
-        if ($this->idAttribute === null) {
-            throw new InvalidConfigException('The ID attribute has not been set.');
+        if ($this->_fieldLayoutId === null) {
+            throw new InvalidConfigException('The fieldLayoutId attribute has not been set.');
         }
+    }
+
+    /**
+     * Returns the owner's field layout ID.
+     *
+     * @return int
+     * @throws InvalidConfigException if the field layout ID could not be determined
+     */
+    public function getFieldLayoutId(): int
+    {
+        if (is_int($this->_fieldLayoutId)) {
+            return $this->_fieldLayoutId;
+        }
+
+        if (is_callable($this->_fieldLayoutId)) {
+            $id = call_user_func($this->_fieldLayoutId);
+        } else if (is_string($this->_fieldLayoutId)) {
+            $id = $this->owner->{$this->_fieldLayoutId}();
+        }
+
+        if (!isset($id) || !is_numeric($id)) {
+            throw new InvalidConfigException('Unable to determine the field layout ID for '.get_class($this->owner).'.');
+        }
+
+        return $this->_fieldLayoutId = (int)$id;
+    }
+
+    /**
+     * Sets the owner's field layout ID.
+     *
+     * @param int|string|callable $id
+     */
+    public function setFieldLayoutId($id)
+    {
+        $this->_fieldLayoutId = $id;
     }
 
     /**
      * Returns the owner's field layout.
      *
      * @return FieldLayout
+     * @throws InvalidConfigException if the configured field layout ID is invalid
      */
     public function getFieldLayout(): FieldLayout
     {
-        if ($this->_fieldLayout === null) {
-            if ($id = $this->owner->{$this->idAttribute}) {
-                $this->_fieldLayout = Craft::$app->getFields()->getLayoutById($id);
-            }
-
-            /** @noinspection NotOptimalIfConditionsInspection */
-            if ($this->_fieldLayout === null) {
-                $this->_fieldLayout = new FieldLayout();
-                $this->_fieldLayout->type = $this->elementType;
-            }
+        if ($this->_fieldLayout !== null) {
+            return $this->_fieldLayout;
         }
 
-        return $this->_fieldLayout;
+        try {
+            $id = $this->getFieldLayoutId();
+        } catch (InvalidConfigException $e) {
+            return $this->_fieldLayout = new FieldLayout([
+                'type' => $this->elementType,
+            ]);
+        }
+
+        if (($fieldLayout = Craft::$app->getFields()->getLayoutById($id)) === null) {
+            throw new InvalidConfigException('Invalid field layout ID: '.$id);
+        }
+
+        return $this->_fieldLayout = $fieldLayout;
     }
 
     /**
@@ -91,5 +154,35 @@ class FieldLayoutBehavior extends Behavior
     public function setFieldLayout(FieldLayout $fieldLayout)
     {
         $this->_fieldLayout = $fieldLayout;
+    }
+
+    /**
+     * Returns the fields associated with the owner's field layout.
+     *
+     * @return FieldInterface[]
+     */
+    public function getFields(): array
+    {
+        if ($this->_fields !== null) {
+            return $this->_fields;
+        }
+
+        try {
+            $id = $this->getFieldLayoutId();
+        } catch (InvalidConfigException $e) {
+            return [];
+        }
+
+        return $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($id);
+    }
+
+    /**
+     * Sets the fields associated with the owner's field layout
+     *
+     * @param FieldInterface[] $fields
+     */
+    public function setFields(array $fields)
+    {
+        $this->_fields = $fields;
     }
 }

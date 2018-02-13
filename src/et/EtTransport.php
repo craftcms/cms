@@ -249,11 +249,8 @@ class EtTransport
         }
 
         $contents = file_get_contents($keyFile);
-        if (empty($contents) || $contents === 'temp') {
-            return null;
-        }
-
-        return trim(preg_replace('/[\r\n]+/', '', $contents));
+        $key = trim(preg_replace('/[\r\n]+/', '', $contents));
+        return strlen($key) === 250 ? $key : null;
     }
 
     /**

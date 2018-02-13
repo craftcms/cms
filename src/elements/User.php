@@ -259,21 +259,14 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            // Start with Email and don't even give Username as an option
-            $attributes = [
-                'email' => ['label' => Craft::t('app', 'Email')],
-            ];
-        } else {
-            $attributes = [
-                'username' => ['label' => Craft::t('app', 'Username')],
-                'email' => ['label' => Craft::t('app', 'Email')],
-            ];
-        }
-
-        $attributes['fullName'] = ['label' => Craft::t('app', 'Full Name')];
-        $attributes['firstName'] = ['label' => Craft::t('app', 'First Name')];
-        $attributes['lastName'] = ['label' => Craft::t('app', 'Last Name')];
+        $attributes = [
+            'user' => ['label' => Craft::t('app', 'User')],
+            'email' => ['label' => Craft::t('app', 'Email')],
+            'username' => ['label' => Craft::t('app', 'Username')],
+            'fullName' => ['label' => Craft::t('app', 'Full Name')],
+            'firstName' => ['label' => Craft::t('app', 'First Name')],
+            'lastName' => ['label' => Craft::t('app', 'Last Name')],
+        ];
 
         if (Craft::$app->getIsMultiSite()) {
             $attributes['preferredLanguage'] = ['label' => Craft::t('app', 'Preferred Language')];
@@ -292,13 +285,12 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
-        } else {
-            $attributes = ['fullName', 'email', 'dateCreated', 'lastLoginDate'];
-        }
-
-        return $attributes;
+        return [
+            'fullName',
+            'email',
+            'dateCreated',
+            'lastLoginDate',
+        ];
     }
 
     /**
@@ -1237,17 +1229,6 @@ class User extends Element implements IdentityInterface
 
     // Events
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = Craft::$app->getFields()->getLayoutByType(static::class)->id;
-
-        return parent::beforeSave($isNew);
-    }
 
     /**
      * @inheritdoc

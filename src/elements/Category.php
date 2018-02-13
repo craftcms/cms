@@ -320,6 +320,14 @@ class Category extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
      * Returns the category's group.
      *
      * @return CategoryGroup
@@ -374,8 +382,7 @@ class Category extends Element
             ]
         ]);
 
-        // Set the field layout ID and render the custom fields
-        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
+        // Render the custom fields
         $html .= parent::getEditorHtml();
 
         return $html;
@@ -403,9 +410,6 @@ class Category extends Element
 
             $this->setParent($parentCategory);
         }
-
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }

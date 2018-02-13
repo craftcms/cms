@@ -1,5 +1,56 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC10 - 2018-02-13
+
+### Added
+- Added support for `config/app.web.php` and `config/app.console.php` files, for customizing the application configuration for specific request types. ([#2424](https://github.com/craftcms/cms/issues/2424))
+- Added the `setup/db` command, as an alias for `setup/db-creds`.
+- Added support for calling `distinct()` on element queries. ([#2414](https://github.com/craftcms/cms/issues/2414))
+- Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.
+- Added `craft\behaviors\FieldLayoutBehavior::getFields()` and `setFields()`.
+- Added `craft\errors\WrongEditionException`.
+- Added `craft\fields\Matrix::getBlockTypeFields()`.
+- Added `craft\services\Assets::getIconPath()`.
+- Added `craft\services\Fields::getFieldIdsByLayoutIds()`.
+
+### Changed
+- Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
+- Assets fields now prevent filename conflicts when new files are uploaded from front-end forms.
+- The Plugin Store installer will now enable plugins that had been installed previously but were disabled.
+- The Plugin Store installer will now run any pending migrations for plugins that had been installed previously.
+- Craft no longer executes two queries per block type when preparing a Matrix block query. ([#2410](https://github.com/craftcms/cms/issues/2410))
+- Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
+- It is no longer necessary to set the `fieldLayoutId` attribute when programmatically creating assets, categories, entries, Matrix blocks, tags, or users.
+- `craft\services\Assets::getThumbUrl()` and `getThumbPath()` now have `$fallbackToIcon` arguments, which can be set to `false` to cause the methods to throw an exception rather than returning a generic file extension icon, if a real thumbnail can’t be generated for the asset.
+- `craft\behaviors\FieldLayoutBehavior` can now be configured with a `fieldLayoutId` attribute, set to either a field layout ID, the name of a method on the owner that will return the ID, or a closure that will return the ID. (`idAttribute` is still supported as well.)
+- `craft\behaviors\FieldLayoutBehavior::getFieldLayout()` will now throw an exception if its `fieldLayoutId` attribute was set to an invalid ID.
+- `craft\services\Security::encryptByKey()` and `decryptByKey()` no longer require the `$inputKey` argument. If omitted or `null`, the `securityKey` config setting will be used.
+
+### Removed
+- Removed `craft\errors\ActionCancelledException`.
+- Removed `craft\errors\AssetMissingException`.
+- Removed `craft\errors\CategoryNotFoundException`.
+- Removed `craft\errors\DbUpdateException`.
+- Removed `craft\errors\DownloadPackageException`.
+- Removed `craft\errors\ElementException`.
+- Removed `craft\errors\ElementSaveException`.
+- Removed `craft\errors\EntryNotFoundException`.
+- Removed `craft\errors\FilePermissionsException`.
+- Removed `craft\errors\MatrixBlockNotFoundException`.
+- Removed `craft\errors\MinimumRequirementException`.
+- Removed `craft\errors\MissingFileException`.
+- Removed `craft\errors\TagNotFoundException`.
+- Removed `craft\errors\ValidatePackageException`.
+- Removed `craft\errors\ValidationException`.
+
+### Fixed
+- Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.
+- Fixed a bug where passing `null` or an empty array to an element query’s `orderBy()` method would still result in the default `orderBy` param being applied.
+- Fixed a bug where Table fields would forget if they were saved without any rows in their Default Values setting, and bring back an empty row. ([#2418](https://github.com/craftcms/cms/issues/2418))
+- Fixed a bug where the `install/craft` console command no longer accepted `--email`, `--username`, `--password`, `--siteName`, `--siteUrl`, or `--language` options. ([#2422](https://github.com/craftcms/cms/issues/2422))
+- Fixed a “Service Unavailable” error that would occur after installing a plugin in the Plugin Store, if it was already Craft-installed with an older schema version.
+- Fixed a bug where clicking “Save as a draft” when creating a new entry could result in the main entry getting saved as enabled. ([#2429](https://github.com/craftcms/cms/issues/2429))
+
 ## 3.0.0-RC9 - 2018-02-06
 
 ### Added
@@ -291,7 +342,7 @@
 - Fixed a bug where it was not possible to delete disabled Matrix blocks. ([#2219](https://github.com/craftcms/cms/issues/2219))
 - Fixed a SQL error that could occur when storing template caches. ([#1792](https://github.com/craftcms/cms/issues/1792))
 - Fixed a layout issue on small screens. ([#2224](https://github.com/craftcms/cms/issues/2224))
-- Fixed a bug where Craft would issue unsaved data warnings when unloading pages, even if nothing had actually changed, in some cases. ([#2225](https://github.com/craftcms/cms/issues/2225))
+- Fixed a bug where Craft would issue unsaved data warnings when leaving edit pages, even if nothing had actually changed, in some cases. ([#2225](https://github.com/craftcms/cms/issues/2225))
 - Fixed a bug where element index pages weren’t loading more elements when the content area was scrolled to the bottom. ([#2228](https://github.com/craftcms/cms/issues/2228))
 
 ## 3.0.0-RC2 - 2017-12-12

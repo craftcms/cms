@@ -7,14 +7,21 @@
 
 namespace craft\errors;
 
-use yii\base\UserException;
+use yii\base\Exception;
 
 /**
- * Class DbConnectException
+ * Class WrongEditionException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MissingFileException extends UserException
+class WrongEditionException extends Exception
 {
+    /**
+     * @return string the user-friendly name of this exception
+     */
+    public function getName()
+    {
+        return 'Wrong edition';
+    }
 }

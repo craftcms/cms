@@ -152,6 +152,45 @@ class Security extends \yii\base\Security
     }
 
     /**
+     * @inheritdoc
+     *
+     * @param string      $data     the data to encrypt
+     * @param string|null $inputKey the input to use for encryption and authentication
+     * @param string      $info     optional context and application specific information, see [[hkdf()]]
+     *
+     * @return string the encrypted data
+     * @see decryptByKey()
+     * @see encryptByPassword()
+     */
+    public function encryptByKey($data, $inputKey = null, $info = null)
+    {
+        if ($inputKey === null) {
+            $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
+        }
+
+        return parent::encryptByKey($data, $inputKey, $info);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param string      $data     the encrypted data to decrypt
+     * @param string|null $inputKey the input to use for encryption and authentication
+     * @param string      $info     optional context and application specific information, see [[hkdf()]]
+     *
+     * @return bool|string the decrypted data or false on authentication failure
+     * @see encryptByKey()
+     */
+    public function decryptByKey($data, $inputKey = null, $info = null)
+    {
+        if ($inputKey === null) {
+            $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
+        }
+
+        return parent::decryptByKey($data, $inputKey, $info);
+    }
+
+    /**
      * Checks the given key to see if it looks like it contains sensitive info, and if so, redacts the given value.
      *
      * @param string       $name

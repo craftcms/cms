@@ -771,9 +771,9 @@ class UsersController extends Controller
         // you're on Client and you're the admin account. No need to show since we always need an admin on Client)
         if (
             ($edition === Craft::Pro && (
-                Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
-                Craft::$app->getUser()->checkPermission('assignUserGroups')
-            )) ||
+                    Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
+                    Craft::$app->getUser()->checkPermission('assignUserGroups')
+                )) ||
             ($edition === Craft::Client && $isClientAccount && Craft::$app->getUser()->getIsAdmin())
         ) {
             $tabs['perms'] = [

@@ -11,12 +11,11 @@ use Craft;
 use craft\db\Query;
 use craft\elements\User;
 use craft\errors\UserGroupNotFoundException;
+use craft\errors\WrongEditionException;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
-
-Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * User Groups service.
@@ -100,9 +99,9 @@ class UserGroups extends Component
         foreach ($this->getAllGroups() as $group) {
             if (
                 ($currentUser !== null && (
-                    $currentUser->isInGroup($group) ||
-                    $currentUser->can('assignUserGroup:'.$group->id)
-                )) ||
+                        $currentUser->isInGroup($group) ||
+                        $currentUser->can('assignUserGroup:'.$group->id)
+                    )) ||
                 ($user !== null && $user->isInGroup($group))
             ) {
                 $assignableGroups[] = $group;
@@ -178,9 +177,12 @@ class UserGroups extends Component
      * @param bool      $runValidation Whether the user group should be validated
      *
      * @return bool
+     * @throws WrongEditionException if this is called from Craft Personal or Client editions
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
+        Craft::$app->requireEdition(Craft::Pro);
+
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveUserGroup' event
@@ -225,9 +227,12 @@ class UserGroups extends Component
      * @param int $groupId
      *
      * @return bool
+     * @throws WrongEditionException if this is called from Craft Personal or Client editions
      */
     public function deleteGroupById(int $groupId): bool
     {
+        Craft::$app->requireEdition(Craft::Pro);
+
         $group = $this->getGroupById($groupId);
 
         if (!$group) {

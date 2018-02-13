@@ -78,8 +78,7 @@ abstract class Controller extends \yii\web\Controller
     {
         try {
             return parent::runAction($id, $params);
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
