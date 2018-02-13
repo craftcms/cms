@@ -91,7 +91,7 @@
 				label: "Password"|t,
 				id: 'password',
 				name: 'password',
-				value: settings.password,
+				value: settings.password ? settings.password|encenc,
 				errors: (settings.protocol != 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
 			}) }}
 
@@ -149,7 +149,7 @@
 					label: "Password"|t,
 					id: 'smtpPassword',
 					name: 'smtpPassword',
-					value: settings.password,
+					value: settings.password ? settings.password|encenc,
 					errors: (settings.protocol == 'Smtp' ? (freshSettings ? null : settings.getErrors('password')) : null)
 				}) }}
 			</div>

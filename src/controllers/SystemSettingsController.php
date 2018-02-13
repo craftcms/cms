@@ -276,12 +276,12 @@ class SystemSettingsController extends BaseController
 		if ($emailSettings->smtpAuth && $emailSettings->protocol !== EmailerType::Gmail)
 		{
 			$emailSettings->username                = craft()->request->getPost('smtpUsername');
-			$emailSettings->password                = craft()->request->getPost('smtpPassword');
+			$emailSettings->password                = StringHelper::decdec(craft()->request->getPost('smtpPassword'));
 		}
 		else
 		{
 			$emailSettings->username                = craft()->request->getPost('username');
-			$emailSettings->password                = craft()->request->getPost('password');
+			$emailSettings->password                = StringHelper::decdec(craft()->request->getPost('password'));
 		}
 
 		$emailSettings->smtpKeepAlive               = (bool)craft()->request->getPost('smtpKeepAlive');

@@ -142,20 +142,6 @@ Craft.CP = Garnish.Base.extend(
 		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		Garnish.$doc.ready($.proxy(function()
-		{
-			// Set up the window resize listener
-			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-			this.onWindowResize();
-
-			// Fade the notification out two seconds after page load
-			var $errorNotifications = this.$notificationContainer.children('.error'),
-				$otherNotifications = this.$notificationContainer.children(':not(.error)');
-
-			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
-			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
-		}, this));
-
 		// Alerts
 		if (this.$alerts.length)
 		{
@@ -187,60 +173,6 @@ Craft.CP = Garnish.Base.extend(
 			});
 		}
 
-		Garnish.$doc.ready($.proxy(function()
-		{
-			// Look for forms that we should watch for changes on
-			this.$confirmUnloadForms = $('form[data-confirm-unload]');
-
-			if (this.$confirmUnloadForms.length)
-			{
-				if (!Craft.forceConfirmUnload)
-				{
-					this.initialFormValues = [];
-				}
-
-				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
-				{
-					var $form = $(this.$confirmUnloadForms);
-
-					if (!Craft.forceConfirmUnload)
-					{
-						this.initialFormValues[i] = $form.serialize();
-					}
-
-					this.addListener($form, 'submit', function()
-					{
-						this.removeListener(Garnish.$win, 'beforeunload');
-					});
-				}
-
-				this.addListener(Garnish.$win, 'beforeunload', function(ev)
-				{
-					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
-					{
-						if (
-							Craft.forceConfirmUnload ||
-							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
-						)
-						{
-							var message = Craft.t('Any changes will be lost if you leave this page.');
-
-							if (ev)
-							{
-								ev.originalEvent.returnValue = message;
-							}
-							else
-							{
-								window.event.returnValue = message;
-							}
-
-							return message;
-						}
-					}
-				});
-			}
-		}, this));
-
 		if (this.$edition.hasClass('hot'))
 		{
 			this.addListener(this.$edition, 'click', 'showUpgradeModal');
@@ -253,6 +185,73 @@ Craft.CP = Garnish.Base.extend(
 				$(this).attr('target', '_blank')
 			}
 		});
+
+		Garnish.$doc.ready($.proxy(function()
+		{
+			// Set up the window resize listener
+			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+			this.onWindowResize();
+
+			// Fade the notification out two seconds after page load
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+
+			Garnish.requestAnimationFrame($.proxy(function() {
+				// Look for forms that we should watch for changes on
+				this.$confirmUnloadForms = $('form[data-confirm-unload]');
+
+				if (this.$confirmUnloadForms.length)
+				{
+					if (!Craft.forceConfirmUnload)
+					{
+						this.initialFormValues = [];
+					}
+
+					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+					{
+						var $form = $(this.$confirmUnloadForms);
+
+						if (!Craft.forceConfirmUnload)
+						{
+							this.initialFormValues[i] = $form.serialize();
+						}
+
+						this.addListener($form, 'submit', function()
+						{
+							this.removeListener(Garnish.$win, 'beforeunload');
+						});
+					}
+
+					this.addListener(Garnish.$win, 'beforeunload', function(ev)
+					{
+						for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+						{
+							if (
+								Craft.forceConfirmUnload ||
+								this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
+							)
+							{
+								var message = Craft.t('Any changes will be lost if you leave this page.');
+
+								if (ev)
+								{
+									ev.originalEvent.returnValue = message;
+								}
+								else
+								{
+									window.event.returnValue = message;
+								}
+
+								return message;
+							}
+						}
+					});
+				}
+			}, this));
+		}, this));
 	},
 
 	submitPrimaryForm: function()
