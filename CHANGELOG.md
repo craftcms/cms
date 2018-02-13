@@ -1,6 +1,6 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3009 - 2018-02-13
 
 ### Added
 - Added `StringHelper::encenc()` and `decdec()`.
