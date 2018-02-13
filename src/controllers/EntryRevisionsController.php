@@ -71,7 +71,11 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Manually validate 'title' since the Elements service will just give it a title automatically.
         if (!$draft->id && $draft->validate(['title'])) {
+            // Don't save brand new entries as enabled
+            $enabled = $draft->enabled;
+            $draft->enabled = false;
             Craft::$app->getElements()->saveElement($draft, false);
+            $draft->enabled = $enabled;
         }
 
         if (!$draft->id || !Craft::$app->getEntryRevisions()->saveDraft($draft)) {

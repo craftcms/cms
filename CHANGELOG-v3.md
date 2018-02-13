@@ -49,6 +49,7 @@
 - Fixed a bug where Table fields would forget if they were saved without any rows in their Default Values setting, and bring back an empty row. ([#2418](https://github.com/craftcms/cms/issues/2418))
 - Fixed a bug where the `install/craft` console command no longer accepted `--email`, `--username`, `--password`, `--siteName`, `--siteUrl`, or `--language` options. ([#2422](https://github.com/craftcms/cms/issues/2422))
 - Fixed a “Service Unavailable” error that would occur after installing a plugin in the Plugin Store, if it was already Craft-installed with an older schema version.
+- Fixed a bug where clicking “Save as a draft” when creating a new entry could result in the main entry getting saved as enabled. ([#2429](https://github.com/craftcms/cms/issues/2429))
 
 ## 3.0.0-RC9 - 2018-02-06
 
