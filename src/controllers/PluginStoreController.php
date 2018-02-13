@@ -247,7 +247,7 @@ class PluginStoreController extends Controller
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
-        if ($etResponse) {
+        if (isset($etResponse->data->editions)) {
             $upgradeInfo = $etResponse->data;
 
             $data['countries'] = $upgradeInfo->countries;
