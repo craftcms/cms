@@ -15,7 +15,6 @@ use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
-use yii\base\InvalidParamException;
 use yii\db\Expression;
 
 /**

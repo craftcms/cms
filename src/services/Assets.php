@@ -71,7 +71,7 @@ class Assets extends Component
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
     /**
-     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     * @event      GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
      * @deprecated in 3.0.0-RC9. Use [[EVENT_GET_THUMB_PATH]] instead.
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
@@ -610,10 +610,10 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail URL for a given asset.
      *
-     * @param Asset    $asset    asset to return a thumb for
-     * @param int      $width    width of the returned thumb
-     * @param int|null $height   height of the returned thumb (defaults to $width if null)
-     * @param bool     $generate whether to generate a thumb in none exists yet
+     * @param Asset    $asset          asset to return a thumb for
+     * @param int      $width          width of the returned thumb
+     * @param int|null $height         height of the returned thumb (defaults to $width if null)
+     * @param bool     $generate       whether to generate a thumb in none exists yet
      * @param bool     $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      *
      * @return string

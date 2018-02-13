@@ -12,7 +12,6 @@ use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\debug\DeprecatedPanel;
 use craft\debug\UserPanel;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;

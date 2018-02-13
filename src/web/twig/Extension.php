@@ -733,6 +733,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Returns a clone of the given variable.
      *
      * @param mixed $var
+     *
      * @return mixed
      */
     public function cloneFunction($var)

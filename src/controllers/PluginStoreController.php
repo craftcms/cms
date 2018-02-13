@@ -341,6 +341,6 @@ class PluginStoreController extends Controller
         $hostInfo = Craft::$app->getRequest()->getHostInfo();
         $hostInfo = StringHelper::ensureRight($hostInfo, '/');
 
-        return  (string) substr($url, strlen($hostInfo) - 1);
+        return (string)substr($url, strlen($hostInfo) - 1);
     }
 }

@@ -7,7 +7,6 @@
 
 namespace craft\models;
 
-use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;

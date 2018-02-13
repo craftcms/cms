@@ -10,7 +10,6 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;

@@ -16,7 +16,6 @@ use craft\errors\DbConnectException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
@@ -31,7 +30,6 @@ use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\mutex\FileMutex;
 use yii\queue\db\Queue;
-use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
 /**

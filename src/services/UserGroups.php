@@ -99,9 +99,9 @@ class UserGroups extends Component
         foreach ($this->getAllGroups() as $group) {
             if (
                 ($currentUser !== null && (
-                    $currentUser->isInGroup($group) ||
-                    $currentUser->can('assignUserGroup:'.$group->id)
-                )) ||
+                        $currentUser->isInGroup($group) ||
+                        $currentUser->can('assignUserGroup:'.$group->id)
+                    )) ||
                 ($user !== null && $user->isInGroup($group))
             ) {
                 $assignableGroups[] = $group;

@@ -117,7 +117,7 @@ class EntryType extends Model
             [
                 ['titleLabel'],
                 'required',
-                'when' => function ($model, $attribute) {
+                'when' => function($model, $attribute) {
                     /** @var static $model */
                     return $model->hasTitleField;
                 }
@@ -125,7 +125,7 @@ class EntryType extends Model
             [
                 ['titleFormat'],
                 'required',
-                'when' => function ($model, $attribute) {
+                'when' => function($model, $attribute) {
                     /** @var static $model */
                     return !$model->hasTitleField;
                 }

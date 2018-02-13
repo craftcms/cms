@@ -8,9 +8,6 @@
 namespace craft\events;
 
 use craft\base\Image;
-use craft\elements\Asset;
-use craft\models\AssetTransformIndex;
-use yii\base\Event;
 
 /**
  * Asset generate transform event class.

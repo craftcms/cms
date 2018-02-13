@@ -7,7 +7,6 @@
 
 namespace craft\errors;
 
-use Craft;
 use yii\base\UserException;
 
 /**

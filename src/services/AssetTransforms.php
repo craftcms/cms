@@ -17,7 +17,6 @@ use craft\errors\AssetTransformException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\events\AssetEvent;
 use craft\events\AssetTransformEvent;
 use craft\events\AssetTransformImageEvent;
 use craft\events\GenerateTransformEvent;
@@ -36,7 +35,6 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
-use yii\base\InvalidConfigException;
 
 /**
  * Asset Transforms service.

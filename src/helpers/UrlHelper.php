@@ -117,10 +117,10 @@ class UrlHelper
     }
 
     /**
-     * Returns a URL with a specific protocol.
+     * Returns a URL with a specific scheme.
      *
-     * @param string $url
-     * @param string $scheme
+     * @param string $url    the URL
+     * @param string $scheme the scheme ('http' or 'https')
      *
      * @return string
      */
@@ -135,7 +135,7 @@ class UrlHelper
         }
 
         if (static::isRootRelativeUrl($url)) {
-            // Prepend the current request's protocol and host name
+            // Prepend the current request's scheme and host name
             $url = Craft::$app->getRequest()->getHostInfo().$url;
         }
 
@@ -178,7 +178,7 @@ class UrlHelper
             $cpUrl = false;
         }
 
-        // Stick with SSL if the current request is over SSL and a protocol wasn't defined
+        // Stick with SSL if the current request is over SSL and a scheme wasn't defined
         if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
             $scheme = 'https';
         }
@@ -247,7 +247,7 @@ class UrlHelper
     /**
      * @param string            $path
      * @param array|string|null $params
-     * @param string|null       $scheme The protocol to use (e.g. http, https). If empty, the protocol used for the current
+     * @param string|null       $scheme   The scheme to use ('http' or 'https'). If empty, the scheme used for the current
      *                                    request will be used.
      *
      * @return string
@@ -348,18 +348,18 @@ class UrlHelper
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a URL with a specific protocol.
+     * Returns a URL with a specific scheme.
      *
-     * @param string $url
-     * @param string $protocol
+     * @param string $url    the URL
+     * @param string $scheme the scheme ('http' or 'https')
      *
      * @return string
      * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
      */
-    public static function urlWithProtocol(string $url, string $protocol): string
+    public static function urlWithProtocol(string $url, string $scheme): string
     {
         Craft::$app->getDeprecator()->log('UrlHelper::urlWithProtocol()', 'UrlHelper::urlWithProtocol() is deprecated. Use urlWithScheme() instead.');
-        return static::urlWithScheme($url, $protocol);
+        return static::urlWithScheme($url, $scheme);
     }
 
     /**
@@ -414,7 +414,7 @@ class UrlHelper
                 $baseUrl = StringHelper::ensureRight($baseUrl, '/');
 
                 if ($scheme !== null) {
-                    // Make sure we're using the right protocol
+                    // Make sure we're using the right scheme
                     $baseUrl = static::urlWithScheme($baseUrl, $scheme);
                 }
 

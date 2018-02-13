@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
