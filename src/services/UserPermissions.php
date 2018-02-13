@@ -14,13 +14,12 @@ use craft\base\UtilityInterface;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\User;
+use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
-
-Craft::$app->requireEdition(Craft::Client);
 
 /**
  * User Permissions service.
@@ -302,9 +301,12 @@ class UserPermissions extends Component
      * @param array $permissions
      *
      * @return bool
+     * @throws WrongEditionException if this is called from Craft Personal or Client editions
      */
     public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
+        Craft::$app->requireEdition(Craft::Pro);
+
         // Delete any existing group permissions
         Craft::$app->getDb()->createCommand()
             ->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])
@@ -385,9 +387,12 @@ class UserPermissions extends Component
      * @param array $permissions
      *
      * @return bool
+     * @throws WrongEditionException if this is called from Craft Personal edition
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
+        Craft::$app->requireEdition(Craft::Client);
+
         // Delete any existing user permissions
         Craft::$app->getDb()->createCommand()
             ->delete('{{%userpermissions_users}}', ['userId' => $userId])

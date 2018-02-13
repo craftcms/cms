@@ -1188,9 +1188,6 @@ trait ApplicationTrait
     {
         $this->getLog();
 
-        // Set the edition components
-        $this->_setEditionComponents();
-
         // Set the timezone
         $this->_setTimeZone();
 
@@ -1258,26 +1255,5 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
-    }
-
-    /**
-     * Sets the edition components.
-     *
-     * @return void
-     */
-    private function _setEditionComponents()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        // Set the appropriate edition components
-        $edition = $this->getEdition();
-
-        if ($edition === Craft::Client || $edition === Craft::Pro) {
-            $basePath = $this->getBasePath().'/config/app';
-            $config = ArrayHelper::merge(
-                require $basePath.'/client.php',
-                $edition === Craft::Pro ? require $basePath.'/pro.php' : []
-            );
-            Craft::configure($this, $config);
-        }
     }
 }

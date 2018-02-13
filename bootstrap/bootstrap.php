@@ -230,8 +230,8 @@ $config = ArrayHelper::merge(
         'env' => $environment,
         'components' => $components,
     ],
-    require "{$srcPath}/config/app/main.php",
-    require "{$srcPath}/config/app/{$appType}.php",
+    require "{$srcPath}/config/app.php",
+    require "{$srcPath}/config/app.{$appType}.php",
     $configService->getConfigFromFile('app')
 );
 
