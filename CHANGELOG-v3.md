@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added support for `config/app.web.php` and `config/app.console.php` files, for customizing the application configuration for specific request types. ([#2424](https://github.com/craftcms/cms/issues/2424))
 - Added the `setup/db` command, as an alias for `setup/db-creds`.
 - Added support for calling `distinct()` on element queries. ([#2414](https://github.com/craftcms/cms/issues/2414))
 - Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.

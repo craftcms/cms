@@ -232,7 +232,8 @@ $config = ArrayHelper::merge(
     ],
     require "{$srcPath}/config/app.php",
     require "{$srcPath}/config/app.{$appType}.php",
-    $configService->getConfigFromFile('app')
+    $configService->getConfigFromFile('app'),
+    $configService->getConfigFromFile("app.{$appType}")
 );
 
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
