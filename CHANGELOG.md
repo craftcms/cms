@@ -1,6 +1,6 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3009 - 2018-02-13
 
 ### Added
 - Added `StringHelper::encenc()` and `decdec()`.
@@ -12,7 +12,7 @@
 ### Fixed
 - Fixed a bug where Craft would not save newly-assigned license keys if a `craft/config/license.key` file existed, even if it didn’t contain a valid license key.
 - Fixed a bug where the “Save” button wasn’t visible on custom field layout tabs on Edit User pages.
-- Fixed a bug where Craft would issue unsaved data warnings when leaving edit pages, if the form data had been modified from the `jQuery(document).ready()` event.
+- Fixed a bug where Craft would issue unsaved data warnings when leaving edit pages, if the form data had been modified from the `jQuery(document).ready()` event. ([#2428](https://github.com/craftcms/cms/issues/2428))
 
 ### Security
 - Email passwords are now encrypted in email settings forms.
