@@ -544,15 +544,14 @@ class Application extends \yii\web\Application
         }
 
         // We'll also let update actions go through
-        if (
-            $request->getIsActionRequest() &&
-            (
-                ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
-                $request->getActionSegments() === ['app', 'migrate']
-            )
-        ) {
-            $action = implode('/', $request->getActionSegments());
-            return $this->runAction($action);
+        if ($request->getIsActionRequest()) {
+            $actionSegments = $request->getActionSegments();
+            if (
+                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'migrate']
+            ) {
+                return $this->runAction(implode('/', $actionSegments));
+            }
         }
 
         // If an exception gets throw during the rendering of the 503 template, let
