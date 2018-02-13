@@ -207,65 +207,7 @@ class UpdaterController extends BaseUpdaterController
             $handles = array_merge($this->data['migrate']);
         }
 
-        try {
-            Craft::$app->getUpdates()->runMigrations($handles);
-        } catch (MigrateException $e) {
-            $ownerName = $e->ownerName;
-            $ownerHandle = $e->ownerHandle;
-            /** @var \Throwable $e */
-            $e = $e->getPrevious();
-
-            if ($e instanceof MigrationException) {
-                /** @var \Throwable|null $previous */
-                $previous = $e->getPrevious();
-                $migration = $e->migration;
-                $output = $e->output;
-                $error = get_class($migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
-                $e = $previous ?? $e;
-            } else {
-                $migration = $output = null;
-                $error = 'Migration failed: '.$e->getMessage();
-            }
-
-            Craft::error($error, __METHOD__);
-
-            $options = [];
-
-            // Do we have a database backup to restore?
-            if (!empty($this->data['dbBackupPath'])) {
-                if (!empty($this->data['install'])) {
-                    $restoreLabel = Craft::t('app', 'Revert update');
-                } else {
-                    $restoreLabel = Craft::t('app', 'Restore database');
-                }
-                $options[] = $this->actionOption($restoreLabel, self::ACTION_RESTORE_DB);
-            }
-
-            if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
-                /** @var Plugin $plugin */
-                $email = $plugin->developerEmail;
-            }
-            $email = $email ?? 'support@craftcms.com';
-
-            $options[] = [
-                'label' => Craft::t('app', 'Send for help'),
-                'submit' => true,
-                'email' => $email,
-                'subject' => $ownerName.' update failure',
-            ];
-
-            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
-
-            return $this->send([
-                'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
-                'errorDetails' => $eName.': '.$e->getMessage().
-                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
-                    ($output ? "\n\nOutput:\n\n".$output : ''),
-                'options' => $options,
-            ]);
-        }
-
-        return $this->sendFinished();
+        return $this->runMigrations($handles, self::ACTION_RESTORE_DB) ?? $this->sendFinished();
     }
 
     // Protected Methods
