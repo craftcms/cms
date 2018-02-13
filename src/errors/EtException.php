@@ -18,4 +18,12 @@ use yii\base\Exception;
 class EtException extends Exception
 {
     // $code = 10001 is that the config/ folder isn't writable.
+
+    /**
+     * @return string the user-friendly name of this exception
+     */
+    public function getName()
+    {
+        return 'ET Exception';
+    }
 }

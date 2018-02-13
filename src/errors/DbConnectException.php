@@ -23,6 +23,6 @@ class DbConnectException extends UserException
      */
     public function getName()
     {
-        return Craft::t('app', 'Database Connection Exception');
+        return 'Database Connection Error';
     }
 }

@@ -13,7 +13,6 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
-use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
@@ -144,8 +143,6 @@ class Assets extends Component
      * @param string $pathOnServer
      * @param string $filename
      *
-     *
-     * @throws ActionCancelledException If something prevented the Asset replacement via Event.
      * @throws FileException            If there was a problem with the actual file.
      * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void

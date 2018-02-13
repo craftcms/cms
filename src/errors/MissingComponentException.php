@@ -22,6 +22,6 @@ class MissingComponentException extends Exception
      */
     public function getName(): string
     {
-        return 'Missing Component Class';
+        return 'Missing component class';
     }
 }

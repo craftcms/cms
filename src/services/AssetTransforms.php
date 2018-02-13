@@ -14,7 +14,6 @@ use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\AssetTransformException;
-use craft\errors\ValidationException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -190,7 +189,6 @@ class AssetTransforms extends Component
      * @param bool           $runValidation Whether the transform should be validated
      *
      * @throws AssetTransformException If attempting to update a non-existing transform.
-     * @throws ValidationException     If the validation failed.
      * @return bool
      */
     public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool

@@ -7,6 +7,7 @@
 - Added support for calling `distinct()` on element queries. ([#2414](https://github.com/craftcms/cms/issues/2414))
 - Added `craft\behaviors\FieldLayoutBehavior::getFieldLayoutId()` and `setFieldLayoutId()`.
 - Added `craft\behaviors\FieldLayoutBehavior::getFields()` and `setFields()`.
+- Added `craft\errors\WrongEditionException`.
 - Added `craft\fields\Matrix::getBlockTypeFields()`.
 - Added `craft\services\Assets::getIconPath()`.
 - Added `craft\services\Fields::getFieldIdsByLayoutIds()`.
@@ -21,6 +22,23 @@
 - `craft\behaviors\FieldLayoutBehavior` can now be configured with a `fieldLayoutId` attribute, set to either a field layout ID, the name of a method on the owner that will return the ID, or a closure that will return the ID. (`idAttribute` is still supported as well.)
 - `craft\behaviors\FieldLayoutBehavior::getFieldLayout()` will now throw an exception if its `fieldLayoutId` attribute was set to an invalid ID.
 - `craft\services\Security::encryptByKey()` and `decryptByKey()` no longer require the `$inputKey` argument. If omitted or `null`, the `securityKey` config setting will be used.
+
+### Removed
+- Removed `craft\errors\ActionCancelledException`.
+- Removed `craft\errors\AssetMissingException`.
+- Removed `craft\errors\CategoryNotFoundException`.
+- Removed `craft\errors\DbUpdateException`.
+- Removed `craft\errors\DownloadPackageException`.
+- Removed `craft\errors\ElementException`.
+- Removed `craft\errors\ElementSaveException`.
+- Removed `craft\errors\EntryNotFoundException`.
+- Removed `craft\errors\FilePermissionsException`.
+- Removed `craft\errors\MatrixBlockNotFoundException`.
+- Removed `craft\errors\MinimumRequirementException`.
+- Removed `craft\errors\MissingFileException`.
+- Removed `craft\errors\TagNotFoundException`.
+- Removed `craft\errors\ValidatePackageException`.
+- Removed `craft\errors\ValidationException`.
 
 ### Fixed
 - Fixed a couple errors that could occur when running the `setup` command if there was no `.env` file or it didn’t define a `DB_DRIVER` environment variable yet.

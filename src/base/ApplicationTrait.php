@@ -13,6 +13,7 @@ use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\errors\DbConnectException;
+use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -413,7 +414,7 @@ trait ApplicationTrait
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      *
      * @return void
-     * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
+     * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
     public function requireEdition(int $edition, bool $orBetter = true)
     {
@@ -423,7 +424,7 @@ trait ApplicationTrait
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
                 $editionName = App::editionName($edition);
-                throw new BadRequestHttpException("Craft {$editionName} is required for this");
+                throw new WrongEditionException("Craft {$editionName} is required for this");
             }
         }
     }
