@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC10 - 2018-02-13
 
 ### Added
 - Added support for `config/app.web.php` and `config/app.console.php` files, for customizing the application configuration for specific request types. ([#2424](https://github.com/craftcms/cms/issues/2424))
