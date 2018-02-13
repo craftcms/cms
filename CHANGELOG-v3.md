@@ -16,6 +16,8 @@
 ### Changed
 - Asset editor HUDs will now show a thumbnail for all assets that can have one (giving plugins a chance to have a say), regardless of whether Craft thinks it can manipulate the asset. ([#2398](https://github.com/craftcms/cms/issues/2398))
 - Assets fields now prevent filename conflicts when new files are uploaded from front-end forms.
+- The Plugin Store installer will now enable plugins that had been installed previously but were disabled.
+- The Plugin Store installer will now run any pending migrations for plugins that had been installed previously.
 - Craft no longer executes two queries per block type when preparing a Matrix block query. ([#2410](https://github.com/craftcms/cms/issues/2410))
 - Element types’ `statuses()` method can now specify status colors, by defining a status using an array with `label` and `color` keys.
 - It is no longer necessary to set the `fieldLayoutId` attribute when programmatically creating assets, categories, entries, Matrix blocks, tags, or users.
@@ -46,6 +48,7 @@
 - Fixed a bug where passing `null` or an empty array to an element query’s `orderBy()` method would still result in the default `orderBy` param being applied.
 - Fixed a bug where Table fields would forget if they were saved without any rows in their Default Values setting, and bring back an empty row. ([#2418](https://github.com/craftcms/cms/issues/2418))
 - Fixed a bug where the `install/craft` console command no longer accepted `--email`, `--username`, `--password`, `--siteName`, `--siteUrl`, or `--language` options. ([#2422](https://github.com/craftcms/cms/issues/2422))
+- Fixed a “Service Unavailable” error that would occur after installing a plugin in the Plugin Store, if it was already Craft-installed with an older schema version.
 
 ## 3.0.0-RC9 - 2018-02-06
 
