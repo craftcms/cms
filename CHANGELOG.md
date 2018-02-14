@@ -1,5 +1,10 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where run charts (e.g. the New Users widget) would always show zero results if MySQL wasn’t configured with time zone data. ([#2433](https://github.com/craftcms/cms/issues/2433))
+
 ## 2.6.3009 - 2018-02-13
 
 ### Added
