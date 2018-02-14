@@ -561,7 +561,7 @@ class Elements extends Component
         try {
             // Start with $element's site
             /** @var Element $mainClone */
-            $mainClone = $this->_cloneElement($element);
+            $mainClone = clone $element;
             $mainClone->setAttributes($newAttributes);
             $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
             $mainClone->id = null;
@@ -581,7 +581,7 @@ class Elements extends Component
                     }
 
                     /** @var Element $siteClone */
-                    $siteClone = $this->_cloneElement($siteElement);
+                    $siteClone = clone $siteElement;
                     $siteClone->setAttributes($newAttributes);
                     $siteClone->setScenario(Element::SCENARIO_ESSENTIALS);
                     $siteClone->id = $mainClone->id;
@@ -1345,7 +1345,7 @@ class Elements extends Component
         // If it doesn't exist yet, just clone the master site
         if ($isNewSiteForElement = $siteElement === null) {
             /** @var Element $siteElement */
-            $siteElement = $this->_cloneElement($element);
+            $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
@@ -1384,26 +1384,6 @@ class Elements extends Component
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
         }
-    }
-
-    /**
-     * Creates a new element based on the given one, with all the same attribute values.
-     *
-     * The clone is not actually saved in the database.
-     *
-     * @param ElementInterface $element the element to be cloned
-     *
-     * @return ElementInterface the clone
-     */
-    private function _cloneElement(ElementInterface $element): ElementInterface
-    {
-        /** @var Element $element */
-        $class = get_class($element);
-        /** @var Element $clone */
-        $clone = new $class();
-        $clone->setAttributes($element->getAttributes(), false);
-
-        return $clone;
     }
 
     /**
