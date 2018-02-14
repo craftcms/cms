@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC10.1 - 2018-02-14
 
 ### Fixed
 - Fixed an error that occurred when saving an element on multi-site installs. ([#2431](https://github.com/craftcms/cms/issues/2431))
