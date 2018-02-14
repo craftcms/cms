@@ -25,23 +25,23 @@ Craft.NewUsersWidget = Garnish.Base.extend(
         switch(dateRange)
         {
             case 'd7':
-                this.startDate = Craft.NewUsersWidget.getDateByDays('7');
+                this.startDate = Craft.NewUsersWidget.getDateByDays(6);
                 this.endDate = new Date();
             break;
 
             case 'd30':
-                this.startDate = Craft.NewUsersWidget.getDateByDays('30');
+                this.startDate = Craft.NewUsersWidget.getDateByDays(30);
                 this.endDate = new Date();
             break;
 
             case 'lastweek':
-                this.startDate = Craft.NewUsersWidget.getDateByDays('14');
-                this.endDate = Craft.NewUsersWidget.getDateByDays('7');
+                this.startDate = Craft.NewUsersWidget.getDateByDays(13);
+                this.endDate = Craft.NewUsersWidget.getDateByDays(7);
             break;
 
             case 'lastmonth':
-                this.startDate = Craft.NewUsersWidget.getDateByDays('60');
-                this.endDate = Craft.NewUsersWidget.getDateByDays('30');
+                this.startDate = Craft.NewUsersWidget.getDateByDays(60);
+                this.endDate = Craft.NewUsersWidget.getDateByDays(30);
             break;
         }
 
@@ -117,7 +117,7 @@ Craft.NewUsersWidget = Garnish.Base.extend(
 
     getDateValue: function(date)
     {
-        return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+    	return Math.floor(date.getTime() / 1000);
     }
 });
 

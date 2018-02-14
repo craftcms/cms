@@ -4,6 +4,8 @@
 
 ### Fixed
 - Fixed a bug where run charts (e.g. the New Users widget) would always show zero results if MySQL wasn’t configured with time zone data. ([#2433](https://github.com/craftcms/cms/issues/2433))
+- Fixed a bug where the New Users widget would show 8 days worth of data when its Date Range setting was set to “Last 7 days” or “Last week”.
+- Fixed a bug where the New Users widget could be missing some data if the browser time zone wasn’t the same as the system time zone.
 
 ## 2.6.3009 - 2018-02-13
 
