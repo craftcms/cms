@@ -865,6 +865,9 @@ class EntriesController extends BaseEntriesController
         $variables['entry']->typeId = $typeId;
         $variables['entryType'] = $variables['entry']->getType();
 
+        // Prevent the last entry type's field layout from being used
+        $variables['entry']->fieldLayoutId = null;
+
         // Define the content tabs
         // ---------------------------------------------------------------------
 
