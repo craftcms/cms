@@ -117,31 +117,37 @@ class Sites extends Component
 
     /**
      * @var bool
+     * @see getAllGroups()
      */
     private $_fetchedAllGroups = false;
 
     /**
      * @var
+     * @see getGroupById()
      */
     private $_groupsById;
 
     /**
      * @var int[]|null
+     * @see getEditableSiteIds()
      */
     private $_editableSiteIds;
 
     /**
      * @var Site[]
+     * @see getSiteById()
      */
     private $_sitesById;
 
     /**
      * @var Site[]
+     * @see getSiteByHandle()
      */
     private $_sitesByHandle;
 
     /**
      * @var Site|null
+     * @see getPrimarySite()
      */
     private $_primarySite;
 
