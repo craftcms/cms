@@ -131,12 +131,12 @@ class Sites extends Component
     private $_editableSiteIds;
 
     /**
-     * @var Site[]|null
+     * @var Site[]
      */
     private $_sitesById;
 
     /**
-     * @var Site[]|null
+     * @var Site[]
      */
     private $_sitesByHandle;
 
