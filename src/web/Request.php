@@ -9,7 +9,10 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use craft\errors\SiteNotFoundException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -146,6 +149,28 @@ class Request extends \yii\web\Request
         // Sanitize
         $path = $this->getFullPath();
 
+        try {
+            // Figure out which site is being requested
+            $site = $this->_getCurrentSite();
+
+            // If the requested URI begins with the current site's base URL path,
+            // make sure that our internal path doesn't include those segments
+            if ($site->baseUrl && ($siteBasePath = parse_url(Craft::getAlias($site->baseUrl), PHP_URL_PATH)) !== null) {
+                $siteBasePath = $this->_normalizePath($siteBasePath);
+                $baseUrl = $this->_normalizePath($this->getBaseUrl());
+                $fullUri = $baseUrl.($baseUrl && $path ? '/' : '').$path;
+                if (strpos($fullUri.'/', $siteBasePath.'/') === 0) {
+                    $path = ltrim(substr($path, strlen($siteBasePath)), '/');
+                }
+            }
+        } catch (SiteNotFoundException $e) {
+            // Fail silently if Craft isn't installed yet or is in the middle of updating
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                throw $e;
+            }
+        }
+
         // Get the path segments
         $this->_segments = explode('/', $path);
 
@@ -225,7 +250,7 @@ class Request extends \yii\web\Request
                 $this->_fullPath = $this->_getQueryStringPath();
             }
 
-            $this->_fullPath = preg_replace('/\/\/+/', '/', trim((string)$this->_fullPath, '/'));
+            $this->_fullPath = $this->_normalizePath($this->_fullPath);
         }
 
         return $this->_fullPath;
@@ -872,6 +897,102 @@ class Request extends \yii\web\Request
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Normalizes a URI path by trimming leading/trailing slashes and removing double slashes.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    private function _normalizePath(string $path): string
+    {
+        return preg_replace('/\/\/+/', '/', trim($path, '/'));
+    }
+
+    /**
+     * Determine the current site for the request, either because it is already defined
+     * or by finding the one that most closely matches the requested URL.
+     *
+     * @return Site
+     * @throws SiteNotFoundException if no sites exist
+     */
+    private function _getCurrentSite(): Site
+    {
+        $sitesService = Craft::$app->getSites();
+
+        // If a current site is already defined, go with that
+        if ($sitesService->getHasCurrentSite()) {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            return $sitesService->getCurrentSite();
+        }
+
+        $sites = $sitesService->getAllSites();
+
+        $hostName = $this->getHostName();
+        $baseUrl = $this->_normalizePath($this->getBaseUrl());
+        $path = $this->getFullPath();
+        $fullUri = $baseUrl.($baseUrl && $path ? '/' : '').$path;
+        $secure = $this->getIsSecureConnection();
+        $scheme = $secure ? 'https' : 'http';
+        $port = $secure ? $this->getSecurePort() : $this->getPort();
+
+        $scores = [];
+        foreach ($sites as $i => $site) {
+            if (!$site->baseUrl) {
+                continue;
+            }
+
+            if (($parsed = parse_url(Craft::getAlias($site->baseUrl))) === false) {
+                Craft::warning('Unable to parse the site base URL: '.$site->baseUrl);
+                continue;
+            }
+
+            // Does the site URL specify a host name?
+            if (!empty($parsed['host']) && $hostName && $parsed['host'] !== $hostName) {
+                continue;
+            }
+
+            // Does the site URL specify a base path?
+            $parsedPath = !empty($parsed['path']) ? $this->_normalizePath($parsed['path']) : '';
+            if ($parsedPath && strpos($fullUri.'/', $parsedPath.'/') !== 0) {
+                continue;
+            }
+
+            // It's a possible match!
+            $scores[$i] = 8 + strlen($parsedPath);
+
+            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : 'http';
+            $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
+
+            // Do the ports match?
+            if ($parsedPort == $port) {
+                $scores[$i] += 4;
+            }
+
+            // Do the schemes match?
+            if ($parsedScheme === $scheme) {
+                $scores[$i] += 2;
+            }
+
+            // One Pence point if it's the primary site in case we need a tiebreaker
+            if ($site->primary) {
+                $scores[$i]++;
+            }
+        }
+
+        if (empty($scores)) {
+            // Default to the primary site
+            return $sitesService->getPrimarySite();
+        }
+
+        // Sort by scores descending
+        arsort($scores, SORT_NUMERIC);
+        $first = ArrayHelper::firstKey($scores);
+        $site = $sites[$first];
+        $sitesService->setCurrentSite($site);
+        return $site;
+    }
 
     /**
      * Returns the query string path.

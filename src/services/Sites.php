@@ -352,6 +352,16 @@ class Sites extends Component
     }
 
     /**
+     * Returns whether the current site has been set yet.
+     *
+     * @return bool
+     */
+    public function getHasCurrentSite(): bool
+    {
+        return $this->_currentSite !== null;
+    }
+
+    /**
      * Returns the current site.
      *
      * @return Site the current site
@@ -399,7 +409,8 @@ class Sites extends Component
         }
 
         // Update the app language if this is a site request
-        if (Craft::$app->getRequest()->getIsSiteRequest()) {
+        // (make sure the request component has been initialized first so we don't create an infinite loop)
+        if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
             Craft::$app->language = $this->_currentSite->language;
         }
     }

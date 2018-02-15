@@ -4,9 +4,12 @@
 
 ### Added
 - Added `craft\services\Sites::getCurrentSite()`.
+- Added `craft\services\Sites::getHasCurrentSite()`.
 - Added `craft\services\Sites::setCurrentSite()`.
 
 ### Changed
+- Craft no longer relies on the `CRAFT_SITE` constant to determine which site it should serve. If it’s not set, it will compare the requested URL with the sites’ base URLs and use the closest match. ([#2397](https://github.com/craftcms/cms/issues/2397))
+- It is no longer necessary to route sites with base URI paths to separate `index.php` files. Craft will automatically detect URI segments that were meant to be part of the site base URI, and ignore them when routing the request.
 - Dashboard widgets no longer animate into place when the browser is resized.
 
 ### Removed
