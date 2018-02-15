@@ -97,7 +97,8 @@ Garnish.$doc.ready(function() {
 
             craftIdAccount() {
                 if(this.craftIdAccount) {
-                    this.$craftIdAccount.html(this.craftIdAccount.email);
+                    $('.label', this.$craftIdAccount).html(this.craftIdAccount.username);
+
                     this.$craftIdAccount.removeClass('hidden');
                     this.$craftIdConnectForm.addClass('hidden');
                     this.$craftIdDisconnectForm.removeClass('hidden');
