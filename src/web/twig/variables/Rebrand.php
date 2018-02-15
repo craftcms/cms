@@ -136,7 +136,6 @@ class Rebrand
 
         if (!is_dir($dir)) {
             $this->_paths[$type] = false;
-
             return false;
         }
 
