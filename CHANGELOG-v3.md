@@ -11,6 +11,7 @@
 
 ### Removed
 - Removed `craft\web\Application::getTranslatedBrowserLanguage()`.
+- Removed `craft\web\Request::getHostName()`. (`yii\web\Request::getHostName()` is still there, and more robust.)
 
 ### Fixed
 - Fixed an error that occurred when saving an element on multi-site installs. ([#2431](https://github.com/craftcms/cms/issues/2431))

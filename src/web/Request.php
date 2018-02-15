@@ -29,7 +29,6 @@ use yii\web\NotFoundHttpException;
  * @property bool   $isActionRequest        Whether a specific controller action was requested.
  * @property array  $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
  * @property bool   $isLivePreview          Whether this is a Live Preview request.
- * @property string $hostName               The host name from the current request URL.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -430,24 +429,6 @@ class Request extends \yii\web\Request
         }
 
         return $property;
-    }
-
-    /**
-     * Returns the host name from the current request URL.
-     *
-     * Internally, this method will first check the Host header that should have accompanied the request, which browsers
-     * will set depending on the host name they are requesting. If that header does not exist, the method will fall back
-     * on the SERVER_NAME server environment variable.
-     *
-     * @return string The host name.
-     */
-    public function getHostName(): string
-    {
-        if (isset($_SERVER['HTTP_HOST'])) {
-            return $_SERVER['HTTP_HOST'];
-        }
-
-        return $_SERVER['SERVER_NAME'];
     }
 
     /**
