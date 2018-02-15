@@ -145,11 +145,6 @@ class Sites extends Component
      */
     private $_primarySite;
 
-    /**
-     * @var bool
-     */
-    private $_fetchedAllSites = false;
-
     // Public Methods
     // =========================================================================
 
@@ -345,8 +340,6 @@ class Sites extends Component
      */
     public function getAllSiteIds(): array
     {
-        $this->_loadAllSites();
-
         return array_keys($this->_sitesById);
     }
 
@@ -359,8 +352,6 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        $this->_loadAllSites();
-
         if ($this->_primarySite === null) {
             throw new SiteNotFoundException('No sites exist');
         }
@@ -397,8 +388,6 @@ class Sites extends Component
      */
     public function getAllSites(): array
     {
-        $this->_loadAllSites();
-
         return array_values($this->_sitesById);
     }
 
@@ -478,22 +467,6 @@ class Sites extends Component
             return null;
         }
 
-        // If we've already fetched all sites we can save ourselves a trip to the DB for site IDs that don't exist
-        if (!$this->_fetchedAllSites && !array_key_exists($siteId, $this->_sitesById)) {
-            $result = $this->_createSiteQuery()
-                ->where(['id' => $siteId])
-                ->one();
-
-            if ($result) {
-                $site = new Site($result);
-                $this->_sitesByHandle[$site->handle] = $site;
-            } else {
-                $site = null;
-            }
-
-            $this->_sitesById[$siteId] = $site;
-        }
-
         return $this->_sitesById[$siteId] ?? null;
     }
 
@@ -506,22 +479,6 @@ class Sites extends Component
      */
     public function getSiteByHandle(string $siteHandle)
     {
-        // If we've already fetched all sites we can save ourselves a trip to the DB for site handles that don't exist
-        if (!$this->_fetchedAllSites && !array_key_exists($siteHandle, $this->_sitesByHandle)) {
-            $result = $this->_createSiteQuery()
-                ->where(['handle' => $siteHandle])
-                ->one();
-
-            if ($result) {
-                $site = new Site($result);
-                $this->_sitesById[$site->id] = $site;
-            } else {
-                $site = null;
-            }
-
-            $this->_sitesByHandle[$siteHandle] = $site;
-        }
-
         return $this->_sitesByHandle[$siteHandle] ?? null;
     }
 
@@ -702,8 +659,6 @@ class Sites extends Component
                 'siteIds' => $siteIds,
             ]));
         }
-
-        $this->_loadAllSites();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -985,10 +940,6 @@ class Sites extends Component
      */
     private function _loadAllSites()
     {
-        if ($this->_fetchedAllSites) {
-            return;
-        }
-
         $this->_sitesById = [];
         $this->_sitesByHandle = [];
 
@@ -1011,8 +962,6 @@ class Sites extends Component
                         $this->_primarySite = $site;
                     }
                 }
-
-                $this->_fetchedAllSites = true;
             }
         } catch (\yii\db\Exception $e) {
             // todo: remove this after the next breakpoint
