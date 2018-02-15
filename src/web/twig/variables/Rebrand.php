@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -148,7 +149,7 @@ class Rebrand
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$subDir;
-            if (is_dir($path)) {
+            if (is_dir($path) || !ImageHelper::canManipulateAsImage(pathinfo($path, PATHINFO_EXTENSION))) {
                 continue;
             }
 

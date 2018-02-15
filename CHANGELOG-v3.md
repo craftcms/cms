@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed an error that occurred when saving an element on multi-site installs. ([#2431](https://github.com/craftcms/cms/issues/2431))
 - Fixed an error that occurred when changing an entry’s type. ([#2432](https://github.com/craftcms/cms/issues/2432))
+- Fixed an error that would occur if there were any non-image files in `storage/rebrand/icon/` or `storage/rebrand/logo/`.
 
 ## 3.0.0-RC10 - 2018-02-13
 
