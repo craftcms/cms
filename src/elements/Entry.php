@@ -288,7 +288,7 @@ class Entry extends Element
                 // They are viewing a specific section. See if it has URLs for the requested site
                 $controller = Craft::$app->controller;
                 if ($controller instanceof ElementIndexesController) {
-                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
                     if (isset($sections[0]->siteSettings[$siteId]) && $sections[0]->siteSettings[$siteId]->hasUrls) {
                         $showViewAction = true;
                     }
@@ -598,7 +598,7 @@ class Entry extends Element
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
@@ -756,7 +756,7 @@ class Entry extends Element
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $url = UrlHelper::cpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $url .= '/'.$this->getSite()->handle;
         }
 

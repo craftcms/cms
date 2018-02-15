@@ -135,6 +135,7 @@ class TemplateCaches extends Component
         // Take the opportunity to delete any expired caches
         $this->deleteExpiredCachesIfOverdue();
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $query = (new Query())
             ->select(['body'])
             ->from([self::$_templateCachesTable])
@@ -142,7 +143,7 @@ class TemplateCaches extends Component
                 'and',
                 [
                     'cacheKey' => $key,
-                    'siteId' => Craft::$app->getSites()->currentSite->id
+                    'siteId' => Craft::$app->getSites()->getCurrentSite()->id
                 ],
                 ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
             ]);
@@ -317,7 +318,7 @@ class TemplateCaches extends Component
                     self::$_templateCachesTable,
                     [
                         'cacheKey' => $key,
-                        'siteId' => Craft::$app->getSites()->currentSite->id,
+                        'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
                         'path' => $global ? null : $this->_getPath(),
                         'expiryDate' => Db::prepareDateForDb($expiration),
                         'body' => $body

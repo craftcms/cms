@@ -200,7 +200,8 @@ class Elements extends Component
         }
 
         if ($siteId === null) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
 
         // First get the element ID and type

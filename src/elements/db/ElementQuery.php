@@ -17,6 +17,7 @@ use craft\behaviors\ElementQueryBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
 use craft\helpers\Db;
@@ -846,12 +847,21 @@ class ElementQuery extends Query implements ElementQueryInterface
         $class = $this->elementType;
 
         // Make sure the siteId param is set
-        if (!$class::isLocalized()) {
-            // The criteria *must* be set to the primary site ID
-            $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else if (!$this->siteId) {
-            // Default to the current site
-            $this->siteId = Craft::$app->getSites()->currentSite->id;
+        try {
+            if (!$class::isLocalized()) {
+                // The criteria *must* be set to the primary site ID
+                $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+            } else if (!$this->siteId) {
+                // Default to the current site
+                $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+            }
+        } catch (SiteNotFoundException $e) {
+            // Fail silently if Craft isn't installed yet or is in the middle of updating
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                throw $e;
+            }
+            throw new QueryAbortedException($e->getMessage(), 0, $e);
         }
 
         // Build the query

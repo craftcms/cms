@@ -206,8 +206,8 @@ trait ApplicationTrait
             return $this->_getUserLanguage();
         }
 
-        $sitesService = $this->getSites();
-        return $sitesService->currentSite->language ?? $sitesService->getPrimarySite()->language;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return $this->getSites()->getCurrentSite()->language;
     }
 
     /**

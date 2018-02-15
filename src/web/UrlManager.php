@@ -337,7 +337,8 @@ class UrlManager extends \yii\web\UrlManager
 
         if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
             /** @var Element $element */
-            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
 
             if ($element) {
                 $route = $element->getRoute();

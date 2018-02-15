@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
 use yii\base\Exception;
 
 /**
@@ -219,7 +220,7 @@ class UrlHelper
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
 
-        if ($siteId !== null && $siteId != $sites->currentSite->id) {
+        if ($siteId !== null && $siteId != $sites->getCurrentSite()->id) {
             // Get the site
             $site = $sites->getSiteById($siteId);
 
@@ -228,8 +229,8 @@ class UrlHelper
             }
 
             // Swap the current site
-            $currentSite = $sites->currentSite;
-            $sites->currentSite = $site;
+            $currentSite = $sites->getCurrentSite();
+            $sites->setCurrentSite($site);
         }
 
         $path = trim($path, '/');
@@ -238,7 +239,7 @@ class UrlHelper
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
-            $sites->currentSite = $currentSite;
+            $sites->setCurrentSite($currentSite);
         }
 
         return $url;
@@ -322,11 +323,15 @@ class UrlHelper
      */
     public static function baseUrl(): string
     {
-        $currentSite = false;
-
-        if (Craft::$app->getIsInstalled()) {
-            // Is there a current site, and does it have a base URL?
-            $currentSite = Craft::$app->getSites()->currentSite;
+        try {
+            $currentSite = Craft::$app->getSites()->getCurrentSite();
+        } catch (SiteNotFoundException $e) {
+            // Fail silently if Craft isn't installed yet or is in the middle of updating
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                throw $e;
+            }
+            $currentSite = null;
         }
 
         if ($currentSite && $currentSite->baseUrl) {

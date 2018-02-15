@@ -233,7 +233,8 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $request->getBodyParam('elementId');
-        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->currentSite->id;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
         $elementType = $request->getBodyParam('elementType');

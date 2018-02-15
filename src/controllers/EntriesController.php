@@ -352,9 +352,10 @@ class EntriesController extends BaseEntriesController
         $variables['baseCpEditUrl'] = 'entries/'.$section->handle.'/{id}-{slug}';
 
         // Set the "Continue Editing" URL
+        /** @noinspection PhpUnhandledExceptionInspection */
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
             (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
-            (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id ? '/'.$site->handle : '');
+            (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? '/'.$site->handle : '');
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (
@@ -765,6 +766,7 @@ class EntriesController extends BaseEntriesController
             $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
             $variables['siteIds'] = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
         } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -773,7 +775,8 @@ class EntriesController extends BaseEntriesController
         }
 
         if (empty($variables['site'])) {
-            $variables['site'] = Craft::$app->getSites()->currentSite;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);

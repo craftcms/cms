@@ -117,7 +117,8 @@ class ConfigHelper
         }
 
         if ($siteHandle === null) {
-            $siteHandle = Craft::$app->getSites()->currentSite->handle;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $siteHandle = Craft::$app->getSites()->getCurrentSite()->handle;
         }
 
         if (is_callable($value, true)) {

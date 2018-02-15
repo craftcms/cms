@@ -602,7 +602,8 @@ class View extends \yii\web\View
 
         // Should we be looking for a localized version of the template?
         if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
-            $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->currentSite->handle;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }

@@ -400,7 +400,8 @@ class CategoriesController extends Controller
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'];
 
-        if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id) {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id) {
             $variables['continueEditingUrl'] .= '/'.$site->handle;
         }
 
@@ -667,6 +668,7 @@ class CategoriesController extends Controller
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
         } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -675,7 +677,8 @@ class CategoriesController extends Controller
         }
 
         if (empty($variables['site'])) {
-            $variables['site'] = Craft::$app->getSites()->currentSite;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);

@@ -2,6 +2,10 @@
 
 ## 3.0.0-RC10.1 - 2018-02-14
 
+### Added
+- Added `craft\services\Sites::getCurrentSite()`.
+- Added `craft\services\Sites::setCurrentSite()`.
+
 ### Changed
 - Dashboard widgets no longer animate into place when the browser is resized.
 

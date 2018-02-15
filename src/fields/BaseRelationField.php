@@ -721,7 +721,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
         }
 
-        return Craft::$app->getSites()->currentSite->id;
+        return Craft::$app->getSites()->getCurrentSite()->id;
     }
 
     /**

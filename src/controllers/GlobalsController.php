@@ -150,14 +150,17 @@ class GlobalsController extends Controller
                 }
             } else {
                 // Are they allowed to edit the current site?
-                if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds, false)) {
-                    $site = Craft::$app->getSites()->currentSite;
+                /** @noinspection PhpUnhandledExceptionInspection */
+                $currentSite = Craft::$app->getSites()->getCurrentSite();
+                if (in_array($currentSite->id, $editableSiteIds, false)) {
+                    $site = $currentSite;
                 } else {
                     // Just use the first site they are allowed to edit
                     $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
                 }
             }
         } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();
         }
 

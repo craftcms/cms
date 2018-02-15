@@ -82,7 +82,8 @@ class Routes extends Component
             ) {
                 $siteRoutes = ArrayHelper::remove($routes, $site->handle);
 
-                if ($site->handle === $sitesService->currentSite->handle) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                if ($site->handle === $sitesService->getCurrentSite()->handle) {
                     // Merge them so that the localized routes come first
                     $routes = array_merge($siteRoutes, $routes);
                 }
@@ -99,13 +100,14 @@ class Routes extends Component
      */
     public function getDbRoutes(): array
     {
+        /** @noinspection PhpUnhandledExceptionInspection */
         $results = (new Query())
             ->select(['uriPattern', 'template'])
             ->from(['{{%routes}}'])
             ->where([
                 'or',
                 ['siteId' => null],
-                ['siteId' => Craft::$app->getSites()->currentSite->id]
+                ['siteId' => Craft::$app->getSites()->getCurrentSite()->id]
             ])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
