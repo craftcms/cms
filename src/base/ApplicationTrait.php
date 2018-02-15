@@ -1248,7 +1248,8 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         // See if we have the CP translated in one of the user's browsers preferred language(s)
         if ($this instanceof WebApplication) {
-            return $this->getTranslatedBrowserLanguage();
+            $languages = $this->getI18n()->getAppLocaleIds();
+            return $this->getRequest()->getPreferredLanguage($languages);
         }
 
         // Default to the source language.
