@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
-use craft\elements\db\ElementQueryInterface;
 use DateTime;
 use yii\base\Exception;
 
@@ -57,133 +56,49 @@ class ChartHelper
             'valueType' => 'number',
         ], $options);
 
-        $isMysql = Craft::$app->getDb()->getIsMysql();
-
         if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];
         } else {
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
         }
 
-        // Convert timezone for SQL request
-        $tz = DateTimeHelper::timeZoneOffset(Craft::$app->getTimeZone());
-
-        if ($isMysql) {
-            $dateColumnSql = "CONVERT_TZ([[{$dateColumn}]], 'UTC', '{$tz}')";
-            $yearSql = "YEAR({$dateColumnSql})";
-            $monthSql = "MONTH({$dateColumnSql})";
-            $daySql = "DAY({$dateColumnSql})";
-            $hourSql = "HOUR({$dateColumnSql})";
-        } else {
-            $dateColumnSql = "[[{$dateColumn}]] AT TIME ZONE '{$tz}'";
-            $yearSql = "EXTRACT(YEAR FROM {$dateColumnSql})";
-            $monthSql = "EXTRACT(MONTH FROM {$dateColumnSql})";
-            $daySql = "EXTRACT(DAY FROM {$dateColumnSql})";
-            $hourSql = "EXTRACT(HOUR FROM {$dateColumnSql})";
-        }
-
         // Prepare the query
         switch ($intervalUnit) {
             case 'year':
-                if ($isMysql) {
-                    $sqlDateFormat = '%Y-01-01';
-                } else {
-                    $sqlDateFormat = 'YYYY-01-01';
-                }
                 $phpDateFormat = 'Y-01-01';
-                $sqlGroup = [$yearSql];
                 break;
             case 'month':
-                if ($isMysql) {
-                    $sqlDateFormat = '%Y-%m-01';
-                } else {
-                    $sqlDateFormat = 'YYYY-MM-01';
-                }
                 $phpDateFormat = 'Y-m-01';
-                $sqlGroup = [$yearSql, $monthSql];
                 break;
             case 'day':
-                if ($isMysql) {
-                    $sqlDateFormat = '%Y-%m-%d';
-                } else {
-                    $sqlDateFormat = 'YYYY-MM-DD';
-                }
                 $phpDateFormat = 'Y-m-d';
-                $sqlGroup = [$yearSql, $monthSql, $daySql];
                 break;
             case 'hour':
-                if ($isMysql) {
-                    $sqlDateFormat = '%Y-%m-%d %H:00:00';
-                } else {
-                    $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
-                }
                 $phpDateFormat = 'Y-m-d H:00:00';
-                $sqlGroup = [$yearSql, $monthSql, $daySql, $hourSql];
                 break;
             default:
                 throw new Exception('Invalid interval unit: '.$intervalUnit);
         }
 
-        if ($isMysql) {
-            $select = "DATE_FORMAT({$dateColumnSql}, '{$sqlDateFormat}') AS [[date]]";
-        } else {
-            $select = "to_char({$dateColumnSql}, '{$sqlDateFormat}') AS [[date]]";
-        }
-
-        $sqlGroup[] = '[[date]]';
-
-        // Prepare the query
-        $condition = ['and', "{$dateColumnSql} >= :startDate", "{$dateColumnSql} < :endDate"];
-        $params = [
-            ':startDate' => Db::prepareDateForDb($startDate),
-            ':endDate' => Db::prepareDateForDb($endDate),
-        ];
-        $orderBy = ['date' => SORT_ASC];
-
-        // If this is an element query, modify the prepared query directly
-        if ($query instanceof ElementQueryInterface) {
-            $query = $query->prepare(Craft::$app->getDb()->getQueryBuilder());
-            /** @var Query $subQuery */
-            $subQuery = $query->from['subquery'];
-            $subQuery
-                ->addSelect($query->select)
-                ->addSelect([$select])
-                ->andWhere($condition, $params)
-                ->groupBy($sqlGroup)
-                ->orderBy($orderBy);
-            $query
-                ->select(['subquery.value', 'subquery.date'])
-                ->orderBy($orderBy);
-        } else {
-            $query
-                ->addSelect([$select])
-                ->andWhere($condition, $params)
-                ->groupBy($sqlGroup)
-                ->orderBy($orderBy);
-        }
-
-        // Execute the query
-        $results = $query->all();
-
         // Assemble the data
         $rows = [];
 
-        $cursorDate = $startDate;
+        $cursorDate = clone $startDate;
         $endTimestamp = $endDate->getTimestamp();
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
-            // Do we have a record for this date?
-            $formattedCursorDate = $cursorDate->format($phpDateFormat);
+            $cursorEndDate = clone $cursorDate;
+            $cursorEndDate->modify('+1 '.$intervalUnit);
+            $cursorQuery = clone $query;
+            $total = $cursorQuery
+                ->andWhere(['and',
+                    ['>=', $dateColumn, Db::prepareDateForDb($cursorDate)],
+                    ['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)]
+                ])
+                ->count();
 
-            if (isset($results[0]) && $results[0]['date'] === $formattedCursorDate) {
-                $value = (float)$results[0]['value'];
-                array_shift($results);
-            } else {
-                $value = 0;
-            }
-
-            $rows[] = [$formattedCursorDate, $value];
-            $cursorDate->modify('+1 '.$intervalUnit);
+            $rows[] = [$cursorDate->format($phpDateFormat), $total];
+            $cursorDate = $cursorEndDate;
         }
 
         return [

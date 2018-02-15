@@ -48,7 +48,10 @@ class ChartsController extends Controller
             throw new Exception('There was a problem calculating the start and end dates');
         }
 
-        $endDate->modify('+1 day');
+        // Start at midnight on the start date, end at midnight after the end date
+        $timeZone = new \DateTimeZone(Craft::$app->getTimeZone());
+        $startDate = new \DateTime($startDate->format('Y-m-d'), $timeZone);
+        $endDate = new \DateTime($endDate->modify('+1 day')->format('Y-m-d'), $timeZone);
 
         $intervalUnit = 'day';
 
