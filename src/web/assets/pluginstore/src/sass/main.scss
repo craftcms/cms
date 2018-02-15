@@ -45,8 +45,8 @@ $minLargeScreenWidth: 1824px;
   justify-content: space-between;
   align-items: center;
 
-  & > *:not(:last-child) {
-    margin-right: 18px !important;
+  & > * {
+    margin-left: 18px !important;
   }
 
   #cart-button {

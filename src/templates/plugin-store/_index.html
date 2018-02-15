@@ -47,6 +47,8 @@
 {% block actionButton %}
 
 	{% if enableCraftId %}
+		<div id="pluginstore-actions-spinner" class="spinner hidden"></div>
+
 		<div id="pluginstore-actions" class="hidden">
 			<a id="cart-button">{{ svg('@app/icons/shopping-cart.svg') }} <span class="badge">0</span></a>
 
@@ -76,8 +78,6 @@
 			<a id="reset-cart-button">Reset cart</a>
 			#}
 		</div>
-
-		<div id="pluginstore-actions-spinner" class="spinner hidden"></div>
 	{% endif %}
 
 {% endblock %}
