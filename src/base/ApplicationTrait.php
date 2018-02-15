@@ -184,6 +184,7 @@ trait ApplicationTrait
         }
 
         $this->language = $this->getTargetLanguage($useUserLanguage);
+        $this->_gettingLanguage = false;
     }
 
     /**
