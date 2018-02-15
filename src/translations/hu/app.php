@@ -362,7 +362,7 @@ return [
     'Delete heading' => 'Fejléc törlése',
     'Delete icon' => 'Ikon törlése',
     'Delete it' => 'Törlés',
-    'Delete logo' => 'Logo törléee',
+    'Delete logo' => 'Logo törlése',
     'Delete other authors’ drafts' => 'Más szerzők piszkozatainak törlése',
     'Delete other authors’ entries' => 'Más szerzők bejegyzéseinek törlése',
     'Delete photo' => 'Kép törlése',
