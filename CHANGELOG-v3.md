@@ -2,6 +2,9 @@
 
 ## 3.0.0-RC10.1 - 2018-02-14
 
+### Changed
+- Dashboard widgets no longer animate into place when the browser is resized.
+
 ### Removed
 - Removed `craft\web\Application::getTranslatedBrowserLanguage()`.
 
@@ -11,6 +14,7 @@
 - Fixed an error that occurred if there were any non-image files in `storage/rebrand/icon/` or `storage/rebrand/logo/`.
 - Fixed an error that occurred if an SVG file without `width` and `height` attributes was uploaded as the Login Page Logo. ([#2435](https://github.com/craftcms/cms/issues/2435))
 - Fixed a bug where the `defaultCpLanguage` setting was only working in some cases.
+- Fixed a bug where Dashboard widgets could go freaking crazy when the browser was resized. ([#2438](https://github.com/craftcms/cms/issues/2438))
 
 ## 3.0.0-RC10 - 2018-02-13
 
