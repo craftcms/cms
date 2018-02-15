@@ -80,6 +80,26 @@ $minLargeScreenWidth: 1824px;
       box-shadow: 0 0 0 2px $bgColor;
     }
   }
+
+  #craftid-account {
+    &:hover {
+      text-decoration: none;
+    }
+
+    .photo {
+      svg {
+        margin-right: 2px;
+        width: 22px;
+        height: 22px;
+        border-radius: 100%;
+        vertical-align: middle;
+      }
+    }
+
+    &:hover .label {
+      text-decoration: underline;
+    }
+  }
 }
 
 

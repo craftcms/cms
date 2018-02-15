@@ -48,9 +48,9 @@
 
 	{% if enableCraftId %}
 		<div id="pluginstore-actions" class="hidden">
-			<a id="cart-button">{{ svg('@app/icons/shopping-cart.svg') }}{#<span class="label">Cart</span>#} <span class="badge">0</span></a>
+			<a id="cart-button">{{ svg('@app/icons/shopping-cart.svg') }} <span class="badge">0</span></a>
 
-			<a id="craftid-account" class="menubtn hidden">Account</a>
+			<a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@app/icons/craftid.svg') }}</span><span class="label">Account</span></a>
 
 			<div class="menu">
 				<ul>
@@ -68,7 +68,7 @@
 			<form id="craftid-connect-form" method="post">
 				{{ csrfInput() }}
 				<input type="hidden" name="action" value="plugin-store/connect">
-				<input type="submit" class="btn submit" value="{{ 'Connect to Craft ID'|t('app') }}">
+				<a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
 			</form>
 
 			{#
@@ -76,6 +76,7 @@
 			<a id="reset-cart-button">Reset cart</a>
 			#}
 		</div>
+
 		<div id="pluginstore-actions-spinner" class="spinner hidden"></div>
 	{% endif %}
 
