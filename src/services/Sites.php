@@ -153,6 +153,23 @@ class Sites extends Component
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     *
+     * @throws InvalidConfigException if currentSite was set incorrectly
+     * @throws SiteNotFoundException if currentSite was not set and no sites exist
+     */
+    public function init()
+    {
+        // No technical reason to put this here, but it's sortof related
+        if (defined('CRAFT_LOCALE')) {
+            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The CRAFT_LOCALE constant has been deprecated. Use CRAFT_SITE instead, which can be set to a site ID or handle.');
+        }
+
+        $this->_loadAllSites();
+        $this->_setCurrentSite();
+    }
+
     // Groups
     // -------------------------------------------------------------------------
 
@@ -316,26 +333,6 @@ class Sites extends Component
         }
 
         return true;
-    }
-
-    // Sites
-    // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     *
-     * @throws InvalidConfigException if currentSite was set incorrectly
-     * @throws SiteNotFoundException if currentSite was not set and no sites exist
-     */
-    public function init()
-    {
-        // No technical reason to put this here, but it's sortof related
-        if (defined('CRAFT_LOCALE')) {
-            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The CRAFT_LOCALE constant has been deprecated. Use CRAFT_SITE instead, which can be set to a site ID or handle.');
-        }
-
-        $this->_loadAllSites();
-        $this->_setCurrentSite();
     }
 
     // Sites
