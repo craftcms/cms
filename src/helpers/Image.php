@@ -185,7 +185,7 @@ class Image
      *
      * @param string $filePath The path to the image
      *
-     * @return int[]
+     * @return array [width, height]
      */
     public static function imageSize(string $filePath): array
     {
@@ -306,7 +306,7 @@ class Image
      *
      * @param string $svg The SVG data
      *
-     * @return array [$width, $height]
+     * @return array [width, height]
      */
     public static function parseSvgSize(string $svg): array
     {
@@ -326,8 +326,9 @@ class Image
             $width = floor($viewboxMatch[3]);
             $height = floor($viewboxMatch[4]);
         } else {
-            $width = null;
-            $height = null;
+            // Just pretend it's 100x100
+            $width = 100;
+            $height = 100;
         }
 
         return [$width, $height];
