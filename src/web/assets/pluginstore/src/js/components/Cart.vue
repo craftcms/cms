@@ -30,10 +30,12 @@
                             <div class="light">{{ "{price} per year for updates"|t('app', { price: $root.$options.filters.currency(plugin.renewalPrice) }) }}</div>
                         </td>
                         <td class="thin">
-                            <a class="btn" @click="removeFromCart(plugin)">
-                                <template v-if="isInTrial(plugin)">{{ "Buy later"|t('app') }}</template>
-                                <template v-else>{{ "Remove"|t('app') }}</template>
-                            </a>
+                            <template v-if="isInTrial(plugin)">
+                                <a class="btn" @click="removeFromCart(plugin)">{{ "Buy later"|t('app') }}</a>
+                            </template>
+                            <template v-else>
+                                <a class="delete icon" role="button" @click="removeFromCart(plugin)"></a>
+                            </template>
                         </td>
                     </template>
                 </tr>
