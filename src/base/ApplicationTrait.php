@@ -12,12 +12,12 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
+use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -191,74 +191,22 @@ trait ApplicationTrait
      *
      * @param bool $useUserLanguage Whether the user's preferred language should be used.
      *
-     * @return string|null
+     * @return string
      */
-    public function getTargetLanguage(bool $useUserLanguage = true)
+    public function getTargetLanguage(bool $useUserLanguage = true): string
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getIsInstalled()) {
-            $request = $this->getRequest();
-            $currentSite = $this->getSites()->currentSite;
-
-            // Will any site validation be necessary here?
-            if ($useUserLanguage || $currentSite) {
-                if ($useUserLanguage) {
-                    $language = 'auto';
-                } else {
-                    $language = $currentSite->language;
-                }
-
-                // Get the list of actual site languages
-                $siteLanguages = $this->getI18n()->getSiteLocaleIds();
-
-                // Is it set to "auto"?
-                if ($language === 'auto') {
-                    // If the user is logged in *and* has a primary language set, use that
-                    try {
-                        $user = $this->getUser()->getIdentity();
-                    } catch (\Exception $e) {
-                        $user = null;
-                    }
-
-                    if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
-                        return $preferredLanguage;
-                    }
-
-                    // Is there a default CP language?
-                    if ($defaultCpLanguage = Craft::$app->getConfig()->getGeneral()->defaultCpLanguage) {
-                        // Make sure it's one of the site languages
-                        $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
-
-                        if (in_array($defaultCpLanguage, $siteLanguages, true)) {
-                            return $defaultCpLanguage;
-                        }
-                    }
-
-                    // Otherwise check if the browser's preferred language matches any of the site languages
-                    if (!$request->getIsConsoleRequest()) {
-                        $browserLanguages = $request->getAcceptableLanguages();
-
-                        if ($browserLanguages) {
-                            foreach ($browserLanguages as $browserLanguage) {
-                                if (in_array($browserLanguage, $siteLanguages, true)) {
-                                    return $browserLanguage;
-                                }
-                            }
-                        }
-                    }
-                } // Is it set to a valid site language?
-                else if (in_array($language, $siteLanguages, true)) {
-                    return $language;
-                }
-            }
-
-            if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                // Use the primary site's language by default
-                return $this->getSites()->getPrimarySite()->language;
-            }
+        // Use the browser language if Craft isn't installed or is updating
+        if (!$this->getIsInstalled() || $this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return $this->_getFallbackLanguage();
         }
 
-        return $this->_getFallbackLanguage();
+        if ($useUserLanguage) {
+            return $this->_getUserLanguage();
+        }
+
+        $sitesService = $this->getSites();
+        return $sitesService->currentSite->language ?? $sitesService->getPrimarySite()->language;
     }
 
     /**
@@ -1238,7 +1186,31 @@ trait ApplicationTrait
     }
 
     /**
-     * Tries to find a language match with the user's browser's preferred language(s).
+     * Tries to find a language match with the user's preferred language.
+     *
+     * @return string
+     */
+    private function _getUserLanguage(): string
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        // If the user is logged in *and* has a primary language set, use that
+        try {
+            /** @var User|null $user */
+            $user = $this->getUser()->getIdentity();
+        } catch (\Exception $e) {
+            $user = null;
+        }
+
+        if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
+            return $preferredLanguage;
+        }
+
+        // Fall back on the default CP language, if there is one, otherwise the browser language
+        return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
+    }
+
+    /**
+     * Tries to find a language match with the browser's preferred language(s).
      * If not uses the app's sourceLanguage.
      *
      * @return string
