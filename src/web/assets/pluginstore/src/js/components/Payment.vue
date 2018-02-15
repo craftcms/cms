@@ -526,7 +526,7 @@
                 let left = ((winWidth / 2) - (width / 2));
                 let top = ((winHeight / 2) - (height / 2));
 
-                let url = Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
+                let url = Craft.getActionUrl('plugin-store/connect', {redirectUrl: Craft.getActionUrl('plugin-store/modal-callback') });
                 let name = 'ConnectWithOauth';
                 let specs = 'location=0,status=0,width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
 

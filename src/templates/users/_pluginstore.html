@@ -15,10 +15,10 @@
 				<p class="error">{{ craftIdError }}</p>
 			{% endif %}
 
-				<input type="submit" class="btn submit" value="{{ 'Connect'|t('app') }}">
-                {% if not craft.app.request.isSecureConnection %}
-					<p class="ssl-status light"><i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i> {{ "Your connection is insecure"|t('app') }}</p>
-                {% endif %}
+			<input type="submit" class="btn submit" value="{{ 'Connect'|t('app') }}">
+			{% if not craft.app.request.isSecureConnection %}
+				<p class="ssl-status light"><i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i> {{ "Your connection is insecure"|t('app') }}</p>
+			{% endif %}
 		</form>
 	{% else %}
 

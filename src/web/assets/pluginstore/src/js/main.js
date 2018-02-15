@@ -47,6 +47,7 @@ Garnish.$doc.ready(function() {
 
             ...mapGetters({
                 cartPlugins: 'cartPlugins',
+                craftIdAccount: 'craftIdAccount',
             }),
 
         },
@@ -55,7 +56,7 @@ Garnish.$doc.ready(function() {
 
             cartPlugins() {
                 if(window.enableCraftId) {
-                    this.$cartButton.html('Cart (' + this.cartPlugins.length + ')');
+                    $('.badge', this.$cartButton).html(this.cartPlugins.length);
                 }
             },
 
@@ -92,6 +93,19 @@ Garnish.$doc.ready(function() {
 
             pageTitle(pageTitle) {
                 this.$pageTitle.html(pageTitle);
+            },
+
+            craftIdAccount() {
+                if(this.craftIdAccount) {
+                    this.$craftIdAccount.html(this.craftIdAccount.email);
+                    this.$craftIdAccount.removeClass('hidden');
+                    this.$craftIdConnectForm.addClass('hidden');
+                    this.$craftIdDisconnectForm.removeClass('hidden');
+                } else {
+                    this.$craftIdAccount.addClass('hidden');
+                    this.$craftIdConnectForm.removeClass('hidden');
+                    this.$craftIdDisconnectForm.addClass('hidden');
+                }
             }
 
         },
@@ -123,24 +137,6 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                let $accountInfo = $('#account-info');
-
-                if($accountInfo.length) {
-                    let $accountInfoMenu = $('#account-info').data('menubtn').menu.$container;
-
-                    if(craftId) {
-                        $('.craftid-connected').removeClass('hidden');
-                        $('.craftid-disconnected').addClass('hidden');
-                        $('.craftid-connected', $accountInfoMenu).removeClass('hidden');
-                        $('.craftid-disconnected', $accountInfoMenu).addClass('hidden');
-                    } else {
-                        $('.craftid-connected').addClass('hidden');
-                        $('.craftid-disconnected').removeClass('hidden');
-                        $('.craftid-connected', $accountInfoMenu).addClass('hidden');
-                        $('.craftid-disconnected', $accountInfoMenu).removeClass('hidden');
-                    }
-                }
-
                 this.$store.dispatch('updateCraftId', { craftId });
             },
 
@@ -157,12 +153,35 @@ Garnish.$doc.ready(function() {
                 this.$pageTitle.html(this.pageTitle)
             }
 
+            // Plugin Store actions
+            this.$pluginStoreActions = $('#pluginstore-actions');
+            this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner');
+
+            // Craft ID account
+            this.$craftIdAccount = $('#craftid-account');
+
+            // Connect form
+            this.$craftIdConnectForm = $('#craftid-connect-form');
+
+            // Disconnect form
+            this.$craftIdDisconnectForm = $('#craftid-disconnect-form');
+
+            // On all data loaded
+            this.$on('allDataLoaded', function() {
+                this.$pluginStoreActions.removeClass('hidden');
+                this.$pluginStoreActionsSpinner.addClass('hidden');
+            }.bind(this));
+
             // Dispatch actions
             this.$store.dispatch('getCraftData')
                 .then(data => {
                     this.craftIdDataLoading = false;
                     this.craftIdDataLoaded = true;
                     this.$emit('craftIdDataLoaded');
+
+                    if(this.pluginStoreDataLoaded) {
+                        this.$emit('allDataLoaded');
+                    }
                 })
                 .catch(response => {
                     this.craftIdDataLoading = false;
@@ -175,6 +194,12 @@ Garnish.$doc.ready(function() {
                     this.pluginStoreDataLoading = false;
                     this.pluginStoreDataLoaded = true;
                     this.$emit('pluginStoreDataLoaded');
+
+                    if(this.craftIdDataLoaded) {
+                        this.$emit('allDataLoaded');
+                    } else {
+                        this.$pluginStoreActionsSpinner.removeClass('hidden');
+                    }
                 })
                 .catch(response => {
                     this.pluginStoreDataLoading = false;
@@ -193,7 +218,7 @@ Garnish.$doc.ready(function() {
             let $this = this;
 
             if(window.enableCraftId) {
-                // Cart Button
+                // Cart button
                 this.$cartButton = $('#cart-button');
 
                 this.$cartButton.on('click', (e) => {
@@ -209,7 +234,7 @@ Garnish.$doc.ready(function() {
                     $this.openGlobalModal('payment');
                 });
 
-                // reset-cart-button
+                // Reset cart button
                 let $resetCartButton = $('#reset-cart-button');
 
                 $resetCartButton.on('click', (e) => {

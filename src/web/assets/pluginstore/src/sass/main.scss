@@ -37,6 +37,52 @@ $minLargeScreenWidth: 1824px;
   transform: translate(-50%, -50%);
 }
 
+
+/* Plugin Store actions */
+
+#pluginstore-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & > *:not(:last-child) {
+    margin-right: 18px !important;
+  }
+
+  #cart-button {
+    svg {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+      line-height: 0;
+      margin-right: 3px;
+    }
+
+    svg {
+      @include svg-mask($secondarySubmitColor);
+    }
+
+    &:hover svg {
+      @include svg-mask($secondarySubmitHoverColor);
+    }
+
+    .badge {
+      @include margin(0, 0, 0, -6px);
+      display: inline-block;
+      flex-shrink: 1;
+      padding: 0 6px;
+      font-size: 11px;
+      line-height: 16px;
+      border-radius: 1em;
+      background: $noticeColor;
+      color: #fff;
+      box-shadow: 0 0 0 2px $bgColor;
+    }
+  }
+}
+
+
 /* Graphic & Status */
 
 #content {

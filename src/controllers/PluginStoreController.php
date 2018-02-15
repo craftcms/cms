@@ -71,26 +71,27 @@ class PluginStoreController extends Controller
     /**
      * Connect to id.craftcms.com.
      *
-     * @param string|null $redirect
+     * @param string|null $redirectUrl
      *
      * @return Response
      */
-    public function actionConnect(string $redirect = null): Response
+    public function actionConnect(string $redirectUrl = null): Response
     {
+        $callbackUrl = UrlHelper::cpUrl('plugin-store/callback');
+
         $provider = new CraftId([
             'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
             'apiEndpointUrl' => Craft::$app->getPluginStore()->craftApiEndpoint,
             'clientId' => Craft::$app->getPluginStore()->craftIdOauthClientId,
-            'redirectUri' => UrlHelper::cpUrl('plugin-store/callback'),
+            'redirectUri' => $callbackUrl,
         ]);
 
-        $referrer = Craft::$app->getRequest()->getReferrer();
-
-        if ($redirect) {
-            $referrer = $redirect;
+        if(!$redirectUrl) {
+            $redirect = Craft::$app->getRequest()->getPathInfo();
+            $redirectUrl = UrlHelper::url($redirect);
         }
 
-        Craft::$app->getSession()->set('pluginStoreConnectReferrer', $referrer);
+        Craft::$app->getSession()->set('pluginStoreConnectRedirectUrl', $redirectUrl);
 
         $authorizationUrl = $provider->getAuthorizationUrl([
             'scope' => [
@@ -146,10 +147,10 @@ class PluginStoreController extends Controller
 
         $view->registerAssetBundle(PluginStoreOauthAsset::class);
 
-        $referrer = Craft::$app->getSession()->get('pluginStoreConnectReferrer');
+        $redirectUrl = Craft::$app->getSession()->get('pluginStoreConnectRedirectUrl');
 
         $options = [
-            'referrer' => $referrer
+            'redirectUrl' => $redirectUrl
         ];
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback('.Json::encode($options).');');

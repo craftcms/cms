@@ -45,13 +45,40 @@
 ]) %}
 
 {% block actionButton %}
+
 	{% if enableCraftId %}
-		<a id="cart-button">Cart (0)</a>
-		{#
-		<a id="payment-button">Payment</a>
-		<a id="reset-cart-button">Reset cart</a>
-		#}
+		<div id="pluginstore-actions" class="hidden">
+			<a id="cart-button">{{ svg('@app/icons/shopping-cart.svg') }}{#<span class="label">Cart</span>#} <span class="badge">0</span></a>
+
+			<a id="craftid-account" class="menubtn hidden">Account</a>
+
+			<div class="menu">
+				<ul>
+					<li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+					<li>
+						<form method="post" id="disconnect">
+							{{ csrfInput() }}
+							<input type="hidden" name="action" value="plugin-store/disconnect">
+							<a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect from Craft ID"|t('app') }}</a>
+						</form>
+					</li>
+				</ul>
+			</div>
+
+			<form id="craftid-connect-form" method="post">
+				{{ csrfInput() }}
+				<input type="hidden" name="action" value="plugin-store/connect">
+				<input type="submit" class="btn submit" value="{{ 'Connect to Craft ID'|t('app') }}">
+			</form>
+
+			{#
+			<a id="payment-button">Payment</a>
+			<a id="reset-cart-button">Reset cart</a>
+			#}
+		</div>
+		<div id="pluginstore-actions-spinner" class="spinner hidden"></div>
 	{% endif %}
+
 {% endblock %}
 
 {% set content %}
