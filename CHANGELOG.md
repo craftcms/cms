@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The Control Panel now sets the `origin-when-cross-origin` referrer policy. ([#2436](https://github.com/craftcms/cms/pull/2436))
+
 ### Fixed
 - Fixed a bug where run charts (e.g. the New Users widget) would always show zero results if MySQL wasn’t configured with time zone data. ([#2433](https://github.com/craftcms/cms/issues/2433))
 - Fixed a bug where the New Users widget would show 8 days worth of data when its Date Range setting was set to “Last 7 days” or “Last week”.
