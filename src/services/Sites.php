@@ -463,10 +463,6 @@ class Sites extends Component
      */
     public function getSiteById(int $siteId)
     {
-        if (!$siteId) {
-            return null;
-        }
-
         return $this->_sitesById[$siteId] ?? null;
     }
 
