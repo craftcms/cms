@@ -147,10 +147,7 @@ class Request extends \yii\web\Request
         $path = $this->getFullPath();
 
         // Get the path segments
-        $this->_segments = array_values(array_filter(explode('/', $path), function($value) {
-            // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
-            return $value !== '';
-        }));
+        $this->_segments = explode('/', $path);
 
         // Is this a CP request?
         $this->_isCpRequest = ($this->getSegment(1) == $generalConfig->cpTrigger);
@@ -228,7 +225,7 @@ class Request extends \yii\web\Request
                 $this->_fullPath = $this->_getQueryStringPath();
             }
 
-            $this->_fullPath = trim((string)$this->_fullPath, '/');
+            $this->_fullPath = preg_replace('/\/\/+/', '/', trim((string)$this->_fullPath, '/'));
         }
 
         return $this->_fullPath;
