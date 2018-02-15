@@ -69,13 +69,15 @@ $minLargeScreenWidth: 1824px;
 
     .badge {
       @include margin(0, 0, 0, -6px);
+      position: relative;
+      top: -1px;
       display: inline-block;
       flex-shrink: 1;
       padding: 0 6px;
       font-size: 11px;
       line-height: 16px;
       border-radius: 1em;
-      background: $noticeColor;
+      background: $submitColor;
       color: #fff;
       box-shadow: 0 0 0 2px $bgColor;
     }
