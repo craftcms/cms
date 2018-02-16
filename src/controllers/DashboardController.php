@@ -24,6 +24,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -287,9 +288,9 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws \yii\base\ErrorException
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\base\InvalidParamException
+     * @throws ErrorException
+     * @throws BadRequestHttpException
+     * @throws InvalidParamException
      */
     public function actionSendSupportRequest(): Response
     {
