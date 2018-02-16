@@ -17,8 +17,8 @@ use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -74,7 +74,7 @@ class Config extends Component
      *
      * @param string $category The config category
      * @return BaseObject The config settings
-     * @throws InvalidParamException if $category is invalid
+     * @throws InvalidArgumentException if $category is invalid
      * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
     public function getConfigSettings(string $category): BaseObject
@@ -91,7 +91,7 @@ class Config extends Component
                 $class = GeneralConfig::class;
                 break;
             default:
-                throw new InvalidParamException('Invalid config category: '.$category);
+                throw new InvalidArgumentException('Invalid config category: '.$category);
         }
 
         // Get any custom config settings

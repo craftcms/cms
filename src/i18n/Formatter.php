@@ -12,8 +12,8 @@ use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
 use NumberFormatter;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\FormatConverter;
 
 /**
@@ -74,7 +74,7 @@ class Formatter extends \yii\i18n\Formatter
      * @param int|string|DateTime $value
      * @param string|null $format
      * @return string
-     * @throws InvalidParamException
+     * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
     public function asDate($value, $format = null): string
@@ -99,7 +99,7 @@ class Formatter extends \yii\i18n\Formatter
      * @param int|string|DateTime $value
      * @param string|null $format
      * @return string
-     * @throws InvalidParamException
+     * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
     public function asTime($value, $format = null): string
@@ -124,7 +124,7 @@ class Formatter extends \yii\i18n\Formatter
      * @param int|string|DateTime $value
      * @param string|null $format
      * @return string
-     * @throws InvalidParamException
+     * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
     public function asDatetime($value, $format = null): string
@@ -163,7 +163,7 @@ class Formatter extends \yii\i18n\Formatter
      * Alternatively this can be a string prefixed with `php:` representing a format that can be recognized by the
      * PHP [date()](http://php.net/manual/en/function.date.php)-function.
      * @return string the formatted result.
-     * @throws InvalidParamException if the input value can not be evaluated as a date value.
+     * @throws InvalidArgumentException if the input value can not be evaluated as a date value.
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
@@ -206,7 +206,7 @@ class Formatter extends \yii\i18n\Formatter
      * @param array $textOptions optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
      * @param bool $stripZeros Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
      * @return string the formatted result.
-     * @throws InvalidParamException if the input value is not numeric.
+     * @throws InvalidArgumentException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
     public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false): string

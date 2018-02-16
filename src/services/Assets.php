@@ -39,7 +39,7 @@ use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Temp;
 use yii\base\Component;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 
 /**
@@ -199,7 +199,7 @@ class Assets extends Component
      * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
      * @return void
      * @throws AssetConflictException if a folder already exists with such a name
-     * @throws InvalidParamException if $folder doesn’t have a parent
+     * @throws InvalidArgumentException if $folder doesn’t have a parent
      * @throws VolumeObjectExistsException if the file actually exists on the volume, but on in the index
      */
     public function createFolder(VolumeFolder $folder, bool $indexExisting = false)
@@ -207,7 +207,7 @@ class Assets extends Component
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new InvalidParamException('Folder '.$folder->id.' doesn’t have a parent.');
+            throw new InvalidArgumentException('Folder '.$folder->id.' doesn’t have a parent.');
         }
 
         $existingFolder = $this->findFolder([
@@ -753,14 +753,14 @@ class Assets extends Component
      * @param int $folderId THe folder in which to find the replacement
      * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @throws InvalidParamException If $folderId is invalid
+     * @throws InvalidArgumentException If $folderId is invalid
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new InvalidParamException('Invalid folder ID: '.$folderId);
+            throw new InvalidArgumentException('Invalid folder ID: '.$folderId);
         }
 
         $volume = $folder->getVolume();

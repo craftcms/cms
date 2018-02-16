@@ -10,7 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -89,7 +89,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @return YiiResponse
-     * @throws InvalidParamException if the view file does not exist.
+     * @throws InvalidArgumentException if the view file does not exist.
      */
     public function renderTemplate(string $template, array $variables = []): YiiResponse
     {

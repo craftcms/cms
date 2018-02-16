@@ -29,7 +29,7 @@ use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
 use DateTime;
 use yii\base\Component;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 
 /**
@@ -217,7 +217,7 @@ class Users extends Component
 
         try {
             $valid = Craft::$app->getSecurity()->validatePassword($code, $userRecord->verificationCode);
-        } catch (InvalidParamException $e) {
+        } catch (InvalidArgumentException $e) {
             $valid = false;
         }
 

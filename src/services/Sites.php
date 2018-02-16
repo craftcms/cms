@@ -28,7 +28,7 @@ use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 
 /**
@@ -373,7 +373,7 @@ class Sites extends Component
      * Sets the current site.
      *
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
-     * @throws InvalidParamException if $site is invalid
+     * @throws InvalidArgumentException if $site is invalid
      */
     public function setCurrentSite($site)
     {
@@ -394,7 +394,7 @@ class Sites extends Component
         if (!$this->_currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                throw new InvalidParamException('Invalid site: '.$site);
+                throw new InvalidArgumentException('Invalid site: '.$site);
             }
             return;
         }
