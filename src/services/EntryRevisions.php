@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -30,7 +30,7 @@ use yii\base\InvalidConfigException;
  * An instance of the Entry Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntryRevisions()|<code>Craft::$app->entryRevisions</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryRevisions extends Component
 {

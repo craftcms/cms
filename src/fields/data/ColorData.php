@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields\data;
@@ -24,7 +24,7 @@ use yii\base\BaseObject;
  * @property float $luma
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
- * @since  3.0
+ * @since 3.0
  */
 class ColorData extends BaseObject implements Serializable
 {

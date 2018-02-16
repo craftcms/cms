@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -12,10 +12,10 @@ use craft\events\ModelEvent;
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
  *
- * @property bool $isNew    Whether the component is new (unsaved)
+ * @property bool $isNew Whether the component is new (unsaved)
  * @property array $settings The component’s settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class SavableComponent extends Component implements SavableComponentInterface
 {

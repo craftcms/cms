@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -24,7 +24,7 @@ use yii\base\Exception;
  * An instance of the Structures service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getStructures()|<code>Craft::$app->structures</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Structures extends Component
 {
@@ -335,11 +335,11 @@ class Structures extends Component
     /**
      * Updates a ElementInterface with the new structure attributes from a StructureElement record.
      *
-     * @param  int $structureId
-     * @param  ElementInterface $element
-     * @param  StructureElement $targetElementRecord
-     * @param  string $action
-     * @param  string $mode
+     * @param int $structureId
+     * @param ElementInterface $element
+     * @param StructureElement $targetElementRecord
+     * @param string $action
+     * @param string $mode
      * @return bool Whether it was done
      * @throws \Throwable if reasons
      */

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -28,7 +28,7 @@ use yii\base\Exception;
  * An instance of the Categories service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getCategories()|<code>Craft::$app->categories</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Categories extends Component
 {

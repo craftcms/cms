@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -21,10 +21,10 @@ use yii\web\Cookie;
  * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|<code>Craft::$app->user</code>]].
  *
  * @property bool $hasElevatedSession Whether the user currently has an elevated session
- * @property UserElement|null $identity           The logged-in user.
+ * @property UserElement|null $identity The logged-in user.
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class User extends \yii\web\User
 {

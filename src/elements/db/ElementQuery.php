@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -37,7 +37,7 @@ use yii\db\Expression;
  * @property string|Site $site The site or site handle that the elements should be returned in
  * @mixin ElementQueryBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {

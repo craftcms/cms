@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -41,7 +41,7 @@ use yii\base\ErrorException;
  * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|<code>Craft::$app->assetTransforms</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetTransforms extends Component
 {
@@ -802,7 +802,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      * @throws VolumeObjectNotFoundException If the file cannot be found.
-     * @throws VolumeException               If there was an error downloading the remote file.
+     * @throws VolumeException If there was an error downloading the remote file.
      * @return string
      */
     public function getLocalImageSource(Asset $asset): string
@@ -1099,7 +1099,7 @@ class AssetTransforms extends Component
      * Delete created transforms for an Asset.
      *
      * @param Asset $asset
-     * @throws VolumeException        if something went very wrong when deleting a transform
+     * @throws VolumeException if something went very wrong when deleting a transform
      */
     public function deleteCreatedTransformsForAsset(Asset $asset)
     {

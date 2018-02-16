@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -22,7 +22,7 @@ use yii\db\Expression;
  * An instance of the Tokens service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTokens()|<code>Craft::$app->tokens</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Tokens extends Component
 {
@@ -47,7 +47,7 @@ class Tokens extends Component
      * used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires.
      * Defaults to the 'defaultTokenDuration' config setting.
-     * @return string|false             The generated token, or `false` if there was an error.
+     * @return string|false The generated token, or `false` if there was an error.
      */
     public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
     {

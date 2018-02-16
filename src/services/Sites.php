@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -35,14 +35,14 @@ use yii\db\Exception as DbException;
  * Sites service.
  * An instance of the Sites service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSites()|<code>Craft::$app->sites</code>]].
  *
- * @property int[] $allSiteIds         all of the site IDs
- * @property Site|null $currentSite        the current site
- * @property int[] $editableSiteIds    all of the site IDs that are editable by the current user
- * @property Site $primarySite        the primary site
- * @property int $totalSites         the total number of sites
+ * @property int[] $allSiteIds all of the site IDs
+ * @property Site|null $currentSite the current site
+ * @property int[] $editableSiteIds all of the site IDs that are editable by the current user
+ * @property Site $primarySite the primary site
+ * @property int $totalSites the total number of sites
  * @property int $totalEditableSites the total number of sites that are editable by the current user
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Sites extends Component
 {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -58,7 +58,7 @@ use yii\base\Exception;
  * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|<code>Craft::$app->fields</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Fields extends Component
 {

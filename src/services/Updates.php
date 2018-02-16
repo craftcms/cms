@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -20,14 +20,14 @@ use yii\base\Exception;
  * Updates service.
  * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|<code>Craft::$app->updates</code>]].
  *
- * @property bool $isCraftDbMigrationNeeded       Whether Craft needs to run any database migrations
+ * @property bool $isCraftDbMigrationNeeded Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
- * @property bool $isCriticalUpdateAvailable      Whether a critical update is available
- * @property bool $isPluginDbUpdateNeeded         Whether a plugin needs to run a database update
- * @property bool $isUpdateInfoCached             Whether the update info is cached
- * @property bool $wasCraftBreakpointSkipped      Whether the build stored in craft_info is less than the minimum required build on the file system
+ * @property bool $isCriticalUpdateAvailable Whether a critical update is available
+ * @property bool $isPluginDbUpdateNeeded Whether a plugin needs to run a database update
+ * @property bool $isUpdateInfoCached Whether the update info is cached
+ * @property bool $wasCraftBreakpointSkipped Whether the build stored in craft_info is less than the minimum required build on the file system
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Updates extends Component
 {

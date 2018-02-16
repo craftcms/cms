@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
@@ -13,7 +13,7 @@ use craft\helpers\Template;
  * Internal node used by the nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class NavItem_Node extends \Twig_Node
 {
@@ -27,8 +27,8 @@ class NavItem_Node extends \Twig_Node
      * @param \Twig_Node|null $indent
      * @param \Twig_Node|null $outdent
      * @param \Twig_Node|null $lowerBody
-     * @param                                  $lineno
-     * @param                                  $tag
+     * @param $lineno
+     * @param $tag
      */
     public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_Node $indent = null, \Twig_Node $outdent = null, \Twig_Node $lowerBody = null, $lineno, $tag = null)
     {

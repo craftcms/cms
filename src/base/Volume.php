@@ -1,9 +1,9 @@
 <?php
 /**
- * The base class for all asset Volumes.  All Volume types must extend this class.
+ * The base class for all asset Volumes. All Volume types must extend this class.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 
 namespace craft\base;

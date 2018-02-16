@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -14,7 +14,7 @@ use Stringy\Stringy as BaseStringy;
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
@@ -227,9 +227,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the index of the first occurrence of $needle in the string, and false if not found.
      * Accepts an optional offset from which to begin the search.
      *
-     * @param  string $str The string to check the index of.
-     * @param  string $needle The substring to look for.
-     * @param  int $offset The offset from which to search.
+     * @param string $str The string to check the index of.
+     * @param string $needle The substring to look for.
+     * @param int $offset The offset from which to search.
      * @return int|bool The occurrence's index if found, otherwise false.
      */
     public static function indexOf($str, $needle, $offset = 0)
@@ -242,9 +242,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Accepts an optional offset from which to begin the search. Offsets may be negative to count from
      * the last character in the string.
      *
-     * @param  string $str The string to check the last index of.
-     * @param  string $needle The substring to look for.
-     * @param  int $offset The offset from which to search.
+     * @param string $str The string to check the last index of.
+     * @param string $needle The substring to look for.
+     * @param int $offset The offset from which to search.
      * @return int|bool The occurrence's last index if found, otherwise false.
      */
     public static function indexOfLast($str, $needle, $offset = 0)
@@ -515,9 +515,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string of a given length such that both sides of the string are padded.
      *
-     * @param  string $str The string to pad.
-     * @param  int $length The desired string length after padding.
-     * @param  string $padStr The string used to pad, defaults to space.
+     * @param string $str The string to pad.
+     * @param int $length The desired string length after padding.
+     * @param string $padStr The string used to pad, defaults to space.
      * @return string The padded string.
      */
     public static function padBoth($str, $length, $padStr = ' '): string
@@ -553,7 +553,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
-     * set to true, additional symbols can be included in the string.  Note that the generated string is *not* a
+     * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
      * [[\craft\services\Security::generateRandomString()|<code>Craft::$app->security->generateRandomString()</code>]].
      *
