@@ -160,7 +160,7 @@ class Request extends \yii\web\Request
                 $baseUrl = $this->_normalizePath($this->getBaseUrl());
                 $fullUri = $baseUrl.($baseUrl && $path ? '/' : '').$path;
                 if (strpos($fullUri.'/', $siteBasePath.'/') === 0) {
-                    $path = ltrim(substr($path, strlen($siteBasePath)), '/');
+                    $path = ltrim(substr($fullUri, strlen($siteBasePath)), '/');
                 }
             }
         } catch (SiteNotFoundException $e) {
