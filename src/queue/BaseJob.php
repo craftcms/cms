@@ -69,7 +69,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * Sets the job progress on the queue.
      *
      * @param \yii\queue\Queue|QueueInterface $queue
-     * @param float                           $progress A number between 0 and 1
+     * @param float $progress A number between 0 and 1
      */
     protected function setProgress($queue, float $progress)
     {

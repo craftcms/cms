@@ -116,7 +116,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
 
     /**
      * @inheritdoc
-     *
      * @return LocalAdapter
      */
     protected function createAdapter(): LocalAdapter

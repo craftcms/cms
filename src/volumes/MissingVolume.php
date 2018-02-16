@@ -125,7 +125,6 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     *
      * @inheritdoc
      */
     public function createDir(string $path)

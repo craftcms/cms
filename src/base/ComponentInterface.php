@@ -9,7 +9,6 @@ namespace craft\base;
 
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.
- *
  * A class implementing this interface should also implement [[\yii\base\Arrayable]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

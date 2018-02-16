@@ -9,7 +9,6 @@ namespace craft\queue;
 
 /**
  * JobInterface defines the common interface to be implemented by job classes.
- *
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[JobTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

@@ -30,7 +30,6 @@ use yii\web\ServerErrorHttpException;
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -71,9 +70,8 @@ class CategoriesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param int|null           $groupId       The category group’s ID, if editing an existing group.
+     * @param int|null $groupId The category group’s ID, if editing an existing group.
      * @param CategoryGroup|null $categoryGroup The category group being edited, if there were any validation errors.
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested category group cannot be found
      */
@@ -223,7 +221,6 @@ class CategoriesController extends Controller
      * Displays the category index page.
      *
      * @param string|null $groupHandle The category group’s handle.
-     *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit categories
      */
@@ -248,11 +245,10 @@ class CategoriesController extends Controller
     /**
      * Displays the category edit page.
      *
-     * @param string        $groupHandle The category group’s handle.
-     * @param int|null      $categoryId  The category’s ID, if editing an existing category.
-     * @param string|null   $siteHandle  The site handle, if specified.
-     * @param Category|null $category    The category being edited, if there were any validation errors.
-     *
+     * @param string $groupHandle The category group’s handle.
+     * @param int|null $categoryId The category’s ID, if editing an existing category.
+     * @param string|null $siteHandle The site handle, if specified.
+     * @param Category|null $category The category being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
@@ -570,9 +566,8 @@ class CategoriesController extends Controller
     /**
      * Redirects the client to a URL for viewing a disabled category on the front end.
      *
-     * @param int      $categoryId
+     * @param int $categoryId
      * @param int|null $siteId
-     *
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested category cannot be found
@@ -615,9 +610,8 @@ class CategoriesController extends Controller
     /**
      * Shows an category/draft/version based on a token.
      *
-     * @param int      $categoryId
+     * @param int $categoryId
      * @param int|null $siteId
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
@@ -641,7 +635,6 @@ class CategoriesController extends Controller
      * Preps category category variables.
      *
      * @param array &$variables
-     *
      * @return void
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
@@ -778,7 +771,6 @@ class CategoriesController extends Controller
      * Enforces all Edit Category permissions.
      *
      * @param Category $category
-     *
      * @return void
      */
     private function _enforceEditCategoryPermissions(Category $category)
@@ -796,7 +788,6 @@ class CategoriesController extends Controller
      * Populates an Category with post data.
      *
      * @param Category $category
-     *
      * @return void
      */
     private function _populateCategoryModel(Category $category)
@@ -824,7 +815,6 @@ class CategoriesController extends Controller
      * Displays a category.
      *
      * @param Category $category
-     *
      * @return Response
      * @throws ServerErrorHttpException if the category doesn't have a URL for the site it's configured with, or if the category's site ID is invalid
      */

@@ -9,7 +9,6 @@ namespace craft\base;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
- *
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[WidgetTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -48,8 +47,8 @@ interface WidgetInterface extends SavableComponentInterface
      * Returns the widget's body HTML.
      *
      * @return string|false The widget’s body HTML, or `false` if the widget
-     *                      should not be visible. (If you don’t want the widget
-     *                      to be selectable in the first place, use {@link isSelectable()}.)
+     * should not be visible. (If you don’t want the widget to be selectable in
+     * the first place, use [[isSelectable()]].)
      */
     public function getBodyHtml();
 }

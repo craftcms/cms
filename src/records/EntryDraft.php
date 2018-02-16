@@ -13,19 +13,18 @@ use yii\db\ActiveQueryInterface;
 /**
  * Stores entry drafts.
  *
- * @property int     $id        ID
- * @property int     $entryId   Entry ID
- * @property int     $sectionId Section ID
- * @property int     $creatorId Creator ID
- * @property int     $siteId    Site ID
- * @property string  $name      Name
- * @property string  $notes     Notes
- * @property array   $data      Data
- * @property Entry   $entry     Entry
+ * @property int $id        ID
+ * @property int $entryId   Entry ID
+ * @property int $sectionId Section ID
+ * @property int $creatorId Creator ID
+ * @property int $siteId    Site ID
+ * @property string $name      Name
+ * @property string $notes     Notes
+ * @property array $data      Data
+ * @property Entry $entry     Entry
  * @property Section $section   Section
- * @property User    $creator   Creator
- * @property Site    $site      Site
- *
+ * @property User $creator   Creator
+ * @property Site $site      Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -36,7 +35,6 @@ class EntryDraft extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

@@ -62,9 +62,8 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @param string     $type
+     * @param string $type
      * @param array|null $settings
-     *
      * @return TransportAdapterInterface
      * @throws MissingComponentException if $type is missing
      */
@@ -83,7 +82,6 @@ class MailerHelper
      * Creates a mailer component based on the given mail settings.
      *
      * @param MailSettings $settings
-     *
      * @return Mailer
      */
     public static function createMailer(MailSettings $settings): Mailer

@@ -31,11 +31,11 @@ class NavNode extends \Twig_Node_For
      *
      * @param \Twig_Node_Expression_AssignName $keyTarget
      * @param \Twig_Node_Expression_AssignName $valueTarget
-     * @param \Twig_Node_Expression            $seq
-     * @param \Twig_Node                       $upperBody
-     * @param \Twig_Node|null                  $lowerBody
-     * @param \Twig_Node|null                  $indent
-     * @param \Twig_Node|null                  $outdent
+     * @param \Twig_Node_Expression $seq
+     * @param \Twig_Node $upperBody
+     * @param \Twig_Node|null $lowerBody
+     * @param \Twig_Node|null $indent
+     * @param \Twig_Node|null $outdent
      * @param                                  $lineno
      * @param                                  $tag
      */

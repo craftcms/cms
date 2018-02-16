@@ -9,7 +9,6 @@ namespace craft\search;
 
 /**
  * Search Query Term class
- *
  * Represents a term in the search query.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

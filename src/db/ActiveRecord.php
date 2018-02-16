@@ -16,7 +16,6 @@ use craft\helpers\StringHelper;
  * @property string $dateCreated Date created
  * @property string $dateUpdated Date updated
  * @property string $uid         UUID
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

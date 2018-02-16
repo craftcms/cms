@@ -15,7 +15,6 @@ use yii\base\Component;
 
 /**
  * Relations service.
- *
  * An instance of the Relations service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRelations()|<code>Craft::$app->relations</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -30,9 +29,8 @@ class Relations extends Component
      * Saves some relations for a field.
      *
      * @param BaseRelationField $field
-     * @param ElementInterface  $source
-     * @param array             $targetIds
-     *
+     * @param ElementInterface $source
+     * @param array $targetIds
      * @throws \Throwable
      * @return void
      */

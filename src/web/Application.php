@@ -35,18 +35,16 @@ use yii\web\Response;
 /**
  * Craft Web Application class
  *
- * @property Request             $request          The request component
+ * @property Request $request          The request component
  * @property \craft\web\Response $response         The response component
- * @property Session             $session          The session component
- * @property UrlManager          $urlManager       The URL manager for this application
- * @property User                $user             The user component
- *
+ * @property Session $session          The session component
+ * @property UrlManager $urlManager       The URL manager for this application
+ * @property User $user             The user component
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\web\Response                    getResponse()     Returns the response component.
  * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -102,7 +100,6 @@ class Application extends \yii\web\Application
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
-     *
      * @return Response the resulting response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
@@ -218,10 +215,8 @@ class Application extends \yii\web\Application
 
     /**
      * @inheritdoc
-     *
      * @param string $route
-     * @param array  $params
-     *
+     * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = [])
@@ -374,7 +369,6 @@ class Application extends \yii\web\Application
      * Processes install requests.
      *
      * @param Request $request
-     *
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
@@ -423,7 +417,6 @@ class Application extends \yii\web\Application
      * Processes action requests.
      *
      * @param Request $request
-     *
      * @return Response|null
      * @throws NotFoundHttpException if the requested action route is invalid
      */
@@ -447,7 +440,6 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
-     *
      * @return bool
      */
     private function _isSpecialCaseActionRequest(Request $request): bool
@@ -474,7 +466,6 @@ class Application extends \yii\web\Application
      * meet Craft’s minimum requirements.
      *
      * @param Request $request
-     *
      * @return Response|null
      */
     private function _processRequirementsCheck(Request $request)
@@ -502,7 +493,6 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
-     *
      * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
@@ -553,7 +543,6 @@ class Application extends \yii\web\Application
      * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
      *
      * @param Request $request
-     *
      * @return void
      * @throws ServiceUnavailableHttpException
      */

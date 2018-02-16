@@ -16,17 +16,16 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class StructureElement record.
  *
- * @property int       $id          ID
- * @property int       $structureId Structure ID
- * @property int       $elementId   Element ID
- * @property int       $root        Root
- * @property int       $lft         Lft
- * @property int       $rgt         Rgt
- * @property int       $level       Level
+ * @property int $id          ID
+ * @property int $structureId Structure ID
+ * @property int $elementId   Element ID
+ * @property int $root        Root
+ * @property int $lft         Lft
+ * @property int $rgt         Rgt
+ * @property int $level       Level
  * @property Structure $structure   Structure
- * @property Element   $element     Element
+ * @property Element $element     Element
  * @mixin NestedSetsBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -49,7 +48,6 @@ class StructureElement extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
@@ -59,7 +57,6 @@ class StructureElement extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return StructuredElementQuery
      */
     public static function find(): StructuredElementQuery

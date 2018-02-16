@@ -14,14 +14,13 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Route record.
  *
- * @property int    $id         ID
- * @property int    $siteId     Site ID
+ * @property int $id         ID
+ * @property int $siteId     Site ID
  * @property string $uriParts   URI parts
  * @property string $uriPattern URI pattern
  * @property string $template   Template
- * @property int    $sortOrder  Sort order
- * @property Site   $site       Site
- *
+ * @property int $sortOrder  Sort order
+ * @property Site $site       Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -43,7 +42,6 @@ class Route extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

@@ -14,7 +14,6 @@ use yii\web\Response;
 /**
  * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
  * re-ordering routes in the control panel.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

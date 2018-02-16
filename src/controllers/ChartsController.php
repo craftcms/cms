@@ -18,7 +18,6 @@ use yii\base\Response;
 /**
  * The ChartsController class is a controller that handles charts related operations such as preparing and returning data,
  * in a format ready to being displayed by Craft charts.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

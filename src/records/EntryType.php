@@ -13,18 +13,17 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class EntryType record.
  *
- * @property int         $id            ID
- * @property int         $sectionId     Section ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
- * @property bool        $hasTitleField Has title field
- * @property string      $titleLabel    Title label
- * @property string      $titleFormat   Title format
- * @property int         $sortOrder     Sort order
- * @property Section     $section       Section
+ * @property int $id            ID
+ * @property int $sectionId     Section ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name          Name
+ * @property string $handle        Handle
+ * @property bool $hasTitleField Has title field
+ * @property string $titleLabel    Title label
+ * @property string $titleFormat   Title format
+ * @property int $sortOrder     Sort order
+ * @property Section $section       Section
  * @property FieldLayout $fieldLayout   Field layout
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -35,7 +34,6 @@ class EntryType extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

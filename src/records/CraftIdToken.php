@@ -13,12 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class CraftIdToken record.
  *
- * @property int       $id           ID
- * @property int       $userId       User ID
- * @property string    $accessToken  Access Token
+ * @property int $id           ID
+ * @property int $userId       User ID
+ * @property string $accessToken  Access Token
  * @property \DateTime $expiryDate   Expiration Date
- * @property string    $refreshToken Refresh Token
- *
+ * @property string $refreshToken Refresh Token
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -29,7 +28,6 @@ class CraftIdToken extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

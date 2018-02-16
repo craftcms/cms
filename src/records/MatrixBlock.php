@@ -13,19 +13,18 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class MatrixBlock record.
  *
- * @property int             $id          ID
- * @property int             $ownerId     Owner ID
- * @property int             $ownerSiteId Owner site ID
- * @property int             $fieldId     Field ID
- * @property int             $typeId      Type ID
- * @property int             $sortOrder   Sort order
- * @property Element         $element     Element
- * @property Element         $owner       Owner
- * @property Site            $ownerSite   Owner's site
- * @property Field           $field       Field
+ * @property int $id          ID
+ * @property int $ownerId     Owner ID
+ * @property int $ownerSiteId Owner site ID
+ * @property int $fieldId     Field ID
+ * @property int $typeId      Type ID
+ * @property int $sortOrder   Sort order
+ * @property Element $element     Element
+ * @property Element $owner       Owner
+ * @property Site $ownerSite   Owner's site
+ * @property Field $field       Field
  * @property MatrixBlockType $type        Type
- * @property Site            $site        Site
- *
+ * @property Site $site        Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -36,7 +35,6 @@ class MatrixBlock extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

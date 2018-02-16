@@ -22,7 +22,6 @@ use yii\helpers\FormatConverter;
  * Stores locale info.
  *
  * @property string $displayName The locale’s display name.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -254,9 +253,8 @@ class Locale extends BaseObject
     /**
      * Constructor.
      *
-     * @param string $id     The locale ID.
-     * @param array  $config Name-value pairs that will be used to initialize the object properties.
-     *
+     * @param string $id The locale ID.
+     * @param array $config Name-value pairs that will be used to initialize the object properties.
      * @throws InvalidParamException If $id is an unsupported locale.
      */
     public function __construct(string $id, array $config = [])
@@ -304,7 +302,6 @@ class Locale extends BaseObject
 
     /**
      * Returns this locale’s script ID.
-     *
      * A script ID consists of only the last four characters after a dash in the locale ID.
      *
      * @return string|null The locale’s script ID, if it has one.
@@ -326,7 +323,6 @@ class Locale extends BaseObject
 
     /**
      * Returns this locale’s territory ID.
-     *
      * A territory ID consists of only the last two to three letter or digits after a dash in the locale ID.
      *
      * @return string|null The locale’s territory ID, if it has one.
@@ -354,7 +350,6 @@ class Locale extends BaseObject
      * Returns the locale name in a given language.
      *
      * @param string|null $inLocale
-     *
      * @return string
      */
     public function getDisplayName(string $inLocale = null): string
@@ -473,8 +468,7 @@ class Locale extends BaseObject
      * Returns the localized ICU date format.
      *
      * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param string      $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
-     *
+     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU date format.
      */
     public function getDateFormat(string $length = null, string $format = self::FORMAT_ICU): string
@@ -486,8 +480,7 @@ class Locale extends BaseObject
      * Returns the localized ICU time format.
      *
      * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param string      $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
-     *
+     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU time format.
      */
     public function getTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
@@ -499,8 +492,7 @@ class Locale extends BaseObject
      * Returns the localized ICU date + time format.
      *
      * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param string      $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
-     *
+     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU date + time format.
      */
     public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
@@ -511,10 +503,9 @@ class Locale extends BaseObject
     /**
      * Returns a localized month name.
      *
-     * @param int         $month      The month to return (1-12).
-     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
-     * @param bool        $standAlone Whether to return the "stand alone" month name.
-     *
+     * @param int $month The month to return (1-12).
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param bool $standAlone Whether to return the "stand alone" month name.
      * @return string The localized month name.
      */
     public function getMonthName(int $month, string $length = null, bool $standAlone = true): string
@@ -561,9 +552,8 @@ class Locale extends BaseObject
     /**
      * Returns all of the localized month names.
      *
-     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
-     * @param bool        $standAlone Whether to return the "stand alone" month names.
-     *
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param bool $standAlone Whether to return the "stand alone" month names.
      * @return array The localized month names.
      */
     public function getMonthNames(string $length = null, bool $standAlone = true): array
@@ -580,10 +570,9 @@ class Locale extends BaseObject
     /**
      * Returns a localized day of the week name.
      *
-     * @param int         $day        The day of the week to return (0-6), where 0 stands for Sunday.
-     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
-     * @param bool        $standAlone Whether to return the "stand alone" day of the week name.
-     *
+     * @param int $day The day of the week to return (0-6), where 0 stands for Sunday.
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+     * @param bool $standAlone Whether to return the "stand alone" day of the week name.
      * @return string The localized day of the week name.
      */
     public function getWeekDayName(int $day, string $length = null, bool $standAlone = true): string
@@ -645,9 +634,8 @@ class Locale extends BaseObject
     /**
      * Returns all of the localized day of the week names.
      *
-     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
-     * @param bool        $standAlone Whether to return the "stand alone" day of the week names.
-     *
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param bool $standAlone Whether to return the "stand alone" day of the week names.
      * @return array The localized day of the week names.
      */
     public function getWeekDayNames(string $length = null, bool $standAlone = true): array
@@ -696,7 +684,6 @@ class Locale extends BaseObject
      * Returns a text attribute used by this locale.
      *
      * @param int $attribute The attribute to return. Values: Locale::
-     *
      * @return string|null The attribute.
      */
     public function getTextAttribute(int $attribute)
@@ -732,9 +719,8 @@ class Locale extends BaseObject
     /**
      * Returns a number pattern used by this locale.
      *
-     * @param int $style     The pattern style to return.
-     *                       Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
-     *
+     * @param int $style The pattern style to return.
+     * Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
      * @return string|null The pattern
      */
     public function getNumberPattern(int $style)
@@ -762,13 +748,11 @@ class Locale extends BaseObject
     /**
      * Returns a number symbol used by this locale.
      *
-     * @param int $symbol     The symbol to return.
-     *                        Accepted values: Locale::SYMBOL_DECIMAL_SEPARATOR, ::SYMBOL_GROUPING_SEPARATOR,
-     *                        ::SYMBOL_PATTERN_SEPARATOR, ::SYMBOL_PERCENT, ::SYMBOL_ZERO_DIGIT, ::SYMBOL_DIGIT, ::SYMBOL_MINUS_SIGN,
-     *                        ::SYMBOL_PLUS_SIGN, ::SYMBOL_CURRENCY, ::SYMBOL_INTL_CURRENCY, ::SYMBOL_MONETARY_SEPARATOR,
-     *                        ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE, ::SYMBOL_INFINITY, ::SYMBOL_NAN,
-     *                        ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
-     *
+     * @param int $symbol The symbol to return. Accepted values: Locale::SYMBOL_DECIMAL_SEPARATOR,
+     * ::SYMBOL_GROUPING_SEPARATOR, ::SYMBOL_PATTERN_SEPARATOR, ::SYMBOL_PERCENT, ::SYMBOL_ZERO_DIGIT,
+     * ::SYMBOL_DIGIT, ::SYMBOL_MINUS_SIGN, ::SYMBOL_PLUS_SIGN, ::SYMBOL_CURRENCY, ::SYMBOL_INTL_CURRENCY,
+     * ::SYMBOL_MONETARY_SEPARATOR, ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE,
+     * ::SYMBOL_INFINITY, ::SYMBOL_NAN, ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
      * @return string|null The symbol.
      */
     public function getNumberSymbol(int $symbol)
@@ -825,7 +809,6 @@ class Locale extends BaseObject
      * Returns this locale’s symbol for a given currency.
      *
      * @param string $currency The 3-letter ISO 4217 currency code indicating the currency to use.
-     *
      * @return string The currency symbol.
      */
     public function getCurrencySymbol(string $currency): string
@@ -863,7 +846,6 @@ class Locale extends BaseObject
      * Returns the locale name in a given language.
      *
      * @param string|null $targetLocaleId
-     *
      * @return string|null
      * @deprecated in 3.0. Use getDisplayName() instead.
      */
@@ -898,11 +880,10 @@ class Locale extends BaseObject
     /**
      * Returns a localized date/time format.
      *
-     * @param string $length   The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param bool   $withDate Whether the date should be included in the format.
-     * @param bool   $withTime Whether the time should be included in the format.
-     * @param string $format   The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
-     *
+     * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param bool $withDate Whether the date should be included in the format.
+     * @param bool $withTime Whether the time should be included in the format.
+     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The date/time format
      */
     private function _getDateTimeFormat(string $length, bool $withDate, bool $withTime, string $format): string
@@ -926,10 +907,9 @@ class Locale extends BaseObject
     /**
      * Returns a localized ICU date/time format.
      *
-     * @param string $length   The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param bool   $withDate Whether the date should be included in the format.
-     * @param bool   $withTime Whether the time should be included in the format.
-     *
+     * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param bool $withDate Whether the date should be included in the format.
+     * @param bool $withTime Whether the time should be included in the format.
      * @return string|null The ICU date/time format
      * @throws Exception if $length is invalid
      */

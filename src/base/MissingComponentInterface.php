@@ -9,7 +9,6 @@ namespace craft\base;
 
 /**
  * MissingComponentInterface defines the common interface for classes that represent a missing component class.
- *
  * A class implementing this interface should also implement [[ComponentInterface]] and [[\yii\base\Arrayable]],
  * and use [[MissingComponentTrait]].
  *

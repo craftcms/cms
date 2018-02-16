@@ -13,11 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Tag record.
  *
- * @property int      $id      ID
- * @property int      $groupId Group ID
- * @property Element  $element Element
+ * @property int $id      ID
+ * @property int $groupId Group ID
+ * @property Element $element Element
  * @property TagGroup $group   Group
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -28,7 +27,6 @@ class Tag extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

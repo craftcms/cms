@@ -9,7 +9,6 @@ namespace craft\search;
 
 /**
  * Search Query Term Group class
- *
  * Contains multiple SearchQueryTerm instances, each representing a term in the search query that was combined by "OR".
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

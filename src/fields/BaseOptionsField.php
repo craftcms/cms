@@ -292,7 +292,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Returns an option's label by its value.
      *
      * @param string|null $value
-     *
      * @return string|null
      */
     protected function optionLabel(string $value = null)

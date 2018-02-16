@@ -66,7 +66,6 @@ class FieldLayoutBehavior extends Behavior
 
     /**
      * @inheritdoc
-     *
      * @throws InvalidConfigException if the behavior was not configured properly
      */
     public function init()
@@ -148,7 +147,6 @@ class FieldLayoutBehavior extends Behavior
      * Sets the owner's field layout.
      *
      * @param FieldLayout $fieldLayout
-     *
      * @return void
      */
     public function setFieldLayout(FieldLayout $fieldLayout)

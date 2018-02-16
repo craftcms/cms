@@ -27,7 +27,6 @@ class Sections
      * Returns all sections.
      *
      * @param string|null $indexBy
-     *
      * @return array
      */
     public function getAllSections(string $indexBy = null): array
@@ -43,7 +42,6 @@ class Sections
      * Returns all editable sections.
      *
      * @param string|null $indexBy
-     *
      * @return array
      */
     public function getEditableSections(string $indexBy = null): array
@@ -83,7 +81,6 @@ class Sections
      * Returns a section by its ID.
      *
      * @param int $sectionId
-     *
      * @return Section|null
      */
     public function getSectionById(int $sectionId)
@@ -97,7 +94,6 @@ class Sections
      * Returns a section by its handle.
      *
      * @param string $handle
-     *
      * @return Section|null
      */
     public function getSectionByHandle(string $handle)

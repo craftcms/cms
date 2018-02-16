@@ -40,7 +40,6 @@ class SingleOptionFieldData extends OptionData
      * Sets the options.
      *
      * @param array $options
-     *
      * @return void
      */
     public function setOptions(array $options)

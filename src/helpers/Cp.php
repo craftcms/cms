@@ -33,8 +33,7 @@ class Cp
 
     /**
      * @param string|null $path
-     * @param bool        $fetch
-     *
+     * @param bool $fetch
      * @return array
      */
     public static function alerts(string $path = null, bool $fetch = false): array

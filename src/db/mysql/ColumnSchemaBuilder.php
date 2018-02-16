@@ -12,7 +12,6 @@ use yii\db\mysql\ColumnSchemaBuilder as YiiColumnSchemaBuilder;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

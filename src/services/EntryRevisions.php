@@ -27,7 +27,6 @@ use yii\base\InvalidConfigException;
 
 /**
  * Entry Revisions service.
- *
  * An instance of the Entry Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntryRevisions()|<code>Craft::$app->entryRevisions</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -85,7 +84,6 @@ class EntryRevisions extends Component
      * Returns a draft by its ID.
      *
      * @param int $draftId
-     *
      * @return EntryDraft|null
      */
     public function getDraftById(int $draftId)
@@ -110,10 +108,9 @@ class EntryRevisions extends Component
     /**
      * Returns drafts of a given entry.
      *
-     * @param int      $entryId
+     * @param int $entryId
      * @param int|null $siteId
-     * @param bool     $withContent Whether the field content should be included on the drafts
-     *
+     * @param bool $withContent Whether the field content should be included on the drafts
      * @return EntryDraft[]
      */
     public function getDraftsByEntryId(int $entryId, int $siteId = null, bool $withContent = false): array
@@ -151,9 +148,8 @@ class EntryRevisions extends Component
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int      $entryId
+     * @param int $entryId
      * @param int|null $siteId
-     *
      * @return EntryDraft[]
      */
     public function getEditableDraftsByEntryId(int $entryId, int $siteId = null): array
@@ -180,9 +176,8 @@ class EntryRevisions extends Component
     /**
      * Saves a draft.
      *
-     * @param EntryDraft $draft         The draft to be saved
-     * @param bool       $runValidation Whether to perform validation
-     *
+     * @param EntryDraft $draft The draft to be saved
+     * @param bool $runValidation Whether to perform validation
      * @return bool
      */
     public function saveDraft(EntryDraft $draft, bool $runValidation = true): bool
@@ -238,9 +233,8 @@ class EntryRevisions extends Component
     /**
      * Publishes a draft.
      *
-     * @param EntryDraft $draft         The draft to be published
-     * @param bool       $runValidation Whether to perform validation
-     *
+     * @param EntryDraft $draft The draft to be published
+     * @param bool $runValidation Whether to perform validation
      * @return bool
      */
     public function publishDraft(EntryDraft $draft, bool $runValidation = true): bool
@@ -291,7 +285,6 @@ class EntryRevisions extends Component
      * Deletes a draft by it's model.
      *
      * @param EntryDraft $draft The draft to be deleted
-     *
      * @return bool Whether the draft was deleted successfully
      */
     public function deleteDraft(EntryDraft $draft): bool
@@ -320,7 +313,6 @@ class EntryRevisions extends Component
      * Returns a version by its ID.
      *
      * @param int $versionId
-     *
      * @return EntryVersion|null
      */
     public function getVersionById(int $versionId)
@@ -345,9 +337,8 @@ class EntryRevisions extends Component
     /**
      * Returns whether an entry has any versions stored.
      *
-     * @param int      $entryId The entry ID to search for
-     * @param int|null $siteId  The site ID to search for
-     *
+     * @param int $entryId The entry ID to search for
+     * @param int|null $siteId The site ID to search for
      * @return bool
      */
     public function doesEntryHaveVersions(int $entryId, int $siteId = null): bool
@@ -364,12 +355,11 @@ class EntryRevisions extends Component
     /**
      * Returns versions by an entry ID.
      *
-     * @param int      $entryId        The entry ID to search for.
-     * @param int|null $siteId         The site ID to search for.
-     * @param int|null $limit          The limit on the number of versions to retrieve.
-     * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
-     * @param bool     $withContent    Whether the field content should be included on the versions
-     *
+     * @param int $entryId The entry ID to search for.
+     * @param int|null $siteId The site ID to search for.
+     * @param int|null $limit The limit on the number of versions to retrieve.
+     * @param bool $includeCurrent Whether to include the current "top" version of the entry.
+     * @param bool $withContent Whether the field content should be included on the versions
      * @return EntryVersion[]
      */
     public function getVersionsByEntryId(int $entryId, int $siteId = null, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
@@ -410,7 +400,6 @@ class EntryRevisions extends Component
      * Saves a new version.
      *
      * @param Entry $entry
-     *
      * @return bool
      */
     public function saveVersion(Entry $entry): bool
@@ -437,8 +426,7 @@ class EntryRevisions extends Component
      * Reverts an entry to a version.
      *
      * @param EntryVersion $version
-     * @param bool         $runValidation Whether to perform validation
-     *
+     * @param bool $runValidation Whether to perform validation
      * @return bool
      */
     public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
@@ -487,7 +475,6 @@ class EntryRevisions extends Component
      * Returns a draft record.
      *
      * @param EntryDraft $draft
-     *
      * @return EntryDraftRecord
      * @throws EntryDraftNotFoundException if $draft->draftId is invalid
      */
@@ -514,7 +501,6 @@ class EntryRevisions extends Component
      * Returns an array of all the revision data for a draft or version.
      *
      * @param Entry $revision
-     *
      * @return array
      */
     private function _getRevisionData(Entry $revision): array
@@ -547,8 +533,7 @@ class EntryRevisions extends Component
      * Updates a revision model with entry properties that aren't saved in the revision tables.
      *
      * @param BaseEntryRevisionModel $revision
-     * @param Entry                  $entry
-     *
+     * @param Entry $entry
      * @return void
      */
     private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision, Entry $entry)

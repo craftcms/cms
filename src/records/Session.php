@@ -13,11 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Session record.
  *
- * @property int    $id     ID
- * @property int    $userId User ID
+ * @property int $id     ID
+ * @property int $userId User ID
  * @property string $token  Token
- * @property User   $user   User
- *
+ * @property User $user   User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -39,7 +38,6 @@ class Session extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

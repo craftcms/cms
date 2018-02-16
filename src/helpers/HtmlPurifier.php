@@ -19,7 +19,6 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
 {
     /**
      * @param string $string
-     *
      * @return string
      */
     public static function cleanUtf8(string $string): string
@@ -28,9 +27,8 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     }
 
     /**
-     * @param string              $string
+     * @param string $string
      * @param HTMLPurifier_Config $config
-     *
      * @return string
      */
     public static function convertToUtf8(string $string, HTMLPurifier_Config $config): string

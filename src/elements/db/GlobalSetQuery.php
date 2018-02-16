@@ -15,7 +15,6 @@ use yii\db\Connection;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
- *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, Connection $db = null)
@@ -61,7 +60,6 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function editable(bool $value = true)
@@ -74,7 +72,6 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[handle]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function handle($value)

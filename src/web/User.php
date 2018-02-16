@@ -18,14 +18,11 @@ use yii\web\Cookie;
 
 /**
  * The User component provides APIs for managing the user authentication status.
- *
  * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|<code>Craft::$app->user</code>]].
  *
- * @property bool             $hasElevatedSession Whether the user currently has an elevated session
+ * @property bool $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity           The logged-in user.
- *
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -54,12 +51,11 @@ class User extends \yii\web\User
     /**
      * Logs in a user by their ID
      *
-     * @param int $userId       The user’s ID
-     * @param int $duration     The number of seconds that the user can remain in logged-in status.
-     *                          Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
-     *                          If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
-     *                          Note that if [[enableSession]] is false, this parameter will be ignored.
-     *
+     * @param int $userId The user’s ID
+     * @param int $duration The number of seconds that the user can remain in logged-in status.
+     * Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
+     * If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
+     * Note that if [[enableSession]] is false, this parameter will be ignored.
      * @return bool Whether the user is logged in
      */
     public function loginByUserId(int $userId, int $duration = 0): bool
@@ -75,12 +71,10 @@ class User extends \yii\web\User
 
     /**
      * Sends a username cookie.
-     *
      * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
      * so that login forms can remember the initial Username value on login forms.
      *
      * @param UserElement $user
-     *
      * @see afterLogin()
      */
     public function sendUsernameCookie(UserElement $user)
@@ -188,7 +182,6 @@ class User extends \yii\web\User
      * Returns whether the current user has a given permission.
      *
      * @param string $permissionName The name of the permission.
-     *
      * @return bool Whether the current user has the permission.
      */
     public function checkPermission(string $permissionName): bool
@@ -202,7 +195,7 @@ class User extends \yii\web\User
      * Returns how many seconds are left in the current elevated user session.
      *
      * @return int|bool The number of seconds left in the current elevated user session
-     *                         or false if it has been disabled.
+     * or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()
     {
@@ -247,7 +240,6 @@ class User extends \yii\web\User
      * Starts an elevated user session for the current user.
      *
      * @param string $password the current user’s password
-     *
      * @return bool Whether the password was valid, and the user session has been elevated
      */
     public function startElevatedSession(string $password): bool

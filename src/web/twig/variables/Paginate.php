@@ -53,7 +53,6 @@ class Paginate
      * Returns the URL to a specific page
      *
      * @param int $page
-     *
      * @return string|null
      */
     public function getPageUrl(int $page)
@@ -139,7 +138,6 @@ class Paginate
      * Returns previous page URLs up to a certain distance from the current page.
      *
      * @param int|null $dist
-     *
      * @return array
      */
     public function getPrevUrls(int $dist = null): array
@@ -157,7 +155,6 @@ class Paginate
      * Returns next page URLs up to a certain distance from the current page.
      *
      * @param int|null $dist
-     *
      * @return array
      */
     public function getNextUrls(int $dist = null): array
@@ -176,7 +173,6 @@ class Paginate
      *
      * @param int $start
      * @param int $end
-     *
      * @return array
      */
     public function getRangeUrls(int $start, int $end): array

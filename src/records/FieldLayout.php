@@ -13,11 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Field layout record class.
  *
- * @property int                $id     ID
- * @property string             $type   Type
- * @property FieldLayoutTab[]   $tabs   Tabs
+ * @property int $id     ID
+ * @property string $type   Type
+ * @property FieldLayoutTab[] $tabs   Tabs
  * @property FieldLayoutField[] $fields Fields
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -28,7 +27,6 @@ class FieldLayout extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

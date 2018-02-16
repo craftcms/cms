@@ -29,7 +29,6 @@ class UserGroups
      * Returns all user groups.
      *
      * @param string|null $indexBy
-     *
      * @return UserGroup[]
      */
     public function getAllGroups(string $indexBy = null): array
@@ -45,7 +44,6 @@ class UserGroups
      * Gets a user group by its ID.
      *
      * @param int $groupId
-     *
      * @return UserGroup|null
      */
     public function getGroupById(int $groupId)
@@ -59,7 +57,6 @@ class UserGroups
      * Gets a user group by its handle.
      *
      * @param string $groupHandle
-     *
      * @return UserGroup|null
      */
     public function getGroupByHandle(string $groupHandle)

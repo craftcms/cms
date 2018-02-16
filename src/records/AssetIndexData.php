@@ -14,17 +14,16 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class AssetIndexData record.
  *
- * @property int       $id         ID
- * @property int       $volumeId   Volume ID
- * @property string    $sessionId  Session ID
- * @property string    $uri        URI
- * @property int       $size       Size
+ * @property int $id         ID
+ * @property int $volumeId   Volume ID
+ * @property string $sessionId  Session ID
+ * @property string $uri        URI
+ * @property int $size       Size
  * @property \DateTime $timestamp  Timestamp
- * @property bool      $inProgress In progress
- * @property bool      $completed  Is completed
- * @property int       $recordId   Record ID
- * @property Volume    $volume     Volume
- *
+ * @property bool $inProgress In progress
+ * @property bool $completed  Is completed
+ * @property int $recordId   Record ID
+ * @property Volume $volume     Volume
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -50,7 +49,6 @@ class AssetIndexData extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

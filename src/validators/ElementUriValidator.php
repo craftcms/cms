@@ -36,7 +36,6 @@ class ElementUriValidator extends UriValidator
 
     /**
      * @inheritdoc
-     *
      * @throws InvalidConfigException if $attribute is not 'uri'
      */
     public function validateAttribute($model, $attribute)

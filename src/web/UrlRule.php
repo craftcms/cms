@@ -12,7 +12,6 @@ use craft\helpers\ArrayHelper;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

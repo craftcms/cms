@@ -14,7 +14,6 @@ use craft\base\Model;
  * Class Structure model.
  *
  * @property bool $isSortable whether elements in this structure can be sorted by the current user
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

@@ -18,7 +18,6 @@ use yii\web\Response;
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
  * such as creating, editing and deleting transforms.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -56,9 +55,8 @@ class AssetTransformsController extends Controller
     /**
      * Edit an asset transform.
      *
-     * @param string|null         $transformHandle The transform’s handle, if any.
-     * @param AssetTransform|null $transform       The transform being edited, if there were any validation errors.
-     *
+     * @param string|null $transformHandle The transform’s handle, if any.
+     * @param AssetTransform|null $transform The transform being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested transform cannot be found
      */

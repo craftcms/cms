@@ -44,7 +44,6 @@ use yii\base\NotSupportedException;
 
 /**
  * Assets service.
- *
  * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|<code>Craft::$app->assets</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -100,9 +99,8 @@ class Assets extends Component
     /**
      * Returns a file by its ID.
      *
-     * @param int      $assetId
+     * @param int $assetId
      * @param int|null $siteId
-     *
      * @return Asset|null
      */
     public function getAssetById(int $assetId, int $siteId = null)
@@ -117,7 +115,6 @@ class Assets extends Component
      * Gets the total number of assets that match a given criteria.
      *
      * @param mixed $criteria
-     *
      * @return int
      */
     public function getTotalAssets($criteria = null): int
@@ -136,13 +133,11 @@ class Assets extends Component
 
     /**
      * Replace an Asset's file.
-     *
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
-     * @param Asset  $asset
+     * @param Asset $asset
      * @param string $pathOnServer
      * @param string $filename
-     *
      * @throws FileException            If there was a problem with the actual file.
      * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void
@@ -181,10 +176,9 @@ class Assets extends Component
     /**
      * Move or rename an Asset.
      *
-     * @param Asset        $asset    The asset whose file should be renamed
-     * @param VolumeFolder $folder   The Volume Folder to move the Asset to.
-     * @param string       $filename The new filename
-     *
+     * @param Asset $asset The asset whose file should be renamed
+     * @param VolumeFolder $folder The Volume Folder to move the Asset to.
+     * @param string $filename The new filename
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
@@ -202,8 +196,7 @@ class Assets extends Component
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
-     * @param bool         $indexExisting Set to true to just index the folder if it already exists on volume.
-     *
+     * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
      * @return void
      * @throws AssetConflictException if a folder already exists with such a name
      * @throws InvalidParamException if $folder doesn’t have a parent
@@ -245,9 +238,8 @@ class Assets extends Component
     /**
      * Rename a folder by it's id.
      *
-     * @param int    $folderId
+     * @param int $folderId
      * @param string $newName
-     *
      * @throws AssetConflictException           If a folder already exists with such name in Assets Index
      * @throws AssetLogicException              If the folder to be renamed can't be found or trying to rename the top folder.
      * @throws VolumeObjectExistsException      If a folder already exists with such name in the Volume, but not in Index
@@ -306,8 +298,7 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param bool      $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
-     *
+     * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
      */
@@ -332,7 +323,6 @@ class Assets extends Component
      *
      * @param array $allowedVolumeIds
      * @param array $additionalCriteria additional criteria for filtering the tree
-     *
      * @return array
      */
     public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = []): array
@@ -369,7 +359,6 @@ class Assets extends Component
      * Get the folder tree for Assets by a folder id.
      *
      * @param int $folderId
-     *
      * @return array
      */
     public function getFolderTreeByFolderId(int $folderId): array
@@ -385,7 +374,6 @@ class Assets extends Component
      * Returns a folder by its ID.
      *
      * @param int $folderId
-     *
      * @return VolumeFolder|null
      */
     public function getFolderById(int $folderId)
@@ -409,7 +397,6 @@ class Assets extends Component
      * Finds folders that match a given criteria.
      *
      * @param mixed $criteria
-     *
      * @return VolumeFolder[]
      */
     public function findFolders($criteria = null): array
@@ -450,8 +437,7 @@ class Assets extends Component
      * Returns all of the folders that are descendants of a given folder.
      *
      * @param VolumeFolder $parentFolder
-     * @param string       $orderBy
-     *
+     * @param string $orderBy
      * @return array
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
@@ -485,7 +471,6 @@ class Assets extends Component
      * Finds the first folder that matches a given criteria.
      *
      * @param mixed $criteria
-     *
      * @return VolumeFolder|null
      */
     public function findFolder($criteria = null)
@@ -508,7 +493,6 @@ class Assets extends Component
      * Returns the root folder for a given volume ID.
      *
      * @param int $volumeId The volume ID
-     *
      * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
      */
     public function getRootFolderByVolumeId(int $volumeId)
@@ -523,7 +507,6 @@ class Assets extends Component
      * Gets the total number of folders that match a given criteria.
      *
      * @param mixed $criteria
-     *
      * @return int
      */
     public function getTotalFolders($criteria): int
@@ -546,12 +529,11 @@ class Assets extends Component
     /**
      * Returns the URL for an asset, possibly with a given transform applied.
      *
-     * @param Asset                            $asset
+     * @param Asset $asset
      * @param AssetTransform|string|array|null $transform
-     * @param bool|null                        $generateNow Whether the transformed image should be generated immediately if it doesn’t exist.
-     *                                                      Default is null, meaning it will be left up to the `generateTransformsBeforePageLoad`
-     *                                                      config setting.
-     *
+     * @param bool|null $generateNow Whether the transformed image should be
+     * generated immediately if it doesn’t exist. Default is null, meaning it
+     * will be left up to the `generateTransformsBeforePageLoad` sconfig setting.
      * @return string|null
      */
     public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
@@ -610,12 +592,11 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail URL for a given asset.
      *
-     * @param Asset    $asset          asset to return a thumb for
-     * @param int      $width          width of the returned thumb
-     * @param int|null $height         height of the returned thumb (defaults to $width if null)
-     * @param bool     $generate       whether to generate a thumb in none exists yet
-     * @param bool     $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
-     *
+     * @param Asset $asset asset to return a thumb for
+     * @param int $width width of the returned thumb
+     * @param int|null $height height of the returned thumb (defaults to $width if null)
+     * @param bool $generate whether to generate a thumb in none exists yet
+     * @param bool $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      * @return string
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @see Asset::getThumbUrl()
@@ -665,12 +646,11 @@ class Assets extends Component
     /**
      * Returns the CP thumbnail path for a given asset.
      *
-     * @param Asset    $asset          asset to return a thumb for
-     * @param int      $width          width of the returned thumb
-     * @param int|null $height         height of the returned thumb (defaults to $width if null)
-     * @param bool     $generate       whether to generate a thumb in none exists yet
-     * @param bool     $fallbackToIcon whether to return the path to a generic icon if a thumbnail can't be generated
-     *
+     * @param Asset $asset asset to return a thumb for
+     * @param int $width width of the returned thumb
+     * @param int|null $height height of the returned thumb (defaults to $width if null)
+     * @param bool $generate whether to generate a thumb in none exists yet
+     * @param bool $fallbackToIcon whether to return the path to a generic icon if a thumbnail can't be generated
      * @return string|false thumbnail path, or `false` if it doesn't exist and $generate is `false`
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @see getThumbUrl()
@@ -734,7 +714,6 @@ class Assets extends Component
      * for assets that don't have a normal thumbnail.
      *
      * @param Asset $asset
-     *
      * @return string
      */
     public function getIconPath(Asset $asset): string
@@ -771,8 +750,7 @@ class Assets extends Component
      * Find a replacement for a filename
      *
      * @param string $originalFilename the original filename for which to find a replacement.
-     * @param int    $folderId         THe folder in which to find the replacement
-     *
+     * @param int $folderId THe folder in which to find the replacement
      * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @throws InvalidParamException If $folderId is invalid
@@ -857,10 +835,9 @@ class Assets extends Component
     /**
      * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
-     * @param string $fullPath   The path to ensure the folder exists at.
+     * @param string $fullPath The path to ensure the folder exists at.
      * @param Volume $volume
-     * @param bool   $justRecord If set to false, will also make sure the physical folder exists on Volume.
-     *
+     * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return int
      * @throws VolumeException If the volume cannot be found.
      */
@@ -916,7 +893,6 @@ class Assets extends Component
      * Store a folder by model
      *
      * @param VolumeFolder $folder
-     *
      * @return void
      */
     public function storeFolderRecord(VolumeFolder $folder)
@@ -950,7 +926,6 @@ class Assets extends Component
      * Get the user's temporary upload folder.
      *
      * @param User|null $userModel
-     *
      * @return VolumeFolder
      */
     public function getUserTemporaryUploadFolder(User $userModel = null)
@@ -1015,7 +990,6 @@ class Assets extends Component
      * Return the folder tree form a list of folders.
      *
      * @param VolumeFolder[] $folders
-     *
      * @return array
      */
     private function _getFolderTreeByFolders(array $folders): array
@@ -1043,9 +1017,8 @@ class Assets extends Component
     /**
      * Applies WHERE conditions to a DbCommand query for folders.
      *
-     * @param Query          $query
+     * @param Query $query
      * @param FolderCriteria $criteria
-     *
      * @return void
      */
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria)

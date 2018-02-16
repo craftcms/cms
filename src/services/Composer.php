@@ -25,7 +25,6 @@ use yii\base\Exception;
 
 /**
  * Composer service.
- *
  * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|<code>Craft::$app->composer</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -83,9 +82,8 @@ class Composer extends Component
     /**
      * Installs a given set of packages with Composer.
      *
-     * @param array            $requirements Package name/version pairs
-     * @param IOInterface|null $io           The IO object that Composer should be instantiated with
-     *
+     * @param array $requirements Package name/version pairs
+     * @param IOInterface|null $io The IO object that Composer should be instantiated with
      * @return void
      * @throws \Throwable if something goes wrong
      */
@@ -146,9 +144,8 @@ class Composer extends Component
     /**
      * Uninstalls a given set of packages with Composer.
      *
-     * @param string[]         $packages Package names
-     * @param IOInterface|null $io       The IO object that Composer should be instantiated with
-     *
+     * @param string[] $packages Package names
+     * @param IOInterface|null $io The IO object that Composer should be instantiated with
      * @return void
      * @throws \Throwable if something goes wrong
      */
@@ -220,7 +217,6 @@ class Composer extends Component
      * Optimizes the Composer autoloader.
      *
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     *
      * @return void
      * @throws \Throwable if something goes wrong
      * @deprecated
@@ -291,9 +287,8 @@ class Composer extends Component
      * Updates the composer.json file with new requirements
      *
      * @param string $jsonPath
-     * @param array  $requirements
-     * @param bool   $sortPackages
-     *
+     * @param array $requirements
+     * @param bool $sortPackages
      * @return void
      */
     protected function updateRequirements(string $jsonPath, array $requirements, bool $sortPackages)
@@ -337,9 +332,8 @@ class Composer extends Component
      * composer.craftcms.com instead of packagist.org.
      *
      * @param IOInterface $io
-     * @param string      $jsonPath
-     * @param bool        $swapPackagist
-     *
+     * @param string $jsonPath
+     * @param bool $swapPackagist
      * @return array
      */
     protected function composerConfig(IOInterface $io, string $jsonPath, bool $swapPackagist = true): array
@@ -405,9 +399,8 @@ class Composer extends Component
      * Creates a new Composer instance.
      *
      * @param IOInterface $io
-     * @param string      $jsonPath
-     * @param bool        $swapPackagist
-     *
+     * @param string $jsonPath
+     * @param bool $swapPackagist
      * @return \Composer\Composer
      */
     protected function createComposer(IOInterface $io, string $jsonPath, bool $swapPackagist = true): \Composer\Composer

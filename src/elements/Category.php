@@ -93,7 +93,6 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     *
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
     public static function find(): ElementQueryInterface

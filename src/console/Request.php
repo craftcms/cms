@@ -11,7 +11,6 @@ use craft\base\RequestTrait;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

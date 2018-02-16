@@ -13,8 +13,7 @@ use craft\base\Model;
  * Stores all of the available update info.
  *
  * @property bool $hasCritical Whether any of the updates have a critical release available
- * @property int  $total       The total number of available updates
- *
+ * @property int $total       The total number of available updates
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

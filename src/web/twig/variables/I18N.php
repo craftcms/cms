@@ -62,7 +62,6 @@ class I18N
      * Returns a locale by its ID.
      *
      * @param string $localeId
-     *
      * @return Locale
      */
     public function getLocaleById(string $localeId): Locale
@@ -136,7 +135,6 @@ class I18N
      * Returns the localization data for a given locale.
      *
      * @param string|null $localeId
-     *
      * @return Locale
      */
     public function getLocaleData(string $localeId = null): Locale

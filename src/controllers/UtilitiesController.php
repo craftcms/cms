@@ -63,7 +63,6 @@ class UtilitiesController extends Controller
      * Show a utility page.
      *
      * @param string $id
-     *
      * @return Response
      * @throws NotFoundHttpException if $id is invalid
      * @throws ForbiddenHttpException if the user doesn't have access to the requested utility
@@ -590,7 +589,6 @@ class UtilitiesController extends Controller
      * Returns a utility type’s SVG icon.
      *
      * @param string $class
-     *
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -619,7 +617,6 @@ class UtilitiesController extends Controller
      * Returns the default icon SVG for a given utility type.
      *
      * @param string $class
-     *
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string

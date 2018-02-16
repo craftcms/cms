@@ -24,7 +24,6 @@ class RequireLoginNode extends \Twig_Node
      * Compiles a RequireLoginNode into PHP.
      *
      * @param \Twig_Compiler $compiler
-     *
      * @return void
      */
     public function compile(\Twig_Compiler $compiler)

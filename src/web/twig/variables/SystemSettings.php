@@ -26,7 +26,6 @@ class SystemSettings
      * Returns whether a setting category exists.
      *
      * @param string $category
-     *
      * @return bool
      */
     public function __isset(string $category): bool
@@ -39,7 +38,6 @@ class SystemSettings
      * Returns the system settings for a category.
      *
      * @param string $category
-     *
      * @return array
      */
     public function __get(string $category): array

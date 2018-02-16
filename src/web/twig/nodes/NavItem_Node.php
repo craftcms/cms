@@ -24,9 +24,9 @@ class NavItem_Node extends \Twig_Node
      * NavItem_Node constructor.
      *
      * @param \Twig_Node_Expression_AssignName $valueTarget
-     * @param \Twig_Node|null                  $indent
-     * @param \Twig_Node|null                  $outdent
-     * @param \Twig_Node|null                  $lowerBody
+     * @param \Twig_Node|null $indent
+     * @param \Twig_Node|null $outdent
+     * @param \Twig_Node|null $lowerBody
      * @param                                  $lineno
      * @param                                  $tag
      */

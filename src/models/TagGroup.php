@@ -19,7 +19,6 @@ use craft\validators\UniqueValidator;
  * TagGroup model.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

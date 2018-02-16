@@ -61,7 +61,6 @@ class Rebrand
      * Return whether the specified type of image has been uploaded for the site.
      *
      * @param string $type 'logo' or 'icon'.
-     *
      * @return bool
      */
     public function isImageUploaded(string $type): bool
@@ -93,7 +92,6 @@ class Rebrand
      * Get the ImageVariable for type.
      *
      * @param string $type
-     *
      * @return Image|null
      */
     public function getImageVariable(string $type)
@@ -123,7 +121,6 @@ class Rebrand
      * Returns the path to a rebrand image by type or false if it hasn't ben uploaded.
      *
      * @param string $type logo or image.
-     *
      * @return string|false
      * @throws Exception in case of failure
      */

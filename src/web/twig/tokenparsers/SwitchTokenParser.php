@@ -11,7 +11,6 @@ use craft\web\twig\nodes\SwitchNode;
 
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
- *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -98,7 +97,6 @@ class SwitchTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideIfFork(\Twig_Token $token): bool
@@ -108,7 +106,6 @@ class SwitchTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideIfEnd(\Twig_Token $token): bool

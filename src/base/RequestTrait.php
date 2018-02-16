@@ -9,7 +9,6 @@ namespace craft\base;
 
 /**
  * Request trait.
- *
  * This provides request methods that are common between craft\web\Request and craft\console\Request.
  *
  * @property string $scriptFilename The requested script name being used to access Craft (e.g. “index.php”).

@@ -21,7 +21,6 @@ use yii\base\InvalidConfigException;
  * EntryType model class.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

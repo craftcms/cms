@@ -21,7 +21,6 @@ use craft\validators\UniqueValidator;
  * GlobalSet represents a global set element.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -64,7 +63,6 @@ class GlobalSet extends Element
 
     /**
      * @inheritdoc
-     *
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
     public static function find(): ElementQueryInterface

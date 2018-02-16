@@ -20,7 +20,6 @@ use craft\validators\UniqueValidator;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- *
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
  */
 class Section extends Model
@@ -173,7 +172,6 @@ class Section extends Model
      * Sets the section's site-specific settings.
      *
      * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
-     *
      * @return void
      */
     public function setSiteSettings(array $siteSettings)
@@ -199,8 +197,7 @@ class Section extends Model
      * Adds site-specific errors to the model.
      *
      * @param array $errors
-     * @param int   $siteId
-     *
+     * @param int $siteId
      * @return void
      */
     public function addSiteSettingsErrors(array $errors, int $siteId)

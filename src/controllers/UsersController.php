@@ -40,7 +40,6 @@ use yii\web\Response;
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
  * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
- *
  * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetRemainingSessionTime]],
  * [[actionSendPasswordResetEmail]], [[actionSetPassword]], [[actionVerifyEmail]] and [[actionSaveUser]] require an
  * authenticated Craft session via [[allowAnonymous]].
@@ -208,7 +207,6 @@ class UsersController extends Controller
 
     /**
      * Starts an elevated user session.
-     *
      * return Response
      */
     public function actionStartElevatedSession()
@@ -492,8 +490,7 @@ class UsersController extends Controller
      * Edit a user account.
      *
      * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User|null       $user   The user being edited, if there were any validation errors.
-     *
+     * @param User|null $user The user being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
@@ -876,15 +873,12 @@ class UsersController extends Controller
 
     /**
      * Provides an endpoint for saving a user account.
-     *
      * This action accounts for the following scenarios:
-     *
      * - An admin registering a new user account.
      * - An admin editing an existing user account.
      * - A normal user with user-administration permissions registering a new user account.
      * - A normal user with user-administration permissions editing an existing user account.
      * - A guest registering a new user account ("public registration").
-     *
      * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
      *
      * @return Response|null
@@ -1550,8 +1544,7 @@ class UsersController extends Controller
      * Handles a failed login attempt.
      *
      * @param string|null $authError
-     * @param User|null   $user
-     *
+     * @param User|null $user
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
@@ -1634,7 +1627,6 @@ class UsersController extends Controller
      * logged in.
      *
      * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
-     *
      * @return Response
      */
     private function _handleSuccessfulLogin(bool $setNotice): Response
@@ -1685,9 +1677,8 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User  $user
+     * @param User $user
      * @param array $variables
-     *
      * @return Response
      */
     private function _renderSetPasswordTemplate(User $user, array $variables): Response
@@ -1752,7 +1743,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     *
      * @return void
      */
     private function _processUserPhoto(User $user)
@@ -1781,7 +1771,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     *
      * @return void
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions/groups
      */
@@ -1920,7 +1909,6 @@ class UsersController extends Controller
 
     /**
      * @param User|false $user
-     *
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
@@ -1953,7 +1941,6 @@ class UsersController extends Controller
      * Takes over after a user has been activated.
      *
      * @param User $user The user that was just activated
-     *
      * @return Response|null
      */
     private function _onAfterActivateUser(User $user)
@@ -1971,7 +1958,6 @@ class UsersController extends Controller
      * Possibly log a user in right after they were activate, if Craft is configured to do so.
      *
      * @param User $user The user that was just activated
-     *
      * @return bool Whether the user was just logged in
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
@@ -1987,7 +1973,6 @@ class UsersController extends Controller
      * Redirect the browser after a user’s account has been activated.
      *
      * @param User $user The user that was just activated
-     *
      * @return Response|null
      */
     private function _redirectUserAfterAccountActivation(User $user)
@@ -2007,9 +1992,8 @@ class UsersController extends Controller
     }
 
     /**
-     * @param string[]    $errors
+     * @param string[] $errors
      * @param string|null $loginName
-     *
      * @return Response|null
      */
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)

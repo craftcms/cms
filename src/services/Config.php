@@ -23,12 +23,10 @@ use yii\base\InvalidParamException;
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
- *
  * An instance of the Config service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConfig()|<code>Craft::$app->config</code>]].
  *
- * @property DbConfig      $db        the DB config settings
+ * @property DbConfig $db        the DB config settings
  * @property GeneralConfig $general   the general config settings
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -75,7 +73,6 @@ class Config extends Component
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
-     *
      * @return BaseObject The config settings
      * @throws InvalidParamException if $category is invalid
      * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
@@ -153,7 +150,6 @@ class Config extends Component
      * config, and returns the values.
      *
      * @param $filename
-     *
      * @return array
      */
     public function getConfigFromFile(string $filename): array
@@ -201,9 +197,8 @@ class Config extends Component
     /**
      * Sets an environment variable value in the project's .env file.
      *
-     * @param string $name  The environment variable name
+     * @param string $name The environment variable name
      * @param string $value The environment variable value
-     *
      * @throws Exception if the .env file doesn't exist
      */
     public function setDotEnvVar($name, $value)

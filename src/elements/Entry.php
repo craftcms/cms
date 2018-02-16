@@ -118,7 +118,6 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     *
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
     public static function find(): ElementQueryInterface

@@ -86,9 +86,7 @@ abstract class Model extends \yii\base\Model
      * Returns the first error of the specified attribute.
      *
      * @param string $attribute The attribute name.
-     *
      * @return string The error message. Null is returned if no error.
-     *
      * @deprecated in 3.0. Use [[getFirstError()]] instead.
      */
     public function getError(string $attribute): string

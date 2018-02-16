@@ -14,12 +14,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Migration record.
  *
- * @property int       $id        ID
- * @property int       $pluginId  Plugin ID
- * @property string    $version   Version
+ * @property int $id        ID
+ * @property int $pluginId  Plugin ID
+ * @property string $version   Version
  * @property \DateTime $applyTime Apply time
- * @property Plugin    $plugin    Plugin
- *
+ * @property Plugin $plugin    Plugin
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -43,7 +42,6 @@ class Migration extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

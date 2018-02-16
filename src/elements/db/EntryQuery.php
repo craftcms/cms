@@ -22,16 +22,14 @@ use yii\db\Connection;
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
  *
- * @property DateTime|string           $before      The date/time that the resulting entries’ Post Dates must be before.
- * @property DateTime|string           $after       The date/time that the resulting entries’ Post Dates must be equal to or after.
- * @property string|string[]|Section   $section     The handle(s) of the section(s) that resulting entries must belong to.
+ * @property DateTime|string $before      The date/time that the resulting entries’ Post Dates must be before.
+ * @property DateTime|string $after       The date/time that the resulting entries’ Post Dates must be equal to or after.
+ * @property string|string[]|Section $section     The handle(s) of the section(s) that resulting entries must belong to.
  * @property string|string[]|EntryType $type        The handle(s) of the entry type(s) that resulting entries must have.
  * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
- *
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
  * @method Entry|array|null nth(int $n, Connection $db = null)
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -136,7 +134,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function editable(bool $value = true)
@@ -149,7 +146,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[sectionId]] property based on a given section(s)’s handle(s).
      *
      * @param string|string[]|Section|null $value The property value
-     *
      * @return static self reference
      */
     public function section($value)
@@ -174,7 +170,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[sectionId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function sectionId($value)
@@ -187,7 +182,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[typeId]] property based on a given entry type(s)’s handle(s).
      *
      * @param string|string[]|EntryType|null $value The property value
-     *
      * @return static self reference
      */
     public function type($value)
@@ -211,7 +205,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[typeId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function typeId($value)
@@ -224,7 +217,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[authorId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function authorId($value)
@@ -237,7 +229,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[authorGroupId]] property based on a given user group(s)’s handle(s).
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function authorGroup($value)
@@ -261,7 +252,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[authorGroupId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function authorGroupId($value)
@@ -274,7 +264,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[postDate]] property.
      *
      * @param mixed $value The property value
-     *
      * @return static self reference
      */
     public function postDate($value)
@@ -287,7 +276,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[postDate]] property to only allow entries whose Post Date is before the given value.
      *
      * @param DateTime|string $value The property value
-     *
      * @return static self reference
      */
     public function before($value)
@@ -312,7 +300,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[postDate]] property to only allow entries whose Post Date is after the given value.
      *
      * @param DateTime|string $value The property value
-     *
      * @return static self reference
      */
     public function after($value)
@@ -337,7 +324,6 @@ class EntryQuery extends ElementQuery
      * Sets the [[expiryDate]] property.
      *
      * @param mixed $value The property value
-     *
      * @return static self reference
      */
     public function expiryDate($value)

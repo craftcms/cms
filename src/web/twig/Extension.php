@@ -72,7 +72,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Constructor
      *
-     * @param View        $view
+     * @param View $view
      * @param Environment $environment
      */
     public function __construct(View $view, Environment $environment)
@@ -255,12 +255,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Translates the given message.
      *
-     * @param mixed       $message  The message to be translated.
+     * @param mixed $message The message to be translated.
      * @param string|null $category the message category.
-     * @param array|null  $params   The parameters that will be used to replace the corresponding placeholders in the message.
+     * @param array|null $params The parameters that will be used to replace the corresponding placeholders in the message.
      * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     *                              [[\yii\base\Application::language|application language]] will be used.
-     *
+     * [[\yii\base\Application::language|application language]] will be used.
      * @return string the translated message.
      */
     public function translateFilter($message, $category = null, $params = null, $language = null): string
@@ -292,7 +291,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Uppercases the first character of a multibyte string.
      *
      * @param string $string The multibyte string.
-     *
      * @return string The string with the first character converted to upercase.
      */
     public function ucfirstFilter(string $string): string
@@ -304,7 +302,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Lowercases the first character of a multibyte string.
      *
      * @param string $string The multibyte string.
-     *
      * @return string The string with the first character converted to lowercase.
      */
     public function lcfirstFilter(string $string): string
@@ -315,11 +312,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * kebab-cases a string.
      *
-     * @param string $string            The string
-     * @param string $glue              The string used to glue the words together (default is a hyphen)
-     * @param bool   $lower             Whether the string should be lowercased (default is true)
-     * @param bool   $removePunctuation Whether punctuation marks should be removed (default is true)
-     *
+     * @param string $string The string
+     * @param string $glue The string used to glue the words together (default is a hyphen)
+     * @param bool $lower Whether the string should be lowercased (default is true)
+     * @param bool $removePunctuation Whether punctuation marks should be removed (default is true)
      * @return string The kebab-cased string
      */
     public function kebabFilter(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
@@ -331,7 +327,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * camelCases a string.
      *
      * @param string $string The string
-     *
      * @return string
      */
     public function camelFilter(string $string): string
@@ -343,7 +338,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * PascalCases a string.
      *
      * @param string $string The string
-     *
      * @return string
      */
     public function pascalFilter(string $string): string
@@ -355,7 +349,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * snake_cases a string.
      *
      * @param string $string The string
-     *
      * @return string
      */
     public function snakeFilter(string $string): string
@@ -368,12 +361,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
      * encoding options on text/html/xml requests.
      *
-     * @param mixed    $value   The value to JSON encode.
+     * @param mixed $value The value to JSON encode.
      * @param int|null $options Either null or a bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP,
-     *                          JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
-     *                          JSON_FORCE_OBJECT
-     * @param int      $depth   The maximum depth
-     *
+     * JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
+     * JSON_FORCE_OBJECT
+     * @param int $depth The maximum depth
      * @return mixed The JSON encoded value.
      */
     public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
@@ -394,7 +386,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @param array $arr
      * @param mixed $exclude
-     *
      * @return array
      */
     public function withoutFilter(array $arr, $exclude): array
@@ -417,9 +408,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses a string for reference tags.
      *
-     * @param string   $str
+     * @param string $str
      * @param int|null $siteId
-     *
      * @return \Twig_Markup
      */
     public function parseRefsFilter(string $str, int $siteId = null): \Twig_Markup
@@ -436,7 +426,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param mixed $str
      * @param mixed $search
      * @param mixed $replace
-     *
      * @return mixed
      */
     public function replaceFilter($str, $search, $replace = null)
@@ -458,12 +447,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Extending Twig's |date filter so we can run any translations on the output.
      *
-     * @param \Twig_Environment                     $env
-     * @param DateTimeInterface|DateInterval|string $date      A date
-     * @param string|null                           $format    The target format, null to use the default
-     * @param DateTimeZone|string|false|null        $timezone  The target timezone, null to use the default, false to leave unchanged
-     * @param bool                                  $translate Whether the formatted date string should be translated
-     *
+     * @param \Twig_Environment $env
+     * @param DateTimeInterface|DateInterval|string $date A date
+     * @param string|null $format The target format, null to use the default
+     * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param bool $translate Whether the formatted date string should be translated
      * @return mixed|string
      */
     public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
@@ -486,10 +474,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the Atom format.
      *
-     * @param \Twig_Environment                 $env
-     * @param DateTime|DateTimeInterface|string $date     A date
-     * @param DateTimeZone|string|false|null    $timezone The target timezone, null to use the default, false to leave unchanged
-     *
+     * @param \Twig_Environment $env
+     * @param DateTime|DateTimeInterface|string $date A date
+     * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @return string The formatted date
      */
     public function atomFilter(\Twig_Environment $env, $date, $timezone = null): string
@@ -500,10 +487,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the RSS format.
      *
-     * @param \Twig_Environment                 $env
-     * @param DateTime|DateTimeInterface|string $date     A date
-     * @param DateTimeZone|string|false|null    $timezone The target timezone, null to use the default, false to leave unchanged
-     *
+     * @param \Twig_Environment $env
+     * @param DateTime|DateTimeInterface|string $date A date
+     * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @return string The formatted date
      */
     public function rssFilter(\Twig_Environment $env, $date, $timezone = null): string
@@ -514,12 +500,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a time.
      *
-     * @param \Twig_Environment              $env
-     * @param DateTimeInterface|string       $date      A date
-     * @param string|null                    $format    The target format, null to use the default
-     * @param DateTimeZone|string|false|null $timezone  The target timezone, null to use the default, false to leave unchanged
-     * @param bool                           $translate Whether the formatted date string should be translated
-     *
+     * @param \Twig_Environment $env
+     * @param DateTimeInterface|string $date A date
+     * @param string|null $format The target format, null to use the default
+     * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param bool $translate Whether the formatted date string should be translated
      * @return mixed|string
      */
     public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
@@ -542,12 +527,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a date+time.
      *
-     * @param \Twig_Environment              $env
-     * @param DateTimeInterface|string       $date      A date
-     * @param string|null                    $format    The target format, null to use the default
-     * @param DateTimeZone|string|false|null $timezone  The target timezone, null to use the default, false to leave unchanged
-     * @param bool                           $translate Whether the formatted date string should be translated
-     *
+     * @param \Twig_Environment $env
+     * @param DateTimeInterface|string $date A date
+     * @param string|null $format The target format, null to use the default
+     * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param bool $translate Whether the formatted date string should be translated
      * @return mixed|string
      */
     public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
@@ -571,7 +555,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Encrypts and base64-encodes a string.
      *
      * @param string $str the string
-     *
      * @return string
      */
     public function encencFilter(string $str): string
@@ -583,8 +566,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Groups an array or element query's results by a common property.
      *
      * @param array|\Traversable $arr
-     * @param string             $item
-     *
+     * @param string $item
      * @return array
      * @throws \Twig_Error_Runtime if $arr is not of type array or Traversable
      */
@@ -616,7 +598,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @param mixed $haystack
      * @param mixed $needle
-     *
      * @return int
      */
     public function indexOfFilter($haystack, $needle): int
@@ -649,7 +630,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * [[Db::parseParam()]].
      *
      * @param string $value The param value.
-     *
      * @return string The escaped param value.
      */
     public function literalFilter(string $value): string
@@ -660,12 +640,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses text through Markdown.
      *
-     * @param string      $markdown   The markdown text to parse
-     * @param string|null $flavor     The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
-     *                                'gfm-comment' (GFM with newlines converted to `<br>`s),
-     *                                or 'extra' (Markdown Extra). Default is 'original'.
-     * @param bool        $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
-     *
+     * @param string $markdown The markdown text to parse
+     * @param string|null $flavor The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
+     * 'gfm-comment' (GFM with newlines converted to `<br>`s),
+     * or 'extra' (Markdown Extra). Default is 'original'.
+     * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      * @return \Twig_Markup
      */
     public function markdownFilter(string $markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
@@ -733,7 +712,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Returns a clone of the given variable.
      *
      * @param mixed $var
-     *
      * @return mixed
      */
     public function cloneFunction($var)
@@ -745,7 +723,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Returns a redirect input wrapped in a \Twig_Markup object.
      *
      * @param string $url The URL to redirect to.
-     *
      * @return \Twig_Markup
      */
     public function redirectInputFunction(string $url): \Twig_Markup
@@ -757,9 +734,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Rounds the given value.
      *
      * @param int|float $value
-     * @param int       $precision
-     * @param int       $mode
-     *
+     * @param int $precision
+     * @param int $mode
      * @return int|float
      * @deprecated in 3.0. Use Twig's |round filter instead.
      */
@@ -772,8 +748,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
     /**
      * @param string $template
-     * @param mixed  $object
-     *
+     * @param mixed $object
      * @return string
      */
     public function renderObjectTemplate(string $template, $object): string
@@ -785,7 +760,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Shuffles an array.
      *
      * @param mixed $arr
-     *
      * @return mixed
      */
     public function shuffleFunction($arr)
@@ -804,9 +778,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
      *
-     * @param string $svg      The SVG file path or contents
-     * @param bool   $sanitize Whether the file should be sanitized first
-     *
+     * @param string $svg The SVG file path or contents
+     * @param bool $sanitize Whether the file should be sanitized first
      * @return \Twig_Markup|string
      */
     public function svgFunction(string $svg, bool $sanitize = true)

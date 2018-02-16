@@ -35,7 +35,6 @@ use yii\web\ServerErrorHttpException;
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
  * swapping between entry types, previewing, deleting and sharing entries.
- *
  * Note that all actions in the controller except [[actionViewSharedEntry]] require an authenticated Craft session
  * via [[allowAnonymous]].
  *
@@ -66,13 +65,12 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string      $sectionHandle The section’s handle
-     * @param int|null    $entryId       The entry’s ID, if editing an existing entry.
-     * @param int|null    $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param int|null    $versionId     The entry version’s ID, if editing an existing version.
-     * @param string|null $siteHandle    The site handle, if specified.
-     * @param Entry|null  $entry         The entry being edited, if there were any validation errors.
-     *
+     * @param string $sectionHandle The section’s handle
+     * @param int|null $entryId The entry’s ID, if editing an existing entry.
+     * @param int|null $draftId The entry draft’s ID, if editing an existing draft.
+     * @param int|null $versionId The entry version’s ID, if editing an existing version.
+     * @param string|null $siteHandle The site handle, if specified.
+     * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
@@ -641,7 +639,6 @@ class EntriesController extends BaseEntriesController
      * @param int|null $siteId
      * @param int|null $draftId
      * @param int|null $versionId
-     *
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
@@ -707,7 +704,6 @@ class EntriesController extends BaseEntriesController
      * @param int|null $siteId
      * @param int|null $draftId
      * @param int|null $versionId
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
@@ -737,7 +733,6 @@ class EntriesController extends BaseEntriesController
      * Preps entry edit variables.
      *
      * @param array &$variables
-     *
      * @return void
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
@@ -930,7 +925,6 @@ class EntriesController extends BaseEntriesController
      * Populates an Entry with post data.
      *
      * @param Entry $entry
-     *
      * @return void
      */
     private function _populateEntryModel(Entry $entry)
@@ -982,7 +976,6 @@ class EntriesController extends BaseEntriesController
      * Displays an entry.
      *
      * @param Entry $entry
-     *
      * @return Response
      * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
      */

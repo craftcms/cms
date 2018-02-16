@@ -19,11 +19,9 @@ use yii\db\Connection;
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
  * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
- *
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, Connection $db = null)
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -117,7 +115,6 @@ class UserQuery extends ElementQuery
      * Sets the [[admin]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function admin(bool $value = true)
@@ -130,7 +127,6 @@ class UserQuery extends ElementQuery
      * Sets the [[client]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function client(bool $value = true)
@@ -143,7 +139,6 @@ class UserQuery extends ElementQuery
      * Sets the [[can]] property.
      *
      * @param string|int|null $value The property value
-     *
      * @return static self reference
      */
     public function can($value)
@@ -156,7 +151,6 @@ class UserQuery extends ElementQuery
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|UserGroup|null $value The property value
-     *
      * @return static self reference
      */
     public function group($value)
@@ -180,7 +174,6 @@ class UserQuery extends ElementQuery
      * Sets the [[groupId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function groupId($value)
@@ -193,7 +186,6 @@ class UserQuery extends ElementQuery
      * Sets the [[email]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function email($value)
@@ -206,7 +198,6 @@ class UserQuery extends ElementQuery
      * Sets the [[username]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function username($value)
@@ -219,7 +210,6 @@ class UserQuery extends ElementQuery
      * Sets the [[firstName]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function firstName($value)
@@ -232,7 +222,6 @@ class UserQuery extends ElementQuery
      * Sets the [[lastName]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function lastName($value)
@@ -245,7 +234,6 @@ class UserQuery extends ElementQuery
      * Sets the [[lastLoginDate]] property.
      *
      * @param mixed $value The property value
-     *
      * @return static self reference
      */
     public function lastLoginDate($value)

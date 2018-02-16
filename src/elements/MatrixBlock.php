@@ -26,7 +26,6 @@ use yii\base\InvalidConfigException;
  * MatrixBlock represents a matrix block element.
  *
  * @property MatrixBlockType|null $type The block type
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -77,7 +76,6 @@ class MatrixBlock extends Element
 
     /**
      * @inheritdoc
-     *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
     public static function find(): ElementQueryInterface

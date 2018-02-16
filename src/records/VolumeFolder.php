@@ -13,14 +13,13 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class VolumeFolder record.
  *
- * @property int          $id       ID
- * @property int          $parentId Parent ID
- * @property int          $volumeId Volume ID
- * @property string       $name     Name
- * @property string       $path     Path
+ * @property int $id       ID
+ * @property int $parentId Parent ID
+ * @property int $volumeId Volume ID
+ * @property string $name     Name
+ * @property string $path     Path
  * @property VolumeFolder $parent   Parent
- * @property Volume       $volume   Volume
- *
+ * @property Volume $volume   Volume
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -42,7 +41,6 @@ class VolumeFolder extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

@@ -43,7 +43,6 @@ use yii\base\Exception;
 
 /**
  * The Elements service provides APIs for managing elements.
- *
  * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|<code>Craft::$app->elements</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -96,7 +95,6 @@ class Elements extends Component
 
     /**
      * @event ElementActionEvent The event that is triggered before an element action is performed.
-     *
      * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
@@ -126,7 +124,6 @@ class Elements extends Component
      * Creates an element with a given config.
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
      * @return ElementInterface The element
      */
     public function createElement($config): ElementInterface
@@ -144,17 +141,14 @@ class Elements extends Component
 
     /**
      * Returns an element by its ID.
-     *
      * If no element type is provided, the method will first have to run a DB query to determine what type of element
      * the $id is, so you should definitely pass it if it’s known.
-     *
      * The element’s status will not be a factor when using this method.
      *
-     * @param int         $elementId    The element’s ID.
-     * @param string|null $elementType  The element class.
-     * @param int|null    $siteId       The site to fetch the element in.
-     *                                  Defaults to the current site.
-     *
+     * @param int $elementId The element’s ID.
+     * @param string|null $elementType The element class.
+     * @param int|null $siteId The site to fetch the element in.
+     * Defaults to the current site.
      * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementById(int $elementId, string $elementType = null, int $siteId = null)
@@ -186,11 +180,10 @@ class Elements extends Component
     /**
      * Returns an element by its URI.
      *
-     * @param string   $uri             The element’s URI.
-     * @param int|null $siteId          The site to look for the URI in, and to return the element in.
-     *                                  Defaults to the current site.
-     * @param bool     $enabledOnly     Whether to only look for an enabled element. Defaults to `false`.
-     *
+     * @param string $uri The element’s URI.
+     * @param int|null $siteId The site to look for the URI in, and to return the element in.
+     * Defaults to the current site.
+     * @param bool $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false)
@@ -231,7 +224,6 @@ class Elements extends Component
      * Returns the class of an element with a given ID.
      *
      * @param int $elementId The element’s ID
-     *
      * @return string|null The element’s class, or null if it could not be found
      */
     public function getElementTypeById(int $elementId)
@@ -249,7 +241,6 @@ class Elements extends Component
      * Returns the classes of elements with the given IDs.
      *
      * @param int[] $elementIds The elements’ IDs
-     *
      * @return string[]
      */
     public function getElementTypesByIds(array $elementIds): array
@@ -266,8 +257,7 @@ class Elements extends Component
      * Returns an element’s URI for a given site.
      *
      * @param int $elementId The element’s ID.
-     * @param int $siteId    The site to search for the element’s URI in.
-     *
+     * @param int $siteId The site to search for the element’s URI in.
      * @return string|null The element’s URI, or `null`.
      */
     public function getElementUriForSite(int $elementId, int $siteId)
@@ -283,9 +273,8 @@ class Elements extends Component
      * Returns the site IDs that a given element is enabled in.
      *
      * @param int $elementId The element’s ID.
-     *
      * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
-     *                   will be returned.
+     * will be returned.
      */
     public function getEnabledSiteIdsForElement(int $elementId): array
     {
@@ -301,9 +290,7 @@ class Elements extends Component
 
     /**
      * Handles all of the routine tasks that go along with saving elements.
-     *
      * Those tasks include:
-     *
      * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
      * - Ensuring the element has a title if its type [[Element::hasTitles()|has titles]], and giving it a
      *   default title in the event that $validateContent is set to `false`
@@ -315,13 +302,10 @@ class Elements extends Component
      * - Saving the element’s row(s) in the `elements_sites` and `content` tables
      * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
      * - Cleaning any template caches that the element was involved in
-     *
      * The function will fire `beforeElementSave` and `afterElementSave` events, and will call `beforeSave()`
      *  and `afterSave()` methods on the passed-in element, giving the element opportunities to hook into the
      * save process.
-     *
      * Example usage - creating a new entry:
-     *
      * ```php
      * $entry = new Entry();
      * $entry->sectionId = 10;
@@ -330,22 +314,18 @@ class Elements extends Component
      * $entry->authorId = 5;
      * $entry->enabled = true;
      * $entry->title = "Hello World!";
-     *
      * $entry->setFieldValues([
      *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
      * ]);
-     *
      * $success = Craft::$app->elements->saveElement($entry);
-     *
      * if (!$success) {
      *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
      * }
      * ```
      *
-     * @param ElementInterface $element       The element that is being saved
-     * @param bool             $runValidation Whether the element should be validated
-     * @param bool             $propagate     Whether the element should be saved across all of its supported sites
-     *
+     * @param ElementInterface $element The element that is being saved
+     * @param bool $runValidation Whether the element should be validated
+     * @param bool $propagate Whether the element should be saved across all of its supported sites
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -540,9 +520,8 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element       the element to duplicate
-     * @param array            $newAttributes any attributes to apply to the duplicate
-     *
+     * @param ElementInterface $element the element to duplicate
+     * @param array $newAttributes any attributes to apply to the duplicate
      * @return ElementInterface the duplicated element
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws \Throwable if reasons
@@ -607,11 +586,10 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, along with any descendants.
      *
-     * @param ElementInterface $element           The element to update.
-     * @param bool             $updateOtherSites  Whether the element’s other sites should also be updated.
-     * @param bool             $updateDescendants Whether the element’s descendants should also be updated.
-     * @param bool             $queue             Whether the element’s slug and URI should be updated via a job in the queue.
-     *
+     * @param ElementInterface $element The element to update.
+     * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
+     * @param bool $updateDescendants Whether the element’s descendants should also be updated.
+     * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
      * @return void
      */
     public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
@@ -676,7 +654,6 @@ class Elements extends Component
      * Updates an element’s slug and URI, for any sites besides the given one.
      *
      * @param ElementInterface $element The element to update.
-     *
      * @return void
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element)
@@ -701,10 +678,9 @@ class Elements extends Component
     /**
      * Updates an element’s descendants’ slugs and URIs.
      *
-     * @param ElementInterface $element          The element whose descendants should be updated.
-     * @param bool             $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param bool             $queue            Whether the descendants’ slugs and URIs should be updated via a job in the queue.
-     *
+     * @param ElementInterface $element The element whose descendants should be updated.
+     * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
+     * @param bool $queue Whether the descendants’ slugs and URIs should be updated via a job in the queue.
      * @return void
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
@@ -741,16 +717,13 @@ class Elements extends Component
 
     /**
      * Merges two elements together.
-     *
      * This method will update the following:
-     *
      * - Any relations involving the merged element
      * - Any structures that contain the merged element
      * - Any reference tags in textual custom fields referencing the merged element
      *
-     * @param int $mergedElementId     The ID of the element that is going away.
+     * @param int $mergedElementId The ID of the element that is going away.
      * @param int $prevailingElementId The ID of the element that is sticking around.
-     *
      * @return bool Whether the elements were merged successfully.
      * @throws \Throwable if reasons
      */
@@ -866,11 +839,10 @@ class Elements extends Component
     /**
      * Deletes an element by its ID.
      *
-     * @param int         $elementId    The element’s ID
-     * @param string|null $elementType  The element class.
-     * @param int|null    $siteId       The site to fetch the element in.
-     *                                  Defaults to the current site.
-     *
+     * @param int $elementId The element’s ID
+     * @param string|null $elementType The element class.
+     * @param int|null $siteId The site to fetch the element in.
+     * Defaults to the current site.
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
@@ -911,7 +883,6 @@ class Elements extends Component
      * Deletes an element.
      *
      * @param ElementInterface $element The element to be deleted
-     *
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
@@ -1020,7 +991,6 @@ class Elements extends Component
      * Creates an element action with a given config.
      *
      * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
      * @return ElementActionInterface The element action
      */
     public function createAction($config): ElementActionInterface
@@ -1038,7 +1008,6 @@ class Elements extends Component
      * Returns an element class by its handle.
      *
      * @param string $refHandle The element class handle
-     *
      * @return string|null The element class, or null if it could not be found
      */
     public function getElementTypeByRefHandle(string $refHandle)
@@ -1063,9 +1032,8 @@ class Elements extends Component
     /**
      * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
-     * @param string   $str    The string to parse
+     * @param string $str The string to parse
      * @param int|null $siteId The site ID to query the elements in
-     *
      * @return string The parsed string
      */
     public function parseRefs(string $str, int $siteId = null): string
@@ -1140,11 +1108,9 @@ class Elements extends Component
     /**
      * Stores a placeholder element that [[findElements()]] should use instead of populating a new element with a
      * matching ID and site ID.
-     *
      * This is used by Live Preview and Sharing features.
      *
      * @param ElementInterface $element The element currently being edited by Live Preview.
-     *
      * @see getPlaceholderElement()
      */
     public function setPlaceholderElement(ElementInterface $element)
@@ -1161,9 +1127,8 @@ class Elements extends Component
     /**
      * Returns a placeholder element by its ID and site ID.
      *
-     * @param int $id     The element’s ID
+     * @param int $id The element’s ID
      * @param int $siteId The element’s site ID
-     *
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
@@ -1175,10 +1140,9 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param string             $elementType The root element type class
-     * @param ElementInterface[] $elements    The root element models that should be updated with the eager-loaded elements
-     * @param string|array       $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
-     *
+     * @param string $elementType The root element type class
+     * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
+     * @param string|array $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      * @return void
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
@@ -1328,9 +1292,8 @@ class Elements extends Component
      * Propagates an element to a different site
      *
      * @param ElementInterface $element
-     * @param bool             $isNewElement
-     * @param array            $siteInfo
-     *
+     * @param bool $isNewElement
+     * @param array $siteInfo
      * @return void
      * @throws Exception if the element couldn't be propagated
      */
@@ -1391,8 +1354,7 @@ class Elements extends Component
      * Returns the replacement for a given reference tag.
      *
      * @param ElementInterface|null $element
-     * @param array                 $matches
-     *
+     * @param array $matches
      * @return string
      * @see parseRefs()
      */

@@ -24,11 +24,10 @@ class Feeds
     // =========================================================================
 
     /**
-     * @param string      $url
-     * @param int         $limit
-     * @param int         $offset
+     * @param string $url
+     * @param int $limit
+     * @param int $offset
      * @param string|null $cacheDuration
-     *
      * @return array
      */
     public function getFeedItems(string $url, int $limit = 0, int $offset = 0, string $cacheDuration = null): array

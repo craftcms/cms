@@ -18,7 +18,6 @@ use yii\base\Component;
 
 /**
  * Routes service.
- *
  * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|<code>Craft::$app->routes</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -120,12 +119,11 @@ class Routes extends Component
     /**
      * Saves a new or existing route.
      *
-     * @param array    $uriParts     The URI as defined by the user. This is an array where each element is either a
-     *                               string or an array containing the name of a subpattern and the subpattern
-     * @param string   $template     The template to route matching requests to
-     * @param int|null $siteId       The site ID the route should be limited to, if any
-     * @param int|null $routeId      The route ID, if editing an existing route
-     *
+     * @param array $uriParts The URI as defined by the user. This is an array where each element is either a
+     * string or an array containing the name of a subpattern and the subpattern
+     * @param string $template The template to route matching requests to
+     * @param int|null $siteId The site ID the route should be limited to, if any
+     * @param int|null $routeId The route ID, if editing an existing route
      * @return RouteRecord
      * @throws RouteNotFoundException if|null $routeId is invalid
      */
@@ -212,7 +210,6 @@ class Routes extends Component
      * Deletes a route by its ID.
      *
      * @param int $routeId
-     *
      * @return bool
      */
     public function deleteRouteById(int $routeId): bool
@@ -258,7 +255,6 @@ class Routes extends Component
      * Updates the route order.
      *
      * @param array $routeIds An array of each of the route IDs, in their new order.
-     *
      * @return void
      */
     public function updateRouteOrder(array $routeIds)

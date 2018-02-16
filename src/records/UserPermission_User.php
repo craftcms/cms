@@ -13,12 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class UserPermission_User record.
  *
- * @property int            $id           ID
- * @property int            $permissionId Permission ID
- * @property int            $userId       User ID
+ * @property int $id           ID
+ * @property int $permissionId Permission ID
+ * @property int $userId       User ID
  * @property UserPermission $permission   Permission
- * @property User           $user         User
- *
+ * @property User $user         User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -39,7 +38,6 @@ class UserPermission_User extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

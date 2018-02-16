@@ -21,7 +21,6 @@ use yii\web\ServerErrorHttpException;
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -45,7 +44,6 @@ class SitesController extends Controller
      * Site settings index.
      *
      * @param int|null $groupId
-     *
      * @return Response
      * @throws NotFoundHttpException if $groupId is invalid
      */
@@ -151,10 +149,9 @@ class SitesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param int|null  $siteId  The site’s ID, if editing an existing site
-     * @param Site|null $site    The site being edited, if there were any validation errors
-     * @param int|null  $groupId The default group ID that the site should be saved in
-     *
+     * @param int|null $siteId The site’s ID, if editing an existing site
+     * @param Site|null $site The site being edited, if there were any validation errors
+     * @param int|null $groupId The default group ID that the site should be saved in
      * @return Response
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist

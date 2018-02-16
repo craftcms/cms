@@ -13,18 +13,17 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Entry record.
  *
- * @property int            $id         ID
- * @property int            $sectionId  Section ID
- * @property int            $typeId     Type ID
- * @property int            $authorId   Author ID
- * @property \DateTime      $postDate   Post date
- * @property \DateTime      $expiryDate Expiry date
- * @property Element        $element    Element
- * @property Section        $section    Section
- * @property EntryType      $type       Type
- * @property User           $author     Author
+ * @property int $id         ID
+ * @property int $sectionId  Section ID
+ * @property int $typeId     Type ID
+ * @property int $authorId   Author ID
+ * @property \DateTime $postDate   Post date
+ * @property \DateTime $expiryDate Expiry date
+ * @property Element $element    Element
+ * @property Section $section    Section
+ * @property EntryType $type       Type
+ * @property User $author     Author
  * @property EntryVersion[] $versions   Versions
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -35,7 +34,6 @@ class Entry extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

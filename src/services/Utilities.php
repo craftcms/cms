@@ -24,7 +24,6 @@ use yii\base\Component;
 
 /**
  * The Utilities service provides APIs for managing utilities.
- *
  * An instance of the Utilities service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUtilities()|<code>Craft::$app->utilities()</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -97,7 +96,6 @@ class Utilities extends Component
      * Returns whether the current user is authorized to use a given utility.
      *
      * @param string $class The utility class
-     *
      * @return bool
      */
     public function checkAuthorization(string $class): bool
@@ -110,7 +108,6 @@ class Utilities extends Component
      * Returns a utility class by its ID
      *
      * @param string $id
-     *
      * @return string|null
      */
     public function getUtilityTypeById(string $id)
