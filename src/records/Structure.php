@@ -13,10 +13,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Structure record.
  *
- * @property int                $id        ID
- * @property int                $maxLevels Max levels
+ * @property int $id        ID
+ * @property int $maxLevels Max levels
  * @property StructureElement[] $elements  Elements
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -37,7 +36,6 @@ class Structure extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

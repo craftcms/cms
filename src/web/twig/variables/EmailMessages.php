@@ -39,9 +39,8 @@ class EmailMessages
     /**
      * Returns a system email message by its key.
      *
-     * @param string      $key
+     * @param string $key
      * @param string|null $language
-     *
      * @return SystemMessage|null
      */
     public function getMessage(string $key, string $language = null)

@@ -13,10 +13,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * SiteGroup record.
  *
- * @property int    $id    ID
+ * @property int $id    ID
  * @property string $name  Name
  * @property Site[] $sites Sites
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -27,7 +26,6 @@ class SiteGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

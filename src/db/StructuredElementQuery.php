@@ -12,9 +12,7 @@ use yii\db\ActiveQuery;
 
 /**
  * @inheritdoc
- *
  * @mixin NestedSetsQueryBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

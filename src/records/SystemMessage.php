@@ -13,12 +13,11 @@ use craft\validators\LanguageValidator;
 /**
  * Class SystemMessage record.
  *
- * @property int    $id       ID
+ * @property int $id       ID
  * @property string $language Language
  * @property string $key      Key
  * @property string $subject  Subject
  * @property string $body     Body
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -43,7 +42,6 @@ class SystemMessage extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

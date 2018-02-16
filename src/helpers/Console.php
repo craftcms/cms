@@ -17,18 +17,14 @@ class Console extends \yii\helpers\Console
 {
     /**
      * Prints a string to STDOUT.
-     *
      * You may optionally format the string with ANSI codes by
      * passing additional parameters using the constants defined in [[\yii\helpers\Console]].
-     *
      * Example:
-     *
      * ```
      * Console::stdout('This will be red and underlined.', Console::FG_RED, Console::UNDERLINE);
      * ```
      *
      * @param string $string the string to print
-     *
      * @return int|bool Number of bytes printed or false on error
      */
     public static function stdout($string)

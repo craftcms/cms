@@ -114,7 +114,6 @@ class FieldLayout extends Model
      * Returns a field by its handle.
      *
      * @param string $handle The field handle.
-     *
      * @return Field|FieldInterface|null
      */
     public function getFieldByHandle(string $handle)
@@ -133,8 +132,7 @@ class FieldLayout extends Model
      * Sets the layout’s tabs.
      *
      * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
-     *                                     objects or arrays defining the tab’s attributes.
-     *
+     * objects or arrays defining the tab’s attributes.
      * @return void
      */
     public function setTabs($tabs)
@@ -154,10 +152,9 @@ class FieldLayout extends Model
     /**
      * Sets the layout']”s fields.
      *
-     * @param FieldInterface[] $fields         An array of the layout’s fields, which can either be
-     *                                         FieldLayoutFieldModel objects or arrays defining the tab’s
-     *                                         attributes.
-     *
+     * @param FieldInterface[] $fields An array of the layout’s fields, which can either be
+     * FieldLayoutFieldModel objects or arrays defining the tab’s
+     * attributes.
      * @return void
      */
     public function setFields(array $fields)

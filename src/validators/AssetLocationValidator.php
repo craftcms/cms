@@ -149,12 +149,11 @@ class AssetLocationValidator extends Validator
     /**
      * Adds a location error to the model.
      *
-     * @param Model  $model
+     * @param Model $model
      * @param string $attribute
      * @param string $errorCode
      * @param string $message
-     * @param array  $params
-     *
+     * @param array $params
      * @return void
      */
     public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = [])

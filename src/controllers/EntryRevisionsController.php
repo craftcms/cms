@@ -18,7 +18,6 @@ use yii\web\ServerErrorHttpException;
 /**
  * The EntryRevisionsController class is a controller that handles various entry version and draft related tasks such as
  * retrieving, saving, deleting, publishing and reverting entry drafts and versions.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -294,7 +293,6 @@ class EntryRevisionsController extends BaseEntriesController
      * Sets a draft's attributes from the post data.
      *
      * @param EntryDraft $draft
-     *
      * @return void
      */
     private function _setDraftAttributesFromPost(EntryDraft $draft)

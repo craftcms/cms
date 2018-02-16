@@ -27,8 +27,8 @@ class InvalidElementException extends Exception
      * Constructor.
      *
      * @param ElementInterface $element The element
-     * @param string|null      $message The error message
-     * @param int              $code    The error code
+     * @param string|null $message The error message
+     * @param int $code The error code
      */
     public function __construct(ElementInterface $element, string $message = null, int $code = 0)
     {

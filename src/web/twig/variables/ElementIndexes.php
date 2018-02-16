@@ -25,8 +25,7 @@ class ElementIndexes
      * Returns the element index sources in the custom groupings/order.
      *
      * @param string $elementTypeClass The element type class
-     * @param string $context          The context
-     *
+     * @param string $context The context
      * @return array
      */
     public function getSources(string $elementTypeClass, string $context = 'index'): array

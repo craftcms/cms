@@ -20,7 +20,6 @@ abstract class Component extends Model implements ComponentInterface
 
     /**
      * @event \yii\base\Event The event that is triggered after the component's init cycle
-     *
      * This is a good place to register custom behaviors on the component
      */
     const EVENT_INIT = 'init';

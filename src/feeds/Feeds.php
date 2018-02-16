@@ -17,7 +17,6 @@ use Zend\Feed\Reader\Reader;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
- *
  * An instance of the Feeds service is globally accessible in Craft via [[\craft\web\Application::feeds|<code>Craft::$app->feeds</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -30,9 +29,7 @@ class Feeds extends Component
 
     /**
      * Fetches and parses an RSS or Atom feed, and returns its items.
-     *
      * Each element in the returned array will have the following keys:
-     *
      * - **authors** – An array of the item’s authors, where each sub-element has the following keys:
      *     - **name** – The author’s name
      *     - **url** – The author’s URL
@@ -52,11 +49,10 @@ class Feeds extends Component
      * - **summary** – The item’s summary content.
      * - **title** – The item’s title.
      *
-     * @param string     $url           The feed’s URL.
-     * @param int|null   $limit         The maximum number of items to return. Default is 0 (no limit).
-     * @param int|null   $offset        The number of items to skip. Defaults to 0.
+     * @param string $url The feed’s URL.
+     * @param int|null $limit The maximum number of items to return. Default is 0 (no limit).
+     * @param int|null $offset The number of items to skip. Defaults to 0.
      * @param mixed|null $cacheDuration How long to cache the results. See [[Config::timeInSeconds()]] for possible values.
-     *
      * @return array|string The list of feed items.
      * @throws \Zend\Feed\Reader\Exception\RuntimeException
      */
@@ -146,7 +142,6 @@ class Feeds extends Component
      * Returns an array of authors.
      *
      * @param \stdClass[] $objects
-     *
      * @return array
      */
     private function _getItemAuthors($objects): array
@@ -170,7 +165,6 @@ class Feeds extends Component
      * Returns an array of categories.
      *
      * @param mixed $objects
-     *
      * @return array
      */
     private function _getItemCategories($objects): array

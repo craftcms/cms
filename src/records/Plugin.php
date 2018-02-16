@@ -14,14 +14,13 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Plugin record.
  *
- * @property int         $id          ID
- * @property string      $class       Class
- * @property string      $version     Version
- * @property bool        $enabled     Enabled
- * @property array       $settings    Settings
- * @property \DateTime   $installDate Install date
+ * @property int $id          ID
+ * @property string $class       Class
+ * @property string $version     Version
+ * @property bool $enabled     Enabled
+ * @property array $settings    Settings
+ * @property \DateTime $installDate Install date
  * @property Migration[] $migrations  Migrations
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -45,7 +44,6 @@ class Plugin extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

@@ -14,15 +14,14 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class MatrixBlockType record.
  *
- * @property int         $id            ID
- * @property int         $fieldId       Field ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
- * @property int         $sortOrder     Sort order
- * @property Field       $field         Field
+ * @property int $id            ID
+ * @property int $fieldId       Field ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name          Name
+ * @property string $handle        Handle
+ * @property int $sortOrder     Sort order
+ * @property Field $field         Field
  * @property FieldLayout $fieldLayout   Field layout
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -67,7 +66,6 @@ class MatrixBlockType extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

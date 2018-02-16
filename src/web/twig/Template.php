@@ -14,7 +14,6 @@ use Craft;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- *
  * @method int[] getDebugInfo()
  */
 abstract class Template extends \Twig_Template
@@ -41,7 +40,6 @@ abstract class Template extends \Twig_Template
      *
      * @param array $context
      * @param array $blocks
-     *
      * @throws \Twig_Error
      * @throws \Twig_Error_Runtime
      */

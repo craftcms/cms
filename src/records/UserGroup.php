@@ -13,11 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class UserGroup record.
  *
- * @property int    $id     ID
+ * @property int $id     ID
  * @property string $name   Name
  * @property string $handle Handle
  * @property User[] $users  Users
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -28,7 +27,6 @@ class UserGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

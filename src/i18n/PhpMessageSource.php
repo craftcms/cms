@@ -52,7 +52,6 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
      *
      * @param string $category
      * @param string $language
-     *
      * @return array|null
      * @throws Exception
      */

@@ -22,7 +22,6 @@ use yii\web\Response;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -94,9 +93,7 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the element query that’s defining which elements will be returned in the current request.
-     *
      * Other components can fetch this like so:
-     *
      * ```php
      * $criteria = Craft::$app->controller->getElementQuery();
      * ```
@@ -359,8 +356,7 @@ class ElementIndexesController extends BaseElementsController
      * Returns the element data to be returned to the client.
      *
      * @param bool $includeContainer Whether the element container should be included in the response data
-     * @param bool $includeActions   Whether info about the available actions should be included in the response data
-     *
+     * @param bool $includeActions Whether info about the available actions should be included in the response data
      * @return array
      */
     private function _elementResponseData(bool $includeContainer, bool $includeActions): array

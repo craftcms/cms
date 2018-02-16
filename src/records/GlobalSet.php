@@ -13,13 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Field group record class.
  *
- * @property int         $id            ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
- * @property Element     $element       Element
+ * @property int $id            ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name          Name
+ * @property string $handle        Handle
+ * @property Element $element       Element
  * @property FieldLayout $fieldLayout   Field layout
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -30,7 +29,6 @@ class GlobalSet extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

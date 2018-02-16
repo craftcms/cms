@@ -37,7 +37,6 @@ use yii\web\Response;
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
- *
  * Note that all actions in the controller except [[actionGenerateTransform()]] require an authenticated Craft session
  * via [[allowAnonymous]].
  *
@@ -811,10 +810,9 @@ class AssetsController extends Controller
     /**
      * Generates a thumbnail.
      *
-     * @param string $uid    The asset's UID
-     * @param int    $width  The thumbnail width
-     * @param int    $height The thumbnail height
-     *
+     * @param string $uid The asset's UID
+     * @param int $width The thumbnail width
+     * @param int $height The thumbnail height
      * @return Response
      */
     public function actionGenerateThumb(string $uid, int $width, int $height): Response
@@ -836,7 +834,6 @@ class AssetsController extends Controller
      * Generate a transform.
      *
      * @param int|null $transformId
-     *
      * @return Response
      * @throws NotFoundHttpException if the transform can't be found
      */
@@ -873,7 +870,6 @@ class AssetsController extends Controller
      * Downloads a temporary asset.
      *
      * @param string $path
-     *
      * @return Response
      * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
      * @throws NotFoundHttpException if $path doesn't exist
@@ -896,7 +892,6 @@ class AssetsController extends Controller
      * Handles an error when generating a thumb/transform.
      *
      * @param \Exception $e The exception that was thrown
-     *
      * @return Response
      */
     private function _handleImageException(\Exception $e): Response
@@ -915,8 +910,7 @@ class AssetsController extends Controller
      * Require an Assets permissions.
      *
      * @param string $permissionName Name of the permission to require.
-     * @param Asset  $asset          Asset on the Volume on which to require the permission.
-     *
+     * @param Asset $asset Asset on the Volume on which to require the permission.
      * @return void
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
@@ -936,9 +930,8 @@ class AssetsController extends Controller
     /**
      * Require an Assets permissions.
      *
-     * @param string       $permissionName Name of the permission to require.
-     * @param VolumeFolder $folder         Folder on the Volume on which to require the permission.
-     *
+     * @param string $permissionName Name of the permission to require.
+     * @param VolumeFolder $folder Folder on the Volume on which to require the permission.
      * @return void
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
@@ -959,8 +952,7 @@ class AssetsController extends Controller
      * Require an Assets permissions.
      *
      * @param string $permissionName Name of the permission to require.
-     * @param int    $volumeId       The Volume id on which to require the permission.
-     *
+     * @param int $volumeId The Volume id on which to require the permission.
      * @return void
      */
     private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
@@ -970,7 +962,6 @@ class AssetsController extends Controller
 
     /**
      * @param UploadedFile $uploadedFile
-     *
      * @return string
      * @throws UploadFailedException
      */

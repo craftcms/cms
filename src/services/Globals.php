@@ -19,7 +19,6 @@ use yii\base\Exception;
 
 /**
  * Globals service.
- *
  * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|<code>Craft::$app->globals</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -166,9 +165,8 @@ class Globals extends Component
     /**
      * Returns a global set by its ID.
      *
-     * @param int      $globalSetId
+     * @param int $globalSetId
      * @param int|null $siteId
-     *
      * @return GlobalSet|null
      */
     public function getSetById(int $globalSetId, int $siteId = null)
@@ -200,9 +198,8 @@ class Globals extends Component
     /**
      * Returns a global set by its handle.
      *
-     * @param string   $globalSetHandle
+     * @param string $globalSetHandle
      * @param int|null $siteId
-     *
      * @return GlobalSet|null
      */
     public function getSetByHandle(string $globalSetHandle, int $siteId = null)
@@ -235,9 +232,8 @@ class Globals extends Component
     /**
      * Saves a global set.
      *
-     * @param GlobalSet $globalSet     The global set to be saved
-     * @param bool      $runValidation Whether the global set should be validated
-     *
+     * @param GlobalSet $globalSet The global set to be saved
+     * @param bool $runValidation Whether the global set should be validated
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
      * @throws \Throwable if reasons

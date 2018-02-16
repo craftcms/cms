@@ -12,7 +12,6 @@ use craft\web\twig\variables\Cp;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
- *
  * A class implementing this interface should also use [[PluginTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

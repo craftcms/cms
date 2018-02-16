@@ -37,7 +37,6 @@ class ShellCommandException extends Exception
      * Creates a ShellCommandException from a [[Command]] object
      *
      * @param Command $command The failed Command object
-     *
      * @return static|false
      */
     public static function createFromCommand(Command $command)
@@ -54,11 +53,11 @@ class ShellCommandException extends Exception
     /**
      * Constructor.
      *
-     * @param string      $command  The command that was executed
-     * @param int         $exitCode The command’s exit code
-     * @param string|null $error    The command’s error output
-     * @param string|null $message  The error message
-     * @param int         $code     The error code
+     * @param string $command The command that was executed
+     * @param int $exitCode The command’s exit code
+     * @param string|null $error The command’s error output
+     * @param string|null $message The error message
+     * @param int $code The error code
      */
     public function __construct(string $command, int $exitCode, string $error = null, string $message = null, int $code = 0)
     {

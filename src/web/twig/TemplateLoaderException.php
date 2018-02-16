@@ -28,7 +28,7 @@ class TemplateLoaderException extends \Twig_Error_Loader
 
     /**
      * @param string $template The requested template
-     * @param string $message  The exception message
+     * @param string $message The exception message
      */
     public function __construct(string $template, string $message)
     {

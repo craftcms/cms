@@ -13,10 +13,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class FieldGroup record.
  *
- * @property int     $id     ID
- * @property string  $name   Name
+ * @property int $id     ID
+ * @property string $name   Name
  * @property Field[] $fields Fields
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -27,7 +26,6 @@ class FieldGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

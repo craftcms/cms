@@ -18,7 +18,6 @@ use yii\web\UrlRule as YiiUrlRule;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -30,15 +29,12 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
      * URL rules for the Control Panel.
-     *
      * This event gets called during class initialization, so you should always
      * use a class-level event handler.
-     *
      * ```php
      * use craft\events\RegisterUrlRulesEvent;
      * use craft\web\UrlManager;
      * use yii\base\Event;
-     *
      * Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $e) {
      *     $e->rules['foo'] => 'bar/baz';
      * });
@@ -49,15 +45,12 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
      * URL rules for the front-end site.
-     *
      * This event gets called during class initialization, so you should always
      * use a class-level event handler.
-     *
      * ```php
      * use craft\events\RegisterUrlRulesEvent;
      * use craft\web\UrlManager;
      * use yii\base\Event;
-     *
      * Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $e) {
      *     $e->rules['foo'] => 'bar/baz';
      * });
@@ -293,7 +286,6 @@ class UrlManager extends \yii\web\UrlManager
      * Returns the request's route.
      *
      * @param Request $request
-     *
      * @return mixed
      */
     private function _getRequestRoute(Request $request)
@@ -323,7 +315,6 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with an element in the database.
      *
      * @param string $path
-     *
      * @return mixed
      */
     private function _getMatchedElementRoute(string $path)
@@ -365,7 +356,6 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with the registered URL routes.
      *
      * @param Request $request
-     *
      * @return mixed
      */
     private function _getMatchedUrlRoute(Request $request)
@@ -423,7 +413,6 @@ class UrlManager extends \yii\web\UrlManager
      * Checks if the path could be a public template path and if so, returns a route to that template.
      *
      * @param string $path
-     *
      * @return array|bool
      */
     private function _getTemplateRoute(string $path)
@@ -449,7 +438,6 @@ class UrlManager extends \yii\web\UrlManager
      * Checks if the request has a token in it.
      *
      * @param Request $request
-     *
      * @return array|false
      */
     private function _getTokenRoute(Request $request)

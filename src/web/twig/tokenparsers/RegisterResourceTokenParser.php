@@ -61,9 +61,9 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     // =========================================================================
 
     /**
-     * @param string $tag    the tag name
+     * @param string $tag the tag name
      * @param string $method the View method the tag represents
-     * @param array  $config name-value pairs that will be used to initialize the object properties
+     * @param array $config name-value pairs that will be used to initialize the object properties
      */
     public function __construct(string $tag, string $method, array $config = [])
     {
@@ -161,7 +161,6 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideBlockEnd(\Twig_Token $token): bool
@@ -176,7 +175,6 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      * Returns whether the next token in the stream is a position param.
      *
      * @param \Twig_TokenStream $stream The Twig token stream
-     *
      * @return bool
      */
     private function _testPositionParam(\Twig_TokenStream $stream): bool
@@ -191,7 +189,6 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      * Returns whether the next token in the stream is an options param.
      *
      * @param \Twig_TokenStream $stream The Twig token stream
-     *
      * @return bool
      */
     private function _testOptionsParam(\Twig_TokenStream $stream): bool
@@ -203,7 +200,6 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      * Returns whether the next token in the stream is the deprecated `first` param
      *
      * @param \Twig_TokenStream $stream The Twig token stream
-     *
      * @return bool
      */
     private function _testFirstParam(\Twig_TokenStream $stream): bool
@@ -215,7 +211,6 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      * Returns whether the next token in the stream is the deprecated `first` param.
      *
      * @param \Twig_TokenStream $stream The Twig token stream
-     *
      * @return bool
      */
     private function _getFirstValue(\Twig_TokenStream $stream): bool

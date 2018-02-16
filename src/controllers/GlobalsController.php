@@ -19,7 +19,6 @@ use yii\web\Response;
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
  * deleting displaying both globals and global sets.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -51,7 +50,6 @@ class GlobalsController extends Controller
      * Saves a global set.
      *
      * @return Response|null
-     *
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveSet()
@@ -118,10 +116,9 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string         $globalSetHandle The global set’s handle.
-     * @param string|null    $siteHandle      The site handle, if specified.
-     * @param GlobalSet|null $globalSet       The global set being edited, if there were any validation errors.
-     *
+     * @param string $globalSetHandle The global set’s handle.
+     * @param string|null $siteHandle The site handle, if specified.
+     * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid

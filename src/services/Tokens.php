@@ -19,7 +19,6 @@ use yii\db\Expression;
 
 /**
  * The Tokens service.
- *
  * An instance of the Tokens service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTokens()|<code>Craft::$app->tokens</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -41,13 +40,13 @@ class Tokens extends Component
     /**
      * Creates a new token and returns it.
      *
-     * @param mixed         $route      Where matching requests should be routed to. If you want them to be routed to a
-     *                                  controller action, pass:
-     *                                  `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
-     * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
-     * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config
-     *                                  setting.
-     *
+     * @param mixed $route Where matching requests should be routed to. If you
+     * want them to be routed to a controller action, pass:
+     * `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
+     * @param int|null $usageLimit The maximum number of times this token can be
+     * used. Defaults to no limit.
+     * @param DateTime|null $expiryDate The date that the token expires.
+     * Defaults to the 'defaultTokenDuration' config setting.
      * @return string|false             The generated token, or `false` if there was an error.
      */
     public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
@@ -82,7 +81,6 @@ class Tokens extends Component
      * Searches for a token, and possibly returns a route for the request.
      *
      * @param string $token
-     *
      * @return array|false
      */
     public function getTokenRoute(string $token)
@@ -124,7 +122,6 @@ class Tokens extends Component
      * Increments a token's usage count.
      *
      * @param int $tokenId
-     *
      * @return bool
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
@@ -147,7 +144,6 @@ class Tokens extends Component
      * Deletes a token by its ID.
      *
      * @param int $tokenId
-     *
      * @return bool
      */
     public function deleteTokenById(int $tokenId): bool

@@ -15,7 +15,6 @@ use yii\base\Exception;
  * @inheritdoc
  * @see    Mutex
  * @todo   Remove this class when Yii 2.0.11 comes out
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

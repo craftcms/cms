@@ -159,7 +159,6 @@ class Request
      * Returns a specific URI segment, or null if the segment doesn't exist.
      *
      * @param int $num
-     *
      * @return string|null
      */
     public function getSegment(int $num)
@@ -196,9 +195,8 @@ class Request
     /**
      * Returns a variable from either the query string or the post data.
      *
-     * @param string      $name
+     * @param string $name
      * @param string|null $default
-     *
      * @return mixed
      */
     public function getParam(string $name, string $default = null)
@@ -212,7 +210,6 @@ class Request
      * Returns a [[Cookie]] if it exists, otherwise, null.
      *
      * @param string $name
-     *
      * @return Cookie|null
      */
     public function getCookie(string $name)
@@ -250,7 +247,6 @@ class Request
      * Returns whether the request is coming from a mobile browser.
      *
      * @param bool $detectTablets
-     *
      * @return bool
      */
     public function isMobileBrowser(bool $detectTablets = false): bool
@@ -386,7 +382,6 @@ class Request
 
     /**
      * Returns the random token used to perform CSRF validation.
-     *
      * The token will be read from cookie first. If not found, a new token will be generated.
      *
      * @return string The random token for CSRF validation.
@@ -427,7 +422,6 @@ class Request
      *
      * @param string|null $name
      * @param string|null $default
-     *
      * @return mixed
      */
     public function getQuery(string $name = null, string $default = null)
@@ -442,7 +436,6 @@ class Request
      *
      * @param string|null $name
      * @param string|null $default
-     *
      * @return mixed
      */
     public function getPost(string $name = null, string $default = null)
@@ -467,7 +460,6 @@ class Request
     /**
      * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
      * variations in how different ISPs handle IP addresses in headers between hops.
-     *
      * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
      * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
      *

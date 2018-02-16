@@ -26,23 +26,20 @@ class ChartHelper
 
     /**
      * Returns the data for a run chart, based on a given DB query, start/end dates, and the desired time interval unit.
-     *
      * The query’s SELECT clause should already be set to a column aliased as `value`.
-     *
      * The $options array can override the following defaults:
      *
      *  - `intervalUnit`  - The time interval unit to use ('hour', 'day', 'month', or 'year').
-     *                     By default, a unit will be decided automatically based on the start/end date duration.
+     *                      By default, a unit will be decided automatically based on the start/end date duration.
      *  - `categoryLabel` - The label to use for the chart categories (times). Defaults to "Date".
      *  - `valueLabel`    - The label to use for the chart values. Defaults to "Value".
      *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
-     * @param Query    $query      The DB query that should be used
-     * @param DateTime $startDate  The start of the time duration to select (inclusive)
-     * @param DateTime $endDate    The end of the time duration to select (exclusive)
-     * @param string   $dateColumn The column that represents the date
-     * @param array    $options    Any customizations that should be made over the default options
-     *
+     * @param Query $query The DB query that should be used
+     * @param DateTime $startDate The start of the time duration to select (inclusive)
+     * @param DateTime $endDate The end of the time duration to select (exclusive)
+     * @param string $dateColumn The column that represents the date
+     * @param array $options Any customizations that should be made over the default options
      * @return array
      * @throws Exception
      */
@@ -91,7 +88,8 @@ class ChartHelper
             $cursorEndDate->modify('+1 '.$intervalUnit);
             $cursorQuery = clone $query;
             $total = $cursorQuery
-                ->andWhere(['and',
+                ->andWhere([
+                    'and',
                     ['>=', $dateColumn, Db::prepareDateForDb($cursorDate)],
                     ['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)]
                 ])
@@ -121,7 +119,6 @@ class ChartHelper
      *
      * @param DateTime $startDate
      * @param DateTime $endDate
-     *
      * @return string The unit that the chart should use ('hour', 'day', 'month', or 'year')
      */
     public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate): string

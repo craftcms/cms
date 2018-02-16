@@ -112,7 +112,6 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
     /**
      * @param string $id of a job message
-     *
      * @return bool
      */
     public function isFailed(string $id): bool
@@ -542,7 +541,6 @@ EOD;
      * Returns a job's status.
      *
      * @param array|false $payload
-     *
      * @return int
      */
     private function _status($payload): int

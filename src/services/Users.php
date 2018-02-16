@@ -34,7 +34,6 @@ use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
- *
  * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|<code>Craft::$app->users</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -57,7 +56,6 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is activated.
-     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
@@ -74,7 +72,6 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
-     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
@@ -86,7 +83,6 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
-     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
@@ -98,7 +94,6 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
-     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
@@ -110,7 +105,6 @@ class Users extends Component
 
     /**
      * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
-     *
      * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
@@ -122,7 +116,6 @@ class Users extends Component
 
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
-     *
      * You may set [[UserAssignGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
@@ -138,13 +131,11 @@ class Users extends Component
 
     /**
      * Returns a user by their ID.
-     *
      * ```php
      * $user = Craft::$app->users->getUserById($userId);
      * ```
      *
      * @param int $userId The user’s ID.
-     *
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
     public function getUserById(int $userId)
@@ -155,13 +146,11 @@ class Users extends Component
 
     /**
      * Returns a user by their username or email.
-     *
      * ```php
      * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
      * ```
      *
      * @param string $usernameOrEmail The user’s username or email.
-     *
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail)
@@ -179,13 +168,11 @@ class Users extends Component
 
     /**
      * Returns a user by their UID.
-     *
      * ```php
      * $user = Craft::$app->users->getUserByUid($userUid);
      * ```
      *
      * @param string $uid The user’s UID.
-     *
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
     public function getUserByUid(string $uid)
@@ -199,14 +186,12 @@ class Users extends Component
 
     /**
      * Returns whether a verification code is valid for the given user.
-     *
      * This method first checks if the code has expired past the
      * [verificationCodeDuration](http://craftcms.com/docs/config-settings#verificationCodeDuration) config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
      *
-     * @param User   $user The user to check the code for.
+     * @param User $user The user to check the code for.
      * @param string $code The verification code to check for.
-     *
      * @return bool Whether the code is still valid.
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
@@ -248,7 +233,6 @@ class Users extends Component
      * Returns a user’s preferences.
      *
      * @param int|null $userId The user’s ID
-     *
      * @return array The user’s preferences
      */
     public function getUserPreferences(int $userId = null): array
@@ -270,9 +254,8 @@ class Users extends Component
     /**
      * Saves a user’s preferences.
      *
-     * @param User  $user        The user
+     * @param User $user The user
      * @param array $preferences The user’s new preferences
-     *
      * @return void
      */
     public function saveUserPreferences(User $user, array $preferences)
@@ -290,11 +273,9 @@ class Users extends Component
 
     /**
      * Sends a new account activation email for a user, regardless of their status.
-     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendActivationEmail(User $user): bool
@@ -314,11 +295,9 @@ class Users extends Component
 
     /**
      * Sends a new email verification email to a user, regardless of their status.
-     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendNewEmailVerifyEmail(User $user): bool
@@ -333,11 +312,9 @@ class Users extends Component
 
     /**
      * Sends a password reset email to a user.
-     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the forgot password email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendPasswordResetEmail(User $user): bool
@@ -354,7 +331,6 @@ class Users extends Component
      * Sets a new verification code on a user, and returns their new Email Verification URL.
      *
      * @param User $user The user that should get the new Email Verification URL.
-     *
      * @return string The new Email Verification URL.
      */
     public function getEmailVerifyUrl(User $user): string
@@ -366,7 +342,6 @@ class Users extends Component
      * Sets a new verification code on a user, and returns their new Password Reset URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     *
      * @return string The new Password Reset URL.
      */
     public function getPasswordResetUrl(User $user): string
@@ -377,10 +352,9 @@ class Users extends Component
     /**
      * Crops and saves a user’s photo.
      *
-     * @param User   $user         the user.
+     * @param User $user the user.
      * @param string $fileLocation the local image path on server
-     * @param string $filename     name of the file to use, defaults to filename of $imagePath
-     *
+     * @param string $filename name of the file to use, defaults to filename of $imagePath
      * @return void
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
@@ -442,7 +416,6 @@ class Users extends Component
      * Deletes a user’s photo.
      *
      * @param User $user The user
-     *
      * @return bool Whether the user’s photo was deleted successfully
      */
     public function deleteUserPhoto(User $user): bool
@@ -454,7 +427,6 @@ class Users extends Component
      * Handles a valid login for a user.
      *
      * @param User $user The user
-     *
      * @return void
      */
     public function handleValidLogin(User $user)
@@ -480,7 +452,6 @@ class Users extends Component
      * Handles an invalid login for a user.
      *
      * @param User $user The user
-     *
      * @return void
      */
     public function handleInvalidLogin(User $user)
@@ -536,7 +507,6 @@ class Users extends Component
      * Activates a user, bypassing email verification.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was activated successfully.
      * @throws \Throwable if reasons
      */
@@ -586,7 +556,6 @@ class Users extends Component
      * and clear the unverified one.
      *
      * @param User $user
-     *
      * @return bool
      */
     public function verifyEmailForUser(User $user): bool
@@ -622,7 +591,6 @@ class Users extends Component
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was unlocked successfully.
      * @throws \Throwable if reasons
      */
@@ -672,7 +640,6 @@ class Users extends Component
      * Suspends a user.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was suspended successfully.
      * @throws \Throwable if reasons
      */
@@ -715,7 +682,6 @@ class Users extends Component
      * Unsuspends a user.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was unsuspended successfully.
      * @throws \Throwable if reasons
      */
@@ -761,10 +727,9 @@ class Users extends Component
     /**
      * Shuns a message for a user.
      *
-     * @param int           $userId     The user’s ID.
-     * @param string        $message    The message to be shunned.
+     * @param int $userId The user’s ID.
+     * @param string $message The message to be shunned.
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
-     *
      * @return bool Whether the message was shunned successfully.
      */
     public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
@@ -787,9 +752,8 @@ class Users extends Component
     /**
      * Un-shuns a message for a user.
      *
-     * @param int    $userId  The user’s ID.
+     * @param int $userId The user’s ID.
      * @param string $message The message to un-shun.
-     *
      * @return bool Whether the message was un-shunned successfully.
      */
     public function unshunMessageForUser(int $userId, string $message): bool
@@ -809,9 +773,8 @@ class Users extends Component
     /**
      * Returns whether a message is shunned for a user.
      *
-     * @param int    $userId  The user’s ID.
+     * @param int $userId The user’s ID.
      * @param string $message The message to check.
-     *
      * @return bool Whether the user has shunned the message.
      */
     public function hasUserShunnedMessage(int $userId, string $message): bool
@@ -837,7 +800,6 @@ class Users extends Component
      * Sets a new verification code on the user's record.
      *
      * @param User $user The user.
-     *
      * @return string The user’s brand new verification code.
      */
     public function setVerificationCodeOnUser(User $user): string
@@ -851,7 +813,6 @@ class Users extends Component
 
     /**
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
-     *
      * This method will check the
      * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
@@ -893,9 +854,8 @@ class Users extends Component
     /**
      * Assigns a user to a given list of user groups.
      *
-     * @param int   $userId   The user’s ID
+     * @param int $userId The user’s ID
      * @param int[] $groupIds The groups’ IDs. Pass an empty array to remove a user from all groups.
-     *
      * @return bool Whether the users were successfully assigned to the groups.
      */
     public function assignUserToGroups(int $userId, array $groupIds): bool
@@ -961,11 +921,9 @@ class Users extends Component
 
     /**
      * Assigns a user to the default user group.
-     *
      * This method is called toward the end of a public registration request.
      *
      * @param User $user The user that was just registered.
-     *
      * @return bool Whether the user was assigned to the default group.
      */
     public function assignUserToDefaultGroup(User $user): bool
@@ -1008,7 +966,6 @@ class Users extends Component
      * Gets a user record by its ID.
      *
      * @param int $userId
-     *
      * @return UserRecord
      * @throws UserNotFoundException if $userId is invalid
      */
@@ -1027,7 +984,6 @@ class Users extends Component
      * Sets a user record up for a new verification code without saving it.
      *
      * @param  UserRecord $userRecord
-     *
      * @return string
      */
     private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
@@ -1045,7 +1001,6 @@ class Users extends Component
      * Determines if a user is within their invalid login window.
      *
      * @param UserRecord $userRecord
-     *
      * @return bool
      */
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
@@ -1066,9 +1021,8 @@ class Users extends Component
     /**
      * Sets a new verification code on a user, and returns their new verification URL
      *
-     * @param User   $user   The user that should get the new Password Reset URL
+     * @param User $user The user that should get the new Password Reset URL
      * @param string $action The UsersController action that the URL should point to
-     *
      * @return string The new Password Reset URL.
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()

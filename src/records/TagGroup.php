@@ -13,13 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class TagGroup record.
  *
- * @property int         $id            ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
+ * @property int $id            ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name          Name
+ * @property string $handle        Handle
  * @property FieldLayout $fieldLayout   Field layout
- * @property Tag[]       $tags          Tags
- *
+ * @property Tag[] $tags          Tags
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -30,7 +29,6 @@ class TagGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

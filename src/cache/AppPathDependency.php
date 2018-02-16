@@ -37,7 +37,6 @@ class AppPathDependency extends Dependency
      * Generates the data needed to determine if dependency has been changed.
      *
      * @param Cache $cache The cache component that is currently evaluating this dependency.
-     *
      * @return string The data needed to determine if dependency has been changed.
      */
     protected function generateDependencyData($cache): string

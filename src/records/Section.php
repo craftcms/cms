@@ -13,16 +13,15 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Section record.
  *
- * @property int                    $id               ID
- * @property int                    $structureId      Structure ID
- * @property string                 $name             Name
- * @property string                 $handle           Handle
- * @property string                 $type             Type
- * @property bool                   $enableVersioning Enable versioning
- * @property bool                   $propagateEntries Propagate entries
+ * @property int $id               ID
+ * @property int $structureId      Structure ID
+ * @property string $name             Name
+ * @property string $handle           Handle
+ * @property string $type             Type
+ * @property bool $enableVersioning Enable versioning
+ * @property bool $propagateEntries Propagate entries
  * @property Section_SiteSettings[] $siteSettings     Site settings
- * @property Structure              $structure        Structure
- *
+ * @property Structure $structure        Structure
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -33,7 +32,6 @@ class Section extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

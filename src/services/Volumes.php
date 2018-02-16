@@ -296,7 +296,6 @@ class Volumes extends Component
      * Returns a volume by its ID.
      *
      * @param int $volumeId
-     *
      * @return VolumeInterface|null
      */
     public function getVolumeById(int $volumeId)
@@ -320,7 +319,6 @@ class Volumes extends Component
      * Returns a volumn by its handle.
      *
      * @param string $handle
-     *
      * @return VolumeInterface|null
      */
     public function getVolumeByHandle(string $handle)
@@ -343,9 +341,8 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface $volume        the volume to be saved.
-     * @param bool            $runValidation Whether the volume should be validated
-     *
+     * @param VolumeInterface $volume the volume to be saved.
+     * @param bool $runValidation Whether the volume should be validated
      * @return bool Whether the field was saved successfully
      * @throws \Throwable
      */
@@ -460,7 +457,6 @@ class Volumes extends Component
      * Reorders asset volumes.
      *
      * @param array $volumeIds
-     *
      * @throws \Throwable
      * @return bool
      */
@@ -489,7 +485,6 @@ class Volumes extends Component
      * Returns any custom volume config values.
      *
      * @param string $handle The volume handle
-     *
      * @return array|null
      */
     public function getVolumeOverrides(string $handle)
@@ -505,7 +500,6 @@ class Volumes extends Component
      * Creates an asset volume with a given config.
      *
      * @param mixed $config The asset volume’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
      * @return VolumeInterface The asset volume
      */
     public function createVolume($config): VolumeInterface
@@ -544,7 +538,6 @@ class Volumes extends Component
      * Ensures a top level folder exists that matches the model.
      *
      * @param VolumeInterface $volume
-     *
      * @return int
      */
     public function ensureTopFolder(VolumeInterface $volume): int
@@ -573,7 +566,6 @@ class Volumes extends Component
      * Deletes an asset volume by its ID.
      *
      * @param int $volumeId
-     *
      * @throws \Throwable
      * @return bool
      */
@@ -592,7 +584,6 @@ class Volumes extends Component
      * Deletes an asset volume.
      *
      * @param VolumeInterface $volume The volume to delete
-     *
      * @throws \Throwable
      * @return bool
      */
@@ -682,7 +673,6 @@ class Volumes extends Component
      * Gets a volume's record.
      *
      * @param int|null $volumeId
-     *
      * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord
      */

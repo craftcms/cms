@@ -16,7 +16,6 @@ use yii\web\Response;
 /**
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,
  * enabling, disabling and saving plugin settings in the control panel.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -77,9 +76,8 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string               $handle The plugin’s handle
+     * @param string $handle The plugin’s handle
      * @param PluginInterface|null $plugin The plugin, if there were validation errors
-     *
      * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */

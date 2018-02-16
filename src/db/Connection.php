@@ -28,15 +28,12 @@ use yii\db\Exception as DbException;
 
 /**
  * @inheritdoc
- *
  * @property MysqlQueryBuilder|PgsqlQueryBuilder $queryBuilder The query builder for the current DB connection.
- * @property MysqlSchema|PgsqlSchema             $schema       The schema information for the database opened by this connection.
- *
+ * @property MysqlSchema|PgsqlSchema $schema       The schema information for the database opened by this connection.
  * @method MysqlQueryBuilder|PgsqlQueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method MysqlSchema|PgsqlSchema getSchema() Returns the schema information for the database opened by this connection.
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -72,7 +69,6 @@ class Connection extends \yii\db\Connection
      * Creates a new Connection instance based off the given DbConfig object.
      *
      * @param DbConfig $config
-     *
      * @return static
      */
     public static function createFromConfig(DbConfig $config): Connection
@@ -140,7 +136,6 @@ class Connection extends \yii\db\Connection
 
     /**
      * @inheritdoc
-     *
      * @throws DbConnectException if there are any issues
      * @throws \Throwable
      */
@@ -203,7 +198,6 @@ class Connection extends \yii\db\Connection
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
      * @param string $filePath The file path the database backup should be saved at
-     *
      * @return void
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
@@ -247,7 +241,6 @@ class Connection extends \yii\db\Connection
      * Restores a database at the given file path.
      *
      * @param string $filePath The path of the database backup to restore.
-     *
      * @return void
      * @throws Exception if the restoreCommand config setting is false
      * @throws ShellCommandException in case of failure
@@ -289,7 +282,6 @@ class Connection extends \yii\db\Connection
 
     /**
      * @param string $name
-     *
      * @return string
      */
     public function quoteDatabaseName(string $name): string
@@ -300,9 +292,8 @@ class Connection extends \yii\db\Connection
     /**
      * Returns whether a table exists.
      *
-     * @param string    $table
+     * @param string $table
      * @param bool|null $refresh
-     *
      * @return bool
      */
     public function tableExists(string $table, bool $refresh = null): bool
@@ -320,10 +311,9 @@ class Connection extends \yii\db\Connection
     /**
      * Checks if a column exists in a table.
      *
-     * @param string    $table
-     * @param string    $column
+     * @param string $table
+     * @param string $column
      * @param bool|null $refresh
-     *
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
@@ -344,9 +334,8 @@ class Connection extends \yii\db\Connection
     /**
      * Returns a primary key name based on the table and column names.
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $columns
-     *
      * @return string
      */
     public function getPrimaryKeyName(string $table, $columns): string
@@ -363,9 +352,8 @@ class Connection extends \yii\db\Connection
     /**
      * Returns a foreign key name based on the table and column names.
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $columns
-     *
      * @return string
      */
     public function getForeignKeyName(string $table, $columns): string
@@ -383,11 +371,10 @@ class Connection extends \yii\db\Connection
      * Returns an index name based on the table, column names, and whether
      * it should be unique.
      *
-     * @param string       $table
+     * @param string $table
      * @param string|array $columns
-     * @param bool         $unique
-     * @param bool         $foreignKey
-     *
+     * @param bool $unique
+     * @param bool $foreignKey
      * @return string
      */
     public function getIndexName(string $table, $columns, bool $unique = false, bool $foreignKey = false): string
@@ -405,7 +392,6 @@ class Connection extends \yii\db\Connection
      * Ensures that an object name is within the schema's limit.
      *
      * @param string $name
-     *
      * @return string
      */
     public function trimObjectName(string $name): string
@@ -451,7 +437,6 @@ class Connection extends \yii\db\Connection
      * Returns a table name without the table prefix
      *
      * @param string $table
-     *
      * @return string
      */
     private function _getTableNameWithoutPrefix(string $table): string
@@ -471,7 +456,6 @@ class Connection extends \yii\db\Connection
      * Creates a shell command set to the given string
      *
      * @param string $command The command to be executed
-     *
      * @return ShellCommand
      */
     private function _createShellCommand(string $command): ShellCommand
@@ -490,8 +474,7 @@ class Connection extends \yii\db\Connection
 
     /**
      * @param ShellCommand $shellCommand
-     * @param string       $file The path to the backup file
-     *
+     * @param string $file The path to the backup file
      * @return ShellCommand
      */
     private function _parseCommandTokens(ShellCommand $shellCommand, $file): ShellCommand
@@ -517,7 +500,6 @@ class Connection extends \yii\db\Connection
 
     /**
      * @param ShellCommand $command
-     *
      * @throws ShellCommandException
      */
     private function _executeDatabaseShellCommand(ShellCommand $command)

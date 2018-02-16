@@ -12,9 +12,6 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
-use craft\errors\MigrateException;
-use craft\errors\MigrationException;
-use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -270,7 +267,6 @@ class UpdaterController extends BaseUpdaterController
      * Returns the initial state for the updater JS.
      *
      * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
-     *
      * @return array
      */
     protected function initialState(bool $force = false): array
@@ -377,7 +373,6 @@ class UpdaterController extends BaseUpdaterController
      * Parses the 'install` param and returns handle => version pairs.
      *
      * @param array $installParam
-     *
      * @return array
      * @throws BadRequestHttpException
      */
@@ -401,7 +396,6 @@ class UpdaterController extends BaseUpdaterController
      *
      * @param string $handle
      * @param string $toVersion
-     *
      * @return bool
      * @throws BadRequestHttpException if the handle is invalid
      */

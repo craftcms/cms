@@ -13,13 +13,12 @@ use craft\validators\DateTimeValidator;
 /**
  * Token record.
  *
- * @property int       $id         ID
- * @property string    $token      Token
- * @property array     $route      Route
- * @property int       $usageLimit Usage limit
- * @property int       $usageCount Usage count
+ * @property int $id         ID
+ * @property string $token      Token
+ * @property array $route      Route
+ * @property int $usageLimit Usage limit
+ * @property int $usageCount Usage count
  * @property \DateTime $expiryDate Expiry date
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -44,7 +43,6 @@ class Token extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

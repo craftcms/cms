@@ -38,7 +38,6 @@ use yii\base\ErrorException;
 
 /**
  * Asset Transforms service.
- *
  * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|<code>Craft::$app->assetTransforms</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -142,7 +141,6 @@ class AssetTransforms extends Component
      * Returns an asset transform by its handle.
      *
      * @param string $handle
-     *
      * @return AssetTransform|null
      */
     public function getTransformByHandle(string $handle)
@@ -168,7 +166,6 @@ class AssetTransforms extends Component
      * Returns an asset transform by its id.
      *
      * @param int $id
-     *
      * @return AssetTransform|null
      */
     public function getTransformById(int $id)
@@ -183,9 +180,8 @@ class AssetTransforms extends Component
     /**
      * Saves an asset transform.
      *
-     * @param AssetTransform $transform     The transform to be saved
-     * @param bool           $runValidation Whether the transform should be validated
-     *
+     * @param AssetTransform $transform The transform to be saved
+     * @param bool $runValidation Whether the transform should be validated
      * @throws AssetTransformException If attempting to update a non-existing transform.
      * @return bool
      */
@@ -260,7 +256,6 @@ class AssetTransforms extends Component
      * Deletes an asset transform by its id.
      *
      * @param int $transformId
-     *
      * @return bool
      * @throws \yii\db\Exception on DB error
      */
@@ -294,9 +289,8 @@ class AssetTransforms extends Component
     /**
      * Eager-loads transform indexes for a given set of file IDs.
      *
-     * @param Asset[] $assets     The files to eager-load tranforms for
-     * @param array   $transforms The transform definitions to eager-load
-     *
+     * @param Asset[] $assets The files to eager-load tranforms for
+     * @param array $transforms The transform definitions to eager-load
      * @return void
      */
     public function eagerLoadTransforms(array $assets, array $transforms)
@@ -380,9 +374,8 @@ class AssetTransforms extends Component
     /**
      * Get a transform index row. If it doesn't exist - create one.
      *
-     * @param Asset                            $asset
+     * @param Asset $asset
      * @param AssetTransform|string|array|null $transform
-     *
      * @return AssetTransformIndex
      * @throws AssetTransformException if the transform cannot be found by the handle
      */
@@ -454,10 +447,9 @@ class AssetTransforms extends Component
     /**
      * Validates a transform index result to see if the index is still valid for a given file.
      *
-     * @param array          $result
+     * @param array $result
      * @param AssetTransform $transform
-     * @param Asset          $asset
-     *
+     * @param Asset $asset
      * @return bool Whether the index result is still valid
      */
     public function validateTransformIndexResult(array $result, AssetTransform $transform, Asset $asset): bool
@@ -475,7 +467,6 @@ class AssetTransforms extends Component
      * Get a transform URL by the transform index model.
      *
      * @param AssetTransformIndex $index
-     *
      * @throws AssetTransformException If there was an error generating the transform.
      * @return string
      */
@@ -534,7 +525,6 @@ class AssetTransforms extends Component
      * Generate a transform by a created index.
      *
      * @param AssetTransformIndex $index
-     *
      * @return bool true if transform exists for the index
      * @throws AssetTransformException
      */
@@ -622,7 +612,6 @@ class AssetTransforms extends Component
      * Normalize a transform from handle or a set of properties to an AssetTransform.
      *
      * @param AssetTransform|string|array|null $transform
-     *
      * @return AssetTransform|null
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -671,7 +660,6 @@ class AssetTransforms extends Component
      * Store a transform index data by it's model.
      *
      * @param AssetTransformIndex $index
-     *
      * @return AssetTransformIndex
      */
     public function storeTransformIndexData(AssetTransformIndex $index): AssetTransformIndex
@@ -721,7 +709,6 @@ class AssetTransforms extends Component
      * Get a transform index model by a row id.
      *
      * @param int $transformId
-     *
      * @return AssetTransformIndex|null
      */
     public function getTransformIndexModelById(int $transformId)
@@ -736,9 +723,8 @@ class AssetTransforms extends Component
     /**
      * Get a transform index model by a row id.
      *
-     * @param int    $assetId
+     * @param int $assetId
      * @param string $transformHandle
-     *
      * @return AssetTransformIndex|null
      */
     public function getTransformIndexModelByAssetIdAndHandle(int $assetId, string $transformHandle)
@@ -757,7 +743,6 @@ class AssetTransforms extends Component
      * Get URL for Transform by TransformIndexId.
      *
      * @param int $transformId
-     *
      * @return string
      */
     public function getUrlForTransformByIndexId(int $transformId): string
@@ -773,9 +758,8 @@ class AssetTransforms extends Component
     /**
      * Get URL for Transform by the transform index model.
      *
-     * @param Asset               $asset
+     * @param Asset $asset
      * @param AssetTransformIndex $transformIndexModel
-     *
      * @return string
      */
     public function getUrlForTransformByAssetAndTransformIndex(Asset $asset, AssetTransformIndex $transformIndexModel): string
@@ -791,7 +775,6 @@ class AssetTransforms extends Component
      * Delete transform records by an Asset id
      *
      * @param int $assetId
-     *
      * @return void
      */
     public function deleteTransformIndexDataByAssetId(int $assetId)
@@ -805,7 +788,6 @@ class AssetTransforms extends Component
      * Delete a transform index by.
      *
      * @param int $indexId
-     *
      * @return void
      */
     public function deleteTransformIndex(int $indexId)
@@ -819,7 +801,6 @@ class AssetTransforms extends Component
      * Get a local image source to use for transforms.
      *
      * @param Asset $asset
-     *
      * @throws VolumeObjectNotFoundException If the file cannot be found.
      * @throws VolumeException               If there was an error downloading the remote file.
      * @return string
@@ -895,7 +876,6 @@ class AssetTransforms extends Component
      * Deletes an image local source if required by config.
      *
      * @param string $imageSource
-     *
      * @return void
      */
     public function queueSourceForDeletingIfNecessary($imageSource)
@@ -927,7 +907,6 @@ class AssetTransforms extends Component
      *
      * @param string $source
      * @param string $destination
-     *
      * @return void
      */
     public function storeLocalSource(string $source, string $destination = '')
@@ -959,7 +938,6 @@ class AssetTransforms extends Component
      * Detect the auto web-safe format for the Asset. Returns null, if the Asset is not an image.
      *
      * @param Asset $asset
-     *
      * @throws AssetLogicException If attempting to detect an image format for a non-image.
      * @return mixed|string
      */
@@ -1010,9 +988,8 @@ class AssetTransforms extends Component
     /**
      * Return a subfolder used by the Transform Index for the Asset.
      *
-     * @param Asset               $asset
+     * @param Asset $asset
      * @param AssetTransformIndex $index
-     *
      * @return string
      */
     public function getTransformSubfolder(Asset $asset, AssetTransformIndex $index): string
@@ -1029,9 +1006,8 @@ class AssetTransforms extends Component
     /**
      * Return the filename used by the Transform Index for the Asset.
      *
-     * @param Asset               $asset
+     * @param Asset $asset
      * @param AssetTransformIndex $index
-     *
      * @return string
      */
     public function getTransformFilename(Asset $asset, AssetTransformIndex $index): string
@@ -1046,9 +1022,8 @@ class AssetTransforms extends Component
     /**
      * Returns the path to a transform, relative to the asset's folder.
      *
-     * @param Asset               $asset
+     * @param Asset $asset
      * @param AssetTransformIndex $index
-     *
      * @return string
      */
     public function getTransformSubpath(Asset $asset, AssetTransformIndex $index): string
@@ -1059,9 +1034,8 @@ class AssetTransforms extends Component
     /**
      * Returns the URI for a transform, relative to the asset's folder.
      *
-     * @param Asset               $asset
+     * @param Asset $asset
      * @param AssetTransformIndex $index
-     *
      * @return string
      */
     public function getTransformUri(Asset $asset, AssetTransformIndex $index): string
@@ -1079,7 +1053,6 @@ class AssetTransforms extends Component
      * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.
      *
      * @param Asset $asset
-     *
      * @return void
      */
     public function deleteAllTransformData(Asset $asset)
@@ -1101,7 +1074,6 @@ class AssetTransforms extends Component
      * Delete all the generated thumbnails for the Asset.
      *
      * @param Asset $asset
-     *
      * @return void
      */
     public function deleteResizedAssetVersion(Asset $asset)
@@ -1127,7 +1099,6 @@ class AssetTransforms extends Component
      * Delete created transforms for an Asset.
      *
      * @param Asset $asset
-     *
      * @throws VolumeException        if something went very wrong when deleting a transform
      */
     public function deleteCreatedTransformsForAsset(Asset $asset)
@@ -1161,7 +1132,6 @@ class AssetTransforms extends Component
      * Get an array of AssetTransformIndex models for all created transforms for an Asset.
      *
      * @param Asset $asset
-     *
      * @return array
      */
     public function getAllCreatedTransformsForAsset(Asset $asset): array
@@ -1250,7 +1220,6 @@ class AssetTransforms extends Component
      * Returns a transform's folder name.
      *
      * @param AssetTransform $transform
-     *
      * @return string
      */
     private function _getTransformFolderName(AssetTransform $transform): string
@@ -1266,7 +1235,6 @@ class AssetTransforms extends Component
      * Returns a named transform's folder name.
      *
      * @param AssetTransform $transform
-     *
      * @return string
      */
     private function _getNamedTransformFolderName(AssetTransform $transform): string
@@ -1278,7 +1246,6 @@ class AssetTransforms extends Component
      * Returns an unnamed transform's folder name.
      *
      * @param AssetTransform $transform
-     *
      * @return string
      */
     private function _getUnnamedTransformFolderName(AssetTransform $transform): string
@@ -1293,9 +1260,8 @@ class AssetTransforms extends Component
     /**
      * Create a transform for the Asset by the transform index.
      *
-     * @param Asset               $asset
+     * @param Asset $asset
      * @param AssetTransformIndex $index
-     *
      * @throws AssetTransformException If a transform index has an invalid transform assigned.
      * @return void
      */

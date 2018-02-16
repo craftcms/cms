@@ -53,42 +53,41 @@ use yii\validators\Validator;
  *
  * @property ElementQueryInterface $ancestors             The element’s ancestors
  * @property ElementQueryInterface $children              The element’s children
- * @property string                $contentTable          The name of the table this element’s content is stored in
- * @property string|null           $cpEditUrl             The element’s CP edit URL
+ * @property string $contentTable          The name of the table this element’s content is stored in
+ * @property string|null $cpEditUrl             The element’s CP edit URL
  * @property ElementQueryInterface $descendants           The element’s descendants
- * @property string                $editorHtml            The HTML for the element’s editor HUD
- * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
- * @property string                $fieldContext          The field context this element’s content uses
- * @property FieldLayout|null      $fieldLayout           The field layout used by this element
- * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
- * @property array                 $fieldValues           The element’s normalized custom field values, indexed by their handles
- * @property bool                  $hasDescendants        Whether the element has descendants
- * @property bool                  $hasFreshContent       Whether the element’s content is "fresh" (unsaved and without validation errors)
- * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property string                $indexHtml             The element index HTML
- * @property bool                  $isEditable            Whether the current user can edit the element
- * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
- * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
- * @property Element|null          $nextSibling           The element’s next sibling
- * @property Element|null          $parent                The element’s parent
- * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
- * @property Element|null          $prevSibling           The element’s previous sibling
- * @property string|null           $ref                   The reference string to this element
- * @property mixed                 $route                 The route that should be used when the element’s URI is requested
- * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property string $editorHtml            The HTML for the element’s editor HUD
+ * @property string $fieldColumnPrefix     The field column prefix this element’s content uses
+ * @property string $fieldContext          The field context this element’s content uses
+ * @property FieldLayout|null $fieldLayout           The field layout used by this element
+ * @property array $fieldParamNamespace   The namespace used by custom field params on the request
+ * @property array $fieldValues           The element’s normalized custom field values, indexed by their handles
+ * @property bool $hasDescendants        Whether the element has descendants
+ * @property bool $hasFreshContent       Whether the element’s content is "fresh" (unsaved and without validation errors)
+ * @property array $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
+ * @property string $indexHtml             The element index HTML
+ * @property bool $isEditable            Whether the current user can edit the element
+ * @property \Twig_Markup|null $link                  An anchor pre-filled with this element’s URL and title
+ * @property Element|null $next                  The next element relative to this one, from a given set of criteria
+ * @property Element|null $nextSibling           The element’s next sibling
+ * @property Element|null $parent                The element’s parent
+ * @property Element|null $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element|null $prevSibling           The element’s previous sibling
+ * @property string|null $ref                   The reference string to this element
+ * @property mixed $route                 The route that should be used when the element’s URI is requested
+ * @property string|null $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property ElementQueryInterface $siblings              All of the element’s siblings
- * @property Site                  $site                  Site the element is associated with
- * @property string|null           $status                The element’s status
- * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
- * @property int[]                 $supportedSiteIds      The site IDs this element is available in
- * @property int[]|array           $supportedSites        The sites this element is associated with
- * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
- * @property string|null           $title                 The element’s title
- * @property int                   $totalDescendants      The total number of descendants that the element has
- * @property string|null           $uriFormat             The URI format used to generate this element’s URL
- * @property string|null           $url                   The element’s full URL
+ * @property Site $site                  Site the element is associated with
+ * @property string|null $status                The element’s status
+ * @property int|null $structureId           The ID of the structure that the element is associated with, if any
+ * @property int[] $supportedSiteIds      The site IDs this element is available in
+ * @property int[]|array $supportedSites        The sites this element is associated with
+ * @property string|null $thumbUrl              The URL to the element’s thumbnail, if there is one
+ * @property string|null $title                 The element’s title
+ * @property int $totalDescendants      The total number of descendants that the element has
+ * @property string|null $uriFormat             The URI format used to generate this element’s URL
+ * @property string|null $url                   The element’s full URL
  * @mixin ContentBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -165,7 +164,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
-     *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
@@ -177,7 +175,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event ModelEvent The event that is triggered before the element is deleted
-     *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
@@ -189,7 +186,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
-     *
      * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
@@ -263,7 +259,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
      * @return ElementQueryInterface
      */
     public static function find(): ElementQueryInterface
@@ -341,7 +336,6 @@ abstract class Element extends Component implements ElementInterface
      * Defines the sources that elements of this type may belong to.
      *
      * @param string|null $context The context ('index' or 'modal').
-     *
      * @return array The sources.
      * @see sources()
      */
@@ -354,7 +348,6 @@ abstract class Element extends Component implements ElementInterface
      * Defines the available element actions for a given source (if one is provided).
      *
      * @param string|null $source The selected source’s key, if any.
-     *
      * @return array The available element actions.
      * @see actions()
      */
@@ -529,7 +522,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns the list of table attribute keys that should be shown by default.
      *
      * @param string $source The selected source’s key
-     *
      * @return string[] The table attributes.
      * @see defaultTableAttributes()
      * @see tableAttributes()
@@ -633,8 +625,7 @@ abstract class Element extends Component implements ElementInterface
      * Preps the element criteria for a given table attribute
      *
      * @param ElementQueryInterface $elementQuery
-     * @param string                $attribute
-     *
+     * @param string $attribute
      * @return void
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
@@ -722,15 +713,12 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Checks if a property is set.
-     *
      * This method will check if $name is one of the following:
-     *
      * - "title"
      * - a magic property supported by [[\yii\base\Component::__isset()]]
      * - a custom field handle
      *
      * @param string $name The property name
-     *
      * @return bool Whether the property is set
      */
     public function __isset($name): bool
@@ -740,14 +728,11 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Returns a property value.
-     *
      * This method will check if $name is one of the following:
-     *
      * - a magic property supported by [[\yii\base\Component::__isset()]]
      * - a custom field handle
      *
      * @param string $name The property name
-     *
      * @return mixed The property value
      * @throws UnknownPropertyException if the property is not defined
      * @throws InvalidCallException if the property is write-only.
@@ -936,13 +921,11 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Calls a custom validation function on a custom field.
-     *
      * This will be called by [[\yii\validators\InlineValidator]] if a custom field specified
      * a closure or the name of a class-level method as the validation type.
      *
-     * @param string     $attribute The field handle
+     * @param string $attribute The field handle
      * @param array|null $params
-     *
      * @return void
      */
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
@@ -962,7 +945,6 @@ abstract class Element extends Component implements ElementInterface
      * Validates that the content size is going to fit within the field’s database column.
      *
      * @param string $attribute
-     *
      * @return void
      */
     public function validateCustomFieldContentSize(string $attribute)
@@ -1561,7 +1543,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns whether elements have been eager-loaded with a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     *
      * @return bool Whether elements have been eager-loaded with the given handle
      */
     public function hasEagerLoadedElements(string $handle): bool
@@ -1573,7 +1554,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     *
      * @return ElementInterface[]|null The eager-loaded elements, or null
      */
     public function getEagerLoadedElements(string $handle)
@@ -1590,9 +1570,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Sets some eager-loaded elements on a given handle.
      *
-     * @param string             $handle   The handle to load the elements with in the future
+     * @param string $handle The handle to load the elements with in the future
      * @param ElementInterface[] $elements The eager-loaded elements
-     *
      * @return void
      */
     public function setEagerLoadedElements(string $handle, array $elements)
@@ -1789,7 +1768,6 @@ abstract class Element extends Component implements ElementInterface
      * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
-     *
      * @return void
      * @throws Exception if there is no field with the handle $fieldValue
      */
@@ -1808,12 +1786,10 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Finds Element instance(s) by the given condition.
-     *
      * This method is internally called by [[findOne()]] and [[findAll()]].
      *
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
-     * @param bool  $one      Whether this method is called by [[findOne()]] or [[findAll()]]
-     *
+     * @param bool $one Whether this method is called by [[findOne()]] or [[findAll()]]
      * @return static|static[]|null
      */
     protected static function findByCondition($criteria, bool $one)
@@ -1843,7 +1819,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns the field with a given handle.
      *
      * @param string $handle
-     *
      * @return Field|null
      */
     protected function fieldByHandle(string $handle)
@@ -1901,7 +1876,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
      * @param string $attribute The attribute name.
-     *
      * @return string The HTML that should be shown for a given attribute in Table View.
      * @see getTableAttributeHtml()
      */
@@ -2000,7 +1974,6 @@ abstract class Element extends Component implements ElementInterface
      * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
      *
      * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
-     *
      * @return array
      * @see getHtmlAttributes()
      */
@@ -2016,8 +1989,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an element right before/after this one, from a given set of criteria.
      *
      * @param mixed $criteria
-     * @param int   $dir
-     *
+     * @param int $dir
      * @return ElementInterface|null
      */
     private function _getRelativeElement($criteria, int $dir)

@@ -13,11 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Category record.
  *
- * @property int           $id      ID
- * @property int           $groupId Group ID
- * @property Element       $element Element
+ * @property int $id      ID
+ * @property int $groupId Group ID
+ * @property Element $element Element
  * @property CategoryGroup $group   Group
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -28,7 +27,6 @@ class Category extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

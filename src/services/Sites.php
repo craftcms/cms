@@ -33,16 +33,14 @@ use yii\db\Exception as DbException;
 
 /**
  * Sites service.
- *
  * An instance of the Sites service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSites()|<code>Craft::$app->sites</code>]].
  *
- * @property int[]     $allSiteIds         all of the site IDs
+ * @property int[] $allSiteIds         all of the site IDs
  * @property Site|null $currentSite        the current site
- * @property int[]     $editableSiteIds    all of the site IDs that are editable by the current user
- * @property Site      $primarySite        the primary site
- * @property int       $totalSites         the total number of sites
- * @property int       $totalEditableSites the total number of sites that are editable by the current user
- *
+ * @property int[] $editableSiteIds    all of the site IDs that are editable by the current user
+ * @property Site $primarySite        the primary site
+ * @property int $totalSites         the total number of sites
+ * @property int $totalEditableSites the total number of sites that are editable by the current user
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -98,7 +96,6 @@ class Sites extends Component
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site is deleted.
-     *
      * You may set [[SiteEvent::isValid]] to `false` to prevent the site from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
@@ -159,7 +156,6 @@ class Sites extends Component
 
     /**
      * @inheritdoc
-     *
      * @throws SiteNotFoundException if currentSite was not set and no sites exist
      */
     public function init()
@@ -204,7 +200,6 @@ class Sites extends Component
      * Returns a site group by its ID.
      *
      * @param int $groupId The site group’s ID
-     *
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      */
     public function getGroupById(int $groupId)
@@ -231,9 +226,8 @@ class Sites extends Component
     /**
      * Saves a site group.
      *
-     * @param SiteGroup $group         The site group to be saved
-     * @param bool      $runValidation Whether the group should be validated
-     *
+     * @param SiteGroup $group The site group to be saved
+     * @param bool $runValidation Whether the group should be validated
      * @return bool Whether the site group was saved successfully
      */
     public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
@@ -277,7 +271,6 @@ class Sites extends Component
      * Deletes a site group by its ID.
      *
      * @param int $groupId The site group’s ID
-     *
      * @return bool Whether the site group was deleted successfully
      */
     public function deleteGroupById(int $groupId): bool
@@ -295,7 +288,6 @@ class Sites extends Component
      * Deletes a site group.
      *
      * @param SiteGroup $group The site group
-     *
      * @return bool Whether the site group was deleted successfully
      */
     public function deleteGroup(SiteGroup $group): bool
@@ -381,7 +373,6 @@ class Sites extends Component
      * Sets the current site.
      *
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
-     *
      * @throws InvalidParamException if $site is invalid
      */
     public function setCurrentSite($site)
@@ -486,7 +477,6 @@ class Sites extends Component
      * Returns sites by a group ID.
      *
      * @param int $groupId
-     *
      * @return Site[]
      */
     public function getSitesByGroupId(int $groupId): array
@@ -530,7 +520,6 @@ class Sites extends Component
      * Returns a site by its ID.
      *
      * @param int $siteId
-     *
      * @return Site|null
      */
     public function getSiteById(int $siteId)
@@ -542,7 +531,6 @@ class Sites extends Component
      * Returns a site by its handle.
      *
      * @param string $siteHandle
-     *
      * @return Site|null
      */
     public function getSiteByHandle(string $siteHandle)
@@ -553,9 +541,8 @@ class Sites extends Component
     /**
      * Saves a site.
      *
-     * @param Site $site          The site to be saved
+     * @param Site $site The site to be saved
      * @param bool $runValidation Whether the site should be validated
-     *
      * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws \Throwable if reasons
@@ -718,7 +705,6 @@ class Sites extends Component
      * Reorders sites.
      *
      * @param int[] $siteIds The site IDs in their new order
-     *
      * @return bool Whether the sites were reordered successfthe sites are reorderedy
      * @throws \Throwable if reasons
      */
@@ -759,9 +745,8 @@ class Sites extends Component
     /**
      * Deletes a site by its ID.
      *
-     * @param int      $siteId            The site ID to be deleted
+     * @param int $siteId The site ID to be deleted
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
-     *
      * @return bool Whether the site was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -779,9 +764,8 @@ class Sites extends Component
     /**
      * Deletes a site.
      *
-     * @param Site     $site              The site to be deleted
+     * @param Site $site The site to be deleted
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
-     *
      * @return bool Whether the site was deleted successfully
      * @throws Exception if $site is the primary site
      * @throws \Throwable if reasons
@@ -1090,7 +1074,6 @@ class Sites extends Component
      * Gets a site group record or creates a new one.
      *
      * @param SiteGroup $group
-     *
      * @return SiteGroupRecord
      * @throws SiteGroupNotFoundException if $group->id is invalid
      */
@@ -1114,7 +1097,6 @@ class Sites extends Component
      *
      * @param int $oldPrimarySiteId
      * @param int $newPrimarySiteId
-     *
      * @throws \Throwable
      */
     private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)

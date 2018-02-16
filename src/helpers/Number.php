@@ -24,7 +24,6 @@ class Number
      * Returns the "word" version of a number
      *
      * @param int $num The number
-     *
      * @return string The number word, or the original number if it's >= 10
      */
     public static function word(int $num): string
@@ -53,7 +52,6 @@ class Number
      * Returns the uppercase alphabetic version of a number
      *
      * @param int $num The number
-     *
      * @return string The alphabetic version of the number
      */
     public static function upperAlpha(int $num): string
@@ -75,7 +73,6 @@ class Number
      * Returns the lowercase alphabetic version of a number
      *
      * @param int $num The number
-     *
      * @return string The alphabetic version of the number
      */
     public static function lowerAlpha(int $num): string
@@ -89,7 +86,6 @@ class Number
      * Returns the uppercase roman numeral version of a number
      *
      * @param int $num The number
-     *
      * @return string The roman numeral version of the number
      */
     public static function upperRoman(int $num): string
@@ -126,7 +122,6 @@ class Number
      * Returns the lowercase roman numeral version of a number
      *
      * @param int $num The number
-     *
      * @return string The roman numeral version of the number
      */
     public static function lowerRoman(int $num): string
@@ -138,12 +133,10 @@ class Number
 
     /**
      * Returns the numeric value of a variable.
-     *
      * If the variable is an object with a __toString() method, the numeric value of its string representation will be
      * returned.
      *
      * @param mixed $var
-     *
      * @return mixed
      */
     public static function makeNumeric($var)

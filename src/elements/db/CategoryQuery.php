@@ -20,11 +20,9 @@ use yii\db\Connection;
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
  *
  * @property string|string[]|CategoryGroup $group The handle(s) of the category group(s) that resulting categories must belong to.
- *
  * @method Category[]|array all($db = null)
  * @method Category|array|null one($db = null)
  * @method Category|array|null nth(int $n, Connection $db = null)
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -77,7 +75,6 @@ class CategoryQuery extends ElementQuery
      * Sets the [[editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function editable(bool $value = true)
@@ -90,7 +87,6 @@ class CategoryQuery extends ElementQuery
      * Sets the [[groupId]] property based on a given category group(s)’s handle(s).
      *
      * @param string|string[]|CategoryGroup|null $value The property value
-     *
      * @return static self reference
      */
     public function group($value)
@@ -115,7 +111,6 @@ class CategoryQuery extends ElementQuery
      * Sets the [[groupId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function groupId($value)

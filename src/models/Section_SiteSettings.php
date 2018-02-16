@@ -95,7 +95,6 @@ class Section_SiteSettings extends Model
      * Sets the section.
      *
      * @param Section $section
-     *
      * @return void
      */
     public function setSection(Section $section)

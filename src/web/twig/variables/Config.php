@@ -28,7 +28,6 @@ class Config
      * Returns whether a config item exists.
      *
      * @param string $name
-     *
      * @return bool
      */
     public function __isset(string $name): bool
@@ -41,7 +40,6 @@ class Config
      * Returns a config item.
      *
      * @param string $name
-     *
      * @return mixed
      */
     public function __get(string $name)
@@ -56,7 +54,6 @@ class Config
      *
      * @param string $name
      * @param string $category
-     *
      * @return mixed
      */
     public function get(string $name, string $category = ConfigService::CATEGORY_GENERAL)

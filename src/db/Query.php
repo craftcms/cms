@@ -46,7 +46,6 @@ class Query extends \yii\db\Query
      * Returns whether a given table has been joined in this query.
      *
      * @param string $table
-     *
      * @return bool
      */
     public function isJoined(string $table): bool
@@ -103,8 +102,7 @@ class Query extends \yii\db\Query
      * Executes the query and returns the first two columns in the results as key/value pairs.
      *
      * @param YiiConnection|null $db The database connection used to execute the query.
-     *                               If this parameter is not given, the `db` application component will be used.
-     *
+     * If this parameter is not given, the `db` application component will be used.
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
      */
@@ -206,10 +204,9 @@ class Query extends \yii\db\Query
     /**
      * Executes the query and returns a single row of result at a given offset.
      *
-     * @param int                $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
-     *                               If this parameter is not given, the `db` application component will be used.
-     *
+     * If this parameter is not given, the `db` application component will be used.
      * @return array|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
@@ -227,8 +224,7 @@ class Query extends \yii\db\Query
      * Shortcut for `createCommand()->getRawSql()`.
      *
      * @param YiiConnection|null $db the database connection used to generate the SQL statement.
-     *                               If this parameter is not given, the `db` application component will be used.
-     *
+     * If this parameter is not given, the `db` application component will be used.
      * @return string
      * @see createCommand()
      * @see \yii\db\Command::getRawSql()

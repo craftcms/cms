@@ -56,7 +56,6 @@ class SetupController extends Controller
     public $database;
     /**
      * @var string|null The database schema to use (PostgreSQL only).
-     *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema;
@@ -369,7 +368,6 @@ EOD;
      *
      * @param $name
      * @param $value
-     *
      * @return bool
      */
     private function _setEnvVar($name, $value): bool

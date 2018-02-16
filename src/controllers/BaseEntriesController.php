@@ -16,7 +16,6 @@ use craft\web\Controller;
 /**
  * BaseEntriesController is a base class that any entry-related controllers, such as [[EntriesController]] and
  * [[EntryRevisionsController]], extend to share common functionality.
- *
  * It extends [[Controller]], overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -31,8 +30,7 @@ abstract class BaseEntriesController extends Controller
      * Enforces all Edit Entry permissions.
      *
      * @param Entry $entry
-     * @param bool  $duplicate
-     *
+     * @param bool $duplicate
      * @return void
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)

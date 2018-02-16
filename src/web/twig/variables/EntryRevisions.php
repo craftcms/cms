@@ -30,9 +30,8 @@ class EntryRevisions
     /**
      * Returns entry drafts by an entry ID.
      *
-     * @param int         $entryId
+     * @param int $entryId
      * @param string|null $siteHandle
-     *
      * @return EntryDraft[]
      * @throws Exception if|null $siteHandle is invalid
      */
@@ -58,9 +57,8 @@ class EntryRevisions
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int         $entryId
+     * @param int $entryId
      * @param string|null $siteHandle
-     *
      * @return EntryDraft[]
      * @throws Exception if|null $siteHandle is invalid
      */
@@ -87,7 +85,6 @@ class EntryRevisions
      * Returns an entry draft by its offset.
      *
      * @param int $draftId
-     *
      * @return EntryDraft|null
      */
     public function getDraftById(int $draftId)
@@ -103,9 +100,8 @@ class EntryRevisions
     /**
      * Returns entry versions by an entry ID.
      *
-     * @param int    $entryId
+     * @param int $entryId
      * @param string $siteHandle
-     *
      * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
      */
@@ -132,7 +128,6 @@ class EntryRevisions
      * Returns an entry version by its ID.
      *
      * @param int $versionId
-     *
      * @return EntryVersion|null
      */
     public function getVersionById(int $versionId)

@@ -72,7 +72,6 @@ class UserGroup extends Model
      * Returns whether the group has permission to perform a given action.
      *
      * @param string $permission
-     *
      * @return bool
      */
     public function can(string $permission): bool

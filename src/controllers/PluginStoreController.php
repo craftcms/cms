@@ -21,7 +21,6 @@ use yii\web\Response;
 
 /**
  * The PluginStoreController class is a controller that handles various actions related to the Plugin Store.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -72,7 +71,6 @@ class PluginStoreController extends Controller
      * Connect to id.craftcms.com.
      *
      * @param string|null $redirect
-     *
      * @return Response
      */
     public function actionConnect(string $redirect = null): Response

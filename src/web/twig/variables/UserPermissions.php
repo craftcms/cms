@@ -39,7 +39,6 @@ class UserPermissions
      * Returns all of the group permissions a given user has.
      *
      * @param int $userId
-     *
      * @return array
      */
     public function getGroupPermissionsByUserId(int $userId): array

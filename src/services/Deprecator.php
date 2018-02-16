@@ -20,7 +20,6 @@ use yii\base\Component;
 
 /**
  * Deprecator service.
- *
  * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|<code>Craft::$app->deprecator</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -54,7 +53,6 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
-     *
      * @return bool
      */
     public function log(string $key, string $message): bool
@@ -134,7 +132,6 @@ class Deprecator extends Component
      * Get 'em all.
      *
      * @param int|null $limit
-     *
      * @return DeprecationError[]
      */
     public function getLogs(int $limit = null): array
@@ -161,7 +158,6 @@ class Deprecator extends Component
      * Returns a log by its ID.
      *
      * @param int $logId
-     *
      * @return DeprecationError|null
      */
     public function getLogById(int $logId)
@@ -177,7 +173,6 @@ class Deprecator extends Component
      * Deletes a log by its ID.
      *
      * @param int $id
-     *
      * @return bool
      */
     public function deleteLogById(int $id): bool
@@ -231,7 +226,6 @@ class Deprecator extends Component
      * Returns the file and line number that should be associated with the error.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
      * @return array [file, line]
      */
     private function _findOrigin(array $traces): array
@@ -286,8 +280,7 @@ class Deprecator extends Component
      * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     * @param int   $index  The trace index to check
-     *
+     * @param int $index The trace index to check
      * @return bool
      */
     private function _isTemplateAttributeCall(array $traces, int $index): bool
@@ -307,7 +300,6 @@ class Deprecator extends Component
      * Returns a simplified version of the stack trace.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
      * @return array
      */
     private function _cleanTraces(array $traces): array
@@ -332,8 +324,7 @@ class Deprecator extends Component
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
      * @param \Twig_Template $template
-     * @param int|null       $actualCodeLine
-     *
+     * @param int|null $actualCodeLine
      * @return int|null
      */
     private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
@@ -354,11 +345,9 @@ class Deprecator extends Component
 
     /**
      * Converts an array of method arguments to a string.
-     *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
      * @param array $args
-     *
      * @return string
      */
     private function _argsToString(array $args): string

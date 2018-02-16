@@ -69,9 +69,8 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * Processes a text node.
      *
-     * @param \Twig_Node_Text   $node
+     * @param \Twig_Node_Text $node
      * @param \Twig_Environment $env
-     *
      * @return \Twig_Node
      */
     private function _processTextNode(\Twig_Node_Text $node, \Twig_Environment $env): \Twig_Node
@@ -128,11 +127,10 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * Inserts a new event function node at a specific point in a given text node’s data.
      *
-     * @param \Twig_Node_Text   $node
+     * @param \Twig_Node_Text $node
      * @param \Twig_Environment $env
-     * @param int               $pos
-     * @param string            $functionName
-     *
+     * @param int $pos
+     * @param string $functionName
      * @return \Twig_Node
      */
     private function _insertEventNode(\Twig_Node_Text $node, \Twig_Environment $env, int $pos, string $functionName): \Twig_Node

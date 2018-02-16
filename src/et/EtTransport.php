@@ -88,7 +88,6 @@ class EtTransport
      * Sets custom data on the EtModel.
      *
      * @param mixed $data
-     *
      * @return void
      */
     public function setData($data)
@@ -100,7 +99,6 @@ class EtTransport
      * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
      *
      * @param string $handle
-     *
      * @return void
      */
     public function setHandle(string $handle)
@@ -271,7 +269,6 @@ class EtTransport
 
     /**
      * @param string $key
-     *
      * @return bool
      * @throws Exception|EtException
      */

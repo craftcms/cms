@@ -22,7 +22,6 @@ use yii\base\Exception;
 
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
- *
  * An instance of the API service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getApi()|<code>Craft::$app->api</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -103,7 +102,6 @@ class Api extends Component
      * and the package requirements that should be installed.
      *
      * @param array $install Package name/version pairs to be installed
-     *
      * @return array
      * @throws ApiException if the API gave a non-2xx response
      * @throws Exception if no one is logged in or there isn't a valid license key
@@ -203,8 +201,7 @@ class Api extends Component
     /**
      * @param string $method
      * @param string $uri
-     * @param array  $options
-     *
+     * @param array $options
      * @return ResponseInterface
      * @throws ApiException
      */
@@ -221,7 +218,6 @@ class Api extends Component
      * Returns platform info.
      *
      * @param bool $useComposerOverrides Whether to factor in any `config.platform` overrides
-     *
      * @return array
      */
     protected function platformVersions(bool $useComposerOverrides = false): array

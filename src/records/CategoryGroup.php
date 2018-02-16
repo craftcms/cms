@@ -13,16 +13,15 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class CategoryGroup record.
  *
- * @property int                          $id            ID
- * @property int                          $structureId   Structure ID
- * @property int                          $fieldLayoutId Field layout ID
- * @property string                       $name          Name
- * @property string                       $handle        Handle
- * @property Structure                    $structure     Structure
- * @property FieldLayout                  $fieldLayout   Field layout
+ * @property int $id            ID
+ * @property int $structureId   Structure ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name          Name
+ * @property string $handle        Handle
+ * @property Structure $structure     Structure
+ * @property FieldLayout $fieldLayout   Field layout
  * @property CategoryGroup_SiteSettings[] $siteSettings  Site settings
- * @property Category[]                   $categories    Categories
- *
+ * @property Category[] $categories    Categories
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -33,7 +32,6 @@ class CategoryGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

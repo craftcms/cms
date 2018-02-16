@@ -637,8 +637,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of variables that should be passed to the input template.
      *
      * @param ElementQueryInterface|array|null $value
-     * @param ElementInterface|null            $element
-     *
+     * @param ElementInterface|null $element
      * @return array
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
@@ -677,7 +676,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
-     *
      * @return array|string
      */
     protected function inputSources(ElementInterface $element = null)
@@ -705,7 +703,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the site ID that target elements should have.
      *
      * @param ElementInterface|null $element
-     *
      * @return int
      */
     protected function targetSiteId(ElementInterface $element = null): int

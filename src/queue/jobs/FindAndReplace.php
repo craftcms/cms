@@ -91,8 +91,8 @@ class FindAndReplace extends BaseJob
      * Checks whether the given field is saving data into a textual column, and saves it accordingly.
      *
      * @param FieldInterface $field
-     * @param string         $table
-     * @param string         $fieldColumnPrefix
+     * @param string $table
+     * @param string $fieldColumnPrefix
      */
     private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
     {
@@ -126,7 +126,6 @@ class FindAndReplace extends BaseJob
      * Registers any textual columns associated with the given Matrix field.
      *
      * @param Matrix $matrixField
-     *
      * @throws Exception if the content table can't be determined
      */
     private function _checkMatrixField(Matrix $matrixField)

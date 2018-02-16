@@ -25,9 +25,9 @@ class InvalidPluginException extends Exception
     /**
      * Constructor.
      *
-     * @param string      $handle  The plugin handle that doesn’t exist or doesn’t extend/implement [[craft\base\PluginInterface]]
+     * @param string $handle The plugin handle that doesn’t exist or doesn’t extend/implement [[craft\base\PluginInterface]]
      * @param string|null $message The error message
-     * @param int         $code    The error code
+     * @param int $code The error code
      */
     public function __construct(string $handle, string $message = null, int $code = 0)
     {

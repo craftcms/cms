@@ -41,11 +41,11 @@ class FixedOrderExpression extends Expression
     /**
      * Constructor
      *
-     * @param string     $column The column name that contains the values.
-     * @param array      $values The column values, in the order in which the rows should be returned in.
-     * @param Connection $db     The DB connection
-     * @param array      $params Parameters
-     * @param array      $config Name-value pairs that will be used to initialize the object properties.
+     * @param string $column The column name that contains the values.
+     * @param array $values The column values, in the order in which the rows should be returned in.
+     * @param Connection $db The DB connection
+     * @param array $params Parameters
+     * @param array $config Name-value pairs that will be used to initialize the object properties.
      */
     public function __construct(string $column, array $values, Connection $db, array $params = [], array $config = [])
     {

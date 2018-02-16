@@ -21,11 +21,9 @@ use yii\console\Response;
  * Craft Console Application class
  *
  * @property Request $request          The request component
- * @property User    $user             The user component
- *
+ * @property User $user             The user component
  * @method Request   getRequest()      Returns the request component.
  * @method Response  getResponse()     Returns the response component.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

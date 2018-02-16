@@ -31,11 +31,11 @@ class MigrationException extends Exception
     /**
      * Constructor.
      *
-     * @param Migration       $migration The migration being executed
-     * @param string|null     $output    The migration output
-     * @param string|null     $message   The error message
-     * @param int             $code      The error code
-     * @param \Throwable|null $previous  The previous exception
+     * @param Migration $migration The migration being executed
+     * @param string|null $output The migration output
+     * @param string|null $message The error message
+     * @param int $code The error code
+     * @param \Throwable|null $previous The previous exception
      */
     public function __construct(Migration $migration, string $output = null, string $message = null, int $code = 0, \Throwable $previous = null)
     {

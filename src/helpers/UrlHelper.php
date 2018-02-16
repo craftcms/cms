@@ -26,7 +26,6 @@ class UrlHelper
      * Returns whether a given string appears to be an absolute URL.
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isAbsoluteUrl(string $url): bool
@@ -38,7 +37,6 @@ class UrlHelper
      * Returns whether a given string appears to be a protocol-relative URL.
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isProtocolRelativeUrl(string $url): bool
@@ -50,7 +48,6 @@ class UrlHelper
      * Returns whether a given string appears to be a root-relative URL.
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isRootRelativeUrl(string $url): bool
@@ -62,7 +59,6 @@ class UrlHelper
      * Returns whether a given string appears to be a "full" URL (absolute, root-relative or protocol-relative).
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isFullUrl(string $url): bool
@@ -73,9 +69,8 @@ class UrlHelper
     /**
      * Returns a URL with additional query string parameters.
      *
-     * @param string       $url
+     * @param string $url
      * @param array|string $params
-     *
      * @return string
      */
     public static function urlWithParams(string $url, $params): string
@@ -104,7 +99,6 @@ class UrlHelper
      *
      * @param string $url
      * @param string $token
-     *
      * @return string
      */
     public static function urlWithToken(string $url, string $token): string
@@ -120,9 +114,8 @@ class UrlHelper
     /**
      * Returns a URL with a specific scheme.
      *
-     * @param string $url    the URL
+     * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
-     *
      * @return string
      */
     public static function urlWithScheme(string $url, string $scheme): string
@@ -146,11 +139,10 @@ class UrlHelper
     /**
      * Returns either a CP or a site URL, depending on the request type.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     * @param bool              $mustShowScriptName
-     *
+     * @param string|null $scheme
+     * @param bool $mustShowScriptName
      * @return string
      */
     public static function url(string $path = '', $params = null, string $scheme = null, bool $mustShowScriptName = false): string
@@ -190,10 +182,9 @@ class UrlHelper
     /**
      * Returns a CP URL.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     *
+     * @param string|null $scheme
      * @return string
      */
     public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
@@ -207,11 +198,10 @@ class UrlHelper
     /**
      * Returns a site URL.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     * @param int|null          $siteId
-     *
+     * @param string|null $scheme
+     * @param int|null $siteId
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
@@ -246,11 +236,10 @@ class UrlHelper
     }
 
     /**
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme   The scheme to use ('http' or 'https'). If empty, the scheme used for the current
-     *                                    request will be used.
-     *
+     * @param string|null $scheme The scheme to use ('http' or 'https'). If empty, the scheme used for the current
+     * request will be used.
      * @return string
      */
     public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
@@ -264,7 +253,6 @@ class UrlHelper
      * Removes the query string from a given URL.
      *
      * @param string $url The URL to check.
-     *
      * @return string The URL without a query string.
      */
     public static function stripQueryString(string $url): string
@@ -355,9 +343,8 @@ class UrlHelper
     /**
      * Returns a URL with a specific scheme.
      *
-     * @param string $url    the URL
+     * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
-     *
      * @return string
      * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
      */
@@ -387,12 +374,11 @@ class UrlHelper
     /**
      * Returns a URL.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     * @param bool              $cpUrl
-     * @param bool              $mustShowScriptName
-     *
+     * @param string|null $scheme
+     * @param bool $cpUrl
+     * @param bool $mustShowScriptName
      * @return string
      */
     private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $mustShowScriptName): string
@@ -492,8 +478,7 @@ class UrlHelper
      * Normalizes query string params.
      *
      * @param string|array|null $params
-     * @param string|null       &$fragment
-     *
+     * @param string|null &$fragment
      * @return string
      */
     private static function _normalizeParams($params, &$fragment = null): string

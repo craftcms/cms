@@ -52,7 +52,6 @@ class D3Asset extends AssetBundle
      * Returns the closest-matching D3 format definition for the current language.
      *
      * @param string $dir the path to the directory containing the format files
-     *
      * @return string the JSON-encoded format definition
      */
     public function formatDef(string $dir): string
@@ -80,7 +79,6 @@ class D3Asset extends AssetBundle
      *
      * @param string $dir
      * @param string $file
-     *
      * @return string|null
      */
     private function _def(string $dir, string $file)
