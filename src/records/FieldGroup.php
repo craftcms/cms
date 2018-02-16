@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,11 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class FieldGroup record.
  *
- * @property int $id     ID
- * @property string $name   Name
+ * @property int $id ID
+ * @property string $name Name
  * @property Field[] $fields Fields
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldGroup extends ActiveRecord
 {

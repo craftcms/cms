@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -24,11 +24,11 @@ use yii\base\Exception;
  * Service for image operations.
  * An instance of the Images service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImages()|<code>Craft::$app->images</code>]].
  *
- * @property bool $isGd                  Whether image manipulations will be performed using GD or not
- * @property bool $isImagick             Whether image manipulations will be performed using Imagick or not
+ * @property bool $isGd Whether image manipulations will be performed using GD or not
+ * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  * @property array $supportedImageFormats A list of all supported image formats
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Images extends Component
 {

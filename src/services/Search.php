@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -28,7 +28,7 @@ use yii\db\Schema;
  * An instance of the Search service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSearch()|<code>Craft::$app->search</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Search extends Component
 {
@@ -128,7 +128,7 @@ class Search extends Component
      * @param int $elementId The ID of the element getting indexed.
      * @param int $siteId The site ID of the content getting indexed.
      * @param array $fields The field values, indexed by field ID.
-     * @return bool  Whether the indexing was a success.
+     * @return bool Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
@@ -356,9 +356,9 @@ class Search extends Component
     /**
      * Calculate score for a row/term combination.
      *
-     * @param  SearchQueryTerm $term The SearchQueryTerm to score.
-     * @param  array $row The result row to score against.
-     * @param  float|int $weight Optional weight for this term.
+     * @param SearchQueryTerm $term The SearchQueryTerm to score.
+     * @param array $row The result row to score against.
+     * @param float|int $weight Optional weight for this term.
      * @return float The total score for this term/row combination.
      */
     private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1): float

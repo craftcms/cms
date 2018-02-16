@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -35,18 +35,18 @@ use yii\web\Response;
 /**
  * Craft Web Application class
  *
- * @property Request $request          The request component
- * @property \craft\web\Response $response         The response component
- * @property Session $session          The session component
- * @property UrlManager $urlManager       The URL manager for this application
- * @property User $user             The user component
- * @method Request                                getRequest()      Returns the request component.
- * @method \craft\web\Response                    getResponse()     Returns the response component.
- * @method Session                                getSession()      Returns the session component.
- * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
- * @method User                                   getUser()         Returns the user component.
+ * @property Request $request The request component
+ * @property \craft\web\Response $response The response component
+ * @property Session $session The session component
+ * @property UrlManager $urlManager The URL manager for this application
+ * @property User $user The user component
+ * @method Request getRequest()      Returns the request component.
+ * @method \craft\web\Response getResponse()     Returns the response component.
+ * @method Session getSession()      Returns the session component.
+ * @method UrlManager getUrlManager()   Returns the URL manager for this application.
+ * @method User getUser()         Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Application extends \yii\web\Application
 {

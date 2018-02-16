@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -47,7 +47,7 @@ use yii\base\NotSupportedException;
  * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|<code>Craft::$app->assets</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Assets extends Component
 {
@@ -70,7 +70,7 @@ class Assets extends Component
     const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
     /**
-     * @event      GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
+     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
      * @deprecated in 3.0.0-RC9. Use [[EVENT_GET_THUMB_PATH]] instead.
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
@@ -138,8 +138,8 @@ class Assets extends Component
      * @param Asset $asset
      * @param string $pathOnServer
      * @param string $filename
-     * @throws FileException            If there was a problem with the actual file.
-     * @throws AssetLogicException      If the Asset to be replaced cannot be found.
+     * @throws FileException If there was a problem with the actual file.
+     * @throws AssetLogicException If the Asset to be replaced cannot be found.
      * @return void
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
@@ -240,10 +240,10 @@ class Assets extends Component
      *
      * @param int $folderId
      * @param string $newName
-     * @throws AssetConflictException           If a folder already exists with such name in Assets Index
-     * @throws AssetLogicException              If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws VolumeObjectExistsException      If a folder already exists with such name in the Volume, but not in Index
-     * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
+     * @throws AssetConflictException If a folder already exists with such name in Assets Index
+     * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
+     * @throws VolumeObjectExistsException If a folder already exists with such name in the Volume, but not in Index
+     * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the Volume.
      * @return string The new folder name after cleaning it.
      */
     public function renameFolderById(int $folderId, string $newName): string

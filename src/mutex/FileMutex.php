@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\mutex;
@@ -13,10 +13,10 @@ use yii\base\Exception;
 
 /**
  * @inheritdoc
- * @see    Mutex
- * @todo   Remove this class when Yii 2.0.11 comes out
+ * @see Mutex
+ * @todo Remove this class when Yii 2.0.11 comes out
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FileMutex extends \yii\mutex\FileMutex
 {

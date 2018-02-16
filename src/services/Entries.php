@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -16,7 +16,7 @@ use yii\base\Component;
  * An instance of the Entries service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntries()|<code>Craft::$app->entries</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Entries extends Component
 {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -45,7 +45,7 @@ use yii\web\Response;
  * authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UsersController extends Controller
 {
@@ -141,7 +141,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Logs a user in for impersonation.  Requires you to be an administrator.
+     * Logs a user in for impersonation. Requires you to be an administrator.
      *
      * @return Response|null
      */
@@ -461,7 +461,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Manually activates a user account.  Only admins have access.
+     * Manually activates a user account. Only admins have access.
      *
      * @return Response
      */

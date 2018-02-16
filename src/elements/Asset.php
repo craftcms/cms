@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -50,11 +50,11 @@ use yii\base\UnknownPropertyException;
  * Asset represents an asset element.
  *
  * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
- * @property bool $hasThumb   whether the file has a thumbnail
- * @property int|float|null $height     the image height
- * @property int|float|null $width      the image width
+ * @property bool $hasThumb whether the file has a thumbnail
+ * @property int|float|null $height the image height
+ * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Asset extends Element
 {

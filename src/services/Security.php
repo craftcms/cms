@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -18,7 +18,7 @@ use yii\helpers\Inflector;
  * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|<code>Craft::$app->security</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Security extends \yii\base\Security
 {

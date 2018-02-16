@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -14,8 +14,8 @@ use yii\web\Cookie;
 /**
  * Request functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class Request
@@ -269,7 +269,7 @@ class Request
     }
 
     /**
-     * Returns the schema and host part of the application URL.  The returned URL does not have an ending slash. By
+     * Returns the schema and host part of the application URL. The returned URL does not have an ending slash. By
      * default this is determined based on the user request information.
      *
      * @return string

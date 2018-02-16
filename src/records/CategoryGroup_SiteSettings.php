@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,16 +13,16 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class CategoryGroup_SiteSettings record.
  *
- * @property int $id                       ID
- * @property int $groupId                  Group ID
- * @property int $siteId                   Site ID
- * @property bool $hasUrls                  Has URLs
- * @property string $uriFormat                URI format
- * @property string $template                 Template
- * @property CategoryGroup $group                    Group
- * @property Site $site                     Site
+ * @property int $id ID
+ * @property int $groupId Group ID
+ * @property int $siteId Site ID
+ * @property bool $hasUrls Has URLs
+ * @property string $uriFormat URI format
+ * @property string $template Template
+ * @property CategoryGroup $group Group
+ * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CategoryGroup_SiteSettings extends ActiveRecord
 {

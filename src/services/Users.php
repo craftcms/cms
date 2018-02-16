@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -37,7 +37,7 @@ use yii\db\Exception as DbException;
  * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|<code>Craft::$app->users</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Users extends Component
 {
@@ -983,7 +983,7 @@ class Users extends Component
     /**
      * Sets a user record up for a new verification code without saving it.
      *
-     * @param  UserRecord $userRecord
+     * @param UserRecord $userRecord
      * @return string
      */
     private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string

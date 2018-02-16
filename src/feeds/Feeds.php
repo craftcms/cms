@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\feeds;
@@ -20,7 +20,7 @@ use Zend\Feed\Reader\Reader;
  * An instance of the Feeds service is globally accessible in Craft via [[\craft\web\Application::feeds|<code>Craft::$app->feeds</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Feeds extends Component
 {

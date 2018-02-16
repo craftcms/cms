@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -13,7 +13,7 @@ use Craft;
  * UploadedFile represents the information for an uploaded file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UploadedFile extends \yii\web\UploadedFile
 {
@@ -21,7 +21,7 @@ class UploadedFile extends \yii\web\UploadedFile
     // =========================================================================
 
     /**
-     * Returns an instance of the specified uploaded file.  The name can be a plain string or a string like an array
+     * Returns an instance of the specified uploaded file. The name can be a plain string or a string like an array
      * element (e.g. 'Post[imageFile]', or 'Post[0][imageFile]').
      *
      * @param string $name The name of the file input field

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\config;
@@ -17,7 +17,7 @@ use yii\base\UnknownPropertyException;
  * General config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GeneralConfig extends BaseObject
 {
@@ -80,7 +80,7 @@ class GeneralConfig extends BaseObject
     public $backupOnUpdate = true;
     /**
      * @var string|null Craft will use the command line libraries `pg_dump` and `mysqldump` for backing up a database
-     * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
+     * by default. It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
      * If you want to use some other library, or want to specify an absolute path to them,
      * or want to specify different parameters than the default, or you want to implement some other backup
@@ -286,7 +286,7 @@ class GeneralConfig extends BaseObject
     public $invalidLoginWindowDuration = 3600;
     /**
      * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
-     * resetting user account passwords.  Note that this only affects front-end site requests.
+     * resetting user account passwords. Note that this only affects front-end site requests.
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getInvalidUserTokenPath()
      */
@@ -309,13 +309,13 @@ class GeneralConfig extends BaseObject
      */
     public $limitAutoSlugsToAscii = false;
     /**
-     * @var mixed The URI Craft should use for user login.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user login. Note that this only affects front-end site requests.
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
-     * @var mixed The URI Craft should use for user logout.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user logout. Note that this only affects front-end site requests.
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getLogoutPath()
      */
@@ -460,7 +460,7 @@ class GeneralConfig extends BaseObject
     public $resourceBaseUrl = '@web/cpresources';
     /**
      * @var string|null Craft will use the command line libraries `psql` and `mysql` for restoring a database
-     * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
+     * by default. It assumes that those libraries are in the $PATH variable for the user the web server is
      * running as.
      * If you want to use some other library, or want to specify an absolute path to them,
      * or want to specify different parameters than the default, or you want to implement some other restoration

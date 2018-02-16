@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console;
@@ -17,7 +17,7 @@ use yii\web\IdentityInterface;
  * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|<code>Craft::$app->user</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class User extends Component
 {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -21,19 +21,19 @@ use yii\web\NotFoundHttpException;
 
 /**
  * @inheritdoc
- * @property string $fullPath               The full requested path, including the CP trigger and pagination info.
- * @property string $path                   The requested path, sans CP trigger and pagination info.
- * @property array $segments               The segments of the requested path.
- * @property int $pageNum                The requested page number.
- * @property string $token                  The token submitted with the request, if there is one.
- * @property bool $isCpRequest            Whether the Control Panel was requested.
- * @property bool $isSiteRequest          Whether the front end site was requested.
- * @property bool $isActionRequest        Whether a specific controller action was requested.
- * @property array $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
- * @property bool $isLivePreview          Whether this is a Live Preview request.
+ * @property string $fullPath The full requested path, including the CP trigger and pagination info.
+ * @property string $path The requested path, sans CP trigger and pagination info.
+ * @property array $segments The segments of the requested path.
+ * @property int $pageNum The requested page number.
+ * @property string $token The token submitted with the request, if there is one.
+ * @property bool $isCpRequest Whether the Control Panel was requested.
+ * @property bool $isSiteRequest Whether the front end site was requested.
+ * @property bool $isActionRequest Whether a specific controller action was requested.
+ * @property array $actionSegments The segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
+ * @property bool $isLivePreview Whether this is a Live Preview request.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Request extends \yii\web\Request
 {
@@ -775,7 +775,7 @@ class Request extends \yii\web\Request
     // =========================================================================
 
     /**
-     * Generates  an unmasked random token used to perform CSRF validation.
+     * Generates an unmasked random token used to perform CSRF validation.
      *
      * @return string the random token for CSRF validation.
      */

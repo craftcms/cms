@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -40,11 +40,11 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property bool $isCurrent         Whether this is the current logged-in user
- * @property string $name              The user's full name or username
+ * @property bool $isCurrent Whether this is the current logged-in user
+ * @property string $name The user's full name or username
  * @property string|null $preferredLanguage The user’s preferred language
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class User extends Element implements IdentityInterface
 {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -48,7 +48,7 @@ use yii\di\ServiceLocator;
  * @property EntryRevisions $entryRevisions
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftVariable extends ServiceLocator
 {
@@ -62,15 +62,15 @@ class CraftVariable extends ServiceLocator
     const EVENT_INIT = 'init';
 
     /**
-     * @event      DefineComponentsEvent The event that is triggered when defining the Service Locator components.
-     * @see        __construct()
+     * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
+     * @see __construct()
      * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
 
     /**
-     * @event      DefineBehaviorsEvent The event that is triggered when defining the class behaviors
-     * @see        behaviors()
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
      * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';

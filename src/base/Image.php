@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -17,7 +17,7 @@ use yii\base\BaseObject;
  *
  * @property bool $isTransparent Whether the image is transparent
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Image extends BaseObject
 {
@@ -113,7 +113,7 @@ abstract class Image extends BaseObject
     // =========================================================================
 
     /**
-     * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
+     * Normalizes the given dimensions. If width or height is set to 'AUTO', we calculate the missing dimension.
      *
      * @param int|string|null $width
      * @param int|string|null $height

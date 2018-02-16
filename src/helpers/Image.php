@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -15,7 +15,7 @@ use craft\image\Svg;
  * Class Image
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Image
 {
@@ -32,10 +32,10 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  int|float|null $targetWidth
-     * @param  int|float|null $targetHeight
-     * @param  int|float $sourceWidth
-     * @param  int|float $sourceHeight
+     * @param int|float|null $targetWidth
+     * @param int|float|null $targetHeight
+     * @param int|float $sourceWidth
+     * @param int|float $sourceHeight
      * @return int[] Array of the width and height.
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
@@ -85,10 +85,10 @@ class Image
      * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo.
      *
      * @param string $file The path to the PNG file.
-     * @author  Tom Klingenberg <lastflood.net>
+     * @author Tom Klingenberg <lastflood.net>
      * @license Apache 2.0
      * @version 0.1.0
-     * @link    http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
+     * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
      * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
      */
     public static function pngImageInfo(string $file)
