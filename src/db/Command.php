@@ -22,17 +22,7 @@ class Command extends \yii\db\Command
     // =========================================================================
 
     /**
-     * Creates an INSERT command.
-     * For example,
-     * ```php
-     * $connection->createCommand()->insert('user', [
-     *     'name' => 'Sam',
-     *     'age' => 30,
-     * ])->execute();
-     * ```
-     * The method will properly escape the column names, and bind the values to be inserted.
-     * Note that the created command is not executed until [[execute()]] is called.
-     *
+     * @inheritdoc
      * @param string $table The table that new rows will be inserted into.
      * @param array $columns The column data (name => value) to be inserted into the table.
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
@@ -60,19 +50,7 @@ class Command extends \yii\db\Command
     }
 
     /**
-     * Creates a batch INSERT command.
-     * For example,
-     * ```php
-     * $connection->createCommand()->batchInsert('user', ['name', 'age'], [
-     *     ['Tom', 30],
-     *     ['Jane', 20],
-     *     ['Linda', 25],
-     * ])->execute();
-     * ```
-     * The method will properly escape the column names, and quote the values to be inserted.
-     * Note that the values in each row must match the corresponding column names.
-     * Also note that the created command is not executed until [[execute()]] is called.
-     *
+     * @inheritdoc
      * @param string $table The table that new rows will be inserted into.
      * @param array $columns The column names.
      * @param array $rows The rows to be batch inserted into the table.
@@ -133,14 +111,7 @@ class Command extends \yii\db\Command
     }
 
     /**
-     * Creates an UPDATE command.
-     * For example,
-     * ```php
-     * $connection->createCommand()->update('user', ['status' => 1], 'age > 30')->execute();
-     * ```
-     * The method will properly escape the column names and bind the values to be updated.
-     * Note that the created command is not executed until [[execute()]] is called.
-     *
+     * @inheritdoc
      * @param string $table The table to be updated.
      * @param array $columns The column data (name => value) to be updated.
      * @param string|array $condition The condition that will be put in the WHERE part. Please

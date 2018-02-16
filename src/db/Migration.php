@@ -315,9 +315,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Builds and executes a SQL statement for creating a primary key.
-     * The method will properly quote the table and column names.
-     *
+     * @inheritdoc
      * @param string|null $name the name of the primary key constraint. If null, a name will be automatically generated.
      * @param string $table the table that the primary key constraint will be added to.
      * @param string|array $columns comma separated string or array of columns that the primary key will consist of.
@@ -332,9 +330,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Builds a SQL statement for adding a foreign key constraint to an existing table.
-     * The method will properly quote the table and column names.
-     *
+     * @inheritdoc
      * @param string|null $name the name of the foreign key constraint. If null, a name will be automatically generated.
      * @param string $table the table that the foreign key constraint will be added to.
      * @param string|array $columns the name of the column to that the constraint will be added on. If there are multiple columns, separate them with commas or use an array.
@@ -353,8 +349,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Builds and executes a SQL statement for creating a new index.
-     *
+     * @inheritdoc
      * @param string|null $name the name of the index. The name will be properly quoted by the method. If null, a name will be automatically generated.
      * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
      * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
