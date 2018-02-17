@@ -165,7 +165,7 @@ trait ApplicationTrait
     public function updateTargetLanguage(bool $useUserLanguage = null)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Defend against an infinite _setLanguage() loop
+        // Defend against an infinite updateTargetLanguage() loop
         if ($this->_gettingLanguage === true) {
             // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
             $fallbackLanguage = $this->_getFallbackLanguage();
