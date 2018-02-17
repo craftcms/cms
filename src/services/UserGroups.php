@@ -113,9 +113,9 @@ class UserGroups extends Component
      * Gets a user group by its ID.
      *
      * @param int $groupId
-     * @return UserGroup
+     * @return UserGroup|null
      */
-    public function getGroupById(int $groupId): UserGroup
+    public function getGroupById(int $groupId)
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['id' => $groupId])

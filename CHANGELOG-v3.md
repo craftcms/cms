@@ -27,6 +27,7 @@
 - Fixed a bug where Control Panel dates, times, and numbers were formatted for US English regardless of the user’s preferred language, if any plugins were registering an asset bundle that relied on `craft\web\assets\cp\CpAsset` from their `init()` methods. ([#2439](https://github.com/craftcms/cms/issues/2439))
 - Fixed a bug where entries would get a “Title cannot be blank” validation error when attempting to publish a draft with a dynamic title. ([#2440](https://github.com/craftcms/cms/issues/2440))
 - Fixed a bug where if both the `before` and `after` params were applied to an entry query, results would include entries where either of them matched, rather than both. ([#2442](https://github.com/craftcms/cms/issues/2442))
+- Fixed an error that occurred if an invalid user group ID was passed into `craft\services\UserGroups::getGroupById()`. ([#2443](https://github.com/craftcms/cms/issues/2443))
 
 ## 3.0.0-RC10 - 2018-02-13
 
