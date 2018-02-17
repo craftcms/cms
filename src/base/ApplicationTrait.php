@@ -1131,12 +1131,11 @@ trait ApplicationTrait
         // Set the timezone
         $this->_setTimeZone();
 
-        // Load the plugins
-        // (this has to happen before setting the language, so plugin class aliases are registered in time)
-        $this->getPlugins()->loadPlugins();
-
         // Set the language
         $this->updateTargetLanguage();
+
+        // Load the plugins
+        $this->getPlugins()->loadPlugins();
 
         // Fire an 'afterInit' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {

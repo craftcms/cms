@@ -23,6 +23,7 @@
 - Fixed an error that occurred if an SVG file without `width` and `height` attributes was uploaded as the Login Page Logo. ([#2435](https://github.com/craftcms/cms/issues/2435))
 - Fixed a bug where the `defaultCpLanguage` setting was only working in some cases.
 - Fixed a bug where Dashboard widgets could go freaking crazy when the browser was resized. ([#2438](https://github.com/craftcms/cms/issues/2438))
+- Fixed a bug where Control Panel dates, times, and numbers were formatted for US English regardless of the user’s preferred language, if any plugins were registering an asset bundle that relied on `craft\web\assets\cp\CpAsset` from their `init()` methods. ([#2439](https://github.com/craftcms/cms/issues/2439))
 
 ## 3.0.0-RC10 - 2018-02-13
 
