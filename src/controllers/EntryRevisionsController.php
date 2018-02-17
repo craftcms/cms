@@ -210,6 +210,11 @@ class EntryRevisionsController extends BaseEntriesController
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $draft->setFieldValuesFromRequest($fieldsLocation);
 
+        $entryType = $entry->getType();
+        if (!$entryType->hasTitleField) {
+            $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
+        }
+
         // Publish the draft (finally!)
         if (!Craft::$app->getEntryRevisions()->publishDraft($draft)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
