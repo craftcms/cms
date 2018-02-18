@@ -398,6 +398,11 @@ class UrlManager extends \yii\web\UrlManager
             $trigger = '_';
         } else {
             $trigger = Craft::$app->getConfig()->getGeneral()->privateTemplateTrigger;
+
+            // If privateTemplateTrigger is set to an empty value, disable all public template routing
+            if (!$trigger) {
+                return false;
+            }
         }
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
