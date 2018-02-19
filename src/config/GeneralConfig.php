@@ -413,6 +413,8 @@ class GeneralConfig extends BaseObject
     /**
      * @var string The template path segment prefix that should be used to identify "private" templates -- templates that aren't
      * directly accessible via a matching URL.
+     *
+     * Set to an empty value to disable public template routing.
      */
     public $privateTemplateTrigger = '_';
     /**

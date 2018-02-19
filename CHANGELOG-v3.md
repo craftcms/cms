@@ -11,6 +11,7 @@
 - Craft no longer relies on the `CRAFT_SITE` constant to determine which site it should serve. If it’s not set, it will compare the requested URL with the sites’ base URLs and use the closest match. ([#2397](https://github.com/craftcms/cms/issues/2397))
 - It is no longer necessary to route sites with base URI paths to separate `index.php` files. Craft will automatically detect URI segments that were meant to be part of the site base URI, and ignore them when routing the request.
 - Dashboard widgets no longer animate into place when the browser is resized.
+- Added a `$defaultOperator` argument to `craft\helpers\Db::parseParam()` and `parseDateParam()`.
 
 ### Removed
 - Removed `craft\web\Application::getTranslatedBrowserLanguage()`.
@@ -23,6 +24,11 @@
 - Fixed an error that occurred if an SVG file without `width` and `height` attributes was uploaded as the Login Page Logo. ([#2435](https://github.com/craftcms/cms/issues/2435))
 - Fixed a bug where the `defaultCpLanguage` setting was only working in some cases.
 - Fixed a bug where Dashboard widgets could go freaking crazy when the browser was resized. ([#2438](https://github.com/craftcms/cms/issues/2438))
+- Fixed a bug where Control Panel dates, times, and numbers were formatted for US English regardless of the user’s preferred language, if any plugins were registering an asset bundle that relied on `craft\web\assets\cp\CpAsset` from their `init()` methods. ([#2439](https://github.com/craftcms/cms/issues/2439))
+- Fixed a bug where entries would get a “Title cannot be blank” validation error when attempting to publish a draft with a dynamic title. ([#2440](https://github.com/craftcms/cms/issues/2440))
+- Fixed a bug where if both the `before` and `after` params were applied to an entry query, results would include entries where either of them matched, rather than both. ([#2442](https://github.com/craftcms/cms/issues/2442))
+- Fixed an error that occurred if an invalid user group ID was passed into `craft\services\UserGroups::getGroupById()`. ([#2443](https://github.com/craftcms/cms/issues/2443))
+- Fixed an error that occurred if the `privateTemplateTrigger` config setting was set to an empty string. ([#2449](https://github.com/craftcms/cms/issues/2449))
 
 ## 3.0.0-RC10 - 2018-02-13
 

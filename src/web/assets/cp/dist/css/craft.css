@@ -1694,6 +1694,7 @@ body.ltr #global-sidebar #nav li ul li a { padding-left: 60px; }
 body.rtl #global-sidebar #nav li ul li a { padding-right: 60px; }
 
 #app-info { padding: 14px 14px 24px; color: #0a0d0f; text-align: center; }
+#app-info #edition { font-size: 14px; }
 #app-info #edition.hot:hover { cursor: pointer; }
 #app-info #edition.hot:hover #edition-logo { border-color: #a3b1c2; }
 #app-info #edition.hot:hover #edition-logo > .edition-name { color: #a3b1c2; }
@@ -1945,7 +1946,7 @@ body.ltr .lp-draghandle { right: -4px; }
 body.rtl .lp-draghandle { left: -4px; }
 
 /* Sidebar */
-.sidebar { width: 225px; padding: 14px 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; box-sizing: border-box; }
+.sidebar { width: 225px; padding: 14px 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; box-sizing: border-box; font-size: 13px; }
 body.ltr .sidebar { -webkit-box-shadow: inset -1px 0 0 #e3e5e8; box-shadow: inset -1px 0 0 #e3e5e8; }
 body.rtl .sidebar { -webkit-box-shadow: inset 1px 0 0 #e3e5e8; box-shadow: inset 1px 0 0 #e3e5e8; }
 .sidebar .heading { position: relative; padding: 0 24px; }
@@ -1969,8 +1970,8 @@ body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padd
 .sidebar nav li:not(.has-subnav) > a.sel .icon.icon-mask span[data-icon] { color: #fff; }
 .sidebar nav li:not(.has-subnav) > a.sel .badge { background: #fff; color: #737f8c; }
 .sidebar nav li a { margin: 0 -24px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; min-height: 24px; -webkit-box-sizing: border-box; box-sizing: border-box; color: #29323d; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; outline: none; }
-body.ltr .sidebar nav li a { padding: 10px 14px 10px 24px; }
-body.rtl .sidebar nav li a { padding: 10px 24px 10px 14px; }
+body.ltr .sidebar nav li a { padding: 7px 14px 7px 24px; }
+body.rtl .sidebar nav li a { padding: 7px 24px 7px 14px; }
 .sidebar nav li a .status { -ms-flex-negative: 1; flex-shrink: 1; }
 .sidebar nav li a .icon { -ms-flex-negative: 1; flex-shrink: 1; width: 16px; height: 16px; }
 body.ltr .sidebar nav li a .icon { margin: 0 10px 0 -10px ; }

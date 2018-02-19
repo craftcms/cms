@@ -428,9 +428,11 @@ class Db
      *
      * @param string $column The database column that the param is targeting.
      * @param string|int|array $value The param value(s).
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
      */
-    public static function parseParam(string $column, $value)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=')
     {
         // Need to do a strict check here in case $value = true
         if ($value === 'not ') {
@@ -456,7 +458,7 @@ class Db
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
-            $operator = self::_parseParamOperator($val);
+            $operator = self::_parseParamOperator($val, $defaultOperator);
 
             if (StringHelper::toLowerCase($val) === ':empty:') {
                 if ($operator === '=') {
@@ -526,9 +528,11 @@ class Db
      *
      * @param string $column
      * @param string|array|\DateTime $value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
      */
-    public static function parseDateParam(string $column, $value)
+    public static function parseDateParam(string $column, $value, string $defaultOperator = '=')
     {
         $normalizedValues = [];
 
@@ -554,11 +558,7 @@ class Db
                 continue;
             }
 
-            if (is_string($val)) {
-                $operator = self::_parseParamOperator($val);
-            } else {
-                $operator = '=';
-            }
+            $operator = self::_parseParamOperator($val, $defaultOperator);
 
             // Assume that date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, true);
@@ -644,24 +644,24 @@ class Db
     /**
      * Extracts the operator from a DB param and returns it.
      *
-     * @param string &$value Te param value.
+     * @param mixed &$value Te param value.
+     * @param string $default The default operator to use
      * @return string The operator.
      */
-    private static function _parseParamOperator(string &$value): string
+    private static function _parseParamOperator(&$value, string $default): string
     {
-        foreach (self::$_operators as $testOperator) {
-            // Does the value start with this operator?
-            if (strpos(StringHelper::toLowerCase($value), $testOperator) === 0) {
-                $value = mb_substr($value, strlen($testOperator));
-
-                if ($testOperator === 'not ') {
-                    return '!=';
+        if (is_string($value)) {
+            $lcValue = strtolower($value);
+            foreach (self::$_operators as $operator) {
+                $len = strlen($operator);
+                // Does the value start with this operator?
+                if (strncmp($lcValue, $operator, $len) === 0) {
+                    $value = mb_substr($value, $len);
+                    return $operator === 'not ' ? '!=' : $operator;
                 }
-
-                return $testOperator;
             }
         }
 
-        return '=';
+        return $default === 'not' || $default === 'not ' ? '!=' : $default;
     }
 }

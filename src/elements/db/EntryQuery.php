@@ -16,14 +16,11 @@ use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
-use DateTime;
 use yii\db\Connection;
 
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
  *
- * @property DateTime|string $before The date/time that the resulting entries’ Post Dates must be before.
- * @property DateTime|string $after The date/time that the resulting entries’ Post Dates must be equal to or after.
  * @property string|string[]|Section $section The handle(s) of the section(s) that resulting entries must belong to.
  * @property string|string[]|EntryType $type The handle(s) of the entry type(s) that resulting entries must have.
  * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
@@ -72,6 +69,16 @@ class EntryQuery extends ElementQuery
     public $postDate;
 
     /**
+     * @var string|array|\DateTime The maximum Post Date that resulting entries can have.
+     */
+    public $before;
+
+    /**
+     * @var string|array|\DateTime The minimum Post Date that resulting entries can have.
+     */
+    public $after;
+
+    /**
      * @var mixed The Expiry Date that the resulting entries must have.
      */
     public $expiryDate;
@@ -106,12 +113,6 @@ class EntryQuery extends ElementQuery
                 break;
             case 'authorGroup':
                 $this->authorGroup($value);
-                break;
-            case 'before':
-                $this->before($value);
-                break;
-            case 'after':
-                $this->after($value);
                 break;
             default:
                 parent::__set($name, $value);
@@ -273,50 +274,26 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[postDate]] property to only allow entries whose Post Date is before the given value.
+     * Sets the [[before]] property.
      *
-     * @param DateTime|string $value The property value
+     * @param string|array|\DateTime $value The property value
      * @return static self reference
      */
     public function before($value)
     {
-        if ($value instanceof DateTime) {
-            $value = $value->format(DateTime::W3C);
-        }
-
-        if (!$this->postDate) {
-            $this->postDate = '<'.$value;
-        } else {
-            if (!is_array($this->postDate)) {
-                $this->postDate = [$this->postDate];
-            }
-            $this->postDate[] = '<'.$value;
-        }
-
+        $this->before = $value;
         return $this;
     }
 
     /**
-     * Sets the [[postDate]] property to only allow entries whose Post Date is after the given value.
+     * Sets the [[after]] property.
      *
-     * @param DateTime|string $value The property value
+     * @param string|array|\DateTime $value The property value
      * @return static self reference
      */
     public function after($value)
     {
-        if ($value instanceof DateTime) {
-            $value = $value->format(DateTime::W3C);
-        }
-
-        if (!$this->postDate) {
-            $this->postDate = '>='.$value;
-        } else {
-            if (!is_array($this->postDate)) {
-                $this->postDate = [$this->postDate];
-            }
-            $this->postDate[] = '>='.$value;
-        }
-
+        $this->after = $value;
         return $this;
     }
 
@@ -357,6 +334,13 @@ class EntryQuery extends ElementQuery
 
         if ($this->postDate) {
             $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->postDate));
+        } else {
+            if ($this->before) {
+                $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->before, '<'));
+            }
+            if ($this->after) {
+                $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->after, '>='));
+            }
         }
 
         if ($this->expiryDate) {
