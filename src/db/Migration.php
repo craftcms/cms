@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
@@ -218,24 +219,29 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates and executes a command that will insert some given data into a table, or update an existing row
-     * in the event of a key constraint violation.
-     *
-     * @param string $table The table that the row will be inserted into, or updated.
-     * @param array $keyColumns The key-constrained column data (name => value) to be inserted into the table
-     * in the event that a new row is getting created
-     * @param array $updateColumns The non-key-constrained column data (name => value) to be inserted into the table
-     * or updated in the existing row.
+     * @inheritdoc
+     * @param string $table the table that new rows will be inserted into/updated in.
+     * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
+     * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement.
+     * @param array|bool $updateColumns the column data (name => value) to be updated if they already exist.
+     * If `true` is passed, the column data will be updated to match the insert column data.
+     * If `false` is passed, no update will be performed if the column data already exists.
+     * @param array $params the parameters to be bound to the command.
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @return $this the command object itself.
+     * @since 2.0.14
      */
-    public function upsert(string $table, array $keyColumns, array $updateColumns, bool $includeAuditColumns = true)
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true)
     {
-        echo "    > insert or update into $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->upsert($table, $keyColumns, $updateColumns, $includeAuditColumns)
-            ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        if (is_bool($params)) {
+            $includeAuditColumns = $params;
+            $params = [];
+            Craft::$app->getDeprecator()->log('craft\\db\\Migration::upsert($includeAuditColumns)', 'The $includeAuditColumns argument on craft\\db\\Migration::upsert() has been moved to the 5th position');
+        }
+
+        $time = $this->beginCommand("upsert into $table");
+        $this->db->createCommand()->upsert($table, $insertColumns, $updateColumns, $params, $includeAuditColumns)->execute();
+        $this->endCommand($time);
     }
 
     /**

@@ -14,8 +14,8 @@ use IntlDateFormatter;
 use NumberFormatter;
 use yii\base\BaseObject;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\FormatConverter;
 
 /**
@@ -255,7 +255,7 @@ class Locale extends BaseObject
      *
      * @param string $id The locale ID.
      * @param array $config Name-value pairs that will be used to initialize the object properties.
-     * @throws InvalidParamException If $id is an unsupported locale.
+     * @throws InvalidArgumentException If $id is an unsupported locale.
      */
     public function __construct(string $id, array $config = [])
     {

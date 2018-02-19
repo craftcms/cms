@@ -30,6 +30,7 @@ use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
 use yii\db\Expression;
+use yii\db\ExpressionInterface;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
@@ -1346,7 +1347,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * ```
      *
      * @param string $status The status
-     * @return string|array|Expression|false|null The status condition, or false if $status is an unsupported status
+     * @return string|array|ExpressionInterface|false|null The status condition, or false if $status is an unsupported status
      */
     protected function statusCondition(string $status)
     {
@@ -1822,7 +1823,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $values = array_reverse($direction->values);
                     $direction = new FixedOrderExpression($direction->column, $values, $direction->db, $direction->params);
                 } // Can't do anything about custom SQL expressions
-                else if (!$direction instanceof Expression) {
+                else if (!$direction instanceof ExpressionInterface) {
                     $direction = $direction === SORT_DESC ? SORT_ASC : SORT_DESC;
                 }
             }

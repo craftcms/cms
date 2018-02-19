@@ -9,8 +9,8 @@ namespace craft\services;
 
 use Craft;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\Inflector;
 
 /**
@@ -78,7 +78,7 @@ class Security extends \yii\base\Security
         $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
         if ($validateHash && !$this->validatePassword($password, $hash)) {
-            throw new InvalidParamException('Could not hash the given string.');
+            throw new InvalidArgumentException('Could not hash the given string.');
         }
 
         return $hash;

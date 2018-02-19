@@ -1243,7 +1243,7 @@ class UsersController extends Controller
         } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
-                FileHelper::removeFile($fileLocation);
+                FileHelper::unlink($fileLocation);
             }
 
             Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
@@ -1762,7 +1762,7 @@ class UsersController extends Controller
                 $users->saveUserPhoto($fileLocation, $user, $photo->name);
             } catch (\Throwable $e) {
                 if (file_exists($fileLocation)) {
-                    FileHelper::removeFile($fileLocation);
+                    FileHelper::unlink($fileLocation);
                 }
                 throw $e;
             }

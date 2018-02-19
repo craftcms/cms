@@ -392,7 +392,7 @@ class UtilitiesController extends Controller
 
         if (is_file($zipPath)) {
             try {
-                FileHelper::removeFile($zipPath);
+                FileHelper::unlink($zipPath);
             } catch (ErrorException $e) {
                 Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage(), __METHOD__);
             }

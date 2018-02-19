@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 
@@ -84,30 +85,42 @@ class Command extends \yii\db\Command
     }
 
     /**
-     * Creates a command that will insert some given data into a table, or update an existing row
-     * in the event of a key constraint violation.
+     * @inheritdoc
      *
-     * @param string $table The table that the row will be inserted into, or updated.
-     * @param array $keyColumns The key-constrained column data (name => value) to be inserted into the table
-     * in the event that a new row is getting created
-     * @param array $updateColumns The non-key-constrained column data (name => value) to be inserted into the table
-     * or updated in the existing row.
+     * @param string $table the table that new rows will be inserted into/updated in.
+     * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
+     * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement.
+     * @param array|bool $updateColumns the column data (name => value) to be updated if they already exist.
+     * If `true` is passed, the column data will be updated to match the insert column data.
+     * If `false` is passed, no update will be performed if the column data already exists.
+     * @param array $params the parameters to be bound to the command.
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
-     * @return Command The command object itself.
+     * @return $this the command object itself.
      */
-    public function upsert(string $table, array $keyColumns, array $updateColumns, bool $includeAuditColumns = true): Command
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): Command
     {
-        if ($includeAuditColumns) {
+        if (is_bool($params)) {
+            $includeAuditColumns = $params;
+            $params = [];
+            Craft::$app->getDeprecator()->log('craft\\db\\Command::upsert($includeAuditColumns)', 'The $includeAuditColumns argument on craft\\db\\Command::upsert() has been moved to the 5th position');
+        }
+
+        if ($includeAuditColumns && $updateColumns !== false) {
+            if ($updateColumns === true) {
+                $updateColumns = array_merge($insertColumns);
+            }
             $now = Db::prepareDateForDb(new \DateTime());
             $updateColumns['dateCreated'] = $now;
             $updateColumns['dateUpdated'] = $now;
             $updateColumns['uid'] = StringHelper::UUID();
         }
 
-        $params = [];
-        $sql = $this->db->getQueryBuilder()->upsert($table, $keyColumns, $updateColumns, $params);
+        // todo: hack for BC with our old upsert() method. Remove in Craft 4
+        // Merge any updateColumn data into insertColumns
+        $insertColumns = array_merge($updateColumns, $insertColumns);
 
-        return $this->setSql($sql)->bindValues($params);
+        parent::upsert($table, $insertColumns, $updateColumns, $params);
+        return $this;
     }
 
     /**

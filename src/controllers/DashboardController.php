@@ -24,7 +24,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -290,7 +290,7 @@ class DashboardController extends Controller
      * @return Response
      * @throws ErrorException
      * @throws BadRequestHttpException
-     * @throws InvalidParamException
+     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
@@ -478,7 +478,7 @@ class DashboardController extends Controller
 
         // Delete the zip file
         if (is_file($zipPath)) {
-            FileHelper::removeFile($zipPath);
+            FileHelper::unlink($zipPath);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [

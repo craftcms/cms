@@ -15,7 +15,7 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class FileHelper
@@ -188,13 +188,13 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $dir the directory to be checked
      * @return bool whether the directory is empty
-     * @throws InvalidParamException if the dir is invalid
+     * @throws InvalidArgumentException if the dir is invalid
      * @throws ErrorException in case of failure
      */
     public static function isDirectoryEmpty(string $dir): bool
     {
         if (!is_dir($dir)) {
-            throw new InvalidParamException("The dir argument must be a directory: $dir");
+            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
 
         if (!($handle = opendir($dir))) {
@@ -245,7 +245,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // Delete the file if it didn't exist already
         if (!$exists) {
-            static::removeFile($path);
+            static::unlink($path);
         }
 
         return true;
@@ -295,7 +295,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *   existing contents. Defaults to false.
      * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
-     * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
+     * @throws InvalidArgumentException if the parent directory doesn't exist and options[createDirs] is false
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -307,7 +307,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if (!isset($options['createDirs']) || $options['createDirs']) {
                 static::createDirectory($dir);
             } else {
-                throw new InvalidParamException("Cannot write to \"{$file}\" because the parent directory doesn't exist.");
+                throw new InvalidArgumentException("Cannot write to \"{$file}\" because the parent directory doesn't exist.");
             }
         }
 
@@ -336,25 +336,16 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Removes a file.
+     * Removes a file or symlink in a cross-platform way
      *
-     * @param string $file the file to be deleted
-     * @throws ErrorException in case of failure
+     * @param string $path the file to be deleted
+     * @return bool
+     * @deprecated in 3.0.0-RC11. Use [[unlink()]] instead.
      */
-    public static function removeFile(string $file)
+    public static function removeFile(string $path): bool
     {
-        // Copied from [[removeDirectory()]]
-        try {
-            unlink($file);
-        } catch (ErrorException $e) {
-            if (DIRECTORY_SEPARATOR === '\\') {
-                // last resort measure for Windows
-                $lines = [];
-                exec("DEL /F/Q \"$file\"", $lines, $deleteError);
-            } else {
-                throw $e;
-            }
-        }
+        Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
+        return static::unlink($path);
     }
 
     /**
@@ -369,13 +360,13 @@ class FileHelper extends \yii\helpers\FileHelper
      * - `except`: array (see [[findFiles()]])
      * - `only`: array (see [[findFiles()]])
      * @return void
-     * @throws InvalidParamException if the dir is invalid
+     * @throws InvalidArgumentException if the dir is invalid
      * @throws ErrorException in case of failure
      */
     public static function clearDirectory(string $dir, array $options = [])
     {
         if (!is_dir($dir)) {
-            throw new InvalidParamException("The dir argument must be a directory: $dir");
+            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
 
         // Adapted from [[removeDirectory()]], plus addition of filters, and minus the root directory removal at the end
@@ -397,7 +388,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 if (is_dir($path)) {
                     static::removeDirectory($path, $options);
                 } else {
-                    static::removeFile($path);
+                    static::unlink($path);
                 }
             }
         }

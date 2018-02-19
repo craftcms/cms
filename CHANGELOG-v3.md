@@ -12,6 +12,11 @@
 - It is no longer necessary to route sites with base URI paths to separate `index.php` files. Craft will automatically detect URI segments that were meant to be part of the site base URI, and ignore them when routing the request.
 - Dashboard widgets no longer animate into place when the browser is resized.
 - Added a `$defaultOperator` argument to `craft\helpers\Db::parseParam()` and `parseDateParam()`.
+- Updated Yii to 2.0.14.
+- Various database columns have been converted back to tiny ints, now that Yii 2 supports it.
+
+### Deprecated
+- Deprecated `craft\helpers\FileHelper::removeFile()`. Use `craft\helpers\FileHelper::unlink()` instead.
 
 ### Removed
 - Removed `craft\web\Application::getTranslatedBrowserLanguage()`.

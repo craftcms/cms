@@ -31,8 +31,8 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
@@ -727,7 +727,7 @@ class User extends Element implements IdentityInterface
                     // Validate the password
                     try {
                         $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-                    } catch (InvalidParamException $e) {
+                    } catch (InvalidArgumentException $e) {
                         $valid = false;
                     }
                     if (!$valid) {

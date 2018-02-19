@@ -802,7 +802,7 @@ class AssetsController extends Controller
 
         $response = Craft::$app->getResponse()
             ->sendFile($localPath, $asset->filename);
-        FileHelper::removeFile($localPath);
+        FileHelper::unlink($localPath);
 
         return $response;
     }

@@ -7,7 +7,7 @@
 
 namespace craft\helpers;
 
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Json
@@ -31,7 +31,7 @@ class Json extends \yii\helpers\Json
     {
         try {
             return static::decode($str, $asArray);
-        } catch (InvalidParamException $e) {
+        } catch (InvalidArgumentException $e) {
             // Wasn't JSON
             return $str;
         }
