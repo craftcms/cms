@@ -227,6 +227,17 @@ Garnish.$doc.ready(function() {
                     $this.openGlobalModal('cart');
                 });
 
+                this.$cartButton.keydown(e => {
+                    switch(e.which) {
+                        case 13: // Enter
+                        case 32: // Space
+                            e.preventDefault();
+                            $this.openGlobalModal('cart');
+                            break;
+
+                    }
+                });
+
                 // Payment button
                 let $paymentButton = $('#payment-button');
 
