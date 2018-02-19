@@ -21,8 +21,7 @@
   "require": {
     "php": ">=7.0.0",
     "craftcms/cms": "^3.0.0-RC1",
-    "vlucas/phpdotenv": "^2.4.0",
-    "roave/security-advisories": "dev-master"
+    "vlucas/phpdotenv": "^2.4.0"
   },
   "autoload": {
     "psr-4": {
