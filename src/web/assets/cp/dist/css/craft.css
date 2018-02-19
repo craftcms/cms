@@ -1360,7 +1360,7 @@ body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
 
 .select:not(.selectize).small:after { top: 9px; }
 
-.select:not(.selectize).small select { padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+.select:not(.selectize).small select { padding-top: 4px !important; padding-bottom: 4px !important; font-size: 11px; }
 
 /* selectize reset */
 .selectize .selectize-control.single .selectize-input { border-color: inherit; -webkit-box-shadow: none; box-shadow: none; background: none; }

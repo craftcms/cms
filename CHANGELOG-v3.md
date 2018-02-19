@@ -36,6 +36,7 @@
 - Fixed an error that occurred if the `privateTemplateTrigger` config setting was set to an empty string. ([#2449](https://github.com/craftcms/cms/issues/2449))
 - Fixed a bug where textareas within editable tables may not be set to the full height of the table row if the first textarea within the row was in a hidden column.
 - Fixed some awkward styling on editable table headings that contained info buttons.
+- Fixed the styling of small select buttons.
 
 ## 3.0.0-RC10 - 2018-02-13
 
