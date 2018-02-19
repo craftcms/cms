@@ -526,7 +526,7 @@ return [
     'Helper text to guide the author.' => 'Segítség a szerkeszőnek.',
     'Hide' => 'Elrejtés',
     'Hide sidebar' => 'Az oldalsáv elrejtése',
-    'High' => 'Magad',
+    'High' => 'Magas',
     'Homepage' => 'Főoldal',
     'Host Name' => 'Host név',
     'Hours' => 'Óra',
