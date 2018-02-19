@@ -811,7 +811,7 @@ body.rtl .elementselect .caboose { float: right; }
 table.editable th, table.editable td.action { color: #8f98a3; font-weight: normal; background: #ebedef; }
 table.editable thead tr th, table.editable tbody tr th { padding: 6px 10px; white-space: nowrap; }
 table.editable thead tr th { border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
-table.editable thead tr th span.info { margin-left: 5px; }
+table.editable thead tr th span.info { position: absolute; margin-left: 5px; }
 table.editable tbody tr:not(:first-child) th, table.editable tbody tr:not(:first-child) td { border-top: 1px solid rgba(0, 0, 0, 0.07); }
 body.ltr table.editable tbody tr:last-child td:first-child { border-bottom-left-radius: 5px; }
 body.rtl table.editable tbody tr:last-child td:first-child { border-bottom-right-radius: 5px; }
