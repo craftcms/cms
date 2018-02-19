@@ -632,7 +632,7 @@ class Assets
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
             $localSource = $asset->getCopyOfFile();
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
-            FileHelper::removeFile($localSource);
+            FileHelper::unlink($localSource);
         }
 
         return $targetFilePath;

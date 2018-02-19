@@ -245,7 +245,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // Delete the file if it didn't exist already
         if (!$exists) {
-            static::removeFile($path);
+            static::unlink($path);
         }
 
         return true;
@@ -336,25 +336,16 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Removes a file.
+     * Removes a file or symlink in a cross-platform way
      *
-     * @param string $file the file to be deleted
-     * @throws ErrorException in case of failure
+     * @param string $path the file to be deleted
+     * @return bool
+     * @deprecated in 3.0.0-RC11. Use [[unlink()]] instead.
      */
-    public static function removeFile(string $file)
+    public static function removeFile(string $path): bool
     {
-        // Copied from [[removeDirectory()]]
-        try {
-            unlink($file);
-        } catch (ErrorException $e) {
-            if (DIRECTORY_SEPARATOR === '\\') {
-                // last resort measure for Windows
-                $lines = [];
-                exec("DEL /F/Q \"$file\"", $lines, $deleteError);
-            } else {
-                throw $e;
-            }
-        }
+        Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
+        return static::unlink($path);
     }
 
     /**
@@ -397,7 +388,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 if (is_dir($path)) {
                     static::removeDirectory($path, $options);
                 } else {
-                    static::removeFile($path);
+                    static::unlink($path);
                 }
             }
         }

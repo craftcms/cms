@@ -508,7 +508,7 @@ class AssetIndexer extends Component
                 $assetTransforms = Craft::$app->getAssetTransforms();
                 $assetTransforms->storeLocalSource($tempPath, $targetPath);
                 $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
-                FileHelper::removeFile($tempPath);
+                FileHelper::unlink($tempPath);
             }
         } else {
             // For images, the Asset has been saved already to ensure an ID was in place.

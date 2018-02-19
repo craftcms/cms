@@ -478,7 +478,7 @@ class DashboardController extends Controller
 
         // Delete the zip file
         if (is_file($zipPath)) {
-            FileHelper::removeFile($zipPath);
+            FileHelper::unlink($zipPath);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [

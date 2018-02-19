@@ -1330,7 +1330,7 @@ class Asset extends Element
 
             // Try to open a file stream
             if (($stream = fopen($tempPath, 'rb')) === false) {
-                FileHelper::removeFile($tempPath);
+                FileHelper::unlink($tempPath);
                 throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
@@ -1374,7 +1374,7 @@ class Asset extends Element
             $this->dateModified = new DateTime('@'.filemtime($tempPath));
 
             // Delete the temp file
-            FileHelper::removeFile($tempPath);
+            FileHelper::unlink($tempPath);
         }
 
         // Clear out the temp location properties
