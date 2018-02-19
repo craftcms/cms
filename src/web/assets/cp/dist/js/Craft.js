@@ -1,4 +1,4 @@
-/*!   - 2018-02-15 */
+/*!   - 2018-02-19 */
 (function($){
 
 /** global: Craft */
@@ -12975,8 +12975,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             this.$textareas.css('min-height', tallestTextareaHeight);
 
-            // If the <td> is still taller, go with that insted
-            var tdHeight = this.$textareas.first().parent().height();
+            // If the <td> is still taller, go with that instead
+            var tdHeight = this.$textareas.filter(':visible').first().parent().height();
 
             if (tdHeight > tallestTextareaHeight) {
                 this.$textareas.css('min-height', tdHeight);

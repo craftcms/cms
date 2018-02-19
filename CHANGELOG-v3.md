@@ -34,6 +34,7 @@
 - Fixed a bug where if both the `before` and `after` params were applied to an entry query, results would include entries where either of them matched, rather than both. ([#2442](https://github.com/craftcms/cms/issues/2442))
 - Fixed an error that occurred if an invalid user group ID was passed into `craft\services\UserGroups::getGroupById()`. ([#2443](https://github.com/craftcms/cms/issues/2443))
 - Fixed an error that occurred if the `privateTemplateTrigger` config setting was set to an empty string. ([#2449](https://github.com/craftcms/cms/issues/2449))
+- Fixed a bug where textareas within editable tables may not be set to the full height of the table row if the first textarea within the row was in a hidden column.
 
 ## 3.0.0-RC10 - 2018-02-13
 
