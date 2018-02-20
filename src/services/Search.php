@@ -319,6 +319,7 @@ class Search extends Component
                 '{{%searchindex}}',
                 $keyColumns,
                 $keywordColumns,
+                [],
                 false)
             ->execute();
     }

@@ -267,6 +267,7 @@ class Users extends Component
                 '{{%userpreferences}}',
                 ['userId' => $user->id],
                 ['preferences' => Json::encode($preferences)],
+                [],
                 false)
             ->execute();
     }
