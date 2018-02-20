@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-RC11 - 2018-02-20
+
 ### Added
 - Added `craft\services\Sites::getCurrentSite()`.
 - Added `craft\services\Sites::getHasCurrentSite()`.
