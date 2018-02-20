@@ -1,6 +1,6 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3010 - 2018-02-20
 
 ### Changed
 - The Control Panel now sets the `origin-when-cross-origin` referrer policy. ([#2436](https://github.com/craftcms/cms/pull/2436))
