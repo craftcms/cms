@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -13,10 +13,9 @@ use craft\base\Model;
  * Stores all of the available update info.
  *
  * @property bool $hasCritical Whether any of the updates have a critical release available
- * @property int  $total       The total number of available updates
- *
+ * @property int $total The total number of available updates
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Updates extends Model
 {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -19,11 +19,10 @@ use yii\base\Component;
 
 /**
  * User Groups service.
- *
  * An instance of the User Groups service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserGroups()|<code>Craft::$app->userGroups</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UserGroups extends Component
 {
@@ -79,7 +78,6 @@ class UserGroups extends Component
      * Returns the user groups that the current user is allowed to assign to another user.
      *
      * @param User|null $user The recipient of the user groups. If set, their current groups will be included as well.
-     *
      * @return UserGroup[]
      */
     public function getAssignableGroups(User $user = null): array
@@ -115,10 +113,9 @@ class UserGroups extends Component
      * Gets a user group by its ID.
      *
      * @param int $groupId
-     *
-     * @return UserGroup
+     * @return UserGroup|null
      */
-    public function getGroupById(int $groupId): UserGroup
+    public function getGroupById(int $groupId)
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['id' => $groupId])
@@ -131,7 +128,6 @@ class UserGroups extends Component
      * Gets a user group by its handle.
      *
      * @param string $groupHandle
-     *
      * @return UserGroup|null
      */
     public function getGroupByHandle(string $groupHandle)
@@ -147,7 +143,6 @@ class UserGroups extends Component
      * Gets user groups by a user ID.
      *
      * @param int $userId
-     *
      * @return UserGroup[]
      */
     public function getGroupsByUserId(int $userId): array
@@ -173,9 +168,8 @@ class UserGroups extends Component
     /**
      * Saves a user group.
      *
-     * @param UserGroup $group         The user group to be saved
-     * @param bool      $runValidation Whether the user group should be validated
-     *
+     * @param UserGroup $group The user group to be saved
+     * @param bool $runValidation Whether the user group should be validated
      * @return bool
      * @throws WrongEditionException if this is called from Craft Personal or Client editions
      */
@@ -225,7 +219,6 @@ class UserGroups extends Component
      * Deletes a user group by its ID.
      *
      * @param int $groupId
-     *
      * @return bool
      * @throws WrongEditionException if this is called from Craft Personal or Client editions
      */
@@ -267,7 +260,6 @@ class UserGroups extends Component
      * Gets a group's record.
      *
      * @param int|null $groupId
-     *
      * @return UserGroupRecord
      */
     private function _getGroupRecordById(int $groupId = null): UserGroupRecord
@@ -289,7 +281,6 @@ class UserGroups extends Component
      * Throws a "No group exists" exception.
      *
      * @param int $groupId
-     *
      * @return void
      * @throws UserGroupNotFoundException
      */

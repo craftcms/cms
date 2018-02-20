@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -21,9 +21,8 @@ use craft\validators\UniqueValidator;
  *
  * @property CategoryGroup_SiteSettings[] $siteSettings Site-specific settings
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CategoryGroup extends Model
 {
@@ -151,7 +150,6 @@ class CategoryGroup extends Model
      * Sets the group's site-specific settings.
      *
      * @param CategoryGroup_SiteSettings[] $siteSettings
-     *
      * @return void
      */
     public function setSiteSettings(array $siteSettings)

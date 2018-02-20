@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -30,7 +30,7 @@ use craft\web\assets\matrixsettings\MatrixSettingsAsset;
  * Matrix represents a Matrix field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Matrix extends Field implements EagerLoadingFieldInterface
 {
@@ -511,7 +511,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * Validates an owner element’s Matrix blocks.
      *
      * @param ElementInterface $element
-     *
      * @return void
      */
     public function validateBlocks(ElementInterface $element)
@@ -724,7 +723,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * Returns info about each block type and their field types for the Matrix field input.
      *
      * @param ElementInterface|null $element
-     *
      * @return array
      */
     private function _getBlockTypeInfoForInput(ElementInterface $element = null): array
@@ -786,9 +784,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * Creates an array of blocks based on the given serialized data.
      *
-     * @param array|string          $value   The raw field value
+     * @param array|string $value The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
-     *
      * @return MatrixBlock[]
      */
     private function _createBlocksFromSerializedData($value, ElementInterface $element = null): array

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -24,7 +24,7 @@ use yii\web\Response;
  * BaseUpdaterController provides the base class for Craft/plugin installation/updating/removal.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseUpdaterController extends Controller
 {
@@ -284,7 +284,6 @@ abstract class BaseUpdaterController extends Controller
      * Sends a state response.
      *
      * @param array $state
-     *
      * @return Response
      */
     protected function send(array $state = []): Response
@@ -299,8 +298,7 @@ abstract class BaseUpdaterController extends Controller
      * Sends a "next action" state response.
      *
      * @param string $nextAction The next action that should be run
-     * @param array  $state
-     *
+     * @param array $state
      * @return Response
      */
     protected function sendNextAction(string $nextAction, array $state = []): Response
@@ -313,7 +311,6 @@ abstract class BaseUpdaterController extends Controller
      * Sends a "finished" state response.
      *
      * @param array $state
-     *
      * @return Response
      */
     protected function sendFinished(array $state = []): Response
@@ -325,11 +322,10 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Sends an "error" state response for a Composer error
      *
-     * @param string     $error The status message to show
-     * @param \Throwable $e     The exception that was thrown
-     * @param BufferIO   $io    The IO object that Composer was instantiated with
-     * @param array      $state
-     *
+     * @param string $error The status message to show
+     * @param \Throwable $e The exception that was thrown
+     * @param BufferIO $io The IO object that Composer was instantiated with
+     * @param array $state
      * @return Response
      */
     protected function sendComposerError(string $error, \Throwable $e, BufferIO $io, array $state = []): Response
@@ -354,8 +350,7 @@ abstract class BaseUpdaterController extends Controller
      *
      * @param string $label
      * @param string $action
-     * @param array  $state
-     *
+     * @param array $state
      * @return array
      */
     protected function actionOption(string $label, string $action, array $state = []): array
@@ -368,8 +363,7 @@ abstract class BaseUpdaterController extends Controller
      * Sets the state info for the given next action.
      *
      * @param string $nextAction
-     * @param array  $state
-     *
+     * @param array $state
      * @return array
      */
     protected function actionState(string $nextAction, array $state = []): array
@@ -387,7 +381,6 @@ abstract class BaseUpdaterController extends Controller
      * Returns the status message for the given action.
      *
      * @param string $action
-     *
      * @return string
      * @throws Exception if $action isn't valid
      */
@@ -415,7 +408,6 @@ abstract class BaseUpdaterController extends Controller
      * Sets the state info for when the job is done.
      *
      * @param array $state
-     *
      * @return array
      */
     protected function finishedState(array $state = []): array
@@ -435,7 +427,6 @@ abstract class BaseUpdaterController extends Controller
      *
      * @param string[] $handles
      * @param string|null $restoreAction
-     *
      * @return Response|null
      */
     protected function runMigrations(array $handles, string $restoreAction = null)
@@ -517,9 +508,8 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Throwable $e  The exception that was thrown
-     * @param BufferIO   $io The IO object that Composer was instantiated with
-     *
+     * @param \Throwable $e The exception that was thrown
+     * @param BufferIO $io The IO object that Composer was instantiated with
      * @return string
      */
     private function _composerErrorDetails(\Throwable $e, BufferIO $io): string

@@ -1,20 +1,21 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
 use yii\base\Exception;
 
 /**
  * Class Url
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UrlHelper
 {
@@ -25,7 +26,6 @@ class UrlHelper
      * Returns whether a given string appears to be an absolute URL.
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isAbsoluteUrl(string $url): bool
@@ -37,7 +37,6 @@ class UrlHelper
      * Returns whether a given string appears to be a protocol-relative URL.
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isProtocolRelativeUrl(string $url): bool
@@ -49,7 +48,6 @@ class UrlHelper
      * Returns whether a given string appears to be a root-relative URL.
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isRootRelativeUrl(string $url): bool
@@ -61,7 +59,6 @@ class UrlHelper
      * Returns whether a given string appears to be a "full" URL (absolute, root-relative or protocol-relative).
      *
      * @param string $url
-     *
      * @return bool
      */
     public static function isFullUrl(string $url): bool
@@ -72,9 +69,8 @@ class UrlHelper
     /**
      * Returns a URL with additional query string parameters.
      *
-     * @param string       $url
+     * @param string $url
      * @param array|string $params
-     *
      * @return string
      */
     public static function urlWithParams(string $url, $params): string
@@ -103,7 +99,6 @@ class UrlHelper
      *
      * @param string $url
      * @param string $token
-     *
      * @return string
      */
     public static function urlWithToken(string $url, string $token): string
@@ -119,9 +114,8 @@ class UrlHelper
     /**
      * Returns a URL with a specific scheme.
      *
-     * @param string $url    the URL
+     * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
-     *
      * @return string
      */
     public static function urlWithScheme(string $url, string $scheme): string
@@ -145,14 +139,14 @@ class UrlHelper
     /**
      * Returns either a CP or a site URL, depending on the request type.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     * @param bool              $mustShowScriptName
-     *
+     * @param string|null $scheme
+     * @param bool|null $showScriptName Whether the script name (index.php) should be included in the URL.
+     * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', $params = null, string $scheme = null, bool $mustShowScriptName = false): string
+    public static function url(string $path = '', $params = null, string $scheme = null, bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -183,16 +177,15 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, $mustShowScriptName);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, $showScriptName);
     }
 
     /**
      * Returns a CP URL.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     *
+     * @param string|null $scheme
      * @return string
      */
     public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
@@ -200,17 +193,16 @@ class UrlHelper
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
 
-        return self::_createUrl($path, $params, $scheme, true, false);
+        return self::_createUrl($path, $params, $scheme, true);
     }
 
     /**
      * Returns a site URL.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     * @param int|null          $siteId
-     *
+     * @param string|null $scheme
+     * @param int|null $siteId
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
@@ -219,7 +211,7 @@ class UrlHelper
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
 
-        if ($siteId !== null && $siteId != $sites->currentSite->id) {
+        if ($siteId !== null && $siteId != $sites->getCurrentSite()->id) {
             // Get the site
             $site = $sites->getSiteById($siteId);
 
@@ -228,28 +220,27 @@ class UrlHelper
             }
 
             // Swap the current site
-            $currentSite = $sites->currentSite;
-            $sites->currentSite = $site;
+            $currentSite = $sites->getCurrentSite();
+            $sites->setCurrentSite($site);
         }
 
         $path = trim($path, '/');
-        $url = self::_createUrl($path, $params, $scheme, false, false);
+        $url = self::_createUrl($path, $params, $scheme, false);
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
-            $sites->currentSite = $currentSite;
+            $sites->setCurrentSite($currentSite);
         }
 
         return $url;
     }
 
     /**
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme   The scheme to use ('http' or 'https'). If empty, the scheme used for the current
-     *                                    request will be used.
-     *
+     * @param string|null $scheme The scheme to use ('http' or 'https'). If empty, the scheme used for the current
+     * request will be used.
      * @return string
      */
     public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
@@ -263,7 +254,6 @@ class UrlHelper
      * Removes the query string from a given URL.
      *
      * @param string $url The URL to check.
-     *
      * @return string The URL without a query string.
      */
     public static function stripQueryString(string $url): string
@@ -322,11 +312,15 @@ class UrlHelper
      */
     public static function baseUrl(): string
     {
-        $currentSite = false;
-
-        if (Craft::$app->getIsInstalled()) {
-            // Is there a current site, and does it have a base URL?
-            $currentSite = Craft::$app->getSites()->currentSite;
+        try {
+            $currentSite = Craft::$app->getSites()->getCurrentSite();
+        } catch (SiteNotFoundException $e) {
+            // Fail silently if Craft isn't installed yet or is in the middle of updating
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                throw $e;
+            }
+            $currentSite = null;
         }
 
         if ($currentSite && $currentSite->baseUrl) {
@@ -350,9 +344,8 @@ class UrlHelper
     /**
      * Returns a URL with a specific scheme.
      *
-     * @param string $url    the URL
+     * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
-     *
      * @return string
      * @deprecated in 3.0. Use [[urlWithScheme()]] instead.
      */
@@ -382,15 +375,14 @@ class UrlHelper
     /**
      * Returns a URL.
      *
-     * @param string            $path
+     * @param string $path
      * @param array|string|null $params
-     * @param string|null       $scheme
-     * @param bool              $cpUrl
-     * @param bool              $mustShowScriptName
-     *
+     * @param string|null $scheme
+     * @param bool $cpUrl
+     * @param bool|null $showScriptName
      * @return string
      */
-    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $mustShowScriptName): string
+    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null): string
     {
         // Normalize the params
         $params = self::_normalizeParams($params, $fragment);
@@ -402,10 +394,23 @@ class UrlHelper
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $showScriptName = ($mustShowScriptName || !$generalConfig->omitScriptNameInUrls);
         $request = Craft::$app->getRequest();
 
-        if ($cpUrl) {
+        if ($showScriptName === null) {
+            $showScriptName = !$generalConfig->omitScriptNameInUrls;
+        }
+
+        // If we must show the script name, then just start with the script URL,
+        // regardless of whether this is a CP or site request, as we can't assume
+        // that index.php lives within the base URL anymore.
+        if ($showScriptName) {
+            if ($request->getIsConsoleRequest()) {
+                // No way to know for sure, so just guess
+                $baseUrl = '/'.$request->getScriptFilename();
+            } else {
+                $baseUrl = $request->getScriptUrl();
+            }
+        } else if ($cpUrl) {
             // Did they set the base URL manually?
             $baseUrl = $generalConfig->baseCpUrl;
 
@@ -417,27 +422,12 @@ class UrlHelper
                     // Make sure we're using the right scheme
                     $baseUrl = static::urlWithScheme($baseUrl, $scheme);
                 }
-
-                // Should we be adding that script name in?
-                if ($showScriptName) {
-                    $baseUrl .= $request->getScriptFilename();
-                }
             } else if ($request->getIsConsoleRequest()) {
                 // No way to know for sure, so just guess
                 $baseUrl = '/';
-
-                if ($showScriptName) {
-                    $baseUrl .= $request->getScriptFilename();
-                }
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $baseUrl = $request->getHostInfo();
-
-                if ($showScriptName) {
-                    $baseUrl .= $request->getScriptUrl();
-                } else {
-                    $baseUrl .= $request->getBaseUrl();
-                }
+                $baseUrl = $request->getHostInfo().$request->getBaseUrl();
 
                 if ($scheme !== null) {
                     $baseUrl = static::urlWithScheme($baseUrl, $scheme);
@@ -445,11 +435,6 @@ class UrlHelper
             }
         } else {
             $baseUrl = static::baseUrl();
-
-            // Should we be adding that script name in?
-            if ($showScriptName) {
-                $baseUrl .= $request->getScriptFilename();
-            }
         }
 
         // Put it all together
@@ -487,8 +472,7 @@ class UrlHelper
      * Normalizes query string params.
      *
      * @param string|array|null $params
-     * @param string|null       &$fragment
-     *
+     * @param string|null &$fragment
      * @return string
      */
     private static function _normalizeParams($params, &$fragment = null): string

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -18,18 +18,16 @@ use yii\base\Exception;
 
 /**
  * Updates service.
- *
  * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|<code>Craft::$app->updates</code>]].
  *
- * @property bool $isCraftDbMigrationNeeded       Whether Craft needs to run any database migrations
+ * @property bool $isCraftDbMigrationNeeded Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
- * @property bool $isCriticalUpdateAvailable      Whether a critical update is available
- * @property bool $isPluginDbUpdateNeeded         Whether a plugin needs to run a database update
- * @property bool $isUpdateInfoCached             Whether the update info is cached
- * @property bool $wasCraftBreakpointSkipped      Whether the build stored in craft_info is less than the minimum required build on the file system
- *
+ * @property bool $isCriticalUpdateAvailable Whether a critical update is available
+ * @property bool $isPluginDbUpdateNeeded Whether a plugin needs to run a database update
+ * @property bool $isUpdateInfoCached Whether the update info is cached
+ * @property bool $wasCraftBreakpointSkipped Whether the build stored in craft_info is less than the minimum required build on the file system
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Updates extends Component
 {
@@ -66,7 +64,6 @@ class Updates extends Component
 
     /**
      * @param bool $check Whether to check for updates if they aren't cached already
-     *
      * @return int
      */
     public function getTotalAvailableUpdates(bool $check = false): int
@@ -81,7 +78,6 @@ class Updates extends Component
      * Returns whether a critical update is available.
      *
      * @param bool $check Whether to check for updates if they aren't cached already
-     *
      * @return bool
      */
     public function getIsCriticalUpdateAvailable(bool $check = false): bool
@@ -94,7 +90,6 @@ class Updates extends Component
 
     /**
      * @param bool $refresh
-     *
      * @return UpdatesModel
      */
     public function getUpdates(bool $refresh = false): UpdatesModel
@@ -131,7 +126,6 @@ class Updates extends Component
 
     /**
      * @param PluginInterface $plugin
-     *
      * @return bool
      */
     public function setNewPluginInfo(PluginInterface $plugin): bool
@@ -152,11 +146,9 @@ class Updates extends Component
 
     /**
      * Returns a list of things with updated schema versions.
-     *
      * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
      *
      * @param bool $includeContent Whether pending content migrations should be considered
-     *
      * @return string[]
      * @see runMigrations()
      */
@@ -190,7 +182,6 @@ class Updates extends Component
      * Runs the pending migrations for the given list of handles.
      *
      * @param string[] $handles The list of handles to run migrations for
-     *
      * @return void
      * @throws MigrateException
      * @see getPendingMigrationHandles()
@@ -272,7 +263,6 @@ class Updates extends Component
 
     /**
      * Returns true if the version stored in craft_info is less than the minimum required version on the file system. This
-     *
      * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
      * @return bool

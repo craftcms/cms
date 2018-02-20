@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -49,13 +49,12 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property array|null     $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
- * @property bool           $hasThumb   whether the file has a thumbnail
- * @property int|float|null $height     the image height
- * @property int|float|null $width      the image width
- *
+ * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property bool $hasThumb whether the file has a thumbnail
+ * @property int|float|null $height the image height
+ * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Asset extends Element
 {
@@ -152,7 +151,6 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     *
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -321,8 +319,7 @@ class Asset extends Element
      * Transforms an asset folder tree into a source list.
      *
      * @param array $folders
-     * @param bool  $includeNestedFolders
-     *
+     * @param bool $includeNestedFolders
      * @return array
      */
     private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true): array
@@ -340,8 +337,7 @@ class Asset extends Element
      * Transforms an VolumeFolderModel into a source info array.
      *
      * @param VolumeFolder $folder
-     * @param bool         $includeNestedFolders
-     *
+     * @param bool $includeNestedFolders
      * @return array
      */
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
@@ -501,14 +497,11 @@ class Asset extends Element
 
     /**
      * Checks if a property is set.
-     *
      * This method will check if $name is one of the following:
-     *
      * - a magic property supported by [[Element::__isset()]]
      * - an image transform handle
      *
      * @param string $name The property name
-     *
      * @return bool Whether the property is set
      */
     public function __isset($name): bool
@@ -522,14 +515,11 @@ class Asset extends Element
 
     /**
      * Returns a property value.
-     *
      * This method will check if $name is one of the following:
-     *
      * - a magic property supported by [[Element::__get()]]
      * - an image transform handle
      *
      * @param string $name The property name
-     *
      * @return mixed The property value
      * @throws UnknownPropertyException if the property is not defined
      * @throws InvalidCallException if the property is write-only.
@@ -677,7 +667,6 @@ class Asset extends Element
      * Sets the transform.
      *
      * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
-     *
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -692,7 +681,6 @@ class Asset extends Element
      * Returns the element’s full URL.
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
-     *
      * @return string|null
      */
     public function getUrl($transform = null)
@@ -738,7 +726,6 @@ class Asset extends Element
      * Returns the file name, with or without the extension.
      *
      * @param bool $withExtension
-     *
      * @return string
      */
     public function getFilename(bool $withExtension = true): string
@@ -775,7 +762,6 @@ class Asset extends Element
      * Returns the image height.
      *
      * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
-     *
      * @return int|float|null
      */
 
@@ -798,7 +784,6 @@ class Asset extends Element
      * Returns the image width.
      *
      * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
-     *
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -842,7 +827,6 @@ class Asset extends Element
      * Get a file's uri path in the source.
      *
      * @param string|null $filename Filename to use. If not specified, the file's filename will be used.
-     *
      * @return string
      */
     public function getUri(string $filename = null): string
@@ -928,7 +912,6 @@ class Asset extends Element
      * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
      * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
-     *
      * @return array|string|null
      */
     public function getFocalPoint(bool $asCss = false)
@@ -950,7 +933,6 @@ class Asset extends Element
      * Sets the asset's focal point.
      *
      * @param $value string|array|null
-     *
      * @throws \InvalidArgumentException if $value is invalid
      */
     public function setFocalPoint($value)
@@ -1103,7 +1085,6 @@ class Asset extends Element
      * Returns a copy of the asset with the given transform applied to it.
      *
      * @param AssetTransform|string|array|null $transform
-     *
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -1259,9 +1240,8 @@ class Asset extends Element
     /**
      * Return a dimension of the image.
      *
-     * @param string                           $dimension 'height' or 'width'
+     * @param string $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
-     *
      * @return int|float|null
      */
     private function _getDimension(string $dimension, $transform)
@@ -1350,7 +1330,7 @@ class Asset extends Element
 
             // Try to open a file stream
             if (($stream = fopen($tempPath, 'rb')) === false) {
-                FileHelper::removeFile($tempPath);
+                FileHelper::unlink($tempPath);
                 throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
@@ -1394,7 +1374,7 @@ class Asset extends Element
             $this->dateModified = new DateTime('@'.filemtime($tempPath));
 
             // Delete the temp file
-            FileHelper::removeFile($tempPath);
+            FileHelper::unlink($tempPath);
         }
 
         // Clear out the temp location properties

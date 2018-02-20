@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -14,7 +14,7 @@ use craft\helpers\DateTimeHelper;
  * Model base class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Model extends \yii\base\Model
 {
@@ -86,9 +86,7 @@ abstract class Model extends \yii\base\Model
      * Returns the first error of the specified attribute.
      *
      * @param string $attribute The attribute name.
-     *
      * @return string The error message. Null is returned if no error.
-     *
      * @deprecated in 3.0. Use [[getFirstError()]] instead.
      */
     public function getError(string $attribute): string

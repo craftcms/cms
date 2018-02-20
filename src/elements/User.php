@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -31,8 +31,8 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
@@ -40,12 +40,11 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property bool        $isCurrent         Whether this is the current logged-in user
- * @property string      $name              The user's full name or username
+ * @property bool $isCurrent Whether this is the current logged-in user
+ * @property string $name The user's full name or username
  * @property string|null $preferredLanguage The user’s preferred language
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class User extends Element implements IdentityInterface
 {
@@ -54,7 +53,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
-     *
      * You may set [[AuthenticateUserEvent::isValid]] to `false` to prevent the user from getting authenticated
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
@@ -138,7 +136,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     *
      * @return UserQuery The newly created [[UserQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -364,7 +361,6 @@ class User extends Element implements IdentityInterface
      * Returns the authentication data from a given auth key.
      *
      * @param string $authKey
-     *
      * @return array|null The authentication data, or `null` if it was invalid.
      */
     public static function authData(string $authKey)
@@ -619,8 +615,8 @@ class User extends Element implements IdentityInterface
     /**
      * Validates the unverifiedEmail value is unique.
      *
-     * @param string          $attribute
-     * @param array|null      $params
+     * @param string $attribute
+     * @param array|null $params
      * @param InlineValidator $validator
      */
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
@@ -698,7 +694,6 @@ class User extends Element implements IdentityInterface
      * Determines whether the user is allowed to be logged in with a given password.
      *
      * @param string $password The user's plain text passwerd.
-     *
      * @return bool
      */
     public function authenticate(string $password): bool
@@ -732,7 +727,7 @@ class User extends Element implements IdentityInterface
                     // Validate the password
                     try {
                         $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-                    } catch (InvalidParamException $e) {
+                    } catch (InvalidArgumentException $e) {
                         $valid = false;
                     }
                     if (!$valid) {
@@ -809,7 +804,6 @@ class User extends Element implements IdentityInterface
      * Sets an array of User element objects on the user.
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
-     *
      * @return void
      */
     public function setGroups(array $groups)
@@ -823,7 +817,6 @@ class User extends Element implements IdentityInterface
      * Returns whether the user is in a specific group.
      *
      * @param UserGroup|int|string $group The user group model, its handle, or ID.
-     *
      * @return bool
      */
     public function isInGroup($group): bool
@@ -924,7 +917,6 @@ class User extends Element implements IdentityInterface
      * Returns the URL to the user's photo.
      *
      * @param int $size The width and height the photo should be sized to
-     *
      * @return string|null
      * @deprecated in 3.0. Use getPhoto().getUrl() instead.
      */
@@ -987,7 +979,6 @@ class User extends Element implements IdentityInterface
      * Returns whether the user has permission to perform a given action.
      *
      * @param string $permission
-     *
      * @return bool
      */
     public function can(string $permission): bool
@@ -1011,7 +1002,6 @@ class User extends Element implements IdentityInterface
      * Returns whether the user has shunned a given message.
      *
      * @param string $message
-     *
      * @return bool
      */
     public function hasShunned(string $message): bool
@@ -1101,9 +1091,8 @@ class User extends Element implements IdentityInterface
     /**
      * Returns one of the user’s preferences by its key.
      *
-     * @param string $key     The preference’s key
-     * @param mixed  $default The default value, if the preference hasn’t been set
-     *
+     * @param string $key The preference’s key
+     * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
     public function getPreference(string $key, $default = null)
@@ -1134,7 +1123,6 @@ class User extends Element implements IdentityInterface
      * Merges new user preferences with the existing ones, and returns the result.
      *
      * @param array $preferences The new preferences
-     *
      * @return array The user’s new preferences.
      */
     public function mergePreferences(array $preferences): array
@@ -1360,7 +1348,6 @@ class User extends Element implements IdentityInterface
      * Saves a new session record for the user.
      *
      * @param string $sessionToken
-     *
      * @return string The new session row's UID.
      */
     private function _storeSessionToken(string $sessionToken): string
@@ -1377,7 +1364,6 @@ class User extends Element implements IdentityInterface
      * Finds a session token by its row's UID.
      *
      * @param string $uid
-     *
      * @return string|null The session token, or `null` if it could not be found.
      */
     private function _findSessionTokenByUid(string $uid)
@@ -1394,7 +1380,6 @@ class User extends Element implements IdentityInterface
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
      *
      * @param string $userAgent
-     *
      * @return bool
      */
     private function _validateUserAgent(string $userAgent): bool

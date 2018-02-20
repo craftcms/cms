@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -15,11 +15,10 @@ use yii\base\Component;
 
 /**
  * Relations service.
- *
  * An instance of the Relations service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRelations()|<code>Craft::$app->relations</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Relations extends Component
 {
@@ -30,9 +29,8 @@ class Relations extends Component
      * Saves some relations for a field.
      *
      * @param BaseRelationField $field
-     * @param ElementInterface  $source
-     * @param array             $targetIds
-     *
+     * @param ElementInterface $source
+     * @param array $targetIds
      * @throws \Throwable
      * @return void
      */

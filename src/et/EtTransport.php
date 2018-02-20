@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\et;
@@ -22,7 +22,7 @@ use yii\base\Exception;
  * Class Et
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EtTransport
 {
@@ -88,7 +88,6 @@ class EtTransport
      * Sets custom data on the EtModel.
      *
      * @param mixed $data
-     *
      * @return void
      */
     public function setData($data)
@@ -100,7 +99,6 @@ class EtTransport
      * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
      *
      * @param string $handle
-     *
      * @return void
      */
     public function setHandle(string $handle)
@@ -271,7 +269,6 @@ class EtTransport
 
     /**
      * @param string $key
-     *
      * @return bool
      * @throws Exception|EtException
      */

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db\mysql;
@@ -14,11 +14,9 @@ use yii\db\Exception;
 
 /**
  * @inheritdoc
- *
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Schema extends \yii\db\mysql\Schema
 {
@@ -71,7 +69,6 @@ class Schema extends \yii\db\mysql\Schema
      * Quotes a database name for use in a query.
      *
      * @param string $name
-     *
      * @return string
      */
     public function quoteDatabaseName(string $name): string
@@ -83,7 +80,6 @@ class Schema extends \yii\db\mysql\Schema
      * Releases an existing savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
     public function releaseSavepoint($name)
@@ -104,7 +100,6 @@ class Schema extends \yii\db\mysql\Schema
      * Rolls back to a previously created savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
     public function rollBackSavepoint($name)
@@ -195,7 +190,6 @@ class Schema extends \yii\db\mysql\Schema
 
     /**
      * Returns all indexes for the given table. Each array element is of the following structure:
-     *
      * ```php
      * [
      *     'IndexName1' => ['col1' [, ...]],
@@ -204,7 +198,6 @@ class Schema extends \yii\db\mysql\Schema
      * ```
      *
      * @param string $tableName The name of the table to get the indexes for.
-     *
      * @return array All indexes for the given table.
      */
     public function findIndexes(string $tableName): array
@@ -233,7 +226,6 @@ class Schema extends \yii\db\mysql\Schema
      * Loads the metadata for the specified table.
      *
      * @param string $name table name
-     *
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
     protected function loadTableSchema($name)

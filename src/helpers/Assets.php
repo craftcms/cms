@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -23,7 +23,7 @@ use yii\base\Exception;
  * Class Assets
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Assets
 {
@@ -54,7 +54,6 @@ class Assets
      * Get a temporary file path.
      *
      * @param string $extension extension to use. "tmp" by default.
-     *
      * @return string The temporary file path
      * @throws Exception in case of failure
      */
@@ -75,8 +74,7 @@ class Assets
      * Generate a URL for a given Assets file in a Source Type.
      *
      * @param VolumeInterface $volume
-     * @param Asset           $file
-     *
+     * @param Asset $file
      * @return string
      */
     public static function generateUrl(VolumeInterface $volume, Asset $file): string
@@ -93,8 +91,7 @@ class Assets
      * Get appendix for an URL based on it's Source caching settings.
      *
      * @param VolumeInterface $volume
-     * @param Asset           $file
-     *
+     * @param Asset $file
      * @return string
      */
     public static function urlAppendix(VolumeInterface $volume, Asset $file): string
@@ -113,10 +110,9 @@ class Assets
      * Clean an Asset's filename.
      *
      * @param string $name
-     * @param bool   $isFilename                  if set to true (default), will separate extension
-     *                                            and clean the filename separately.
-     * @param bool   $preventPluginModifications  if set to true, will prevent plugins from modify
-     *
+     * @param bool $isFilename if set to true (default), will separate extension
+     * and clean the filename separately.
+     * @param bool $preventPluginModifications if set to true, will prevent plugins from modify
      * @return string
      */
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
@@ -160,7 +156,6 @@ class Assets
      * Generates a default asset title based on its filename.
      *
      * @param string $filename The asset's filename
-     *
      * @return string
      */
     public static function filename2Title(string $filename): string
@@ -174,9 +169,8 @@ class Assets
      * Mirror a folder structure on a Volume.
      *
      * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
-     * @param VolumeFolder $destinationFolder  The destination folder
-     * @param array        $targetTreeMap      map of relative path => existing folder id
-     *
+     * @param VolumeFolder $destinationFolder The destination folder
+     * @param array $targetTreeMap map of relative path => existing folder id
      * @return array map of original folder id => new folder id
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
@@ -214,9 +208,8 @@ class Assets
      * Create an Asset transfer list based on a list of Assets and an array of
      * changing folder ids.
      *
-     * @param array $assets          List of assets
+     * @param array $assets List of assets
      * @param array $folderIdChanges A map of folder id changes
-     *
      * @return array
      */
     public static function fileTransferList(array $assets, array $folderIdChanges): array
@@ -288,7 +281,6 @@ class Assets
      * Returns the label of a given file kind.
      *
      * @param string $kind
-     *
      * @return string
      */
     public static function getFileKindLabel(string $kind): string
@@ -301,7 +293,6 @@ class Assets
      * Return a file's kind by a file's extension.
      *
      * @param string $file The file name/path
-     *
      * @return string The file kind, or "unknown" if unknown.
      */
     public static function getFileKindByExtension(string $file): string
@@ -323,7 +314,6 @@ class Assets
      * Parses a file location in the format of `{folder:X}filename.ext` returns the folder ID + filename.
      *
      * @param string $location
-     *
      * @return array
      * @throws Exception if the file location is invalid
      */
@@ -579,7 +569,6 @@ class Assets
      *
      * @param integer $assetId
      * @param integer $size
-     *
      * @return false|string
      * @throws Exception in case of failure
      */
@@ -643,7 +632,7 @@ class Assets
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
             $localSource = $asset->getCopyOfFile();
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
-            FileHelper::removeFile($localSource);
+            FileHelper::unlink($localSource);
         }
 
         return $targetFilePath;

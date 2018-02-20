@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -26,9 +26,8 @@ use yii\base\InvalidConfigException;
  * MatrixBlock represents a matrix block element.
  *
  * @property MatrixBlockType|null $type The block type
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MatrixBlock extends Element
 {
@@ -77,7 +76,6 @@ class MatrixBlock extends Element
 
     /**
      * @inheritdoc
-     *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
     public static function find(): ElementQueryInterface

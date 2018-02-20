@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -16,7 +16,7 @@ use yii\base\InvalidConfigException;
  * Component helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Component
 {
@@ -26,9 +26,8 @@ class Component
     /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
-     * @param mixed       $config     The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param mixed $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @param string|null $instanceOf The class or interface that the component must be an instance of.
-     *
      * @return ComponentInterface The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
@@ -85,7 +84,6 @@ class Component
      * Extracts settings from a given component config, and returns a new config array wiith the settings merged in.
      *
      * @param array $config
-     *
      * @return array
      */
     public static function mergeSettings(array $config): array

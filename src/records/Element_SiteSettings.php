@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,17 +13,16 @@ use yii\db\ActiveQueryInterface;
 /**
  * Element_SiteSettings record class.
  *
- * @property int     $id        ID
- * @property int     $elementId Element ID
- * @property int     $siteId    Site ID
- * @property string  $slug      Slug
- * @property string  $uri       URI
- * @property bool    $enabled   Enabled
- * @property Element $element   Element
- * @property Site    $site      Site
- *
+ * @property int $id ID
+ * @property int $elementId Element ID
+ * @property int $siteId Site ID
+ * @property string $slug Slug
+ * @property string $uri URI
+ * @property bool $enabled Enabled
+ * @property Element $element Element
+ * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Element_SiteSettings extends ActiveRecord
 {
@@ -32,7 +31,6 @@ class Element_SiteSettings extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

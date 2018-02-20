@@ -1,5 +1,47 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+## 3.0.0-RC11 - 2018-02-20
+
+### Added
+- Added `craft\services\Sites::getCurrentSite()`.
+- Added `craft\services\Sites::getHasCurrentSite()`.
+- Added `craft\services\Sites::setCurrentSite()`.
+
+### Changed
+- Craft no longer relies on the `CRAFT_SITE` constant to determine which site it should serve. If it’s not set, it will compare the requested URL with the sites’ base URLs and use the closest match. ([#2397](https://github.com/craftcms/cms/issues/2397))
+- It is no longer necessary to route sites with base URI paths to separate `index.php` files. Craft will automatically detect URI segments that were meant to be part of the site base URI, and ignore them when routing the request.
+- Dashboard widgets no longer animate into place when the browser is resized.
+- Added a `$defaultOperator` argument to `craft\helpers\Db::parseParam()` and `parseDateParam()`.
+- Updated Yii to 2.0.14.
+- Various database columns have been converted back to tiny ints, now that Yii 2 supports it.
+- Renamed the fourth argument of `craft\helpers\UrlHelper::url()` from `$mustShowScriptName` to `$showScriptName`. Now passing `false` will explicitly tell it to not include the script name; `null` will tell it to defer to the `omitScriptNameInUrls` config setting; and `true` will tell it to include the script name (as it always has).
+- `craft\mail\Mailer::send()` now catches `Swift_TransportException` exceptions that are thrown when sending emails, and logs the exception and returns `false`.
+
+### Deprecated
+- Deprecated `craft\helpers\FileHelper::removeFile()`. Use `craft\helpers\FileHelper::unlink()` instead.
+
+### Removed
+- Removed `craft\web\Application::getTranslatedBrowserLanguage()`.
+- Removed `craft\web\Request::getHostName()`. (`yii\web\Request::getHostName()` is still there, and more robust.)
+
+### Fixed
+- Fixed an error that occurred if there were any non-image files in `storage/rebrand/icon/` or `storage/rebrand/logo/`.
+- Fixed an error that occurred if an SVG file without `width` and `height` attributes was uploaded as the Login Page Logo. ([#2435](https://github.com/craftcms/cms/issues/2435))
+- Fixed a bug where the `defaultCpLanguage` setting was only working in some cases.
+- Fixed a bug where Dashboard widgets could go freaking crazy when the browser was resized. ([#2438](https://github.com/craftcms/cms/issues/2438))
+- Fixed a bug where Control Panel dates, times, and numbers were formatted for US English regardless of the user’s preferred language, if any plugins were registering an asset bundle that relied on `craft\web\assets\cp\CpAsset` from their `init()` methods. ([#2439](https://github.com/craftcms/cms/issues/2439))
+- Fixed a bug where entries would get a “Title cannot be blank” validation error when attempting to publish a draft with a dynamic title. ([#2440](https://github.com/craftcms/cms/issues/2440))
+- Fixed a bug where if both the `before` and `after` params were applied to an entry query, results would include entries where either of them matched, rather than both. ([#2442](https://github.com/craftcms/cms/issues/2442))
+- Fixed an error that occurred if an invalid user group ID was passed into `craft\services\UserGroups::getGroupById()`. ([#2443](https://github.com/craftcms/cms/issues/2443))
+- Fixed an error that occurred if the `privateTemplateTrigger` config setting was set to an empty string. ([#2449](https://github.com/craftcms/cms/issues/2449))
+- Fixed a bug where textareas within editable tables may not be set to the full height of the table row if the first textarea within the row was in a hidden column.
+- Fixed some awkward styling on editable table headings that contained info buttons.
+- Fixed the styling of small select buttons.
+- Fixed a bug where relational fields could lose relations to target elements that weren’t available on all of the source element’s sites. ([#2451](https://github.com/craftcms/cms/issues/2451))
+- Fixed a bug where Craft was failing silently when a user that required a password reset attempted to log in, if Craft wasn’t properly configured to send emails yet. ([#2460](https://github.com/craftcms/cms/issues/2460))
+
 ## 3.0.0-RC10.1 - 2018-02-14
 
 ### Fixed

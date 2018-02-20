@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
  * FieldLayoutTab model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldLayoutTab extends Model
 {
@@ -97,7 +97,6 @@ class FieldLayoutTab extends Model
      * Sets the tab’s layout.
      *
      * @param FieldLayout $layout The tab’s layout.
-     *
      * @return void
      */
     public function setLayout(FieldLayout $layout)
@@ -134,7 +133,6 @@ class FieldLayoutTab extends Model
      * Sets the tab’s fields.
      *
      * @param FieldInterface[] $fields The tab’s fields.
-     *
      * @return void
      */
     public function setFields(array $fields)

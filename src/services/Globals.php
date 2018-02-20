@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -19,11 +19,10 @@ use yii\base\Exception;
 
 /**
  * Globals service.
- *
  * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|<code>Craft::$app->globals</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Globals extends Component
 {
@@ -166,18 +165,19 @@ class Globals extends Component
     /**
      * Returns a global set by its ID.
      *
-     * @param int      $globalSetId
+     * @param int $globalSetId
      * @param int|null $siteId
-     *
      * @return GlobalSet|null
      */
     public function getSetById(int $globalSetId, int $siteId = null)
     {
         if ($siteId === null) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
 
-        if ($siteId == Craft::$app->getSites()->currentSite->id) {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        if ($siteId == Craft::$app->getSites()->getCurrentSite()->id) {
             if ($this->_allGlobalSets === null) {
                 $this->getAllSets();
             }
@@ -198,14 +198,14 @@ class Globals extends Component
     /**
      * Returns a global set by its handle.
      *
-     * @param string   $globalSetHandle
+     * @param string $globalSetHandle
      * @param int|null $siteId
-     *
      * @return GlobalSet|null
      */
     public function getSetByHandle(string $globalSetHandle, int $siteId = null)
     {
-        $currentSiteId = Craft::$app->getSites()->currentSite->id;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if ($siteId === null) {
             $siteId = $currentSiteId;
@@ -232,9 +232,8 @@ class Globals extends Component
     /**
      * Saves a global set.
      *
-     * @param GlobalSet $globalSet     The global set to be saved
-     * @param bool      $runValidation Whether the global set should be validated
-     *
+     * @param GlobalSet $globalSet The global set to be saved
+     * @param bool $runValidation Whether the global set should be validated
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
      * @throws \Throwable if reasons

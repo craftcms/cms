@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\config;
@@ -15,7 +15,7 @@ use yii\base\InvalidConfigException;
  * DB config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DbConfig extends BaseObject
 {
@@ -30,12 +30,10 @@ class DbConfig extends BaseObject
 
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
-     *
      * For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
      * if you wanted to enable a SSL database connection (assuming SSL is enabled in MySQL
      * (https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'`
      * can connect via SSL, you'd set these:
-     *
      * ```php
      * [
      *     PDO::MYSQL_ATTR_SSL_KEY    => '/path/to/my/client-key.pem',
@@ -59,10 +57,8 @@ class DbConfig extends BaseObject
     public $driver = self::DRIVER_MYSQL;
     /**
      * @var string If you want to manually specify your PDO DSN connection string you can do so here.
-     *
      * - MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
      * - PostgreSQL: https://secure.php.net/manual/en/ref.pdo-pgsql.connection.php
-     *
      * If you set this, then the [[server]], [[port]], [[user]], [[password]], [[database]],
      * [[driver]] and [[unixSocket]] config settings will be ignored.
      */
@@ -77,7 +73,6 @@ class DbConfig extends BaseObject
     public $port;
     /**
      * @var string The database schema to use (PostgreSQL only).
-     *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';

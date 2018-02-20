@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,21 +13,20 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Field record.
  *
- * @property int        $id                   ID
- * @property int        $groupId              Group ID
- * @property string     $name                 Name
- * @property string     $handle               Handle
- * @property string     $context              Context
- * @property string     $instructions         Instructions
- * @property bool       $translatable         Translatable
- * @property string     $translationMethod    Translation method
- * @property string     $translationKeyFormat Translation key format
- * @property string     $type                 Type
- * @property array      $settings             Settings
- * @property FieldGroup $group                Group
- *
+ * @property int $id ID
+ * @property int $groupId Group ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property string $context Context
+ * @property string $instructions Instructions
+ * @property bool $translatable Translatable
+ * @property string $translationMethod Translation method
+ * @property string $translationKeyFormat Translation key format
+ * @property string $type Type
+ * @property array $settings Settings
+ * @property FieldGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Field extends ActiveRecord
 {
@@ -77,7 +76,6 @@ class Field extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

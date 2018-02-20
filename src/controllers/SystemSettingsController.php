@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -28,11 +28,10 @@ use yii\web\Response;
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
  * displaying, saving and testing Craft settings in the control panel.
- *
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemSettingsController extends Controller
 {
@@ -52,7 +51,6 @@ class SystemSettingsController extends Controller
      * Shows the general settings form.
      *
      * @param Info|null $info The info being edited, if there were any validation errors.
-     *
      * @return Response
      */
     public function actionGeneralSettings(Info $info = null): Response
@@ -140,9 +138,8 @@ class SystemSettingsController extends Controller
     /**
      * Renders the email settings page.
      *
-     * @param MailSettings|null              $settings The posted email settings, if there were any validation errors
-     * @param TransportAdapterInterface|null $adapter  The transport adapter, if there were any validation errors
-     *
+     * @param MailSettings|null $settings The posted email settings, if there were any validation errors
+     * @param TransportAdapterInterface|null $adapter The transport adapter, if there were any validation errors
      * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
@@ -301,9 +298,8 @@ class SystemSettingsController extends Controller
     /**
      * Global Set edit form.
      *
-     * @param int|null       $globalSetId The global set’s ID, if any.
-     * @param GlobalSet|null $globalSet   The global set being edited, if there were any validation errors.
-     *
+     * @param int|null $globalSetId The global set’s ID, if any.
+     * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */

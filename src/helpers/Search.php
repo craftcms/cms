@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -11,7 +11,7 @@ namespace craft\helpers;
  * Search helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Search
 {
@@ -21,10 +21,9 @@ class Search
     /**
      * Normalizes search keywords.
      *
-     * @param string[]|string $str            The dirty keywords
-     * @param array           $ignore         Ignore words to strip out
-     * @param bool            $processCharMap Whether to remove punctuation and diacritics (default is true)
-     *
+     * @param string[]|string $str The dirty keywords
+     * @param array $ignore Ignore words to strip out
+     * @param bool $processCharMap Whether to remove punctuation and diacritics (default is true)
      * @return string The cleansed keywords.
      */
     public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true): string

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -14,11 +14,10 @@ use yii\base\Component;
 
 /**
  * System Settings service.
- *
  * An instance of the System Settings service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemSettings()|<code>Craft::$app->systemSettings</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemSettings extends Component
 {
@@ -42,7 +41,6 @@ class SystemSettings extends Component
      * Returns the system settings for a category.
      *
      * @param string $category
-     *
      * @return array
      */
     public function getSettings(string $category): array
@@ -67,7 +65,6 @@ class SystemSettings extends Component
      *
      * @param string $category
      * @param string $key
-     *
      * @return mixed
      */
     public function getSetting(string $category, string $key)
@@ -84,9 +81,8 @@ class SystemSettings extends Component
     /**
      * Saves the system settings for a category.
      *
-     * @param string     $category
+     * @param string $category
      * @param array|null $settings
-     *
      * @return bool Whether the new settings saved
      */
     public function saveSettings(string $category, array $settings = null): bool
@@ -136,7 +132,6 @@ class SystemSettings extends Component
      * Returns a SystemSettings record by its category.
      *
      * @param string $category
-     *
      * @return SystemSettingsRecord|null The SystemSettings record or null
      */
     private function _getSettingsRecord(string $category)

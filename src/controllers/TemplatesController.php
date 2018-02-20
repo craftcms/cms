@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -23,11 +23,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
  * control panel and front-end of a Craft site.
- *
  * Note that all actions in the controller are open to do not require an authenticated Craft session in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TemplatesController extends Controller
 {
@@ -59,8 +58,7 @@ class TemplatesController extends Controller
      * Renders a template.
      *
      * @param string $template
-     * @param array  $variables
-     *
+     * @param array $variables
      * @return Response
      * @throws NotFoundHttpException if the requested template cannot be found
      */

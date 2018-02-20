@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -28,7 +28,7 @@ use yii\base\InvalidConfigException;
  * Category represents a category element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Category extends Element
 {
@@ -93,7 +93,6 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     *
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -149,7 +148,7 @@ class Category extends Element
             // They are viewing a specific category group. See if it has URLs for the requested site
             $controller = Craft::$app->controller;
             if ($controller instanceof ElementIndexesController) {
-                $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
                 if (isset($group->siteSettings[$siteId]) && $group->siteSettings[$siteId]->hasUrls) {
                     $actions[] = Craft::$app->getElements()->createAction([
                         'type' => View::class,
@@ -278,7 +277,7 @@ class Category extends Element
     protected function route()
     {
         // Make sure the category group is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$siteId]) || !$categoryGroupSiteSettings[$siteId]->hasUrls) {
@@ -312,7 +311,7 @@ class Category extends Element
 
         $url = UrlHelper::cpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $url .= '/'.$this->getSite()->handle;
         }
 

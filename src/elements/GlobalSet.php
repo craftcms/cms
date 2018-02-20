@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -21,9 +21,8 @@ use craft\validators\UniqueValidator;
  * GlobalSet represents a global set element.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GlobalSet extends Element
 {
@@ -64,7 +63,6 @@ class GlobalSet extends Element
 
     /**
      * @inheritdoc
-     *
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -152,7 +150,7 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
             return UrlHelper::cpUrl('globals/'.$this->getSite()->handle.'/'.$this->handle);
         }
 

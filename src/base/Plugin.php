@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -22,11 +22,10 @@ use yii\base\Module;
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
- * @property string           $handle   The plugin’s handle (alias of [[id]])
+ * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Plugin extends Module implements PluginInterface
 {

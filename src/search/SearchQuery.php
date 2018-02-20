@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\search;
@@ -13,7 +13,7 @@ use craft\helpers\StringHelper;
  * Search Query class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SearchQuery
 {
@@ -42,7 +42,7 @@ class SearchQuery
      * Constructor
      *
      * @param string $query
-     * @param array  $termOptions
+     * @param array $termOptions
      */
     public function __construct(string $query, array $termOptions = [])
     {

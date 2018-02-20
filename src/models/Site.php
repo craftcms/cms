@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -19,7 +19,7 @@ use yii\base\InvalidConfigException;
  * Site model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Site extends Model
 {
@@ -151,7 +151,6 @@ class Site extends Model
      * Overrides the name while keeping track of the original one.
      *
      * @param string $name
-     *
      * @return void
      */
     public function overrideName(string $name)
@@ -164,7 +163,6 @@ class Site extends Model
      * Overrides the base URL while keeping track of the original one.
      *
      * @param string $baseUrl
-     *
      * @return void
      */
     public function overrideBaseUrl(string $baseUrl)

@@ -2009,6 +2009,7 @@ table.editable {
         border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 
         span.info {
+          position: absolute;
           margin-left: 5px;
         }
       }
@@ -3717,8 +3718,8 @@ input:-ms-input-placeholder {
 }
 
 .select:not(.selectize).small select {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
   font-size: 11px;
 }
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -29,11 +29,10 @@ use yii\base\Exception;
 
 /**
  * Sections service.
- *
  * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|<code>Craft::$app->sections</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Sections extends Component
 {
@@ -206,7 +205,6 @@ class Sections extends Component
      * Returns all sections of a given type.
      *
      * @param string $type
-     *
      * @return Section[] All the sections of the given type.
      */
     public function getSectionsByType(string $type): array
@@ -246,7 +244,6 @@ class Sections extends Component
      * Returns a section by its ID.
      *
      * @param int $sectionId
-     *
      * @return Section|null
      */
     public function getSectionById(int $sectionId)
@@ -276,7 +273,6 @@ class Sections extends Component
      * Gets a section by its handle.
      *
      * @param string $sectionHandle
-     *
      * @return Section|null
      */
     public function getSectionByHandle(string $sectionHandle)
@@ -298,7 +294,6 @@ class Sections extends Component
      * Returns a section’s site-specific settings.
      *
      * @param int $sectionId
-     *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
     public function getSectionSiteSettings(int $sectionId): array
@@ -328,11 +323,9 @@ class Sections extends Component
 
     /**
      * Saves a section.
-     *
      * ```php
      * use craft\models\Section;
      * use craft\models\Section_SiteSettings;
-     *
      * $section = new Section([
      *     'name' => 'News',
      *     'handle' => 'news',
@@ -347,13 +340,11 @@ class Sections extends Component
      *         ]),
      *     ]
      * ]);
-     *
      * $success = Craft::$app->sections->saveSection($section);
      * ```
      *
-     * @param Section $section       The section to be saved
-     * @param bool    $runValidation Whether the section should be validated
-     *
+     * @param Section $section The section to be saved
+     * @param bool $runValidation Whether the section should be validated
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Throwable if reasons
@@ -619,7 +610,6 @@ class Sections extends Component
      * Deletes a section by its ID.
      *
      * @param int $sectionId
-     *
      * @return bool Whether the section was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -638,7 +628,6 @@ class Sections extends Component
      * Deletes a section.
      *
      * @param Section $section
-     *
      * @return bool Whether the section was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -720,8 +709,7 @@ class Sections extends Component
      * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
      *
      * @param Section $section
-     * @param int     $siteId
-     *
+     * @param int $siteId
      * @return bool
      */
     public function isSectionTemplateValid(Section $section, int $siteId): bool
@@ -755,7 +743,6 @@ class Sections extends Component
      * Returns a section’s entry types.
      *
      * @param int $sectionId
-     *
      * @return EntryType[]
      */
     public function getEntryTypesBySectionId(int $sectionId): array
@@ -776,7 +763,6 @@ class Sections extends Component
      * Returns an entry type by its ID.
      *
      * @param int $entryTypeId
-     *
      * @return EntryType|null
      */
     public function getEntryTypeById(int $entryTypeId)
@@ -800,7 +786,6 @@ class Sections extends Component
      * Returns entry types that have a given handle.
      *
      * @param string $entryTypeHandle
-     *
      * @return EntryType[]
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
@@ -819,9 +804,8 @@ class Sections extends Component
     /**
      * Saves an entry type.
      *
-     * @param EntryType $entryType     The entry type to be saved
-     * @param bool      $runValidation Whether the entry type should be validated
-     *
+     * @param EntryType $entryType The entry type to be saved
+     * @param bool $runValidation Whether the entry type should be validated
      * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Throwable if reasons
@@ -951,7 +935,6 @@ class Sections extends Component
      * Reorders entry types.
      *
      * @param array $entryTypeIds
-     *
      * @return bool Whether the entry types were reordered successfully
      * @throws \Throwable if reasons
      */
@@ -980,7 +963,6 @@ class Sections extends Component
      * Deletes an entry type by its ID.
      *
      * @param int $entryTypeId
-     *
      * @return bool Whether the entry type was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -999,7 +981,6 @@ class Sections extends Component
      * Deletes an entry type.
      *
      * @param EntryType $entryType
-     *
      * @return bool Whether the entry type was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -1087,10 +1068,9 @@ class Sections extends Component
     /**
      * Performs some Single-specific tasks when a section is saved.
      *
-     * @param Section                $section
-     * @param bool                   $isNewSection
+     * @param Section $section
+     * @param bool $isNewSection
      * @param Section_SiteSettings[] $allSiteSettings
-     *
      * @return void
      * @see saveSection()
      * @throws Exception if reasons
@@ -1196,11 +1176,10 @@ class Sections extends Component
     /**
      * Performs some Structure-specific tasks when a section is saved.
      *
-     * @param Section                      $section
-     * @param bool                         $isNewSection
-     * @param bool                         $isNewStructure
+     * @param Section $section
+     * @param bool $isNewSection
+     * @param bool $isNewStructure
      * @param Section_SiteSettingsRecord[] $allOldSiteSettingsRecords
-     *
      * @return void
      * @see saveSection()
      * @throws Exception if reasons

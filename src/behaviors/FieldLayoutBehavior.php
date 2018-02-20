@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\behaviors;
@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
  * Field Layout behavior.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldLayoutBehavior extends Behavior
 {
@@ -66,7 +66,6 @@ class FieldLayoutBehavior extends Behavior
 
     /**
      * @inheritdoc
-     *
      * @throws InvalidConfigException if the behavior was not configured properly
      */
     public function init()
@@ -148,7 +147,6 @@ class FieldLayoutBehavior extends Behavior
      * Sets the owner's field layout.
      *
      * @param FieldLayout $fieldLayout
-     *
      * @return void
      */
     public function setFieldLayout(FieldLayout $fieldLayout)

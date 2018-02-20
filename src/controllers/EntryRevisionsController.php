@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The EntryRevisionsController class is a controller that handles various entry version and draft related tasks such as
  * retrieving, saving, deleting, publishing and reverting entry drafts and versions.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryRevisionsController extends BaseEntriesController
 {
@@ -211,6 +210,11 @@ class EntryRevisionsController extends BaseEntriesController
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $draft->setFieldValuesFromRequest($fieldsLocation);
 
+        $entryType = $entry->getType();
+        if (!$entryType->hasTitleField) {
+            $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
+        }
+
         // Publish the draft (finally!)
         if (!Craft::$app->getEntryRevisions()->publishDraft($draft)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
@@ -294,7 +298,6 @@ class EntryRevisionsController extends BaseEntriesController
      * Sets a draft's attributes from the post data.
      *
      * @param EntryDraft $draft
-     *
      * @return void
      */
     private function _setDraftAttributesFromPost(EntryDraft $draft)

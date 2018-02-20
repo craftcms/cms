@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\errors;
@@ -14,7 +14,7 @@ use yii\base\Exception;
  * InvalidElementException represents an exception caused by setting an invalid element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class InvalidElementException extends Exception
 {
@@ -27,8 +27,8 @@ class InvalidElementException extends Exception
      * Constructor.
      *
      * @param ElementInterface $element The element
-     * @param string|null      $message The error message
-     * @param int              $code    The error code
+     * @param string|null $message The error message
+     * @param int $code The error code
      */
     public function __construct(ElementInterface $element, string $message = null, int $code = 0)
     {

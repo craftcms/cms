@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -21,11 +21,10 @@ use yii\web\Response;
 
 /**
  * The PluginStoreController class is a controller that handles various actions related to the Plugin Store.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginStoreController extends Controller
 {
@@ -72,7 +71,6 @@ class PluginStoreController extends Controller
      * Connect to id.craftcms.com.
      *
      * @param string|null $redirect
-     *
      * @return Response
      */
     public function actionConnect(string $redirect = null): Response

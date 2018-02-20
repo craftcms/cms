@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -26,7 +26,7 @@ use yii\base\NotSupportedException;
  * BaseRelationField is the base class for classes representing a relational field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseRelationField extends Field implements PreviewableFieldInterface, EagerLoadingFieldInterface
 {
@@ -500,21 +500,25 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        /** @var ElementQuery $value */
-        $value = $element->getFieldValue($this->handle);
+        // Skip if the element is just propagating, and we're not localizing relations
+        /** @var Element $element */
+        if (!$element->propagating || $this->localizeRelations) {
+            /** @var ElementQuery $value */
+            $value = $element->getFieldValue($this->handle);
 
-        // $id will be set if we're saving new relations
-        if ($value->id !== null) {
-            $targetIds = $value->id ?: [];
-        } else {
-            $targetIds = $value
-                ->status(null)
-                ->enabledForSite(false)
-                ->ids();
+            // $id will be set if we're saving new relations
+            if ($value->id !== null) {
+                $targetIds = $value->id ?: [];
+            } else {
+                $targetIds = $value
+                    ->status(null)
+                    ->enabledForSite(false)
+                    ->ids();
+            }
+
+            /** @var int|int[]|false|null $targetIds */
+            Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
         }
-
-        /** @var int|int[]|false|null $targetIds */
-        Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
         parent::afterElementSave($element, $isNew);
     }
@@ -637,8 +641,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of variables that should be passed to the input template.
      *
      * @param ElementQueryInterface|array|null $value
-     * @param ElementInterface|null            $element
-     *
+     * @param ElementInterface|null $element
      * @return array
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
@@ -677,7 +680,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
-     *
      * @return array|string
      */
     protected function inputSources(ElementInterface $element = null)
@@ -705,7 +707,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the site ID that target elements should have.
      *
      * @param ElementInterface|null $element
-     *
      * @return int
      */
     protected function targetSiteId(ElementInterface $element = null): int
@@ -721,7 +722,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
         }
 
-        return Craft::$app->getSites()->currentSite->id;
+        return Craft::$app->getSites()->getCurrentSite()->id;
     }
 
     /**

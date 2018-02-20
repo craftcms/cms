@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -15,13 +15,13 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class FileHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
@@ -116,11 +116,9 @@ class FileHelper extends \yii\helpers\FileHelper
      * Sanitizes a filename.
      *
      * @param string $filename the filename to sanitize
-     * @param array  $options  options for sanitization. Valid options are:
-     *
+     * @param array $options options for sanitization. Valid options are:
      * - `asciiOnly`: bool, whether only ASCII characters should be allowed. Defaults to false.
      * - `separator`: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
-     *
      * @return string The cleansed filename
      */
     public static function sanitizeFilename(string $filename, array $options = []): string
@@ -189,15 +187,14 @@ class FileHelper extends \yii\helpers\FileHelper
      * Returns whether a given directory is empty (has no files) recursively.
      *
      * @param string $dir the directory to be checked
-     *
      * @return bool whether the directory is empty
-     * @throws InvalidParamException if the dir is invalid
+     * @throws InvalidArgumentException if the dir is invalid
      * @throws ErrorException in case of failure
      */
     public static function isDirectoryEmpty(string $dir): bool
     {
         if (!is_dir($dir)) {
-            throw new InvalidParamException("The dir argument must be a directory: $dir");
+            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
 
         if (!($handle = opendir($dir))) {
@@ -227,7 +224,6 @@ class FileHelper extends \yii\helpers\FileHelper
      * Tests whether a file/directory is writable.
      *
      * @param string $path the file/directory path to test
-     *
      * @return bool whether the path is writable
      * @throws ErrorException in case of failure
      */
@@ -249,7 +245,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // Delete the file if it didn't exist already
         if (!$exists) {
-            static::removeFile($path);
+            static::unlink($path);
         }
 
         return true;
@@ -273,15 +269,13 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * Returns whether the given file path is an SVG image.
      *
-     *
-     * @param string $file           the file name.
-     * @param string $magicFile      name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
-     *                               This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
-     *                               when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
-     *                               and this is null, it will use the file specified by [[mimeMagicFile]].
-     * @param bool   $checkExtension whether to use the file extension to determine the MIME type in case
-     *                               `finfo_open()` cannot determine it.
-     *
+     * @param string $file the file name.
+     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
+     * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
+     * and this is null, it will use the file specified by [[mimeMagicFile]].
+     * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
+     * `finfo_open()` cannot determine it.
      * @return bool
      */
     public static function isSvg(string $file, string $magicFile = null, bool $checkExtension = true): bool
@@ -292,18 +286,16 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * Writes contents to a file.
      *
-     * @param string $file     the file path
+     * @param string $file the file path
      * @param string $contents the new file contents
-     * @param array  $options  options for file write. Valid options are:
-     *
+     * @param array $options options for file write. Valid options are:
      * - `createDirs`: bool, whether to create parent directories if they do
      *   not exist. Defaults to true.
      * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
      * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
-     *
-     * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
+     * @throws InvalidArgumentException if the parent directory doesn't exist and options[createDirs] is false
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -315,7 +307,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if (!isset($options['createDirs']) || $options['createDirs']) {
                 static::createDirectory($dir);
             } else {
-                throw new InvalidParamException("Cannot write to \"{$file}\" because the parent directory doesn't exist.");
+                throw new InvalidArgumentException("Cannot write to \"{$file}\" because the parent directory doesn't exist.");
             }
         }
 
@@ -344,49 +336,37 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Removes a file.
+     * Removes a file or symlink in a cross-platform way
      *
-     * @param string $file the file to be deleted
-     *
-     * @throws ErrorException in case of failure
+     * @param string $path the file to be deleted
+     * @return bool
+     * @deprecated in 3.0.0-RC11. Use [[unlink()]] instead.
      */
-    public static function removeFile(string $file)
+    public static function removeFile(string $path): bool
     {
-        // Copied from [[removeDirectory()]]
-        try {
-            unlink($file);
-        } catch (ErrorException $e) {
-            if (DIRECTORY_SEPARATOR === '\\') {
-                // last resort measure for Windows
-                $lines = [];
-                exec("DEL /F/Q \"$file\"", $lines, $deleteError);
-            } else {
-                throw $e;
-            }
-        }
+        Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
+        return static::unlink($path);
     }
 
     /**
      * Removes all of a directory’s contents recursively.
      *
-     * @param string $dir     the directory to be deleted recursively.
-     * @param array  $options options for directory remove. Valid options are:
-     *
+     * @param string $dir the directory to be deleted recursively.
+     * @param array $options options for directory remove. Valid options are:
      * - `traverseSymlinks`: bool, whether symlinks to the directories should be traversed too.
      *   Defaults to `false`, meaning the content of the symlinked directory would not be deleted.
      *   Only symlink would be removed in that default case.
      * - `filter`: callback (see [[findFiles()]])
      * - `except`: array (see [[findFiles()]])
      * - `only`: array (see [[findFiles()]])
-     *
      * @return void
-     * @throws InvalidParamException if the dir is invalid
+     * @throws InvalidArgumentException if the dir is invalid
      * @throws ErrorException in case of failure
      */
     public static function clearDirectory(string $dir, array $options = [])
     {
         if (!is_dir($dir)) {
-            throw new InvalidParamException("The dir argument must be a directory: $dir");
+            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
 
         // Adapted from [[removeDirectory()]], plus addition of filters, and minus the root directory removal at the end
@@ -408,7 +388,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 if (is_dir($path)) {
                     static::removeDirectory($path, $options);
                 } else {
-                    static::removeFile($path);
+                    static::unlink($path);
                 }
             }
         }
@@ -417,11 +397,9 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * Returns the last modification time for the given path.
-     *
      * If the path is a directory, any nested files/directories will be checked as well.
      *
      * @param string $path the directory to be checked
-     *
      * @return int Unix timestamp representing the last modification time
      */
     public static function lastModifiedTime($path)

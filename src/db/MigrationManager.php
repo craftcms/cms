@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db;
@@ -22,7 +22,7 @@ use yii\di\Instance;
  * MigrationManager manages a set of migrations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MigrationManager extends Component
 {
@@ -103,7 +103,6 @@ class MigrationManager extends Component
      * Creates a new migration instance.
      *
      * @param string $name The migration name
-     *
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
@@ -123,9 +122,8 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param int $limit             The number of new migrations to be applied. If 0, it means
-     *                               applying all available new migrations.
-     *
+     * @param int $limit The number of new migrations to be applied. If 0, it means
+     * applying all available new migrations.
      * @return void
      * @throws MigrationException on migrate failure
      */
@@ -177,8 +175,7 @@ class MigrationManager extends Component
      * Downgrades the application by reverting old migrations.
      *
      * @param int $limit The number of migrations to be reverted. Defaults to 1,
-     *                   meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
-     *
+     * meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      * @return void
      * @throws MigrationException on migrate failure
      */
@@ -219,7 +216,6 @@ class MigrationManager extends Component
      * Upgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     *
      * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
@@ -275,7 +271,6 @@ class MigrationManager extends Component
      * Downgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
-     *
      * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
@@ -331,7 +326,6 @@ class MigrationManager extends Component
      * Returns the migration history.
      *
      * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
-     *
      * @return array The migration history
      */
     public function getMigrationHistory(int $limit = 0): array
@@ -387,7 +381,6 @@ class MigrationManager extends Component
      * Returns whether a given migration has been applied.
      *
      * @param string $name The migration name
-     *
      * @return bool Whether the migration has been applied
      */
     public function hasRun(string $name): bool
@@ -439,7 +432,6 @@ class MigrationManager extends Component
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     *
      * @return array
      */
     private function _normalizeMigration($migration): array

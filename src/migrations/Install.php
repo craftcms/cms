@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\migrations;
@@ -22,7 +22,7 @@ use craft\models\SiteGroup;
  * Installation Migration
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Install extends Migration
 {
@@ -305,7 +305,7 @@ class Install extends Migration
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleLabel' => $this->string()->defaultValue('Title'),
             'titleFormat' => $this->string(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -336,7 +336,7 @@ class Install extends Migration
             'tabId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
             'required' => $this->boolean()->defaultValue(false)->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -352,7 +352,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -385,7 +385,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
-            'edition' => $this->smallInteger()->unsigned()->notNull(),
+            'edition' => $this->tinyInteger()->unsigned()->notNull(),
             'timezone' => $this->string(30),
             'name' => $this->string()->notNull(),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
@@ -401,7 +401,7 @@ class Install extends Migration
             'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -413,7 +413,7 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -464,7 +464,7 @@ class Install extends Migration
             'sourceId' => $this->integer()->notNull(),
             'sourceSiteId' => $this->integer(),
             'targetId' => $this->integer()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -475,7 +475,7 @@ class Install extends Migration
             'uriParts' => $this->string()->notNull(),
             'uriPattern' => $this->string()->notNull(),
             'template' => $this->string(500)->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -530,7 +530,7 @@ class Install extends Migration
             'language' => $this->string(12)->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(false)->notNull(),
             'baseUrl' => $this->string(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -608,8 +608,8 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'token' => $this->char(32)->notNull(),
             'route' => $this->text(),
-            'usageLimit' => $this->smallInteger()->unsigned(),
-            'usageCount' => $this->smallInteger()->unsigned(),
+            'usageLimit' => $this->tinyInteger()->unsigned(),
+            'usageCount' => $this->tinyInteger()->unsigned(),
             'expiryDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -674,7 +674,7 @@ class Install extends Migration
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
-            'invalidLoginCount' => $this->smallInteger()->unsigned(),
+            'invalidLoginCount' => $this->tinyInteger()->unsigned(),
             'lastInvalidLoginDate' => $this->dateTime(),
             'lockoutDate' => $this->dateTime(),
             'verificationCode' => $this->string(),
@@ -706,7 +706,7 @@ class Install extends Migration
             'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'url' => $this->string(),
             'settings' => $this->text(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -715,7 +715,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'type' => $this->string()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
+            'sortOrder' => $this->tinyInteger()->unsigned(),
             'colspan' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,9 +12,6 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
-use craft\errors\MigrateException;
-use craft\errors\MigrationException;
-use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -22,7 +19,7 @@ use yii\web\Response;
  * UpdaterController handles the Craft/plugin update workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UpdaterController extends BaseUpdaterController
 {
@@ -270,7 +267,6 @@ class UpdaterController extends BaseUpdaterController
      * Returns the initial state for the updater JS.
      *
      * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
-     *
      * @return array
      */
     protected function initialState(bool $force = false): array
@@ -377,7 +373,6 @@ class UpdaterController extends BaseUpdaterController
      * Parses the 'install` param and returns handle => version pairs.
      *
      * @param array $installParam
-     *
      * @return array
      * @throws BadRequestHttpException
      */
@@ -401,7 +396,6 @@ class UpdaterController extends BaseUpdaterController
      *
      * @param string $handle
      * @param string $toVersion
-     *
      * @return bool
      * @throws BadRequestHttpException if the handle is invalid
      */

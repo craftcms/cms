@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console;
@@ -20,14 +20,12 @@ use yii\console\Response;
 /**
  * Craft Console Application class
  *
- * @property Request $request          The request component
- * @property User    $user             The user component
- *
- * @method Request   getRequest()      Returns the request component.
- * @method Response  getResponse()     Returns the response component.
- *
+ * @property Request $request The request component
+ * @property User $user The user component
+ * @method Request getRequest()      Returns the request component.
+ * @method Response getResponse()     Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Application extends \yii\console\Application
 {

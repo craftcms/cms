@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -23,11 +23,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
  * and deleting both fields and field groups.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldsController extends Controller
 {
@@ -104,10 +103,9 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param int|null            $fieldId The field’s ID, if editing an existing field
-     * @param FieldInterface|null $field   The field being edited, if there were any validation errors
-     * @param int|null            $groupId The default group ID that the field should be saved in
-     *
+     * @param int|null $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface|null $field The field being edited, if there were any validation errors
+     * @param int|null $groupId The default group ID that the field should be saved in
      * @return Response
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
