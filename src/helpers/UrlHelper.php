@@ -142,10 +142,11 @@ class UrlHelper
      * @param string $path
      * @param array|string|null $params
      * @param string|null $scheme
-     * @param bool $mustShowScriptName
+     * @param bool|null $showScriptName Whether the script name (index.php) should be included in the URL.
+     * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', $params = null, string $scheme = null, bool $mustShowScriptName = false): string
+    public static function url(string $path = '', $params = null, string $scheme = null, bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -176,7 +177,7 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, $mustShowScriptName);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, $showScriptName);
     }
 
     /**
@@ -192,7 +193,7 @@ class UrlHelper
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
 
-        return self::_createUrl($path, $params, $scheme, true, false);
+        return self::_createUrl($path, $params, $scheme, true);
     }
 
     /**
@@ -224,7 +225,7 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
-        $url = self::_createUrl($path, $params, $scheme, false, false);
+        $url = self::_createUrl($path, $params, $scheme, false);
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
@@ -378,10 +379,10 @@ class UrlHelper
      * @param array|string|null $params
      * @param string|null $scheme
      * @param bool $cpUrl
-     * @param bool $mustShowScriptName
+     * @param bool|null $showScriptName
      * @return string
      */
-    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $mustShowScriptName): string
+    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null): string
     {
         // Normalize the params
         $params = self::_normalizeParams($params, $fragment);
@@ -393,7 +394,9 @@ class UrlHelper
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $showScriptName = ($mustShowScriptName || !$generalConfig->omitScriptNameInUrls);
+        if ($showScriptName === null) {
+            $showScriptName = !$generalConfig->omitScriptNameInUrls;
+        }
         $request = Craft::$app->getRequest();
 
         if ($cpUrl) {

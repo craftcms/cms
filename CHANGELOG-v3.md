@@ -14,6 +14,7 @@
 - Added a `$defaultOperator` argument to `craft\helpers\Db::parseParam()` and `parseDateParam()`.
 - Updated Yii to 2.0.14.
 - Various database columns have been converted back to tiny ints, now that Yii 2 supports it.
+- Renamed the fourth argument of `craft\helpers\UrlHelper::url()` from `$mustShowScriptName` to `$showScriptName`. Now passing `false` will explicitly tell it to not include the script name; `null` will tell it to defer to the `omitScriptNameInUrls` config setting; and `true` will tell it to include the script name (as it always has).
 
 ### Deprecated
 - Deprecated `craft\helpers\FileHelper::removeFile()`. Use `craft\helpers\FileHelper::unlink()` instead.
