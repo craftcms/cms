@@ -1,6 +1,8 @@
 # Craft CMS 3.0 Working Changelog
 
-## 3.0.0-RC10.1 - 2018-02-14
+## Unreleased
+
+## 3.0.0-RC11 - 2018-02-20
 
 ### Added
 - Added `craft\services\Sites::getCurrentSite()`.
@@ -25,8 +27,6 @@
 - Removed `craft\web\Request::getHostName()`. (`yii\web\Request::getHostName()` is still there, and more robust.)
 
 ### Fixed
-- Fixed an error that occurred when saving an element on multi-site installs. ([#2431](https://github.com/craftcms/cms/issues/2431))
-- Fixed an error that occurred when changing an entry’s type. ([#2432](https://github.com/craftcms/cms/issues/2432))
 - Fixed an error that occurred if there were any non-image files in `storage/rebrand/icon/` or `storage/rebrand/logo/`.
 - Fixed an error that occurred if an SVG file without `width` and `height` attributes was uploaded as the Login Page Logo. ([#2435](https://github.com/craftcms/cms/issues/2435))
 - Fixed a bug where the `defaultCpLanguage` setting was only working in some cases.
@@ -41,6 +41,12 @@
 - Fixed the styling of small select buttons.
 - Fixed a bug where relational fields could lose relations to target elements that weren’t available on all of the source element’s sites. ([#2451](https://github.com/craftcms/cms/issues/2451))
 - Fixed a bug where Craft was failing silently when a user that required a password reset attempted to log in, if Craft wasn’t properly configured to send emails yet. ([#2460](https://github.com/craftcms/cms/issues/2460))
+
+## 3.0.0-RC10.1 - 2018-02-14
+
+### Fixed
+- Fixed an error that occurred when saving an element on multi-site installs. ([#2431](https://github.com/craftcms/cms/issues/2431))
+- Fixed an error that occurred when changing an entry’s type. ([#2432](https://github.com/craftcms/cms/issues/2432))
 
 ## 3.0.0-RC10 - 2018-02-13
 
