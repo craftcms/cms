@@ -376,6 +376,9 @@ class Sites extends Component
      */
     public function setCurrentSite($site)
     {
+        // In case this was called from the constructor...
+        $this-> _loadAllSites();
+
         if ($site === null) {
             $this->_currentSite = null;
             return;
@@ -990,6 +993,10 @@ class Sites extends Component
      */
     private function _loadAllSites()
     {
+        if ($this->_sitesById !== null) {
+            return;
+        }
+
         $this->_sitesById = [];
         $this->_sitesByHandle = [];
 
