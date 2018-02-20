@@ -40,6 +40,7 @@
 - Fixed some awkward styling on editable table headings that contained info buttons.
 - Fixed the styling of small select buttons.
 - Fixed a bug where relational fields could lose relations to target elements that weren’t available on all of the source element’s sites. ([#2451](https://github.com/craftcms/cms/issues/2451))
+- Fixed a bug where Craft was failing silently when a user that required a password reset attempted to log in, if Craft wasn’t properly configured to send emails yet. ([#2460](https://github.com/craftcms/cms/issues/2460))
 
 ## 3.0.0-RC10 - 2018-02-13
 

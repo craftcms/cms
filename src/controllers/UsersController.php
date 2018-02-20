@@ -1571,8 +1571,11 @@ class UsersController extends Controller
                 }
                 break;
             case User::AUTH_PASSWORD_RESET_REQUIRED:
-                $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
-                Craft::$app->getUsers()->sendPasswordResetEmail($user);
+                if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                    $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
+                } else {
+                    $message = Craft::t('app', 'You need to reset your password, but an error was encountered when sending the password reset email.');
+                }
                 break;
             case User::AUTH_ACCOUNT_SUSPENDED:
                 $message = Craft::t('app', 'Account suspended.');
