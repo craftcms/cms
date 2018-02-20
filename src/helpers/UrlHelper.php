@@ -394,12 +394,23 @@ class UrlHelper
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
+
         if ($showScriptName === null) {
             $showScriptName = !$generalConfig->omitScriptNameInUrls;
         }
-        $request = Craft::$app->getRequest();
 
-        if ($cpUrl) {
+        // If we must show the script name, then just start with the script URL,
+        // regardless of whether this is a CP or site request, as we can't assume
+        // that index.php lives within the base URL anymore.
+        if ($showScriptName) {
+            if ($request->getIsConsoleRequest()) {
+                // No way to know for sure, so just guess
+                $baseUrl = '/'.$request->getScriptFilename();
+            } else {
+                $baseUrl = $request->getScriptUrl();
+            }
+        } else if ($cpUrl) {
             // Did they set the base URL manually?
             $baseUrl = $generalConfig->baseCpUrl;
 
@@ -411,27 +422,12 @@ class UrlHelper
                     // Make sure we're using the right scheme
                     $baseUrl = static::urlWithScheme($baseUrl, $scheme);
                 }
-
-                // Should we be adding that script name in?
-                if ($showScriptName) {
-                    $baseUrl .= $request->getScriptFilename();
-                }
             } else if ($request->getIsConsoleRequest()) {
                 // No way to know for sure, so just guess
                 $baseUrl = '/';
-
-                if ($showScriptName) {
-                    $baseUrl .= $request->getScriptFilename();
-                }
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $baseUrl = $request->getHostInfo();
-
-                if ($showScriptName) {
-                    $baseUrl .= $request->getScriptUrl();
-                } else {
-                    $baseUrl .= $request->getBaseUrl();
-                }
+                $baseUrl = $request->getHostInfo().$request->getBaseUrl();
 
                 if ($scheme !== null) {
                     $baseUrl = static::urlWithScheme($baseUrl, $scheme);
@@ -439,11 +435,6 @@ class UrlHelper
             }
         } else {
             $baseUrl = static::baseUrl();
-
-            // Should we be adding that script name in?
-            if ($showScriptName) {
-                $baseUrl .= $request->getScriptFilename();
-            }
         }
 
         // Put it all together
