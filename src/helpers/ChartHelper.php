@@ -56,93 +56,51 @@ class ChartHelper
 			$intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
 		}
 
-
-        // Convert timezone for SQL request
-
-        $utc = new DateTime();
-        $timezoneId = craft()->getTimeZone();
-        $timezone = new \DateTimeZone($timezoneId);
-
-        $offsetInSeconds = $timezone->getOffset($utc);
-        $offsetInHours = round($offsetInSeconds / 60 / 60);
-
-        $fromTz = '+00:00';
-        $toTz = ($offsetInHours >= 0 ? '+' : '').$offsetInHours.':00';
-
-        $tzDateColumn = "CONVERT_TZ({$dateColumn},'{$fromTz}','{$toTz}')";
-
-
-        // Prepare the query
-
 		switch ($intervalUnit)
 		{
 			case 'year':
 			{
-				$sqlDateFormat = '%Y-01-01';
 				$phpDateFormat = 'Y-01-01';
-				$sqlGroup = "YEAR({$tzDateColumn})";
 				break;
 			}
 			case 'month':
 			{
-				$sqlDateFormat = '%Y-%m-01';
 				$phpDateFormat = 'Y-m-01';
-				$sqlGroup = "YEAR({$tzDateColumn}), MONTH({$tzDateColumn})";
 				break;
 			}
 			case 'day':
 			{
-				$sqlDateFormat = '%Y-%m-%d';
 				$phpDateFormat = 'Y-m-d';
-				$sqlGroup = "YEAR({$tzDateColumn}), MONTH({$tzDateColumn}), DAY({$tzDateColumn})";
 				break;
 			}
 			case 'hour':
 			{
-				$sqlDateFormat = '%Y-%m-%d %H:00:00';
 				$phpDateFormat = 'Y-m-d H:00:00';
-				$sqlGroup = "YEAR({$tzDateColumn}), MONTH({$tzDateColumn}), DAY({$tzDateColumn}), HOUR({$tzDateColumn})";
 				break;
 			}
 		}
-
-
-		// Execute the query
-
-		$results = $query
-            ->addSelect("DATE_FORMAT({$tzDateColumn}, '{$sqlDateFormat}') as date")
-			->andWhere(
-				array('and', "{$tzDateColumn} >= :startDate", "{$tzDateColumn} < :endDate"),
-				array(':startDate' => $startDate->format(DateTime::MYSQL_DATETIME), ':endDate' => $endDate->format(DateTime::MYSQL_DATETIME)))
-			->group($sqlGroup)
-			->order("{$tzDateColumn} asc")
-			->queryAll();
-
 
 		// Assemble the data
 
 		$rows = array();
 
-		$cursorDate = $startDate;
+		$cursorDate = clone $startDate;
 		$endTimestamp = $endDate->getTimestamp();
+		$query->select('COUNT(*)');
 
 		while ($cursorDate->getTimestamp() < $endTimestamp)
 		{
-			// Do we have a record for this date?
-			$formattedCursorDate = $cursorDate->format($phpDateFormat);
+			$cursorEndDate = clone $cursorDate;
+			$cursorEndDate->modify('+1 '.$intervalUnit);
+			$total = $query
+				->where(array('and', "{$dateColumn} >= :startDate", "{$dateColumn} < :endDate"), array(
+					':startDate' => DateTimeHelper::formatTimeForDb($cursorDate),
+					':endDate' => DateTimeHelper::formatTimeForDb($cursorEndDate)
+					))
+				->queryScalar();
 
-			if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate)
-			{
-				$value = (float) $results[0]['value'];
-				array_shift($results);
-			}
-			else
-			{
-				$value = 0;
-			}
-
-			$rows[] = array($formattedCursorDate, $value);
-			$cursorDate->modify('+1 '.$intervalUnit);
+			$rows[] = array($cursorDate->format($phpDateFormat), $total);
+			$cursorDate = $cursorEndDate;
 		}
 
 		return array(

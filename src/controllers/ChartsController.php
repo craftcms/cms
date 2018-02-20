@@ -27,9 +27,12 @@ class ChartsController extends BaseController
 		$startDateParam = craft()->request->getRequiredPost('startDate');
 		$endDateParam = craft()->request->getRequiredPost('endDate');
 
-		$startDate = DateTime::createFromString($startDateParam, craft()->timezone);
-		$endDate = DateTime::createFromString($endDateParam, craft()->timezone);
-		$endDate->modify('+1 day');
+		$startDate = DateTime::createFromString($startDateParam);
+		$endDate = DateTime::createFromString($endDateParam);
+
+		// Start at midnight on the start date, end at midnight after the end date
+		$startDate = new DateTime($startDate->format(DateTime::W3C_DATE), new \DateTimeZone(craft()->timezone));
+		$endDate = new DateTime($endDate->modify('+1 day')->format(DateTime::W3C_DATE), new \DateTimeZone(craft()->timezone));
 
 		$intervalUnit = 'day';
 

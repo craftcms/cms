@@ -1,5 +1,16 @@
 # Craft CMS Changelog
 
+## 2.6.3010 - 2018-02-20
+
+### Changed
+- The Control Panel now sets the `origin-when-cross-origin` referrer policy. ([#2436](https://github.com/craftcms/cms/pull/2436))
+- Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
+
+### Fixed
+- Fixed a bug where run charts (e.g. the New Users widget) would always show zero results if MySQL wasn’t configured with time zone data. ([#2433](https://github.com/craftcms/cms/issues/2433))
+- Fixed a bug where the New Users widget would show 8 days worth of data when its Date Range setting was set to “Last 7 days” or “Last week”.
+- Fixed a bug where the New Users widget could be missing some data if the browser time zone wasn’t the same as the system time zone.
+
 ## 2.6.3009 - 2018-02-13
 
 ### Added
