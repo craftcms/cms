@@ -38,6 +38,7 @@
 - Fixed a bug where textareas within editable tables may not be set to the full height of the table row if the first textarea within the row was in a hidden column.
 - Fixed some awkward styling on editable table headings that contained info buttons.
 - Fixed the styling of small select buttons.
+- Fixed a bug where relational fields could lose relations to target elements that weren’t available on all of the source element’s sites. ([#2451](https://github.com/craftcms/cms/issues/2451))
 
 ## 3.0.0-RC10 - 2018-02-13
 
