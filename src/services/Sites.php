@@ -156,7 +156,6 @@ class Sites extends Component
 
     /**
      * @inheritdoc
-     * @throws SiteNotFoundException if currentSite was not set and no sites exist
      */
     public function init()
     {
