@@ -10,6 +10,7 @@ namespace craft\mail;
 use Craft;
 use craft\elements\User;
 use craft\helpers\Template;
+use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MessageInterface;
@@ -154,6 +155,12 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setBcc(null);
         }
 
-        return parent::send($message);
+        try {
+            return parent::send($message);
+        } catch (Swift_TransportException $e) {
+            Craft::error('Error sending email: '.$e->getMessage());
+            Craft::$app->getErrorHandler()->logException($e);
+            return false;
+        }
     }
 }
