@@ -18,7 +18,6 @@ class m180217_172123_tiny_ints extends Migration
         $this->alterColumn('{{%entrytypes}}', 'sortOrder', $this->tinyInteger()->unsigned());
         $this->alterColumn('{{%fieldlayoutfields}}', 'sortOrder', $this->tinyInteger()->unsigned());
         $this->alterColumn('{{%fieldlayouttabs}}', 'sortOrder', $this->tinyInteger()->unsigned());
-        $this->alterColumn('{{%info}}', 'edition', $this->tinyInteger()->unsigned()->notNull());
         $this->alterColumn('{{%matrixblocks}}', 'sortOrder', $this->tinyInteger()->unsigned());
         $this->alterColumn('{{%matrixblocktypes}}', 'sortOrder', $this->tinyInteger()->unsigned());
         $this->alterColumn('{{%relations}}', 'sortOrder', $this->tinyInteger()->unsigned());
@@ -29,6 +28,12 @@ class m180217_172123_tiny_ints extends Migration
         $this->alterColumn('{{%users}}', 'invalidLoginCount', $this->tinyInteger()->unsigned());
         $this->alterColumn('{{%volumes}}', 'sortOrder', $this->tinyInteger()->unsigned());
         $this->alterColumn('{{%widgets}}', 'sortOrder', $this->tinyInteger()->unsigned());
+
+        if ($this->db->getIsPgsql()) {
+            $this->execute('alter table {{%info}} alter column [[edition]] type smallint, alter column [[edition]] set not null');
+        } else {
+            $this->alterColumn('{{%info}}', 'edition', $this->tinyInteger()->unsigned()->notNull());
+        }
     }
 
     /**
