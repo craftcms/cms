@@ -87,7 +87,7 @@ class ChartHelper
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             $cursorEndDate = clone $cursorDate;
             $cursorEndDate->modify('+1 '.$intervalUnit);
-            $total = (clone $query)
+            $total = (int)(clone $query)
                 ->andWhere(['>=', $dateColumn, Db::prepareDateForDb($cursorDate)])
                 ->andWhere(['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)])
                 ->scalar();
