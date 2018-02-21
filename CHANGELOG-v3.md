@@ -6,6 +6,7 @@
 - Fixed an error that occurred when creating a new transform or thumbnail for a remotely-stored image, if Craft didn’t already have a copy of the image cached locally. ([#2463](https://github.com/craftcms/cms/issues/2463))
 - Fixed an error that occurred if a site’s base URL was set to `@web` and the `CRAFT_SITE` constant wasn’t defined. ([#2464](https://github.com/craftcms/cms/issues/2464))
 - Fixed a bug where global sets and other elements could become hidden if a new site was added with the “Is this the primary site?” setting enabled. ([#2465](https://github.com/craftcms/cms/issues/2465))
+- Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` was overriding the query’s `SELECT` clause.
 
 ## 3.0.0-RC11 - 2018-02-20
 
