@@ -667,7 +667,6 @@ class Sites extends Component
                 // (skip entries because they only support specific sites)
                 // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
                 $queue = Craft::$app->getQueue();
-                $siteId = $this->getPrimarySite()->id;
                 $elementTypes = [
                     Asset::class,
                     Category::class,
@@ -679,7 +678,7 @@ class Sites extends Component
                     $queue->push(new ResaveElements([
                         'elementType' => $elementType,
                         'criteria' => [
-                            'siteId' => $siteId,
+                            'siteId' => $oldPrimarySiteId,
                             'status' => null,
                             'enabledForSite' => false
                         ]
