@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.6.3010 - 2018-02-21
+
 ### Changed
 - Reverted the fix to ([#2433](https://github.com/craftcms/cms/issues/2433)) as it broke backwards compatibility.
 
