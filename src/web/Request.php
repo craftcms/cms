@@ -890,6 +890,10 @@ class Request extends \yii\web\Request
             return $sitesService->getCurrentSite();
         }
 
+        // Set the @web alias now (ahead of yii\base\Application::bootstrap())
+        // in case a site's base URL requires it
+        Craft::setAlias('@web', $this->getBaseUrl());
+
         $sites = $sitesService->getAllSites();
 
         $hostName = $this->getHostName();

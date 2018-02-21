@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that occurred when creating a new transform or thumbnail for a remotely-stored image, if Craft didn’t already have a copy of the image cached locally. ([#2463](https://github.com/craftcms/cms/issues/2463))
+- Fixed an error that occurred if a site’s base URL was set to `@web` and the `CRAFT_SITE` constant wasn’t defined. ([#2464](https://github.com/craftcms/cms/issues/2464))
 
 ## 3.0.0-RC11 - 2018-02-20
 
