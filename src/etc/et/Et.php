@@ -84,6 +84,7 @@ class Et
 				'phpVersion'    => PHP_VERSION,
 				'mySqlVersion'  => craft()->db->getServerVersion(),
 				'proc'          => function_exists('proc_open') ? 1 : 0,
+				'totalLocales'  => count(craft()->i18n->getSiteLocales()),
 			),
 		));
 
