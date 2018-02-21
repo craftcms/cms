@@ -89,11 +89,8 @@ class ChartHelper
             $cursorEndDate->modify('+1 '.$intervalUnit);
             $cursorQuery = clone $query;
             $total = $cursorQuery
-                ->andWhere([
-                    'and',
-                    ['>=', $dateColumn, Db::prepareDateForDb($cursorDate)],
-                    ['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)]
-                ])
+                ->andWhere(['>=', $dateColumn, Db::prepareDateForDb($cursorDate)])
+                ->andWhere(['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)])
                 ->scalar();
 
             $rows[] = [$cursorDate->format($phpDateFormat), $total];
