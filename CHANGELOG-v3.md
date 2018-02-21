@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed an error that occurred when creating a new transform or thumbnail for a remotely-stored image, if Craft didn’t already have a copy of the image cached locally. ([#2463](https://github.com/craftcms/cms/issues/2463))
+
 ## 3.0.0-RC11 - 2018-02-20
 
 ### Added

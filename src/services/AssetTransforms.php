@@ -816,7 +816,7 @@ class AssetTransforms extends Component
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
 
                     // Delete it just in case it's a 0-byter
-                    if (!FileHelper::unlink($imageSourcePath)) {
+                    if (file_exists($imageSourcePath) && !FileHelper::unlink($imageSourcePath)) {
                         Craft::warning("Unable to delete the file \"{$imageSourcePath}\".", __METHOD__);
                     }
 
