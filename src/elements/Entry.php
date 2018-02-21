@@ -504,18 +504,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-
-        if ($this->authorId === null) {
-            $this->authorId = Craft::$app->getUser()->getId();
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
@@ -547,6 +535,14 @@ class Entry extends Element
         $rules = parent::rules();
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        $rules[] = [
+            ['authorId'],
+            'required',
+            'when' => function() {
+                return $this->getSection()->type !== Section::TYPE_SINGLE;
+            },
+            'on' => self::SCENARIO_LIVE
+        ];
 
         return $rules;
     }
@@ -863,6 +859,18 @@ EOD;
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
+            $this->authorId = Craft::$app->getUser()->getId();
+        }
+
+        return parent::beforeValidate();
+    }
 
     /**
      * @inheritdoc
