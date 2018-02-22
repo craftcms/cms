@@ -20,6 +20,7 @@
 - Fixed a bug where `yii\web\User::getIdentity()` would return `null` when called from a plugin’s `init()` method. ([#2473](https://github.com/craftcms/cms/issues/2473))
 - Fixed a bug where entries would not save certain field values if their entry type had changed. ([#2474](https://github.com/craftcms/cms/issues/2474))
 - Fixed a bug where database backups would fail if in some environments if you had certain special characters in the password.
+- Fixed a bug where a database connection would fail if you had a `"` in the password and you setup Craft using `craft setup/db-creds` from the command line.
 
 ## 3.0.0-RC11 - 2018-02-20
 
