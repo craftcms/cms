@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC12 - 2018-02-22
 
 ### Added
 - Added the `getenv()` Twig function. ([#2471](https://github.com/craftcms/cms/pull/2471))

@@ -844,7 +844,7 @@ class Asset extends Element
      *
      * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
-     * @deprecated in 3.0.0-RC11.1
+     * @deprecated in 3.0.0-RC12
      */
     public function getUri(string $filename = null): string
     {
@@ -908,7 +908,7 @@ class Asset extends Element
      * Return whether the Asset has a URL.
      *
      * @return bool
-     * @deprecated in 3.0.0-RC11.1. Use getVolume()->hasUrls instead.
+     * @deprecated in 3.0.0-RC12. Use getVolume()->hasUrls instead.
      */
     public function getHasUrls(): bool
     {
