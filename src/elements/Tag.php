@@ -19,6 +19,7 @@ use yii\base\InvalidConfigException;
 /**
  * Tag represents a tag element.
  *
+ * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -116,6 +117,16 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'group';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -146,7 +157,7 @@ class Tag extends Element
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): TagGroup
     {
         if ($this->groupId === null) {
             throw new InvalidConfigException('Tag is missing its group ID');

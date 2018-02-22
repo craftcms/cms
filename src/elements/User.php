@@ -40,9 +40,17 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property bool $isCurrent Whether this is the current logged-in user
- * @property string $name The user's full name or username
- * @property string|null $preferredLanguage The user’s preferred language
+ * @property \DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property string|null $friendlyName the user's first name or username
+ * @property string|null $fullName the user's full name
+ * @property UserGroup[] $groups the user's groups
+ * @property bool $isCurrent whether this is the current logged-in user
+ * @property string $name the user's full name or username
+ * @property Asset|null $photo the user's photo
+ * @property array $preferences the user’s preferences
+ * @property string|null $preferredLanguage the user’s preferred language
+ * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -555,6 +563,25 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'cooldownEndTime';
+        $names[] = 'friendlyName';
+        $names[] = 'fullName';
+        $names[] = 'groups';
+        $names[] = 'isCurrent';
+        $names[] = 'name';
+        $names[] = 'photo';
+        $names[] = 'preferences';
+        $names[] = 'preferredLanguage';
+        $names[] = 'remainingCooldownTime';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
@@ -837,7 +864,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Gets the user's full name.
+     * Returns the user's full name.
      *
      * @return string|null
      */

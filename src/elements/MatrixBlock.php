@@ -25,7 +25,8 @@ use yii\base\InvalidConfigException;
 /**
  * MatrixBlock represents a matrix block element.
  *
- * @property MatrixBlockType|null $type The block type
+ * @property ElementInterface|null $owner the owner
+ * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -171,10 +172,10 @@ class MatrixBlock extends Element
      */
     public function attributes()
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'owner';
-
-        return $attributes;
+        $names = parent::attributes();
+        $names[] = 'owner';
+        $names[] = 'type';
+        return $names;
     }
 
     /**
@@ -228,10 +229,10 @@ class MatrixBlock extends Element
     /**
      * Returns the block type.
      *
-     * @return MatrixBlockType|null
+     * @return MatrixBlockType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType()
+    public function getType(): MatrixBlockType
     {
         if ($this->typeId === null) {
             throw new InvalidConfigException('Matrix block is missing its type ID');

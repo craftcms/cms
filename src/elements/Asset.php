@@ -49,9 +49,15 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
+ * @property string $extension the file extension
  * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
- * @property bool $hasThumb whether the file has a thumbnail
+ * @property VolumeFolder $folder the asset’s volume folder
+ * @property bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property int|float|null $height the image height
+ * @property \Twig_Markup|null $img an `<img>` tag based on this asset
+ * @property string|null $mimeType the file’s MIME type, if it can be determined
+ * @property string $path the asset's path in the volume
+ * @property VolumeInterface $volume the asset’s volume
  * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -382,6 +388,7 @@ class Asset extends Element
 
     /**
      * @var string|null Filename
+     * @todo rename to private $_basename w/ getter & setter in 4.0; and getFilename() should not include the extension (to be like PATHINFO_FILENAME). We can add a getBasename() for getting the whole thing.
      */
     public $filename;
 
@@ -598,13 +605,19 @@ class Asset extends Element
      */
     public function getImg()
     {
-        if ($this->kind === self::KIND_IMAGE && $this->getHasUrls()) {
-            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
-
-            return Template::raw($img);
+        if ($this->kind !== self::KIND_IMAGE) {
+            return null;
         }
 
-        return null;
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+
+        if (!$volume->hasUrls) {
+            return null;
+        }
+
+        $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'">';
+        return Template::raw($img);
     }
 
     /**
@@ -685,12 +698,15 @@ class Asset extends Element
      */
     public function getUrl($transform = null)
     {
-        // Normalize empty transform values
-        $transform = $transform ?: null;
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
 
-        if (!$this->getHasUrls()) {
+        if (!$volume->hasUrls) {
             return null;
         }
+
+        // Normalize empty transform values
+        $transform = $transform ?: null;
 
         if (is_array($transform)) {
             if (isset($transform['width'])) {
@@ -824,12 +840,26 @@ class Asset extends Element
     }
 
     /**
-     * Get a file's uri path in the source.
+     * Returns the asset's path in the volume.
      *
-     * @param string|null $filename Filename to use. If not specified, the file's filename will be used.
+     * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
+     * @deprecated in 3.0.0-RC12
      */
     public function getUri(string $filename = null): string
+    {
+        Craft::$app->getDeprecator()->log(self::class.'::getUri()', self::class.'::getUri() has been deprecated. Use getPath() instead.');
+
+        return $this->getPath($filename);
+    }
+
+    /**
+     * Returns the asset's path in the volume.
+     *
+     * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
+     * @return string
+     */
+    public function getPath(string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->filename);
     }
@@ -844,7 +874,7 @@ class Asset extends Element
         $volume = $this->getVolume();
 
         if ($volume instanceof LocalVolumeInterface) {
-            return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());
+            return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
@@ -859,7 +889,7 @@ class Asset extends Element
     {
         $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true).'.'.$this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-        $this->getVolume()->saveFileLocally($this->getUri(), $tempPath);
+        $this->getVolume()->saveFileLocally($this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -871,19 +901,21 @@ class Asset extends Element
      */
     public function getStream()
     {
-        return $this->getVolume()->getFileStream($this->getUri());
+        return $this->getVolume()->getFileStream($this->getPath());
     }
 
     /**
      * Return whether the Asset has a URL.
      *
      * @return bool
+     * @deprecated in 3.0.0-RC12. Use getVolume()->hasUrls instead.
      */
     public function getHasUrls(): bool
     {
+        Craft::$app->getDeprecator()->log(self::class.'::getHasUrls()', self::class.'::getHasUrls() has been deprecated. Use getVolume()->hasUrls instead.');
+
         /** @var Volume $volume */
         $volume = $this->getVolume();
-
         return $volume && $volume->hasUrls;
     }
 
@@ -1073,12 +1105,19 @@ class Asset extends Element
      */
     public function attributes()
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'focalPoint';
-        $attributes[] = 'height';
-        $attributes[] = 'width';
-
-        return $attributes;
+        $names = parent::attributes();
+        $names[] = 'extension';
+        $names[] = 'filename';
+        $names[] = 'focalPoint';
+        $names[] = 'folder';
+        $names[] = 'hasFocalPoint';
+        $names[] = 'height';
+        $names[] = 'img';
+        $names[] = 'mimeType';
+        $names[] = 'path';
+        $names[] = 'volume';
+        $names[] = 'width';
+        return $names;
     }
 
     /**
@@ -1209,7 +1248,7 @@ class Asset extends Element
     public function afterDelete()
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getUri());
+            $this->getVolume()->deleteFile($this->getPath());
         }
 
         Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
@@ -1312,7 +1351,7 @@ class Asset extends Element
         $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
         $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
 
-        $oldPath = $this->folderId ? $this->getUri() : null;
+        $oldPath = $this->folderId ? $this->getPath() : null;
         $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
 
         // Is this just a simple move/rename within the same volume?

@@ -32,6 +32,9 @@ use yii\base\InvalidConfigException;
 /**
  * Entry represents an entry element.
  *
+ * @property User|null $author the entry's author
+ * @property Section $section the entry's section
+ * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -504,13 +507,13 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function init()
+    public function attributes()
     {
-        parent::init();
-
-        if ($this->authorId === null) {
-            $this->authorId = Craft::$app->getUser()->getId();
-        }
+        $names = parent::attributes();
+        $names[] = 'author';
+        $names[] = 'section';
+        $names[] = 'type';
+        return $names;
     }
 
     /**
@@ -547,6 +550,14 @@ class Entry extends Element
         $rules = parent::rules();
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        $rules[] = [
+            ['authorId'],
+            'required',
+            'when' => function() {
+                return $this->getSection()->type !== Section::TYPE_SINGLE;
+            },
+            'on' => self::SCENARIO_LIVE
+        ];
 
         return $rules;
     }
@@ -652,7 +663,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the type of entry.
+     * Returns the entry type.
      *
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
@@ -863,6 +874,18 @@ EOD;
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
+            $this->authorId = Craft::$app->getUser()->getId();
+        }
+
+        return parent::beforeValidate();
+    }
 
     /**
      * @inheritdoc

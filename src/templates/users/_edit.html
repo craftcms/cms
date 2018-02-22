@@ -58,7 +58,8 @@
 
             {% if not isNewUser %}
                 {{ forms.field({
-                    label: "Photo"|t('app')
+                    label: "Photo"|t('app'),
+                    id: 'photo'
                 }, include('users/_photo', {user: user}, with_context = false)) }}
             {% endif %}
 

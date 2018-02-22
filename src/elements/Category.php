@@ -27,6 +27,7 @@ use yii\base\InvalidConfigException;
 /**
  * Category represents a category element.
  *
+ * @property CategoryGroup $group the category's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -245,6 +246,16 @@ class Category extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'group';
+        return $names;
+    }
 
     /**
      * @inheritdoc

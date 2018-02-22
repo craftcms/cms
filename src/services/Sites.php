@@ -626,70 +626,68 @@ class Sites extends Component
             throw $e;
         }
 
-        // Did the primary site just change?
-        if ($site->primary) {
-            if (Craft::$app->getIsInstalled()) {
-                $oldPrimarySiteId = $this->getPrimarySite()->id;
-                if ($site->id != $oldPrimarySiteId) {
-                    $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
+        if (Craft::$app->getIsInstalled()) {
+            // Did the primary site just change?
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+            if ($site->primary && $site->id != $oldPrimarySiteId) {
+                $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
+            }
+
+            if ($isNewSite) {
+                // TODO: Move this code into element/category modules
+                // Create site settings for each of the category groups
+                $allSiteSettings = (new Query())
+                    ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
+                    ->from(['{{%categorygroups_sites}}'])
+                    ->where(['siteId' => $this->getPrimarySite()->id])
+                    ->all();
+
+                if (!empty($allSiteSettings)) {
+                    $newSiteSettings = [];
+
+                    foreach ($allSiteSettings as $siteSettings) {
+                        $newSiteSettings[] = [
+                            $siteSettings['groupId'],
+                            $site->id,
+                            $siteSettings['uriFormat'],
+                            $siteSettings['template'],
+                            $siteSettings['hasUrls']
+                        ];
+                    }
+
+                    Craft::$app->getDb()->createCommand()
+                        ->batchInsert(
+                            '{{%categorygroups_sites}}',
+                            ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
+                            $newSiteSettings)
+                        ->execute();
                 }
-            } else {
-                $this->_primarySite = $site;
-            }
-        }
 
-        if (Craft::$app->getIsInstalled() && $isNewSite) {
-            // TODO: Move this code into element/category modules
-            // Create site settings for each of the category groups
-            $allSiteSettings = (new Query())
-                ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                ->from(['{{%categorygroups_sites}}'])
-                ->where(['siteId' => $this->getPrimarySite()->id])
-                ->all();
+                // Re-save most localizable element types
+                // (skip entries because they only support specific sites)
+                // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
+                $queue = Craft::$app->getQueue();
+                $elementTypes = [
+                    Asset::class,
+                    Category::class,
+                    GlobalSet::class,
+                    Tag::class,
+                ];
 
-            if (!empty($allSiteSettings)) {
-                $newSiteSettings = [];
-
-                foreach ($allSiteSettings as $siteSettings) {
-                    $newSiteSettings[] = [
-                        $siteSettings['groupId'],
-                        $site->id,
-                        $siteSettings['uriFormat'],
-                        $siteSettings['template'],
-                        $siteSettings['hasUrls']
-                    ];
+                foreach ($elementTypes as $elementType) {
+                    $queue->push(new ResaveElements([
+                        'elementType' => $elementType,
+                        'criteria' => [
+                            'siteId' => $oldPrimarySiteId,
+                            'status' => null,
+                            'enabledForSite' => false
+                        ]
+                    ]));
                 }
-
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        '{{%categorygroups_sites}}',
-                        ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
-                        $newSiteSettings)
-                    ->execute();
             }
-
-            // Re-save most localizable element types
-            // (skip entries because they only support specific sites)
-            // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
-            $queue = Craft::$app->getQueue();
-            $siteId = $this->getPrimarySite()->id;
-            $elementTypes = [
-                Asset::class,
-                Category::class,
-                GlobalSet::class,
-                Tag::class,
-            ];
-
-            foreach ($elementTypes as $elementType) {
-                $queue->push(new ResaveElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
-                        'siteId' => $siteId,
-                        'status' => null,
-                        'enabledForSite' => false
-                    ]
-                ]));
-            }
+        } else {
+            // This must be the primary site
+            $this->_primarySite = $site;
         }
 
         // Fire an 'afterSaveSite' event
@@ -1116,8 +1114,6 @@ class Sites extends Component
             $db->createCommand()
                 ->update('{{%sites}}', ['primary' => false], ['id' => $oldPrimarySiteId])
                 ->execute();
-
-
             $db->createCommand()
                 ->update('{{%sites}}', ['primary' => true], ['id' => $newPrimarySiteId])
                 ->execute();

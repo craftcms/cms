@@ -299,7 +299,7 @@ SQL;
         $dbConfig = Craft::$app->getConfig()->getDb();
         $contents = '[client]'.PHP_EOL.
             'user='.$dbConfig->user.PHP_EOL.
-            'password='.$dbConfig->password.PHP_EOL.
+            'password="'.addslashes($dbConfig->password).'"'.PHP_EOL.
             'host='.$dbConfig->server.PHP_EOL.
             'port='.$dbConfig->port;
 

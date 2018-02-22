@@ -1,6 +1,34 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC12 - 2018-02-22
+
+### Added
+- Added the `getenv()` Twig function. ([#2471](https://github.com/craftcms/cms/pull/2471))
+- Added `craft\elements\Asset::getPath()`.
+- Added `craft\services\Users::getUserPreference()`.
+
+### Changed
+- Element query classes can now specify the default `orderBy` value by overriding `craft\elements\db\ElementQuery::defaultOrderBy`.
+- The Photo field on Edit User pages now has `id="photo"`. ([#2469](https://github.com/craftcms/cms/pull/2469))
+- Built-in element types now support several more attributes in their array representations.
+- The system installer now sets the initial admin account’s preferred language to the site language selected in the installation wizard. ([#2480](https://github.com/craftcms/cms/issues/2480))
+- It’s now possible to order elements by either `score desc` or `score asc` when the `search` element query param is in use.
+
+### Deprecated
+- Deprecated `craft\elements\Asset::getHasUrls()`.
+- Deprecated `craft\elements\Asset::getUri()`. Use `getPath()` instead.
+
+### Fixed
+- Fixed a bug where various asset transform operations could result in a PHP error. ([#2463](https://github.com/craftcms/cms/issues/2463))
+- Fixed an error that occurred if a site’s base URL was set to `@web` and the `CRAFT_SITE` constant wasn’t defined. ([#2464](https://github.com/craftcms/cms/issues/2464))
+- Fixed a bug where global sets and other elements could become hidden if a new site was added with the “Is this the primary site?” setting enabled. ([#2465](https://github.com/craftcms/cms/issues/2465))
+- Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` was overriding the query’s `SELECT` clause.
+- Fixed a bug where Single sections were showing the currently logged-in user as their author.
+- Fixed a bug where element queries for entries within Structure sections weren’t getting ordered in the Structure-defined order by default in some cases.
+- Fixed a bug where `yii\web\User::getIdentity()` would return `null` when called from a plugin’s `init()` method. ([#2473](https://github.com/craftcms/cms/issues/2473))
+- Fixed a bug where entries would not save certain field values if their entry type had changed. ([#2474](https://github.com/craftcms/cms/issues/2474))
+- Fixed a bug where database backups could fail if the database password containned quotes or `$` symbols.
+- Fixed a bug where entering a database password with a quote in it from the `setup/db-creds` command would cause Craft to generate an invalid `.env` file.
 
 ## 3.0.0-RC11 - 2018-02-20
 

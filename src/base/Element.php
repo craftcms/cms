@@ -80,10 +80,7 @@ use yii\validators\Validator;
  * @property Site $site Site the element is associated with
  * @property string|null $status The element’s status
  * @property int|null $structureId The ID of the structure that the element is associated with, if any
- * @property int[] $supportedSiteIds The site IDs this element is available in
  * @property int[]|array $supportedSites The sites this element is associated with
- * @property string|null $thumbUrl The URL to the element’s thumbnail, if there is one
- * @property string|null $title The element’s title
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
@@ -401,13 +398,13 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 unset($viewState['order']);
             }
-        } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
-            $elementQuery->orderBy('score');
         } else {
             $sortOptions = static::sortOptions();
 
             if (!empty($sortOptions)) {
-                $order = (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortOptions);
+                $sortOptions = array_keys($sortOptions);
+                $sortOptions[] = 'score';
+                $order = (!empty($viewState['order']) && in_array($viewState['order'], $sortOptions, true)) ? $viewState['order'] : reset($sortOptions);
                 $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
@@ -787,6 +784,29 @@ abstract class Element extends Component implements ElementInterface
     public function attributes()
     {
         $names = parent::attributes();
+        $names[] = 'ancestors';
+        $names[] = 'children';
+        $names[] = 'contentTable';
+        $names[] = 'cpEditUrl';
+        $names[] = 'descendants';
+        $names[] = 'hasDescendants';
+        $names[] = 'link';
+        $names[] = 'next';
+        $names[] = 'nextSibling';
+        $names[] = 'parent';
+        $names[] = 'prev';
+        $names[] = 'prevSibling';
+        $names[] = 'ref';
+        $names[] = 'route';
+        $names[] = 'siblings';
+        $names[] = 'site';
+        $names[] = 'status';
+        $names[] = 'structureId';
+        $names[] = 'supportedSites';
+        $names[] = 'title';
+        $names[] = 'totalDescendants';
+        $names[] = 'uriFormat';
+        $names[] = 'url';
 
         // Include custom field handles
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
@@ -1082,6 +1102,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getRef()
     {
+        return null;
     }
 
     /**
