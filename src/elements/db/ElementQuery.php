@@ -983,6 +983,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function orderBy($columns)
     {
+        // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
+        if ($columns === 'score') {
+            $columns = ['score' => SORT_DESC];
+        }
+
         parent::orderBy($columns);
 
         // If $columns normalizes to an empty array, just set it to null
@@ -1723,12 +1728,15 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $filteredElementIds = array_keys($searchResults);
 
-            if ($this->orderBy === ['score' => SORT_ASC]) {
+            if ($this->orderBy === ['score' => SORT_ASC] || ['score' => SORT_DESC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 if (!$db instanceof \craft\db\Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
-                if ($this->inReverse) {
+                if (
+                    ($this->orderBy === ['score' => SORT_ASC] && !$this->inReverse) ||
+                    ($this->orderBy === ['score' => SORT_DESC] && $this->inReverse)
+                ) {
                     $orderBy = [new FixedOrderExpression('elements.id', array_reverse($filteredElementIds), $db)];
                 } else {
                     $orderBy = [new FixedOrderExpression('elements.id', $filteredElementIds, $db)];
@@ -1785,7 +1793,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        if (empty($this->orderBy) || $this->orderBy === ['score' => SORT_ASC] || !empty($this->query->orderBy)) {
+        if (
+            empty($this->orderBy) ||
+            $this->orderBy === ['score' => SORT_ASC] ||
+            $this->orderBy === ['score' => SORT_DESC] ||
+            !empty($this->query->orderBy)
+        ) {
             return;
         }
 

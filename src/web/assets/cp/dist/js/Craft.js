@@ -1,4 +1,4 @@
-/*!   - 2018-02-19 */
+/*!   - 2018-02-22 */
 (function($){
 
 /** global: Craft */
@@ -2590,9 +2590,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection('asc');
+                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
 
-                if (attr === 'score' || attr === 'structure') {
+                if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
                 }
                 else {

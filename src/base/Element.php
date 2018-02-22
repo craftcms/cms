@@ -398,13 +398,13 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 unset($viewState['order']);
             }
-        } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
-            $elementQuery->orderBy('score');
         } else {
             $sortOptions = static::sortOptions();
 
             if (!empty($sortOptions)) {
-                $order = (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortOptions);
+                $sortOptions = array_keys($sortOptions);
+                $sortOptions[] = 'score';
+                $order = (!empty($viewState['order']) && in_array($viewState['order'], $sortOptions, true)) ? $viewState['order'] : reset($sortOptions);
                 $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
