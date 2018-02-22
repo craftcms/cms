@@ -382,6 +382,7 @@ class Asset extends Element
 
     /**
      * @var string|null Filename
+     * @todo rename to private $_basename w/ getter & setter in 4.0; and getFilename() should not include the extension (to be like PATHINFO_FILENAME). We can add a getBasename() for getting the whole thing.
      */
     public $filename;
 
