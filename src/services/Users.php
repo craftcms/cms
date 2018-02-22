@@ -273,6 +273,20 @@ class Users extends Component
     }
 
     /**
+     * Returns one of a user’s preferences by its key.
+     *
+     * @param int|null $userId The user’s ID
+     * @param string $key The preference’s key
+     * @param mixed $default The default value, if the preference hasn’t been set
+     * @return mixed The user’s preference
+     */
+    public function getUserPreference(int $userId = null, string $key, $default = null)
+    {
+        $preferences = $this->getUserPreferences($userId);
+        return $preferences[$key] ?? $default;
+    }
+
+    /**
      * Sends a new account activation email for a user, regardless of their status.
      * A new verification code will generated for the user overwriting any existing one.
      *

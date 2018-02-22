@@ -12,7 +12,6 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
-use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
@@ -1186,15 +1185,13 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         // If the user is logged in *and* has a primary language set, use that
-        try {
-            /** @var User|null $user */
-            $user = $this->getUser()->getIdentity();
-        } catch (\Exception $e) {
-            $user = null;
-        }
-
-        if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
-            return $preferredLanguage;
+        if ($this instanceof WebApplication) {
+            // Don't actually try to fetch the user, as plugins haven't been loaded yet.
+            $session = $this->getSession();
+            $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->getUser()->idParam) : null;
+            if ($id && ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null) {
+                return $language;
+            }
         }
 
         // Fall back on the default CP language, if there is one, otherwise the browser language

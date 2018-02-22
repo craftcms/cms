@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `getenv()` Twig function. ([#2471](https://github.com/craftcms/cms/pull/2471))
+- Added `craft\services\Users::getUserPreference()`.
 
 ### Changed
 - Element query classes can now specify the default `orderBy` value by overriding `craft\elements\db\ElementQuery::defaultOrderBy`.
@@ -16,6 +17,7 @@
 - Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` was overriding the query’s `SELECT` clause.
 - Fixed a bug where Single sections were showing the currently logged-in user as their author.
 - Fixed a bug where element queries for entries within Structure sections weren’t getting ordered in the Structure-defined order by default in some cases.
+- Fixed a bug where `yii\web\User::getIdentity()` would return `null` when called from a plugin’s `init()` method. ([#2473](https://github.com/craftcms/cms/issues/2473))
 
 ## 3.0.0-RC11 - 2018-02-20
 
