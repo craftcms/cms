@@ -211,8 +211,10 @@ class Config extends Component
 
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
+        $value = addslashes($value);
         $qValue = str_replace('$', '\\$', $value);
         $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$qValue}\"", $contents, -1, $count);
+
         if ($count === 0) {
             $contents = rtrim($contents);
             $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$value}\"".PHP_EOL;
