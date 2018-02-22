@@ -598,13 +598,19 @@ class Asset extends Element
      */
     public function getImg()
     {
-        if ($this->kind === self::KIND_IMAGE && $this->getHasUrls()) {
-            $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
-
-            return Template::raw($img);
+        if ($this->kind !== self::KIND_IMAGE) {
+            return null;
         }
 
-        return null;
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
+
+        if (!$volume->hasUrls) {
+            return null;
+        }
+
+        $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'">';
+        return Template::raw($img);
     }
 
     /**
@@ -685,12 +691,15 @@ class Asset extends Element
      */
     public function getUrl($transform = null)
     {
-        // Normalize empty transform values
-        $transform = $transform ?: null;
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
 
-        if (!$this->getHasUrls()) {
+        if (!$volume->hasUrls) {
             return null;
         }
+
+        // Normalize empty transform values
+        $transform = $transform ?: null;
 
         if (is_array($transform)) {
             if (isset($transform['width'])) {
@@ -878,12 +887,14 @@ class Asset extends Element
      * Return whether the Asset has a URL.
      *
      * @return bool
+     * @deprecated in 3.0.0-RC11.1. Use getVolume()->hasUrls instead.
      */
     public function getHasUrls(): bool
     {
+        Craft::$app->getDeprecator()->log(self::class.'::getHasUrls()', self::class.'::getHasUrls() has been deprecated. Use getVolume()->hasUrls instead.');
+
         /** @var Volume $volume */
         $volume = $this->getVolume();
-
         return $volume && $volume->hasUrls;
     }
 
