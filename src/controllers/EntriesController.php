@@ -947,6 +947,9 @@ class EntriesController extends BaseEntriesController
             $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
         }
 
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
