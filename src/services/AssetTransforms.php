@@ -825,7 +825,7 @@ class AssetTransforms extends Component
                     $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
                     $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
 
-                    $volume->saveFileLocally($asset->getUri(), $tempPath);
+                    $volume->saveFileLocally($asset->getPath(), $tempPath);
 
                     if (!is_file($tempPath) || filesize($tempPath) === 0) {
                         try {
@@ -959,7 +959,7 @@ class AssetTransforms extends Component
 
             $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
             $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-            $volume->saveFileLocally($asset->getUri(), $tempPath);
+            $volume->saveFileLocally($asset->getPath(), $tempPath);
 
             $image = $images->loadImage($tempPath);
 

@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `getenv()` Twig function. ([#2471](https://github.com/craftcms/cms/pull/2471))
+- Added `craft\elements\Asset::getPath()`.
 - Added `craft\services\Users::getUserPreference()`.
 
 ### Changed
@@ -12,6 +13,7 @@
 
 ### Deprecated
 - Deprecated `craft\elements\Asset::getHasUrls()`.
+- Deprecated `craft\elements\Asset::getUri()`. Use `getPath()` instead.
 
 ### Fixed
 - Fixed a bug where various asset transform operations could result in a PHP error. ([#2463](https://github.com/craftcms/cms/issues/2463))

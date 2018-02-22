@@ -52,6 +52,7 @@ use yii\base\UnknownPropertyException;
  * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
  * @property bool $hasThumb whether the file has a thumbnail
  * @property int|float|null $height the image height
+ * @property string $path the asset's path in the volume
  * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -833,12 +834,26 @@ class Asset extends Element
     }
 
     /**
-     * Get a file's uri path in the source.
+     * Returns the asset's path in the volume.
      *
-     * @param string|null $filename Filename to use. If not specified, the file's filename will be used.
+     * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
+     * @deprecated in 3.0.0-RC11.1
      */
     public function getUri(string $filename = null): string
+    {
+        Craft::$app->getDeprecator()->log(self::class.'::getUri()', self::class.'::getUri() has been deprecated. Use getPath() instead.');
+
+        return $this->getPath($filename);
+    }
+
+    /**
+     * Returns the asset's path in the volume.
+     *
+     * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
+     * @return string
+     */
+    public function getPath(string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->filename);
     }
@@ -853,7 +868,7 @@ class Asset extends Element
         $volume = $this->getVolume();
 
         if ($volume instanceof LocalVolumeInterface) {
-            return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());
+            return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
@@ -868,7 +883,7 @@ class Asset extends Element
     {
         $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true).'.'.$this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-        $this->getVolume()->saveFileLocally($this->getUri(), $tempPath);
+        $this->getVolume()->saveFileLocally($this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -880,7 +895,7 @@ class Asset extends Element
      */
     public function getStream()
     {
-        return $this->getVolume()->getFileStream($this->getUri());
+        return $this->getVolume()->getFileStream($this->getPath());
     }
 
     /**
@@ -1219,7 +1234,7 @@ class Asset extends Element
     public function afterDelete()
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getUri());
+            $this->getVolume()->deleteFile($this->getPath());
         }
 
         Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
@@ -1322,7 +1337,7 @@ class Asset extends Element
         $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
         $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
 
-        $oldPath = $this->folderId ? $this->getUri() : null;
+        $oldPath = $this->folderId ? $this->getPath() : null;
         $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
 
         // Is this just a simple move/rename within the same volume?
