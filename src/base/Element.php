@@ -80,10 +80,8 @@ use yii\validators\Validator;
  * @property Site $site Site the element is associated with
  * @property string|null $status The element’s status
  * @property int|null $structureId The ID of the structure that the element is associated with, if any
- * @property int[] $supportedSiteIds The site IDs this element is available in
  * @property int[]|array $supportedSites The sites this element is associated with
  * @property string|null $thumbUrl The URL to the element’s thumbnail, if there is one
- * @property string|null $title The element’s title
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
@@ -1082,6 +1080,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getRef()
     {
+        return null;
     }
 
     /**
