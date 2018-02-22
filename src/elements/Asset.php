@@ -50,7 +50,6 @@ use yii\base\UnknownPropertyException;
  * Asset represents an asset element.
  *
  * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
- * @property bool $hasThumb whether the file has a thumbnail
  * @property int|float|null $height the image height
  * @property string $path the asset's path in the volume
  * @property int|float|null $width the image width
