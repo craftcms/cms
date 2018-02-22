@@ -171,10 +171,9 @@ class MatrixBlock extends Element
      */
     public function attributes()
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'owner';
-
-        return $attributes;
+        $names = parent::attributes();
+        $names[] = 'owner';
+        return $names;
     }
 
     /**

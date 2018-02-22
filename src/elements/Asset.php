@@ -1073,12 +1073,11 @@ class Asset extends Element
      */
     public function attributes()
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'focalPoint';
-        $attributes[] = 'height';
-        $attributes[] = 'width';
-
-        return $attributes;
+        $names = parent::attributes();
+        $names[] = 'focalPoint';
+        $names[] = 'height';
+        $names[] = 'width';
+        return $names;
     }
 
     /**
