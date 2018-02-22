@@ -19,6 +19,7 @@
 - Fixed a bug where element queries for entries within Structure sections weren’t getting ordered in the Structure-defined order by default in some cases.
 - Fixed a bug where `yii\web\User::getIdentity()` would return `null` when called from a plugin’s `init()` method. ([#2473](https://github.com/craftcms/cms/issues/2473))
 - Fixed a bug where entries would not save certain field values if their entry type had changed. ([#2474](https://github.com/craftcms/cms/issues/2474))
+- Fixed a bug where database backups would fail if in some environments if you had certain special characters in the password.
 
 ## 3.0.0-RC11 - 2018-02-20
 
