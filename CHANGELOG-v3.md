@@ -10,6 +10,7 @@
 ### Changed
 - Element query classes can now specify the default `orderBy` value by overriding `craft\elements\db\ElementQuery::defaultOrderBy`.
 - The Photo field on Edit User pages now has `id="photo"`. ([#2469](https://github.com/craftcms/cms/pull/2469))
+- Built-in element types now support several more attributes in their array representations.
 
 ### Deprecated
 - Deprecated `craft\elements\Asset::getHasUrls()`.

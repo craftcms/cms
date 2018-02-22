@@ -25,7 +25,8 @@ use yii\base\InvalidConfigException;
 /**
  * MatrixBlock represents a matrix block element.
  *
- * @property MatrixBlockType|null $type The block type
+ * @property ElementInterface|null $owner the owner
+ * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -173,6 +174,7 @@ class MatrixBlock extends Element
     {
         $names = parent::attributes();
         $names[] = 'owner';
+        $names[] = 'type';
         return $names;
     }
 

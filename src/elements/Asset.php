@@ -49,9 +49,15 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
+ * @property string $extension the file extension
  * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property VolumeFolder $folder the asset’s volume folder
+ * @property bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property int|float|null $height the image height
+ * @property \Twig_Markup|null $img an `<img>` tag based on this asset
+ * @property string|null $mimeType the file’s MIME type, if it can be determined
  * @property string $path the asset's path in the volume
+ * @property VolumeInterface $volume the asset’s volume
  * @property int|float|null $width the image width
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -1100,8 +1106,16 @@ class Asset extends Element
     public function attributes()
     {
         $names = parent::attributes();
+        $names[] = 'extension';
+        $names[] = 'filename';
         $names[] = 'focalPoint';
+        $names[] = 'folder';
+        $names[] = 'hasFocalPoint';
         $names[] = 'height';
+        $names[] = 'img';
+        $names[] = 'mimeType';
+        $names[] = 'path';
+        $names[] = 'volume';
         $names[] = 'width';
         return $names;
     }

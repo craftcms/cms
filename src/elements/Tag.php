@@ -19,6 +19,7 @@ use yii\base\InvalidConfigException;
 /**
  * Tag represents a tag element.
  *
+ * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -112,6 +113,16 @@ class Tag extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'group';
+        return $names;
+    }
 
     /**
      * @inheritdoc

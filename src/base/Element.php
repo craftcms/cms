@@ -81,7 +81,6 @@ use yii\validators\Validator;
  * @property string|null $status The element’s status
  * @property int|null $structureId The ID of the structure that the element is associated with, if any
  * @property int[]|array $supportedSites The sites this element is associated with
- * @property string|null $thumbUrl The URL to the element’s thumbnail, if there is one
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
@@ -785,6 +784,29 @@ abstract class Element extends Component implements ElementInterface
     public function attributes()
     {
         $names = parent::attributes();
+        $names[] = 'ancestors';
+        $names[] = 'children';
+        $names[] = 'contentTable';
+        $names[] = 'cpEditUrl';
+        $names[] = 'descendants';
+        $names[] = 'hasDescendants';
+        $names[] = 'link';
+        $names[] = 'next';
+        $names[] = 'nextSibling';
+        $names[] = 'parent';
+        $names[] = 'prev';
+        $names[] = 'prevSibling';
+        $names[] = 'ref';
+        $names[] = 'route';
+        $names[] = 'siblings';
+        $names[] = 'site';
+        $names[] = 'status';
+        $names[] = 'structureId';
+        $names[] = 'supportedSites';
+        $names[] = 'title';
+        $names[] = 'totalDescendants';
+        $names[] = 'uriFormat';
+        $names[] = 'url';
 
         // Include custom field handles
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {

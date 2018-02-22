@@ -32,6 +32,9 @@ use yii\base\InvalidConfigException;
 /**
  * Entry represents an entry element.
  *
+ * @property User|null $author the entry's author
+ * @property Section $section the entry's section
+ * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -500,6 +503,18 @@ class Entry extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'author';
+        $names[] = 'section';
+        $names[] = 'type';
+        return $names;
+    }
 
     /**
      * @inheritdoc
