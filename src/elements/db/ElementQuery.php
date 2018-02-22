@@ -261,6 +261,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public $positionedAfter;
 
+    /**
+     * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
+     */
+    protected $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
+
     // For internal use
     // -------------------------------------------------------------------------
 
@@ -1776,7 +1781,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'elements.dateCreated' => SORT_DESC,
                 ];
             } else {
-                $this->orderBy = ['elements.dateCreated' => SORT_DESC];
+                $this->orderBy = $this->defaultOrderBy;
             }
         }
 

@@ -83,6 +83,11 @@ class EntryQuery extends ElementQuery
      */
     public $expiryDate;
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['entries.postDate' => SORT_DESC];
+
     // Public Methods
     // =========================================================================
 
@@ -366,10 +371,6 @@ class EntryQuery extends ElementQuery
         $this->_applyEditableParam();
         $this->_applySectionIdParam();
         $this->_applyRefParam();
-
-        if ($this->orderBy !== null && empty($this->orderBy) && !$this->structureId && !$this->fixedOrder) {
-            $this->orderBy = ['entries.postDate' => SORT_DESC];
-        }
 
         return parent::beforePrepare();
     }
