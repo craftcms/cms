@@ -79,6 +79,11 @@ class Install extends Migration
         Craft::$app->getElements()->saveElement($user);
         echo " done\n";
 
+        // Set their preferred language
+        Craft::$app->getUsers()->saveUserPreferences($user, [
+            'language' => $this->site->language,
+        ]);
+
         // Log them in
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
             Craft::$app->getUser()->login($user);
