@@ -837,7 +837,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Gets the user's full name.
+     * Returns the user's full name.
      *
      * @return string|null
      */

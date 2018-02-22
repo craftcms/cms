@@ -146,7 +146,7 @@ class Tag extends Element
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): TagGroup
     {
         if ($this->groupId === null) {
             throw new InvalidConfigException('Tag is missing its group ID');

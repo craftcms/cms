@@ -648,7 +648,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the type of entry.
+     * Returns the entry type.
      *
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid

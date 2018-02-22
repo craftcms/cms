@@ -227,10 +227,10 @@ class MatrixBlock extends Element
     /**
      * Returns the block type.
      *
-     * @return MatrixBlockType|null
+     * @return MatrixBlockType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType()
+    public function getType(): MatrixBlockType
     {
         if ($this->typeId === null) {
             throw new InvalidConfigException('Matrix block is missing its type ID');
