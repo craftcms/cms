@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the `Craft.getUrl()` function would prepend the base URL even if the passed-in path began with `/`. ([#2475](https://github.com/craftcms/cms/issues/2475))
+
 ## 3.0.0-RC12 - 2018-02-22
 
 ### Added
