@@ -80,6 +80,7 @@ class EtTransport
                 'databaseType' => $db->getDriverName(),
                 'databaseVersion' => $db->getVersion(),
                 'proc' => function_exists('proc_open') ? 1 : 0,
+                'totalLocales' => Craft::$app->getSites()->getTotalSites(),
             ],
         ]);
     }

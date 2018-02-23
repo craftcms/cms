@@ -1,5 +1,18 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+### Changed
+- Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
+
+## 2.6.3010 - 2018-02-21
+
+### Changed
+- Reverted the fix to ([#2433](https://github.com/craftcms/cms/issues/2433)) as it broke backwards compatibility.
+
+### Fixed
+- Fixed an error that occurred when displaying run charts in some cases.
+
 ## 2.6.3010 - 2018-02-20
 
 ### Changed
