@@ -427,7 +427,7 @@ class View extends \yii\web\View
     public function renderObjectTemplate(string $template, $object, array $variables = []): string
     {
         // If there are no dynamic tags, just return the template
-        if (!StringHelper::contains($template, '{')) {
+        if (strpos($template, '{') === false) {
             return $template;
         }
 
