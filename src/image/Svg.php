@@ -26,7 +26,7 @@ class Svg extends Image
 
     const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
     const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
-    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")([\d.]+(?:,|\s)[\d.]+(?:,|\s)([\d.]+)(?:,|\s)([.\d]+))"/i';
+    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(-?[\d.]+(?:,|\s)-?[\d.]+(?:,|\s)-?([\d.]+)(?:,|\s)(-?[\d.]+))"/i';
     const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/i';
     const SVG_TAG_RE = '/<svg/i';
     const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
