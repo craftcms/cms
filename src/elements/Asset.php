@@ -1112,7 +1112,6 @@ class Asset extends Element
         $names[] = 'folder';
         $names[] = 'hasFocalPoint';
         $names[] = 'height';
-        $names[] = 'img';
         $names[] = 'mimeType';
         $names[] = 'path';
         $names[] = 'volume';

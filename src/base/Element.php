@@ -790,7 +790,6 @@ abstract class Element extends Component implements ElementInterface
         $names[] = 'cpEditUrl';
         $names[] = 'descendants';
         $names[] = 'hasDescendants';
-        $names[] = 'link';
         $names[] = 'next';
         $names[] = 'nextSibling';
         $names[] = 'parent';
