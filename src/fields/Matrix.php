@@ -867,7 +867,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $fieldNamespace = $element->getFieldParamNamespace();
 
             if ($fieldNamespace !== null) {
-                $blockFieldNamespace = ($fieldNamespace ? $fieldNamespace.'.' : '').'.'.$this->handle.'.'.$blockId.'.fields';
+                $blockFieldNamespace = ($fieldNamespace ? $fieldNamespace.'.' : '').$this->handle.'.'.$blockId.'.fields';
                 $block->setFieldParamNamespace($blockFieldNamespace);
             }
 
