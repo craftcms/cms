@@ -1,5 +1,9 @@
 <?php
 
+// Get the last error at the earliest opportunity, so we can catch max_input_vars errors
+// see https://stackoverflow.com/a/21601349/1688568
+$lastError = error_get_last();
+
 // Make sure this is PHP 5.3 or later
 // -----------------------------------------------------------------------------
 
@@ -59,4 +63,11 @@ date_default_timezone_set('UTC');
 // -----------------------------------------------------------------------------
 
 $app = require 'bootstrap.php';
+
+// If there was a max_input_vars error, kill the request before we start processing it with incomplete data
+if ($lastError && strpos($lastError['message'], 'max_input_vars') !== false)
+{
+	throw new \Craft\ErrorException($lastError['message']);
+}
+
 $app->run();

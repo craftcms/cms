@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
+
 ## 2.6.3010 - 2018-02-21
 
 ### Changed
