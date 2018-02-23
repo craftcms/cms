@@ -507,9 +507,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function extraFields()
     {
-        $names = parent::attributes();
+        $names = parent::extraFields();
         $names[] = 'author';
         $names[] = 'section';
         $names[] = 'type';

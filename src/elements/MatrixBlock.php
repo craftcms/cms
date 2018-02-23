@@ -170,9 +170,9 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function extraFields()
     {
-        $names = parent::attributes();
+        $names = parent::extraFields();
         $names[] = 'owner';
         $names[] = 'type';
         return $names;

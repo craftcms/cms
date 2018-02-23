@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Changed
+- Elements’ `toArray()` results no longer include relational objects by default, and must be specified via the `$expand` argument if desired.
 - `craft\web\View::renderObjectTemplate()` now includes fields defined by the object’s `extraFields()` method, if it looks like they are being referenced within the template.
 
 ### Fixed
 - Fixed a bug where the `Craft.getUrl()` function would prepend the base URL even if the passed-in path began with `/`. ([#2475](https://github.com/craftcms/cms/issues/2475))
 - Fixed a bug where SVG images with viewboxes that had negative numbers could not be resized. ([#2477](https://github.com/craftcms/cms/issues/2477))
+- Fixed an infinite recursion bug that could occur where calling `toArray()` on an element.
 
 ## 3.0.0-RC12 - 2018-02-22
 

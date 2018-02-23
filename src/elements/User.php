@@ -569,12 +569,21 @@ class User extends Element implements IdentityInterface
         $names[] = 'cooldownEndTime';
         $names[] = 'friendlyName';
         $names[] = 'fullName';
-        $names[] = 'groups';
         $names[] = 'isCurrent';
         $names[] = 'name';
-        $names[] = 'photo';
         $names[] = 'preferredLanguage';
         $names[] = 'remainingCooldownTime';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'groups';
+        $names[] = 'photo';
         return $names;
     }
 

@@ -784,24 +784,33 @@ abstract class Element extends Component implements ElementInterface
     public function attributes()
     {
         $names = parent::attributes();
-        $names[] = 'ancestors';
-        $names[] = 'children';
-        $names[] = 'contentTable';
         $names[] = 'cpEditUrl';
-        $names[] = 'descendants';
         $names[] = 'hasDescendants';
-        $names[] = 'next';
-        $names[] = 'nextSibling';
-        $names[] = 'parent';
-        $names[] = 'prev';
-        $names[] = 'prevSibling';
         $names[] = 'ref';
-        $names[] = 'siblings';
-        $names[] = 'site';
         $names[] = 'status';
         $names[] = 'structureId';
         $names[] = 'totalDescendants';
         $names[] = 'url';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $names = [
+            'ancestors',
+            'children',
+            'descendants',
+            'next',
+            'nextSibling',
+            'parent',
+            'prev',
+            'prevSibling',
+            'siblings',
+            'site',
+        ];
 
         // Include custom field handles
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {

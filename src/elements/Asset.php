@@ -1109,13 +1109,22 @@ class Asset extends Element
         $names[] = 'extension';
         $names[] = 'filename';
         $names[] = 'focalPoint';
-        $names[] = 'folder';
         $names[] = 'hasFocalPoint';
         $names[] = 'height';
         $names[] = 'mimeType';
         $names[] = 'path';
-        $names[] = 'volume';
         $names[] = 'width';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'folder';
+        $names[] = 'volume';
         return $names;
     }
 
