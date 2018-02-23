@@ -573,7 +573,6 @@ class User extends Element implements IdentityInterface
         $names[] = 'isCurrent';
         $names[] = 'name';
         $names[] = 'photo';
-        $names[] = 'preferences';
         $names[] = 'preferredLanguage';
         $names[] = 'remainingCooldownTime';
         return $names;

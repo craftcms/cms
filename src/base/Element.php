@@ -796,15 +796,11 @@ abstract class Element extends Component implements ElementInterface
         $names[] = 'prev';
         $names[] = 'prevSibling';
         $names[] = 'ref';
-        $names[] = 'route';
         $names[] = 'siblings';
         $names[] = 'site';
         $names[] = 'status';
         $names[] = 'structureId';
-        $names[] = 'supportedSites';
-        $names[] = 'title';
         $names[] = 'totalDescendants';
-        $names[] = 'uriFormat';
         $names[] = 'url';
 
         // Include custom field handles
