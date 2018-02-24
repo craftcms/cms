@@ -105,7 +105,6 @@ class Content extends Component
      * Populates a given element with its custom field values.
      *
      * @param ElementInterface $element The element for which we should create a new content model.
-     * @return void
      */
     public function populateElementContent(ElementInterface $element)
     {
@@ -224,7 +223,6 @@ class Content extends Component
      *
      * @param ElementInterface $element
      * @param FieldLayout $fieldLayout
-     * @return void
      */
     private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
     {

@@ -1334,7 +1334,6 @@ class Asset extends Element
     /**
      * Relocates the file after the element has been saved.
      *
-     * @return void
      * @throws FileException if the file is being moved but cannot be read
      */
     private function _relocateFile()

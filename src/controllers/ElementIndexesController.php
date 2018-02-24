@@ -72,8 +72,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Initializes the application component.
-     *
-     * @return void
      */
     public function init()
     {

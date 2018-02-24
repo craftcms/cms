@@ -229,8 +229,6 @@ class SystemSettingsController extends Controller
 
     /**
      * Tests the email settings.
-     *
-     * @return void
      */
     public function actionTestEmailSettings()
     {

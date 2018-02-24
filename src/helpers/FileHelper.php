@@ -359,7 +359,6 @@ class FileHelper extends \yii\helpers\FileHelper
      * - `filter`: callback (see [[findFiles()]])
      * - `except`: array (see [[findFiles()]])
      * - `only`: array (see [[findFiles()]])
-     * @return void
      * @throws InvalidArgumentException if the dir is invalid
      * @throws ErrorException in case of failure
      */

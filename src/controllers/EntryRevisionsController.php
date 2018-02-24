@@ -298,7 +298,6 @@ class EntryRevisionsController extends BaseEntriesController
      * Sets a draft's attributes from the post data.
      *
      * @param EntryDraft $draft
-     * @return void
      */
     private function _setDraftAttributesFromPost(EntryDraft $draft)
     {

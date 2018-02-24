@@ -84,7 +84,6 @@ class Composer extends Component
      *
      * @param array $requirements Package name/version pairs
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @return void
      * @throws \Throwable if something goes wrong
      */
     public function install(array $requirements, IOInterface $io = null)
@@ -146,7 +145,6 @@ class Composer extends Component
      *
      * @param string[] $packages Package names
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @return void
      * @throws \Throwable if something goes wrong
      */
     public function uninstall(array $packages, IOInterface $io = null)
@@ -217,7 +215,6 @@ class Composer extends Component
      * Optimizes the Composer autoloader.
      *
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @return void
      * @throws \Throwable if something goes wrong
      * @deprecated
      */
@@ -289,7 +286,6 @@ class Composer extends Component
      * @param string $jsonPath
      * @param array $requirements
      * @param bool $sortPackages
-     * @return void
      */
     protected function updateRequirements(string $jsonPath, array $requirements, bool $sortPackages)
     {

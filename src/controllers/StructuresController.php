@@ -44,7 +44,6 @@ class StructuresController extends Controller
     /**
      * Initializes the application component.
      *
-     * @return void
      * @throws ForbiddenHttpException if this is not a Control Panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */

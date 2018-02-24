@@ -89,7 +89,6 @@ class CategoryGroup_SiteSettings extends Model
      * Sets the group.
      *
      * @param CategoryGroup $group
-     * @return void
      */
     public function setGroup(CategoryGroup $group)
     {

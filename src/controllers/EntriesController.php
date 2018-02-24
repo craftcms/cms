@@ -733,7 +733,6 @@ class EntriesController extends BaseEntriesController
      * Preps entry edit variables.
      *
      * @param array &$variables
-     * @return void
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -925,7 +924,6 @@ class EntriesController extends BaseEntriesController
      * Populates an Entry with post data.
      *
      * @param Entry $entry
-     * @return void
      */
     private function _populateEntryModel(Entry $entry)
     {

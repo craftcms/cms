@@ -1071,7 +1071,6 @@ class Sections extends Component
      * @param Section $section
      * @param bool $isNewSection
      * @param Section_SiteSettings[] $allSiteSettings
-     * @return void
      * @see saveSection()
      * @throws Exception if reasons
      */
@@ -1180,7 +1179,6 @@ class Sections extends Component
      * @param bool $isNewSection
      * @param bool $isNewStructure
      * @param Section_SiteSettingsRecord[] $allOldSiteSettingsRecords
-     * @return void
      * @see saveSection()
      * @throws Exception if reasons
      */

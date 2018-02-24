@@ -185,8 +185,6 @@ class CategoryQuery extends ElementQuery
 
     /**
      * Applies the 'ref' param to the query being prepared.
-     *
-     * @return void
      */
     private function _applyRefParam()
     {

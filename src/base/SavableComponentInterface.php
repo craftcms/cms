@@ -151,7 +151,6 @@ interface SavableComponentInterface extends ComponentInterface
      * Performs actions after a component is saved.
      *
      * @param bool $isNew Whether the component is brand new
-     * @return void
      */
     public function afterSave(bool $isNew);
 
@@ -164,8 +163,6 @@ interface SavableComponentInterface extends ComponentInterface
 
     /**
      * Performs actions after a component is deleted.
-     *
-     * @return void
      */
     public function afterDelete();
 }

@@ -81,7 +81,6 @@ class PlainText extends Field implements PreviewableFieldInterface
      * Validates that the Character Limit isn't set to something higher than the Column Type will hold.
      *
      * @param string $attribute
-     * @return void
      */
     public function validateCharLimit(string $attribute)
     {

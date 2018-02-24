@@ -48,7 +48,6 @@ class Security extends \yii\base\Security
     // =========================================================================
 
     /**
-     * @return void
      */
     public function init()
     {

@@ -511,7 +511,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * Validates an owner element’s Matrix blocks.
      *
      * @param ElementInterface $element
-     * @return void
      */
     public function validateBlocks(ElementInterface $element)
     {

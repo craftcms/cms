@@ -198,7 +198,6 @@ class Connection extends \yii\db\Connection
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
      * @param string $filePath The file path the database backup should be saved at
-     * @return void
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
@@ -241,7 +240,6 @@ class Connection extends \yii\db\Connection
      * Restores a database at the given file path.
      *
      * @param string $filePath The path of the database backup to restore.
-     * @return void
      * @throws Exception if the restoreCommand config setting is false
      * @throws ShellCommandException in case of failure
      */

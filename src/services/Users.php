@@ -256,7 +256,6 @@ class Users extends Component
      *
      * @param User $user The user
      * @param array $preferences The user’s new preferences
-     * @return void
      */
     public function saveUserPreferences(User $user, array $preferences)
     {
@@ -370,7 +369,6 @@ class Users extends Component
      * @param User $user the user.
      * @param string $fileLocation the local image path on server
      * @param string $filename name of the file to use, defaults to filename of $imagePath
-     * @return void
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
@@ -442,7 +440,6 @@ class Users extends Component
      * Handles a valid login for a user.
      *
      * @param User $user The user
-     * @return void
      */
     public function handleValidLogin(User $user)
     {
@@ -467,7 +464,6 @@ class Users extends Component
      * Handles an invalid login for a user.
      *
      * @param User $user The user
-     * @return void
      */
     public function handleInvalidLogin(User $user)
     {
@@ -832,8 +828,6 @@ class Users extends Component
      * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
-     *
-     * @return void
      */
     public function purgeExpiredPendingUsers()
     {

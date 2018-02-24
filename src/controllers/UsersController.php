@@ -1707,7 +1707,6 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @return void
      * @throws NotFoundHttpException
      */
     private function _noUserExists()
@@ -1746,7 +1745,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @return void
      */
     private function _processUserPhoto(User $user)
     {
@@ -1774,7 +1772,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @return void
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions/groups
      */
     private function _processUserGroupsPermissions(User $user)

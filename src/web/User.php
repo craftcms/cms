@@ -120,7 +120,6 @@ class User extends \yii\web\User
     /**
      * Removes the stored return URL, if there is one.
      *
-     * @return void
      * @see getReturnUrl()
      */
     public function removeReturnUrl()

@@ -839,7 +839,6 @@ class User extends Element implements IdentityInterface
      * Sets an array of User element objects on the user.
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
-     * @return void
      */
     public function setGroups(array $groups)
     {

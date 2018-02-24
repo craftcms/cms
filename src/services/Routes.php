@@ -255,7 +255,6 @@ class Routes extends Component
      * Updates the route order.
      *
      * @param array $routeIds An array of each of the route IDs, in their new order.
-     * @return void
      */
     public function updateRouteOrder(array $routeIds)
     {

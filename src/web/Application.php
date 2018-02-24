@@ -84,8 +84,6 @@ class Application extends \yii\web\Application
 
     /**
      * Initializes the application.
-     *
-     * @return void
      */
     public function init()
     {
@@ -558,7 +556,6 @@ class Application extends \yii\web\Application
      * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
      *
      * @param Request $request
-     * @return void
      * @throws ServiceUnavailableHttpException
      */
     private function _enforceSystemStatusPermissions(Request $request)

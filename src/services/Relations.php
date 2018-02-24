@@ -32,7 +32,6 @@ class Relations extends Component
      * @param ElementInterface $source
      * @param array $targetIds
      * @throws \Throwable
-     * @return void
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
     {

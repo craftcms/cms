@@ -274,7 +274,6 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that was just saved
      * @param bool $isNew Whether the element is brand new
-     * @return void
      */
     public function afterElementSave(ElementInterface $element, bool $isNew);
 
@@ -290,7 +289,6 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been deleted.
      *
      * @param ElementInterface $element The element that was just deleted
-     * @return void
      */
     public function afterElementDelete(ElementInterface $element);
 }

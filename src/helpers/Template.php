@@ -165,7 +165,6 @@ class Template
      * Includes an element in any active template caches.
      *
      * @param ElementInterface $element
-     * @return void
      */
     private static function _includeElementInTemplateCaches(ElementInterface $element)
     {

@@ -976,8 +976,6 @@ class Request extends \yii\web\Request
 
     /**
      * Checks to see if this is an action request.
-     *
-     * @return void
      */
     private function _checkRequestType()
     {

@@ -911,7 +911,6 @@ class AssetsController extends Controller
      *
      * @param string $permissionName Name of the permission to require.
      * @param Asset $asset Asset on the Volume on which to require the permission.
-     * @return void
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
@@ -932,7 +931,6 @@ class AssetsController extends Controller
      *
      * @param string $permissionName Name of the permission to require.
      * @param VolumeFolder $folder Folder on the Volume on which to require the permission.
-     * @return void
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
@@ -953,7 +951,6 @@ class AssetsController extends Controller
      *
      * @param string $permissionName Name of the permission to require.
      * @param int $volumeId The Volume id on which to require the permission.
-     * @return void
      */
     private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
     {

@@ -97,7 +97,6 @@ class FieldLayoutTab extends Model
      * Sets the tab’s layout.
      *
      * @param FieldLayout $layout The tab’s layout.
-     * @return void
      */
     public function setLayout(FieldLayout $layout)
     {
@@ -133,7 +132,6 @@ class FieldLayoutTab extends Model
      * Sets the tab’s fields.
      *
      * @param FieldInterface[] $fields The tab’s fields.
-     * @return void
      */
     public function setFields(array $fields)
     {

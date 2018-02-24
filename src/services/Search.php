@@ -269,7 +269,6 @@ class Search extends Component
      * @param string $fieldId
      * @param int|null $siteId
      * @param string $dirtyKeywords
-     * @return void
      * @throws \craft\errors\SiteNotFoundException
      */
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)

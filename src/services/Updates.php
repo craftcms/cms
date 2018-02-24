@@ -182,7 +182,6 @@ class Updates extends Component
      * Runs the pending migrations for the given list of handles.
      *
      * @param string[] $handles The list of handles to run migrations for
-     * @return void
      * @throws MigrateException
      * @see getPendingMigrationHandles()
      */

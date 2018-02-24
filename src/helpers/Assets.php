@@ -333,8 +333,6 @@ class Assets
 
     /**
      * Builds the internal file kinds array, if it hasn't been built already.
-     *
-     * @return void
      */
     private static function _buildFileKinds()
     {

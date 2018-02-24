@@ -147,7 +147,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param string $oldKey old key name of the array element
      * @param string $newKey new key name of the array element
      * @param mixed $default the default value to be set if the specified old key does not exist
-     * @return void
      */
     public static function rename(array &$array, string $oldKey, string $newKey, $default = null)
     {

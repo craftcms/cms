@@ -31,7 +31,6 @@ abstract class BaseEntriesController extends Controller
      *
      * @param Entry $entry
      * @param bool $duplicate
-     * @return void
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {

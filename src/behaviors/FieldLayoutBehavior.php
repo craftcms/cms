@@ -147,7 +147,6 @@ class FieldLayoutBehavior extends Behavior
      * Sets the owner's field layout.
      *
      * @param FieldLayout $fieldLayout
-     * @return void
      */
     public function setFieldLayout(FieldLayout $fieldLayout)
     {

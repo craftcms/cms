@@ -112,8 +112,6 @@ class Install extends Migration
 
     /**
      * Creates the tables.
-     *
-     * @return void
      */
     protected function createTables()
     {
@@ -732,8 +730,6 @@ class Install extends Migration
 
     /**
      * Creates the indexes.
-     *
-     * @return void
      */
     protected function createIndexes()
     {
@@ -913,8 +909,6 @@ class Install extends Migration
 
     /**
      * Adds the foreign keys.
-     *
-     * @return void
      */
     protected function addForeignKeys()
     {
@@ -1000,8 +994,6 @@ class Install extends Migration
 
     /**
      * Populates the DB with the default data.
-     *
-     * @return void
      */
     protected function insertDefaultData()
     {

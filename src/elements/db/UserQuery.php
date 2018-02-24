@@ -358,7 +358,6 @@ class UserQuery extends ElementQuery
     /**
      * Applies the 'can' param to the query being prepared.
      *
-     * @return void
      * @throws QueryAbortedException
      */
     private function _applyCanParam()

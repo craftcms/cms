@@ -623,7 +623,6 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param ElementQueryInterface $elementQuery
      * @param string $attribute
-     * @return void
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
@@ -950,7 +949,6 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $attribute The field handle
      * @param array|null $params
-     * @return void
      */
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
@@ -969,7 +967,6 @@ abstract class Element extends Component implements ElementInterface
      * Validates that the content size is going to fit within the field’s database column.
      *
      * @param string $attribute
-     * @return void
      */
     public function validateCustomFieldContentSize(string $attribute)
     {
@@ -1597,7 +1594,6 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $handle The handle to load the elements with in the future
      * @param ElementInterface[] $elements The eager-loaded elements
-     * @return void
      */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
@@ -1793,7 +1789,6 @@ abstract class Element extends Component implements ElementInterface
      * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
-     * @return void
      * @throws Exception if there is no field with the handle $fieldValue
      */
     protected function normalizeFieldValue(string $fieldHandle)

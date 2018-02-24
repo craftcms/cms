@@ -162,7 +162,6 @@ class Image
      * Clean an image provided by path from all malicious code and the like.
      *
      * @param string $imagePath
-     * @return void
      */
     public static function cleanImageByPath(string $imagePath)
     {

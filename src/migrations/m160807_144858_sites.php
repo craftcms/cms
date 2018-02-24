@@ -492,7 +492,6 @@ class m160807_144858_sites extends Migration
      * Updates the 'locale' setting in Recent Entries widgets
      *
      * @param array $siteIdsByLocale Mapping of site IDs to the locale IDs they used to be
-     * @return void
      */
     public function updateRecentEntriesWidgets(array $siteIdsByLocale)
     {

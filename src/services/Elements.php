@@ -590,7 +590,6 @@ class Elements extends Component
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $updateDescendants Whether the element’s descendants should also be updated.
      * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
-     * @return void
      */
     public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {
@@ -654,7 +653,6 @@ class Elements extends Component
      * Updates an element’s slug and URI, for any sites besides the given one.
      *
      * @param ElementInterface $element The element to update.
-     * @return void
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element)
     {
@@ -681,7 +679,6 @@ class Elements extends Component
      * @param ElementInterface $element The element whose descendants should be updated.
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $queue Whether the descendants’ slugs and URIs should be updated via a job in the queue.
-     * @return void
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
     {
@@ -1143,7 +1140,6 @@ class Elements extends Component
      * @param string $elementType The root element type class
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param string|array $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
-     * @return void
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
@@ -1294,7 +1290,6 @@ class Elements extends Component
      * @param ElementInterface $element
      * @param bool $isNewElement
      * @param array $siteInfo
-     * @return void
      * @throws Exception if the element couldn't be propagated
      */
     private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo)

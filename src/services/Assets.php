@@ -140,7 +140,6 @@ class Assets extends Component
      * @param string $filename
      * @throws FileException If there was a problem with the actual file.
      * @throws AssetLogicException If the Asset to be replaced cannot be found.
-     * @return void
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
@@ -197,7 +196,6 @@ class Assets extends Component
      *
      * @param VolumeFolder $folder
      * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
-     * @return void
      * @throws AssetConflictException if a folder already exists with such a name
      * @throws InvalidArgumentException if $folder doesn’t have a parent
      * @throws VolumeObjectExistsException if the file actually exists on the volume, but on in the index
@@ -300,7 +298,6 @@ class Assets extends Component
      * @param array|int $folderIds
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
-     * @return void
      */
     public function deleteFoldersByIds($folderIds, bool $deleteDir = true)
     {
@@ -893,7 +890,6 @@ class Assets extends Component
      * Store a folder by model
      *
      * @param VolumeFolder $folder
-     * @return void
      */
     public function storeFolderRecord(VolumeFolder $folder)
     {
@@ -1019,7 +1015,6 @@ class Assets extends Component
      *
      * @param Query $query
      * @param FolderCriteria $criteria
-     * @return void
      */
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria)
     {

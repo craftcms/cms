@@ -132,7 +132,6 @@ class Response extends \yii\web\Response
      *
      * @see http://stackoverflow.com/a/141026
      * @throws \Throwable An exception will be thrown if content has already been output.
-     * @return void
      */
     public function sendAndClose()
     {

@@ -48,8 +48,6 @@ class Application extends \yii\console\Application
 
     /**
      * Initializes the console app by creating the command runner.
-     *
-     * @return void
      */
     public function init()
     {
