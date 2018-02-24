@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- The `@web` alias now includes the request’s host info (`scheme://hostname/`) in addition to the base URI. ([#2486](https://github.com/craftcms/cms/issues/2486))
 - Elements’ `toArray()` results no longer include relational objects by default, and must be specified via the `$expand` argument if desired.
 - `craft\helpers\UrlHelper` now includes the current request’s host info (`scheme://hostname/`) when generating URLs that have to include the script name.
 - `craft\web\View::renderObjectTemplate()` now includes fields defined by the object’s `extraFields()` method, if it looks like they are being referenced within the template.

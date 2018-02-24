@@ -97,6 +97,21 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        // Ensure that the request component has been instantiated
+        if (!$this->has('request', true)) {
+            $this->getRequest();
+        }
+
+        // Skip yii\web\Application::bootstrap, because we've already set @web and
+        // @webroot from craft\web\Request::init(), and we like our values better.
+        \yii\base\Application::bootstrap();
+    }
+
+    /**
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
