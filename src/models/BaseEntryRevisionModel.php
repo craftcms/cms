@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 
 /**
@@ -31,6 +32,21 @@ class BaseEntryRevisionModel extends Entry
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $names = parent::attributes();
+
+        // Prevent getUrl() from being called by View::renderObjectTemplate(),
+        // which would cause an infinite recursion bug
+        ArrayHelper::removeValue($names, 'url');
+        ArrayHelper::removeValue($names, 'link');
+
+        return $names;
+    }
 
     /**
      * @inheritdoc
