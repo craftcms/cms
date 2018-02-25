@@ -95,9 +95,9 @@ class BaseEntryRevisionModel extends Entry
     /**
      * Returns the element's full URL.
      *
-     * @return string
+     * @return string|null
      */
-    public function getUrl(): string
+    public function getUrl()
     {
         if ($this->uri === null) {
             ElementHelper::setUniqueUri($this);
