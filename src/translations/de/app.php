@@ -441,7 +441,7 @@ return [
     'Enter your password to log back in.' => 'Geben Sie Ihr Passwort ein, um sich erneut anzumelden.',
     'Entries' => 'Einträge',
     'Entries deleted.' => 'Die Einträge wurden gelöscht.',
-    'Entry' => 'Eingabe',
+    'Entry' => 'Eintrag',
     'Entry Type' => 'Eintragstyp',
     'Entry Types' => 'Eintragstypen',
     'Entry URI Format' => 'Eingabe-URI-Format',
