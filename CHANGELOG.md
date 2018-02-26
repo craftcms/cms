@@ -5,6 +5,9 @@
 ### Changed
 - Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
 
+### Fixed
+- Fixed a bug where entry version data was not including newly-created Matrix block IDs, so they would be re-created from scratch when loading the version. ([#2498](https://github.com/craftcms/cms/issues/2498))
+
 ## 2.6.3010 - 2018-02-21
 
 ### Changed
