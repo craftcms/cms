@@ -15,7 +15,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
- * @deprecated in 3.0.0-RC9
+ * @todo rename to AssetThumbUrlEvent in Craft 4
  */
 class GetAssetThumbUrlEvent extends Event
 {

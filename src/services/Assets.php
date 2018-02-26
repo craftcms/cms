@@ -71,7 +71,7 @@ class Assets extends Component
 
     /**
      * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
-     * @deprecated in 3.0.0-RC9. Use [[EVENT_GET_THUMB_PATH]] instead.
+     * @todo rename to GET_THUMB_URL in Craft 4
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
@@ -605,9 +605,8 @@ class Assets extends Component
         }
 
         // Maybe a plugin wants to do something here
-        // todo: remove this in Craft 4
+        // todo: remove the `size` key in 4.0
         if ($this->hasEventHandlers(self::EVENT_GET_ASSET_THUMB_URL)) {
-            Craft::$app->getDeprecator()->log('Assets::getAssetThumbUrl', 'The `getAssetThumbUrl` event on craft\services\Assets has been deprecated. Use the `generateThumbPath` event to generate custom asset thumbnails instead.');
             $event = new GetAssetThumbUrlEvent([
                 'asset' => $asset,
                 'width' => $width,
