@@ -229,8 +229,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function isEmpty($value): bool
     {
-        /** @var ElementQueryInterface $value */
-        return $value->count() === 0;
+        /** @var ElementQueryInterface|ElementInterface[] $value */
+        if ($value instanceof ElementQueryInterface) {
+            return $value->count() === 0;
+        }
+
+        return empty($value);
     }
 
     /**
