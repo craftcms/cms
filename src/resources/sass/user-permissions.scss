@@ -11,15 +11,21 @@
 .user-permissions input.checkbox:disabled + label:before,
 .user-permissions div.checkbox.disabled:before { opacity: 0.5; }
 
-.user-permissions ul ul li:before { display: block; position: absolute; margin-top: 8px; content: '.'; font-size: 0; width: 10px; height: 0; border-top: 1px solid #eee; }
-.user-permissions ul ul ul li:before { width: 30px; }
-.user-permissions ul ul ul ul li:before { width: 45px; }
-
 .user-permissions h3 { @include padding-right(0.5em); @include border-right(1px solid #eee); @include margin-right(0.5em); }
 .user-permissions h3,
 .user-permissions .select-all { @include floatleft; }
 
 .user-permissions ul { clear: both; }
+
+.user-permissions ul ul li:before { display: block; position: absolute; margin-top: 8px; content: '.'; font-size: 0; width: 10px; height: 0; border-top: 1px solid #eee; @include left(20px); }
+.user-permissions ul ul ul li:before { width: 30px; }
+.user-permissions ul ul ul ul li:before { width: 45px; }
+.user-permissions ul ul ul ul ul li:before { width: 60px; }
+.user-permissions ul ul ul ul ul ul li:before { width: 75px; }
+.user-permissions ul ul ul ul ul ul ul li:before { width: 90px; }
+
 .user-permissions ul ul li .checkbox + label { @include padding-left(35px); }
 .user-permissions ul ul ul li .checkbox + label { @include padding-left(55px); }
-.user-permissions ul ul li:before { @include left(20px); }
+.user-permissions ul ul ul ul li .checkbox + label { @include padding-left(70px); }
+.user-permissions ul ul ul ul ul li .checkbox + label { @include padding-left(85px); }
+.user-permissions ul ul ul ul ul ul li .checkbox + label { @include padding-left(100px); }
