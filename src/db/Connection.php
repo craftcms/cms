@@ -95,7 +95,9 @@ class Connection extends \yii\db\Connection
             'schemaMap' => [
                 $config->driver => $schemaConfig,
             ],
-            'commandClass' => Command::class,
+            'commandMap' => [
+                $config->driver => Command::class,
+            ],
             'attributes' => $config->attributes,
         ]);
     }
