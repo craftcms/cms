@@ -864,6 +864,10 @@ class MatrixService extends BaseApplicationComponent
 			$blocks = array();
 		}
 
+		$allPostContent = $owner->getContentFromPost();
+		$postContent = isset($allPostContent[$field->handle]) ? $allPostContent[$field->handle] : null;
+		$newPostContent = array();
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
@@ -887,6 +891,13 @@ class MatrixService extends BaseApplicationComponent
 				if ($block->collapsed)
 				{
 					$collapsedBlockIds[] = $block->id;
+				}
+
+				// Update the post content
+				$postId = $block->postId ?: $block->id;
+				if (isset($postContent[$postId]))
+				{
+					$newPostContent[$block->id] = $postContent[$postId];
 				}
 			}
 
@@ -929,6 +940,12 @@ class MatrixService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+
+		// Update the post content on the owner element
+		if ($postContent !== null)
+		{
+			$owner->setRawPostContent($field->handle, $newPostContent);
 		}
 
 		// Tell the browser to collapse any new block IDs

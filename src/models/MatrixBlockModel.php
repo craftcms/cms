@@ -259,6 +259,7 @@ class MatrixBlockModel extends BaseElementModel
 			'typeId'      => AttributeType::Number,
 			'sortOrder'   => AttributeType::Number,
 
+			'postId'      => AttributeType::String,
 			'collapsed'   => AttributeType::Bool,
 		));
 	}

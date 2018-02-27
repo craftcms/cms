@@ -69,8 +69,10 @@ Craft.LightSwitch = Garnish.Base.extend(
 		this.$input.val('1');
 		this.$outerContainer.addClass('on');
 		this.$outerContainer.attr('aria-checked', 'true');
-		this.on = true;
-		this.onChange();
+
+		if (this.on !== (this.on = true)) {
+			this.onChange();
+		}
 	},
 
 	turnOff: function()
@@ -84,8 +86,10 @@ Craft.LightSwitch = Garnish.Base.extend(
 		this.$input.val('');
 		this.$outerContainer.removeClass('on');
 		this.$outerContainer.attr('aria-checked', 'false');
-		this.on = false;
-		this.onChange();
+
+		if (this.on !== (this.on = false)) {
+			this.onChange();
+		}
 	},
 
 	toggle: function(event)
