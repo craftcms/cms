@@ -198,11 +198,11 @@
                 {% set languageInput %}
                     <div class="select">
                         <select id="language" name="preferredLanguage">
-                            {% set allAppLanguages = craft.app.i18n.getAppLocaleIds %}
-                            {% set userLanguage = user.getPreferredLanguage() ?: (user.getIsCurrent() ? craft.app.language : allAppLanguages[0]) %}
+                            {% set allAppLocales = craft.app.i18n.getAppLocales() %}
+                            {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
 
-                            {% for language in allAppLanguages %}
-                                <option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ craft.app.i18n.getLocaleById(language).getDisplayName() }}</option>
+                            {% for locale in allAppLocales %}
+                                <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
                             {% endfor %}
                         </select>
                     </div>
