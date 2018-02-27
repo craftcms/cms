@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where entry version data was not including newly-created Matrix block IDs, so they would be re-created from scratch when loading the version. ([#2498](https://github.com/craftcms/cms/issues/2498))
 - Fixed an error that could occur if an email template included any Twig filters with a single underscore.
+- Fixed a bug where lightswitch inputs could trigger a `change` event when they didn’t actually change. ([#2494](https://github.com/craftcms/cms/issues/2494))
 
 ## 2.6.3010 - 2018-02-21
 
