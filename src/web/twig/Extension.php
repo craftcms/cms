@@ -678,7 +678,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @throws InvalidArgumentException if the $direction or $sortFlag parameters do not have
      * correct number of elements as that of $key.
      */
-    public function multisortFilter($array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
+    public function multisortFilter(array $array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
     {
         // Prevent multisort() from modifying the original array
         $array = array_merge($array);
