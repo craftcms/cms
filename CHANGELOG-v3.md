@@ -11,6 +11,7 @@
 - `craft\helpers\UrlHelper` now includes the current request’s host info (`scheme://hostname/`) when generating URLs that have to include the script name.
 - `craft\web\View::renderObjectTemplate()` now includes fields defined by the object’s `extraFields()` method, if it looks like they are being referenced within the template.
 - Undeprecated the `getAssetThumbUrl` event on `craft\services\Assets`. ([#2493](https://github.com/craftcms/cms/issues/2493))
+- If anything prevents a user from being deleted, any changes that were made in preparation for deleting the user are now rolled back.
 
 ### Fixed
 - Fixed a bug where the `Craft.getUrl()` function would prepend the base URL even if the passed-in path began with `/`. ([#2475](https://github.com/craftcms/cms/issues/2475))
