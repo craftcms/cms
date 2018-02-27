@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Added the `|multisort` Twig filter, which duplicates an array and sorts it with [craft\helpers\ArrayHelper::multisort()](http://www.yiiframework.com/doc-2.0/yii-helpers-basearrayhelper.html#multisort()-detail).
+
 ### Changed
 - The `@web` alias now includes the request’s host info (`scheme://hostname/`) in addition to the base URI. ([#2486](https://github.com/craftcms/cms/issues/2486))
 - Elements’ `toArray()` results no longer include relational objects by default, and must be specified via the `$expand` argument if desired.
