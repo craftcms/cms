@@ -273,7 +273,6 @@ class ElementHelper
      * and "prev" elements on them.
      *
      * @param ElementInterface[] $elements The array of elements.
-     * @return void
      */
     public static function setNextPrevOnElements(array $elements)
     {

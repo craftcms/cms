@@ -1,4 +1,4 @@
-/*!   - 2018-02-22 */
+/*!   - 2018-02-27 */
 (function($){
 
 /** global: Craft */
@@ -186,7 +186,7 @@ $.extend(Craft,
             if(typeof format == 'undefined') {
                 format = ',.0f';
             }
-            
+
             var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
 
             return formatter(number);
@@ -281,7 +281,7 @@ $.extend(Craft,
             }
 
             // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path.substr(0, 2) === '//') {
+            if (path.search('://') !== -1 || path[0] === '/') {
                 return path;
             }
 
@@ -15200,8 +15200,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val(this.settings.value);
             this.$outerContainer.addClass('on');
             this.$outerContainer.attr('aria-checked', 'true');
-            this.on = true;
-            this.onChange();
+
+            if (this.on !== (this.on = true)) {
+                this.onChange();
+            }
         },
 
         turnOff: function() {
@@ -15214,8 +15216,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val('');
             this.$outerContainer.removeClass('on');
             this.$outerContainer.attr('aria-checked', 'false');
-            this.on = false;
-            this.onChange();
+
+            if (this.on !== (this.on = false)) {
+                this.onChange();
+            }
         },
 
         toggle: function(event) {

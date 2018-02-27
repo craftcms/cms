@@ -120,8 +120,6 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * Redirects the user to the login template if they're not logged in.
-     *
-     * @return void
      */
     public function requireLogin()
     {
@@ -136,7 +134,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @return void
      * @throws ForbiddenHttpException if the current user is not an admin
      */
     public function requireAdmin()
@@ -154,7 +151,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
      *
      * @param string $permissionName The name of the permission.
-     * @return void
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission(string $permissionName)
@@ -168,7 +164,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user can perform a given action, and ends the request with a 403 error if they don’t.
      *
      * @param string $action The name of the action to check.
-     * @return void
      * @throws ForbiddenHttpException if the current user is not authorized
      */
     public function requireAuthorization(string $action)
@@ -181,7 +176,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Requires that the user has an elevated session.
      *
-     * @return void
      * @throws ForbiddenHttpException if the current user does not have an elevated session
      */
     public function requireElevatedSession()
@@ -194,7 +188,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @return void
      * @throws BadRequestHttpException if the request is not a post request
      */
     public function requirePostRequest()
@@ -207,7 +200,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if the request doesn't accept JSON.
      *
-     * @return void
      * @throws BadRequestHttpException if the request doesn't accept JSON
      */
     public function requireAcceptsJson()
@@ -220,7 +212,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if the current request doesn’t have a valid token.
      *
-     * @return void
      * @throws BadRequestHttpException if the request does not have a valid token
      */
     public function requireToken()

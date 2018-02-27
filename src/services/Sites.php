@@ -377,7 +377,7 @@ class Sites extends Component
     public function setCurrentSite($site)
     {
         // In case this was called from the constructor...
-        $this-> _loadAllSites();
+        $this->_loadAllSites();
 
         if ($site === null) {
             $this->_currentSite = null;

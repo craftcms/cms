@@ -42,6 +42,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -214,6 +215,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('literal', [$this, 'literalFilter']),
             new \Twig_SimpleFilter('markdown', [$this, 'markdownFilter']),
             new \Twig_SimpleFilter('md', [$this, 'markdownFilter']),
+            new \Twig_SimpleFilter('multisort', [$this, 'multisortFilter']),
             new \Twig_SimpleFilter('namespace', [$this->view, 'namespaceInputs']),
             new \Twig_SimpleFilter('ns', [$this->view, 'namespaceInputs']),
             new \Twig_SimpleFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
@@ -656,6 +658,32 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         return TemplateHelper::raw($html);
+    }
+
+    /**
+     * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
+     *
+     * @param array $array the array to be sorted. The array will be modified after calling this method.
+     * @param string|\Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
+     * elements, a property name of the objects, or an anonymous function returning the values for comparison
+     * purpose. The anonymous function signature should be: `function($item)`.
+     * To sort by multiple keys, provide an array of keys here.
+     * @param int|array $direction the sorting direction. It can be either `SORT_ASC` or `SORT_DESC`.
+     * When sorting by multiple keys with different sorting directions, use an array of sorting directions.
+     * @param int|array $sortFlag the PHP sort flag. Valid values include
+     * `SORT_REGULAR`, `SORT_NUMERIC`, `SORT_STRING`, `SORT_LOCALE_STRING`, `SORT_NATURAL` and `SORT_FLAG_CASE`.
+     * Please refer to [PHP manual](http://php.net/manual/en/function.sort.php)
+     * for more details. When sorting by multiple keys with different sort flags, use an array of sort flags.
+     * @return array the sorted array
+     * @throws InvalidArgumentException if the $direction or $sortFlag parameters do not have
+     * correct number of elements as that of $key.
+     */
+    public function multisortFilter(array $array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
+    {
+        // Prevent multisort() from modifying the original array
+        $array = array_merge($array);
+        ArrayHelper::multisort($array, $key, $direction, $sortFlag);
+        return $array;
     }
 
     /**

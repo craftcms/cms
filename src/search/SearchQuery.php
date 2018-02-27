@@ -77,8 +77,6 @@ class SearchQuery
 
     /**
      * Parses the query into an array of tokens.
-     *
-     * @return void
      */
     private function _parse()
     {

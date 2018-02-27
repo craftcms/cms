@@ -1109,14 +1109,22 @@ class Asset extends Element
         $names[] = 'extension';
         $names[] = 'filename';
         $names[] = 'focalPoint';
-        $names[] = 'folder';
         $names[] = 'hasFocalPoint';
         $names[] = 'height';
-        $names[] = 'img';
         $names[] = 'mimeType';
         $names[] = 'path';
-        $names[] = 'volume';
         $names[] = 'width';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'folder';
+        $names[] = 'volume';
         return $names;
     }
 
@@ -1326,7 +1334,6 @@ class Asset extends Element
     /**
      * Relocates the file after the element has been saved.
      *
-     * @return void
      * @throws FileException if the file is being moved but cannot be read
      */
     private function _relocateFile()

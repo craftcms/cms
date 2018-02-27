@@ -250,9 +250,9 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function extraFields()
     {
-        $names = parent::attributes();
+        $names = parent::extraFields();
         $names[] = 'group';
         return $names;
     }

@@ -61,8 +61,6 @@ class Images extends Component
 
     /**
      * Decide on the image driver being used.
-     *
-     * @return void
      */
     public function init()
     {
@@ -275,7 +273,6 @@ class Images extends Component
      * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
-     * @return void
      * @throws Exception if $filePath is a malformed SVG image
      */
     public function cleanImage(string $filePath)

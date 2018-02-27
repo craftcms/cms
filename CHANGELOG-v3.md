@@ -1,5 +1,28 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC13 - 2018-02-27
+
+### Added the `|multisort` Twig filter, which duplicates an array and sorts it with [craft\helpers\ArrayHelper::multisort()](http://www.yiiframework.com/doc-2.0/yii-helpers-basearrayhelper.html#multisort()-detail).
+
+### Changed
+- The `@web` alias now includes the request’s host info (`scheme://hostname/`) in addition to the base URI. ([#2486](https://github.com/craftcms/cms/issues/2486))
+- Elements’ `toArray()` results no longer include relational objects by default, and must be specified via the `$expand` argument if desired.
+- `craft\helpers\ChartHelper::getRunChartDataFromQuery()` now has `$func` and `$q` arguments, which should be set to the aggregate query function and the column/expression to be passed into it.
+- `craft\helpers\UrlHelper` now includes the current request’s host info (`scheme://hostname/`) when generating URLs that have to include the script name.
+- `craft\web\View::renderObjectTemplate()` now includes fields defined by the object’s `extraFields()` method, if it looks like they are being referenced within the template.
+- Undeprecated the `getAssetThumbUrl` event on `craft\services\Assets`. ([#2493](https://github.com/craftcms/cms/issues/2493))
+- If anything prevents a user from being deleted, any changes that were made in preparation for deleting the user are now rolled back.
+
+### Fixed
+- Fixed a bug where the `Craft.getUrl()` function would prepend the base URL even if the passed-in path began with `/`. ([#2475](https://github.com/craftcms/cms/issues/2475))
+- Fixed a bug where SVG images with viewboxes that had negative numbers could not be resized. ([#2477](https://github.com/craftcms/cms/issues/2477))
+- Fixed an infinite recursion bug that could occur where calling `toArray()` on an element.
+- Fixed a bug where Matrix fields were assigning the wrong field namespace to their blocks, when creating the blocks from revision or POST data. ([#2484](https://github.com/craftcms/cms/pull/2484))
+- Fixed an error that could occur when viewing entry revisions. ([#2491](https://github.com/craftcms/cms/issues/2491))
+- Fixed an error that occurred when programmatically saving an element that had been fetched with eager-loaded relations.
+- Fixed a bug where users’ Language preference options weren’t sorted alphabetically.
+- Fixed a bug where Assets fields’ “Upload Location” and “Default Upload Location” settings weren’t showing correct example code for Matrix fields.
+
 ## 3.0.0-RC12 - 2018-02-22
 
 ### Added

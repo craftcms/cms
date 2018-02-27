@@ -84,8 +84,6 @@ class Application extends \yii\web\Application
 
     /**
      * Initializes the application.
-     *
-     * @return void
      */
     public function init()
     {
@@ -94,6 +92,21 @@ class Application extends \yii\web\Application
         $this->_init();
         $this->ensureResourcePathExists();
         $this->debugBootstrap();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        // Ensure that the request component has been instantiated
+        if (!$this->has('request', true)) {
+            $this->getRequest();
+        }
+
+        // Skip yii\web\Application::bootstrap, because we've already set @web and
+        // @webroot from craft\web\Request::init(), and we like our values better.
+        \yii\base\Application::bootstrap();
     }
 
     /**
@@ -543,7 +556,6 @@ class Application extends \yii\web\Application
      * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
      *
      * @param Request $request
-     * @return void
      * @throws ServiceUnavailableHttpException
      */
     private function _enforceSystemStatusPermissions(Request $request)

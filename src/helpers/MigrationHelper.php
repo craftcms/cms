@@ -64,7 +64,6 @@ class MigrationHelper
      * @param string $tableName
      * @param string|string[] $columns
      * @param Migration|null $migration
-     * @return void
      */
     public static function dropForeignKeyIfExists(string $tableName, $columns, Migration $migration = null)
     {
@@ -107,7 +106,6 @@ class MigrationHelper
      * @param string|string[] $columns
      * @param bool $unique
      * @param Migration|null $migration
-     * @return void
      */
     public static function dropIndexIfExists(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -122,7 +120,6 @@ class MigrationHelper
      * @param string $oldName
      * @param string $newName
      * @param Migration|null $migration
-     * @return void
      */
     public static function renameTable(string $oldName, string $newName, Migration $migration = null)
     {
@@ -281,7 +278,6 @@ class MigrationHelper
      * @param string $oldName
      * @param string $newName
      * @param Migration|null $migration
-     * @return void
      */
     public static function renameColumn(string $tableName, string $oldName, string $newName, Migration $migration = null)
     {
@@ -542,7 +538,6 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param Migration|null $migration
-     * @return void
      */
     public static function dropAllForeignKeysToTable(string $tableName, Migration $migration = null)
     {
@@ -622,7 +617,6 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param Migration|null $migration
-     * @return void
      */
     public static function dropAllUniqueIndexesOnTable(string $tableName, Migration $migration = null)
     {

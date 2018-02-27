@@ -291,7 +291,6 @@ class AssetTransforms extends Component
      *
      * @param Asset[] $assets The files to eager-load tranforms for
      * @param array $transforms The transform definitions to eager-load
-     * @return void
      */
     public function eagerLoadTransforms(array $assets, array $transforms)
     {
@@ -775,7 +774,6 @@ class AssetTransforms extends Component
      * Delete transform records by an Asset id
      *
      * @param int $assetId
-     * @return void
      */
     public function deleteTransformIndexDataByAssetId(int $assetId)
     {
@@ -788,7 +786,6 @@ class AssetTransforms extends Component
      * Delete a transform index by.
      *
      * @param int $indexId
-     * @return void
      */
     public function deleteTransformIndex(int $indexId)
     {
@@ -876,7 +873,6 @@ class AssetTransforms extends Component
      * Deletes an image local source if required by config.
      *
      * @param string $imageSource
-     * @return void
      */
     public function queueSourceForDeletingIfNecessary($imageSource)
     {
@@ -891,8 +887,6 @@ class AssetTransforms extends Component
 
     /**
      * Delete all image sources queued up for deletion.
-     *
-     * @return void
      */
     public function deleteQueuedSourceFiles()
     {
@@ -907,7 +901,6 @@ class AssetTransforms extends Component
      *
      * @param string $source
      * @param string $destination
-     * @return void
      */
     public function storeLocalSource(string $source, string $destination = '')
     {
@@ -1053,7 +1046,6 @@ class AssetTransforms extends Component
      * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.
      *
      * @param Asset $asset
-     * @return void
      */
     public function deleteAllTransformData(Asset $asset)
     {
@@ -1074,7 +1066,6 @@ class AssetTransforms extends Component
      * Delete all the generated thumbnails for the Asset.
      *
      * @param Asset $asset
-     * @return void
      */
     public function deleteResizedAssetVersion(Asset $asset)
     {
@@ -1263,7 +1254,6 @@ class AssetTransforms extends Component
      * @param Asset $asset
      * @param AssetTransformIndex $index
      * @throws AssetTransformException If a transform index has an invalid transform assigned.
-     * @return void
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {

@@ -427,7 +427,7 @@ class View extends \yii\web\View
     public function renderObjectTemplate(string $template, $object, array $variables = []): string
     {
         // If there are no dynamic tags, just return the template
-        if (!StringHelper::contains($template, '{')) {
+        if (strpos($template, '{') === false) {
             return $template;
         }
 
@@ -452,8 +452,19 @@ class View extends \yii\web\View
 
             // Get the variables to pass to the template
             if ($object instanceof Arrayable) {
-                $variables = array_merge($object->toArray([], [], false), $variables);
+                // See if we should be including any of the extra fields
+                $extra = [];
+                foreach ($object->extraFields() as $field => $definition) {
+                    if (is_int($field)) {
+                        $field = $definition;
+                    }
+                    if (strpos($template, $field) !== false) {
+                        $extra[] = $field;
+                    }
+                }
+                $variables = array_merge($object->toArray([], $extra, false), $variables);
             }
+
             $variables['object'] = $object;
 
             // Render it!
@@ -678,8 +689,6 @@ class View extends \yii\web\View
      * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
      * having it actually get output to the page.
-     *
-     * @return void
      */
     public function startJsBuffer()
     {
@@ -863,7 +872,6 @@ class View extends \yii\web\View
     /**
      * Registers any asset bundles and JS code that were queued-up in the session flash data.
      *
-     * @return void
      * @throws Exception if any of the registered asset bundles are not actually asset bundles
      */
     protected function registerAssetFlashes()
@@ -888,8 +896,6 @@ class View extends \yii\web\View
     /**
      * Registers all files provided by all registered asset bundles, including depending bundles files.
      * Removes a bundle from [[assetBundles]] once files are registered.
-     *
-     * @return void
      */
     protected function registerAllAssetFiles()
     {
@@ -907,7 +913,6 @@ class View extends \yii\web\View
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
-     * @return void
      */
     public function registerTranslations(string $category, array $messages)
     {
@@ -955,7 +960,6 @@ JS;
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
      * @param string|null $namespace The new namespace. Set to null to remove the namespace.
-     * @return void
      */
     public function setNamespace(string $namespace = null)
     {
@@ -980,7 +984,6 @@ JS;
      * - the "index" template filenames that sholud be checked when looking for templates
      *
      * @param string $templateMode Either 'site' or 'cp'
-     * @return void
      * @throws Exception if $templateMode is invalid
      */
     public function setTemplateMode(string $templateMode)
@@ -1024,7 +1027,6 @@ JS;
      * Sets the base path that templates should be found in.
      *
      * @param string $templatesPath
-     * @return void
      */
     public function setTemplatesPath(string $templatesPath)
     {
@@ -1175,7 +1177,6 @@ JS;
      *
      * @param string $hook The hook name.
      * @param callback $method The callback function.
-     * @return void
      */
     public function hook(string $hook, $method)
     {
@@ -1231,7 +1232,6 @@ JS;
      * @param mixed $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
      * @param string $output The template’s rendering result
-     * @return void
      */
     public function afterRenderTemplate(string $template, array $variables, string &$output)
     {
@@ -1272,7 +1272,6 @@ JS;
      * @param mixed $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
      * @param string $output The template’s rendering result
-     * @return void
      */
     public function afterRenderPageTemplate(string $template, array $variables, string &$output)
     {

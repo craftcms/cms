@@ -158,8 +158,6 @@ class Plugins extends Component
 
     /**
      * Loads the enabled plugins.
-     *
-     * @return void
      */
     public function loadPlugins()
     {
@@ -917,7 +915,6 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param string|null $licenseKeyStatus The plugin’s license key status
-     * @return void
      * @throws InvalidPluginException if the plugin isn't installed
      */
     public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null)

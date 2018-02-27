@@ -511,7 +511,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * Validates an owner element’s Matrix blocks.
      *
      * @param ElementInterface $element
-     * @return void
      */
     public function validateBlocks(ElementInterface $element)
     {
@@ -867,7 +866,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $fieldNamespace = $element->getFieldParamNamespace();
 
             if ($fieldNamespace !== null) {
-                $blockFieldNamespace = ($fieldNamespace ? $fieldNamespace.'.' : '').'.'.$this->handle.'.'.$blockId.'.fields';
+                $blockFieldNamespace = ($fieldNamespace ? $fieldNamespace.'.' : '').$this->handle.'.'.$blockId.'.fields';
                 $block->setFieldParamNamespace($blockFieldNamespace);
             }
 

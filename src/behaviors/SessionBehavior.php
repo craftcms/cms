@@ -56,7 +56,6 @@ class SessionBehavior extends Behavior
      * Only one flash notice can be stored at a time.
      *
      * @param string $message The message.
-     * @return void
      */
     public function setNotice(string $message)
     {
@@ -70,7 +69,6 @@ class SessionBehavior extends Behavior
      * Only one flash error message can be stored at a time.
      *
      * @param string $message The message.
-     * @return void
      */
     public function setError(string $message)
     {
@@ -84,7 +82,6 @@ class SessionBehavior extends Behavior
      *
      * @param string $name the class name of the asset bundle (without the leading backslash)
      * @param integer|null $position if set, this forces a minimum position for javascript files.
-     * @return void
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
      */
@@ -121,7 +118,6 @@ class SessionBehavior extends Behavior
      * @param integer $position the position at which the JS script tag should
      * be inserted in a page.
      * @param string|null $key the key that identifies the JS code block.
-     * @return void
      * @see getJsFlashes()
      * @see View::registerJs()
      */
@@ -151,7 +147,6 @@ class SessionBehavior extends Behavior
      * Authorizes the user to perform an action for the duration of the session.
      *
      * @param string $action
-     * @return void
      */
     public function authorize(string $action)
     {
@@ -167,7 +162,6 @@ class SessionBehavior extends Behavior
      * Deauthorizes the user from performing an action.
      *
      * @param string $action
-     * @return void
      */
     public function deauthorize(string $action)
     {

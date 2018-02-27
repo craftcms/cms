@@ -281,7 +281,6 @@ class UserGroups extends Component
      * Throws a "No group exists" exception.
      *
      * @param int $groupId
-     * @return void
      * @throws UserGroupNotFoundException
      */
     private function _noGroupExists(int $groupId)

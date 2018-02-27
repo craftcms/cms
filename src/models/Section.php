@@ -172,7 +172,6 @@ class Section extends Model
      * Sets the section's site-specific settings.
      *
      * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
-     * @return void
      */
     public function setSiteSettings(array $siteSettings)
     {
@@ -198,7 +197,6 @@ class Section extends Model
      *
      * @param array $errors
      * @param int $siteId
-     * @return void
      */
     public function addSiteSettingsErrors(array $errors, int $siteId)
     {

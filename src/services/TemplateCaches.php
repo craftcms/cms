@@ -165,7 +165,6 @@ class TemplateCaches extends Component
      * Starts a new template cache.
      *
      * @param string $key The template cache key.
-     * @return void
      */
     public function startTemplateCache(string $key)
     {
@@ -193,7 +192,6 @@ class TemplateCaches extends Component
      * Includes an element criteria in any active caches.
      *
      * @param Event $event The 'afterPrepare' element query event
-     * @return void
      */
     public function includeElementQueryInTemplateCaches(Event $event)
     {
@@ -232,7 +230,6 @@ class TemplateCaches extends Component
      * Includes an element in any active caches.
      *
      * @param int $elementId The element ID.
-     * @return void
      */
     public function includeElementInTemplateCaches(int $elementId)
     {
@@ -260,7 +257,6 @@ class TemplateCaches extends Component
      * @param mixed|null $expiration When the cache should expire.
      * @param string $body The contents of the cache.
      * @throws \Throwable
-     * @return void
      */
     public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
     {

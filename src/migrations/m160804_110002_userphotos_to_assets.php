@@ -218,7 +218,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set the photo volume setting for users.
      *
      * @param int $volumeId
-     * @return void
      */
     private function _setUserphotoVolume(int $volumeId)
     {
@@ -330,7 +329,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set photo ID values for the user array passed in.
      *
      * @param array $userlist userId => assetId
-     * @return void
      */
     private function _setPhotoIdValues(array $userlist)
     {

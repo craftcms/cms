@@ -91,7 +91,6 @@ class Localization
      * Looks for a missing translation string in Yii's core translations.
      *
      * @param MissingTranslationEvent $event
-     * @return void
      */
     public static function findMissingTranslation(MissingTranslationEvent $event)
     {

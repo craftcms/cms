@@ -412,7 +412,6 @@ class Dashboard extends Component
      * Throws a "No widget exists" exception.
      *
      * @param int $widgetId
-     * @return void
      * @throws WidgetNotFoundException
      */
     private function _noWidgetExists(int $widgetId)

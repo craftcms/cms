@@ -408,7 +408,7 @@ class UrlHelper
                 // No way to know for sure, so just guess
                 $baseUrl = '/'.$request->getScriptFilename();
             } else {
-                $baseUrl = $request->getScriptUrl();
+                $baseUrl = $request->getHostInfo().$request->getScriptUrl();
             }
         } else if ($cpUrl) {
             // Did they set the base URL manually?

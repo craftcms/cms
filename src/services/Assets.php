@@ -71,7 +71,7 @@ class Assets extends Component
 
     /**
      * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
-     * @deprecated in 3.0.0-RC9. Use [[EVENT_GET_THUMB_PATH]] instead.
+     * @todo rename to GET_THUMB_URL in Craft 4
      */
     const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
@@ -140,7 +140,6 @@ class Assets extends Component
      * @param string $filename
      * @throws FileException If there was a problem with the actual file.
      * @throws AssetLogicException If the Asset to be replaced cannot be found.
-     * @return void
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
@@ -197,7 +196,6 @@ class Assets extends Component
      *
      * @param VolumeFolder $folder
      * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
-     * @return void
      * @throws AssetConflictException if a folder already exists with such a name
      * @throws InvalidArgumentException if $folder doesn’t have a parent
      * @throws VolumeObjectExistsException if the file actually exists on the volume, but on in the index
@@ -300,7 +298,6 @@ class Assets extends Component
      * @param array|int $folderIds
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
-     * @return void
      */
     public function deleteFoldersByIds($folderIds, bool $deleteDir = true)
     {
@@ -608,9 +605,8 @@ class Assets extends Component
         }
 
         // Maybe a plugin wants to do something here
-        // todo: remove this in Craft 4
+        // todo: remove the `size` key in 4.0
         if ($this->hasEventHandlers(self::EVENT_GET_ASSET_THUMB_URL)) {
-            Craft::$app->getDeprecator()->log('Assets::getAssetThumbUrl', 'The `getAssetThumbUrl` event on craft\services\Assets has been deprecated. Use the `generateThumbPath` event to generate custom asset thumbnails instead.');
             $event = new GetAssetThumbUrlEvent([
                 'asset' => $asset,
                 'width' => $width,
@@ -893,7 +889,6 @@ class Assets extends Component
      * Store a folder by model
      *
      * @param VolumeFolder $folder
-     * @return void
      */
     public function storeFolderRecord(VolumeFolder $folder)
     {
@@ -1019,7 +1014,6 @@ class Assets extends Component
      *
      * @param Query $query
      * @param FolderCriteria $criteria
-     * @return void
      */
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria)
     {

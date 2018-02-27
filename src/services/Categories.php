@@ -631,7 +631,6 @@ class Categories extends Component
      * Patches an array of categories, filling in any gaps in the tree.
      *
      * @param Category[] $categories
-     * @return void
      */
     public function fillGapsInCategories(array &$categories)
     {
@@ -673,7 +672,6 @@ class Categories extends Component
      *
      * @param Category[] $categories
      * @param int $branchLimit
-     * @return void
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
     {

@@ -124,7 +124,6 @@ class MigrationManager extends Component
      *
      * @param int $limit The number of new migrations to be applied. If 0, it means
      * applying all available new migrations.
-     * @return void
      * @throws MigrationException on migrate failure
      */
     public function up(int $limit = 0)
@@ -176,7 +175,6 @@ class MigrationManager extends Component
      *
      * @param int $limit The number of migrations to be reverted. Defaults to 1,
      * meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
-     * @return void
      * @throws MigrationException on migrate failure
      */
     public function down(int $limit = 1)
@@ -216,7 +214,6 @@ class MigrationManager extends Component
      * Upgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -271,7 +268,6 @@ class MigrationManager extends Component
      * Downgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
-     * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */

@@ -449,7 +449,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the default next element.
      *
      * @param ElementInterface|false $element
-     * @return void
      */
     public function setNext($element);
 
@@ -472,7 +471,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s parent.
      *
      * @param ElementInterface|null $parent
-     * @return void
      */
     public function setParent(ElementInterface $parent = null);
 
@@ -622,7 +620,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s custom field values.
      *
      * @param array $values The custom field values (handle => value)
-     * @return void
      */
     public function setFieldValues(array $values);
 
@@ -639,7 +636,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $fieldHandle The field handle whose value needs to be set
      * @param mixed $value The value to set on the field
-     * @return void
      */
     public function setFieldValue(string $fieldHandle, $value);
 
@@ -647,7 +643,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s custom field values, when the values have come from post data.
      *
      * @param string $paramNamespace The field param namespace
-     * @return void
      */
     public function setFieldValuesFromRequest(string $paramNamespace);
 
@@ -662,7 +657,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the namespace used by custom field params on the request.
      *
      * @param string $namespace The field param namespace
-     * @return void
      */
     public function setFieldParamNamespace(string $namespace);
 
@@ -753,7 +747,6 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is saved.
      *
      * @param bool $isNew Whether the element is brand new
-     * @return void
      */
     public function afterSave(bool $isNew);
 
@@ -766,8 +759,6 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Performs actions after an element is deleted.
-     *
-     * @return void
      */
     public function afterDelete();
 
@@ -783,7 +774,6 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
-     * @return void
      */
     public function afterMoveInStructure(int $structureId);
 }

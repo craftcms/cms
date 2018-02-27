@@ -150,7 +150,6 @@ class CategoryGroup extends Model
      * Sets the group's site-specific settings.
      *
      * @param CategoryGroup_SiteSettings[] $siteSettings
-     * @return void
      */
     public function setSiteSettings(array $siteSettings)
     {

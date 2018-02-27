@@ -1,5 +1,26 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+## 2.6.3012 - 2018-02-27
+
+### Changed
+- Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
+- Improved styles to support 5 levels of nested user permissions. ([#2467](https://github.com/craftcms/cms/issues/2467))
+
+### Fixed
+- Fixed a bug where entry version data was not including newly-created Matrix block IDs, so they would be re-created from scratch when loading the version. ([#2498](https://github.com/craftcms/cms/issues/2498))
+- Fixed an error that could occur if an email template included any Twig filters with a single underscore.
+- Fixed a bug where lightswitch inputs could trigger a `change` event when they didn’t actually change. ([#2494](https://github.com/craftcms/cms/issues/2494))
+
+## 2.6.3011 - 2018-02-21
+
+### Changed
+- Reverted the fix to ([#2433](https://github.com/craftcms/cms/issues/2433)) as it broke backwards compatibility.
+
+### Fixed
+- Fixed an error that occurred when displaying run charts in some cases.
+
 ## 2.6.3010 - 2018-02-20
 
 ### Changed

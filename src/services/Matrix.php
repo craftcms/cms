@@ -807,7 +807,6 @@ class Matrix extends Component
      * Creates the content table for a Matrix field.
      *
      * @param string $tableName
-     * @return void
      */
     private function _createContentTable(string $tableName)
     {

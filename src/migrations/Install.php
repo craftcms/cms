@@ -107,15 +107,10 @@ class Install extends Migration
         return false;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Creates the tables.
-     *
-     * @return void
      */
-    protected function createTables()
+    public function createTables()
     {
         $this->createTable('{{%assetindexdata}}', [
             'id' => $this->primaryKey(),
@@ -732,10 +727,8 @@ class Install extends Migration
 
     /**
      * Creates the indexes.
-     *
-     * @return void
      */
-    protected function createIndexes()
+    public function createIndexes()
     {
         $this->createIndex(null, '{{%assetindexdata}}', ['sessionId', 'volumeId']);
         $this->createIndex(null, '{{%assetindexdata}}', ['volumeId'], false);
@@ -913,10 +906,8 @@ class Install extends Migration
 
     /**
      * Adds the foreign keys.
-     *
-     * @return void
      */
-    protected function addForeignKeys()
+    public function addForeignKeys()
     {
         $this->addForeignKey(null, '{{%assetindexdata}}', ['volumeId'], '{{%volumes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%assets}}', ['folderId'], '{{%volumefolders}}', ['id'], 'CASCADE', null);
@@ -1000,10 +991,8 @@ class Install extends Migration
 
     /**
      * Populates the DB with the default data.
-     *
-     * @return void
      */
-    protected function insertDefaultData()
+    public function insertDefaultData()
     {
         // Populate the info table
         echo '    > populate the info table ...';

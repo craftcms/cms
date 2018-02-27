@@ -552,7 +552,6 @@ class Raster extends Image
      * @param string $fontFile path to the font file on server
      * @param int $size font size to use
      * @param string $color font color to use in hex format
-     * @return void
      */
     public function setFontProperties(string $fontFile, int $size, string $color)
     {
@@ -587,7 +586,6 @@ class Raster extends Image
      * @param int $x
      * @param int $y
      * @param int $angle
-     * @return void
      * @throws ImageException If attempting to create text box with no font properties et.
      */
     public function writeText(string $text, int $x, int $y, int $angle = 0)

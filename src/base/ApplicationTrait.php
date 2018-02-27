@@ -228,7 +228,6 @@ trait ApplicationTrait
      * Sets Craft's record of whether it's installed
      *
      * @param bool|null $value
-     * @return void
      */
     public function setIsInstalled($value = true)
     {
@@ -353,7 +352,6 @@ trait ApplicationTrait
      *
      * @param int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
-     * @return void
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
     public function requireEdition(int $edition, bool $orBetter = true)

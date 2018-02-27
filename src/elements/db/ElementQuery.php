@@ -29,7 +29,6 @@ use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
-use yii\db\Expression;
 use yii\db\ExpressionInterface;
 
 /**
@@ -448,7 +447,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param string $name The offset to set
      * @param mixed $value The value
-     * @return void
      * @throws NotSupportedException if $name is numeric
      */
     public function offsetSet($name, $value)
@@ -1452,7 +1450,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the 'status' param to the query being prepared.
      *
      * @param string $class
-     * @return void
      * @throws QueryAbortedException
      */
     private function _applyStatusParam(string $class)
@@ -1488,7 +1485,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'relatedTo' param to the query being prepared.
      *
-     * @return void
      * @throws QueryAbortedException
      */
     private function _applyRelatedToParam()
@@ -1510,7 +1506,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the structure params to the query being prepared.
      *
      * @param string $class
-     * @return void
      * @throws QueryAbortedException
      */
     private function _applyStructureParams(string $class)

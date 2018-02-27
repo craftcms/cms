@@ -142,6 +142,11 @@ class Request extends \yii\web\Request
     {
         parent::init();
 
+        // Set the @webroot and @web aliases now (instead of from yii\web\Application::bootstrap())
+        // in case a site's base URL requires @web, and so we can include the host info in @web
+        Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+        Craft::setAlias('@web', $this->getHostInfo().$this->getBaseUrl());
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // Sanitize
@@ -890,10 +895,6 @@ class Request extends \yii\web\Request
             return $sitesService->getCurrentSite();
         }
 
-        // Set the @web alias now (ahead of yii\base\Application::bootstrap())
-        // in case a site's base URL requires it
-        Craft::setAlias('@web', $this->getBaseUrl());
-
         $sites = $sitesService->getAllSites();
 
         $hostName = $this->getHostName();
@@ -975,8 +976,6 @@ class Request extends \yii\web\Request
 
     /**
      * Checks to see if this is an action request.
-     *
-     * @return void
      */
     private function _checkRequestType()
     {

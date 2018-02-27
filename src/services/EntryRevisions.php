@@ -534,7 +534,6 @@ class EntryRevisions extends Component
      *
      * @param BaseEntryRevisionModel $revision
      * @param Entry $entry
-     * @return void
      */
     private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision, Entry $entry)
     {

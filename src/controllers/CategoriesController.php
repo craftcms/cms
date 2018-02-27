@@ -635,7 +635,6 @@ class CategoriesController extends Controller
      * Preps category category variables.
      *
      * @param array &$variables
-     * @return void
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -771,7 +770,6 @@ class CategoriesController extends Controller
      * Enforces all Edit Category permissions.
      *
      * @param Category $category
-     * @return void
      */
     private function _enforceEditCategoryPermissions(Category $category)
     {
@@ -788,7 +786,6 @@ class CategoriesController extends Controller
      * Populates an Category with post data.
      *
      * @param Category $category
-     * @return void
      */
     private function _populateCategoryModel(Category $category)
     {

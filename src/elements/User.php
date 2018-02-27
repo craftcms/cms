@@ -569,13 +569,21 @@ class User extends Element implements IdentityInterface
         $names[] = 'cooldownEndTime';
         $names[] = 'friendlyName';
         $names[] = 'fullName';
-        $names[] = 'groups';
         $names[] = 'isCurrent';
         $names[] = 'name';
-        $names[] = 'photo';
-        $names[] = 'preferences';
         $names[] = 'preferredLanguage';
         $names[] = 'remainingCooldownTime';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'groups';
+        $names[] = 'photo';
         return $names;
     }
 
@@ -831,7 +839,6 @@ class User extends Element implements IdentityInterface
      * Sets an array of User element objects on the user.
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
-     * @return void
      */
     public function setGroups(array $groups)
     {
@@ -1316,56 +1323,72 @@ class User extends Element implements IdentityInterface
      */
     public function beforeDelete(): bool
     {
-        // Get the entry IDs that belong to this user
-        $entryQuery = (new Query())
-            ->select('e.id')
-            ->from('{{%entries}} e')
-            ->where(['e.authorId' => $this->id]);
+        // Do all this stuff within a transaction
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-        // Should we transfer the content to a new user?
-        if ($this->inheritorOnDelete) {
-            // Delete the template caches for any entries authored by this user
-            $entryIds = $entryQuery->column();
-            Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+        try {
+            // Get the entry IDs that belong to this user
+            $entryQuery = (new Query())
+                ->select('e.id')
+                ->from('{{%entries}} e')
+                ->where(['e.authorId' => $this->id]);
 
-            // Update the entry/version/draft tables to point to the new user
-            $userRefs = [
-                '{{%entries}}' => 'authorId',
-                '{{%entrydrafts}}' => 'creatorId',
-                '{{%entryversions}}' => 'creatorId',
-            ];
+            // Should we transfer the content to a new user?
+            if ($this->inheritorOnDelete) {
+                // Delete the template caches for any entries authored by this user
+                $entryIds = $entryQuery->column();
+                Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
-            foreach ($userRefs as $table => $column) {
-                Craft::$app->getDb()->createCommand()
-                    ->update(
-                        $table,
-                        [
-                            $column => $this->inheritorOnDelete->id
-                        ],
-                        [
-                            $column => $this->id
-                        ])
-                    ->execute();
+                // Update the entry/version/draft tables to point to the new user
+                $userRefs = [
+                    '{{%entries}}' => 'authorId',
+                    '{{%entrydrafts}}' => 'creatorId',
+                    '{{%entryversions}}' => 'creatorId',
+                ];
+
+                foreach ($userRefs as $table => $column) {
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            $table,
+                            [
+                                $column => $this->inheritorOnDelete->id
+                            ],
+                            [
+                                $column => $this->id
+                            ])
+                        ->execute();
+                }
+            } else {
+                // Get the entry IDs along with one of the sites they’re enabled in
+                $results = $entryQuery
+                    ->addSelect([
+                        'siteId' => (new Query())
+                            ->select('i18n.siteId')
+                            ->from('{{%elements_sites}} i18n')
+                            ->where('[[i18n.elementId]] = [[e.id]]')
+                            ->limit(1)
+                    ])
+                    ->all();
+
+                // Delete them
+                foreach ($results as $result) {
+                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+                }
             }
-        } else {
-            // Get the entry IDs along with one of the sites they’re enabled in
-            $results = $entryQuery
-                ->addSelect([
-                    'siteId' => (new Query())
-                        ->select('i18n.siteId')
-                        ->from('{{%elements_sites}} i18n')
-                        ->where('[[i18n.elementId]] = [[e.id]]')
-                        ->limit(1)
-                ])
-                ->all();
 
-            // Delete them
-            foreach ($results as $result) {
-                Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+            if (!parent::beforeDelete()) {
+                $transaction->rollBack();
+                return false;
             }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        return parent::beforeDelete();
+        return true;
     }
 
     // Private Methods

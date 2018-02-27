@@ -40,11 +40,13 @@ class ChartHelper
      * @param DateTime $startDate The start of the time duration to select (inclusive)
      * @param DateTime $endDate The end of the time duration to select (exclusive)
      * @param string $dateColumn The column that represents the date
+     * @param string $func The aggregate function to call for each date interval ('count', 'sum', 'average', 'min', or 'max')
+     * @param string $q The column name or expression to pass into the aggregate function (make sure column names are `[[quoted]]`)
      * @param array $options Any customizations that should be made over the default options
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, string $dateColumn, array $options = []): array
+    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, string $dateColumn, string $func, string $q, array $options = []): array
     {
         // Setup
         $options = array_merge([
@@ -90,7 +92,7 @@ class ChartHelper
             $total = (int)(clone $query)
                 ->andWhere(['>=', $dateColumn, Db::prepareDateForDb($cursorDate)])
                 ->andWhere(['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)])
-                ->scalar();
+                ->$func($q);
             $rows[] = [$cursorDate->format($phpDateFormat), $total];
             $cursorDate = $cursorEndDate;
         }

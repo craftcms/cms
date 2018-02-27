@@ -54,7 +54,6 @@ class Craft extends Yii
      * @param mixed $var The variable to be dumped.
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
      * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
-     * @return void
      */
     public static function dump($var, int $depth = 10, bool $highlight = true)
     {
@@ -67,7 +66,6 @@ class Craft extends Yii
      * @param mixed $var The variable to be dumped.
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
      * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
-     * @return void
      * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, int $depth = 10, bool $highlight = true)
@@ -113,7 +111,6 @@ class Craft extends Yii
      * Class autoloader.
      *
      * @param string $className
-     * @return void
      */
     public static function autoload($className)
     {

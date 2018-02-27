@@ -427,7 +427,6 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'editable' param to the query being prepared.
      *
-     * @return void
      * @throws QueryAbortedException
      */
     private function _applyEditableParam()
@@ -481,8 +480,6 @@ class EntryQuery extends ElementQuery
 
     /**
      * Applies the 'ref' param to the query being prepared.
-     *
-     * @return void
      */
     private function _applyRefParam()
     {
