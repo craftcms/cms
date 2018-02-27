@@ -19,6 +19,7 @@
 - Fixed a bug where Matrix fields were assigning the wrong field namespace to their blocks, when creating the blocks from revision or POST data. ([#2484](https://github.com/craftcms/cms/pull/2484))
 - Fixed an error that could occur when viewing entry revisions. ([#2491](https://github.com/craftcms/cms/issues/2491))
 - Fixed an error that occurred when programmatically saving an element that had been fetched with eager-loaded relations.
+- Fixed a bug where users’ Language preference options weren’t sorted alphabetically.
 
 ## 3.0.0-RC12 - 2018-02-22
 

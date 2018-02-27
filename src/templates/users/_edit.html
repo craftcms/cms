@@ -198,7 +198,7 @@
                 {% set languageInput %}
                     <div class="select">
                         <select id="language" name="preferredLanguage">
-                            {% set allAppLocales = craft.app.i18n.getAppLocales() %}
+                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName') %}
                             {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
 
                             {% for locale in allAppLocales %}
