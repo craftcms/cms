@@ -550,14 +550,10 @@ class Entry extends Element
         $rules = parent::rules();
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
-        $rules[] = [
-            ['authorId'],
-            'required',
-            'when' => function() {
-                return $this->getSection()->type !== Section::TYPE_SINGLE;
-            },
-            'on' => self::SCENARIO_LIVE
-        ];
+
+        if ($this->getSection()->type !== Section::TYPE_SINGLE) {
+            $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
+        }
 
         return $rules;
     }
