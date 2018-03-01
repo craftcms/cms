@@ -1723,7 +1723,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $filteredElementIds = array_keys($searchResults);
 
-            if ($this->orderBy === ['score' => SORT_ASC] || ['score' => SORT_DESC]) {
+            if ($this->orderBy === ['score' => SORT_ASC] || $this->orderBy === ['score' => SORT_DESC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 if (!$db instanceof \craft\db\Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
