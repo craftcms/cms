@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.models
  * @since     1.3
  */
-class urlModel extends BaseModel
+class UrlModel extends BaseModel
 {
 	// Properties
 	// =========================================================================
