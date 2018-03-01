@@ -783,7 +783,15 @@ abstract class Element extends Component implements ElementInterface
     public function attributes()
     {
         $names = parent::attributes();
-        $names[] = 'cpEditUrl';
+
+        if (!$this->structureId) {
+            ArrayHelper::removeValue($names, 'structureId');
+            ArrayHelper::removeValue($names, 'root');
+            ArrayHelper::removeValue($names, 'lft');
+            ArrayHelper::removeValue($names, 'rgt');
+            ArrayHelper::removeValue($names, 'level');
+        }
+
         $names[] = 'hasDescendants';
         $names[] = 'ref';
         $names[] = 'status';
