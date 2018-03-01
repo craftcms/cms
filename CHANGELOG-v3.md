@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Schema caching is now enabled on the `db` app component, improving `upsert()` performance among other things.
+
 ### Fixed
 - Fixed a bug where entries and entry types were not serializable. ([#2506](https://github.com/craftcms/cms/issues/2506))
 - Fixed a bug where you would get a PHP error loading an entry if it had a draft that was missing its entry type ID.
