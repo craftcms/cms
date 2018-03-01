@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a PHP error that could occur on case-sensitive file systems when loading RSS feeds. ([#2514](https://github.com/craftcms/cms/pull/2514))
+
 ## 2.6.3012 - 2018-02-27
 
 ### Changed
