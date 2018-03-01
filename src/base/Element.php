@@ -792,6 +792,10 @@ abstract class Element extends Component implements ElementInterface
             ArrayHelper::removeValue($names, 'level');
         }
 
+        ArrayHelper::removeValue($names, 'searchScore');
+        ArrayHelper::removeValue($names, 'awaitingFieldValues');
+        ArrayHelper::removeValue($names, 'propagating');
+
         $names[] = 'hasDescendants';
         $names[] = 'ref';
         $names[] = 'status';
