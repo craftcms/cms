@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use yii\base\InvalidConfigException;
 
 /**
  * Class EntryDraft model.
@@ -51,6 +52,15 @@ class EntryDraft extends BaseEntryRevisionModel
         }
 
         parent::__construct($config);
+
+        try {
+            $this->getType();
+        } catch (InvalidConfigException $e) {
+            // We must be missing our typeId or it's invalid.
+            $entryTypes = $this->getSection()->getEntryTypes();
+            $entryType = reset($entryTypes);
+            $this->typeId = $entryType->id;
+        }
 
         // Use the live content as a starting point
         Craft::$app->getContent()->populateElementContent($this);
