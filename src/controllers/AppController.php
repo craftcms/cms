@@ -121,6 +121,7 @@ class AppController extends Controller
     public function actionMigrate()
     {
         $this->requirePostRequest();
+        $this->enableCsrfValidation = false;
 
         $updatesService = Craft::$app->getUpdates();
         $db = Craft::$app->getDb();
