@@ -5,6 +5,7 @@
 ### Changed
 - Schema caching is now enabled on the `db` app component, improving `upsert()` performance among other things.
 - CSRF validation is now disabled for `craft\controllers\AppController->actionMigrate()` by default since it is mainly used for public webhook callbacks.
+- Matrix fields now include any block validation errors on the owner element with the attribute format `MatrixFieldHandle[BlockIndex].NestedFieldHandle`.
 
 ### Fixed
 - Fixed a bug where entries and entry types were not serializable. ([#2506](https://github.com/craftcms/cms/issues/2506))

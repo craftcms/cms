@@ -519,18 +519,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $value = $element->getFieldValue($this->handle);
         $blocksValidate = true;
 
-        foreach ($value->all() as $block) {
+        foreach ($value->all() as $i => $block) {
             /** @var MatrixBlock $block */
             if ($element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
-            if (!$block->validate()) {
-                $blocksValidate = false;
-            }
-        }
 
-        if (!$blocksValidate) {
-            $element->addError($this->handle, Craft::t('app', 'Correct the errors listed above.'));
+            if (!$block->validate()) {
+                foreach ($block->getErrors() as $attribute => $errors) {
+                    $element->addErrors([
+                        "{$this->handle}[{$i}].{$attribute}" => $errors,
+                    ]);
+                }
+            }
         }
     }
 
