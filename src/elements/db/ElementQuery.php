@@ -859,6 +859,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException($e->getMessage(), 0, $e);
         }
 
+        // Normalize the orderBy param in case it was set directly
+        if (!empty($this->orderBy)) {
+            $this->orderBy = $this->normalizeOrderBy($this->orderBy);
+        }
+
         // Build the query
         // ---------------------------------------------------------------------
 
@@ -1793,10 +1798,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        // In case $this->orderBy was set directly instead of via orderBy()
-        $orderBy = $this->normalizeOrderBy($this->orderBy);
+        $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
-
         $orderColumnMap = [];
 
         if (is_array($this->customFields)) {
