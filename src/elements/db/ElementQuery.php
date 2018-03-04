@@ -979,26 +979,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function orderBy($columns)
-    {
-        // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
-        if ($columns === 'score') {
-            $columns = ['score' => SORT_DESC];
-        }
-
-        parent::orderBy($columns);
-
-        // If $columns normalizes to an empty array, just set it to null
-        if ($this->orderBy === []) {
-            $this->orderBy = null;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function count($q = '*', $db = null)
     {
         // Cached?
@@ -1381,6 +1361,22 @@ class ElementQuery extends Query implements ElementQueryInterface
         $joinTable = "{{%{$table}}} {$table}";
         $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function normalizeOrderBy($columns)
+    {
+        // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
+        if ($columns === 'score') {
+            return ['score' => SORT_DESC];
+        }
+
+        $result = parent::normalizeOrderBy($columns);
+
+        // If $columns normalizes to an empty array, just set it to null
+        return $result !== [] ? $result : null;
     }
 
     // Private Methods
