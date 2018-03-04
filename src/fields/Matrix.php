@@ -517,7 +517,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         /** @var Element $element */
         /** @var MatrixBlockQuery $value */
         $value = $element->getFieldValue($this->handle);
-        $blocksValidate = true;
 
         foreach ($value->all() as $i => $block) {
             /** @var MatrixBlock $block */
@@ -526,11 +525,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
 
             if (!$block->validate()) {
-                foreach ($block->getErrors() as $attribute => $errors) {
-                    $element->addErrors([
-                        "{$this->handle}[{$i}].{$attribute}" => $errors,
-                    ]);
-                }
+                $element->addModelErrors($block, "{$this->handle}[{$i}]");
             }
         }
     }

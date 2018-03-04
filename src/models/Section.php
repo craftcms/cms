@@ -105,10 +105,8 @@ class Section extends Model
 
     /**
      * Validates the site settings.
-     *
-     * @param string $attribute
      */
-    public function validateSiteSettings(string $attribute)
+    public function validateSiteSettings()
     {
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
@@ -120,20 +118,14 @@ class Section extends Model
                 ->column();
 
             if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
-                $this->addError($attribute, Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
+                $this->addError('siteSettings', Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
             }
         }
 
-        $validates = true;
-
-        foreach ($this->getSiteSettings() as $siteSettings) {
+        foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $validates = false;
+                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
-        }
-
-        if (!$validates) {
-            $this->addError($attribute, Craft::t('app', 'Correct the errors listed above.'));
         }
     }
 

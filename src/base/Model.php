@@ -79,6 +79,25 @@ abstract class Model extends \yii\base\Model
         return $fields;
     }
 
+    /**
+     * Adds errors from another model, with a given attribute name prefix.
+     *
+     * @param \yii\base\Model
+     * @param string $attrPrefix
+     */
+    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
+    {
+        if ($attrPrefix !== '') {
+            $attrPrefix = rtrim($attrPrefix, '.').'.';
+        }
+
+        foreach ($model->getErrors() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $this->addError($attrPrefix.$attribute, $error);
+            }
+        }
+    }
+
     // Deprecated Methods
     // -------------------------------------------------------------------------
 
