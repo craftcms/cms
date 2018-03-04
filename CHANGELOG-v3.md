@@ -10,7 +10,7 @@
 ### Fixed
 - Fixed a bug where entries and entry types were not serializable. ([#2506](https://github.com/craftcms/cms/issues/2506))
 - Fixed a bug where you would get a PHP error loading an entry if it had a draft that was missing its entry type ID.
-- Fixed a bug where some element queries that involved searching and sort ordering would ignore the sort order portion of the query.
+- Fixed a bug where all element queries with a `search` param were getting ordered by search score, even if the query had been configured not to be. ([#2520](https://github.com/craftcms/cms/issues/2520))
 - Fixed a bug where it wasn’t possible to use the `_includes/forms/select.html` include template’s `toggle` feature if the template was getting namespaced.
 
 ## 3.0.0-RC13 - 2018-02-27
