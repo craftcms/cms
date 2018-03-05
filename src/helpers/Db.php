@@ -460,7 +460,7 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator);
 
-            if (StringHelper::toLowerCase($val) === ':empty:') {
+            if (is_string($val) && StringHelper::toLowerCase($val) === ':empty:') {
                 if ($operator === '=') {
                     if ($isMysql) {
                         $condition[] = [
@@ -492,7 +492,7 @@ class Db
                         ];
                     }
                 }
-            } else {
+            } else if (is_string($val)) {
                 // Trim any whitespace from the value
                 $val = trim($val);
 
@@ -517,6 +517,8 @@ class Db
                 } else {
                     $condition[] = [$operator, $column, $val];
                 }
+            } else {
+                $condition[] = [$operator, $column, $val];
             }
         }
 
@@ -630,13 +632,13 @@ class Db
     /**
      * Normalizes “empty” values.
      *
-     * @param string|null &$value The param value.
+     * @param mixed &$value The param value.
      */
-    private static function _normalizeEmptyValue(string &$value = null)
+    private static function _normalizeEmptyValue(&$value)
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (StringHelper::toLowerCase($value) === ':notempty:') {
+        } else if (is_string($value) && StringHelper::toLowerCase($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }
