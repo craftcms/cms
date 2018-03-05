@@ -1504,6 +1504,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Returns whether we should join structure data in the query.
+     *
+     * @return bool
+     */
+    private function _shouldJoinStructureData(): bool
+    {
+        return $this->withStructure || ($this->withStructure !== false && $this->structureId);
+    }
+
+    /**
      * Applies the structure params to the query being prepared.
      *
      * @param string $class
@@ -1511,7 +1521,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->withStructure || ($this->withStructure !== false && $this->structureId)) {
+        if ($this->_shouldJoinStructureData()) {
             $this->query
                 ->addSelect([
                     'structureelements.root',
@@ -1777,9 +1787,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if ($this->structureId) {
-                $this->orderBy = ['structureelements.lft' => SORT_ASC];
-            } else if ($this->withStructure) {
+            } else if ($this->_shouldJoinStructureData()) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
             } else {
                 $this->orderBy = $this->defaultOrderBy;
