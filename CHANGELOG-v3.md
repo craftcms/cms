@@ -16,6 +16,7 @@
 - Fixed a bug where you would get a PHP error loading an entry if it had a draft that was missing its entry type ID.
 - Fixed a bug where all element queries with a `search` param were getting ordered by search score, even if the query had been configured not to be. ([#2520](https://github.com/craftcms/cms/issues/2520))
 - Fixed a bug where it wasn’t possible to use the `_includes/forms/select.html` include template’s `toggle` feature if the template was getting namespaced.
+- Fixed a bug where entries in Channel sections weren’t being ordered by `postDate desc` by default. ([#2531](https://github.com/craftcms/cms/issues/2531))
 
 ## 3.0.0-RC13 - 2018-02-27
 

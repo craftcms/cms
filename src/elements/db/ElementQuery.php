@@ -1780,10 +1780,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             } else if ($this->structureId) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC];
             } else if ($this->withStructure) {
-                $this->orderBy = [
-                    'structureelements.lft' => SORT_ASC,
-                    'elements.dateCreated' => SORT_DESC,
-                ];
+                $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
             } else {
                 $this->orderBy = $this->defaultOrderBy;
             }
