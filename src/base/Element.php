@@ -802,26 +802,6 @@ abstract class Element extends Component implements ElementInterface
         $names[] = 'structureId';
         $names[] = 'totalDescendants';
         $names[] = 'url';
-        return $names;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function extraFields()
-    {
-        $names = [
-            'ancestors',
-            'children',
-            'descendants',
-            'next',
-            'nextSibling',
-            'parent',
-            'prev',
-            'prevSibling',
-            'siblings',
-            'site',
-        ];
 
         // Include custom field handles
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
@@ -833,6 +813,25 @@ abstract class Element extends Component implements ElementInterface
 
         // In case there are any field handles that had the same name as an existing property
         return array_unique($names);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        return [
+            'ancestors',
+            'children',
+            'descendants',
+            'next',
+            'nextSibling',
+            'parent',
+            'prev',
+            'prevSibling',
+            'siblings',
+            'site',
+        ];
     }
 
     /**
