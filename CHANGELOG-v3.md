@@ -18,6 +18,7 @@
 - Fixed a bug where it wasn’t possible to use the `_includes/forms/select.html` include template’s `toggle` feature if the template was getting namespaced.
 - Fixed a bug where entries in Channel sections weren’t being ordered by `postDate desc` by default. ([#2531](https://github.com/craftcms/cms/issues/2531))
 - Fixed a SQL error that could occur when `true` or `false` was passed to a Lightswitch field’s element query param on PostgreSQL. ([#2530](https://github.com/craftcms/cms/issues/2530))
+- Fixed a bug where if a plugin prevented an element from being moved within a structure, the element index page would react as if the move had completed successfully. ([#2537](https://github.com/craftcms/cms/issues/2537))
 
 ## 3.0.0-RC13 - 2018-02-27
 
