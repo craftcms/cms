@@ -96,7 +96,7 @@ class PluginStore extends Component
     }
 
     /**
-     * Get authenticated client.
+     * Returns the authenticated Guzzle client.
      *
      * @return Client
      */
@@ -116,7 +116,7 @@ class PluginStore extends Component
     }
 
     /**
-     * Save OAuth token.
+     * Saves the OAuth token.
      *
      * @param array $tokenArray
      */
@@ -170,7 +170,7 @@ class PluginStore extends Component
     }
 
     /**
-     * Get OAuth token.
+     * Returns the OAuth token.
      *
      * @return mixed
      */
@@ -178,16 +178,11 @@ class PluginStore extends Component
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-
         // Get the token from the session
-
         $token = Craft::$app->getSession()->get('pluginStore.token');
 
-
         // Or use the token from the database otherwise
-
         if (!$token || ($token && $token->hasExpired())) {
-
             $oauthTokenRecord = OauthTokenRecord::find()
                 ->where(['userId' => $userId])
                 ->one();
@@ -201,7 +196,7 @@ class PluginStore extends Component
     }
 
     /**
-     * Delete OAuth token.
+     * Deletes an OAuth token.
      */
     public function deleteToken()
     {
@@ -217,13 +212,14 @@ class PluginStore extends Component
             $oauthToken->delete();
         }
 
+
         // Delete session token
 
         Craft::$app->getSession()->remove('pluginStore.token');
     }
 
     /**
-     * Delete token from its user ID.
+     * Deletes the token from its user ID.
      *
      * @param int $userId
      *
@@ -245,7 +241,7 @@ class PluginStore extends Component
     }
 
     /**
-     * Get token by user ID.
+     * Returns the token by user ID.
      *
      * @param $userId
      *
