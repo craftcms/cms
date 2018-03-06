@@ -947,7 +947,7 @@ return [
     'Single-line text' => 'Enkele-lijn tekst',
     'Singles' => 'Eenmalig',
     'Site' => 'Website',
-    'Site Homepage' => 'Homepae',
+    'Site Homepage' => 'Homepage',
     'Site Icon' => 'Site icoon',
     'Site Settings' => 'Website-instellingen',
     'Site saved.' => 'Website opgeslagen.',
