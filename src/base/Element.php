@@ -783,33 +783,25 @@ abstract class Element extends Component implements ElementInterface
     public function attributes()
     {
         $names = parent::attributes();
-        $names[] = 'cpEditUrl';
+
+        if (!$this->structureId) {
+            ArrayHelper::removeValue($names, 'structureId');
+            ArrayHelper::removeValue($names, 'root');
+            ArrayHelper::removeValue($names, 'lft');
+            ArrayHelper::removeValue($names, 'rgt');
+            ArrayHelper::removeValue($names, 'level');
+        }
+
+        ArrayHelper::removeValue($names, 'searchScore');
+        ArrayHelper::removeValue($names, 'awaitingFieldValues');
+        ArrayHelper::removeValue($names, 'propagating');
+
         $names[] = 'hasDescendants';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
         $names[] = 'totalDescendants';
         $names[] = 'url';
-        return $names;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function extraFields()
-    {
-        $names = [
-            'ancestors',
-            'children',
-            'descendants',
-            'next',
-            'nextSibling',
-            'parent',
-            'prev',
-            'prevSibling',
-            'siblings',
-            'site',
-        ];
 
         // Include custom field handles
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
@@ -821,6 +813,25 @@ abstract class Element extends Component implements ElementInterface
 
         // In case there are any field handles that had the same name as an existing property
         return array_unique($names);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        return [
+            'ancestors',
+            'children',
+            'descendants',
+            'next',
+            'nextSibling',
+            'parent',
+            'prev',
+            'prevSibling',
+            'siblings',
+            'site',
+        ];
     }
 
     /**

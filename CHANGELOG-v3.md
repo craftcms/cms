@@ -1,5 +1,25 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC14 - 2018-03-06
+
+### Added
+- Added `craft\base\Model::addModelErrors()`.
+
+### Changed
+- Schema caching is now enabled on the `db` app component, improving `upsert()` performance among other things.
+- CSRF validation is now disabled for `craft\controllers\AppController->actionMigrate()` by default since it is mainly used for public webhook callbacks.
+- Matrix fields now include any block validation errors on the owner element with the attribute format `MatrixFieldHandle[BlockIndex].NestedFieldHandle`.
+- Sections and category groups now include any site settings validation errors with the attribute format `siteSettings[Index].NestedAttribute`.
+
+### Fixed
+- Fixed a bug where entries and entry types were not serializable. ([#2506](https://github.com/craftcms/cms/issues/2506))
+- Fixed a bug where you would get a PHP error loading an entry if it had a draft that was missing its entry type ID.
+- Fixed a bug where all element queries with a `search` param were getting ordered by search score, even if the query had been configured not to be. ([#2520](https://github.com/craftcms/cms/issues/2520))
+- Fixed a bug where it wasn’t possible to use the `_includes/forms/select.html` include template’s `toggle` feature if the template was getting namespaced.
+- Fixed a bug where entries in Channel sections weren’t being ordered by `postDate desc` by default. ([#2531](https://github.com/craftcms/cms/issues/2531))
+- Fixed a SQL error that could occur when `true` or `false` was passed to a Lightswitch field’s element query param on PostgreSQL. ([#2530](https://github.com/craftcms/cms/issues/2530))
+- Fixed a bug where if a plugin prevented an element from being moved within a structure, the element index page would react as if the move had completed successfully. ([#2537](https://github.com/craftcms/cms/issues/2537))
+
 ## 3.0.0-RC13 - 2018-02-27
 
 ### Added

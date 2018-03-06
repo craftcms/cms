@@ -1,4 +1,4 @@
-/*!   - 2018-02-27 */
+/*!   - 2018-03-06 */
 (function($){
 
 /** global: Craft */
@@ -17235,6 +17235,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
+                        if (!response.success) {
+                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            this.tableView.elementIndex.updateElements();
+                            return;
+                        }
                         Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
                         this.onPositionChange();
 

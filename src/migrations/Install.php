@@ -140,7 +140,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%assettransformindex}}', [
             'id' => $this->primaryKey(),
@@ -178,7 +178,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%categorygroups}}', [
             'id' => $this->primaryKey(),
@@ -281,7 +281,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%entrydrafts}}', [
             'id' => $this->primaryKey(),
@@ -405,7 +405,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%matrixblocktypes}}', [
             'id' => $this->primaryKey(),
@@ -584,7 +584,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%templatecacheelements}}', [
             'cacheId' => $this->integer()->notNull(),
@@ -685,7 +685,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%volumefolders}}', [
             'id' => $this->primaryKey(),

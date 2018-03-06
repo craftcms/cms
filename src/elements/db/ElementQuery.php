@@ -859,6 +859,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException($e->getMessage(), 0, $e);
         }
 
+        // Normalize the orderBy param in case it was set directly
+        if (!empty($this->orderBy)) {
+            $this->orderBy = $this->normalizeOrderBy($this->orderBy);
+        }
+
         // Build the query
         // ---------------------------------------------------------------------
 
@@ -974,26 +979,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $this->_createElements($rows);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function orderBy($columns)
-    {
-        // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
-        if ($columns === 'score') {
-            $columns = ['score' => SORT_DESC];
-        }
-
-        parent::orderBy($columns);
-
-        // If $columns normalizes to an empty array, just set it to null
-        if ($this->orderBy === []) {
-            $this->orderBy = null;
-        }
-
-        return $this;
     }
 
     /**
@@ -1383,6 +1368,22 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function normalizeOrderBy($columns)
+    {
+        // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
+        if ($columns === 'score') {
+            return ['score' => SORT_DESC];
+        }
+
+        $result = parent::normalizeOrderBy($columns);
+
+        // If $columns normalizes to an empty array, just set it to null
+        return $result !== [] ? $result : null;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -1503,6 +1504,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Returns whether we should join structure data in the query.
+     *
+     * @return bool
+     */
+    private function _shouldJoinStructureData(): bool
+    {
+        return $this->withStructure || ($this->withStructure !== false && $this->structureId);
+    }
+
+    /**
      * Applies the structure params to the query being prepared.
      *
      * @param string $class
@@ -1510,7 +1521,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->withStructure || ($this->withStructure !== false && $this->structureId)) {
+        if ($this->_shouldJoinStructureData()) {
             $this->query
                 ->addSelect([
                     'structureelements.root',
@@ -1723,7 +1734,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $filteredElementIds = array_keys($searchResults);
 
-            if ($this->orderBy === ['score' => SORT_ASC] || ['score' => SORT_DESC]) {
+            if ($this->orderBy === ['score' => SORT_ASC] || $this->orderBy === ['score' => SORT_DESC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 if (!$db instanceof \craft\db\Connection) {
                     throw new Exception('The database connection doesn’t support fixed ordering.');
@@ -1776,13 +1787,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if ($this->structureId) {
-                $this->orderBy = ['structureelements.lft' => SORT_ASC];
-            } else if ($this->withStructure) {
-                $this->orderBy = [
-                    'structureelements.lft' => SORT_ASC,
-                    'elements.dateCreated' => SORT_DESC,
-                ];
+            } else if ($this->_shouldJoinStructureData()) {
+                $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
             } else {
                 $this->orderBy = $this->defaultOrderBy;
             }
@@ -1797,10 +1803,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        // In case $this->orderBy was set directly instead of via orderBy()
-        $orderBy = $this->normalizeOrderBy($this->orderBy);
+        $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
-
         $orderColumnMap = [];
 
         if (is_array($this->customFields)) {

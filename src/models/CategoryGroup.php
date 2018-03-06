@@ -97,21 +97,13 @@ class CategoryGroup extends Model
 
     /**
      * Validates the site settings.
-     *
-     * @param string $attribute
      */
-    public function validateSiteSettings(string $attribute)
+    public function validateSiteSettings()
     {
-        $validates = true;
-
-        foreach ($this->getSiteSettings() as $siteSettings) {
+        foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $validates = false;
+                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
-        }
-
-        if (!$validates) {
-            $this->addError($attribute, Craft::t('app', 'Correct the errors listed above.'));
         }
     }
 

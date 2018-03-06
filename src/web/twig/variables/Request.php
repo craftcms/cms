@@ -138,7 +138,7 @@ class Request
      */
     public function getUrl()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use url(craft.app.request.pathInfo) instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use craft.app.request.absoluteUrl instead.');
 
         return UrlHelper::url(Craft::$app->getRequest()->getPathInfo());
     }
