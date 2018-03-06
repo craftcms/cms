@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC14 - 2018-03-06
 
 ### Added
 - Added `craft\base\Model::addModelErrors()`.
