@@ -67,29 +67,27 @@ class PluginStore extends Component
     /**
      * Returns the Craft ID account.
      *
-     * @return array|null
+     * @return mixed|null
+     * @throws \Exception
      */
     public function getCraftIdAccount()
     {
-        try {
-            $craftIdToken = $this->getToken();
+        $craftIdToken = $this->getToken();
 
-            if ($craftIdToken && $craftIdToken->hasExpired()) {
-                $craftIdToken = null;
-            }
+        if ($craftIdToken && $craftIdToken->hasExpired()) {
+            $craftIdToken = null;
+        }
 
+        if ($craftIdToken) {
             $client = $this->getClient();
+            $craftIdAccountResponse = $client->request('GET', 'account');
+            $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
 
-            if ($craftIdToken) {
-                $craftIdAccountResponse = $client->request('GET', 'account');
-                $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-                if (!isset($craftIdAccount['error'])) {
-                    return $craftIdAccount;
-                }
+            if (isset($craftIdAccount['error'])) {
+                throw new \Exception("Couldn’t get Craft ID account: ".$craftIdAccount['error']);
             }
-        } catch (ServerException $e) {
-            // Todo: Handle exception
+
+            return $craftIdAccount;
         }
 
         return null;
