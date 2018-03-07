@@ -966,6 +966,17 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Detects whether the given string has any 4-byte UTF-8 characters.
+     *
+     * @param string $string
+     * @return bool
+     */
+    public static function hasMb4(string $string): bool
+    {
+        return max(array_map('ord', str_split($string))) >= 240;
+    }
+
+    /**
      * HTML-encodes any 4-byte UTF-8 characters.
      *
      * @param string $string The string
