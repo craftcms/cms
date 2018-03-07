@@ -47,11 +47,12 @@ class EntryRevisionsController extends BaseEntriesController
                 throw new NotFoundHttpException('Entry draft not found');
             }
         } else {
-            $draft = new EntryDraft();
-            $draft->id = Craft::$app->getRequest()->getBodyParam('entryId');
-            $draft->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
-            $draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
-            $draft->siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
+            $draft = new EntryDraft([
+                'id' => Craft::$app->getRequest()->getBodyParam('entryId'),
+                'sectionId' => Craft::$app->getRequest()->getRequiredBodyParam('sectionId'),
+                'creatorId' => Craft::$app->getUser()->getIdentity()->id,
+                'siteId' => Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id,
+            ]);
         }
 
         // Make sure they have permission to be editing this
