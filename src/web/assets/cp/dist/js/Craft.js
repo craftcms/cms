@@ -1,4 +1,4 @@
-/*!   - 2018-03-06 */
+/*!   - 2018-03-07 */
 (function($){
 
 /** global: Craft */
@@ -2940,17 +2940,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;
