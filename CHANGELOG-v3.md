@@ -11,6 +11,7 @@
 - Element titles now get a validation error if they contain any 4+ byte characters (like emoji), on servers running MySQL. ([#2513](https://github.com/craftcms/cms/issues/2513))
 - Craft now sets the `@web` and `@webroot` aliases for console requests.
 - The web and console installers now set the default site URL to `@web`.
+- Cleaned up the styling of subnav items in the global Control Panel navigation.
 
 ### Fixed
 - Fixed an error that occurred when creating a new entry draft. ([#2544](https://github.com/craftcms/cms/issues/2544))

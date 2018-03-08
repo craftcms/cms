@@ -29,6 +29,7 @@ body {
 /* global sidebar */
 
 $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
+$sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 #global-sidebar {
   flex: 0 0 $sidebarWidth;
@@ -282,9 +283,15 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       ul {
         display: block;
+        margin-bottom: 10px;
 
         li a {
-          @include padding-left(60px);
+          @include padding(3px, 14px, 3px, 56px);
+          font-size: 12px;
+
+          &:not(.active) {
+            color: $sidebarLinkSecondaryColor;
+          }
         }
       }
     }

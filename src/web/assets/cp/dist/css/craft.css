@@ -1689,9 +1689,11 @@ body.rtl #global-sidebar #nav li a .icon { margin: 0 0 0 22px ; }
 #global-sidebar #nav li a .badge { background: rgba(255, 255, 255, 0.5); color: #333f4d; }
 body.ltr #global-sidebar #nav li a .badge { margin-right: 0; }
 body.rtl #global-sidebar #nav li a .badge { margin-left: 0; }
-#global-sidebar #nav li ul { display: block; }
-body.ltr #global-sidebar #nav li ul li a { padding-left: 60px; }
-body.rtl #global-sidebar #nav li ul li a { padding-right: 60px; }
+#global-sidebar #nav li ul { display: block; margin-bottom: 10px; }
+#global-sidebar #nav li ul li a { font-size: 12px; }
+body.ltr #global-sidebar #nav li ul li a { padding: 3px 14px 3px 56px; }
+body.rtl #global-sidebar #nav li ul li a { padding: 3px 56px 3px 14px; }
+#global-sidebar #nav li ul li a:not(.active) { color: #bcbfc2; }
 
 #app-info { padding: 14px 14px 24px; color: #0a0d0f; text-align: center; }
 #app-info #edition { font-size: 14px; }
