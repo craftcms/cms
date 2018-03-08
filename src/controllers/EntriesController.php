@@ -532,13 +532,6 @@ class EntriesController extends BaseEntriesController
             $revisionsService->saveVersion($currentEntry);
         }
 
-        // Validate that the title does not have an emoji
-        if (StringHelper::hasMb4($entry->title)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry with emoji in title.'));
-            return null;
-        }
-
-
         // Save the entry (finally!)
         if ($entry->enabled && $entry->enabledForSite) {
             $entry->setScenario(Element::SCENARIO_LIVE);

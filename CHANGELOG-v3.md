@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\db\Connection::getSupportsMb4()` and `setSupportsMb4()`.
+- Added `craft\helpers\StringHelper::containsMb4()`.
+- Added `craft\validators\StringValidator`.
+
+### Changed
+- Element titles now get a validation error if they contain any 4+ byte characters (like emoji), on servers running MySQL. ([#2513](https://github.com/craftcms/cms/issues/2513))
+
 ### Fixed
 - Fixed an error that occurred when creating a new entry draft. ([#2544](https://github.com/craftcms/cms/issues/2544))
 - Fixed a bug where the primary action button on element index pages was getting positioned off-screen on IE11. ([#2545](https://github.com/craftcms/cms/issues/2545))

@@ -971,7 +971,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $string
      * @return bool
      */
-    public static function hasMb4(string $string): bool
+    public static function containsMb4(string $string): bool
     {
         return max(array_map('ord', str_split($string))) >= 240;
     }
@@ -986,7 +986,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function encodeMb4(string $string): string
     {
         // Does this string have any 4+ byte Unicode chars?
-        if (max(array_map('ord', str_split($string))) >= 240) {
+        if (static::containsMb4($string)) {
             $string = preg_replace_callback('/./u', function(array $match) {
                 if (strlen($match[0]) >= 4) {
                     // (Logic pulled from WP's wp_encode_emoji() function)

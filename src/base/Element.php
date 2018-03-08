@@ -37,6 +37,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
+use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use yii\base\Event;
@@ -45,7 +46,6 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 use yii\validators\NumberValidator;
-use yii\validators\StringValidator;
 use yii\validators\Validator;
 
 /**
@@ -901,7 +901,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
