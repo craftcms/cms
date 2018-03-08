@@ -852,6 +852,19 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getAttributeLabel($attribute)
+    {
+        // Is this the "field:handle" syntax?
+        if (strncmp($attribute, 'field:', 6) === 0) {
+            $attribute = substr($attribute, 6);
+        }
+
+        return parent::getAttributeLabel($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         $labels = [
