@@ -719,19 +719,16 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name): bool
     {
+        // Is this the "field:handle" syntax?
+        if (strncmp($name, 'field:', 6) === 0) {
+            return $this->fieldByHandle(substr($name, 6)) !== null;
+        }
+
         return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
     }
 
     /**
-     * Returns a property value.
-     * This method will check if $name is one of the following:
-     * - a magic property supported by [[\yii\base\Component::__isset()]]
-     * - a custom field handle
-     *
-     * @param string $name The property name
-     * @return mixed The property value
-     * @throws UnknownPropertyException if the property is not defined
-     * @throws InvalidCallException if the property is write-only.
+     * @inheritdoc
      */
     public function __get($name)
     {
@@ -746,12 +743,31 @@ abstract class Element extends Component implements ElementInterface
             return $this->getEagerLoadedElements($name);
         }
 
-        // If this is a field, make sure the value has been normalized
-        if (($field = $this->fieldByHandle($name)) !== null) {
+        // Is this the "field:handle" syntax?
+        if (strncmp($name, 'field:', 6) === 0) {
+            return $this->getFieldValue(substr($name, 6));
+        }
+
+        // If this is a field, make sure the value has been normalized before returning the ContentBehavior value
+        if ($this->fieldByHandle($name) !== null) {
             $this->normalizeFieldValue($name);
         }
 
         return parent::__get($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        // Is this the "field:handle" syntax?
+        if (strncmp($name, 'field:', 6) === 0) {
+            $this->setFieldValue(substr($name, 6), $value);
+            return;
+        }
+
+        parent::__set($name, $value);
     }
 
     /**
@@ -888,9 +904,11 @@ abstract class Element extends Component implements ElementInterface
 
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
+                $attribute = 'field:'.$field->handle;
+
                 if ($field->required) {
                     // Only validate required custom fields on the LIVE scenario
-                    $rules[] = [[$field->handle], 'required', 'isEmpty' => [$field, 'isEmpty'], 'on' => self::SCENARIO_LIVE];
+                    $rules[] = [[$attribute], 'required', 'isEmpty' => [$field, 'isEmpty'], 'on' => self::SCENARIO_LIVE];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -903,16 +921,21 @@ abstract class Element extends Component implements ElementInterface
                     } else {
                         if (is_string($rule)) {
                             // "Validator" syntax
-                            $rule = [$field->handle, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+                            $rule = [$attribute, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
                         }
 
                         if (!is_array($rule) || !isset($rule[0])) {
                             throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
                         }
 
-                        if (!isset($rule[1])) {
+                        if (isset($rule[1])) {
+                            // Make sure the attribute name starts with 'field:'
+                            if ($rule[0] === $field->handle) {
+                                $rule[0] = $attribute;
+                            }
+                        } else {
                             // ["Validator"] syntax
-                            array_unshift($rule, $field->handle);
+                            array_unshift($rule, $attribute);
                         }
 
                         if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
