@@ -65,7 +65,6 @@ use yii\validators\Validator;
  * @property bool $hasDescendants Whether the element has descendants
  * @property bool $hasFreshContent Whether the element’s content is "fresh" (unsaved and without validation errors)
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property string $indexHtml The element index HTML
  * @property bool $isEditable Whether the current user can edit the element
  * @property \Twig_Markup|null $link An anchor pre-filled with this element’s URL and title
  * @property Element|null $next The next element relative to this one, from a given set of criteria
