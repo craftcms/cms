@@ -60,6 +60,17 @@ class Application extends \yii\console\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        // Ensure that the request component has been instantiated
+        if (!$this->has('request', true)) {
+            $this->getRequest();
+        }
+    }
+
+    /**
      * Returns the configuration of the built-in commands.
      *
      * @return array The configuration of the built-in commands.

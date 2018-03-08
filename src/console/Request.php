@@ -7,6 +7,7 @@
 
 namespace craft\console;
 
+use Craft;
 use craft\base\RequestTrait;
 
 /**
@@ -23,6 +24,18 @@ class Request extends \yii\console\Request
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Set the @webroot and @web aliases, in case they are needed
+        Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+        Craft::setAlias('@web', '/');
+    }
 
     /**
      * Returns whether the Control Panel was requested. (Narrator: It wasn't.)
