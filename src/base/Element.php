@@ -746,10 +746,9 @@ abstract class Element extends Component implements ElementInterface
             return $this->getEagerLoadedElements($name);
         }
 
-        // Give custom fields priority over other getters so we have a chance to prepare their values
-        $field = $this->fieldByHandle($name);
-        if ($field !== null) {
-            return $this->getFieldValue($name);
+        // If this is a field, make sure the value has been normalized
+        if (($field = $this->fieldByHandle($name)) !== null) {
+            $this->normalizeFieldValue($name);
         }
 
         return parent::__get($name);
@@ -1489,10 +1488,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getFieldValue(string $fieldHandle)
     {
-        // Is this the first time this field value has been accessed?
-        if (!isset($this->_normalizedFieldValues[$fieldHandle])) {
-            $this->normalizeFieldValue($fieldHandle);
-        }
+        // Make sure the value has been normalized
+        $this->normalizeFieldValue($fieldHandle);
 
         return $this->getBehavior('customFields')->$fieldHandle;
     }
@@ -1804,6 +1801,11 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function normalizeFieldValue(string $fieldHandle)
     {
+        // Have we already normalized this value?
+        if (isset($this->_normalizedFieldValues[$fieldHandle])) {
+            return;
+        }
+
         $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
