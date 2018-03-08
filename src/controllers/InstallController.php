@@ -93,7 +93,7 @@ class InstallController extends Controller
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
         $defaultSystemName = implode(' ', array_map('ucfirst', $words));
-        $defaultSiteUrl = 'http://'.$server;
+        $defaultSiteUrl = '@web';
 
         $iconsPath = Craft::getAlias('@app/icons');
         $dbIcon = $showDbScreen ? file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'database.svg') : null;

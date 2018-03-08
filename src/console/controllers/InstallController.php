@@ -120,7 +120,7 @@ class InstallController extends Controller
         $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         $password = $this->password ?: $this->_passwordPrompt();
         $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
-        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'validator' => [$this, 'validateSiteUrl']]);
+        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => '@web', 'validator' => [$this, 'validateSiteUrl']]);
         $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
 
         $site = new Site([
