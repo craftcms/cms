@@ -12,6 +12,7 @@ use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\ApiException;
+use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
@@ -165,10 +166,40 @@ class Api extends Component
         ]);
 
         try {
-            return $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
             throw new ApiException($e->getMessage(), $e->getCode(), $e);
         }
+
+        // cache license info from the response
+        $cache = Craft::$app->getCache();
+        $duration = 86400;
+        if ($response->hasHeader('X-Craft-Allow-Trials')) {
+            $cache->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), (bool)$response->getHeaderLine('X-Craft-Allow-Trials'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Status')) {
+            $cache->set('licenseKeyStatus', $response->getHeaderLine('X-Craft-License-Status'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Domain')) {
+            $cache->set('licensedDomain', $response->getHeaderLine('X-Craft-License-Domain'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Edition')) {
+            $cache->set('licensedEdition', $response->getHeaderLine('X-Craft-License-Edition'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
+            $pluginsService = Craft::$app->getPlugins();
+            $pluginLicenseStatuses = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
+
+            foreach ($pluginLicenseStatuses as $info) {
+                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
+                try {
+                    $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+                } catch (InvalidPluginException $e) {
+                }
+            }
+        }
+
+        return $response;
     }
 
     /**
