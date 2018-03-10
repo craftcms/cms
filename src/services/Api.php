@@ -167,6 +167,26 @@ class Api extends Component
     }
 
     /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return ResponseInterface
+     * @throws ApiException
+     */
+    public function request(string $method, string $uri, array $options = []): ResponseInterface
+    {
+        $options = ArrayHelper::merge($options, [
+            'headers' => $this->getHeaders(),
+        ]);
+
+        try {
+            return $this->client->request($method, $uri, $options);
+        } catch (RequestException $e) {
+            throw new ApiException($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    /**
      * Returns the headers that should be sent with API requests.
      *
      * @return array
@@ -223,26 +243,6 @@ class Api extends Component
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     * @return ResponseInterface
-     * @throws ApiException
-     */
-    protected function request(string $method, string $uri, array $options = []): ResponseInterface
-    {
-        $options = ArrayHelper::merge($options, [
-            'headers' => $this->getHeaders(),
-        ]);
-
-        try {
-            return $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
-            throw new ApiException($e->getMessage(), $e->getCode(), $e);
-        }
-    }
 
     /**
      * Returns platform info.
