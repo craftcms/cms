@@ -222,17 +222,20 @@ class Api extends Component
      */
     protected function platformVersions(bool $useComposerOverrides = false): array
     {
-        $versions = [];
-
         // Let Composer's PlatformRepository do most of the work
+        $overrides = [];
         if ($useComposerOverrides) {
-            $jsonPath = Craft::$app->getComposer()->getJsonPath();
-            $config = Json::decode(file_get_contents($jsonPath));
-            $overrides = $config['config']['platform'] ?? [];
-        } else {
-            $overrides = [];
+            try {
+                $jsonPath = Craft::$app->getComposer()->getJsonPath();
+                $config = Json::decode(file_get_contents($jsonPath));
+                $overrides = $config['config']['platform'] ?? [];
+            } catch (Exception $e) {
+                // couldn't locate composer.json - NBD
+            }
         }
         $repo = new PlatformRepository([], $overrides);
+
+        $versions = [];
         foreach ($repo->getPackages() as $package) {
             $versions[$package->getName()] = $package->getPrettyVersion();
         }
