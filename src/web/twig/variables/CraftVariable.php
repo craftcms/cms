@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -27,29 +27,28 @@ use yii\di\ServiceLocator;
 /**
  * Craft defines the `craft` global template variable.
  *
- * @property Config          $config
- * @property ElementIndexes  $elementIndexes
- * @property CategoryGroups  $categoryGroups
- * @property Cp              $cp
- * @property Deprecator      $deprecator
- * @property Fields          $fields
- * @property Feeds           $feeds
- * @property Globals         $globals
- * @property Request         $request
- * @property Routes          $routes
- * @property Sections        $sections
- * @property SystemSettings  $systemSettings
- * @property UserSession     $session
- * @property I18n            $i18n
- * @property Io              $io
- * @property UserGroups      $userGroups
+ * @property Config $config
+ * @property ElementIndexes $elementIndexes
+ * @property CategoryGroups $categoryGroups
+ * @property Cp $cp
+ * @property Deprecator $deprecator
+ * @property Fields $fields
+ * @property Feeds $feeds
+ * @property Globals $globals
+ * @property Request $request
+ * @property Routes $routes
+ * @property Sections $sections
+ * @property SystemSettings $systemSettings
+ * @property UserSession $session
+ * @property I18n $i18n
+ * @property Io $io
+ * @property UserGroups $userGroups
  * @property UserPermissions $userPermissions
- * @property EmailMessages   $emailMessages
- * @property EntryRevisions  $entryRevisions
- * @property Rebrand         $rebrand
- *
+ * @property EmailMessages $emailMessages
+ * @property EntryRevisions $entryRevisions
+ * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftVariable extends ServiceLocator
 {
@@ -58,21 +57,20 @@ class CraftVariable extends ServiceLocator
 
     /**
      * @event \yii\base\Event The event that is triggered after the component's init cycle
-     *
      * This is a good place to register custom behaviors on the component.
      */
     const EVENT_INIT = 'init';
 
     /**
-     * @event      DefineComponentsEvent The event that is triggered when defining the Service Locator components.
-     * @see        __construct()
+     * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
+     * @see __construct()
      * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
 
     /**
-     * @event      DefineBehaviorsEvent The event that is triggered when defining the class behaviors
-     * @see        behaviors()
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
      * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
@@ -245,7 +243,6 @@ class CraftVariable extends ServiceLocator
      * Returns a new AssetQuery instance.
      *
      * @param mixed $criteria
-     *
      * @return AssetQuery
      */
     public function assets($criteria = null): AssetQuery
@@ -262,7 +259,6 @@ class CraftVariable extends ServiceLocator
      * Returns a new CategoryQuery instance.
      *
      * @param mixed $criteria
-     *
      * @return CategoryQuery
      */
     public function categories($criteria = null): CategoryQuery
@@ -279,7 +275,6 @@ class CraftVariable extends ServiceLocator
      * Returns a new EntryQuery instance.
      *
      * @param mixed $criteria
-     *
      * @return EntryQuery
      */
     public function entries($criteria = null): EntryQuery
@@ -296,7 +291,6 @@ class CraftVariable extends ServiceLocator
      * Returns a new MatrixBlockQuery instance.
      *
      * @param mixed $criteria
-     *
      * @return MatrixBlockQuery
      */
     public function matrixBlocks($criteria = null): MatrixBlockQuery
@@ -313,7 +307,6 @@ class CraftVariable extends ServiceLocator
      * Returns a new TagQuery instance.
      *
      * @param mixed $criteria
-     *
      * @return TagQuery
      */
     public function tags($criteria = null): TagQuery
@@ -330,7 +323,6 @@ class CraftVariable extends ServiceLocator
      * Returns a new UserQuery instance
      *
      * @param mixed $criteria
-     *
      * @return UserQuery
      */
     public function users($criteria = null): UserQuery

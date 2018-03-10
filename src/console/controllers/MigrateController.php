@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
@@ -21,29 +21,23 @@ use yii\helpers\Console;
 
 /**
  * Manages Craft and plugin migrations.
- *
  * A migration means a set of persistent changes to the application environment that is shared among different
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
- *
  * This controller provides support for tracking the migration history, updating migrations, and creating new
  * migration skeleton files.
- *
  * The migration history is stored in a database table named `migrations`. The table will be automatically
  * created the first time this controller is executed, if it does not exist.
- *
  * Below are some common usages of this command:
- *
  * ~~~
  * # creates a new migration named 'create_user_table' for a plugin with the handle pluginHandle.
  * craft migrate/create create_user_table --plugin=pluginHandle
- *
  * # applies ALL new migrations for a plugin with the handle pluginHandle
  * craft migrate up --plugin=pluginHandle
  * ~~~
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MigrateController extends BaseMigrateController
 {
@@ -52,7 +46,6 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
-     *
      * If --plugin is passed, this will automatically be set to 'plugin'. Otherwise defaults to 'content'.
      */
     public $type = MigrationManager::TYPE_CONTENT;
@@ -113,7 +106,6 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @inheritdoc
-     *
      * @throws Exception if the 'plugin' option isn't valid
      */
     public function beforeAction($action)
@@ -161,14 +153,11 @@ class MigrateController extends BaseMigrateController
      *
      * By default the migration will be created within the project's migrations/
      * folder (as a "content migration").
-     *
      * Use `--plugin=<plugin-handle>` to create a new plugin migration.
-     *
      * Use `--type=app` to create a new Craft CMS app migration.
      *
      * @param string $name the name of the new migration. This should only contain
-     *                     letters, digits, and underscores.
-     *
+     * letters, digits, and underscores.
      * @throws Exception if the name argument is invalid.
      */
     public function actionCreate($name)

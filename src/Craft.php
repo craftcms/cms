@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 use craft\behaviors\ContentBehavior;
@@ -17,11 +17,10 @@ use yii\web\Request;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
- *
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Craft extends Yii
 {
@@ -52,11 +51,9 @@ class Craft extends Yii
     /**
      * Displays a variable.
      *
-     * @param mixed $var       The variable to be dumped.
-     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
-     *
-     * @return void
+     * @param mixed $var The variable to be dumped.
+     * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      */
     public static function dump($var, int $depth = 10, bool $highlight = true)
     {
@@ -66,11 +63,9 @@ class Craft extends Yii
     /**
      * Displays a variable and ends the request. (“Dump and die”)
      *
-     * @param mixed $var       The variable to be dumped.
-     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
-     *
-     * @return void
+     * @param mixed $var The variable to be dumped.
+     * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, int $depth = 10, bool $highlight = true)
@@ -82,9 +77,8 @@ class Craft extends Yii
     /**
      * Generates and returns a cookie config.
      *
-     * @param array        $config  Any config options that should be included in the config.
+     * @param array $config Any config options that should be included in the config.
      * @param Request|null $request The request object
-     *
      * @return array The cookie config array.
      */
     public static function cookieConfig(array $config = [], Request $request = null): array
@@ -117,8 +111,6 @@ class Craft extends Yii
      * Class autoloader.
      *
      * @param string $className
-     *
-     * @return void
      */
     public static function autoload($className)
     {
@@ -203,7 +195,6 @@ EOD;
      * Creates a Guzzle client configured with the given array merged with any default values in config/guzzle.php.
      *
      * @param array $config Guzzle client config settings
-     *
      * @return Client
      */
     public static function createGuzzleClient(array $config = []): Client
@@ -232,7 +223,6 @@ EOD;
      *
      * @param string $path
      * @param string $storedFieldVersion
-     *
      * @return bool
      */
     private static function _loadFieldAttributesFile(string $path, string $storedFieldVersion): bool
@@ -257,10 +247,10 @@ EOD;
     /**
      * Writes a field attributes file.
      *
-     * @param string   $templatePath
+     * @param string $templatePath
      * @param string[] $search
      * @param string[] $replace
-     * @param string   $destinationPath
+     * @param string $destinationPath
      */
     private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath)
     {

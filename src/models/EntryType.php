@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -21,9 +21,8 @@ use yii\base\InvalidConfigException;
  * EntryType model class.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryType extends Model
 {
@@ -91,7 +90,7 @@ class EntryType extends Model
      */
     public function rules()
     {
-        return [
+        $rules = [
             [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true],
             [['name', 'handle'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
@@ -114,23 +113,15 @@ class EntryType extends Model
                 'targetAttribute' => ['handle', 'sectionId'],
                 'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
-            [
-                ['titleLabel'],
-                'required',
-                'when' => function ($model, $attribute) {
-                    /** @var static $model */
-                    return $model->hasTitleField;
-                }
-            ],
-            [
-                ['titleFormat'],
-                'required',
-                'when' => function ($model, $attribute) {
-                    /** @var static $model */
-                    return !$model->hasTitleField;
-                }
-            ],
         ];
+
+        if ($this->hasTitleField) {
+            $rules[] = [['titleLabel'], 'required'];
+        } else {
+            $rules[] = [['titleFormat'], 'required'];
+        }
+
+        return $rules;
     }
 
     /**

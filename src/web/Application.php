@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -12,7 +12,6 @@ use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\debug\DeprecatedPanel;
 use craft\debug\UserPanel;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
@@ -36,20 +35,18 @@ use yii\web\Response;
 /**
  * Craft Web Application class
  *
- * @property Request             $request          The request component
- * @property \craft\web\Response $response         The response component
- * @property Session             $session          The session component
- * @property UrlManager          $urlManager       The URL manager for this application
- * @property User                $user             The user component
- *
- * @method Request                                getRequest()      Returns the request component.
- * @method \craft\web\Response                    getResponse()     Returns the response component.
- * @method Session                                getSession()      Returns the session component.
- * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
- * @method User                                   getUser()         Returns the user component.
- *
+ * @property Request $request The request component
+ * @property \craft\web\Response $response The response component
+ * @property Session $session The session component
+ * @property UrlManager $urlManager The URL manager for this application
+ * @property User $user The user component
+ * @method Request getRequest()      Returns the request component.
+ * @method \craft\web\Response getResponse()     Returns the response component.
+ * @method Session getSession()      Returns the session component.
+ * @method UrlManager getUrlManager()   Returns the URL manager for this application.
+ * @method User getUser()         Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Application extends \yii\web\Application
 {
@@ -87,8 +84,6 @@ class Application extends \yii\web\Application
 
     /**
      * Initializes the application.
-     *
-     * @return void
      */
     public function init()
     {
@@ -100,10 +95,24 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        // Ensure that the request component has been instantiated
+        if (!$this->has('request', true)) {
+            $this->getRequest();
+        }
+
+        // Skip yii\web\Application::bootstrap, because we've already set @web and
+        // @webroot from craft\web\Request::init(), and we like our values better.
+        \yii\base\Application::bootstrap();
+    }
+
+    /**
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
-     *
      * @return Response the resulting response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
@@ -218,22 +227,9 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
-     *
-     * @return string
-     */
-    public function getTranslatedBrowserLanguage(): string
-    {
-        $languages = $this->getI18n()->getAppLocaleIds();
-        return $this->getRequest()->getPreferredLanguage($languages);
-    }
-
-    /**
      * @inheritdoc
-     *
      * @param string $route
-     * @param array  $params
-     *
+     * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = [])
@@ -386,7 +382,6 @@ class Application extends \yii\web\Application
      * Processes install requests.
      *
      * @param Request $request
-     *
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
@@ -435,7 +430,6 @@ class Application extends \yii\web\Application
      * Processes action requests.
      *
      * @param Request $request
-     *
      * @return Response|null
      * @throws NotFoundHttpException if the requested action route is invalid
      */
@@ -459,7 +453,6 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
-     *
      * @return bool
      */
     private function _isSpecialCaseActionRequest(Request $request): bool
@@ -486,7 +479,6 @@ class Application extends \yii\web\Application
      * meet Craft’s minimum requirements.
      *
      * @param Request $request
-     *
      * @return Response|null
      */
     private function _processRequirementsCheck(Request $request)
@@ -514,7 +506,6 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
-     *
      * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
@@ -545,15 +536,15 @@ class Application extends \yii\web\Application
         }
 
         // We'll also let update actions go through
-        if (
-            $request->getIsActionRequest() &&
-            (
-                ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
-                $request->getActionSegments() === ['app', 'migrate']
-            )
-        ) {
-            $action = implode('/', $request->getActionSegments());
-            return $this->runAction($action);
+        if ($request->getIsActionRequest()) {
+            $actionSegments = $request->getActionSegments();
+            if (
+                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['pluginstore', 'install', 'migrate']
+            ) {
+                return $this->runAction(implode('/', $actionSegments));
+            }
         }
 
         // If an exception gets throw during the rendering of the 503 template, let
@@ -565,8 +556,6 @@ class Application extends \yii\web\Application
      * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
      *
      * @param Request $request
-     *
-     * @return void
      * @throws ServiceUnavailableHttpException
      */
     private function _enforceSystemStatusPermissions(Request $request)

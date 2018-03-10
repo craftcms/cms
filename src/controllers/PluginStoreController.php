@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -21,11 +21,10 @@ use yii\web\Response;
 
 /**
  * The PluginStoreController class is a controller that handles various actions related to the Plugin Store.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginStoreController extends Controller
 {
@@ -52,13 +51,18 @@ class PluginStoreController extends Controller
     {
         $pluginStoreAppBaseUrl = $this->_getVueAppBaseUrl();
 
+        $cmsInfo = [
+            'version' => Craft::$app->getVersion(),
+            'edition' => strtolower(Craft::$app->getEditionName()),
+        ];
+
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v3/');
         $view->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
         $view->registerJs('window.stripeApiKey = "'.Craft::$app->getPluginStore()->stripeApiKey.'";', View::POS_BEGIN);
         $view->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
         $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
-        $view->registerJs('window.cmsInfo = '.Json::encode(Craft::$app->getApi()->getCmsInfo()).';', View::POS_BEGIN);
+        $view->registerJs('window.cmsInfo = '.Json::encode($cmsInfo).';', View::POS_BEGIN);
         $view->registerJs('window.allowUpdates = '.Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates).';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
@@ -248,7 +252,7 @@ class PluginStoreController extends Controller
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
-        if ($etResponse) {
+        if (isset($etResponse->data->editions)) {
             $upgradeInfo = $etResponse->data;
 
             $data['countries'] = $upgradeInfo->countries;
@@ -342,6 +346,6 @@ class PluginStoreController extends Controller
         $hostInfo = Craft::$app->getRequest()->getHostInfo();
         $hostInfo = StringHelper::ensureRight($hostInfo, '/');
 
-        return  (string) substr($url, strlen($hostInfo) - 1);
+        return (string)substr($url, strlen($hostInfo) - 1);
     }
 }

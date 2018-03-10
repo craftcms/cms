@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields\data;
@@ -15,17 +15,16 @@ use yii\base\BaseObject;
  *
  * @property string $hex
  * @property string $rgb
- * @property int    $red
- * @property int    $green
- * @property int    $blue
- * @property int    $r
- * @property int    $g
- * @property int    $b
- * @property float  $luma
- *
+ * @property int $red
+ * @property int $green
+ * @property int $blue
+ * @property int $r
+ * @property int $g
+ * @property int $b
+ * @property float $luma
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
- * @since  3.0
+ * @since 3.0
  */
 class ColorData extends BaseObject implements Serializable
 {
@@ -43,8 +42,8 @@ class ColorData extends BaseObject implements Serializable
     /**
      * Constructor.
      *
-     * @param string $hex    hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
-     * @param array  $config name-value pairs that will be used to initialize the object properties
+     * @param string $hex hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * @param array $config name-value pairs that will be used to initialize the object properties
      */
     public function __construct(string $hex, array $config = [])
     {
@@ -142,7 +141,6 @@ class ColorData extends BaseObject implements Serializable
      *
      * @see http://stackoverflow.com/a/12228906/1136822 Stack Overflow answer.
      * @see https://en.wikipedia.org/wiki/Luma_(video) Luma
-     *
      * @return float
      */
     public function getLuma(): float

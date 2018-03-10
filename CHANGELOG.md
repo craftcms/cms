@@ -1,5 +1,54 @@
 # Craft CMS Changelog
 
+## Unreleased
+
+## 2.6.3012 - 2018-02-27
+
+### Changed
+- Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
+- Improved styles to support 5 levels of nested user permissions. ([#2467](https://github.com/craftcms/cms/issues/2467))
+
+### Fixed
+- Fixed a bug where entry version data was not including newly-created Matrix block IDs, so they would be re-created from scratch when loading the version. ([#2498](https://github.com/craftcms/cms/issues/2498))
+- Fixed an error that could occur if an email template included any Twig filters with a single underscore.
+- Fixed a bug where lightswitch inputs could trigger a `change` event when they didn’t actually change. ([#2494](https://github.com/craftcms/cms/issues/2494))
+
+## 2.6.3011 - 2018-02-21
+
+### Changed
+- Reverted the fix to ([#2433](https://github.com/craftcms/cms/issues/2433)) as it broke backwards compatibility.
+
+### Fixed
+- Fixed an error that occurred when displaying run charts in some cases.
+
+## 2.6.3010 - 2018-02-20
+
+### Changed
+- The Control Panel now sets the `origin-when-cross-origin` referrer policy. ([#2436](https://github.com/craftcms/cms/pull/2436))
+- Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
+
+### Fixed
+- Fixed a bug where run charts (e.g. the New Users widget) would always show zero results if MySQL wasn’t configured with time zone data. ([#2433](https://github.com/craftcms/cms/issues/2433))
+- Fixed a bug where the New Users widget would show 8 days worth of data when its Date Range setting was set to “Last 7 days” or “Last week”.
+- Fixed a bug where the New Users widget could be missing some data if the browser time zone wasn’t the same as the system time zone.
+
+## 2.6.3009 - 2018-02-13
+
+### Added
+- Added `StringHelper::encenc()` and `decdec()`.
+- Added the `|encenc` Twig filter.
+
+### Changed
+- The first column on user index tables is now labeled “User”, and there are now always dedicated “Username” and “Email” columns available. ([#2417](https://github.com/craftcms/cms/issues/2417))
+
+### Fixed
+- Fixed a bug where Craft would not save newly-assigned license keys if a `craft/config/license.key` file existed, even if it didn’t contain a valid license key.
+- Fixed a bug where the “Save” button wasn’t visible on custom field layout tabs on Edit User pages.
+- Fixed a bug where Craft would issue unsaved data warnings when leaving edit pages, if the form data had been modified from the `jQuery(document).ready()` event. ([#2428](https://github.com/craftcms/cms/issues/2428))
+
+### Security
+- Email passwords are now encrypted in email settings forms.
+
 ## 2.6.3008 - 2018-02-06
 
 ### Changed

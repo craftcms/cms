@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -19,8 +19,7 @@ use craft\validators\UniqueValidator;
  * Section model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
- *
+ * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
  */
 class Section extends Model
@@ -106,10 +105,8 @@ class Section extends Model
 
     /**
      * Validates the site settings.
-     *
-     * @param string $attribute
      */
-    public function validateSiteSettings(string $attribute)
+    public function validateSiteSettings()
     {
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
@@ -121,20 +118,14 @@ class Section extends Model
                 ->column();
 
             if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
-                $this->addError($attribute, Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
+                $this->addError('siteSettings', Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
             }
         }
 
-        $validates = true;
-
-        foreach ($this->getSiteSettings() as $siteSettings) {
+        foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $validates = false;
+                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
-        }
-
-        if (!$validates) {
-            $this->addError($attribute, Craft::t('app', 'Correct the errors listed above.'));
         }
     }
 
@@ -173,8 +164,6 @@ class Section extends Model
      * Sets the section's site-specific settings.
      *
      * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
-     *
-     * @return void
      */
     public function setSiteSettings(array $siteSettings)
     {
@@ -199,9 +188,7 @@ class Section extends Model
      * Adds site-specific errors to the model.
      *
      * @param array $errors
-     * @param int   $siteId
-     *
-     * @return void
+     * @param int $siteId
      */
     public function addSiteSettingsErrors(array $errors, int $siteId)
     {

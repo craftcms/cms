@@ -29,6 +29,7 @@ body {
 /* global sidebar */
 
 $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
+$sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 #global-sidebar {
   flex: 0 0 $sidebarWidth;
@@ -282,9 +283,15 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       ul {
         display: block;
+        margin-bottom: 10px;
 
         li a {
-          @include padding-left(60px);
+          @include padding(3px, 14px, 3px, 56px);
+          font-size: 12px;
+
+          &:not(.active) {
+            color: $sidebarLinkSecondaryColor;
+          }
         }
       }
     }
@@ -297,7 +304,9 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   text-align: center;
 
   #edition {
-    &:hover {
+    font-size: 14px;
+
+    &.hot:hover {
       cursor: pointer;
 
       #edition-logo {
@@ -545,10 +554,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         &:not(:last-child) {
           @include margin-right(24px !important);
         }
-      }
-
-      #extra-headers {
-        flex: 0 0 0;
       }
 
       .buttons,
@@ -1332,6 +1337,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   overflow: auto;
   background: $lightBgColor;
   box-sizing: border-box;
+  font-size: 13px;
 
   body.ltr & {
     box-shadow: inset -1px 0 0 $hairlineColor;
@@ -1428,7 +1434,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         display: flex;
         flex-direction: row;
         align-items: center;
-        @include padding(10px, 14px, 10px, 24px);
+        @include padding(7px, 14px, 7px, 24px);
         min-height: 24px;
         box-sizing: border-box;
         color: $textColor;

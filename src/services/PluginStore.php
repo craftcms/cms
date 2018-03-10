@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -20,11 +20,10 @@ use yii\base\Component;
 
 /**
  * Plugin Store service.
- *
  * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|<code>Craft::$app->pluginStore</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginStore extends Component
 {
@@ -220,7 +219,6 @@ class PluginStore extends Component
      * Deletes the token from its user ID.
      *
      * @param int $userId
-     *
      * @return bool
      */
     public function deleteTokenByUserId(int $userId): bool
@@ -242,7 +240,6 @@ class PluginStore extends Component
      * Returns the token by user ID.
      *
      * @param $userId
-     *
      * @return CraftIdToken|null
      */
     public function getTokenByUserId($userId)
@@ -263,7 +260,6 @@ class PluginStore extends Component
      * Returns a plugin store token record based on its ID.
      *
      * @param int $id
-     *
      * @return OauthTokenRecord
      */
     private function _getOauthTokenRecordById($id = null)
@@ -285,7 +281,6 @@ class PluginStore extends Component
      * Save token to DB.
      *
      * @param CraftIdToken $token
-     *
      * @return bool
      */
     private function _saveToken(CraftIdToken $token)

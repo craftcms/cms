@@ -1,13 +1,12 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
 
-use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
@@ -17,9 +16,8 @@ use craft\elements\MatrixBlock;
  *
  * @property bool $isNew Whether this is a new block type
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MatrixBlockType extends Model
 {
@@ -105,27 +103,5 @@ class MatrixBlockType extends Model
     public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
-    }
-
-    /**
-     * Returns the fields associated with this block type.
-     *
-     * @return FieldInterface[]
-     */
-    public function getFields(): array
-    {
-        return $this->getFieldLayout()->getFields();
-    }
-
-    /**
-     * Sets the fields associated with this block type.
-     *
-     * @param FieldInterface[] $fields
-     *
-     * @return void
-     */
-    public function setFields(array $fields)
-    {
-        $this->getFieldLayout()->setFields($fields);
     }
 }

@@ -3,10 +3,10 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-RC9',
-    'schemaVersion' => '3.0.82',
+    'version' => '3.0.0-RC14',
+    'schemaVersion' => '3.0.83',
     'minVersionRequired' => '2.6.2788',
-    'basePath' => dirname(__DIR__, 2), // Defines the @app alias
+    'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
@@ -121,6 +121,12 @@ return [
         ],
         'volumes' => [
             'class' => craft\services\Volumes::class,
+        ],
+        'userGroups' => [
+            'class' => craft\services\UserGroups::class,
+        ],
+        'userPermissions' => [
+            'class' => craft\services\UserPermissions::class,
         ],
         'utilities' => [
             'class' => craft\services\Utilities::class,

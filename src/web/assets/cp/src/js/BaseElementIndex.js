@@ -756,9 +756,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection('asc');
+                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
 
-                if (attr === 'score' || attr === 'structure') {
+                if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
                 }
                 else {
@@ -1106,17 +1106,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;

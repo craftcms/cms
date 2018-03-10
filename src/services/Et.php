@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -19,11 +19,10 @@ use yii\base\Component;
 
 /**
  * ET service.
- *
  * An instance of the ET service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEt()|<code>Craft::$app->et</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Et extends Component
 {
@@ -115,9 +114,8 @@ class Et extends Component
     /**
      * Fetches the price of an upgrade with a coupon applied to it.
      *
-     * @param int    $edition
+     * @param int $edition
      * @param string $couponCode
-     *
      * @return EtModel|null
      */
     public function fetchCouponPrice(int $edition, string $couponCode)
@@ -132,7 +130,6 @@ class Et extends Component
      * Attempts to purchase an edition upgrade.
      *
      * @param UpgradePurchase $model
-     *
      * @return bool
      */
     public function purchaseUpgrade(UpgradePurchase $model): bool
@@ -219,7 +216,6 @@ class Et extends Component
      * Registers a given plugin with the current Craft license.
      *
      * @param string $packageName The plugin package name that should be registered
-     *
      * @return EtModel
      */
     public function registerPlugin(string $packageName): EtModel
@@ -236,7 +232,6 @@ class Et extends Component
      * Transfers a given plugin to the current Craft license.
      *
      * @param string $packageName The plugin package name that should be transferred
-     *
      * @return EtModel
      */
     public function transferPlugin(string $packageName): EtModel
@@ -253,7 +248,6 @@ class Et extends Component
      * Unregisters a given plugin from the current Craft license.
      *
      * @param string $packageName The plugin packageName that should be unregistered
-     *
      * @return EtModel
      */
     public function unregisterPlugin(string $packageName): EtModel
@@ -302,7 +296,6 @@ class Et extends Component
      * Creates a new EtModel with provided JSON, and returns it if it's valid.
      *
      * @param string $attributes
-     *
      * @return EtModel|null
      */
     public function decodeEtModel(string $attributes)
@@ -331,7 +324,6 @@ class Et extends Component
      * Creates a new ET Transport object for the given endpoint.
      *
      * @param string $endpoint
-     *
      * @return EtTransport
      */
     private function _createEtTransport(string $endpoint): EtTransport

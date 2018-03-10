@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -31,8 +31,8 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
@@ -40,12 +40,19 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property bool        $isCurrent         Whether this is the current logged-in user
- * @property string      $name              The user's full name or username
- * @property string|null $preferredLanguage The user’s preferred language
+ * @property \DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property string|null $friendlyName the user's first name or username
+ * @property string|null $fullName the user's full name
+ * @property UserGroup[] $groups the user's groups
+ * @property bool $isCurrent whether this is the current logged-in user
+ * @property string $name the user's full name or username
+ * @property Asset|null $photo the user's photo
+ * @property array $preferences the user’s preferences
+ * @property string|null $preferredLanguage the user’s preferred language
+ * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class User extends Element implements IdentityInterface
 {
@@ -54,7 +61,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
-     *
      * You may set [[AuthenticateUserEvent::isValid]] to `false` to prevent the user from getting authenticated
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
@@ -138,7 +144,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     *
      * @return UserQuery The newly created [[UserQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -259,21 +264,14 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            // Start with Email and don't even give Username as an option
-            $attributes = [
-                'email' => ['label' => Craft::t('app', 'Email')],
-            ];
-        } else {
-            $attributes = [
-                'username' => ['label' => Craft::t('app', 'Username')],
-                'email' => ['label' => Craft::t('app', 'Email')],
-            ];
-        }
-
-        $attributes['fullName'] = ['label' => Craft::t('app', 'Full Name')];
-        $attributes['firstName'] = ['label' => Craft::t('app', 'First Name')];
-        $attributes['lastName'] = ['label' => Craft::t('app', 'Last Name')];
+        $attributes = [
+            'user' => ['label' => Craft::t('app', 'User')],
+            'email' => ['label' => Craft::t('app', 'Email')],
+            'username' => ['label' => Craft::t('app', 'Username')],
+            'fullName' => ['label' => Craft::t('app', 'Full Name')],
+            'firstName' => ['label' => Craft::t('app', 'First Name')],
+            'lastName' => ['label' => Craft::t('app', 'Last Name')],
+        ];
 
         if (Craft::$app->getIsMultiSite()) {
             $attributes['preferredLanguage'] = ['label' => Craft::t('app', 'Preferred Language')];
@@ -292,13 +290,12 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
-        } else {
-            $attributes = ['fullName', 'email', 'dateCreated', 'lastLoginDate'];
-        }
-
-        return $attributes;
+        return [
+            'fullName',
+            'email',
+            'dateCreated',
+            'lastLoginDate',
+        ];
     }
 
     /**
@@ -372,7 +369,6 @@ class User extends Element implements IdentityInterface
      * Returns the authentication data from a given auth key.
      *
      * @param string $authKey
-     *
      * @return array|null The authentication data, or `null` if it was invalid.
      */
     public static function authData(string $authKey)
@@ -567,6 +563,33 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'cooldownEndTime';
+        $names[] = 'friendlyName';
+        $names[] = 'fullName';
+        $names[] = 'isCurrent';
+        $names[] = 'name';
+        $names[] = 'preferredLanguage';
+        $names[] = 'remainingCooldownTime';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'groups';
+        $names[] = 'photo';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
@@ -627,8 +650,8 @@ class User extends Element implements IdentityInterface
     /**
      * Validates the unverifiedEmail value is unique.
      *
-     * @param string          $attribute
-     * @param array|null      $params
+     * @param string $attribute
+     * @param array|null $params
      * @param InlineValidator $validator
      */
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
@@ -706,7 +729,6 @@ class User extends Element implements IdentityInterface
      * Determines whether the user is allowed to be logged in with a given password.
      *
      * @param string $password The user's plain text passwerd.
-     *
      * @return bool
      */
     public function authenticate(string $password): bool
@@ -740,7 +762,7 @@ class User extends Element implements IdentityInterface
                     // Validate the password
                     try {
                         $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-                    } catch (InvalidParamException $e) {
+                    } catch (InvalidArgumentException $e) {
                         $valid = false;
                     }
                     if (!$valid) {
@@ -817,8 +839,6 @@ class User extends Element implements IdentityInterface
      * Sets an array of User element objects on the user.
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
-     *
-     * @return void
      */
     public function setGroups(array $groups)
     {
@@ -831,7 +851,6 @@ class User extends Element implements IdentityInterface
      * Returns whether the user is in a specific group.
      *
      * @param UserGroup|int|string $group The user group model, its handle, or ID.
-     *
      * @return bool
      */
     public function isInGroup($group): bool
@@ -852,7 +871,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Gets the user's full name.
+     * Returns the user's full name.
      *
      * @return string|null
      */
@@ -932,7 +951,6 @@ class User extends Element implements IdentityInterface
      * Returns the URL to the user's photo.
      *
      * @param int $size The width and height the photo should be sized to
-     *
      * @return string|null
      * @deprecated in 3.0. Use getPhoto().getUrl() instead.
      */
@@ -995,7 +1013,6 @@ class User extends Element implements IdentityInterface
      * Returns whether the user has permission to perform a given action.
      *
      * @param string $permission
-     *
      * @return bool
      */
     public function can(string $permission): bool
@@ -1019,7 +1036,6 @@ class User extends Element implements IdentityInterface
      * Returns whether the user has shunned a given message.
      *
      * @param string $message
-     *
      * @return bool
      */
     public function hasShunned(string $message): bool
@@ -1109,9 +1125,8 @@ class User extends Element implements IdentityInterface
     /**
      * Returns one of the user’s preferences by its key.
      *
-     * @param string $key     The preference’s key
-     * @param mixed  $default The default value, if the preference hasn’t been set
-     *
+     * @param string $key The preference’s key
+     * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
     public function getPreference(string $key, $default = null)
@@ -1142,7 +1157,6 @@ class User extends Element implements IdentityInterface
      * Merges new user preferences with the existing ones, and returns the result.
      *
      * @param array $preferences The new preferences
-     *
      * @return array The user’s new preferences.
      */
     public function mergePreferences(array $preferences): array
@@ -1240,17 +1254,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = Craft::$app->getFields()->getLayoutByType(static::class)->id;
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew)
@@ -1320,56 +1323,72 @@ class User extends Element implements IdentityInterface
      */
     public function beforeDelete(): bool
     {
-        // Get the entry IDs that belong to this user
-        $entryQuery = (new Query())
-            ->select('e.id')
-            ->from('{{%entries}} e')
-            ->where(['e.authorId' => $this->id]);
+        // Do all this stuff within a transaction
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-        // Should we transfer the content to a new user?
-        if ($this->inheritorOnDelete) {
-            // Delete the template caches for any entries authored by this user
-            $entryIds = $entryQuery->column();
-            Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+        try {
+            // Get the entry IDs that belong to this user
+            $entryQuery = (new Query())
+                ->select('e.id')
+                ->from('{{%entries}} e')
+                ->where(['e.authorId' => $this->id]);
 
-            // Update the entry/version/draft tables to point to the new user
-            $userRefs = [
-                '{{%entries}}' => 'authorId',
-                '{{%entrydrafts}}' => 'creatorId',
-                '{{%entryversions}}' => 'creatorId',
-            ];
+            // Should we transfer the content to a new user?
+            if ($this->inheritorOnDelete) {
+                // Delete the template caches for any entries authored by this user
+                $entryIds = $entryQuery->column();
+                Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
-            foreach ($userRefs as $table => $column) {
-                Craft::$app->getDb()->createCommand()
-                    ->update(
-                        $table,
-                        [
-                            $column => $this->inheritorOnDelete->id
-                        ],
-                        [
-                            $column => $this->id
-                        ])
-                    ->execute();
+                // Update the entry/version/draft tables to point to the new user
+                $userRefs = [
+                    '{{%entries}}' => 'authorId',
+                    '{{%entrydrafts}}' => 'creatorId',
+                    '{{%entryversions}}' => 'creatorId',
+                ];
+
+                foreach ($userRefs as $table => $column) {
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            $table,
+                            [
+                                $column => $this->inheritorOnDelete->id
+                            ],
+                            [
+                                $column => $this->id
+                            ])
+                        ->execute();
+                }
+            } else {
+                // Get the entry IDs along with one of the sites they’re enabled in
+                $results = $entryQuery
+                    ->addSelect([
+                        'siteId' => (new Query())
+                            ->select('i18n.siteId')
+                            ->from('{{%elements_sites}} i18n')
+                            ->where('[[i18n.elementId]] = [[e.id]]')
+                            ->limit(1)
+                    ])
+                    ->all();
+
+                // Delete them
+                foreach ($results as $result) {
+                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+                }
             }
-        } else {
-            // Get the entry IDs along with one of the sites they’re enabled in
-            $results = $entryQuery
-                ->addSelect([
-                    'siteId' => (new Query())
-                        ->select('i18n.siteId')
-                        ->from('{{%elements_sites}} i18n')
-                        ->where('[[i18n.elementId]] = [[e.id]]')
-                        ->limit(1)
-                ])
-                ->all();
 
-            // Delete them
-            foreach ($results as $result) {
-                Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+            if (!parent::beforeDelete()) {
+                $transaction->rollBack();
+                return false;
             }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        return parent::beforeDelete();
+        return true;
     }
 
     // Private Methods
@@ -1379,7 +1398,6 @@ class User extends Element implements IdentityInterface
      * Saves a new session record for the user.
      *
      * @param string $sessionToken
-     *
      * @return string The new session row's UID.
      */
     private function _storeSessionToken(string $sessionToken): string
@@ -1396,7 +1414,6 @@ class User extends Element implements IdentityInterface
      * Finds a session token by its row's UID.
      *
      * @param string $uid
-     *
      * @return string|null The session token, or `null` if it could not be found.
      */
     private function _findSessionTokenByUid(string $uid)
@@ -1413,7 +1430,6 @@ class User extends Element implements IdentityInterface
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
      *
      * @param string $userAgent
-     *
      * @return bool
      */
     private function _validateUserAgent(string $userAgent): bool

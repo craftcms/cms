@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -23,7 +23,7 @@ use yii\db\Schema;
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Table extends Field
 {
@@ -65,6 +65,10 @@ class Table extends Field
     public function init()
     {
         parent::init();
+
+        if ($this->defaults === '') {
+            $this->defaults = [];
+        }
 
         // Convert default date cell values to ISO8601 strings
         if (!empty($this->columns) && $this->defaults !== null) {
@@ -299,9 +303,8 @@ class Table extends Field
     /**
      * Normalizes a cell’s value.
      *
-     * @param string $type  The cell type
-     * @param mixed  $value The cell value
-     *
+     * @param string $type The cell type
+     * @param mixed $value The cell value
      * @return mixed
      * @see normalizeValue()
      */
@@ -340,10 +343,9 @@ class Table extends Field
     /**
      * Validates a cell’s value.
      *
-     * @param string      $type   The cell type
-     * @param mixed       $value  The cell value
+     * @param string $type The cell type
+     * @param mixed $value The cell value
      * @param string|null &$error The error text to set on the element
-     *
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
@@ -363,10 +365,9 @@ class Table extends Field
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed                 $value
+     * @param mixed $value
      * @param ElementInterface|null $element
-     * @param bool                  $static
-     *
+     * @param bool $static
      * @return string|null
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)

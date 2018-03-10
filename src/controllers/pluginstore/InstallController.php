@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers\pluginstore;
@@ -13,14 +13,14 @@ use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\web\Response as CraftResponse;
 use yii\base\Exception as YiiException;
-use yii\web\Response as YiiResponse;
 use yii\web\ForbiddenHttpException;
+use yii\web\Response as YiiResponse;
 
 /**
  * InstallController handles the plugin installation workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class InstallController extends BaseUpdaterController
 {
@@ -28,6 +28,8 @@ class InstallController extends BaseUpdaterController
     // =========================================================================
 
     const ACTION_CRAFT_INSTALL = 'craft-install';
+    const ACTION_ENABLE = 'enable';
+    const ACTION_MIGRATE = 'migrate';
 
     // Properties
     // =========================================================================
@@ -52,7 +54,7 @@ class InstallController extends BaseUpdaterController
         // Only admins can install plugins
         $this->requireAdmin();
 
-        if(!Craft::$app->getConfig()->getGeneral()->allowUpdates) {
+        if (!Craft::$app->getConfig()->getGeneral()->allowUpdates) {
             throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
         }
 
@@ -133,6 +135,29 @@ class InstallController extends BaseUpdaterController
         return $this->sendFinished();
     }
 
+    /**
+     * Enables the plugin. Called if the plugin was already Craft-installed
+     * before being installed from the Plugin Store, but it was disabled.
+     *
+     * @return YiiResponse
+     */
+    public function actionEnable(): YiiResponse
+    {
+        Craft::$app->getPlugins()->enablePlugin($this->data['handle']);
+        return $this->sendNextAction(self::ACTION_MIGRATE);
+    }
+
+    /**
+     * Updates the plugin. Called if the plugin was already Craft-installed
+     * before being installed from the Plugin Store.
+     *
+     * @return YiiResponse
+     */
+    public function actionMigrate(): YiiResponse
+    {
+        return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -168,11 +193,16 @@ class InstallController extends BaseUpdaterController
      */
     protected function actionStatus(string $action): string
     {
-        if ($action == self::ACTION_CRAFT_INSTALL) {
-            return Craft::t('app', 'Installing the plugin…');
+        switch ($action) {
+            case self::ACTION_CRAFT_INSTALL:
+                return Craft::t('app', 'Installing the plugin…');
+            case self::ACTION_ENABLE:
+                return Craft::t('app', 'Enabling the plugin…');
+            case self::ACTION_MIGRATE:
+                return Craft::t('app', 'Updating the plugin…');
+            default:
+                return parent::actionStatus($action);
         }
-
-        return parent::actionStatus($action);
     }
 
     /**
@@ -198,6 +228,17 @@ class InstallController extends BaseUpdaterController
             return $this->actionState(self::ACTION_FINISH, [
                 'status' => Craft::t('app', 'The plugin was removed successfully.'),
             ]);
+        }
+
+        // Is the plugin already Craft-installed?
+        $pluginsService = Craft::$app->getPlugins();
+        if ($pluginsService->isPluginInstalled($this->data['handle'])) {
+            // Is it disabled?
+            if (!$pluginsService->isPluginEnabled($this->data['handle'])) {
+                return $this->actionState(self::ACTION_ENABLE);
+            }
+
+            return $this->actionState(self::ACTION_MIGRATE);
         }
 
         return $this->actionState(self::ACTION_CRAFT_INSTALL);

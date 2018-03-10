@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -30,11 +30,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
  * upgrading Craft editions and license requests.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AppController extends Controller
 {
@@ -114,7 +113,6 @@ class AppController extends Controller
 
     /**
      * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
-     *
      * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
      * to minimize site downtime after a deployment.
      *
@@ -485,14 +483,12 @@ class AppController extends Controller
 
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
-     *
      * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
      *
-     * @param bool   $allowUpdates Whether updates are allowed
-     * @param Update $update       The update model
-     * @param string $handle       The handle of whatever this update is for
-     * @param string $name         The name of whatever this update is for
-     *
+     * @param bool $allowUpdates Whether updates are allowed
+     * @param Update $update The update model
+     * @param string $handle The handle of whatever this update is for
+     * @param string $name The name of whatever this update is for
      * @return array
      */
     private function _transformUpdate(bool $allowUpdates, Update $update, string $handle, string $name): array

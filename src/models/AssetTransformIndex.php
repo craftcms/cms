@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -17,7 +17,7 @@ use yii\base\InvalidConfigException;
  *
  * @property AssetTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetTransformIndex extends Model
 {
@@ -136,7 +136,7 @@ class AssetTransformIndex extends Model
         }
 
         if (($this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform(mb_substr($this->location, 1))) === null) {
-            throw new InvalidConfigException('Invalid transform location: '.$this-$this->location);
+            throw new InvalidConfigException('Invalid transform location: '.$this->location);
         }
 
         return $this->_transform;

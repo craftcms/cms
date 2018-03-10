@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\et;
@@ -22,7 +22,7 @@ use yii\base\Exception;
  * Class Et
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EtTransport
 {
@@ -80,6 +80,7 @@ class EtTransport
                 'databaseType' => $db->getDriverName(),
                 'databaseVersion' => $db->getVersion(),
                 'proc' => function_exists('proc_open') ? 1 : 0,
+                'totalLocales' => Craft::$app->getSites()->getTotalSites(),
             ],
         ]);
     }
@@ -88,8 +89,6 @@ class EtTransport
      * Sets custom data on the EtModel.
      *
      * @param mixed $data
-     *
-     * @return void
      */
     public function setData($data)
     {
@@ -100,8 +99,6 @@ class EtTransport
      * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
      *
      * @param string $handle
-     *
-     * @return void
      */
     public function setHandle(string $handle)
     {
@@ -249,11 +246,8 @@ class EtTransport
         }
 
         $contents = file_get_contents($keyFile);
-        if (empty($contents) || $contents === 'temp') {
-            return null;
-        }
-
-        return trim(preg_replace('/[\r\n]+/', '', $contents));
+        $key = trim(preg_replace('/[\r\n]+/', '', $contents));
+        return strlen($key) === 250 ? $key : null;
     }
 
     /**
@@ -274,7 +268,6 @@ class EtTransport
 
     /**
      * @param string $key
-     *
      * @return bool
      * @throws Exception|EtException
      */

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -12,6 +12,7 @@ use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\ApiException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -22,11 +23,10 @@ use yii\base\Exception;
 
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
- *
  * An instance of the API service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getApi()|<code>Craft::$app->api</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Api extends Component
 {
@@ -64,37 +64,7 @@ class Api extends Component
      */
     public function getUpdates(): array
     {
-        $request = Craft::$app->getRequest();
-        $user = Craft::$app->getUser()->getIdentity();
-
-        if (!$user) {
-            throw new Exception('A user must be logged in to check for updates.');
-        }
-
-        $requestBody = [
-            'request' => [
-                'hostname' => $request->getHostName(),
-                'port' => $request->getPort(),
-            ],
-            'user' => [
-                'email' => $user->email,
-            ],
-            'platform' => $this->platformVersions(),
-            'cms' => $this->getCmsInfo(),
-        ];
-
-        if ($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-            $requestBody['request']['ip'] = $ip;
-        }
-
-        if (!empty($pluginInfo = $this->pluginInfo())) {
-            $requestBody['plugins'] = $pluginInfo;
-        }
-
-        $response = $this->request('POST', 'updates', [
-            RequestOptions::BODY => Json::encode($requestBody),
-        ]);
-
+        $response = $this->request('GET', 'updates');
         return Json::decode((string)$response->getBody());
     }
 
@@ -103,7 +73,6 @@ class Api extends Component
      * and the package requirements that should be installed.
      *
      * @param array $install Package name/version pairs to be installed
-     *
      * @return array
      * @throws ApiException if the API gave a non-2xx response
      * @throws Exception if no one is logged in or there isn't a valid license key
@@ -203,13 +172,62 @@ class Api extends Component
     /**
      * @param string $method
      * @param string $uri
-     * @param array  $options
-     *
+     * @param array $options
      * @return ResponseInterface
      * @throws ApiException
      */
     protected function request(string $method, string $uri, array $options = []): ResponseInterface
     {
+        // build out the headers
+        $headers = [
+            'Accept' => 'application/json',
+            'X-Craft-System' => 'craft:'.Craft::$app->getVersion().';'.strtolower(Craft::$app->getEditionName()),
+        ];
+
+        // platform
+        $platform = [];
+        foreach ($this->platformVersions() as $name => $version) {
+            $platform[] = "{$name}:{$version}";
+        }
+        $headers['X-Craft-Platform'] = implode(',', $platform);
+
+        // request info
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest()) {
+            if (($host = $request->getHostInfo()) !== null) {
+                $headers['X-Craft-Host'] = $host;
+            }
+            if (($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) !== null) {
+                $headers['X-Craft-User-Ip'] = $ip;
+            }
+        }
+
+        // email
+        if (($user = Craft::$app->getUser()->getIdentity()) !== null) {
+            $headers['X-Craft-User-Email'] = $user->email;
+        }
+
+        // Craft license
+        $headers['X-Craft-License'] = $this->cmsLicenseKey();
+
+        // plugin info
+        $pluginLicenses = [];
+        $pluginsService = Craft::$app->getPlugins();
+        /** @var Plugin[] $plugins */
+        $plugins = $pluginsService->getAllPlugins();
+        foreach ($plugins as $plugin) {
+            $handle = $plugin->getHandle();
+            $headers['X-Craft-System'] .= ",{$handle}:{$plugin->getVersion()}";
+            if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
+                $pluginLicenses[] = "{$handle}:{$licenseKey}";
+            }
+        }
+        $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+
+        $options = ArrayHelper::merge($options, [
+            'headers' => $headers,
+        ]);
+
         try {
             return $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
@@ -221,22 +239,24 @@ class Api extends Component
      * Returns platform info.
      *
      * @param bool $useComposerOverrides Whether to factor in any `config.platform` overrides
-     *
      * @return array
      */
     protected function platformVersions(bool $useComposerOverrides = false): array
     {
-        $versions = [];
-
         // Let Composer's PlatformRepository do most of the work
+        $overrides = [];
         if ($useComposerOverrides) {
-            $jsonPath = Craft::$app->getComposer()->getJsonPath();
-            $config = Json::decode(file_get_contents($jsonPath));
-            $overrides = $config['config']['platform'] ?? [];
-        } else {
-            $overrides = [];
+            try {
+                $jsonPath = Craft::$app->getComposer()->getJsonPath();
+                $config = Json::decode(file_get_contents($jsonPath));
+                $overrides = $config['config']['platform'] ?? [];
+            } catch (Exception $e) {
+                // couldn't locate composer.json - NBD
+            }
         }
         $repo = new PlatformRepository([], $overrides);
+
+        $versions = [];
         foreach ($repo->getPackages() as $package) {
             $versions[$package->getName()] = $package->getPrettyVersion();
         }
@@ -249,44 +269,28 @@ class Api extends Component
     }
 
     /**
-     * @return string
-     * @throws Exception
+     * @return string|null
      */
-    protected function cmsLicenseKey(): string
+    protected function cmsLicenseKey()
     {
         $path = Craft::$app->getPath()->getLicenseKeyPath();
 
         // Check to see if the key exists and it's not a temp one.
         if (!is_file($path)) {
-            throw new Exception("No license key found at {$path}.");
+            return null;
         }
 
         $contents = file_get_contents($path);
         if (empty($contents) || $contents === 'temp') {
-            throw new Exception("Invalid license key at {$path}.");
+            return null;
         }
 
-        return trim(preg_replace('/[\r\n]+/', '', $contents));
-    }
+        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $contents));
 
-    /**
-     * @return array
-     */
-    protected function pluginInfo(): array
-    {
-        $info = [];
-        $pluginsService = Craft::$app->getPlugins();
-        /** @var Plugin[] $plugins */
-        $plugins = $pluginsService->getAllPlugins();
-
-        foreach ($plugins as $plugin) {
-            $handle = $plugin->getHandle();
-            $info[$handle] = [
-                'version' => $plugin->getVersion(),
-                'licenseKey' => $pluginsService->getPluginLicenseKey($handle),
-            ];
+        if (strlen($licenseKey) !== 250) {
+            return null;
         }
 
-        return $info;
+        return $licenseKey;
     }
 }

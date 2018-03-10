@@ -1,4 +1,4 @@
-/*!   - 2018-02-01 */
+/*!   - 2018-03-07 */
 (function($){
 
 /** global: Craft */
@@ -186,7 +186,7 @@ $.extend(Craft,
             if(typeof format == 'undefined') {
                 format = ',.0f';
             }
-            
+
             var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
 
             return formatter(number);
@@ -281,7 +281,7 @@ $.extend(Craft,
             }
 
             // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path.substr(0, 2) === '//') {
+            if (path.search('://') !== -1 || path[0] === '/') {
                 return path;
             }
 
@@ -2590,9 +2590,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection('asc');
+                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
 
-                if (attr === 'score' || attr === 'structure') {
+                if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
                 }
                 else {
@@ -2940,17 +2940,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;
@@ -12975,8 +12968,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             this.$textareas.css('min-height', tallestTextareaHeight);
 
-            // If the <td> is still taller, go with that insted
-            var tdHeight = this.$textareas.first().parent().height();
+            // If the <td> is still taller, go with that instead
+            var tdHeight = this.$textareas.filter(':visible').first().parent().height();
 
             if (tdHeight > tallestTextareaHeight) {
                 this.$textareas.css('min-height', tdHeight);
@@ -14432,7 +14425,6 @@ Craft.Grid = Garnish.Base.extend(
             this.$items = $().add(this.$items.add(items));
             this.setItems();
             this.refreshCols(true, true);
-            $(items).velocity('finish');
         },
 
         removeItems: function(items) {
@@ -14459,7 +14451,7 @@ Craft.Grid = Garnish.Base.extend(
             delete this.setItems._;
         },
 
-        refreshCols: function(force, animate) {
+        refreshCols: function(force) {
             if (this._refreshingCols) {
                 this._refreshColsAfterRefresh = true;
                 if (force) {
@@ -14697,27 +14689,7 @@ Craft.Grid = Garnish.Base.extend(
                             width: this.getItemWidthCss(this.layout.colspans[this.refreshCols._.i])
                         };
                         this.refreshCols._.css[Craft.left] = this.getItemLeftPosCss(this.layout.positions[this.refreshCols._.i]);
-
-                        if (animate) {
-                            // Get the target CSS in pixels for Velocity
-                            this.refreshCols._.velocityCss = {
-                                width: this.getItemWidthInPx(this.layout.colspans[this.refreshCols._.i])
-                            };
-                            this.refreshCols._.velocityCss[Craft.left] = this.getItemLeftPosInPx(this.layout.positions[this.refreshCols._.i]);
-
-                            this.items[this.refreshCols._.i].velocity(this.refreshCols._.velocityCss, {
-                                queue: false,
-                                complete: (function(css) {
-                                    // Set to calc()-based width/position on complete
-                                    return function(elements) {
-                                        $(elements).css(css);
-                                    };
-                                })(this.refreshCols._.css)
-                            });
-                        }
-                        else {
-                            this.items[this.refreshCols._.i].velocity('finish').css(this.refreshCols._.css);
-                        }
+                        this.items[this.refreshCols._.i].css(this.refreshCols._.css);
                     }
 
                     // If every item is at position 0, then let them lay out au naturel
@@ -14730,7 +14702,7 @@ Craft.Grid = Garnish.Base.extend(
                         this.$items.css('position', 'absolute');
 
                         // Now position the items
-                        this.positionItems(animate);
+                        this.positionItems();
 
                         // Update the positions as the items' heigthts change
                         this.addListener(this.$items, 'resize', 'onItemResize');
@@ -14803,7 +14775,7 @@ Craft.Grid = Garnish.Base.extend(
             return true;
         },
 
-        positionItems: function(animate) {
+        positionItems: function() {
             this.positionItems._ = {};
 
             this.positionItems._.colHeights = [];
@@ -14825,14 +14797,7 @@ Craft.Grid = Garnish.Base.extend(
                     this.positionItems._.top += this.settings.gutter;
                 }
 
-                if (animate) {
-                    this.items[this.positionItems._.i].velocity({top: this.positionItems._.top}, {
-                        queue: false
-                    });
-                }
-                else {
-                    this.items[this.positionItems._.i].velocity('finish').css('top', this.positionItems._.top);
-                }
+                this.items[this.positionItems._.i].css('top', this.positionItems._.top);
 
                 // Now add the new heights to those columns
                 for (this.positionItems._.col = this.layout.positions[this.positionItems._.i]; this.positionItems._.col <= this.positionItems._.endingCol; this.positionItems._.col++) {
@@ -15228,8 +15193,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val(this.settings.value);
             this.$outerContainer.addClass('on');
             this.$outerContainer.attr('aria-checked', 'true');
-            this.on = true;
-            this.onChange();
+
+            if (this.on !== (this.on = true)) {
+                this.onChange();
+            }
         },
 
         turnOff: function() {
@@ -15242,8 +15209,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val('');
             this.$outerContainer.removeClass('on');
             this.$outerContainer.attr('aria-checked', 'false');
-            this.on = false;
-            this.onChange();
+
+            if (this.on !== (this.on = false)) {
+                this.onChange();
+            }
         },
 
         toggle: function(event) {
@@ -17259,6 +17228,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
+                        if (!response.success) {
+                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            this.tableView.elementIndex.updateElements();
+                            return;
+                        }
                         Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
                         this.onPositionChange();
 

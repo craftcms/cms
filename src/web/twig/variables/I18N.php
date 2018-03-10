@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -13,8 +13,8 @@ use craft\i18n\Locale;
 /**
  * Localization functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class I18N
@@ -62,7 +62,6 @@ class I18N
      * Returns a locale by its ID.
      *
      * @param string $localeId
-     *
      * @return Locale
      */
     public function getLocaleById(string $localeId): Locale
@@ -136,7 +135,6 @@ class I18N
      * Returns the localization data for a given locale.
      *
      * @param string|null $localeId
-     *
      * @return Locale
      */
     public function getLocaleData(string $localeId = null): Locale

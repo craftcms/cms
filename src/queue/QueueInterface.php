@@ -1,19 +1,18 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
 
 /**
  * QueueInterface defines the common interface to be implemented by queue classes.
- *
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[JobTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 interface QueueInterface
 {
@@ -59,9 +58,7 @@ interface QueueInterface
 
     /**
      * Returns info about the jobs in the queue.
-     *
      * The response array should have sub-arrays with the following keys:
-     *
      * - 'id': The job ID
      * - 'status': The job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)
      * - 'progress': The job progress (0-100)
@@ -69,7 +66,6 @@ interface QueueInterface
      * - 'error': The error message (if the job failed)
      *
      * @param int|null $limit
-     *
      * @return array
      */
     public function getJobInfo(int $limit = null): array;

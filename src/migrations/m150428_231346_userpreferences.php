@@ -67,7 +67,7 @@ class m150428_231346_userpreferences extends Migration
         $this->createTable($this->_prefsTable, [
             'userId' => $this->integer()->notNull(),
             'preferences' => $this->text(),
-            'PRIMARY KEY(userId)',
+            'PRIMARY KEY([[userId]])',
         ]);
     }
 

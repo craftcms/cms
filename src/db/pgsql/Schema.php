@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db\pgsql;
@@ -14,11 +14,9 @@ use yii\db\Exception;
 
 /**
  * @inheritdoc
- *
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Schema extends \yii\db\pgsql\Schema
 {
@@ -50,7 +48,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Quotes a database name for use in a query.
      *
      * @param string $name
-     *
      * @return string
      */
     public function quoteDatabaseName(string $name): string
@@ -62,7 +59,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Releases an existing savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
 
@@ -84,7 +80,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Rolls back to a previously created savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
     public function rollBackSavepoint($name)
@@ -107,7 +102,10 @@ class Schema extends \yii\db\pgsql\Schema
     public function getLastInsertID($sequenceName = '')
     {
         if ($sequenceName !== '') {
-            $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName).'_id_seq';
+            if (strpos($sequenceName, '.') === false) {
+                $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName);
+            }
+            $sequenceName .= '_id_seq';
         }
 
         return parent::getLastInsertID($sequenceName);
@@ -176,7 +174,6 @@ class Schema extends \yii\db\pgsql\Schema
 
     /**
      * Returns all indexes for the given table. Each array element is of the following structure:
-     *
      * ```php
      * [
      *     'IndexName1' => ['col1' [, ...]],
@@ -185,7 +182,6 @@ class Schema extends \yii\db\pgsql\Schema
      * ```
      *
      * @param string $tableName The name of the table to get the indexes for.
-     *
      * @return array All indexes for the given table.
      */
     public function findIndexes(string $tableName): array
@@ -214,7 +210,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Loads the metadata for the specified table.
      *
      * @param string $name table name
-     *
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
     public function loadTableSchema($name)
@@ -322,7 +317,6 @@ SQL;
      * Gets information about given table indexes.
      *
      * @param TableSchema $table The table metadata
-     *
      * @return array Index and column names
      */
     protected function getIndexInformation(TableSchema $table): array

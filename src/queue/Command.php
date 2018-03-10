@@ -1,21 +1,18 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
-
-use Craft;
-use yii\log\FileTarget;
 
 /**
  * Manages application db-queue.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
- * @since  3.0
+ * @since 3.0
  */
 class Command extends \yii\queue\cli\Command
 {

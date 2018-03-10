@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -16,8 +16,8 @@ use craft\models\FieldLayout;
 /**
  * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class Fields
@@ -32,7 +32,6 @@ class Fields
      * Returns all field groups.
      *
      * @param string|null $indexBy The attribute to index the field groups by
-     *
      * @return FieldGroup[] The field groups
      */
     public function getAllGroups(string $indexBy = null): array
@@ -48,7 +47,6 @@ class Fields
      * Returns a field group by its ID.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
     public function getGroupById(int $groupId)
@@ -65,7 +63,6 @@ class Fields
      * Returns a field by its ID.
      *
      * @param int $fieldId The field’s ID
-     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById(int $fieldId)
@@ -79,7 +76,6 @@ class Fields
      * Returns a field by its handle.
      *
      * @param string $handle The field’s handle
-     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle(string $handle)
@@ -93,7 +89,6 @@ class Fields
      * Returns all fields.
      *
      * @param string|null $indexBy The attribute to index the fields by
-     *
      * @return FieldInterface[] The fields
      */
     public function getAllFields(string $indexBy = null): array
@@ -108,9 +103,8 @@ class Fields
     /**
      * Returns all the fields in a given group.
      *
-     * @param int         $groupId The field group’s ID
+     * @param int $groupId The field group’s ID
      * @param string|null $indexBy The attribute to index the fields by
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByGroupId(int $groupId, string $indexBy = null): array
@@ -126,7 +120,6 @@ class Fields
      * Returns a field layout by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId)
@@ -140,7 +133,6 @@ class Fields
      * Returns a field layout by its associated element type.
      *
      * @param string $type The associated element type
-     *
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout

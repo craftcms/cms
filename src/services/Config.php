@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -17,20 +17,18 @@ use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
- *
  * An instance of the Config service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConfig()|<code>Craft::$app->config</code>]].
  *
- * @property DbConfig      $db        the DB config settings
- * @property GeneralConfig $general   the general config settings
- *
+ * @property DbConfig $db the DB config settings
+ * @property GeneralConfig $general the general config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Config extends Component
 {
@@ -75,9 +73,8 @@ class Config extends Component
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
-     *
      * @return BaseObject The config settings
-     * @throws InvalidParamException if $category is invalid
+     * @throws InvalidArgumentException if $category is invalid
      * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
     public function getConfigSettings(string $category): BaseObject
@@ -94,7 +91,7 @@ class Config extends Component
                 $class = GeneralConfig::class;
                 break;
             default:
-                throw new InvalidParamException('Invalid config category: '.$category);
+                throw new InvalidArgumentException('Invalid config category: '.$category);
         }
 
         // Get any custom config settings
@@ -153,7 +150,6 @@ class Config extends Component
      * config, and returns the values.
      *
      * @param $filename
-     *
      * @return array
      */
     public function getConfigFromFile(string $filename): array
@@ -201,9 +197,8 @@ class Config extends Component
     /**
      * Sets an environment variable value in the project's .env file.
      *
-     * @param string $name  The environment variable name
+     * @param string $name The environment variable name
      * @param string $value The environment variable value
-     *
      * @throws Exception if the .env file doesn't exist
      */
     public function setDotEnvVar($name, $value)
@@ -216,8 +211,10 @@ class Config extends Component
 
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
+        $value = addslashes($value);
         $qValue = str_replace('$', '\\$', $value);
         $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$qValue}\"", $contents, -1, $count);
+
         if ($count === 0) {
             $contents = rtrim($contents);
             $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$value}\"".PHP_EOL;

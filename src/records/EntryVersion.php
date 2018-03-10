@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,21 +13,20 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class EntryVersion record.
  *
- * @property int     $id        ID
- * @property int     $entryId   Entry ID
- * @property int     $sectionId Section ID
- * @property int     $creatorId Creator ID
- * @property int     $siteId    Site ID
- * @property int     $num       Num
- * @property string  $notes     Notes
- * @property array   $data      Data
- * @property Entry   $entry     Entry
- * @property Section $section   Section
- * @property User    $creator   Creator
- * @property Site    $site      Site
- *
+ * @property int $id ID
+ * @property int $entryId Entry ID
+ * @property int $sectionId Section ID
+ * @property int $creatorId Creator ID
+ * @property int $siteId Site ID
+ * @property int $num Num
+ * @property string $notes Notes
+ * @property array $data Data
+ * @property Entry $entry Entry
+ * @property Section $section Section
+ * @property User $creator Creator
+ * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryVersion extends ActiveRecord
 {
@@ -36,7 +35,6 @@ class EntryVersion extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

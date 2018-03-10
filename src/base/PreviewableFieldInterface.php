@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -12,7 +12,7 @@ namespace craft\base;
  * that wish to be previewable on element indexes in the Control Panel.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 interface PreviewableFieldInterface
 {
@@ -22,9 +22,8 @@ interface PreviewableFieldInterface
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param mixed            $value   The field’s value
+     * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
-     *
      * @return string The HTML that should be shown for this field in Table View
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string;

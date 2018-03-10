@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -24,11 +24,10 @@ use yii\web\Response;
 /**
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as
  * creating, editing, renaming and reordering them.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class VolumesController extends Controller
 {
@@ -60,9 +59,8 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param int|null             $volumeId The volume’s ID, if editing an existing volume.
-     * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
-     *
+     * @param int|null $volumeId The volume’s ID, if editing an existing volume.
+     * @param VolumeInterface|null $volume The volume being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found

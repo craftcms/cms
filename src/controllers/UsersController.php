@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -40,13 +40,12 @@ use yii\web\Response;
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
  * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
- *
  * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetRemainingSessionTime]],
  * [[actionSendPasswordResetEmail]], [[actionSetPassword]], [[actionVerifyEmail]] and [[actionSaveUser]] require an
  * authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UsersController extends Controller
 {
@@ -142,7 +141,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Logs a user in for impersonation.  Requires you to be an administrator.
+     * Logs a user in for impersonation. Requires you to be an administrator.
      *
      * @return Response|null
      */
@@ -208,7 +207,6 @@ class UsersController extends Controller
 
     /**
      * Starts an elevated user session.
-     *
      * return Response
      */
     public function actionStartElevatedSession()
@@ -463,7 +461,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Manually activates a user account.  Only admins have access.
+     * Manually activates a user account. Only admins have access.
      *
      * @return Response
      */
@@ -492,8 +490,7 @@ class UsersController extends Controller
      * Edit a user account.
      *
      * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User|null       $user   The user being edited, if there were any validation errors.
-     *
+     * @param User|null $user The user being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
@@ -771,9 +768,9 @@ class UsersController extends Controller
         // you're on Client and you're the admin account. No need to show since we always need an admin on Client)
         if (
             ($edition === Craft::Pro && (
-                Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
-                Craft::$app->getUser()->checkPermission('assignUserGroups')
-            )) ||
+                    Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
+                    Craft::$app->getUser()->checkPermission('assignUserGroups')
+                )) ||
             ($edition === Craft::Client && $isClientAccount && Craft::$app->getUser()->getIsAdmin())
         ) {
             $tabs['perms'] = [
@@ -876,15 +873,12 @@ class UsersController extends Controller
 
     /**
      * Provides an endpoint for saving a user account.
-     *
      * This action accounts for the following scenarios:
-     *
      * - An admin registering a new user account.
      * - An admin editing an existing user account.
      * - A normal user with user-administration permissions registering a new user account.
      * - A normal user with user-administration permissions editing an existing user account.
      * - A guest registering a new user account ("public registration").
-     *
      * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
      *
      * @return Response|null
@@ -1249,7 +1243,7 @@ class UsersController extends Controller
         } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
-                FileHelper::removeFile($fileLocation);
+                FileHelper::unlink($fileLocation);
             }
 
             Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
@@ -1550,8 +1544,7 @@ class UsersController extends Controller
      * Handles a failed login attempt.
      *
      * @param string|null $authError
-     * @param User|null   $user
-     *
+     * @param User|null $user
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
@@ -1578,8 +1571,11 @@ class UsersController extends Controller
                 }
                 break;
             case User::AUTH_PASSWORD_RESET_REQUIRED:
-                $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
-                Craft::$app->getUsers()->sendPasswordResetEmail($user);
+                if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                    $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
+                } else {
+                    $message = Craft::t('app', 'You need to reset your password, but an error was encountered when sending the password reset email.');
+                }
                 break;
             case User::AUTH_ACCOUNT_SUSPENDED:
                 $message = Craft::t('app', 'Account suspended.');
@@ -1634,7 +1630,6 @@ class UsersController extends Controller
      * logged in.
      *
      * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
-     *
      * @return Response
      */
     private function _handleSuccessfulLogin(bool $setNotice): Response
@@ -1685,9 +1680,8 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User  $user
+     * @param User $user
      * @param array $variables
-     *
      * @return Response
      */
     private function _renderSetPasswordTemplate(User $user, array $variables): Response
@@ -1713,7 +1707,6 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @return void
      * @throws NotFoundHttpException
      */
     private function _noUserExists()
@@ -1752,8 +1745,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     *
-     * @return void
      */
     private function _processUserPhoto(User $user)
     {
@@ -1772,7 +1763,7 @@ class UsersController extends Controller
                 $users->saveUserPhoto($fileLocation, $user, $photo->name);
             } catch (\Throwable $e) {
                 if (file_exists($fileLocation)) {
-                    FileHelper::removeFile($fileLocation);
+                    FileHelper::unlink($fileLocation);
                 }
                 throw $e;
             }
@@ -1781,8 +1772,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     *
-     * @return void
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions/groups
      */
     private function _processUserGroupsPermissions(User $user)
@@ -1920,7 +1909,6 @@ class UsersController extends Controller
 
     /**
      * @param User|false $user
-     *
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
@@ -1953,7 +1941,6 @@ class UsersController extends Controller
      * Takes over after a user has been activated.
      *
      * @param User $user The user that was just activated
-     *
      * @return Response|null
      */
     private function _onAfterActivateUser(User $user)
@@ -1971,7 +1958,6 @@ class UsersController extends Controller
      * Possibly log a user in right after they were activate, if Craft is configured to do so.
      *
      * @param User $user The user that was just activated
-     *
      * @return bool Whether the user was just logged in
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
@@ -1987,7 +1973,6 @@ class UsersController extends Controller
      * Redirect the browser after a user’s account has been activated.
      *
      * @param User $user The user that was just activated
-     *
      * @return Response|null
      */
     private function _redirectUserAfterAccountActivation(User $user)
@@ -2007,9 +1992,8 @@ class UsersController extends Controller
     }
 
     /**
-     * @param string[]    $errors
+     * @param string[] $errors
      * @param string|null $loginName
-     *
      * @return Response|null
      */
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)

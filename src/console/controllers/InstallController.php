@@ -1,19 +1,17 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
-use craft\errors\InvalidPluginException;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
-use yii\base\Exception;
 use yii\console\Controller;
 use yii\helpers\Console;
 
@@ -21,7 +19,7 @@ use yii\helpers\Console;
  * Craft CMS CLI installer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class InstallController extends Controller
 {
@@ -70,7 +68,7 @@ class InstallController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'index') {
+        if ($actionID === 'craft') {
             $options[] = 'email';
             $options[] = 'username';
             $options[] = 'password';
@@ -122,7 +120,7 @@ class InstallController extends Controller
         $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         $password = $this->password ?: $this->_passwordPrompt();
         $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
-        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'validator' => [$this, 'validateSiteUrl']]);
+        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => '@web', 'validator' => [$this, 'validateSiteUrl']]);
         $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
 
         $site = new Site([

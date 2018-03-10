@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -27,11 +27,10 @@ use yii\helpers\Inflector;
 
 /**
  * The Plugins service provides APIs for managing plugins.
- *
  * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|<code>Craft::$app->plugins</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Plugins extends Component
 {
@@ -159,8 +158,6 @@ class Plugins extends Component
 
     /**
      * Loads the enabled plugins.
-     *
-     * @return void
      */
     public function loadPlugins()
     {
@@ -238,7 +235,6 @@ class Plugins extends Component
      * Returns an enabled plugin by its handle.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
     public function getPlugin(string $handle)
@@ -256,7 +252,6 @@ class Plugins extends Component
      * Returns an enabled plugin by its package name.
      *
      * @param string $packageName The plugin’s package name
-     *
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
     public function getPluginByPackageName(string $packageName)
@@ -275,11 +270,9 @@ class Plugins extends Component
 
     /**
      * Returns the plugin handle that contains the given class, if any.
-     *
      * The plugin may not actually be installed.
      *
      * @param string $class
-     *
      * @return string|null The plugin handle, or null if it can’t be determined
      */
     public function getPluginHandleByClass(string $class)
@@ -321,7 +314,6 @@ class Plugins extends Component
      * Enables a plugin by its handle.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return bool Whether the plugin was enabled successfully
      * @throws InvalidPluginException if the plugin isn't installed
      */
@@ -368,7 +360,6 @@ class Plugins extends Component
      * Disables a plugin by its handle.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return bool Whether the plugin was disabled successfully
      * @throws InvalidPluginException if the plugin isn’t installed
      */
@@ -415,7 +406,6 @@ class Plugins extends Component
      * Installs a plugin by its handle.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return bool Whether the plugin was installed successfully.
      * @throws InvalidPluginException if the plugin doesn’t exist
      * @throws \Throwable if reasons
@@ -488,7 +478,6 @@ class Plugins extends Component
      * Uninstalls a plugin by its handle.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return bool Whether the plugin was uninstalled successfully
      * @throws InvalidPluginException if the plugin doesn’t exist
      * @throws \Throwable if reasons
@@ -558,9 +547,8 @@ class Plugins extends Component
     /**
      * Saves a plugin's settings.
      *
-     * @param PluginInterface $plugin   The plugin
-     * @param array           $settings The plugin’s new settings
-     *
+     * @param PluginInterface $plugin The plugin
+     * @param array $settings The plugin’s new settings
      * @return bool Whether the plugin’s settings were saved successfully
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
@@ -602,7 +590,6 @@ class Plugins extends Component
      * Returns whether the given plugin’s version number has changed from what we have recorded in the database.
      *
      * @param PluginInterface $plugin The plugin
-     *
      * @return bool Whether the plugin’s version number has changed from what we have recorded in the database
      */
     public function hasPluginVersionNumberChanged(PluginInterface $plugin): bool
@@ -621,7 +608,6 @@ class Plugins extends Component
      * Returns whether the given plugin’s local schema version is greater than the record we have in the database.
      *
      * @param PluginInterface $plugin The plugin
-     *
      * @return bool Whether the plugin’s local schema version is greater than the record we have in the database
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin): bool
@@ -640,7 +626,6 @@ class Plugins extends Component
      * Returns whether a given plugin is installed (even if it's disabled).
      *
      * @param string $handle The plugin handle
-     *
      * @return bool
      */
     public function isPluginInstalled(string $handle): bool
@@ -660,7 +645,6 @@ class Plugins extends Component
      * Returns whether a given plugin is installed and enabled.
      *
      * @param string $handle The plugin handle
-     *
      * @return bool
      */
     public function isPluginEnabled(string $handle): bool
@@ -673,7 +657,6 @@ class Plugins extends Component
      * Returns whether a given plugin is installed but disabled.
      *
      * @param string $handle The plugin handle
-     *
      * @return bool
      */
     public function isPluginDisabled(string $handle): bool
@@ -685,7 +668,6 @@ class Plugins extends Component
      * Returns the stored info for a given plugin.
      *
      * @param string $handle The plugin handle
-     *
      * @return array|null The stored info, if there is any
      */
     public function getStoredPluginInfo(string $handle)
@@ -714,7 +696,6 @@ class Plugins extends Component
      * Returns the Composer-supplied info
      *
      * @param string|null $handle The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.
-     *
      * @return array|null The plugin info, or null if an unknown handle was passed.
      */
     public function getComposerPluginInfo(string $handle = null)
@@ -728,9 +709,8 @@ class Plugins extends Component
     /**
      * Creates and returns a new plugin instance based on its handle.
      *
-     * @param string     $handle The plugin’s handle
-     * @param array|null $row    The plugin’s row in the plugins table, if any
-     *
+     * @param string $handle The plugin’s handle
+     * @param array|null $row The plugin’s row in the plugins table, if any
      * @return PluginInterface
      * @throws InvalidPluginException if $handle is invalid
      */
@@ -834,7 +814,6 @@ class Plugins extends Component
      * Returns a plugin’s SVG icon.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return string The given plugin’s SVG icon
      */
     public function getPluginIconSvg(string $handle): string
@@ -862,7 +841,6 @@ class Plugins extends Component
      * Returns the license key stored for a given plugin, if it was purchased through the Store.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return string|null The plugin’s license key, or null if it isn’t known
      */
     public function getPluginLicenseKey(string $handle)
@@ -872,14 +850,11 @@ class Plugins extends Component
 
     /**
      * Sets a plugin’s license key.
-     *
      * Note this should *not* be used to store license keys generated by third party stores.
      *
-     * @param string      $handle     The plugin’s handle
+     * @param string $handle The plugin’s handle
      * @param string|null $licenseKey The plugin’s license key
-     *
      * @return bool Whether the license key was updated successfully
-     *
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
@@ -928,7 +903,6 @@ class Plugins extends Component
      * Returns the license key status of a given plugin.
      *
      * @param string $handle The plugin’s handle
-     *
      * @return string
      */
     public function getPluginLicenseKeyStatus(string $handle): string
@@ -939,10 +913,8 @@ class Plugins extends Component
     /**
      * Sets the license key status for a given plugin.
      *
-     * @param string      $handle           The plugin’s handle
+     * @param string $handle The plugin’s handle
      * @param string|null $licenseKeyStatus The plugin’s license key status
-     *
-     * @return void
      * @throws InvalidPluginException if the plugin isn't installed
      */
     public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null)
@@ -993,7 +965,6 @@ class Plugins extends Component
      * Converts old school camelCase handles to kebab-case.
      *
      * @param string $handle
-     *
      * @return string
      */
     private function _normalizeHandle(string $handle): string
@@ -1007,7 +978,6 @@ class Plugins extends Component
 
     /**
      * Registers a plugin internally and as an application module.
-     *
      * This should only be called for enabled plugins
      *
      * @param PluginInterface $plugin The plugin
@@ -1035,7 +1005,7 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param int             $id     The plugin’s ID
+     * @param int $id The plugin’s ID
      */
     private function _setPluginMigrator(PluginInterface $plugin, int $id)
     {

@@ -2,14 +2,18 @@
 /**
  * Craft bootstrap file.
  *
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
 use craft\services\Config;
+use yii\base\ErrorException;
+
+// Get the last error at the earliest opportunity, so we can catch max_input_vars errors
+// see https://stackoverflow.com/a/21601349/1688568
+$lastError = error_get_last();
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -230,9 +234,10 @@ $config = ArrayHelper::merge(
         'env' => $environment,
         'components' => $components,
     ],
-    require "{$srcPath}/config/app/main.php",
-    require "{$srcPath}/config/app/{$appType}.php",
-    $configService->getConfigFromFile('app')
+    require "{$srcPath}/config/app.php",
+    require "{$srcPath}/config/app.{$appType}.php",
+    $configService->getConfigFromFile('app'),
+    $configService->getConfigFromFile("app.{$appType}")
 );
 
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
@@ -240,4 +245,12 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-return Craft::createObject($config);
+/** @var \craft\web\Application|craft\console\Application $app */
+$app = Craft::createObject($config);
+
+// If there was a max_input_vars error, kill the request before we start processing it with incomplete data
+if ($lastError && strpos($lastError['message'], 'max_input_vars') !== false) {
+    throw new ErrorException($lastError['message']);
+}
+
+return $app;

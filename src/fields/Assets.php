@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -24,7 +24,7 @@ use craft\web\UploadedFile;
  * Assets represents an Assets field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Assets extends BaseRelationField
 {
@@ -188,8 +188,6 @@ class Assets extends BaseRelationField
      * Validates the files to make sure they are one of the allowed file kinds.
      *
      * @param ElementInterface $element
-     *
-     * @return void
      */
     public function validateFileType(ElementInterface $element)
     {
@@ -262,7 +260,6 @@ class Assets extends BaseRelationField
      * Resolve source path for uploading for this field.
      *
      * @param ElementInterface|null $element
-     *
      * @return int
      */
     public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
@@ -302,6 +299,7 @@ class Assets extends BaseRelationField
                 $asset->newFolderId = $targetFolderId;
                 $asset->volumeId = $folder->volumeId;
                 $asset->setScenario(Asset::SCENARIO_CREATE);
+                $asset->avoidFilenameConflicts = true;
                 Craft::$app->getElements()->saveElement($asset);
 
                 $assetIds[] = $asset->id;
@@ -434,7 +432,6 @@ class Assets extends BaseRelationField
      * Returns any files that were uploaded to the field.
      *
      * @param ElementInterface $element
-     *
      * @return array
      */
     private function _getUploadedFiles(ElementInterface $element): array
@@ -503,11 +500,10 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param string                $uploadSource
-     * @param string                $subpath
+     * @param string $uploadSource
+     * @param string $subpath
      * @param ElementInterface|null $element
-     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
-     *
+     * @param bool $createDynamicFolders whether missing folders should be created in the process
      * @throws InvalidVolumeException if the volume root folder doesn’t exist
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
@@ -604,8 +600,7 @@ class Assets extends BaseRelationField
      * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
      *
      * @param ElementInterface|null $element
-     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
-     *
+     * @param bool $createDynamicFolders whether missing folders should be created in the process
      * @return int if the folder subpath is not valid
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @throws InvalidVolumeException if there's a problem with the field's volume configuration
@@ -658,7 +653,6 @@ class Assets extends BaseRelationField
      * Returns a volume ID from an upload source key.
      *
      * @param string $sourceKey
-     *
      * @return int|null
      */
     public function _volumeIdBySourceKey(string $sourceKey)

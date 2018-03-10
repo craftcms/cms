@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The EntryRevisionsController class is a controller that handles various entry version and draft related tasks such as
  * retrieving, saving, deleting, publishing and reverting entry drafts and versions.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryRevisionsController extends BaseEntriesController
 {
@@ -48,11 +47,12 @@ class EntryRevisionsController extends BaseEntriesController
                 throw new NotFoundHttpException('Entry draft not found');
             }
         } else {
-            $draft = new EntryDraft();
-            $draft->id = Craft::$app->getRequest()->getBodyParam('entryId');
-            $draft->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
-            $draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
-            $draft->siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
+            $draft = new EntryDraft([
+                'id' => Craft::$app->getRequest()->getBodyParam('entryId'),
+                'sectionId' => Craft::$app->getRequest()->getRequiredBodyParam('sectionId'),
+                'creatorId' => Craft::$app->getUser()->getIdentity()->id,
+                'siteId' => Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id,
+            ]);
         }
 
         // Make sure they have permission to be editing this
@@ -71,7 +71,11 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Manually validate 'title' since the Elements service will just give it a title automatically.
         if (!$draft->id && $draft->validate(['title'])) {
+            // Don't save brand new entries as enabled
+            $enabled = $draft->enabled;
+            $draft->enabled = false;
             Craft::$app->getElements()->saveElement($draft, false);
+            $draft->enabled = $enabled;
         }
 
         if (!$draft->id || !Craft::$app->getEntryRevisions()->saveDraft($draft)) {
@@ -207,6 +211,11 @@ class EntryRevisionsController extends BaseEntriesController
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $draft->setFieldValuesFromRequest($fieldsLocation);
 
+        $entryType = $entry->getType();
+        if (!$entryType->hasTitleField) {
+            $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
+        }
+
         // Publish the draft (finally!)
         if (!Craft::$app->getEntryRevisions()->publishDraft($draft)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
@@ -290,8 +299,6 @@ class EntryRevisionsController extends BaseEntriesController
      * Sets a draft's attributes from the post data.
      *
      * @param EntryDraft $draft
-     *
-     * @return void
      */
     private function _setDraftAttributesFromPost(EntryDraft $draft)
     {
@@ -310,8 +317,6 @@ class EntryRevisionsController extends BaseEntriesController
             // Default to the section's first entry type
             $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
         }
-
-        $draft->fieldLayoutId = $draft->getType()->fieldLayoutId;
 
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));

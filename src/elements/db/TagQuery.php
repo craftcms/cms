@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -17,13 +17,11 @@ use yii\db\Connection;
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
  *
  * @property string|string[]|TagGroup $group The handle(s) of the tag group(s) that resulting tags must belong to.
- *
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
  * @method Tag|array|null nth(int $n, Connection $db = null)
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TagQuery extends ElementQuery
 {
@@ -70,7 +68,6 @@ class TagQuery extends ElementQuery
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|TagGroup|null $value The property value
-     *
      * @return static self reference
      */
     public function group($value)
@@ -94,7 +91,6 @@ class TagQuery extends ElementQuery
      * Sets the [[groupId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function groupId($value)
