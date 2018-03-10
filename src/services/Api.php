@@ -169,7 +169,6 @@ class Api extends Component
      * @param array $options
      * @return ResponseInterface
      * @throws RequestException
-     * @throws InvalidPluginException
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
@@ -177,7 +176,6 @@ class Api extends Component
             'headers' => $this->getHeaders(),
         ]);
 
-        /** @var RequestException|null $e */
         $e = null;
 
         try {
@@ -211,7 +209,7 @@ class Api extends Component
                 list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
                 try {
                     $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException $pluginException) {
                 }
             }
         }
