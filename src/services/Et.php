@@ -29,7 +29,6 @@ class Et extends Component
     // Constants
     // =========================================================================
 
-    const ENDPOINT_PING = 'app/ping';
     const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
     const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
     const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
@@ -52,16 +51,6 @@ class Et extends Component
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @return EtModel|null
-     */
-    public function ping()
-    {
-        $et = $this->_createEtTransport(self::ENDPOINT_PING);
-
-        return $et->phoneHome();
-    }
 
     /**
      * Fetches info about the available Craft editions from Elliott.
