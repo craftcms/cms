@@ -87,19 +87,11 @@ class Cp
                     $keyPath = substr($keyPath, strlen($rootPath) + 1);
                 }
 
-                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                    'file' => $keyPath,
-                    'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-                ]);
-
-                // Can they actually do something about it?
-                if ($user->admin) {
-                    $action = '<a class="go domain-mismatch">'.Craft::t('app', 'Transfer it to this domain?').'</a>';
-                } else {
-                    $action = Craft::t('app', 'Please notify one of your site’s admins.');
-                }
-
-                $alerts[] = $message.' '.$action;
+                $alerts[] = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                        'file' => $keyPath,
+                        'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
+                    ]).
+                    ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('app', 'Learn more').'</a>';
             }
         }
 

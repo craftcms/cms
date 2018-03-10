@@ -30,7 +30,6 @@ class Et extends Component
     // =========================================================================
 
     const ENDPOINT_PING = 'app/ping';
-    const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
     const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
     const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
     const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
@@ -62,36 +61,6 @@ class Et extends Component
         $et = $this->_createEtTransport(self::ENDPOINT_PING);
 
         return $et->phoneHome();
-    }
-
-    /**
-     * Transfers the installed license to the current domain.
-     *
-     * @return true|string Returns true if the request was successful, otherwise returns the error.
-     */
-    public function transferLicenseToCurrentDomain()
-    {
-        $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_LICENSE);
-        $etResponse = $et->phoneHome();
-
-        if (!empty($etResponse->data['success'])) {
-            return true;
-        }
-
-        // Did they at least say why?
-        if (!empty($etResponse->responseErrors)) {
-            // If the domain isn't considered public in the first place,
-            // pretend everything worked out
-            if ($etResponse->responseErrors[0] === 'not_public_domain') {
-                return true;
-            }
-
-            $error = $etResponse->data['error'];
-        } else {
-            $error = Craft::t('app', 'Craft is unable to transfer your license to this domain at this time.');
-        }
-
-        return $error;
     }
 
     /**
