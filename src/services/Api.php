@@ -61,7 +61,6 @@ class Api extends Component
      *
      * @return array
      * @throws ApiException if the API gave a non-2xx response
-     * @throws Exception if no one is logged in or there isn't a valid license key
      */
     public function getUpdates(): array
     {
@@ -76,7 +75,7 @@ class Api extends Component
      * @param array $install Package name/version pairs to be installed
      * @return array
      * @throws ApiException if the API gave a non-2xx response
-     * @throws Exception if no one is logged in or there isn't a valid license key
+     * @throws Exception if composer.json can't be located
      */
     public function getOptimizedComposerRequirements(array $install): array
     {
