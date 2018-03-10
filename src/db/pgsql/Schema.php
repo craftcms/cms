@@ -102,7 +102,10 @@ class Schema extends \yii\db\pgsql\Schema
     public function getLastInsertID($sequenceName = '')
     {
         if ($sequenceName !== '') {
-            $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName).'_id_seq';
+            if (strpos($sequenceName, '.') === false) {
+                $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName);
+            }
+            $sequenceName .= '_id_seq';
         }
 
         return parent::getLastInsertID($sequenceName);
