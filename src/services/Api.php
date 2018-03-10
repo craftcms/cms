@@ -166,19 +166,13 @@ class Api extends Component
         ];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     * @return ResponseInterface
-     * @throws ApiException
+     * Returns the headers that should be sent with API requests.
+     *
+     * @return array
      */
-    protected function request(string $method, string $uri, array $options = []): ResponseInterface
+    public function getHeaders(): array
     {
-        // build out the headers
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-System' => 'craft:'.Craft::$app->getVersion().';'.strtolower(Craft::$app->getEditionName()),
@@ -224,8 +218,23 @@ class Api extends Component
         }
         $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
 
+        return $headers;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return ResponseInterface
+     * @throws ApiException
+     */
+    protected function request(string $method, string $uri, array $options = []): ResponseInterface
+    {
         $options = ArrayHelper::merge($options, [
-            'headers' => $headers,
+            'headers' => $this->getHeaders(),
         ]);
 
         try {
