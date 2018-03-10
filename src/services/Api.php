@@ -11,7 +11,6 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
-use craft\errors\ApiException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -60,7 +59,7 @@ class Api extends Component
      * Checks for Craft and plugin updates.
      *
      * @return array
-     * @throws ApiException if the API gave a non-2xx response
+     * @throws RequestException if the API gave a non-2xx response
      */
     public function getUpdates(): array
     {
@@ -74,7 +73,7 @@ class Api extends Component
      *
      * @param array $install Package name/version pairs to be installed
      * @return array
-     * @throws ApiException if the API gave a non-2xx response
+     * @throws RequestException if the API gave a non-2xx response
      * @throws Exception if composer.json can't be located
      */
     public function getOptimizedComposerRequirements(array $install): array
@@ -156,7 +155,8 @@ class Api extends Component
      * @param string $uri
      * @param array $options
      * @return ResponseInterface
-     * @throws ApiException
+     * @throws RequestException
+     * @throws InvalidPluginException
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
@@ -164,10 +164,15 @@ class Api extends Component
             'headers' => $this->getHeaders(),
         ]);
 
+        /** @var RequestException|null $e */
+        $e = null;
+
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
-            throw new ApiException($e->getMessage(), $e->getCode(), $e);
+            if (($response = $e->getResponse()) === null) {
+                throw $e;
+            }
         }
 
         // cache license info from the response
@@ -196,6 +201,10 @@ class Api extends Component
                 } catch (InvalidPluginException $e) {
                 }
             }
+        }
+
+        if ($e !== null) {
+            throw $e;
         }
 
         return $response;
