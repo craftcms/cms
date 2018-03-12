@@ -11,7 +11,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
-use craft\errors\ApiException;
+use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
@@ -56,15 +56,115 @@ class Api extends Component
     }
 
     /**
+     * Returns info about the current Craft license.
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getLicenseInfo(): array
+    {
+        $response = $this->request('GET', 'cms-licenses');
+        $body = Json::decode((string)$response->getBody());
+        return $body['license'];
+    }
+
+    /**
      * Checks for Craft and plugin updates.
      *
      * @return array
-     * @throws ApiException if the API gave a non-2xx response
-     * @throws Exception if no one is logged in or there isn't a valid license key
+     * @throws RequestException if the API gave a non-2xx response
      */
     public function getUpdates(): array
     {
         $response = $this->request('GET', 'updates');
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns plugins data for the Plugin Store.
+     *
+     * @param bool $enableCraftId
+     * @param array $cms
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginStoreData(bool $enableCraftId, array $cms): array
+    {
+        $requestBody = [
+            'enableCraftId' => $enableCraftId,
+            'cms' => $cms,
+        ];
+
+        $response = $this->request('POST', 'plugin-store', [
+            RequestOptions::BODY => Json::encode($requestBody),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns the plugin details.
+     *
+     * @param int $pluginId
+     * @param bool $enableCraftId
+     * @param array $cms
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginDetails(int $pluginId, bool $enableCraftId, array $cms): array
+    {
+        $requestBody = [
+            'enableCraftId' => $enableCraftId,
+            'cms' => $cms,
+        ];
+
+        $response = $this->request('POST', 'plugin/'.$pluginId, [
+            RequestOptions::BODY => Json::encode($requestBody),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns the developer details.
+     *
+     * @param int $developerId
+     * @param bool $enableCraftId
+     * @param array $cms
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getDeveloper(int $developerId, bool $enableCraftId, array $cms): array
+    {
+        $requestBody = [
+            'enableCraftId' => $enableCraftId,
+            'cms' => $cms,
+        ];
+
+        $response = $this->request('POST', 'developer/'.$developerId, [
+            RequestOptions::BODY => Json::encode($requestBody),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Order checkout.
+     *
+     * @param array $order
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function checkout(array $order): array
+    {
+        $response = $this->request('POST', 'checkout', [
+            RequestOptions::BODY => Json::encode($order),
+        ]);
+
         return Json::decode((string)$response->getBody());
     }
 
@@ -74,8 +174,8 @@ class Api extends Component
      *
      * @param array $install Package name/version pairs to be installed
      * @return array
-     * @throws ApiException if the API gave a non-2xx response
-     * @throws Exception if no one is logged in or there isn't a valid license key
+     * @throws RequestException if the API gave a non-2xx response
+     * @throws Exception if composer.json can't be located
      */
     public function getOptimizedComposerRequirements(array $install): array
     {
@@ -152,18 +252,61 @@ class Api extends Component
     }
 
     /**
-     * Returns info about the CMS.
-     *
-     * @return array
-     * @throws Exception if there isn't a valid license key
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return ResponseInterface
+     * @throws RequestException
      */
-    public function getCmsInfo(): array
+    public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
-        return [
-            'version' => Craft::$app->getVersion(),
-            'edition' => strtolower(Craft::$app->getEditionName()),
-            'licenseKey' => $this->cmsLicenseKey(),
-        ];
+        $options = ArrayHelper::merge($options, [
+            'headers' => $this->getHeaders(),
+        ]);
+
+        $e = null;
+
+        try {
+            $response = $this->client->request($method, $uri, $options);
+        } catch (RequestException $e) {
+            if (($response = $e->getResponse()) === null) {
+                throw $e;
+            }
+        }
+
+        // cache license info from the response
+        $cache = Craft::$app->getCache();
+        $duration = 86400;
+        if ($response->hasHeader('X-Craft-Allow-Trials')) {
+            $cache->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), (bool)$response->getHeaderLine('X-Craft-Allow-Trials'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Status')) {
+            $cache->set('licenseKeyStatus', $response->getHeaderLine('X-Craft-License-Status'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Domain')) {
+            $cache->set('licensedDomain', $response->getHeaderLine('X-Craft-License-Domain'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Edition')) {
+            $cache->set('licensedEdition', $response->getHeaderLine('X-Craft-License-Edition'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
+            $pluginsService = Craft::$app->getPlugins();
+            $pluginLicenseStatuses = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
+
+            foreach ($pluginLicenseStatuses as $info) {
+                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
+                try {
+                    $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+                } catch (InvalidPluginException $pluginException) {
+                }
+            }
+        }
+
+        if ($e !== null) {
+            throw $e;
+        }
+
+        return $response;
     }
 
     /**
@@ -223,26 +366,6 @@ class Api extends Component
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     * @return ResponseInterface
-     * @throws ApiException
-     */
-    protected function request(string $method, string $uri, array $options = []): ResponseInterface
-    {
-        $options = ArrayHelper::merge($options, [
-            'headers' => $this->getHeaders(),
-        ]);
-
-        try {
-            return $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
-            throw new ApiException($e->getMessage(), $e->getCode(), $e);
-        }
-    }
 
     /**
      * Returns platform info.
