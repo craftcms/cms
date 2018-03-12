@@ -23,6 +23,7 @@
 - Fixed a bug where submitting a form from the front-end could cause Asset folders to be created even if there was nothing to put in them. ([#2303](https://github.com/craftcms/cms/issues/2303))
 - Fixed a bug where drop zone for drag-and-drop Asset uploads was too small in Asset manager. ([#2479](https://github.com/craftcms/cms/issues/2479))
 - Fixed a bug where Assets references would not be correctly parsed in Redactor fields when transforms were used.. ([#2524](https://github.com/craftcms/cms/issues/2524))
+- Fixed a bug where buggy SVGs would break the Control Panel when uploaded in certain conditions. ([#2543](https://github.com/craftcms/cms/issues/2543))
 
 ## 3.0.0-RC14 - 2018-03-06
 
