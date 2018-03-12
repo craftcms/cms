@@ -20,6 +20,7 @@
 - Fixed a bug where `craft\db\pgsql\Schema::gatLastInsertID()` was prepending the default schema to the sequence name even if a schema was already present.
 - Fixed a bug where loading the Plugin Store would fail if Craft didn’t have a valid license key yet.
 - Fixed a “Headers already sent” error that would occur when calling `Craft::dd()`.
+- Fixed a bug where submitting a form from the front-end could cause Asset folders to be created even if there was nothing to put in them. ([#2303](https://github.com/craftcms/cms/issues/2303))
 
 ## 3.0.0-RC14 - 2018-03-06
 

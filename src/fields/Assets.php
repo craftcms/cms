@@ -275,11 +275,13 @@ class Assets extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        $targetFolderId = $this->_determineUploadFolderId($element);
 
         // Were there any uploaded files?
         $uploadedFiles = $this->_getUploadedFiles($element);
+
         if (!empty($uploadedFiles)) {
+            $targetFolderId = $this->_determineUploadFolderId($element);
+
             // Convert them to assets
             $assetIds = [];
 
@@ -317,7 +319,10 @@ class Assets extends BaseRelationField
         /** @var AssetQuery $query */
         /** @var Asset[] $assets */
         $assets = $query->all();
+
         if (!empty($assets)) {
+            $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element);
+
             // Figure out which (if any) we need to move into place
             $assetsToMove = [];
 
