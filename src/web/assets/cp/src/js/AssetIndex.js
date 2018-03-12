@@ -678,7 +678,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var options = {
                 url: Craft.getActionUrl('assets/save-asset'),
                 fileInput: this.$uploadInput,
-                dropZone: this.$main
+                dropZone: this.$container
             };
 
             options.events = {
