@@ -21,11 +21,13 @@ export default {
 
     getDeveloper(developerId, cb, errorCb) {
         let params = qs.stringify({
+            developerId: developerId,
             enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
-        });
+            [Craft.csrfTokenName]: Craft.csrfTokenValue
+        })
 
-        axios.post(window.craftApiEndpoint+'/developer/'+developerId, params)
+        axios.post(Craft.getActionUrl('plugin-store/developer'), params)
             .then(response => {
                 let developer = response.data;
                 return cb(developer);
@@ -36,12 +38,13 @@ export default {
     },
 
     getPluginStoreData(cb, errorCb) {
-        let params = qs.stringify({
+        let data = qs.stringify({
             enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
+            [Craft.csrfTokenName]: Craft.csrfTokenValue
         });
 
-        axios.post(window.craftApiEndpoint+'/plugin-store', params)
+        axios.post(Craft.getActionUrl('plugin-store/plugin-store-data'), data)
             .then(response => {
                 return cb(response.data);
             })
@@ -52,11 +55,13 @@ export default {
 
     getPluginDetails(pluginId, cb, errorCb) {
         let params = qs.stringify({
+            pluginId: pluginId,
             enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
+            [Craft.csrfTokenName]: Craft.csrfTokenValue
         });
 
-        axios.post(window.craftApiEndpoint+'/plugin/'+pluginId, params)
+        axios.post(Craft.getActionUrl('plugin-store/plugin-details'), params)
             .then(response => {
                 let pluginDetails = response.data;
                 return cb(pluginDetails);
@@ -80,7 +85,7 @@ export default {
     checkout(order) {
         let params = qs.stringify(order);
 
-        return axios.post(window.craftApiEndpoint+'/checkout', params);
+        return axios.post(Craft.getActionUrl('plugin-store/checkout'), params);
     }
 
 }

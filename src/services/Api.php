@@ -81,6 +81,94 @@ class Api extends Component
     }
 
     /**
+     * Returns plugins data for the Plugin Store.
+     *
+     * @param bool $enableCraftId
+     * @param array $cms
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginStoreData(bool $enableCraftId, array $cms): array
+    {
+        $requestBody = [
+            'enableCraftId' => $enableCraftId,
+            'cms' => $cms,
+        ];
+
+        $response = $this->request('POST', 'plugin-store', [
+            RequestOptions::BODY => Json::encode($requestBody),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns the plugin details.
+     *
+     * @param int $pluginId
+     * @param bool $enableCraftId
+     * @param array $cms
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginDetails(int $pluginId, bool $enableCraftId, array $cms): array
+    {
+        $requestBody = [
+            'enableCraftId' => $enableCraftId,
+            'cms' => $cms,
+        ];
+
+        $response = $this->request('POST', 'plugin/'.$pluginId, [
+            RequestOptions::BODY => Json::encode($requestBody),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns the developer details.
+     *
+     * @param int $developerId
+     * @param bool $enableCraftId
+     * @param array $cms
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getDeveloper(int $developerId, bool $enableCraftId, array $cms): array
+    {
+        $requestBody = [
+            'enableCraftId' => $enableCraftId,
+            'cms' => $cms,
+        ];
+
+        $response = $this->request('POST', 'developer/'.$developerId, [
+            RequestOptions::BODY => Json::encode($requestBody),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Order checkout.
+     *
+     * @param array $order
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function checkout(array $order): array
+    {
+        $response = $this->request('POST', 'checkout', [
+            RequestOptions::BODY => Json::encode($order),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
      * Returns optimized Composer requirements based on what’s currently installed,
      * and the package requirements that should be installed.
      *
