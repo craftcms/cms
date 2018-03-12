@@ -2831,27 +2831,27 @@
 
 ### Deprecated
 - Deprecated the `round()` Twig function. Use the `|round` filter instead.
-- Deprecated `craft\craft\app\dates\DateTime::__toString()`. Use `format('Y-m-d')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::atom()`. Use `format(DateTime::ATOM)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::cookie()`. Use `format(DateTime::COOKIE)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::iso8601()`. Use `format(DateTime::ISO8601)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc822()`. Use `format(DateTime::RFC822)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc850()`. Use `format(DateTime::RFC850)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc1036()`. Use `format(DateTime::RFC1036)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc1123()`. Use `format(DateTime::RFC1123)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc2822()`. Use `format(DateTime::RFC2822)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc3339()`. Use `format(DateTime::RFC3339)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rss()`. Use `format(DateTime::RSS)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::w3c()`. Use `format(DateTime::W3C)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::w3cDate()`. Use `format('Y-m-d')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::mySqlDateTime()`. Use `format('Y-m-d H:i:s')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::localeDate()`. Use `Craft::$app->formatter->asDate($date, 'short')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::localeTime()`. Use `Craft::$app->formatter->asTime($date, 'short')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::year()`. Use `format('Y')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::month()`. Use `format('n')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::day()`. Use `format('j')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::nice()`. Use `Craft::$app->formatter->asDatetime($date)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::uiTimestamp()`. Use `Craft::$app->formatter->asTimestamp($date, 'short')` instead.
+- Deprecated `craft\app\dates\DateTime::__toString()`. Use `format('Y-m-d')` instead.
+- Deprecated `craft\app\dates\DateTime::atom()`. Use `format(DateTime::ATOM)` instead.
+- Deprecated `craft\app\dates\DateTime::cookie()`. Use `format(DateTime::COOKIE)` instead.
+- Deprecated `craft\app\dates\DateTime::iso8601()`. Use `format(DateTime::ISO8601)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc822()`. Use `format(DateTime::RFC822)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc850()`. Use `format(DateTime::RFC850)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc1036()`. Use `format(DateTime::RFC1036)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc1123()`. Use `format(DateTime::RFC1123)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc2822()`. Use `format(DateTime::RFC2822)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc3339()`. Use `format(DateTime::RFC3339)` instead.
+- Deprecated `craft\app\dates\DateTime::rss()`. Use `format(DateTime::RSS)` instead.
+- Deprecated `craft\app\dates\DateTime::w3c()`. Use `format(DateTime::W3C)` instead.
+- Deprecated `craft\app\dates\DateTime::w3cDate()`. Use `format('Y-m-d')` instead.
+- Deprecated `craft\app\dates\DateTime::mySqlDateTime()`. Use `format('Y-m-d H:i:s')` instead.
+- Deprecated `craft\app\dates\DateTime::localeDate()`. Use `Craft::$app->formatter->asDate($date, 'short')` instead.
+- Deprecated `craft\app\dates\DateTime::localeTime()`. Use `Craft::$app->formatter->asTime($date, 'short')` instead.
+- Deprecated `craft\app\dates\DateTime::year()`. Use `format('Y')` instead.
+- Deprecated `craft\app\dates\DateTime::month()`. Use `format('n')` instead.
+- Deprecated `craft\app\dates\DateTime::day()`. Use `format('j')` instead.
+- Deprecated `craft\app\dates\DateTime::nice()`. Use `Craft::$app->formatter->asDatetime($date)` instead.
+- Deprecated `craft\app\dates\DateTime::uiTimestamp()`. Use `Craft::$app->formatter->asTimestamp($date, 'short')` instead.
 
 ### Removed
 - Removed the static `$plugin` property on `craft\base\Plugin`.
@@ -2861,11 +2861,11 @@
 - Removed `craft\helpers\DateTimeHelper::timeAgoInWords()`. Use `Craft::$app->formatter->asRelativeTime($date)` instead.
 - Removed `craft\helpers\DateTimeHelper::nice()`. Use `Craft::$app->formatter->asDatetime($date)` instead.
 - Removed `craft\helpers\DateTimeHelper::niceShort()`.
-- Removed the `craft\craft\app\dates\DateTime::W3C_DATE` constant.
-- Removed the `craft\craft\app\dates\DateTime::MYSQL_DATETIME` constant.
-- Removed the `craft\craft\app\dates\DateTime::UTC constant`.
-- Removed the `craft\craft\app\dates\DateTime::DATEFIELD_24HOUR` constant.
-- Removed the `craft\craft\app\dates\DateTime::DATEFIELD_12HOUR` constant.
+- Removed the `craft\app\dates\DateTime::W3C_DATE` constant.
+- Removed the `craft\app\dates\DateTime::MYSQL_DATETIME` constant.
+- Removed the `craft\app\dates\DateTime::UTC constant`.
+- Removed the `craft\app\dates\DateTime::DATEFIELD_24HOUR` constant.
+- Removed the `craft\app\dates\DateTime::DATEFIELD_12HOUR` constant.
 
 ### Fixed
 - Fixed PHP error when `Craft::$app->getIsUpdating()` was called in a console request.
@@ -2954,7 +2954,7 @@
 ### Added
 - Table fields now have a "Lightswitch" column type option.
 - Added a `|unique` Twig filter for filtering out duplicate values in an array.
-- Added `craft\craft\app\validators\Unique`, which can be used as a drop-in replacement for `craft\yii\validators\UniqueValidator`, but with better support for validating a model's attributes based on an associated record's attributes.
+- Added `craft\app\validators\Unique`, which can be used as a drop-in replacement for `craft\yii\validators\UniqueValidator`, but with better support for validating a model's attributes based on an associated record's attributes.
 - Added `Craft.ui.createTextarea()`, `createTextareaField()`, `createLightswitch()`, and `createLightswitchField()`.
 - Added a `lightswitch` column type option to editable tables.
 - Text columns within editable tables can now define placeholder text.
@@ -3190,8 +3190,8 @@
 - Added protected `craft\base\Field::isValueEmpty()` which aids `craft\base\Field::validateValue()` in required-field validation.
 - Added `craft\helpers\DateTimeHelper::normalizeTimeZone()`.
 - Added `craft.getTimeZone()` for Control Panel JavaScript.
-- Added the `craft\craft\app\base\Savable` interface. Objects that implement it have control over how `craft\helpers\DbHelper::prepareValueForDb()` prepares them to be saved to the database.
-- Added `craft\craft\app\web\View::getBodyHtml()`, replacing `getBodyBeginHtml()` and `getBodyEndHtml()`.
+- Added the `craft\app\base\Savable` interface. Objects that implement it have control over how `craft\helpers\DbHelper::prepareValueForDb()` prepares them to be saved to the database.
+- Added `craft\app\web\View::getBodyHtml()`, replacing `getBodyBeginHtml()` and `getBodyEndHtml()`.
 
 ### Changed
 - Updated Yii to 2.0.5.
