@@ -257,6 +257,14 @@ class Assets extends BaseRelationField
     }
 
     /**
+     * @inheritdoc
+     */
+    public function isEmpty($value, ElementInterface $element): bool
+    {
+        return parent::isEmpty($value, $element) && empty($this->_getUploadedFiles($element));
+    }
+
+    /**
      * Resolve source path for uploading for this field.
      *
      * @param ElementInterface|null $element
