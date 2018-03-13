@@ -37,15 +37,13 @@ use craft\validators\DateTimeValidator;
 use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
+use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 use yii\validators\NumberValidator;
-use yii\validators\StringValidator;
 use yii\validators\Validator;
 
 /**
@@ -65,7 +63,6 @@ use yii\validators\Validator;
  * @property bool $hasDescendants Whether the element has descendants
  * @property bool $hasFreshContent Whether the element’s content is "fresh" (unsaved and without validation errors)
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property string $indexHtml The element index HTML
  * @property bool $isEditable Whether the current user can edit the element
  * @property \Twig_Markup|null $link An anchor pre-filled with this element’s URL and title
  * @property Element|null $next The next element relative to this one, from a given set of criteria
@@ -719,19 +716,16 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name): bool
     {
+        // Is this the "field:handle" syntax?
+        if (strncmp($name, 'field:', 6) === 0) {
+            return $this->fieldByHandle(substr($name, 6)) !== null;
+        }
+
         return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
     }
 
     /**
-     * Returns a property value.
-     * This method will check if $name is one of the following:
-     * - a magic property supported by [[\yii\base\Component::__isset()]]
-     * - a custom field handle
-     *
-     * @param string $name The property name
-     * @return mixed The property value
-     * @throws UnknownPropertyException if the property is not defined
-     * @throws InvalidCallException if the property is write-only.
+     * @inheritdoc
      */
     public function __get($name)
     {
@@ -746,13 +740,43 @@ abstract class Element extends Component implements ElementInterface
             return $this->getEagerLoadedElements($name);
         }
 
-        // Give custom fields priority over other getters so we have a chance to prepare their values
-        $field = $this->fieldByHandle($name);
-        if ($field !== null) {
-            return $this->getFieldValue($name);
+        // Is this the "field:handle" syntax?
+        if (strncmp($name, 'field:', 6) === 0) {
+            return $this->getFieldValue(substr($name, 6));
+        }
+
+        // If this is a field, make sure the value has been normalized before returning the ContentBehavior value
+        if ($this->fieldByHandle($name) !== null) {
+            $this->normalizeFieldValue($name);
         }
 
         return parent::__get($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        // Is this the "field:handle" syntax?
+        if (strncmp($name, 'field:', 6) === 0) {
+            $this->setFieldValue(substr($name, 6), $value);
+            return;
+        }
+
+        parent::__set($name, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __call($name, $params)
+    {
+        if (strncmp($name, 'isFieldEmpty:', 13) === 0) {
+            return $this->isFieldEmpty(substr($name, 13));
+        }
+
+        return parent::__call($name, $params);
     }
 
     /**
@@ -837,6 +861,19 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getAttributeLabel($attribute)
+    {
+        // Is this the "field:handle" syntax?
+        if (strncmp($attribute, 'field:', 6) === 0) {
+            $attribute = substr($attribute, 6);
+        }
+
+        return parent::getAttributeLabel($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         $labels = [
@@ -873,7 +910,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
@@ -889,9 +926,12 @@ abstract class Element extends Component implements ElementInterface
 
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
+                $attribute = 'field:'.$field->handle;
+                $isEmpty = [$this, 'isFieldEmpty:'.$field->handle];
+
                 if ($field->required) {
                     // Only validate required custom fields on the LIVE scenario
-                    $rules[] = [[$field->handle], 'required', 'isEmpty' => [$field, 'isEmpty'], 'on' => self::SCENARIO_LIVE];
+                    $rules[] = [[$attribute], 'required', 'isEmpty' => $isEmpty, 'on' => self::SCENARIO_LIVE];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -904,16 +944,21 @@ abstract class Element extends Component implements ElementInterface
                     } else {
                         if (is_string($rule)) {
                             // "Validator" syntax
-                            $rule = [$field->handle, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+                            $rule = [$attribute, $rule, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
                         }
 
                         if (!is_array($rule) || !isset($rule[0])) {
                             throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
                         }
 
-                        if (!isset($rule[1])) {
+                        if (isset($rule[1])) {
+                            // Make sure the attribute name starts with 'field:'
+                            if ($rule[0] === $field->handle) {
+                                $rule[0] = $attribute;
+                            }
+                        } else {
                             // ["Validator"] syntax
-                            array_unshift($rule, $field->handle);
+                            array_unshift($rule, $attribute);
                         }
 
                         if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
@@ -932,7 +977,7 @@ abstract class Element extends Component implements ElementInterface
 
                         // Set 'isEmpty' to the field's isEmpty() method by default
                         if (!array_key_exists('isEmpty', $rule)) {
-                            $rule['isEmpty'] = [$field, 'isEmpty'];
+                            $rule['isEmpty'] = $isEmpty;
                         }
 
                         // Set 'on' to the main scenarios by default
@@ -972,6 +1017,24 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $method($this, $fieldParams);
+    }
+
+    /**
+     * Returns whether a field is empty.
+     *
+     * @param string $handle
+     * @return bool
+     */
+    public function isFieldEmpty(string $handle): bool
+    {
+        if (
+            ($fieldLayout = $this->getFieldLayout()) === null ||
+            ($field = $fieldLayout->getFieldByHandle($handle)) === null
+        ) {
+            return true;
+        }
+
+        return $field->isValueEmpty($this->getFieldValue($handle), $this);
     }
 
     /**
@@ -1489,10 +1552,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getFieldValue(string $fieldHandle)
     {
-        // Is this the first time this field value has been accessed?
-        if (!isset($this->_normalizedFieldValues[$fieldHandle])) {
-            $this->normalizeFieldValue($fieldHandle);
-        }
+        // Make sure the value has been normalized
+        $this->normalizeFieldValue($fieldHandle);
 
         return $this->getBehavior('customFields')->$fieldHandle;
     }
@@ -1804,6 +1865,11 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function normalizeFieldValue(string $fieldHandle)
     {
+        // Have we already normalized this value?
+        if (isset($this->_normalizedFieldValues[$fieldHandle])) {
+            return;
+        }
+
         $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {

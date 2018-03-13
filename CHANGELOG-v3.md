@@ -1,5 +1,39 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC15 - 2018-03-13
+
+### Added
+- Added `craft\base\Element::isFieldEmpty()`, which can be used to determine if a field value is considered “empty” by the field type.
+- Added `craft\base\FieldInterface::isValueEmpty()`, which replaces the deprecated `isEmpty()` method.
+- Added `craft\db\Connection::getSupportsMb4()` and `setSupportsMb4()`.
+- Added `craft\helpers\StringHelper::containsMb4()`.
+- Added `craft\helpers\UrlHelper::host()`.
+- Added `craft\validators\StringValidator`.
+
+### Changed
+- Element titles now get a validation error if they contain any 4+ byte characters (like emoji), on servers running MySQL. ([#2513](https://github.com/craftcms/cms/issues/2513))
+- Craft now sets the `@web` and `@webroot` aliases for console requests.
+- The web and console installers now set the default site URL to `@web`.
+- Cleaned up the styling of subnav items in the global Control Panel navigation.
+- Craft now requires Yii 2.0.14.2 or later, which fixes performance issues related to `upsert()`, so schema caching is now only enabled when Dev Mode is not enabled.
+
+### Deprecated
+- Deprecated `craft\base\Field::isEmpty()`. `isValueEmpty()` should be used instead.
+
+### Fixed
+- Fixed an error that occurred when creating a new entry draft. ([#2544](https://github.com/craftcms/cms/issues/2544))
+- Fixed a bug where the primary action button on element index pages was getting positioned off-screen on IE11. ([#2545](https://github.com/craftcms/cms/issues/2545))
+- Fixed a bug where custom fields were taking precidence over actual element properties when their names conflicted (e.g. `author`). ([#2548](https://github.com/craftcms/cms/issues/2548))
+- Fixed a bug where `craft\db\pgsql\Schema::gatLastInsertID()` was prepending the default schema to the sequence name even if a schema was already present.
+- Fixed a bug where loading the Plugin Store would fail if Craft didn’t have a valid license key yet.
+- Fixed a “Headers already sent” error that would occur when calling `Craft::dd()`.
+- Fixed a bug where submitting a form from the front-end could cause Asset folders to be created even if there was nothing to put in them. ([#2303](https://github.com/craftcms/cms/issues/2303))
+- Fixed a bug where file upload drop zone could be too small on the Assets index page. ([#2479](https://github.com/craftcms/cms/issues/2479))
+- Fixed a bug where asset reference tags were not getting parsed correcctly when transforms were used. ([#2524](https://github.com/craftcms/cms/issues/2524))
+- Fixed a bug where buggy SVGs would break the Control Panel in some cases. ([#2543](https://github.com/craftcms/cms/issues/2543))
+- Fixed a bug where Assets fields weren’t validating the file types of files uploaded via front-end entry forms. ([#2550](https://github.com/craftcms/cms/issues/2550))
+- Fixed a bug where action URLs were including the request’s host name rather than the current site’s host name, if they differed. ([#2558](https://github.com/craftcms/cms/issues/2558))
+
 ## 3.0.0-RC14 - 2018-03-06
 
 ### Added
@@ -2806,27 +2840,27 @@
 
 ### Deprecated
 - Deprecated the `round()` Twig function. Use the `|round` filter instead.
-- Deprecated `craft\craft\app\dates\DateTime::__toString()`. Use `format('Y-m-d')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::atom()`. Use `format(DateTime::ATOM)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::cookie()`. Use `format(DateTime::COOKIE)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::iso8601()`. Use `format(DateTime::ISO8601)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc822()`. Use `format(DateTime::RFC822)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc850()`. Use `format(DateTime::RFC850)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc1036()`. Use `format(DateTime::RFC1036)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc1123()`. Use `format(DateTime::RFC1123)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc2822()`. Use `format(DateTime::RFC2822)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rfc3339()`. Use `format(DateTime::RFC3339)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::rss()`. Use `format(DateTime::RSS)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::w3c()`. Use `format(DateTime::W3C)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::w3cDate()`. Use `format('Y-m-d')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::mySqlDateTime()`. Use `format('Y-m-d H:i:s')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::localeDate()`. Use `Craft::$app->formatter->asDate($date, 'short')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::localeTime()`. Use `Craft::$app->formatter->asTime($date, 'short')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::year()`. Use `format('Y')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::month()`. Use `format('n')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::day()`. Use `format('j')` instead.
-- Deprecated `craft\craft\app\dates\DateTime::nice()`. Use `Craft::$app->formatter->asDatetime($date)` instead.
-- Deprecated `craft\craft\app\dates\DateTime::uiTimestamp()`. Use `Craft::$app->formatter->asTimestamp($date, 'short')` instead.
+- Deprecated `craft\app\dates\DateTime::__toString()`. Use `format('Y-m-d')` instead.
+- Deprecated `craft\app\dates\DateTime::atom()`. Use `format(DateTime::ATOM)` instead.
+- Deprecated `craft\app\dates\DateTime::cookie()`. Use `format(DateTime::COOKIE)` instead.
+- Deprecated `craft\app\dates\DateTime::iso8601()`. Use `format(DateTime::ISO8601)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc822()`. Use `format(DateTime::RFC822)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc850()`. Use `format(DateTime::RFC850)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc1036()`. Use `format(DateTime::RFC1036)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc1123()`. Use `format(DateTime::RFC1123)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc2822()`. Use `format(DateTime::RFC2822)` instead.
+- Deprecated `craft\app\dates\DateTime::rfc3339()`. Use `format(DateTime::RFC3339)` instead.
+- Deprecated `craft\app\dates\DateTime::rss()`. Use `format(DateTime::RSS)` instead.
+- Deprecated `craft\app\dates\DateTime::w3c()`. Use `format(DateTime::W3C)` instead.
+- Deprecated `craft\app\dates\DateTime::w3cDate()`. Use `format('Y-m-d')` instead.
+- Deprecated `craft\app\dates\DateTime::mySqlDateTime()`. Use `format('Y-m-d H:i:s')` instead.
+- Deprecated `craft\app\dates\DateTime::localeDate()`. Use `Craft::$app->formatter->asDate($date, 'short')` instead.
+- Deprecated `craft\app\dates\DateTime::localeTime()`. Use `Craft::$app->formatter->asTime($date, 'short')` instead.
+- Deprecated `craft\app\dates\DateTime::year()`. Use `format('Y')` instead.
+- Deprecated `craft\app\dates\DateTime::month()`. Use `format('n')` instead.
+- Deprecated `craft\app\dates\DateTime::day()`. Use `format('j')` instead.
+- Deprecated `craft\app\dates\DateTime::nice()`. Use `Craft::$app->formatter->asDatetime($date)` instead.
+- Deprecated `craft\app\dates\DateTime::uiTimestamp()`. Use `Craft::$app->formatter->asTimestamp($date, 'short')` instead.
 
 ### Removed
 - Removed the static `$plugin` property on `craft\base\Plugin`.
@@ -2836,11 +2870,11 @@
 - Removed `craft\helpers\DateTimeHelper::timeAgoInWords()`. Use `Craft::$app->formatter->asRelativeTime($date)` instead.
 - Removed `craft\helpers\DateTimeHelper::nice()`. Use `Craft::$app->formatter->asDatetime($date)` instead.
 - Removed `craft\helpers\DateTimeHelper::niceShort()`.
-- Removed the `craft\craft\app\dates\DateTime::W3C_DATE` constant.
-- Removed the `craft\craft\app\dates\DateTime::MYSQL_DATETIME` constant.
-- Removed the `craft\craft\app\dates\DateTime::UTC constant`.
-- Removed the `craft\craft\app\dates\DateTime::DATEFIELD_24HOUR` constant.
-- Removed the `craft\craft\app\dates\DateTime::DATEFIELD_12HOUR` constant.
+- Removed the `craft\app\dates\DateTime::W3C_DATE` constant.
+- Removed the `craft\app\dates\DateTime::MYSQL_DATETIME` constant.
+- Removed the `craft\app\dates\DateTime::UTC constant`.
+- Removed the `craft\app\dates\DateTime::DATEFIELD_24HOUR` constant.
+- Removed the `craft\app\dates\DateTime::DATEFIELD_12HOUR` constant.
 
 ### Fixed
 - Fixed PHP error when `Craft::$app->getIsUpdating()` was called in a console request.
@@ -2929,7 +2963,7 @@
 ### Added
 - Table fields now have a "Lightswitch" column type option.
 - Added a `|unique` Twig filter for filtering out duplicate values in an array.
-- Added `craft\craft\app\validators\Unique`, which can be used as a drop-in replacement for `craft\yii\validators\UniqueValidator`, but with better support for validating a model's attributes based on an associated record's attributes.
+- Added `craft\app\validators\Unique`, which can be used as a drop-in replacement for `craft\yii\validators\UniqueValidator`, but with better support for validating a model's attributes based on an associated record's attributes.
 - Added `Craft.ui.createTextarea()`, `createTextareaField()`, `createLightswitch()`, and `createLightswitchField()`.
 - Added a `lightswitch` column type option to editable tables.
 - Text columns within editable tables can now define placeholder text.
@@ -3165,8 +3199,8 @@
 - Added protected `craft\base\Field::isValueEmpty()` which aids `craft\base\Field::validateValue()` in required-field validation.
 - Added `craft\helpers\DateTimeHelper::normalizeTimeZone()`.
 - Added `craft.getTimeZone()` for Control Panel JavaScript.
-- Added the `craft\craft\app\base\Savable` interface. Objects that implement it have control over how `craft\helpers\DbHelper::prepareValueForDb()` prepares them to be saved to the database.
-- Added `craft\craft\app\web\View::getBodyHtml()`, replacing `getBodyBeginHtml()` and `getBodyEndHtml()`.
+- Added the `craft\app\base\Savable` interface. Objects that implement it have control over how `craft\helpers\DbHelper::prepareValueForDb()` prepares them to be saved to the database.
+- Added `craft\app\web\View::getBodyHtml()`, replacing `getBodyBeginHtml()` and `getBodyEndHtml()`.
 
 ### Changed
 - Updated Yii to 2.0.5.

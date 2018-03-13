@@ -1,4 +1,4 @@
-/*!   - 2018-03-06 */
+/*!   - 2018-03-12 */
 (function($){
 
 /** global: Craft */
@@ -2940,17 +2940,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;
@@ -8081,7 +8074,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var options = {
                 url: Craft.getActionUrl('assets/save-asset'),
                 fileInput: this.$uploadInput,
-                dropZone: this.$main
+                dropZone: this.$container
             };
 
             options.events = {
@@ -15015,6 +15008,7 @@ Craft.ImageUpload = Garnish.Base.extend(
             options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
             options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
             options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
+            options.events.fileuploadfail = $.proxy(this, '_onUploadError');
 
             this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -15081,6 +15075,18 @@ Craft.ImageUpload = Garnish.Base.extend(
             if (this.uploader.isLastUpload()) {
                 this.progressBar.hideProgressBar();
                 this.$container.removeClass('uploading');
+            }
+        },
+
+        /**
+         * On a file being uploaded.
+         */
+        _onUploadError: function(event, data) {
+            if (data.jqXHR.responseJSON.error) {
+                alert(data.jqXHR.responseJSON.error);
+                this.$container.removeClass('uploading');
+                this.progressBar.hideProgressBar();
+                this.progressBar.resetProgressBar();
             }
         }
     },

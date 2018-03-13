@@ -30,6 +30,7 @@ use yii\db\Exception as DbException;
  * @inheritdoc
  * @property MysqlQueryBuilder|PgsqlQueryBuilder $queryBuilder The query builder for the current DB connection.
  * @property MysqlSchema|PgsqlSchema $schema The schema information for the database opened by this connection.
+ * @property bool $supportsMb4 Whether the database supports 4+ byte characters.
  * @method MysqlQueryBuilder|PgsqlQueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method MysqlSchema|PgsqlSchema getSchema() Returns the schema information for the database opened by this connection.
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
@@ -99,9 +100,19 @@ class Connection extends \yii\db\Connection
                 $config->driver => Command::class,
             ],
             'attributes' => $config->attributes,
-            'enableSchemaCache' => true,
+            'enableSchemaCache' => !YII_DEBUG,
         ]);
     }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool|null whether the database supports 4+ byte characters
+     * @see getSupportsMb4()
+     * @see setSupportsMb4()
+     */
+    private $_supportsMb4;
 
     // Public Methods
     // =========================================================================
@@ -135,6 +146,29 @@ class Connection extends \yii\db\Connection
     {
         $version = $this->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION);
         return App::normalizeVersion($version);
+    }
+
+    /**
+     * Returns whether the database supports 4+ byte characters.
+     *
+     * @return bool
+     */
+    public function getSupportsMb4(): bool
+    {
+        if ($this->_supportsMb4 !== null) {
+            return $this->_supportsMb4;
+        }
+        return $this->_supportsMb4 = $this->getIsPgsql();
+    }
+
+    /**
+     * Sets whether the database supports 4+ byte characters.
+     *
+     * @param bool $supportsMb4
+     */
+    public function setSupportsMb4(bool $supportsMb4)
+    {
+        $this->_supportsMb4 = $supportsMb4;
     }
 
     /**

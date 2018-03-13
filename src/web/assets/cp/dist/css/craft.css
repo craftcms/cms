@@ -1689,9 +1689,11 @@ body.rtl #global-sidebar #nav li a .icon { margin: 0 0 0 22px ; }
 #global-sidebar #nav li a .badge { background: rgba(255, 255, 255, 0.5); color: #333f4d; }
 body.ltr #global-sidebar #nav li a .badge { margin-right: 0; }
 body.rtl #global-sidebar #nav li a .badge { margin-left: 0; }
-#global-sidebar #nav li ul { display: block; }
-body.ltr #global-sidebar #nav li ul li a { padding-left: 60px; }
-body.rtl #global-sidebar #nav li ul li a { padding-right: 60px; }
+#global-sidebar #nav li ul { display: block; margin-bottom: 10px; }
+#global-sidebar #nav li ul li a { font-size: 12px; }
+body.ltr #global-sidebar #nav li ul li a { padding: 3px 14px 3px 56px; }
+body.rtl #global-sidebar #nav li ul li a { padding: 3px 56px 3px 14px; }
+#global-sidebar #nav li ul li a:not(.active) { color: #bcbfc2; }
 
 #app-info { padding: 14px 14px 24px; color: #0a0d0f; text-align: center; }
 #app-info #edition { font-size: 14px; }
@@ -1746,7 +1748,6 @@ body.fixed-header.focused #main-container #main #header { position: absolute; }
 #main-container #main #header h1 { line-height: 32px; margin-top: 0; display: inline; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.ltr #main-container #main #header h1:not(:last-child) { margin-right: 24px !important; }
 body.rtl #main-container #main #header h1:not(:last-child) { margin-left: 24px !important; }
-#main-container #main #header #extra-headers { -webkit-box-flex: 0; -ms-flex: 0 0 0px; flex: 0 0 0; }
 #main-container #main #header .buttons, #main-container #main #header .btngroup { margin-top: 0; }
 #main-container #main #main-content { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; display: -webkit-box; display: -ms-flexbox; display: flex; min-height: 0; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; width: calc(100vw - 225px); }
 #main-container #main #main-content:not(.has-sidebar):not(.has-details) #content-container { width: 100%; }
