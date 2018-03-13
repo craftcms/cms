@@ -193,7 +193,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return bool Whether the value should be considered “empty”
      * @see Validator::$isEmpty
      */
-    public function isEmpty($value, ElementInterface $element): bool;
+    public function isValueEmpty($value, ElementInterface $element): bool;
 
     /**
      * Returns the search keywords that should be associated with this field.

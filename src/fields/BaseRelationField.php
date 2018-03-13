@@ -227,7 +227,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function isEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var ElementQueryInterface|ElementInterface[] $value */
         if ($value instanceof ElementQueryInterface) {

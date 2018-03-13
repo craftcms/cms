@@ -1034,7 +1034,7 @@ abstract class Element extends Component implements ElementInterface
             return true;
         }
 
-        return $field->isEmpty($this->getFieldValue($handle), $this);
+        return $field->isValueEmpty($this->getFieldValue($handle), $this);
     }
 
     /**

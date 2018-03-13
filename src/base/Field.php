@@ -308,7 +308,22 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function isEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
+    {
+        $reflection = new \ReflectionMethod($this, 'isEmpty');
+        if ($reflection->getDeclaringClass()->getName() !== self::class) {
+            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ isEmpty() method has been deprecated. Use isValueEmpty() instead.');
+        }
+
+        return $this->isEmpty($value);
+    }
+
+    /**
+     * @param mixed $value
+     * @return bool
+     * @deprecated in 3.0.0-RC15. Use isEmpty() instead.
+     */
+    public function isEmpty($value): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
         return $value === null || $value === [] || $value === '';

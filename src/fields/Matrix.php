@@ -501,7 +501,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function isEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var MatrixBlockQuery $value */
         return $value->count() === 0;

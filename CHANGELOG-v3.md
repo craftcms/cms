@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\base\Element::isFieldEmpty()`, which can be used to determine if a field value is considered “empty” by the field type.
+- Added `craft\base\FieldInterface::isValueEmpty()`, which replaces the deprecated `isEmpty()` method.
 - Added `craft\db\Connection::getSupportsMb4()` and `setSupportsMb4()`.
 - Added `craft\helpers\StringHelper::containsMb4()`.
 - Added `craft\helpers\UrlHelper::host()`.
@@ -14,8 +15,10 @@
 - Craft now sets the `@web` and `@webroot` aliases for console requests.
 - The web and console installers now set the default site URL to `@web`.
 - Cleaned up the styling of subnav items in the global Control Panel navigation.
-- `craft\base\FieldInterface::isEmpty()` now accepts an `$element` argument, which will be set to the element that is currently being validated.
 - Craft now requires Yii 2.0.14.2 or later, which fixes performance issues related to `upsert()`, so schema caching is now only enabled when Dev Mode is not enabled.
+
+### Deprecated
+- Deprecated `craft\base\Field::isEmpty()`. `isValueEmpty()` should be used instead.
 
 ### Fixed
 - Fixed an error that occurred when creating a new entry draft. ([#2544](https://github.com/craftcms/cms/issues/2544))
