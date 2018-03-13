@@ -6,6 +6,7 @@
 - Added `craft\base\Element::isFieldEmpty()`, which can be used to determine if a field value is considered “empty” by the field type.
 - Added `craft\db\Connection::getSupportsMb4()` and `setSupportsMb4()`.
 - Added `craft\helpers\StringHelper::containsMb4()`.
+- Added `craft\helpers\UrlHelper::host()`.
 - Added `craft\validators\StringValidator`.
 
 ### Changed
@@ -28,6 +29,7 @@
 - Fixed a bug where Assets references would not be correctly parsed in Redactor fields when transforms were used.. ([#2524](https://github.com/craftcms/cms/issues/2524))
 - Fixed a bug where buggy SVGs would break the Control Panel when uploaded in certain conditions. ([#2543](https://github.com/craftcms/cms/issues/2543))
 - Fixed a bug where Assets fields weren’t validating the file types of files uploaded via front-end entry forms. ([#2550](https://github.com/craftcms/cms/issues/2550))
+- Fixed a bug where action URLs were including the request’s host name rather than the current site’s host name, if they differed. ([#2558](https://github.com/craftcms/cms/issues/2558))
 
 ## 3.0.0-RC14 - 2018-03-06
 

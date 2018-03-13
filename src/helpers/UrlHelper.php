@@ -117,6 +117,7 @@ class UrlHelper
      * @param string $url the URL
      * @param string $scheme the scheme ('http' or 'https')
      * @return string
+     * @throws SiteNotFoundException
      */
     public static function urlWithScheme(string $url, string $scheme): string
     {
@@ -130,7 +131,7 @@ class UrlHelper
 
         if (static::isRootRelativeUrl($url)) {
             // Prepend the current request's scheme and host name
-            $url = Craft::$app->getRequest()->getHostInfo().$url;
+            $url = static::host().$url;
         }
 
         return preg_replace('/^https?:/', $scheme.':', $url);
@@ -338,6 +339,34 @@ class UrlHelper
         return rtrim($baseUrl, '/').'/';
     }
 
+    /**
+     * Returns the current site’s host.
+     *
+     * @return string
+     * @throws SiteNotFoundException
+     */
+    public static function host(): string
+    {
+        $host = static::baseUrl();
+
+        // If there's no host info in the base URL, default to the request's host info
+        if (($slashes = strpos($host, '//')) === false) {
+            $request = Craft::$app->getRequest();
+            if ($request->getIsConsoleRequest()) {
+                return '';
+            }
+            return $request->getHostInfo();
+        }
+
+        // Trim off the URI
+        $uriPos = strpos($host, '/', $slashes + 2);
+        if ($uriPos !== false) {
+            $host = substr($host, 0, $uriPos);
+        }
+
+        return $host;
+    }
+
     // Deprecated Methods
     // -------------------------------------------------------------------------
 
@@ -408,7 +437,7 @@ class UrlHelper
                 // No way to know for sure, so just guess
                 $baseUrl = '/'.$request->getScriptFilename();
             } else {
-                $baseUrl = $request->getHostInfo().$request->getScriptUrl();
+                $baseUrl = static::host().$request->getScriptUrl();
             }
         } else if ($cpUrl) {
             // Did they set the base URL manually?
@@ -427,7 +456,7 @@ class UrlHelper
                 $baseUrl = '/';
             } else {
                 // Figure it out for ourselves, then
-                $baseUrl = $request->getHostInfo().$request->getBaseUrl();
+                $baseUrl = static::host().$request->getBaseUrl();
 
                 if ($scheme !== null) {
                     $baseUrl = static::urlWithScheme($baseUrl, $scheme);
