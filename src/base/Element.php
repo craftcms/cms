@@ -772,6 +772,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function __call($name, $params)
+    {
+        if (strncmp($name, 'isFieldEmpty:', 13) === 0) {
+            return $this->isFieldEmpty(substr($name, 13));
+        }
+
+        return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
         return [
@@ -917,10 +929,11 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 $attribute = 'field:'.$field->handle;
+                $isEmpty = [$this, 'isFieldEmpty:'.$field->handle];
 
                 if ($field->required) {
                     // Only validate required custom fields on the LIVE scenario
-                    $rules[] = [[$attribute], 'required', 'isEmpty' => [$field, 'isEmpty'], 'on' => self::SCENARIO_LIVE];
+                    $rules[] = [[$attribute], 'required', 'isEmpty' => $isEmpty, 'on' => self::SCENARIO_LIVE];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -966,7 +979,7 @@ abstract class Element extends Component implements ElementInterface
 
                         // Set 'isEmpty' to the field's isEmpty() method by default
                         if (!array_key_exists('isEmpty', $rule)) {
-                            $rule['isEmpty'] = [$field, 'isEmpty'];
+                            $rule['isEmpty'] = $isEmpty;
                         }
 
                         // Set 'on' to the main scenarios by default
@@ -1006,6 +1019,24 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $method($this, $fieldParams);
+    }
+
+    /**
+     * Returns whether a field is empty.
+     *
+     * @param string $handle
+     * @return bool
+     */
+    public function isFieldEmpty(string $handle): bool
+    {
+        if (
+            ($fieldLayout = $this->getFieldLayout()) === null ||
+            ($field = $fieldLayout->getFieldByHandle($handle)) === null
+        ) {
+            return true;
+        }
+
+        return $field->isEmpty($this->getFieldValue($handle), $this);
     }
 
     /**

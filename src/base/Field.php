@@ -308,7 +308,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function isEmpty($value): bool
+    public function isEmpty($value, ElementInterface $element): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
         return $value === null || $value === [] || $value === '';
