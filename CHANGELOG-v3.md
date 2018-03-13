@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC15 - 2018-03-13
 
 ### Added
 - Added `craft\base\Element::isFieldEmpty()`, which can be used to determine if a field value is considered “empty” by the field type.
@@ -28,9 +28,9 @@
 - Fixed a bug where loading the Plugin Store would fail if Craft didn’t have a valid license key yet.
 - Fixed a “Headers already sent” error that would occur when calling `Craft::dd()`.
 - Fixed a bug where submitting a form from the front-end could cause Asset folders to be created even if there was nothing to put in them. ([#2303](https://github.com/craftcms/cms/issues/2303))
-- Fixed a bug where drop zone for drag-and-drop Asset uploads was too small in Asset manager. ([#2479](https://github.com/craftcms/cms/issues/2479))
-- Fixed a bug where Assets references would not be correctly parsed in Redactor fields when transforms were used.. ([#2524](https://github.com/craftcms/cms/issues/2524))
-- Fixed a bug where buggy SVGs would break the Control Panel when uploaded in certain conditions. ([#2543](https://github.com/craftcms/cms/issues/2543))
+- Fixed a bug where file upload drop zone could be too small on the Assets index page. ([#2479](https://github.com/craftcms/cms/issues/2479))
+- Fixed a bug where asset reference tags were not getting parsed correcctly when transforms were used. ([#2524](https://github.com/craftcms/cms/issues/2524))
+- Fixed a bug where buggy SVGs would break the Control Panel in some cases. ([#2543](https://github.com/craftcms/cms/issues/2543))
 - Fixed a bug where Assets fields weren’t validating the file types of files uploaded via front-end entry forms. ([#2550](https://github.com/craftcms/cms/issues/2550))
 - Fixed a bug where action URLs were including the request’s host name rather than the current site’s host name, if they differed. ([#2558](https://github.com/craftcms/cms/issues/2558))
 
