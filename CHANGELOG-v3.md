@@ -14,6 +14,7 @@
 - The web and console installers now set the default site URL to `@web`.
 - Cleaned up the styling of subnav items in the global Control Panel navigation.
 - `craft\base\FieldInterface::isEmpty()` now accepts an `$element` argument, which will be set to the element that is currently being validated.
+- Craft now requires Yii 2.0.14.2 or later, which fixes performance issues related to `upsert()`, so schema caching is now only enabled when Dev Mode is not enabled.
 
 ### Fixed
 - Fixed an error that occurred when creating a new entry draft. ([#2544](https://github.com/craftcms/cms/issues/2544))

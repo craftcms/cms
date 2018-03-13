@@ -100,7 +100,7 @@ class Connection extends \yii\db\Connection
                 $config->driver => Command::class,
             ],
             'attributes' => $config->attributes,
-            'enableSchemaCache' => true,
+            'enableSchemaCache' => !YII_DEBUG,
         ]);
     }
 
