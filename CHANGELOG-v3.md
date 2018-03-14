@@ -2,10 +2,17 @@
 
 ## Unreleased
 
+### Changed
+- `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
+- `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
+- `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
+- `craft\validators\LanguageValidator` now has a `notAllowed` property, which can be used to customize the error message.
+
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
 - Fixed a bug where front-end Asset uploads would be handled incorrectly in multi-site environments. ([#2551](https://github.com/craftcms/cms/issues/2551))
 - Fixed a bug where custom field validation errors weren’t being reported on the edit page. ([#2572](https://github.com/craftcms/cms/issues/2572))
+- Fixed a bug where it was possible to set an invalid language on the initial site, when installing Craft from the command line. ([#2573](https://github.com/craftcms/cms/issues/2573))
 
 ## 3.0.0-RC15 - 2018-03-13
 
