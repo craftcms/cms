@@ -16,6 +16,7 @@
 - Fixed a bug where front-end Asset uploads would be handled incorrectly in multi-site environments. ([#2551](https://github.com/craftcms/cms/issues/2551))
 - Fixed a bug where custom field validation errors weren’t being reported on the edit page. ([#2572](https://github.com/craftcms/cms/issues/2572))
 - Fixed a bug where it was possible to set an invalid language on the initial site, when installing Craft from the command line. ([#2573](https://github.com/craftcms/cms/issues/2573))
+- Fixed a bug where users’ preferred languages were not always getting migrated correctly when updating to Craft 3. ([#2574](https://github.com/craftcms/cms/issues/2574))
 
 ## 3.0.0-RC15 - 2018-03-13
 
