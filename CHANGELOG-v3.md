@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where database backups could fail on MySQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
+
 ## 3.0.0-RC15 - 2018-03-13
 
 ### Added
