@@ -90,7 +90,7 @@ class LanguageValidator extends Validator
         }
 
         if ($value && !in_array($value, $allowed, true)) {
-            return [$this->notAllowed, ['language' => $value]];
+            return [$this->notAllowed, []];
         }
 
         return null;
