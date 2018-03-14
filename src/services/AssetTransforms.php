@@ -578,6 +578,7 @@ class AssetTransforms extends Component
                         'assetId' => $asset->id,
                         'fileExists' => 1,
                         'location' => $possibleLocations,
+                        'format' => $index->detectedFormat,
                     ],
                     ['not', ['id' => $index->id]]
                 ])
