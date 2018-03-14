@@ -1081,6 +1081,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function addError($attribute, $error = '')
+    {
+        if (strncmp($attribute, 'field:', 6) === 0) {
+            $attribute = substr($attribute, 6);
+        }
+
+        parent::addError($attribute, $error);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getId()
     {
         return $this->id;

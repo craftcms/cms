@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
 - Fixed a bug where front-end Asset uploads would be handled incorrectly in multi-site environments. ([#2551](https://github.com/craftcms/cms/issues/2551))
+- Fixed a bug where custom field validation errors weren’t being reported on the edit page. ([#2572](https://github.com/craftcms/cms/issues/2572))
 
 ## 3.0.0-RC15 - 2018-03-13
 
