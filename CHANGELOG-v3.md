@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\Localization::normalizeLanguage()`.
+
 ### Changed
 - `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).

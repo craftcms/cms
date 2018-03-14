@@ -8,6 +8,7 @@
 namespace craft\validators;
 
 use Craft;
+use craft\helpers\Localization;
 use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
 
@@ -62,10 +63,7 @@ class LanguageValidator extends Validator
         $language = $model->$attribute;
 
         // Normalize
-        $normalized = strtolower(str_replace('_', '-', $language));
-        if (($pos = strpos($normalized, '-')) !== false) {
-            $normalized = substr($normalized, 0, $pos).'-'.strtoupper(substr($normalized, $pos + 1));
-        }
+        $normalized = Localization::normalizeLanguage($language);
 
         if ($normalized !== $language) {
             try {
