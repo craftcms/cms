@@ -1,8 +1,8 @@
 <?php
 /**
- * @link https://craftcms.com/
+ * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -23,7 +23,7 @@ use yii\db\Schema;
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class Table extends Field
 {
@@ -41,6 +41,18 @@ class Table extends Field
     // Properties
     // =========================================================================
 
+    /**
+     * @var string|null Custom add row button label
+     */
+    public $addRowLabel = 'Add a row';
+    /**
+     * @var int|null Maximum number of Rows allowed
+     */
+    public $maxRows;
+    /**
+     * @var int|null Minimum number of Rows allowed
+     */
+    public $minRows;
     /**
      * @var array|null The columns that should be shown in the table
      */
@@ -66,10 +78,6 @@ class Table extends Field
     {
         parent::init();
 
-        if ($this->defaults === '') {
-            $this->defaults = [];
-        }
-
         // Convert default date cell values to ISO8601 strings
         if (!empty($this->columns) && $this->defaults !== null) {
             foreach ($this->columns as $colId => $col) {
@@ -81,6 +89,18 @@ class Table extends Field
             }
         }
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
+
+        return $rules;
+    }
+
 
     /**
      * @inheritdoc
@@ -158,7 +178,9 @@ class Table extends Field
             Json::encode($this->columns, JSON_UNESCAPED_UNICODE).', '.
             Json::encode($this->defaults, JSON_UNESCAPED_UNICODE).', '.
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
+            ($this->maxRows ?: 'null').
             ');');
+
 
         $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
             [
@@ -197,6 +219,7 @@ class Table extends Field
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
 
         $input = '<input type="hidden" name="'.$this->handle.'" value="">';
@@ -303,8 +326,9 @@ class Table extends Field
     /**
      * Normalizes a cell’s value.
      *
-     * @param string $type The cell type
-     * @param mixed $value The cell value
+     * @param string $type  The cell type
+     * @param mixed  $value The cell value
+     *
      * @return mixed
      * @see normalizeValue()
      */
@@ -343,9 +367,10 @@ class Table extends Field
     /**
      * Validates a cell’s value.
      *
-     * @param string $type The cell type
-     * @param mixed $value The cell value
+     * @param string      $type   The cell type
+     * @param mixed       $value  The cell value
      * @param string|null &$error The error text to set on the element
+     *
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
@@ -365,9 +390,10 @@ class Table extends Field
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed $value
+     * @param mixed                 $value
      * @param ElementInterface|null $element
-     * @param bool $static
+     * @param bool                  $static
+     *
      * @return string|null
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)
@@ -387,8 +413,10 @@ class Table extends Field
 
         // Explicitly set each cell value to an array with a 'value' key
         $checkForErrors = $element && $element->hasErrors($this->handle);
+        $count = 0;
         if (is_array($value)) {
             foreach ($value as &$row) {
+                $count = $count + 1;
                 foreach ($this->columns as $colId => $col) {
                     if (isset($row[$colId])) {
                         $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
@@ -401,6 +429,14 @@ class Table extends Field
             }
         }
         unset($row);
+        $minRows = $this->minRows;
+        $maxRows = $this->maxRows;
+        $staticRows = false;
+
+        if($count >= $maxRows or $minRows === $maxRows){
+            $staticRows = true;
+        }
+
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
@@ -410,7 +446,9 @@ class Table extends Field
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,
-            'static' => $static
+            'static' => $static,
+            'staticRows' => $staticRows,
+            'addRowLabel'=> $this->addRowLabel,
         ]);
     }
 }
