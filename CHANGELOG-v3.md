@@ -6,6 +6,7 @@
 - Added `craft\helpers\Localization::normalizeLanguage()`.
 
 ### Changed
+- Improved the page header styles in the Control Panel.
 - `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.

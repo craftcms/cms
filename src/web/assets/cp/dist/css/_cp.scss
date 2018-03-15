@@ -456,15 +456,22 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     flex-direction: row;
     align-items: stretch;
     padding: 0 24px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    background: rgba(0, 0, 0, 0.03);
+    font-size: 12px;
 
     &.empty {
       display: none;
+      & + #main #header {
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
     }
 
     &:not(.empty) {
       display: flex;
+      & + #main #header {
+        padding-top: 7px;
+        padding-bottom: 7px;
+      }
     }
 
     nav {
@@ -491,7 +498,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
           a {
             display: inline-block;
-            padding: 10px 0;
+            padding: 5px 0 1px;
             color: $mediumTextColor;
 
             &:hover {
@@ -515,11 +522,15 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
   #main {
     #header {
+      display: flex;
       align-items: center;
+      align-content: stretch;
+      flex-wrap: wrap;
       justify-content: space-between;
       position: relative;
       z-index: 2;
-      padding: 20px 24px 13px;
+      padding-left: 24px;
+      padding-right: 24px;
       box-sizing: border-box;
       width: calc(100vw - #{$sidebarWidth});
       background: $bgColor;
@@ -546,6 +557,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       h1 {
         line-height: 32px;
         margin-top: 0;
+        margin-bottom: 0;
         display: inline;
         white-space: nowrap;
         overflow: hidden;
@@ -795,6 +807,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     #main {
       #header {
         width: 100vw;
+        padding-top: 7px !important;
+        padding-bottom: 7px !important;
 
         body.ltr.fixed-header & {
           left: 0;
@@ -998,12 +1012,12 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 #nav-toggle {
   display: none;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
+  width: 36px;
+  height: 26px;
+  line-height: 26px;
   color: $secondarySubmitColor;
   text-align: center;
-  @include margin-left(-24px);
+  @include margin-left(-10px);
 
   &:before {
     @include icon;
