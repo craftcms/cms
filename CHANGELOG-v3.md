@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `defineBehaviors` event to `craft\base\Component` and `craft\db\Query`.
 - Added `craft\helpers\Localization::normalizeLanguage()`.
 
 ### Changed
@@ -11,6 +12,7 @@
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
 - `craft\validators\LanguageValidator` now has a `notAllowed` property, which can be used to customize the error message.
+- The `defineBehaviors` event on `craft\web\twig\variables\CraftVariable` is no longer deprecated.
 
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))

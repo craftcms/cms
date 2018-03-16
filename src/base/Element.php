@@ -784,9 +784,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function behaviors()
     {
-        return [
-            'customFields' => ContentBehavior::class,
-        ];
+        $behaviors = parent::behaviors();
+        $behaviors['customFields'] = ContentBehavior::class;
+        return $behaviors;
     }
 
     /**
