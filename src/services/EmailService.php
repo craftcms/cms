@@ -320,7 +320,7 @@ class EmailService extends BaseApplicationComponent
 							$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 						}
 
-						$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], craft()->config->get('devMode') ? 1 : 0);
+						$pop->authorise($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], craft()->config->get('devMode') ? 1 : 0);
 
 						$this->_setSmtpSettings($email, $emailSettings);
 						break;
@@ -533,14 +533,17 @@ class EmailService extends BaseApplicationComponent
 			$email->SMTPKeepAlive = true;
 		}
 
-		if ($emailSettings['smtpSecureTransportType'] == 'none')
+		if (isset($emailSettings['smtpSecureTransportType']))
 		{
-			// Clearly they don't want any encryption.
-			$email->SMTPAutoTLS = false;
-		}
-		else
-		{
-			$email->SMTPSecure = $emailSettings['smtpSecureTransportType'];
+			if ($emailSettings['smtpSecureTransportType'] === 'none')
+			{
+				// Clearly they don't want any encryption.
+				$email->SMTPAutoTLS = false;
+			}
+			else
+			{
+				$email->SMTPSecure = $emailSettings['smtpSecureTransportType'];
+			}
 		}
 
 		if (!isset($emailSettings['host']))
