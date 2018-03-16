@@ -400,7 +400,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
 
-        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) === 1);
+        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName());
     }
 
     /**

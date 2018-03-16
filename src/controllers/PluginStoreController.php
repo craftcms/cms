@@ -339,10 +339,7 @@ class PluginStoreController extends Controller
      */
     public function actionPluginStoreData()
     {
-        $enableCraftId = Craft::$app->getRequest()->getBodyParam('enableCraftId');
-        $cms = Craft::$app->getRequest()->getBodyParam('cms');
-
-        $pluginStoreData = Craft::$app->getApi()->getPluginStoreData($enableCraftId, $cms);
+        $pluginStoreData = Craft::$app->getApi()->getPluginStoreData();
 
         return Json::encode($pluginStoreData);
     }
@@ -355,10 +352,7 @@ class PluginStoreController extends Controller
     public function actionPluginDetails()
     {
         $pluginId = Craft::$app->getRequest()->getBodyParam('pluginId');
-        $enableCraftId = Craft::$app->getRequest()->getBodyParam('enableCraftId');
-        $cms = Craft::$app->getRequest()->getBodyParam('cms');
-
-        $pluginDetails = Craft::$app->getApi()->getPluginDetails($pluginId, $enableCraftId, $cms);
+        $pluginDetails = Craft::$app->getApi()->getPluginDetails($pluginId);
 
         return Json::encode($pluginDetails);
     }
@@ -371,10 +365,7 @@ class PluginStoreController extends Controller
     public function actionDeveloper()
     {
         $developerId = Craft::$app->getRequest()->getBodyParam('developerId');
-        $enableCraftId = Craft::$app->getRequest()->getBodyParam('enableCraftId');
-        $cms = Craft::$app->getRequest()->getBodyParam('cms');
-
-        $developer = Craft::$app->getApi()->getDeveloper($developerId, $enableCraftId, $cms);
+        $developer = Craft::$app->getApi()->getDeveloper($developerId);
 
         return Json::encode($developer);
     }
