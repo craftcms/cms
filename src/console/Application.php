@@ -68,6 +68,8 @@ class Application extends \yii\console\Application
         if (!$this->has('request', true)) {
             $this->getRequest();
         }
+
+        parent::bootstrap();
     }
 
     /**

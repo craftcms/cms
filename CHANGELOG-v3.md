@@ -23,6 +23,7 @@
 - Fixed a bug where switching transform format could cause sub-optimal transforms to be used. ([#2565](https://github.com/craftcms/cms/issues/2565))
 - Fixed a bug where invoking `craft\services\Feeds` during a console request would cause a PHP error. ([#2576](https://github.com/craftcms/cms/issues/2576))
 - Fixed a bug where you could get a PHP serialization error on some element queries inside of a `{% cache %}` tag. ([#2586](https://github.com/craftcms/cms/issues/2586))
+- Fixed a bug where `queue` commands weren’t working. ([#2594](https://github.com/craftcms/cms/issues/2594))
 
 ## 3.0.0-RC15 - 2018-03-13
 
