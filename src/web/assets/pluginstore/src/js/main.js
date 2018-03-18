@@ -48,7 +48,6 @@ Garnish.$doc.ready(function() {
             ...mapGetters({
                 cartPlugins: 'cartPlugins',
                 craftIdAccount: 'craftIdAccount',
-                enableCommercialFeatures: 'enableCommercialFeatures',
             }),
 
         },
@@ -170,7 +169,7 @@ Garnish.$doc.ready(function() {
 
             // On all data loaded
             this.$on('allDataLoaded', function() {
-                if(this.enableCommercialFeatures) {
+                if(window.enableCraftId) {
                     this.$pluginStoreActions.removeClass('hidden');
                     this.$pluginStoreActionsSpinner.addClass('hidden');
                 }
@@ -202,7 +201,7 @@ Garnish.$doc.ready(function() {
                     if(this.craftIdDataLoaded) {
                         this.$emit('allDataLoaded');
                     } else {
-                        if(this.enableCommercialFeatures) {
+                        if(window.enableCraftId) {
                             this.$pluginStoreActionsSpinner.removeClass('hidden');
                         }
                     }

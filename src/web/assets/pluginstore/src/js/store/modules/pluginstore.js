@@ -14,10 +14,6 @@ const getters = {
         return window.enableCraftId;
     },
 
-    enableCommercialFeatures(state) {
-        return state.data.enableCommercialFeatures;
-    },
-
     pluginStoreGetAllCategories(state) {
         return state.data.categories;
     },
