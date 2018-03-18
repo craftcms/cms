@@ -31,6 +31,21 @@ class Localization
     // =========================================================================
 
     /**
+     * Normalizes a language into the correct format (e.g. `en-US`).
+     *
+     * @param string $language
+     * @return string
+     */
+    public static function normalizeLanguage(string $language): string
+    {
+        $language = strtolower(str_replace('_', '-', $language));
+        if (($pos = strpos($language, '-')) !== false) {
+            $language = substr($language, 0, $pos).'-'.strtoupper(substr($language, $pos + 1));
+        }
+        return $language;
+    }
+
+    /**
      * Normalizes a user-submitted number for use in code and/or to be saved into the database.
      * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
      * locale uses something else.
