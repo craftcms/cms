@@ -16,7 +16,6 @@ use craft\errors\InvalidElementException;
 use craft\events\ElementEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;

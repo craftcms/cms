@@ -42,9 +42,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
 
@@ -772,11 +770,23 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function __call($name, $params)
+    {
+        if (strncmp($name, 'isFieldEmpty:', 13) === 0) {
+            return $this->isFieldEmpty(substr($name, 13));
+        }
+
+        return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
-        return [
-            'customFields' => ContentBehavior::class,
-        ];
+        $behaviors = parent::behaviors();
+        $behaviors['customFields'] = ContentBehavior::class;
+        return $behaviors;
     }
 
     /**
@@ -917,10 +927,11 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 $attribute = 'field:'.$field->handle;
+                $isEmpty = [$this, 'isFieldEmpty:'.$field->handle];
 
                 if ($field->required) {
                     // Only validate required custom fields on the LIVE scenario
-                    $rules[] = [[$attribute], 'required', 'isEmpty' => [$field, 'isEmpty'], 'on' => self::SCENARIO_LIVE];
+                    $rules[] = [[$attribute], 'required', 'isEmpty' => $isEmpty, 'on' => self::SCENARIO_LIVE];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -966,7 +977,7 @@ abstract class Element extends Component implements ElementInterface
 
                         // Set 'isEmpty' to the field's isEmpty() method by default
                         if (!array_key_exists('isEmpty', $rule)) {
-                            $rule['isEmpty'] = [$field, 'isEmpty'];
+                            $rule['isEmpty'] = $isEmpty;
                         }
 
                         // Set 'on' to the main scenarios by default
@@ -1009,6 +1020,24 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns whether a field is empty.
+     *
+     * @param string $handle
+     * @return bool
+     */
+    public function isFieldEmpty(string $handle): bool
+    {
+        if (
+            ($fieldLayout = $this->getFieldLayout()) === null ||
+            ($field = $fieldLayout->getFieldByHandle($handle)) === null
+        ) {
+            return true;
+        }
+
+        return $field->isValueEmpty($this->getFieldValue($handle), $this);
+    }
+
+    /**
      * Validates that the content size is going to fit within the field’s database column.
      *
      * @param string $attribute
@@ -1047,6 +1076,18 @@ abstract class Element extends Component implements ElementInterface
             $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('site', $field->name), $error);
             $this->addError($attribute, $error);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addError($attribute, $error = '')
+    {
+        if (strncmp($attribute, 'field:', 6) === 0) {
+            $attribute = substr($attribute, 6);
+        }
+
+        parent::addError($attribute, $error);
     }
 
     /**

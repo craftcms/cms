@@ -100,7 +100,7 @@ class QueueLogBehavior extends VerboseBehavior
             }
 
             // Prevent verbose system logs
-            if (!Craft::$app->getConfig()->getGeneral()->devMode) {
+            if (!YII_DEBUG) {
                 $target->except = ['yii\*'];
                 $target->setLevels(['info', 'warning', 'error']);
             }

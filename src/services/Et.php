@@ -32,9 +32,6 @@ class Et extends Component
     const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
     const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
     const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
-    const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
-    const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
-    const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
 
     // Properties
     // =========================================================================
@@ -168,86 +165,6 @@ class Et extends Component
         }
 
         return false;
-    }
-
-    /**
-     * Registers a given plugin with the current Craft license.
-     *
-     * @param string $packageName The plugin package name that should be registered
-     * @return EtModel
-     */
-    public function registerPlugin(string $packageName): EtModel
-    {
-        $et = $this->_createEtTransport(self::ENDPOINT_REGISTER_PLUGIN);
-        $et->setData([
-            'packageName' => $packageName
-        ]);
-
-        return $et->phoneHome();
-    }
-
-    /**
-     * Transfers a given plugin to the current Craft license.
-     *
-     * @param string $packageName The plugin package name that should be transferred
-     * @return EtModel
-     */
-    public function transferPlugin(string $packageName): EtModel
-    {
-        $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_PLUGIN);
-        $et->setData([
-            'packageName' => $packageName
-        ]);
-
-        return $et->phoneHome();
-    }
-
-    /**
-     * Unregisters a given plugin from the current Craft license.
-     *
-     * @param string $packageName The plugin packageName that should be unregistered
-     * @return EtModel
-     */
-    public function unregisterPlugin(string $packageName): EtModel
-    {
-        $et = $this->_createEtTransport(self::ENDPOINT_UNREGISTER_PLUGIN);
-        $et->setData([
-            'packageName' => $packageName
-        ]);
-        $etResponse = $et->phoneHome();
-
-        if (!empty($etResponse->data['success'])) {
-            // Remove our record of the license key
-            $pluginsService = Craft::$app->getPlugins();
-            $plugin = $pluginsService->getPluginByPackageName($packageName);
-            if ($plugin) {
-                /** @var Plugin $plugin */
-                $pluginsService->setPluginLicenseKey($plugin->id, null);
-            }
-        }
-
-        return $etResponse;
-    }
-
-    /**
-     * Returns the license key status, or false if it's unknown.
-     *
-     * @return string|false
-     */
-    public function getLicenseKeyStatus()
-    {
-        return Craft::$app->getCache()->get('licenseKeyStatus');
-    }
-
-    /**
-     * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's
-     * unknown.
-     *
-     * @return string|null|false
-     */
-    public function getLicensedDomain()
-    {
-        return Craft::$app->getCache()->get('licensedDomain');
     }
 
     /**

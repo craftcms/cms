@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -24,8 +25,15 @@ class Query extends \yii\db\Query
 
     /**
      * @event \yii\base\Event The event that is triggered after the query's init cycle
+     * @see init()
      */
     const EVENT_INIT = 'init';
+
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     // Public Methods
     // =========================================================================
@@ -40,6 +48,17 @@ class Query extends \yii\db\Query
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        // Fire a 'defineBehaviors' event
+        $event = new DefineBehaviorsEvent();
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        return $event->behaviors;
     }
 
     /**

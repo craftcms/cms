@@ -180,13 +180,17 @@ class Image
      */
     public static function imageSize(string $filePath): array
     {
-        if (FileHelper::isSvg($filePath)) {
-            $svg = file_get_contents($filePath);
-            return static::parseSvgSize($svg);
-        }
+        try {
+            if (FileHelper::isSvg($filePath)) {
+                $svg = file_get_contents($filePath);
+                return static::parseSvgSize($svg);
+            }
 
-        $image = Craft::$app->getImages()->loadImage($filePath);
-        return [$image->getWidth(), $image->getHeight()];
+            $image = Craft::$app->getImages()->loadImage($filePath);
+            return [$image->getWidth(), $image->getHeight()];
+        } catch (\Throwable $exception) {
+            return [0, 0];
+        }
     }
 
     /**

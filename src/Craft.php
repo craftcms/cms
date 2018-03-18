@@ -71,7 +71,7 @@ class Craft extends Yii
     public static function dd($var, int $depth = 10, bool $highlight = true)
     {
         VarDumper::dump($var, $depth, $highlight);
-        static::$app->end();
+        exit();
     }
 
     /**
