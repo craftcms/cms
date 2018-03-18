@@ -35,12 +35,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Asset::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Asset::class,
         ];
+        return $behaviors;
     }
 
     /**

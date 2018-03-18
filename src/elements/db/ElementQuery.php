@@ -480,10 +480,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function behaviors()
     {
+        $behaviors = parent::behaviors();
         /** @noinspection PhpUndefinedClassInspection */
-        return [
-            'customFields' => ElementQueryBehavior::class,
-        ];
+        $behaviors['customFields'] = ElementQueryBehavior::class;
+        return $behaviors;
     }
 
     // Element criteria parameter setters

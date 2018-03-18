@@ -49,11 +49,11 @@ class Cp
 
         if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
-            // relying on cached Elliott info
+            // relying on cached Craftnet info
             $updatesService->getUpdates();
 
             // Get the license key status
-            $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
+            $licenseKeyStatus = Craft::$app->getCache()->get('licenseKeyStatus');
 
             // Invalid license?
             if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
@@ -77,7 +77,7 @@ class Cp
 
             // Domain mismatch?
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
+                $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
 
                 $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
 

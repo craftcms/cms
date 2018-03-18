@@ -1137,14 +1137,7 @@ class Asset extends Element
      */
     public function copyWithTransform($transform): Asset
     {
-        // Duplicate this model and set it to that transform
-        $model = new self();
-
-        // Can't just use attributes() here because we'll get thrown into an infinite loop.
-        foreach ($this->attributes() as $attributeName) {
-            $model->$attributeName = $this->$attributeName;
-        }
-
+        $model = clone $this;
         $model->setFieldValues($this->getFieldValues());
         $model->setTransform($transform);
 

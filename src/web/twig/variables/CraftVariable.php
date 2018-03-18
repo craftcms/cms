@@ -57,9 +57,15 @@ class CraftVariable extends ServiceLocator
 
     /**
      * @event \yii\base\Event The event that is triggered after the component's init cycle
-     * This is a good place to register custom behaviors on the component.
+     * @see init()
      */
     const EVENT_INIT = 'init';
+
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
@@ -67,13 +73,6 @@ class CraftVariable extends ServiceLocator
      * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
-
-    /**
-     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
-     * @see behaviors()
-     * @deprecated since 3.0.0-beta.23
-     */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     // Properties
     // =========================================================================
@@ -184,13 +183,9 @@ class CraftVariable extends ServiceLocator
      */
     public function behaviors()
     {
-        // todo: remove all this before 3.0 GA
-        // Give plugins a chance to add new properties/methods on here
+        // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
-            Craft::$app->getDeprecator()->log('CraftVariable::defineBehaviors', 'The `defineBehaviors` event on CraftVariable has been deprecated. Use the `init` event to register custom behaviors instead.');
-            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
-        }
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
         return $event->behaviors;
     }
 
