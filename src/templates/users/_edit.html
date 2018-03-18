@@ -313,11 +313,6 @@
                 {% endif %}
             </form>
         {% endif %}
-
-        {% if user.getIsCurrent() and craft.cp.enableCraftId() %}
-            <hr>
-            {% include 'users/_pluginstore' %}
-        {% endif %}
     {% endif %}
 
     {# Give plugins a chance to add other stuff here #}
