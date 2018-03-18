@@ -187,10 +187,6 @@ class PluginStoreController extends Controller
         $this->requirePostRequest();
 
         try {
-            if (!Craft::$app->getRequest()->isSecureConnection) {
-                throw new BadRequestHttpException('OAuth requires a secure callback URL.');
-            }
-
             $token_type = Craft::$app->getRequest()->getParam('token_type');
             $access_token = Craft::$app->getRequest()->getParam('access_token');
             $expires_in = Craft::$app->getRequest()->getParam('expires_in');
