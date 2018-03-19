@@ -1,4 +1,4 @@
-/*!   - 2018-03-12 */
+/*!   - 2018-03-19 */
 (function($){
 
 /** global: Craft */
@@ -12591,6 +12591,8 @@ Craft.EditableTable = Garnish.Base.extend(
         columns: null,
         sorter: null,
         biggestId: -1,
+        maxRows: null,
+        rowCount: null,
 
         $table: null,
         $tbody: null,
@@ -12598,12 +12600,14 @@ Craft.EditableTable = Garnish.Base.extend(
 
         radioCheckboxes: null,
 
-        init: function(id, baseName, columns, settings) {
+        init: function(id, baseName, columns, settings, maxRows) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
+            this.maxRows = maxRows;
+            this.rowCount = 0;
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
@@ -12653,7 +12657,36 @@ Craft.EditableTable = Garnish.Base.extend(
             }
         },
 
+        canAddRow: function() {
+            if (this.rowCount >= this.maxRows) {
+              this.removeListener(this.$addRowBtn, 'activate');
+              return false;
+            }
+          this.removeListener(this.$addRowBtn, 'activate');
+          this.$addRowBtn = this.$table.next('.add');
+          this.addListener(this.$addRowBtn, 'activate', 'addRow');
+          return true;
+        },
+
+        deleteRow: function(row) {
+
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+            this.rowCount--;
+            console.log("Row count: ", this.rowCount);
+
+            // onDeleteRow callback
+            this.settings.onDeleteRow(row.$tr);
+        },
+
         addRow: function() {
+            if (!this.canAddRow()) {
+                return;
+            }
+
+            this.rowCount++;
+            console.log("Row count: ", this.rowCount);
+
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
@@ -12977,11 +13010,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         deleteRow: function() {
-            this.table.sorter.removeItems(this.$tr);
-            this.$tr.remove();
-
-            // onDeleteRow callback
-            this.table.settings.onDeleteRow(this.$tr);
+            this.table.deleteRow(this);
         }
     },
     {

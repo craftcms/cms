@@ -5,8 +5,8 @@
 {%- set initJs = not static and (initJs ?? true) -%}
 
 
-<table id="{{ id }}" class="shadow-box editable">
-       {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}
+<table id="{{ id }}" class="shadow-box editable"
+       {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
             {% for col in cols %}
@@ -93,7 +93,7 @@
         {% endfor %}
     </tbody>
 </table>
-{% if not staticRows  %}
+{% if not staticRows %}
     <div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
 {% endif %}
 
@@ -101,10 +101,11 @@
     {% set jsId = id|namespaceInputId|e('js') %}
     {% set jsName = name|namespaceInputName|e('js') %}
     {% set jsCols = cols|json_encode %}
+    {% set jsMaxRows = maxRows %}
     {% set defaultValues = defaultValues ?? null %}
     {% js %}
         new Craft.EditableTable("{{ jsId }}", "{{ jsName }}", {{ jsCols|raw }}, {
         defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }}
-        });
+        }, {{ jsMaxRows }});
     {% endjs %}
 {% endif %}
