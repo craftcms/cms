@@ -5,6 +5,7 @@
 ### Added
 - Added the `defineBehaviors` event to `craft\base\Component` and `craft\db\Query`.
 - Added `craft\helpers\Localization::normalizeLanguage()`.
+- Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
 
 ### Changed
 - Improved the page header styles in the Control Panel.
@@ -12,6 +13,7 @@
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
 - `craft\validators\LanguageValidator` now has a `notAllowed` property, which can be used to customize the error message.
+- `craft\web\View::renderString()` and `renderObjectTemplate()` no longer escape dynamically-output HTML in the template by default.
 - The `defineBehaviors` event on `craft\web\twig\variables\CraftVariable` is no longer deprecated.
 
 ### Fixed

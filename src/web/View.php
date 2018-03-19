@@ -403,12 +403,13 @@ class View extends \yii\web\View
      */
     public function renderString(string $template, array $variables = []): string
     {
+        $twig = $this->getTwig();
+        $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
-        $templateObj = $this->getTwig()->createTemplate($template);
-        $result = $templateObj->render($variables);
+        $result = $twig->createTemplate($template)->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
-
+        $twig->setDefaultEscaperStrategy();
         return $result;
     }
 
@@ -468,13 +469,14 @@ class View extends \yii\web\View
             $variables['object'] = $object;
 
             // Render it!
+            $twig->setDefaultEscaperStrategy(false);
             $lastRenderingTemplate = $this->_renderingTemplate;
             $this->_renderingTemplate = 'string:'.$template;
             /** @var Template $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
-
             $this->_renderingTemplate = $lastRenderingTemplate;
+            $twig->setDefaultEscaperStrategy();
 
             // Re-enable strict variables
             if ($strictVariables) {
