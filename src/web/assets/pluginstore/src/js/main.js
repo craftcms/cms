@@ -87,7 +87,7 @@ Garnish.$doc.ready(function() {
 
                     crumbsNav.appendTo(this.$crumbs);
                 } else {
-                    this.$crumbs.removeClass('empty');
+                    this.$crumbs.addClass('empty');
                 }
             },
 
