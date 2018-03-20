@@ -291,6 +291,7 @@ class Elements extends Component
     /**
      * Handles all of the routine tasks that go along with saving elements.
      * Those tasks include:
+     *
      * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
      * - Ensuring the element has a title if its type [[Element::hasTitles()|has titles]], and giving it a
      *   default title in the event that $validateContent is set to `false`
@@ -302,10 +303,13 @@ class Elements extends Component
      * - Saving the element’s row(s) in the `elements_sites` and `content` tables
      * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
      * - Cleaning any template caches that the element was involved in
+     *
      * The function will fire `beforeElementSave` and `afterElementSave` events, and will call `beforeSave()`
      *  and `afterSave()` methods on the passed-in element, giving the element opportunities to hook into the
      * save process.
+     *
      * Example usage - creating a new entry:
+     *
      * ```php
      * $entry = new Entry();
      * $entry->sectionId = 10;

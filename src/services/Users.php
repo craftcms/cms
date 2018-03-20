@@ -131,6 +131,7 @@ class Users extends Component
 
     /**
      * Returns a user by their ID.
+     *
      * ```php
      * $user = Craft::$app->users->getUserById($userId);
      * ```
@@ -146,6 +147,7 @@ class Users extends Component
 
     /**
      * Returns a user by their username or email.
+     *
      * ```php
      * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
      * ```
@@ -168,6 +170,7 @@ class Users extends Component
 
     /**
      * Returns a user by their UID.
+     *
      * ```php
      * $user = Craft::$app->users->getUserByUid($userUid);
      * ```

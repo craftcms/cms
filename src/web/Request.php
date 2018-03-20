@@ -460,10 +460,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the named request body parameter value.
      * If the parameter does not exist, the second parameter passed to this method will be returned.
+     *
      * ```php
      * $foo = Craft::$app->request->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
      * ```
+     *
      * You can also specify a nested parameter using a dot-delimited string.
+     *
      * ```php
      * $bar = Craft::$app->request->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
      * ```
@@ -539,10 +542,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the named GET parameter value.
      * If the GET parameter does not exist, the second parameter to this method will be returned.
+     *
      * ```php
      * $foo = Craft::$app->request->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
      * ```
+     *
      * You can also specify a nested parameter using a dot-delimited string.
+     *
      * ```php
      * $bar = Craft::$app->request->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
      * ```
