@@ -816,6 +816,11 @@ class AssetsService extends BaseApplicationComponent
 			foreach ($fileIds as $fileId)
 			{
 				$file = $this->getFileById($fileId);
+
+				if (!$file) {
+				    continue;
+                }
+
 				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
 
 				// Fire an 'onBeforeDeleteAsset' event
