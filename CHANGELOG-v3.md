@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `defineBehaviors` event to `craft\base\Component` and `craft\db\Query`.
+- Added `craft\helpers\FileHelper::hasAnythingChanged()`.
 - Added `craft\helpers\Localization::normalizeLanguage()`.
 - Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
 
@@ -29,6 +30,7 @@
 - Fixed a bug where you could get a PHP serialization error on some element queries inside of a `{% cache %}` tag. ([#2586](https://github.com/craftcms/cms/issues/2586))
 - Fixed a bug where `queue` commands weren’t working. ([#2594](https://github.com/craftcms/cms/issues/2594))
 - Fixed an error that would occur if a `SiteGroupNotFoundException` was thrown. ([#2595](https://github.com/craftcms/cms/issues/2595))
+- Fixed a bug where Control Panel resource requests could 404 in load-balanced environments. ([#2500](https://github.com/craftcms/cms/issues/2500))
 
 ## 3.0.0-RC15 - 2018-03-13
 
