@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodevisitors;
@@ -13,7 +13,7 @@ use craft\web\twig\nodes\GetAttrNode;
  * GetAttrAdjuster swaps Twig_Node_Expression_GetAttr nodes with [[GetAttrNode]] nodes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GetAttrAdjuster implements \Twig_NodeVisitorInterface
 {

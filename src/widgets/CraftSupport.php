@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -10,15 +10,15 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Plugin;
 use craft\base\Widget;
+use craft\helpers\App;
 use craft\helpers\Json;
 use craft\web\assets\craftsupport\CraftSupportAsset;
-use PDO;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftSupport extends Widget
 {
@@ -82,15 +82,23 @@ class CraftSupport extends Widget
 
         $db = Craft::$app->getDb();
         if ($db->getIsMysql()) {
-            $driver = 'MySQL';
+            $dbDriver = 'MySQL';
         } else {
-            $driver = 'PostgreSQL';
+            $dbDriver = 'PostgreSQL';
+        }
+
+        $imagesService = Craft::$app->getImages();
+        if ($imagesService->getIsGd()) {
+            $imageDriver = 'GD';
+        } else {
+            $imageDriver = 'Imagick';
         }
 
         $envInfoJs = Json::encode([
             'Craft version' => Craft::$app->getVersion().' ('.Craft::$app->getEditionName().')',
-            'PHP version' => str_replace('~', '\~', PHP_VERSION),
-            'Database driver & version' => $driver.' '.str_replace('~', '\~', $db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION)),
+            'PHP version' => App::phpVersion(),
+            'Database driver & version' => $dbDriver.' '.$db->getVersion(),
+            'Image driver & version' => $imageDriver.' '.$imagesService->getVersion(),
             'Plugins & versions' => $plugins,
         ]);
 

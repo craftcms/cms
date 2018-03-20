@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\web\Response;
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within
  * a structure.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class StructuresController extends Controller
 {
@@ -45,7 +44,6 @@ class StructuresController extends Controller
     /**
      * Initializes the application component.
      *
-     * @return void
      * @throws ForbiddenHttpException if this is not a Control Panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */
@@ -54,27 +52,40 @@ class StructuresController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
+        $request = Craft::$app->getRequest();
+
         // This controller is only available to the Control Panel
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$request->getIsCpRequest()) {
             throw new ForbiddenHttpException('Action only available from the Control Panel');
         }
 
-        $structureId = Craft::$app->getRequest()->getRequiredBodyParam('structureId');
-        $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getRequiredBodyParam('siteId');
+        $structureId = $request->getRequiredBodyParam('structureId');
+        $elementId = $request->getRequiredBodyParam('elementId');
+        $siteId = $request->getRequiredBodyParam('siteId');
 
         // Make sure they have permission to edit this structure
         $this->requireAuthorization('editStructure:'.$structureId);
 
-        $this->_structure = Craft::$app->getStructures()->getStructureById($structureId);
-
-        if (!$this->_structure) {
+        if (($this->_structure = Craft::$app->getStructures()->getStructureById($structureId)) === null) {
             throw new NotFoundHttpException('Structure not found');
         }
 
-        $this->_element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+        $elementsService = Craft::$app->getElements();
 
-        if (!$this->_element) {
+        if (($elementType = $elementsService->getElementTypeById($elementId)) === null) {
+            throw new NotFoundHttpException('Element not found');
+        }
+
+        /** @var Element|string $elementType */
+        $this->_element = $elementType::find()
+            ->id($elementId)
+            ->siteId($siteId)
+            ->status(null)
+            ->enabledForSite(false)
+            ->structureId($structureId)
+            ->one();
+
+        if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
     }
@@ -88,9 +99,7 @@ class StructuresController extends Controller
     {
         $delta = Craft::$app->getStructures()->getElementLevelDelta($this->_structure->id, $this->_element);
 
-        return $this->asJson([
-            'delta' => $delta
-        ]);
+        return $this->asJson(compact('delta'));
     }
 
     /**
@@ -100,21 +109,22 @@ class StructuresController extends Controller
      */
     public function actionMoveElement(): Response
     {
-        $parentElementId = Craft::$app->getRequest()->getBodyParam('parentId');
-        $prevElementId = Craft::$app->getRequest()->getBodyParam('prevId');
+        $request = Craft::$app->getRequest();
+        $structuresService = Craft::$app->getStructures();
+
+        $parentElementId = $request->getBodyParam('parentId');
+        $prevElementId = $request->getBodyParam('prevId');
 
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);
-            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto');
+            $success = $structuresService->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto');
         } else if ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->siteId);
-            $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto');
+            $success = $structuresService->prepend($this->_structure->id, $this->_element, $parentElement, 'auto');
         } else {
-            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto');
+            $success = $structuresService->prependToRoot($this->_structure->id, $this->_element, 'auto');
         }
 
-        return $this->asJson([
-            'success' => $success
-        ]);
+        return $this->asJson(compact('success'));
     }
 }

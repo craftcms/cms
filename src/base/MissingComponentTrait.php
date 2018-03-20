@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -14,7 +14,7 @@ use yii\base\Arrayable;
  * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 trait MissingComponentTrait
 {
@@ -43,7 +43,6 @@ trait MissingComponentTrait
      * Creates a new component of a given type based on this one’s properties.
      *
      * @param string $type The component class that should be used as the fallback
-     *
      * @return ComponentInterface
      */
     public function createFallback(string $type): ComponentInterface

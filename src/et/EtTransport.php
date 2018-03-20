@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\et;
@@ -11,21 +11,26 @@ use Craft;
 use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;
 use GuzzleHttp\Exception\RequestException;
-use PDO;
 use yii\base\Exception;
 
 /**
  * Class Et
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EtTransport
 {
+    // Constants
+    // =========================================================================
+
+    const CACHE_DURATION = 86400;
+
     // Properties
     // =========================================================================
 
@@ -56,6 +61,8 @@ class EtTransport
         $user = Craft::$app->getUser()->getIdentity();
         $userEmail = $user ? $user->email : '';
 
+        $db = Craft::$app->getDb();
+
         $this->_model = new EtModel([
             'licenseKey' => $this->_getLicenseKey(),
             'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
@@ -69,10 +76,11 @@ class EtTransport
             'showBeta' => Craft::$app->getConfig()->getGeneral()->showBetaUpdates,
             'serverInfo' => [
                 'extensions' => get_loaded_extensions(),
-                'phpVersion' => PHP_VERSION,
-                'databaseType' => Craft::$app->getConfig()->getDb()->driver,
-                'databaseVersion' => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
+                'phpVersion' => App::phpVersion(),
+                'databaseType' => $db->getDriverName(),
+                'databaseVersion' => $db->getVersion(),
                 'proc' => function_exists('proc_open') ? 1 : 0,
+                'totalLocales' => Craft::$app->getSites()->getTotalSites(),
             ],
         ]);
     }
@@ -81,8 +89,6 @@ class EtTransport
      * Sets custom data on the EtModel.
      *
      * @param mixed $data
-     *
-     * @return void
      */
     public function setData($data)
     {
@@ -93,8 +99,6 @@ class EtTransport
      * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
      *
      * @param string $handle
-     *
-     * @return void
      */
     public function setHandle(string $handle)
     {
@@ -165,12 +169,12 @@ class EtTransport
                             }
 
                             // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
-                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-                            $cacheService->set('licensedEdition', $etModel->licensedEdition);
-                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus, self::CACHE_DURATION);
+                            $cacheService->set('licensedEdition', $etModel->licensedEdition, self::CACHE_DURATION);
+                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0, self::CACHE_DURATION);
 
                             if ($etModel->licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                                $cacheService->set('licensedDomain', $etModel->licensedDomain);
+                                $cacheService->set('licensedDomain', $etModel->licensedDomain, self::CACHE_DURATION);
                             }
 
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {
@@ -242,11 +246,8 @@ class EtTransport
         }
 
         $contents = file_get_contents($keyFile);
-        if (empty($contents) || $contents === 'temp') {
-            return null;
-        }
-
-        return trim(preg_replace('/[\r\n]+/', '', $contents));
+        $key = trim(preg_replace('/[\r\n]+/', '', $contents));
+        return strlen($key) === 250 ? $key : null;
     }
 
     /**
@@ -267,7 +268,6 @@ class EtTransport
 
     /**
      * @param string $key
-     *
      * @return bool
      * @throws Exception|EtException
      */

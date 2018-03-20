@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -11,14 +11,16 @@ use Craft;
 use craft\base\Model;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
+use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * Site model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Site extends Model
 {
@@ -29,6 +31,11 @@ class Site extends Model
      * @var int|null ID
      */
     public $id;
+
+    /**
+     * @var int|null Group ID
+     */
+    public $groupId;
 
     /**
      * @var string|null Name
@@ -44,6 +51,11 @@ class Site extends Model
      * @var string|null Name
      */
     public $language;
+
+    /**
+     * @var bool Primary site?
+     */
+    public $primary = false;
 
     /**
      * @var bool Has URLs
@@ -64,6 +76,11 @@ class Site extends Model
      * @var string|null Base URL
      */
     public $baseUrl;
+
+    /**
+     * @var int Sort order
+     */
+    public $sortOrder = 1;
 
     // Public Methods
     // =========================================================================
@@ -87,12 +104,12 @@ class Site extends Model
     public function rules()
     {
         $rules = [
-            [['name', 'handle', 'language'], 'required'],
-            [['id'], 'number', 'integerOnly' => true],
+            [['groupId', 'name', 'handle', 'language'], 'required'],
+            [['id', 'groupId'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
-            [['language'], 'string', 'max' => 12],
+            [['language'], LanguageValidator::class, 'onlySiteLanguages' => false],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
+            [['baseUrl'], UrlValidator::class, 'allowAlias' => true, 'defaultScheme' => 'http'],
         ];
 
         if (Craft::$app->getIsInstalled()) {
@@ -113,11 +130,28 @@ class Site extends Model
     }
 
     /**
+     * Returns the site's group
+     *
+     * @return SiteGroup
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
+     */
+    public function getGroup(): SiteGroup
+    {
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Site is missing its group ID');
+        }
+
+        if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid site group ID: '.$this->groupId);
+        }
+
+        return $group;
+    }
+
+    /**
      * Overrides the name while keeping track of the original one.
      *
      * @param string $name
-     *
-     * @return void
      */
     public function overrideName(string $name)
     {
@@ -129,8 +163,6 @@ class Site extends Model
      * Overrides the base URL while keeping track of the original one.
      *
      * @param string $baseUrl
-     *
-     * @return void
      */
     public function overrideBaseUrl(string $baseUrl)
     {

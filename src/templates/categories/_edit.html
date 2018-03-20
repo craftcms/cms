@@ -9,7 +9,35 @@
 
 {% hook "cp.categories.edit" %}
 
-{% block saveButton %}
+{% block header %}
+    {{ block('pageTitle') }}
+    {{ block('contextMenu') }}
+    <div class="flex-grow"></div>
+    {% if showPreviewBtn or shareUrl is defined %}
+        {% if showPreviewBtn %}
+            <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
+        {% endif %}
+        {% if shareUrl is defined %}
+            <a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>
+        {% endif %}
+        <div class="flex-grow"></div>
+    {% endif %}
+    {{ block('actionButton') }}
+{% endblock %}
+
+{% block contextMenu %}
+    {% if craft.app.getIsMultiSite() %}
+        {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
+        {% set urlFormat = url("categories/#{groupHandle}/#{craft.app.request.getSegment(3)}/{handle}", (parentIdParam ? { parentId: parentIdParam })) %}
+        {% include "_elements/sitemenu" with {
+            siteIds: siteIds,
+            selectedSiteId: category.siteId,
+            urlFormat: urlFormat
+        } only %}
+    {% endif %}
+{% endblock %}
+
+{% block actionButton %}
     <div class="btngroup">
         <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 
@@ -20,152 +48,114 @@
                         {{ forms.optionShortcutLabel('S') }}
                         {{ "Save and continue editing"|t('app') }}
                     </a></li>
-                <li><a class="formsubmit" data-redirect="{{ ('categories/'~groupHandle~'/new?parentId={parent.id}')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                <li><a class="formsubmit" data-redirect="{{ ('categories/'~groupHandle~'/new?parentId={parent.id}#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
 
-                {% if category.id %}
-                    <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new category"|t('app') }}</a></li>
+                {% if not isNewCategory %}
+                    <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ (continueEditingUrl~'#')|hash }}">{{ "Save as a new category"|t('app') }}</a></li>
                 {% endif %}
             </ul>
+            {% if not isNewCategory %}
+                <hr>
+                <ul>
+                    <li><a class="formsubmit error" data-action="categories/delete-category" data-confirm="{{ 'Are you sure you want to delete this category?'|t('app') }}" data-redirect="{{ 'categories#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                </ul>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
 
 
-{% block main %}
-        <input type="hidden" name="action" value="categories/save-category">
-        {{ redirectInput('categories/'~groupHandle) }}
+{% block content %}
+    <input type="hidden" name="action" value="categories/save-category">
+    {{ redirectInput('categories/'~groupHandle) }}
 
-        <input type="hidden" name="groupId" value="{{ group.id }}">
-        {% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
-        {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ category.siteId }}">{% endif %}
+    <input type="hidden" name="groupId" value="{{ group.id }}">
+    {% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
+    {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ category.siteId }}">{% endif %}
 
-        <div class="grid first" data-max-cols="3">
-            <div class="item" data-position="left" data-colspan="2">
-                <div id="fields" class="pane">
-                    {% include "_includes/tabs" %}
+    <div id="fields">
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            siteId: category.siteId,
+            id: 'title',
+            name: 'title',
+            value: category.title,
+            errors: category.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
 
-                    {{ forms.textField({
-                        label: "Title"|t('app'),
-                        siteId: category.siteId,
-                        id: 'title',
-                        name: 'title',
-                        value: category.title,
-                        errors: category.getErrors('title'),
-                        first: true,
-                        autofocus: true,
-                        required: true,
-                        maxlength: 255
-                    }) }}
-
-                    <div>
-                        {% for tab in group.getFieldLayout().getTabs() %}
-                            <div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
-                                {% include "_includes/fields" with {
-                                    fields:  tab.getFields(),
-                                    element: category
-                                } only %}
-                            </div>
-                        {% endfor %}
-                    </div>
+        <div>
+            {% for tab in group.getFieldLayout().getTabs() %}
+                <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
+                    {% include "_includes/fields" with {
+                        fields:  tab.getFields(),
+                        element: category
+                    } only %}
                 </div>
-            </div><!--/item-->
+            {% endfor %}
+        </div>
+    </div>
 
-            <div class="item" data-position="right">
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.categories.edit.content" %}
+{% endblock %}
 
-                {% if showPreviewBtn %}
-                    {% include "_includes/previewbtns" %}
-                {% endif %}
+{% block details %}
+    <div id="settings" class="meta">
 
-                {% if craft.app.getIsMultiSite() %}
-                    <ul id="sites" class="pane">
-                        {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
-                        {% for siteId in siteIds %}
-                            {% set site = craft.app.sites.getSiteById(siteId) %}
-                            <li{% if siteId == category.siteId %} class="sel"{% endif %}>
-                                {%- if siteId == category.siteId -%}
-                                    {{ site.name|t('site') }}
-                                {%- else -%}
-                                    {% set siteCategoryUrl = url(
-                                        'categories/'~groupHandle~'/'~craft.app.request.getSegment(3)~'/'~site.handle,
-                                        (parentIdParam ? { parentId: parentIdParam })
-                                    ) -%}
-                                    <a href="{{ siteCategoryUrl }}">{{ site.name|t('site') }}</a>
-                                {%- endif -%}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+        {{ forms.textField({
+            label: "Slug"|t('app'),
+            siteId: category.siteId,
+            id: 'slug',
+            name: 'slug',
+            value: category.slug,
+            placeholder: "Enter slug"|t('app'),
+            errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
+        }) }}
 
-                <div id="settings" class="pane meta">
+        {% if parentOptionCriteria is defined %}
+            {{ forms.elementSelectField({
+                label: "Parent"|t('app'),
+                id: 'parentId',
+                name: 'parentId',
+                elementType: elementType,
+                selectionLabel: "Choose"|t('app'),
+                sources: ['group:'~group.id],
+                criteria: parentOptionCriteria,
+                limit: 1,
+                elements: (parent is defined and parent ? [parent]),
+                errors: category.getErrors('parent')
+            }) }}
+        {% endif %}
 
-                    {{ forms.textField({
-                        label: "Slug"|t('app'),
-                        siteId: category.siteId,
-                        id: 'slug',
-                        name: 'slug',
-                        value: category.slug,
-                        placeholder: "Enter slug"|t('app'),
-                        errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
-                    }) }}
+        {{ forms.lightswitchField({
+            label: "Enabled"|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: category.enabled
+        }) }}
 
-                    {% if parentOptionCriteria is defined %}
-                        {{ forms.elementSelectField({
-                            label: "Parent"|t('app'),
-                            id: 'parentId',
-                            name: 'parentId',
-                            elementType: elementType,
-                            selectionLabel: "Choose"|t('app'),
-                            sources: ['group:'~group.id],
-                            criteria: parentOptionCriteria,
-                            limit: 1,
-                            elements: (parent is defined and parent ? [parent]),
-                            errors: category.getErrors('parent')
-                        }) }}
-                    {% endif %}
+    </div>
 
-                    {% set statusInput %}
-                        <div class="left">
-                            {{ forms.lightswitch({
-                                id: 'enabled',
-                                name: 'enabled',
-                                on: category.enabled
-                            }) }}
-                        </div>
+    {% if category.id %}
+        <hr>
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
+                <div class="value">{{ category.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
+                <div class="value">{{ category.dateUpdated|datetime('short') }}</div>
+            </div>
+        </div>
+    {% endif %}
 
-                        {% if not isNewCategory %}
-                            <div class="right">
-                                <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t('app') }}" data-action="categories/delete-category"
-                                       data-confirm="{{ 'Are you sure you want to delete this category?'|t('app') }}"
-                                       data-redirect="{{ 'categories'|hash }}">
-                            </div>
-                        {% endif %}
-                    {% endset %}
-
-                    {{ forms.field({
-                        label: "Enabled"|t('app'),
-                        id: 'enabled'
-                    }, statusInput) }}
-
-                </div><!--/pane-->
-
-                {% if category.id %}
-                    <div class="pane lightpane meta">
-                        <div class="data">
-                            <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
-                            <div class="value">{{ category.dateCreated|datetime('short') }}</div>
-                        </div>
-                        <div class="data">
-                            <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
-                            <div class="value">{{ category.dateUpdated|datetime('short') }}</div>
-                        </div>
-                    </div>
-                {% endif %}
-
-                {# Give plugins a chance to add other panes here #}
-                {% hook "cp.categories.edit.right-pane" %}
-
-            </div><!--/item-->
-        </div><!--/grid-->
+    {# Give plugins a chance to add other stuff here #}
+    {% hook "cp.categories.edit.details" %}
 {% endblock %}
 
 

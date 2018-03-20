@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -17,12 +17,11 @@ use craft\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
 
 /**
- * Class Tags service.
- *
- * An instance of the Tags service is globally accessible in Craft via [[Application::tags `Craft::$app->getTags()`]].
+ * Tags service.
+ * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|<code>Craft::$app->tags</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Tags extends Component
 {
@@ -136,7 +135,6 @@ class Tags extends Component
      * Returns a group by its ID.
      *
      * @param int $groupId
-     *
      * @return TagGroup|null
      */
     public function getTagGroupById(int $groupId)
@@ -153,18 +151,13 @@ class Tags extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if (!$result) {
-            return $this->_tagGroupsById[$groupId] = null;
-        }
-
-        return $this->_tagGroupsById[$groupId] = new TagGroup($result);
+        return $this->_tagGroupsById[$groupId] = $result ? new TagGroup($result) : null;
     }
 
     /**
      * Gets a group by its handle.
      *
      * @param string $groupHandle
-     *
      * @return TagGroup|null
      */
     public function getTagGroupByHandle(string $groupHandle)
@@ -173,19 +166,14 @@ class Tags extends Component
             ->where(['handle' => $groupHandle])
             ->one();
 
-        if ($result) {
-            return new TagGroup($result);
-        }
-
-        return null;
+        return $result ? new TagGroup($result) : null;
     }
 
     /**
      * Saves a tag group.
      *
-     * @param TagGroup $tagGroup      The tag group to be saved
-     * @param bool     $runValidation Whether the tag group should be validated
-     *
+     * @param TagGroup $tagGroup The tag group to be saved
+     * @param bool $runValidation Whether the tag group should be validated
      * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Throwable if reasons
@@ -262,7 +250,6 @@ class Tags extends Component
      * Deletes a tag group by its ID.
      *
      * @param int $tagGroupId
-     *
      * @return bool Whether the tag group was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -336,9 +323,8 @@ class Tags extends Component
     /**
      * Returns a tag by its ID.
      *
-     * @param int      $tagId
+     * @param int $tagId
      * @param int|null $siteId
-     *
      * @return Tag|null
      */
     public function getTagById(int $tagId, int $siteId = null)

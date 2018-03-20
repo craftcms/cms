@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
@@ -10,6 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\App;
 use craft\queue\BaseJob;
@@ -19,7 +20,7 @@ use yii\base\Exception;
  * ResaveElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ResaveElements extends BaseJob
 {
@@ -63,14 +64,18 @@ class ResaveElements extends BaseJob
         $totalElements = $query->count();
         $currentElement = 0;
 
-        foreach ($query->each() as $element) {
-            $this->setProgress($queue, $currentElement++ / $totalElements);
+        try {
+            foreach ($query->each() as $element) {
+                $this->setProgress($queue, $currentElement++ / $totalElements);
 
-            /** @var Element $element */
-            $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            if (!Craft::$app->getElements()->saveElement($element)) {
-                throw new Exception('Couldn’t save element '.$element->id.' ('.get_class($element).') due to validation errors.');
+                /** @var Element $element */
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                if (!Craft::$app->getElements()->saveElement($element)) {
+                    throw new Exception('Couldn’t save element '.$element->id.' ('.get_class($element).') due to validation errors.');
+                }
             }
+        } catch (QueryAbortedException $e) {
+            // Fail silently
         }
     }
 

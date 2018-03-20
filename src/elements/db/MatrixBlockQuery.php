@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -10,7 +10,6 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
@@ -23,15 +22,13 @@ use yii\db\Connection;
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @property string|string[]|Site            $ownerSite The handle(s) of the site(s) that the owner element should be in
- * @property string|string[]|MatrixBlockType $type      The handle(s) of the block type(s) that resulting Matrix blocks must have
- *
+ * @property string|string[]|Site $ownerSite The handle(s) of the site(s) that the owner element should be in
+ * @property string|string[]|MatrixBlockType $type The handle(s) of the block type(s) that resulting Matrix blocks must have
  * @method MatrixBlock[]|array all($db = null)
- * @method MatrixBlock|array|false one($db = null)
- * @method MatrixBlock|array|false nth(int $n, Connection $db = null)
- *
+ * @method MatrixBlock|array|null one($db = null)
+ * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MatrixBlockQuery extends ElementQuery
 {
@@ -102,13 +99,11 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[fieldId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function fieldId($value)
     {
         $this->fieldId = $value;
-
         return $this;
     }
 
@@ -116,13 +111,11 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[ownerId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function ownerId($value)
     {
         $this->ownerId = $value;
-
         return $this;
     }
 
@@ -130,7 +123,6 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[ownerSiteId]] and [[siteId]] properties.
      *
      * @param int|string|null $value The property value
-     *
      * @return static self reference
      */
     public function ownerSiteId($value)
@@ -150,7 +142,6 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[ownerSiteId]] property based on a given site(s)’s handle(s).
      *
      * @param string|string[]|Site $value The property value
-     *
      * @return static self reference
      * @throws Exception if $value is an invalid site handle
      */
@@ -175,7 +166,6 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[ownerLocale]] property.
      *
      * @param string|string[] $value The property value
-     *
      * @return static self reference
      * @deprecated in 3.0. Use [[ownerSiteId()]] instead.
      */
@@ -183,7 +173,6 @@ class MatrixBlockQuery extends ElementQuery
     {
         Craft::$app->getDeprecator()->log('ElementQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
         $this->ownerSite($value);
-
         return $this;
     }
 
@@ -191,7 +180,6 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[ownerId]] and [[ownerSiteId]] properties based on a given element.
      *
      * @param ElementInterface $owner The owner element
-     *
      * @return static self reference
      */
     public function owner(ElementInterface $owner)
@@ -199,7 +187,6 @@ class MatrixBlockQuery extends ElementQuery
         /** @var Element $owner */
         $this->ownerId = $owner->id;
         $this->siteId = $owner->siteId;
-
         return $this;
     }
 
@@ -207,7 +194,6 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[typeId]] property based on a given block type(s)’s handle(s).
      *
      * @param string|string[]|MatrixBlockType|null $value The property value
-     *
      * @return static self reference
      */
     public function type($value)
@@ -231,13 +217,11 @@ class MatrixBlockQuery extends ElementQuery
      * Sets the [[typeId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function typeId($value)
     {
         $this->typeId = $value;
-
         return $this;
     }
 
@@ -308,26 +292,9 @@ class MatrixBlockQuery extends ElementQuery
      */
     protected function customFields(): array
     {
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->fieldId);
-
-        // Preload all of the fields up front to save ourselves some DB queries, and discard
-        $contexts = [];
-        foreach ($blockTypes as $blockType) {
-            $contexts[] = 'matrixBlockType:'.$blockType->id;
-        }
-        Craft::$app->getFields()->getAllFields($contexts);
-
-        // Now assemble the actual fields list
-        $fields = [];
-        foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
-            foreach ($blockType->getFields() as $field) {
-                /** @var Field $field */
-                $field->columnPrefix = $fieldColumnPrefix;
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
+        // This method won't get called if $this->fieldId isn't set to a single int
+        /** @var MatrixField $matrixField */
+        $matrixField = Craft::$app->getFields()->getFieldById($this->fieldId);
+        return $matrixField->getBlockTypeFields();
     }
 }

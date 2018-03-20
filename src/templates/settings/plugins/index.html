@@ -8,8 +8,6 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% set docsUrl = 'http://craftcms.com/docs/plugins/introduction' %}
-
 
 {% set info = craft.app.plugins.getAllPluginInfo() %}
 
@@ -30,7 +28,7 @@
                     <tr data-name="{{ config.name }}">
                         <th data-title="{{ 'Name'|t('app') }}">
                             <div class="plugin-infos">
-                                <div class="icon">{{ craft.app.plugins.getPluginIconSvg(handle)|raw }}</div>
+                                <div class="icon">{{ svg(craft.app.plugins.getPluginIconSvg(handle)) }}</div>
                                 <div class="details">
                                     <div class="name">
                                         {{ config.name }}
@@ -42,37 +40,52 @@
                                 </div>
                             </div>
                         </th>
-                        <td data-title="{{ 'Settings'|t('app') }}">
+                        <td class="nowrap" data-title="{{ 'Settings'|t('app') }}">
                             {% if config.hasCpSettings %}
                                 <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span> {{ "Settings"|t('app') }}</a>
                             {% else %}
                                 <span class="light">—</span>
                             {% endif %}
                         </td>
-                        <td data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
-                        <td data-title="{{ 'Documentation'|t('app') }}">
+                        <td class="nowrap" data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
+                        <td class="nowrap" data-title="{{ 'Documentation'|t('app') }}">
                             {% if config.documentationUrl %}
                                 <a href="{{ config.documentationUrl }}" title="{{ "{name} Documentation"|t('app', {name: config.name}) }}" target="_blank">{{ "Documentation"|t('app') }}</a>
                             {% else %}
                                 <span class="light">—</span>
                             {% endif %}
                         </td>
-                        <td class="status-cell thin" data-title="{{ 'Status'|t('app') }}">
-                            {% if config.isInstalled %}
-                                <span class="status enabled"></span> {{ "Installed"|t('app') }}
+                        <td class="nowrap thin" data-title="{{ 'Status'|t('app') }}">
+                            {% if config.isEnabled %}
+                                <span class="status on"></span> {{ "Enabled"|t('app') }}
+                            {% elseif config.isInstalled %}
+                                <span class="status off"></span> {{ "Disabled"|t('app') }}
                             {% else %}
                                 <span class="status"></span> <span class="light">{{ "Not installed"|t('app') }}</span>
                             {% endif %}
                         </td>
-                        <td class="centeralign thin" data-title="{{ 'Action'|t('app') }}">
+                        <td class="nowrap thin" data-title="{{ 'Action'|t('app') }}">
                             <form method="post" accept-charset="UTF-8">
                                 <input type="hidden" name="pluginHandle" value="{{ handle }}">
                                 {{ csrfInput() }}
-                                {% if config.isInstalled %}
-                                    <div class="btn small formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</div>
-                                {% else %}
-                                    <div class="btn small formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</div>
-                                {% endif %}
+                                <div class="btngroup">
+                                    <div class="btn menubtn" data-icon="settings"></div>
+                                    <div class="menu" data-align="right">
+                                        <ul>
+                                            {% if not config.isInstalled %}
+                                                <li><a class="formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t('app') }}</a></li>
+                                                <li><a class="formsubmit error" data-action="pluginstore/remove" data-param="packageName" data-value="{{ config.packageName }}">{{ 'Remove'|t('app') }}</a></li>
+                                            {% else %}
+                                                {% if config.isEnabled %}
+                                                    <li><a class="formsubmit" data-action="plugins/disable-plugin">{{ 'Disable'|t('app') }}</a></li>
+                                                    <li><a class="formsubmit error" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t('app', { plugin: config.name }) }}">{{ 'Uninstall'|t('app') }}</a></li>
+                                                {% else %}
+                                                    <li><a class="formsubmit" data-action="plugins/enable-plugin">{{ 'Enable'|t('app') }}</a></li>
+                                                {% endif %}
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
                             </form>
                         </td>
                     </tr>

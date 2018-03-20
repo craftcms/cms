@@ -2,14 +2,18 @@
 /**
  * Craft bootstrap file.
  *
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
 use craft\services\Config;
+use yii\base\ErrorException;
+
+// Get the last error at the earliest opportunity, so we can catch max_input_vars errors
+// see https://stackoverflow.com/a/21601349/1688568
+$lastError = error_get_last();
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -152,20 +156,22 @@ ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
 error_reporting(E_ALL);
 
-// Determine if Craft is running in Dev Mode
+// Load the general config
 // -----------------------------------------------------------------------------
 
-// Initialize the Config service
 $configService = new Config();
 $configService->env = $environment;
 $configService->configDir = $configPath;
 $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
+$generalConfig = $configService->getConfigFromFile('general');
 
-// We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
+// Determine if Craft is running in Dev Mode
+// -----------------------------------------------------------------------------
+
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = ArrayHelper::getValue($configService->getConfigFromFile('general'), 'devMode', false);
+    $devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
 }
 
 if ($devMode) {
@@ -207,6 +213,16 @@ Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 
+// Set any custom aliases
+$customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
+if (is_array($customAliases)) {
+    foreach ($customAliases as $name => $value) {
+        if (is_string($value)) {
+            Craft::setAlias($name, $value);
+        }
+    }
+}
+
 // Load the config
 $components = [
     'config' => $configService,
@@ -218,9 +234,10 @@ $config = ArrayHelper::merge(
         'env' => $environment,
         'components' => $components,
     ],
-    require "{$srcPath}/config/app/main.php",
-    require "{$srcPath}/config/app/{$appType}.php",
-    $configService->getConfigFromFile('app')
+    require "{$srcPath}/config/app.php",
+    require "{$srcPath}/config/app.{$appType}.php",
+    $configService->getConfigFromFile('app'),
+    $configService->getConfigFromFile("app.{$appType}")
 );
 
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
@@ -228,4 +245,12 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-return Craft::createObject($config);
+/** @var \craft\web\Application|craft\console\Application $app */
+$app = Craft::createObject($config);
+
+// If there was a max_input_vars error, kill the request before we start processing it with incomplete data
+if ($lastError && strpos($lastError['message'], 'max_input_vars') !== false) {
+    throw new ErrorException($lastError['message']);
+}
+
+return $app;

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console;
@@ -10,6 +10,8 @@ namespace craft\console;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\errors\MissingComponentException;
+use craft\queue\QueueLogBehavior;
+use yii\base\Component;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
@@ -18,14 +20,12 @@ use yii\console\Response;
 /**
  * Craft Console Application class
  *
- * @property Request $request          The request component
- * @property User    $user             The user component
- *
- * @method Request   getRequest()      Returns the request component.
- * @method Response  getResponse()     Returns the response component.
- *
+ * @property Request $request The request component
+ * @property User $user The user component
+ * @method Request getRequest()      Returns the request component.
+ * @method Response getResponse()     Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Application extends \yii\console\Application
 {
@@ -48,8 +48,6 @@ class Application extends \yii\console\Application
 
     /**
      * Initializes the console app by creating the command runner.
-     *
-     * @return void
      */
     public function init()
     {
@@ -59,6 +57,19 @@ class Application extends \yii\console\Application
         date_default_timezone_set('UTC');
 
         $this->_init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        // Ensure that the request component has been instantiated
+        if (!$this->has('request', true)) {
+            $this->getRequest();
+        }
+
+        parent::bootstrap();
     }
 
     /**
@@ -91,5 +102,22 @@ class Application extends \yii\console\Application
     public function getUser()
     {
         return $this->get('user');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function get($id, $throwException = true)
+    {
+        // Is this the first time the queue component is requested?
+        $isFirstQueue = $id === 'queue' && !$this->has($id, true);
+
+        $component = parent::get($id, $throwException);
+
+        if ($isFirstQueue && $component instanceof Component) {
+            $component->attachBehavior('queueLogger', QueueLogBehavior::class);
+        }
+
+        return $component;
     }
 }

@@ -9,6 +9,12 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
         $newCategoryBtnGroup: null,
         $newCategoryBtn: null,
 
+        init: function(elementType, $container, settings) {
+            this.on('selectSource', $.proxy(this, 'updateButton'));
+            this.on('selectSite', $.proxy(this, 'updateButton'));
+            this.base(elementType, $container, settings);
+        },
+
         afterInit: function() {
             // Find which of the visible groups the user has permission to create new categories in
             this.editableGroups = [];
@@ -39,7 +45,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        onSelectSource: function() {
+        updateButton: function() {
+            if (!this.$source) {
+                return;
+            }
+
             // Get the handle of the selected source
             var selectedSourceHandle = this.$source.data('handle');
 
@@ -130,13 +140,19 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
                 history.replaceState({}, '', Craft.getUrl(uri));
             }
-
-            this.base();
         },
 
         _getGroupTriggerHref: function(group) {
             if (this.settings.context === 'index') {
-                return 'href="' + Craft.getUrl('categories/' + group.handle + '/new') + '"';
+                var uri = 'categories/' + group.handle + '/new';
+                if (this.siteId && this.siteId != Craft.primarySiteId) {
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == this.siteId) {
+                            uri += '/'+Craft.sites[i].handle;
+                        }
+                    }
+                }
+                return 'href="' + Craft.getUrl(uri) + '"';
             }
             else {
                 return 'data-id="' + group.id + '"';

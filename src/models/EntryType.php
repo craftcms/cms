@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -15,14 +15,14 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * EntryType model class.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryType extends Model
 {
@@ -90,7 +90,7 @@ class EntryType extends Model
      */
     public function rules()
     {
-        return [
+        $rules = [
             [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true],
             [['name', 'handle'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
@@ -114,6 +114,14 @@ class EntryType extends Model
                 'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
         ];
+
+        if ($this->hasTitleField) {
+            $rules[] = [['titleLabel'], 'required'];
+        } else {
+            $rules[] = [['titleFormat'], 'required'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -139,14 +147,19 @@ class EntryType extends Model
     /**
      * Returns the entry type’s section.
      *
-     * @return Section|null
+     * @return Section
+     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
-        if ($this->sectionId) {
-            return Craft::$app->getSections()->getSectionById($this->sectionId);
+        if ($this->sectionId === null) {
+            throw new InvalidConfigException('Entry type is missing its section ID');
         }
 
-        return null;
+        if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
+            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+        }
+
+        return $section;
     }
 }

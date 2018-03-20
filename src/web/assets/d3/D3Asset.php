@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\d3;
@@ -39,51 +39,51 @@ class D3Asset extends AssetBundle
     {
         parent::registerAssetFiles($view);
 
-        // Figure out which D3 i18n script to load
-        $language = Craft::$app->language;
-
-        if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'], true)) {
-            $d3Language = $language;
-        } else {
-            $languageId = Craft::$app->getLocale()->getLanguageID();
-
-            $d3LanguageIds = [
-                'ca' => 'ca-ES',
-                'de' => 'de-DE',
-                'en' => 'en-US',
-                'es' => 'es-ES',
-                'fi' => 'fi-FI',
-                'fr' => 'fr-FR',
-                'he' => 'he-IL',
-                'hu' => 'hu-HU',
-                'it' => 'it-IT',
-                'ja' => 'ja-JP',
-                'ko' => 'ko-KR',
-                'nl' => 'nl-NL',
-                'pl' => 'pl-PL',
-                'pt' => 'pt-BR',
-                'ru' => 'ru-RU',
-                'sv' => 'sv-SE',
-                'zh' => 'zh-CN',
-            ];
-
-            if (array_key_exists($languageId, $d3LanguageIds)) {
-                $d3Language = $d3LanguageIds[$languageId];
-            } else {
-                $d3Language = 'en-US';
-            }
-        }
-
-        // Retrieve locale files
-        $libPath = Craft::getAlias('@lib');
-        $formatLocalePath = $libPath."/d3-format/{$d3Language}.json";
-        $timeFormatLocalePath = $libPath."/d3-time-format/{$d3Language}.json";
-
         // Add locale definition JS variables
-        $js = 'window.d3FormatLocaleDefinition = '.file_get_contents($formatLocalePath).';';
-        $js .= 'window.d3TimeFormatLocaleDefinition = '.file_get_contents($timeFormatLocalePath).';';
+        $libPath = Craft::getAlias('@lib');
+        $js = 'window.d3FormatLocaleDefinition = '.$this->formatDef($libPath.'/d3-format').';';
+        $js .= 'window.d3TimeFormatLocaleDefinition = '.$this->formatDef($libPath.'/d3-time-format').';';
         $js .= 'window.d3Formats = '.Json::encode(ChartHelper::formats()).';';
 
         $view->registerJs($js, View::POS_BEGIN);
+    }
+
+    /**
+     * Returns the closest-matching D3 format definition for the current language.
+     *
+     * @param string $dir the path to the directory containing the format files
+     * @return string the JSON-encoded format definition
+     */
+    public function formatDef(string $dir): string
+    {
+        if (($def = $this->_def($dir, Craft::$app->language)) !== null) {
+            return $def;
+        }
+
+        // Find the first file in the directory that starts with the language ID
+        $language = Craft::$app->getLocale()->getLanguageID();
+        $handle = opendir($dir);
+        while (($file = readdir($handle)) !== false) {
+            if (strncmp($file, $language, 2) === 0) {
+                closedir($handle);
+                return $this->_def($dir, pathinfo($file, PATHINFO_FILENAME));
+            }
+        }
+        closedir($handle);
+
+        return $this->_def($dir, 'en-US') ?? '{}';
+    }
+
+    /**
+     * Returns a D3 format definition if it exists.
+     *
+     * @param string $dir
+     * @param string $file
+     * @return string|null
+     */
+    private function _def(string $dir, string $file)
+    {
+        $path = $dir.DIRECTORY_SEPARATOR.$file.'.json';
+        return file_exists($path) ? file_get_contents($path) : null;
     }
 }

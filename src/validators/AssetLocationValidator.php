@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -19,7 +19,7 @@ use yii\validators\Validator;
  * Class AssetLocationValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetLocationValidator extends Validator
 {
@@ -149,13 +149,11 @@ class AssetLocationValidator extends Validator
     /**
      * Adds a location error to the model.
      *
-     * @param Model  $model
+     * @param Model $model
      * @param string $attribute
      * @param string $errorCode
      * @param string $message
-     * @param array  $params
-     *
-     * @return void
+     * @param array $params
      */
     public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = [])
     {

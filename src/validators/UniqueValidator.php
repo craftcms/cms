@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -16,7 +16,7 @@ use yii\validators\UniqueValidator as YiiUniqueValidator;
  * Class UniqueValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UniqueValidator extends YiiUniqueValidator
 {
@@ -24,10 +24,13 @@ class UniqueValidator extends YiiUniqueValidator
     // =========================================================================
 
     /**
-     * @var string|string[] If [[targetClass]] is set, this defines the model attributes that represent the record's primary key(s).
-     *                      Can be set to a string or array of strings of model attributes in the same respective order as the primary keys defined by the record's primaryKey() method,
-     *                      or can be set to an array of attribute/PK pairs, which explicitly maps model attributes to record primary keys.
-     *                      Defaults to whatever the record's primaryKey() method returns.
+     * @var string|string[] If [[targetClass]] is set, this defines the model
+     * attributes that represent the record's primary key(s). Can be set to a
+     * string or array of strings of model attributes in the same respective
+     * order as the primary keys defined by the record's primaryKey() method, or
+     * can be set to an array of attribute/PK pairs, which explicitly maps model
+     * attributes to record primary keys. Defaults to whatever the record's
+     * primaryKey() method returns.
      */
     public $pk;
 

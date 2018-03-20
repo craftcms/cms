@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\sites;
@@ -27,7 +27,7 @@ class SitesAsset extends AssetBundle
         ];
 
         $this->js = [
-            'SiteAdminTable'.$this->dotJs(),
+            'sites'.$this->dotJs(),
         ];
 
         parent::init();

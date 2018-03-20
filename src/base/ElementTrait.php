@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -13,7 +13,7 @@ use DateTime;
  * ElementTrait implements the common methods and properties for element classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 trait ElementTrait
 {
@@ -24,6 +24,11 @@ trait ElementTrait
      * @var int|null The element’s ID
      */
     public $id;
+
+    /**
+     * @var string|null The element’s temporary ID (only used if the element's URI format contains {id})
+     */
+    public $tempId;
 
     /**
      * @var string|null The element’s UID

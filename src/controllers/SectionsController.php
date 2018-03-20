@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -22,11 +22,10 @@ use yii\web\Response;
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as
  * displaying, saving, deleting and reordering them in the control panel.
- *
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SectionsController extends Controller
 {
@@ -46,7 +45,6 @@ class SectionsController extends Controller
      * Sections index.
      *
      * @param array $variables
-     *
      * @return Response The rendering result
      */
     public function actionIndex(array $variables = []): Response
@@ -59,9 +57,8 @@ class SectionsController extends Controller
     /**
      * Edit a section.
      *
-     * @param int|null     $sectionId The section’s id, if any.
-     * @param Section|null $section   The section being edited, if there were any validation errors.
-     *
+     * @param int|null $sectionId The section’s id, if any.
+     * @param Section|null $section The section being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
@@ -106,10 +103,6 @@ class SectionsController extends Controller
             $typeOptions[$type] = Craft::t('app', ucfirst($type));
         }
 
-        if (empty($typeOptions)) {
-            throw new BadRequestHttpException('Craft Client or Pro Edition is required to create any additional sections');
-        }
-
         if (!$section->type) {
             $section->type = Section::TYPE_CHANNEL;
         }
@@ -151,6 +144,7 @@ class SectionsController extends Controller
         $section->handle = $request->getBodyParam('handle');
         $section->type = $request->getBodyParam('type');
         $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
+        $section->propagateEntries = $request->getBodyParam('propagateEntries', true);
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $request->getBodyParam('maxLevels');
@@ -233,7 +227,6 @@ class SectionsController extends Controller
      * Entry types index
      *
      * @param int $sectionId The ID of the section whose entry types we’re listing
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
      */
@@ -274,10 +267,9 @@ class SectionsController extends Controller
     /**
      * Edit an entry type
      *
-     * @param int            $sectionId   The section’s ID.
-     * @param int|null       $entryTypeId The entry type’s ID, if any.
-     * @param EntryType|null $entryType   The entry type being edited, if there were any validation errors.
-     *
+     * @param int $sectionId The section’s ID.
+     * @param int|null $entryTypeId The entry type’s ID, if any.
+     * @param EntryType|null $entryType The entry type being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested section/entry type cannot be found
      * @throws BadRequestHttpException if the requested entry type does not belong to the requested section

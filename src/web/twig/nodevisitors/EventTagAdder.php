@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodevisitors;
@@ -13,7 +13,7 @@ use Craft;
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()` event tags to templates as they’re being compiled.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EventTagAdder extends BaseEventTagVisitor
 {
@@ -69,9 +69,8 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * Processes a text node.
      *
-     * @param \Twig_Node_Text   $node
+     * @param \Twig_Node_Text $node
      * @param \Twig_Environment $env
-     *
      * @return \Twig_Node
      */
     private function _processTextNode(\Twig_Node_Text $node, \Twig_Environment $env): \Twig_Node
@@ -97,10 +96,10 @@ class EventTagAdder extends BaseEventTagVisitor
                         $beginBodyPos = $matches[0][1] + strlen($matches[0][0]);
 
                         return $this->_insertEventNode($node, $env, $beginBodyPos, 'beginBody');
-                    } else {
-                        // Will have to wait for the next text node
-                        $this->_findingBeginBody = true;
                     }
+
+// Will have to wait for the next text node
+                    $this->_findingBeginBody = true;
                 }
             } else {
                 // Did we just find the `>`?
@@ -128,11 +127,10 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * Inserts a new event function node at a specific point in a given text node’s data.
      *
-     * @param \Twig_Node_Text   $node
+     * @param \Twig_Node_Text $node
      * @param \Twig_Environment $env
-     * @param int               $pos
-     * @param string            $functionName
-     *
+     * @param int $pos
+     * @param string $functionName
      * @return \Twig_Node
      */
     private function _insertEventNode(\Twig_Node_Text $node, \Twig_Environment $env, int $pos, string $functionName): \Twig_Node

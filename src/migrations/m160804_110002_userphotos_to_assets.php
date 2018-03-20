@@ -6,12 +6,12 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\volumes\Local;
 use yii\base\Exception;
 
@@ -52,7 +52,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
-        $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
+        $this->addColumn('{{%users}}', 'photoId', $this->integer()->after('username')->null());
         $this->addForeignKey(null, '{{%users}}', ['photoId'], '{{%assets}}', ['id'], 'SET NULL', null);
 
         echo "    > Setting the photoId value\n";
@@ -164,7 +164,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->where(['handle' => $handle])
             ->one($this->db);
 
-        while (!empty($existingVolume)) {
+        while ($existingVolume !== null) {
             $handle = 'userPhotos'.++$counter;
             $name = 'User Photos '.$counter;
             $existingVolume = (new Query())
@@ -189,7 +189,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'handle' => $handle,
             'hasUrls' => false,
             'url' => null,
-            'settings' => Json::encode(['path' => $this->_basePath]),
+            'settings' => Json::encode(['path' => '@storage/userphotos']),
             'fieldLayoutId' => null,
             'sortOrder' => $maxSortOrder + 1
         ];
@@ -218,8 +218,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set the photo volume setting for users.
      *
      * @param int $volumeId
-     *
-     * @return void
      */
     private function _setUserphotoVolume(int $volumeId)
     {
@@ -233,9 +231,8 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Convert matching user photos to Assets in a Volume and add that information
      * to the array passed in.
      *
-     * @param int   $volumeId
+     * @param int $volumeId
      * @param array $userList
-     *
      * @return array $userList
      */
     private function _convertPhotosToAssets(int $volumeId, array $userList): array
@@ -269,7 +266,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'assets.folderId' => $folderId,
                     'filename' => $user['photo']
                 ])
-                ->one($this->db);
+                ->exists($this->db);
 
             if (!$assetExists && is_file($filePath)) {
                 $elementData = [
@@ -298,7 +295,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => StringHelper::toTitleCase(pathinfo($user['photo'], PATHINFO_FILENAME))
+                        'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
                         ->insert('{{%content}}', $contentData)
@@ -311,7 +308,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'volumeId' => $volumeId,
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
-                    'kind' => 'image',
+                    'kind' => Asset::KIND_IMAGE,
                     'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
@@ -332,8 +329,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set photo ID values for the user array passed in.
      *
      * @param array $userlist userId => assetId
-     *
-     * @return void
      */
     private function _setPhotoIdValues(array $userlist)
     {

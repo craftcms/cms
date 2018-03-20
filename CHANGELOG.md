@@ -1,17 +1,190 @@
-Craft CMS Changelog
-===================
+# Craft CMS Changelog
 
-## 2.6.2995 (WIP)
+## Unreleased
+
+## 2.6.3012 - 2018-02-27
+
+### Changed
+- Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
+- Improved styles to support 5 levels of nested user permissions. ([#2467](https://github.com/craftcms/cms/issues/2467))
+
+### Fixed
+- Fixed a bug where entry version data was not including newly-created Matrix block IDs, so they would be re-created from scratch when loading the version. ([#2498](https://github.com/craftcms/cms/issues/2498))
+- Fixed an error that could occur if an email template included any Twig filters with a single underscore.
+- Fixed a bug where lightswitch inputs could trigger a `change` event when they didn’t actually change. ([#2494](https://github.com/craftcms/cms/issues/2494))
+
+## 2.6.3011 - 2018-02-21
+
+### Changed
+- Reverted the fix to ([#2433](https://github.com/craftcms/cms/issues/2433)) as it broke backwards compatibility.
+
+### Fixed
+- Fixed an error that occurred when displaying run charts in some cases.
+
+## 2.6.3010 - 2018-02-20
+
+### Changed
+- The Control Panel now sets the `origin-when-cross-origin` referrer policy. ([#2436](https://github.com/craftcms/cms/pull/2436))
+- Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
+
+### Fixed
+- Fixed a bug where run charts (e.g. the New Users widget) would always show zero results if MySQL wasn’t configured with time zone data. ([#2433](https://github.com/craftcms/cms/issues/2433))
+- Fixed a bug where the New Users widget would show 8 days worth of data when its Date Range setting was set to “Last 7 days” or “Last week”.
+- Fixed a bug where the New Users widget could be missing some data if the browser time zone wasn’t the same as the system time zone.
+
+## 2.6.3009 - 2018-02-13
 
 ### Added
+- Added `StringHelper::encenc()` and `decdec()`.
+- Added the `|encenc` Twig filter.
+
+### Changed
+- The first column on user index tables is now labeled “User”, and there are now always dedicated “Username” and “Email” columns available. ([#2417](https://github.com/craftcms/cms/issues/2417))
+
+### Fixed
+- Fixed a bug where Craft would not save newly-assigned license keys if a `craft/config/license.key` file existed, even if it didn’t contain a valid license key.
+- Fixed a bug where the “Save” button wasn’t visible on custom field layout tabs on Edit User pages.
+- Fixed a bug where Craft would issue unsaved data warnings when leaving edit pages, if the form data had been modified from the `jQuery(document).ready()` event. ([#2428](https://github.com/craftcms/cms/issues/2428))
+
+### Security
+- Email passwords are now encrypted in email settings forms.
+
+## 2.6.3008 - 2018-02-06
+
+### Changed
+- The Edit User page now shows the Permissions tab for users that have the “Assign user groups” permission, even if they don’t have the “Assign user permissions” permission.
+- Users with the “Assign user groups” permission no longer need explicit permission to assign a user group, if they already belong to it. ([#2087](https://github.com/craftcms/cms/issues/2087))
+- Matrix blocks’ “Delete” option is now listed before all of the “New [Block Type] above” options. ([#2400](https://github.com/craftcms/cms/issues/2400))
+
+## 2.6.3007 - 2018-01-31
+
+### Fixed
+- Fixed some jQuery deprecation errors in the Control Panel.
+- Fixed a bug where Control Panel panes with sidebars weren’t expanding to the height of their content. ([#2379](https://github.com/craftcms/cms/issues/2379))
+
+## 2.6.3006 - 2018-01-30
+
+### Changed
+- Updated jQuery to 3.3.1 and added the [jQuery Migrate](https://github.com/jquery/jquery-migrate) plugin to maintain backwards compatibility with jQuery 2.
+- Tab and field names in Field Layout Designers are no longer displayed in all-uppercase. ([#2360](https://github.com/craftcms/cms/issues/2360))
+- Fields in Field Layout Designers now have tool tips that reveal their handles. ([#2360](https://github.com/craftcms/cms/issues/2360))
+- Asset thumbnails can now only be generated on Control Panel requests by logged-in users.
+- The Control Panel now prevents referrer information from being sent when following links, on [supporting browsers](https://caniuse.com/#search=referrer).
+- Links within the Control Panel that point to a different hostname now open in a new window. ([#1206](https://github.com/craftcms/cms/issues/1206))
+
+### Fixed
+- Fixed a bug where Tags fields weren’t getting any spacing between their field labels and inputs. ([#2361](https://github.com/craftcms/cms/issues/2361))
+- Fixed a bug where Tags fields were encoding special characters on tag creation, and double/triple-encoding tag names in the UI. ([#2369](https://github.com/craftcms/cms/issues/2369))
+- Fixed a bug where Craft might not delete elements for locales that they no longer support if Dev Mode is enabled.
+
+## 2.6.3005 - 2018-01-23
+
+### Changed
+- Users’ field layouts can now have multiple tabs. ([#892](https://github.com/craftcms/cms/issues/892))
+- Assets fields now fail validation if a file was not uploaded successfully.
+
+### Fixed
+- Fixed a bug where replacing an Asset file would not delete the existing file in some cases.
+
+## 2.6.3004 - 2018-01-16
+
+### Added
+- Added the [onBeforeAuthenticate](https://craftcms.com/docs/plugins/events-reference#userSession-onBeforeAuthenticate) event. ([#1161](https://github.com/craftcms/cms/issues/1161))
+- Added support for most Emoji characters in Plain Text fields, for servers running PHP 5.4 or later. ([#1753](https://github.com/craftcms/cms/issues/1753))
+- Added LitEmoji 1.3.
+
+### Changed
+- Redactor’s toolbar is not fixed anymore. ([#1745](https://github.com/craftcms/cms/issues/1745))
+
+## 2.6.3003 - 2018-01-09
+
+### Fixed
+- Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable. ([#2245](https://github.com/craftcms/cms/issues/2245))
+- Fixed a bug where the Settings → Users → Fields page wasn’t warning users when leaving the page with unsaved changes. ([#2265](https://github.com/craftcms/cms/issues/2265))
+- Fixed a bug where Dropdown and Radio Buttons fields were displaying their selected option’s value, rather than label, in element index tables. ([#2282](https://github.com/craftcms/cms/issues/2282))
+- Fixed `attribute:*` and `-attribute:*` search queries when the default `subRight` search term option was enabled. ([#2270](https://github.com/craftcms/cms/issues/2270))
+- Fixed a bug where native `<select>` menu options weren’t getting white backgrounds in Firefox or Internet Explorer on Windows 7 when using a Classic theme with a custom window color. ([#2272](https://github.com/craftcms/cms/issues/2272))
+
+## 2.6.3002 - 2018-01-02
+
+### Fixed
+- Fixed a bug where password reset URL prompts were showing the macOS keyboard shortcut on Windows computers. ([#2258](https://github.com/craftcms/cms/issues/2258))
+- Fixed an error that broke Edit Entry HUDs.
+
+## 2.6.3001 - 2018-01-02
+
+### Changed
+- URL patterns defined in `craft/config/routes.php` can now begin with a verb (e.g. `POST some/path`) to restrict the route to a specific request type.
+- Edit Entry pages for entries without a user-defined title now show the Title field anyway if it has any validation errors. ([#2242](https://github.com/craftcms/cms/issues/2242))
+- Updated Twig to 1.35.0.
+- Updated SimplePie to 1.5.1.
+- Updated PEL to 0.9.6.
+- Updated svg-sanitize to 0.8.2.
+
+### Fixed
+- Fixed a bug where a PHP error could occur when accessing Category elements through a console command.
+- Fixed a bug where some `IOHelper` methods could create a folder with zero permission under specific circumstances.
+- Fixed some unexpected behavior when deleting a Matrix block for a field that had recently been made translatable, if the owner element hadn’t been resaved yet. ([#2245](https://github.com/craftcms/cms/issues/2245))
+
+### Security
+- Fixed a Remote Code Execution vulnerability for people that have permissions to upload Assets in the Control Panel.
+- Fixed a vulnerability where image cleansing was not working for uploaded JPG files under specific conditions.
+
+## 2.6.3000 - 2017-12-07
+
+### Changed
+- `Craft.MatrixInput` JavaScript objects are now accessible via `$('.matrix').data('matrix')`. ([#2156](https://github.com/craftcms/cms/issues/2156))
+
+### Fixed
+- Fixed a race condition that could cause a PHP error when quickly saving multiple tasks.
+- Fixed a bug where `ArrayHelper::stringToArray('0')` would return an empty array instead of `array('0')`. ([#2144](https://github.com/craftcms/cms/issues/2144))
+- Improved the performance of some queries to the `templatecaches` tables.
+
+### Security
+- Fixed a vulnerability that made it possible to access sensitive files.
+
+## 2.6.2999 - 2017-11-29
+
+### Fixed
+- Fixed PHP 5.3 compatibility.
+
+## 2.6.2998 - 2017-11-28
+
+### Changed
+- `<select>` inputs in the Control Panel now get the same custom styling in Firefox and IE/Edge that Chrome and Safari get.
+- Updated PhpMailer to 5.2.26.
+- Improved the performance of some queries to the `templatecaches` tables when the `globally` cache tag parameter was used with large amounts of data. ([#2110](https://github.com/craftcms/cms/issues/2110))
+- Plugin settings values are now run through `ModelHelper::packageAttributeValue()` before getting saved, so things like `DateTime` objects get converted to JSON-safe values before getting JSON-encoded. ([#2114](https://github.com/craftcms/cms/issues/2114))
+
+### Fixed
+- Fixed a bug where Craft would think that Rich Text field values had changed, even when they hadn’t, when leaving an edit page. ([#2098](https://github.com/craftcms/cms/issues/2098))
+- Fixed a bug where Assets fields with large thumbnails were overlapping the following field in element editor HUDs. ([#1802](https://github.com/craftcms/cms/issues/1802))
+- Fixed a bug where uppercase non-ASCII characters were not getting converted to their correct ASCII equivalents for element slugs, if the `limitAutoSlugsToAscii` config setting was enabled. ([#2096](https://github.com/craftcms/cms/issues/2096))
+- Fixed a bug where Craft would re-install updates after reverting them.
+
+### Security
+- Fixed an XSS vulnerability in the Control Panel.
+
+## 2.6.2997 - 2017-11-08
+
+### Fixed
+- Fixed a bug where Craft was saving entries when attempting to switch the entry type.
+
+## 2.6.2996 - 2017-11-08
+
+### Added
+- Added `UserGroupsService::getAssignableGroups()`.
 - Added `UserPermissionsService::getAssignablePermissions()`.
 
 ### Changed
-- Users are no longer allowed to grant new permissions to user accounts that they don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
+- The “Assign user groups and permissions” permission has now been split into “Assign user permissions” and “Assign user groups”, and the latter now has nested permissions for each of the user groups. ([#2087](https://github.com/craftcms/cms/issues/2087))
+- Users with the “Assign user permissions” permission are no longer allowed to grant new permissions to user accounts that they themselves don’t already have. ([#915](https://github.com/craftcms/cms/issues/915))
+- If a user is not yet activated, but they have a password set on the account, then admins will no longer see the “Copy Activation URL” user administration option.
 
 ### Fixed
 - Fixed a bug where `DateTimeHelper::wasYesterday()` was returning whether the timestamp was yesterday _in UTC_ rather than in the system time zone. ([#2086](https://github.com/craftcms/cms/issues/2086))
 - Fixed a bug where the autocomplete menu in Tags fields would sometimes not go away.
+- Fixed a bug where Craft would mistake `users/sendPasswordResetEmail` requests for `users/login` requests, if the Forgot Password form was submitted from the same path as the `loginPath` config setting.
 
 ## 2.6.2994 - 2017-10-31
 
@@ -42,6 +215,7 @@ Craft CMS Changelog
 - Fixed a PHP error that occurred if an empty array was passed to the `relatedTo` element criteria parameter.
 - Fixed a PHP error that occurred when uploading a file to an Assets field on the front-end. ([#2018](https://github.com/craftcms/cms/issues/2018))
 - Fixed a bug where `HttpRequestService::getQueryStringWithoutPath()` wasn’t including duplicate param names in the returned string. ([#2041](https://github.com/craftcms/cms/issues/2041))
+- Fixed a bug where Categories fields weren’t automatically adding all of a category’s ancestors when selecting a nested category, if any of its ancestors were disabled. ([#2035](https://github.com/craftcms/cms/issues/2035))
 
 ## 2.6.2992 - 2017-10-13
 

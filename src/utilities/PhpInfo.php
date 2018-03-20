@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\utilities;
@@ -14,7 +14,7 @@ use craft\base\Utility;
  * PhpInfo represents a PhpInfo dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PhpInfo extends Utility
 {
@@ -102,7 +102,9 @@ class PhpInfo extends Utility
                 foreach ($matches as $row) {
                     if (!isset($row[2])) {
                         continue;
-                    } else if (!isset($row[3]) || $row[2] === $row[3]) {
+                    }
+
+                    if (!isset($row[3]) || $row[2] === $row[3]) {
                         $value = $row[2];
                     } else {
                         $value = array_slice($row, 2);

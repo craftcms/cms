@@ -3,11 +3,11 @@
 namespace craft\volumes;
 
 use Craft;
+use craft\base\FlysystemVolume;
 use craft\base\LocalVolumeInterface;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\base\FlysystemVolume;
 use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
@@ -17,12 +17,12 @@ use League\Flysystem\FileNotFoundException;
  * The local volume class. Handles the implementation of the local filesystem as a volume in
  * Craft.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://craftcms.com/license Craft License Agreement
- * @see        http://craftcms.com
- * @package    craft.app.volumes
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license http://craftcms.com/license Craft License Agreement
+ * @see http://craftcms.com
+ * @package craft.app.volumes
+ * @since 3.0
  */
 class Local extends FlysystemVolume implements LocalVolumeInterface
 {
@@ -58,7 +58,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         parent::init();
 
         if ($this->path !== null) {
-            $this->path = FileHelper::normalizePath($this->path);
+            $this->path = str_replace('\\', '/', $this->path);
         }
     }
 
@@ -89,15 +89,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return $this->path;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl()
-    {
-        return rtrim($this->url, '/').'/';
+        return FileHelper::normalizePath(Craft::getAlias($this->path));
     }
 
     /**
@@ -124,7 +116,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
 
     /**
      * @inheritdoc
-     *
      * @return LocalAdapter
      */
     protected function createAdapter(): LocalAdapter

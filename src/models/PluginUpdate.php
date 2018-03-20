@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -14,7 +14,7 @@ use craft\validators\DateTimeValidator;
  * Stores the available plugin update info.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginUpdate extends Model
 {
@@ -105,7 +105,6 @@ class PluginUpdate extends Model
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'latestDate';
-
         return $attributes;
     }
 

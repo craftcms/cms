@@ -77,7 +77,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
                     this.updateSizeAndPosition();
 
                     if (!this.$deleteActionRadios.first().prop('checked')) {
-                        this.$deleteActionRadios.first().click();
+                        this.$deleteActionRadios.first().trigger('click');
                     }
                     else {
                         this.validateDeleteInputs();
@@ -137,7 +137,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         onFadeIn: function() {
             // Auto-focus the first radio
             if (!Garnish.isMobileBrowser(true)) {
-                this.$deleteActionRadios.first().focus();
+                this.$deleteActionRadios.first().trigger('focus');
             }
 
             this.base();

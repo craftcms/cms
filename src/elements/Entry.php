@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -32,8 +32,11 @@ use yii\base\InvalidConfigException;
 /**
  * Entry represents an entry element.
  *
+ * @property User|null $author the entry's author
+ * @property Section $section the entry's section
+ * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Entry extends Element
 {
@@ -118,7 +121,6 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     *
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -187,9 +189,11 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:'.$section->id,
                         'label' => Craft::t('site', $section->name),
+                        'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
                             'handle' => $section->handle
@@ -286,7 +290,7 @@ class Entry extends Element
                 // They are viewing a specific section. See if it has URLs for the requested site
                 $controller = Craft::$app->controller;
                 if ($controller instanceof ElementIndexesController) {
-                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
                     if (isset($sections[0]->siteSettings[$siteId]) && $sections[0]->siteSettings[$siteId]->hasUrls) {
                         $showViewAction = true;
                     }
@@ -503,13 +507,13 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function init()
+    public function extraFields()
     {
-        parent::init();
-
-        if ($this->authorId === null) {
-            $this->authorId = Craft::$app->getUser()->getId();
-        }
+        $names = parent::extraFields();
+        $names[] = 'author';
+        $names[] = 'section';
+        $names[] = 'type';
+        return $names;
     }
 
     /**
@@ -517,11 +521,10 @@ class Entry extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'postDate';
-        $names[] = 'expiryDate';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'postDate';
+        $attributes[] = 'expiryDate';
+        return $attributes;
     }
 
     /**
@@ -532,7 +535,9 @@ class Entry extends Element
         $labels = parent::attributeLabels();
 
         // Use the entry type's title label
-        $labels['title'] = $this->getType()->titleLabel;
+        if ($titleLabel = $this->getType()->titleLabel) {
+            $labels['title'] = Craft::t('site', $titleLabel);
+        }
 
         return $labels;
     }
@@ -546,6 +551,10 @@ class Entry extends Element
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
+        if ($this->getSection()->type !== Section::TYPE_SINGLE) {
+            $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
+        }
+
         return $rules;
     }
 
@@ -554,13 +563,16 @@ class Entry extends Element
      */
     public function getSupportedSites(): array
     {
+        $section = $this->getSection();
         $sites = [];
 
-        foreach ($this->getSection()->getSiteSettings() as $siteSettings) {
-            $sites[] = [
-                'siteId' => $siteSettings->siteId,
-                'enabledByDefault' => $siteSettings->enabledByDefault
-            ];
+        foreach ($section->getSiteSettings() as $siteSettings) {
+            if ($section->propagateEntries || $siteSettings->siteId == $this->siteId) {
+                $sites[] = [
+                    'siteId' => $siteSettings->siteId,
+                    'enabledByDefault' => $siteSettings->enabledByDefault
+                ];
+            }
         }
 
         return $sites;
@@ -575,7 +587,7 @@ class Entry extends Element
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Entry\'s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
@@ -587,12 +599,12 @@ class Entry extends Element
     protected function route()
     {
         // Make sure that the entry is actually live
-        if ($this->getStatus() != Entry::STATUS_LIVE) {
+        if ($this->getStatus() != self::STATUS_LIVE) {
             return null;
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
@@ -620,6 +632,14 @@ class Entry extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+    }
+
+    /**
      * Returns the entry's section.
      *
      * @return Section
@@ -639,7 +659,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the type of entry.
+     * Returns the entry type.
      *
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
@@ -742,7 +762,7 @@ class Entry extends Element
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $url = UrlHelper::cpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $url .= '/'.$this->getSite()->handle;
         }
 
@@ -783,9 +803,7 @@ class Entry extends Element
                 return Craft::t('site', $this->getType()->name);
         }
 
-        $r = parent::tableAttributeHtml($attribute);
-
-        return $r;
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**
@@ -844,8 +862,7 @@ EOD;
             ]);
         }
 
-        // Set the field layout ID and render the custom fields
-        $this->fieldLayoutId = $entryType->fieldLayoutId;
+        // Render the custom fields
         $html .= parent::getEditorHtml();
 
         return $html;
@@ -853,6 +870,18 @@ EOD;
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
+            $this->authorId = Craft::$app->getUser()->getId();
+        }
+
+        return parent::beforeValidate();
+    }
 
     /**
      * @inheritdoc
@@ -871,7 +900,7 @@ EOD;
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId !== null) {
+            if ($this->newParentId) {
                 $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
 
                 if (!$parentEntry) {
@@ -888,7 +917,9 @@ EOD;
         if ($section->type == Section::TYPE_SINGLE) {
             $this->authorId = null;
             $this->expiryDate = null;
-        } else if (!$entryType->hasTitleField) {
+        }
+
+        if (!$entryType->hasTitleField) {
             // Set the dynamic title
             $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
@@ -897,9 +928,6 @@ EOD;
             // Default the post date to the current date/time
             $this->postDate = DateTimeHelper::currentUTCDateTime();
         }
-
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $entryType->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }
@@ -934,7 +962,7 @@ EOD;
         if ($section->type == Section::TYPE_STRUCTURE) {
             // Has the parent changed?
             if ($this->_hasNewParent()) {
-                if ($this->newParentId === null) {
+                if (!$this->newParentId) {
                     Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
                 } else {
                     Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
@@ -1006,17 +1034,17 @@ EOD;
         }
 
         // Is it set to the top level now, but it hadn't been before?
-        if ($this->newParentId === '' && $this->level != 1) {
+        if (!$this->newParentId && $this->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId !== '' && $this->level == 1) {
+        if ($this->newParentId && $this->level == 1) {
             return true;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentQuery = Entry::find();
+        $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->status(null);

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -14,11 +14,10 @@ use yii\base\Exception;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
- *
- * An instance of the Path service is globally accessible in Craft via [[Application::path `Craft::$app->getPath()`]].
+ * An instance of the Path service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPath()|<code>Craft::$app->path</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Path extends Component
 {
@@ -138,7 +137,10 @@ class Path extends Component
         $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
 
         if (!is_file($gitignorePath)) {
-            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n");
+            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
+                // Prevent a segfault if this is called recursively
+                'lock' => false,
+            ]);
         }
 
         return $path;
@@ -373,7 +375,6 @@ class Path extends Component
 
     /**
      * Returns the path to the file cache directory.
-     *
      * This will be located at `storage/runtime/cache/` by default, but that can be overridden with the 'cachePath'
      * config setting in `config/filecache.php`.
      *

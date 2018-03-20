@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -15,7 +15,7 @@ use yii\i18n\MissingTranslationEvent;
  * Class Localization
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Localization
 {
@@ -31,14 +31,27 @@ class Localization
     // =========================================================================
 
     /**
-     * Normalizes a user-submitted number for use in code and/or to be saved into the database.
+     * Normalizes a language into the correct format (e.g. `en-US`).
      *
+     * @param string $language
+     * @return string
+     */
+    public static function normalizeLanguage(string $language): string
+    {
+        $language = strtolower(str_replace('_', '-', $language));
+        if (($pos = strpos($language, '-')) !== false) {
+            $language = substr($language, 0, $pos).'-'.strtoupper(substr($language, $pos + 1));
+        }
+        return $language;
+    }
+
+    /**
+     * Normalizes a user-submitted number for use in code and/or to be saved into the database.
      * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
      * locale uses something else.
      *
      * @param mixed $number The number that should be normalized.
      * @param string|null $localeId The locale ID that the number is set in
-     *
      * @return mixed The normalized number.
      */
     public static function normalizeNumber($number, string $localeId = null)
@@ -64,7 +77,6 @@ class Localization
      * Returns fallback data for a locale if the Intl extension isn't loaded.
      *
      * @param string $localeId
-     *
      * @return array|null
      */
     public static function localeData(string $localeId)
@@ -94,8 +106,6 @@ class Localization
      * Looks for a missing translation string in Yii's core translations.
      *
      * @param MissingTranslationEvent $event
-     *
-     * @return void
      */
     public static function findMissingTranslation(MissingTranslationEvent $event)
     {

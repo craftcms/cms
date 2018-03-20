@@ -8,8 +8,17 @@
 {% block content %}
     <input type="hidden" name="action" value="sites/save-site">
     {{ redirectInput('settings/sites') }}
-
     {% if site.id %}<input type="hidden" name="siteId" value="{{ site.id }}">{% endif %}
+
+    {{ forms.selectField({
+        first: true,
+        label: "Group"|t('app'),
+        instructions: "Which group should this site belong to?"|t('app'),
+        id: 'group',
+        name: 'group',
+        options: groupOptions,
+        value: groupId
+    }) }}
 
     <div id="categorygroup-settings">
         {{ forms.textField({
@@ -54,6 +63,18 @@
             warning: languageWarning ?? null
         }) }}
 
+        {% if craft.app.isMultiSite or not site.id %}
+            {{ forms.lightswitchField({
+                label: "Is this the primary site?"|t('app'),
+                instructions: "The primary site will be loaded by default on the front end."|t('app'),
+                id: 'primary',
+                name: 'primary',
+                on: site.primary
+            }) }}
+        {% else %}
+            <input type="hidden" name="primary" value="1">
+        {% endif %}
+
         <hr>
 
         {{ forms.checkboxField({
@@ -67,7 +88,7 @@
         <div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
             {{ forms.textField({
                 label: "Base URL"|t('app'),
-                instructions: "The base URL for the site"|t('app'),
+                instructions: "The base URL for the site. It can begin with an alias, such as {ex}."|t('app', {ex: '`@web`'}),
                 id: 'base-url',
                 class: 'ltr',
                 name: 'baseUrl',

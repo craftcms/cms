@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -33,9 +33,7 @@ use craft\fields\MissingField;
 use craft\fields\MultiSelect as MultiSelectField;
 use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
-use craft\fields\PositionSelect as PositionSelectField;
 use craft\fields\RadioButtons as RadioButtonsField;
-use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
@@ -56,12 +54,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Fields service.
- *
- * An instance of the Fields service is globally accessible in Craft via [[Application::fields `Craft::$app->getFields()`]].
+ * Fields service.
+ * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|<code>Craft::$app->fields</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Fields extends Component
 {
@@ -231,7 +228,6 @@ class Fields extends Component
      * Returns a field group by its ID.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
     public function getGroupById(int $groupId)
@@ -248,26 +244,21 @@ class Fields extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if (!$result) {
-            return $this->_groupsById[$groupId] = null;
-        }
-
-        return $this->_groupsById[$groupId] = new FieldGroup($result);
+        return $this->_groupsById[$groupId] = $result ? new FieldGroup($result) : null;
     }
 
     /**
      * Saves a field group.
      *
-     * @param FieldGroup $group         The field group to be saved
-     * @param bool       $runValidation Whether the group should be validated
-     *
+     * @param FieldGroup $group The field group to be saved
+     * @param bool $runValidation Whether the group should be validated
      * @return bool Whether the field group was saved successfully
      */
     public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
     {
         $isNewGroup = !$group->id;
 
-        // Fire a 'beforeSaveFieldLayout' event
+        // Fire a 'beforeSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -289,7 +280,7 @@ class Fields extends Component
             $group->id = $groupRecord->id;
         }
 
-        // Fire an 'afterSaveFieldLayout' event
+        // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -304,7 +295,6 @@ class Fields extends Component
      * Deletes a field group by its ID.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return bool Whether the field group was deleted successfully
      */
     public function deleteGroupById(int $groupId): bool
@@ -322,7 +312,6 @@ class Fields extends Component
      * Deletes a field group.
      *
      * @param FieldGroup $group The field group
-     *
      * @return bool Whether the field group was deleted successfully
      */
     public function deleteGroup(FieldGroup $group): bool
@@ -394,9 +383,7 @@ class Fields extends Component
             MultiSelectField::class,
             NumberField::class,
             PlainTextField::class,
-            PositionSelectField::class,
             RadioButtonsField::class,
-            RichTextField::class,
             TableField::class,
             TagsField::class,
             UrlField::class,
@@ -433,9 +420,8 @@ class Fields extends Component
     /**
      * Returns all field types whose column types are considered compatible with a given field.
      *
-     * @param FieldInterface $field          The current field to base compatible fields on
-     * @param bool           $includeCurrent Whether $field's class should be included
-     *
+     * @param FieldInterface $field The current field to base compatible fields on
+     * @param bool $includeCurrent Whether $field's class should be included
      * @return string[] The compatible field type classes
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
@@ -480,7 +466,6 @@ class Fields extends Component
      * Creates a field with a given config.
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
      * @return FieldInterface The field
      */
     public function createField($config): FieldInterface
@@ -507,7 +492,6 @@ class Fields extends Component
      * Returns all fields within a field context(s).
      *
      * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
-     *
      * @return FieldInterface[] The fields
      */
     public function getAllFields($context = null): array
@@ -581,7 +565,6 @@ class Fields extends Component
      * Returns a field by its ID.
      *
      * @param int $fieldId The field’s ID
-     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById(int $fieldId)
@@ -610,7 +593,6 @@ class Fields extends Component
      * Returns a field by its handle.
      *
      * @param string $handle The field’s handle
-     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle(string $handle)
@@ -644,9 +626,8 @@ class Fields extends Component
     /**
      * Returns whether a field exists with a given handle and context.
      *
-     * @param string      $handle  The field handle
+     * @param string $handle The field handle
      * @param string|null $context The field context (defauts to ContentService::$fieldContext)
-     *
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
@@ -675,7 +656,6 @@ class Fields extends Component
      * Returns all the fields in a given group.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByGroupId(int $groupId): array
@@ -697,7 +677,6 @@ class Fields extends Component
      * Returns all of the fields used by a given element type.
      *
      * @param string $elementType
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByElementType(string $elementType): array
@@ -720,9 +699,8 @@ class Fields extends Component
     /**
      * Saves a field.
      *
-     * @param FieldInterface $field         The Field to be saved
-     * @param bool           $runValidation Whether the field should be validated
-     *
+     * @param FieldInterface $field The Field to be saved
+     * @param bool $runValidation Whether the field should be validated
      * @return bool Whether the field was saved successfully
      * @throws \Throwable if reasons
      */
@@ -869,7 +847,6 @@ class Fields extends Component
      * Deletes a field by its ID.
      *
      * @param int $fieldId The field’s ID
-     *
      * @return bool Whether the field was deleted successfully
      */
     public function deleteFieldById(int $fieldId): bool
@@ -887,7 +864,6 @@ class Fields extends Component
      * Deletes a field.
      *
      * @param FieldInterface $field The field
-     *
      * @return bool Whether the field was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -951,7 +927,6 @@ class Fields extends Component
      * Returns a field layout by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId)
@@ -964,18 +939,13 @@ class Fields extends Component
             ->where(['id' => $layoutId])
             ->one();
 
-        if (!$result) {
-            return $this->_layoutsById[$layoutId] = null;
-        }
-
-        return $this->_layoutsById[$layoutId] = new FieldLayout($result);
+        return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
     }
 
     /**
      * Returns a field layout by its associated element type.
      *
      * @param string $type The associated element type
-     *
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
@@ -1004,7 +974,6 @@ class Fields extends Component
      * Returns a layout's tabs by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldLayoutTab[] The field layout’s tabs
      */
     public function getLayoutTabsById(int $layoutId): array
@@ -1021,10 +990,32 @@ class Fields extends Component
     }
 
     /**
+     * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
+     *
+     * @param int[] $layoutIds The field layout IDs
+     * @return array
+     */
+    public function getFieldIdsByLayoutIds(array $layoutIds): array
+    {
+        $results = (new Query())
+            ->select(['flf.layoutId', 'fields.id'])
+            ->from(['{{%fields}} fields'])
+            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
+            ->where(['flf.layoutId' => $layoutIds])
+            ->all();
+
+        $fieldIdsByLayoutId = [];
+        foreach ($results as $result) {
+            $fieldIdsByLayoutId[$result['layoutId']][] = $result['id'];
+        }
+
+        return $fieldIdsByLayoutId;
+    }
+
+    /**
      * Returns the fields in a field layout, identified by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByLayoutId(int $layoutId): array
@@ -1055,7 +1046,6 @@ class Fields extends Component
      * Assembles a field layout from post data.
      *
      * @param string|null $namespace The namespace that the form data was posted in, if any
-     *
      * @return FieldLayout The field layout
      */
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
@@ -1076,8 +1066,7 @@ class Fields extends Component
      * Assembles a field layout.
      *
      * @param array $postedFieldLayout The post data for the field layout
-     * @param array $requiredFields    The field IDs that should be marked as required in the field layout
-     *
+     * @param array $requiredFields The field IDs that should be marked as required in the field layout
      * @return FieldLayout The field layout
      */
     public function assembleLayout(array $postedFieldLayout, array $requiredFields = []): FieldLayout
@@ -1143,9 +1132,8 @@ class Fields extends Component
     /**
      * Saves a field layout.
      *
-     * @param FieldLayout $layout        The field layout
-     * @param bool        $runValidation Whether the layout should be validated
-     *
+     * @param FieldLayout $layout The field layout
+     * @param bool $runValidation Whether the layout should be validated
      * @return bool Whether the field layout was saved successfully
      * @throws Exception if $layout->id is set to an invalid layout ID
      */
@@ -1233,7 +1221,6 @@ class Fields extends Component
      * Deletes a field layout(s) by its ID.
      *
      * @param int|int[] $layoutId The field layout’s ID
-     *
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayoutById($layoutId): bool
@@ -1257,7 +1244,6 @@ class Fields extends Component
      * Deletes a field layout.
      *
      * @param FieldLayout $layout The field layout
-     *
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayout(FieldLayout $layout): bool
@@ -1286,7 +1272,6 @@ class Fields extends Component
      * Deletes field layouts associated with a given element type.
      *
      * @param string $type The element type
-     *
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1403,7 +1388,6 @@ class Fields extends Component
      * Gets a field group record or creates a new one.
      *
      * @param FieldGroup $group
-     *
      * @return FieldGroupRecord
      * @throws FieldGroupNotFoundException if $group->id is invalid
      */
@@ -1426,7 +1410,6 @@ class Fields extends Component
      * Returns a field record for a given model.
      *
      * @param FieldInterface $field
-     *
      * @return FieldRecord
      * @throws FieldNotFoundException if $field->id is invalid
      */

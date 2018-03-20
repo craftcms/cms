@@ -1,0 +1,70 @@
+{% extends "_layouts/cp" %}
+
+{% set title = 'Plugin Store'|t('app') %}
+
+{% do view.registerTranslations('app', [
+	"Active installs",
+	"Active Trials",
+	"Add to cart",
+	"Ascending",
+	"Buy later",
+	"Buy {price}",
+	"Cart",
+	"Categories",
+	"Changelog",
+	"Compatibility",
+	"Contact",
+	"Description",
+	"Descending",
+	"Documentation",
+	"Install",
+	"Installed",
+	"Items in your cart",
+	"Last update",
+	"Last Update",
+	"License",
+	"Loading Plugin Store…",
+	"Name",
+	"Page not found.",
+	"Plugin Name",
+	"Plugin Store",
+	"Popularity",
+	"Price",
+	"Pro Rate Discount",
+	"Process My Order",
+	"Screenshots",
+	"Search plugins",
+	"See all",
+	"Staff Picks",
+	"Subtotal",
+	"The Plugin Store is not available, please try again later.",
+	"Total",
+	"Try",
+	"Version",
+	"Website",
+]) %}
+
+{% block actionButton %}
+	{% if enableCraftId %}
+		<a id="cart-button">Cart (0)</a>
+		{#
+		<a id="payment-button">Payment</a>
+		<a id="reset-cart-button">Reset cart</a>
+		#}
+	{% endif %}
+{% endblock %}
+
+{% set content %}
+
+	<template v-if="pluginStoreDataLoaded && !pluginStoreDataError">
+		<router-view></router-view>
+	</template>
+
+	<template v-else>
+		<div id="graphic" class="spinner big" :class="{ error: pluginStoreDataError }"></div>
+		<div id="status">{{ '{{ statusMessage }}' }}</div>
+	</template>
+
+	<global-modal :show.sync="showModal" :plugin-id="pluginId"></global-modal>
+
+{% endset %}

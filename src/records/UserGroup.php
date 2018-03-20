@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,13 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class UserGroup record.
  *
- * @property int    $id     ID
- * @property string $name   Name
+ * @property int $id ID
+ * @property string $name Name
  * @property string $handle Handle
- * @property User[] $users  Users
- *
+ * @property User[] $users Users
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UserGroup extends ActiveRecord
 {
@@ -28,7 +27,6 @@ class UserGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

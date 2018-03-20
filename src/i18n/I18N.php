@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\i18n;
@@ -14,9 +14,8 @@ use yii\base\Exception;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class I18N extends \yii\i18n\I18N
 {
@@ -71,7 +70,6 @@ class I18N extends \yii\i18n\I18N
      * Returns a locale by its ID.
      *
      * @param string $localeId
-     *
      * @return Locale
      */
     public function getLocaleById(string $localeId): Locale
@@ -81,7 +79,6 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Returns an array of all known locale IDs.
-     *
      * If the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded, then this will be based on
      * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
      * `vendor/craftcms/cms/src/config/locales/` and `config/locales/`.
@@ -160,7 +157,7 @@ class I18N extends \yii\i18n\I18N
             return $this->_appLocales;
         }
 
-        $this->_appLocales = [new Locale('en-US')];
+        $this->_appLocales = [new Locale(Craft::$app->sourceLanguage)];
 
         // Scan the translations/ dir for the others
         $dir = Craft::$app->getPath()->getCpTranslationsPath();
@@ -169,7 +166,7 @@ class I18N extends \yii\i18n\I18N
             throw new Exception("Unable to open directory: $dir");
         }
         while (($subDir = readdir($handle)) !== false) {
-            if ($subDir === '.' || $subDir === '..' || $subDir === 'en-US') {
+            if ($subDir === '.' || $subDir === '..' || $subDir === Craft::$app->sourceLanguage) {
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$subDir;

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -19,7 +19,7 @@ use craft\i18n\Locale;
  * Number represents a Number field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Number extends Field implements PreviewableFieldInterface
 {
@@ -150,7 +150,7 @@ class Number extends Field implements PreviewableFieldInterface
             $value = number_format($value, $decimals, $decimalSeparator, '');
         }
 
-        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">' .
+        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">'.
             Craft::$app->getView()->renderTemplate('_includes/forms/text', [
                 'name' => $this->handle.'[value]',
                 'value' => $value,

@@ -1,15 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
-use yii\base\Exception;
 use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
@@ -18,7 +17,7 @@ use yii\web\HttpException;
  * Class ErrorHandler
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {

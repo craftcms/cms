@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,10 +12,9 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MailerHelper;
-use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
-use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\Info;
 use craft\models\MailSettings;
@@ -29,11 +28,10 @@ use yii\web\Response;
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
  * displaying, saving and testing Craft settings in the control panel.
- *
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemSettingsController extends Controller
 {
@@ -53,7 +51,6 @@ class SystemSettingsController extends Controller
      * Shows the general settings form.
      *
      * @param Info|null $info The info being edited, if there were any validation errors.
-     *
      * @return Response
      */
     public function actionGeneralSettings(Info $info = null): Response
@@ -141,9 +138,8 @@ class SystemSettingsController extends Controller
     /**
      * Renders the email settings page.
      *
-     * @param MailSettings|null              $settings The posted email settings, if there were any validation errors
-     * @param TransportAdapterInterface|null $adapter  The transport adapter, if there were any validation errors
-     *
+     * @param MailSettings|null $settings The posted email settings, if there were any validation errors
+     * @param TransportAdapterInterface|null $adapter The transport adapter, if there were any validation errors
      * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
@@ -157,7 +153,7 @@ class SystemSettingsController extends Controller
             try {
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
             } catch (MissingComponentException $e) {
-                $adapter = new Php();
+                $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType
                 ]));
@@ -233,8 +229,6 @@ class SystemSettingsController extends Controller
 
     /**
      * Tests the email settings.
-     *
-     * @return void
      */
     public function actionTestEmailSettings()
     {
@@ -302,9 +296,8 @@ class SystemSettingsController extends Controller
     /**
      * Global Set edit form.
      *
-     * @param int|null       $globalSetId The global set’s ID, if any.
-     * @param GlobalSet|null $globalSet   The global set being edited, if there were any validation errors.
-     *
+     * @param int|null $globalSetId The global set’s ID, if any.
+     * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */

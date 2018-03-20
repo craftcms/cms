@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\search;
@@ -13,7 +13,7 @@ use craft\helpers\StringHelper;
  * Search Query class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SearchQuery
 {
@@ -42,7 +42,7 @@ class SearchQuery
      * Constructor
      *
      * @param string $query
-     * @param array  $termOptions
+     * @param array $termOptions
      */
     public function __construct(string $query, array $termOptions = [])
     {
@@ -77,8 +77,6 @@ class SearchQuery
 
     /**
      * Parses the query into an array of tokens.
-     *
-     * @return void
      */
     private function _parse()
     {
@@ -147,9 +145,14 @@ class SearchQuery
                 $token = mb_substr($token, 1);
             }
 
-            if ($token && substr($token, -1) === '*') {
-                $term->subRight = true;
-                $token = mb_substr($token, 0, -1);
+            if ($token) {
+                if (substr($token, -1) === '*') {
+                    $term->subRight = true;
+                    $token = mb_substr($token, 0, -1);
+                }
+            } else {
+                // subRight messes `attr:*` queries up
+                $term->subRight = false;
             }
 
             $term->term = $token;

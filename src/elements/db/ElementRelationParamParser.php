@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -21,7 +21,7 @@ use craft\models\Site;
  * Parses a relatedTo param on an ElementQuery.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementRelationParamParser
 {
@@ -62,7 +62,6 @@ class ElementRelationParamParser
      * be applied back on the element query, or `false` if there's an issue.
      *
      * @param mixed $relatedToParam
-     *
      * @return array|false
      */
     public function parse($relatedToParam)
@@ -136,7 +135,6 @@ class ElementRelationParamParser
      * Parses a part of a relatedTo element query param and returns the condition or `false` if there's an issue.
      *
      * @param mixed $relCriteria
-     *
      * @return mixed
      */
     private function _subparse($relCriteria)
@@ -409,9 +407,8 @@ class ElementRelationParamParser
     /**
      * Returns a field model based on its handle or ID.
      *
-     * @param mixed      $field
+     * @param mixed $field
      * @param array|null &$fieldHandleParts
-     *
      * @return FieldInterface|null
      */
     private function _getField($field, array &$fieldHandleParts = null)

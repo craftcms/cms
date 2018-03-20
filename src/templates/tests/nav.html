@@ -1,0 +1,67 @@
+{% extends "_layouts/cp" %}
+
+{% set title = "Nav item tests" %}
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            <li>
+                <a>Plain</a>
+            </li>
+            <li>
+                <a>
+                    <span class="label">Plain with badge</span>
+                    <span class="badge">100</span>
+                </a>
+            </li>
+            <li>
+                <a class="sel">
+                    <span class="label">Plain with badge</span>
+                    <span class="badge">100</span>
+                </a>
+            </li>
+            <li>
+                <a>
+                    <span class="status active"></span>
+                    <span class="label">With Status</span>
+                </a>
+            </li>
+            <li>
+                <a>
+                    <span class="icon"><span data-icon="section"></span></span>
+                    <span class="label">With Font Icon</span>
+                </a>
+            </li>
+            <li>
+                <a>
+                    <span class="icon icon-mask"><span data-icon="section"></span></span>
+                    <span class="label">With Font Icon (masked)</span>
+                </a>
+            </li>
+            <li>
+                <a class="sel">
+                    <span class="icon icon-mask"><span data-icon="section"></span></span>
+                    <span class="label">With Font Icon (masked)</span>
+                </a>
+            </li>
+            <li>
+                <a>
+                    <span class="icon">{{ svg('@app/icons/circle-c.svg') }}</span>
+                    <span class="label">With SVG Icon</span>
+                </a>
+            </li>
+            <li>
+                <a>
+                    <span class="icon icon-mask">{{ svg('@app/icons/circle-c.svg') }}</span>
+                    <span class="label">With SVG Mask (masked)</span>
+                </a>
+            </li>
+            <li>
+                <a class="sel">
+                    <span class="icon icon-mask">{{ svg('@app/icons/circle-c.svg') }}</span>
+                    <span class="label">With SVG Mask (masked)</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}

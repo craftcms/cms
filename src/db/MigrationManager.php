@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db;
@@ -22,7 +22,7 @@ use yii\di\Instance;
  * MigrationManager manages a set of migrations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MigrationManager extends Component
 {
@@ -103,7 +103,6 @@ class MigrationManager extends Component
      * Creates a new migration instance.
      *
      * @param string $name The migration name
-     *
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
@@ -123,10 +122,8 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param int $limit             The number of new migrations to be applied. If 0, it means
-     *                               applying all available new migrations.
-     *
-     * @return void
+     * @param int $limit The number of new migrations to be applied. If 0, it means
+     * applying all available new migrations.
      * @throws MigrationException on migrate failure
      */
     public function up(int $limit = 0)
@@ -177,9 +174,7 @@ class MigrationManager extends Component
      * Downgrades the application by reverting old migrations.
      *
      * @param int $limit The number of migrations to be reverted. Defaults to 1,
-     *                   meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
-     *
-     * @return void
+     * meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      * @throws MigrationException on migrate failure
      */
     public function down(int $limit = 1)
@@ -219,8 +214,6 @@ class MigrationManager extends Component
      * Upgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     *
-     * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -275,8 +268,6 @@ class MigrationManager extends Component
      * Downgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
-     *
-     * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -331,7 +322,6 @@ class MigrationManager extends Component
      * Returns the migration history.
      *
      * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
-     *
      * @return array The migration history
      */
     public function getMigrationHistory(int $limit = 0): array
@@ -387,7 +377,6 @@ class MigrationManager extends Component
      * Returns whether a given migration has been applied.
      *
      * @param string $name The migration name
-     *
      * @return bool Whether the migration has been applied
      */
     public function hasRun(string $name): bool
@@ -422,16 +411,14 @@ class MigrationManager extends Component
             $path = $this->migrationPath.DIRECTORY_SEPARATOR.$file;
 
             if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
-                // Index as the key instead of value to work around a PHP bug where readdir() is returning the same file twice
-                // at least on my machine (7.1.3-3+deb.sury.org~xenial+1). Because PHP.
-                $migrations[$matches[1]] = true;
+                $migrations[] = $matches[1];
             }
         }
 
         closedir($handle);
-        ksort($migrations);
+        sort($migrations);
 
-        return array_keys($migrations);
+        return $migrations;
     }
 
     // Private Methods
@@ -441,7 +428,6 @@ class MigrationManager extends Component
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     *
      * @return array
      */
     private function _normalizeMigration($migration): array

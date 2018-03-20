@@ -1,14 +1,17 @@
-{% set id = id ~ '-date' -%}
-{% set name = name is defined ? name -%}
-{% set value = value is defined ? value -%}
+{% set id = (id ?? 'date'~random())~'-date' -%}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
 
-<div class="datewrapper">
+<div class="datewrapper"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- include "_includes/forms/text" with {
         name: (name ? name~'[date]'),
         autocomplete: false,
         size: 10,
+        placeholder: ' ',
         value: (value ? value|date('short') : '')
     } -%}
+    <div data-icon="date"></div>
     {% if name -%}
         <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
     {%- endif -%}
@@ -16,6 +19,6 @@
 
 {%- js %}
     $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
-    defaultDate: new Date({% if value %}{{ value|date('Y') }}, {{ value|date('n')-1 }}, {{ value|date('j') }}{% endif %})
+        defaultDate: new Date({% if value %}{{ value|date('Y') }}, {{ value|date('n')-1 }}, {{ value|date('j') }}{% endif %})
     }, Craft.datepickerOptions));
 {%- endjs %}

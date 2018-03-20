@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -27,8 +27,9 @@ use yii\base\InvalidConfigException;
 /**
  * Category represents a category element.
  *
+ * @property CategoryGroup $group the category's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Category extends Element
 {
@@ -93,7 +94,6 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     *
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -121,7 +121,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
             ];
         }
 
@@ -149,7 +149,7 @@ class Category extends Element
             // They are viewing a specific category group. See if it has URLs for the requested site
             $controller = Craft::$app->controller;
             if ($controller instanceof ElementIndexesController) {
-                $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
                 if (isset($group->siteSettings[$siteId]) && $group->siteSettings[$siteId]->hasUrls) {
                     $actions[] = Craft::$app->getElements()->createAction([
                         'type' => View::class,
@@ -250,6 +250,16 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'group';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -266,7 +276,7 @@ class Category extends Element
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Category\'s group ('.$this->groupId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Category’s group ('.$this->groupId.') is not enabled for site '.$this->siteId);
         }
 
         return $categoryGroupSiteSettings[$this->siteId]->uriFormat;
@@ -278,7 +288,7 @@ class Category extends Element
     protected function route()
     {
         // Make sure the category group is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$siteId]) || !$categoryGroupSiteSettings[$siteId]->hasUrls) {
@@ -312,11 +322,19 @@ class Category extends Element
 
         $url = UrlHelper::cpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $url .= '/'.$this->getSite()->handle;
         }
 
         return $url;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
     }
 
     /**
@@ -374,8 +392,7 @@ class Category extends Element
             ]
         ]);
 
-        // Set the field layout ID and render the custom fields
-        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
+        // Render the custom fields
         $html .= parent::getEditorHtml();
 
         return $html;
@@ -391,7 +408,7 @@ class Category extends Element
     public function beforeSave(bool $isNew): bool
     {
         if ($this->_hasNewParent()) {
-            if ($this->newParentId !== null) {
+            if ($this->newParentId) {
                 $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
 
                 if (!$parentCategory) {
@@ -403,9 +420,6 @@ class Category extends Element
 
             $this->setParent($parentCategory);
         }
-
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }
@@ -435,7 +449,7 @@ class Category extends Element
 
         // Has the parent changed?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId === null) {
+            if (!$this->newParentId) {
                 Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
             } else {
                 Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
@@ -543,17 +557,17 @@ class Category extends Element
         }
 
         // Is it set to the top level now, but it hadn't been before?
-        if ($this->newParentId === '' && $this->level != 1) {
+        if (!$this->newParentId && $this->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId !== '' && $this->level == 1) {
+        if ($this->newParentId && $this->level == 1) {
             return true;
         }
 
         // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentQuery = Category::find();
+        $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->status(null);

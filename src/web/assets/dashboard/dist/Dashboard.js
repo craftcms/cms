@@ -25,7 +25,7 @@
                 this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
 
                 Garnish.$doc.ready($.proxy(function() {
-                    this.$grid = $('#main').find('> .padded > .grid');
+                    this.$grid = $('#dashboard-grid');
                     this.grid = this.$grid.data('grid');
                     $('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', $.proxy(this, 'handleNewWidgetOptionSelect'));
                 }, this));
@@ -437,7 +437,7 @@
 
                 // Focus on the first input
                 setTimeout($.proxy(function() {
-                    this.$settingsForm.find(':focusable:first').focus();
+                    this.$settingsForm.find(':focusable:first').trigger('focus');
                 }, this), 1);
             },
 

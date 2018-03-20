@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -26,7 +26,7 @@ use yii\db\Schema;
  * Field is the base class for classes representing fields in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
@@ -43,7 +43,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @event FieldElementEvent The event that is triggered before the element is saved
-     *
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
@@ -55,7 +54,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @event FieldElementEvent The event that is triggered before the element is deleted
-     *
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
     const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
@@ -69,8 +67,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     // -------------------------------------------------------------------------
 
     const TRANSLATION_METHOD_NONE = 'none';
-    const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_SITE = 'site';
+    const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
+    const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
 
     // Static
@@ -91,8 +90,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         return [
             self::TRANSLATION_METHOD_NONE,
-            self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_SITE,
+            self::TRANSLATION_METHOD_SITE_GROUP,
+            self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_CUSTOM,
         ];
     }
@@ -110,17 +110,17 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Public Methods
     // =========================================================================
 
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * Use the translated field name as the string representation.
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
             return (string)Craft::t('site', $this->name);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -161,8 +161,9 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'in',
                 'range' => [
                     self::TRANSLATION_METHOD_NONE,
-                    self::TRANSLATION_METHOD_LANGUAGE,
                     self::TRANSLATION_METHOD_SITE,
+                    self::TRANSLATION_METHOD_SITE_GROUP,
+                    self::TRANSLATION_METHOD_LANGUAGE,
                     self::TRANSLATION_METHOD_CUSTOM
                 ]
             ],
@@ -251,10 +252,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         switch ($this->translationMethod) {
             case self::TRANSLATION_METHOD_NONE:
                 return '1';
-            case self::TRANSLATION_METHOD_LANGUAGE:
-                return $element->getSite()->language;
             case self::TRANSLATION_METHOD_SITE:
                 return (string)$element->siteId;
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return (string)$element->getSite()->groupId;
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return $element->getSite()->language;
             default:
                 return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
         }
@@ -305,6 +308,21 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function isValueEmpty($value, ElementInterface $element): bool
+    {
+        $reflection = new \ReflectionMethod($this, 'isEmpty');
+        if ($reflection->getDeclaringClass()->getName() !== self::class) {
+            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ isEmpty() method has been deprecated. Use isValueEmpty() instead.');
+        }
+
+        return $this->isEmpty($value);
+    }
+
+    /**
+     * @param mixed $value
+     * @return bool
+     * @deprecated in 3.0.0-RC15. Use isEmpty() instead.
+     */
     public function isEmpty($value): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
@@ -322,9 +340,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param mixed            $value   The field’s value
+     * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
-     *
      * @return string The HTML that should be shown for this field in Table View
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
@@ -472,7 +489,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns the field’s param name on the request.
      *
      * @param ElementInterface $element The element this field is associated with
-     *
      * @return string|null The field’s param name on the request
      */
     protected function requestParamName(ElementInterface $element)
@@ -494,7 +510,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns whether this is the first time the element's content has been edited.
      *
      * @param ElementInterface|null $element
-     *
      * @return bool
      */
     protected function isFresh(ElementInterface $element = null): bool

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -14,7 +14,7 @@ use yii\validators\Validator;
  * Class ArrayValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ArrayValidator extends Validator
 {
@@ -24,7 +24,6 @@ class ArrayValidator extends Validator
     /**
      * @var int|array|null specifies the count limit of the value to be validated.
      * This can be specified in one of the following forms:
-     *
      * - an int: the exact count that the value should be of;
      * - an array of one element: the minimum count that the value should be of. For example, `[8]`.
      *   This will overwrite [[min]].

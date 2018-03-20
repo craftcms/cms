@@ -1,4 +1,4 @@
-/*!   - 2017-11-06 */
+/*!   - 2018-03-12 */
 (function($){
 
 /** global: Craft */
@@ -177,6 +177,22 @@ $.extend(Craft,
         },
 
         /**
+         * Formats a number.
+         *
+         * @param {string} number
+         * @return string D3 format
+         */
+        formatNumber: function(number, format) {
+            if(typeof format == 'undefined') {
+                format = ',.0f';
+            }
+
+            var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
+
+            return formatter(number);
+        },
+
+        /**
          * Escapes some HTML.
          *
          * @param {string} str
@@ -265,7 +281,7 @@ $.extend(Craft,
             }
 
             // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path.substr(0, 2) === '//') {
+            if (path.search('://') !== -1 || path[0] === '/') {
                 return path;
             }
 
@@ -957,7 +973,7 @@ $.extend(Craft,
 
             $elem.on('mousedown' + namespace, function() {
                     $elem.addClass('no-outline');
-                    $elem.focus();
+                    $elem.trigger('focus');
                 })
                 .on('keydown' + namespace + ' blur' + namespace, function(event) {
                     if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
@@ -1039,7 +1055,6 @@ $.extend(Craft,
          */
         initUiElements: function($container) {
             $('.grid', $container).grid();
-            $('.pane', $container).pane();
             $('.info', $container).infoicon();
             $('.checkbox-select', $container).checkboxselect();
             $('.fieldtoggle', $container).fieldtoggle();
@@ -1354,14 +1369,6 @@ $.extend($.fn,
             });
         },
 
-        pane: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pane')) {
-                    new Craft.Pane(this);
-                }
-            });
-        },
-
         /**
          * Sets the element as a container for a checkbox select.
          */
@@ -1448,15 +1455,8 @@ $.extend($.fn,
                     }
                 }
 
-                var $form;
-
-                // Is this a menu item?
-                if ($btn.data('menu')) {
-                    $form = $btn.data('menu').$anchor.closest('form');
-                }
-                else {
-                    $form = $btn.closest('form');
-                }
+                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                var $form = $anchor.attr('data-form') ? $('#'+$anchor.attr('data-form')) : $anchor.closest('form');
 
                 if ($btn.attr('data-action')) {
                     $('<input type="hidden" name="action"/>')
@@ -1479,7 +1479,7 @@ $.extend($.fn,
                         .appendTo($form);
                 }
 
-                $form.submit();
+                $form.trigger('submit');
             });
         },
 
@@ -1522,7 +1522,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $saveBtn: null,
         $spinner: null,
 
-        $languageSelect: null,
+        $siteSelect: null,
         $siteSpinner: null,
 
         hud: null,
@@ -1650,7 +1650,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 }
 
                 // Focus on the first text input
-                $hudContents.find('.text:first').focus();
+                $hudContents.find('.text:first').trigger('focus');
 
                 this.addListener(this.$cancelBtn, 'click', function() {
                     this.hud.hide();
@@ -1667,18 +1667,25 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             this.$siteSpinner.removeClass('hidden');
 
+            this.reloadForm({ siteId: newSiteId }, $.proxy(function(textStatus) {
+                this.$siteSpinner.addClass('hidden');
+                if (textStatus !== 'success') {
+                    // Reset the site select
+                    this.$siteSelect.val(this.siteId);
+                }
+            }, this));
+        },
 
-            var data = this.getBaseData();
-            data.siteId = newSiteId;
+        reloadForm: function(data, callback) {
+            data = $.extend(this.getBaseData(), data);
 
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
-                this.$siteSpinner.addClass('hidden');
-
                 if (textStatus === 'success') {
                     this.updateForm(response);
                 }
-                else {
-                    this.$languageSelect.val(this.siteId);
+
+                if (callback) {
+                    callback(textStatus);
                 }
             }, this));
         },
@@ -1934,13 +1941,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar = this.$container.find('.toolbar:first');
             this.$toolbarFlexContainer = this.$toolbar.children('.flex');
             this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
-            this.$siteMenuBtn = this.$toolbarFlexContainer.find('.sitemenubtn:first');
+            this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
             this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
             this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
             this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
             this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
             this.$sidebar = this.$container.find('.sidebar:first');
-            this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
+            this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
 
             // Hide sidebar if needed
@@ -1954,7 +1961,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context === 'index')) &&
                 !Garnish.isMobileBrowser(true)
             ) {
-                this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
+                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -1992,7 +2000,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 if ($option.length) {
-                    this.siteId = $option.data('site-id');
+                    this._setSite($option.data('site-id'));
                 }
                 else {
                     // No site options -- they must not have any site permissions
@@ -2017,7 +2025,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
             else if (this.settings.criteria && this.settings.criteria.siteId) {
-                this.siteId = this.settings.criteria.siteId;
+                this._setSite(this.settings.criteria.siteId);
             }
 
             // Initialize the search input
@@ -2061,7 +2069,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.$search.focus();
+                    this.$search.trigger('focus');
                 }
 
                 this.stopSearching();
@@ -2072,7 +2080,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Auto-focus the Search box
             if (!Garnish.isMobileBrowser(true)) {
-                this.$search.focus();
+                this.$search.trigger('focus');
             }
 
             // Initialize the sort menu
@@ -2109,7 +2117,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.children('nav').children('ul');
+            return this.$sidebar.find('nav ul');
         },
 
         get $sources() {
@@ -2187,27 +2195,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }, this));
         },
 
-        updateFixedToolbar: function() {
-            this.updateFixedToolbar._pageHeaderHeight = $('#page-header').outerHeight();
+        updateFixedToolbar: function(e) {
+            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
 
-            if (!this.toolbarOffset) {
-                this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
-
-                if (!this.toolbarOffset) {
-                    return;
-                }
-            }
-
-            this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
-
-            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7) {
-                if (!this.$toolbar.hasClass('fixed')) {
-                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
+            if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
+                if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
+                    this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
                     this.$toolbar.addClass('fixed');
-                    this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
                 }
 
-                this.$toolbar.css('width', this.$main.width());
+                if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
+                    this.$toolbar.css({
+                        top: Craft.cp.$contentContainer.offset().top,
+                        width: this.$main.width()
+                    });
+                }
             }
             else {
                 if (this.$toolbar.hasClass('fixed')) {
@@ -2233,6 +2235,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $toggle = this._getSourceToggle($source);
 
             if ($toggle.length) {
+                // Remove handlers for the same thing. Just in case.
+                this.removeListener($toggle, 'click', '_handleSourceToggleClick');
+
                 this.addListener($toggle, 'click', '_handleSourceToggleClick');
                 $source.data('hasNestedSources', true);
             } else {
@@ -2585,9 +2590,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection('asc');
+                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
 
-                if (attr === 'score' || attr === 'structure') {
+                if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
                 }
                 else {
@@ -2935,17 +2940,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#page-header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;
@@ -3008,6 +3006,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         onSelectSource: function() {
             this.settings.onSelectSource(this.sourceKey);
             this.trigger('selectSource', {sourceKey: this.sourceKey});
+        },
+
+        onSelectSite: function() {
+            this.settings.onSelectSite(this.siteId);
+            this.trigger('selectSite', {siteId: this.siteId});
         },
 
         onUpdateElements: function() {
@@ -3095,12 +3098,55 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.siteMenu.$options.removeClass('sel');
             var $option = $(ev.selectedOption).addClass('sel');
             this.$siteMenuBtn.html($option.html());
+            this._setSite($option.data('site-id'));
+            this.onSelectSite();
+        },
 
-            this.siteId = $option.data('site-id');
+        _setSite: function(siteId) {
+            this.siteId = siteId;
+
+            // Hide any sources that aren't available for this site
+            var $firstVisibleSource;
+            var $source;
+            var selectNewSource = false;
+
+            for (var i = 0; i < this.$sources.length; i++) {
+                $source = this.$sources.eq(i);
+                if (typeof $source.data('sites') === 'undefined' || $source.data('sites').toString().split(',').indexOf(siteId.toString()) !== -1) {
+                    $source.parent().removeClass('hidden');
+                    if (!$firstVisibleSource) {
+                        $firstVisibleSource = $source;
+                    }
+                } else {
+                    $source.parent().addClass('hidden');
+
+                    // Is this the currently selected source?
+                    if (this.$source && this.$source.get(0) == $source.get(0)) {
+                        selectNewSource = true;
+                    }
+                }
+            }
+
+            if (selectNewSource) {
+                this.selectSource($firstVisibleSource);
+            }
+
+            // Hide any empty-nester headings
+            var $headings = this.getSourceContainer().children('.heading');
+            var $heading;
+
+            for (i = 0; i < $headings.length; i++) {
+                $heading = $headings.eq(i);
+                if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
+                    $heading.removeClass('hidden');
+                } else {
+                    $heading.addClass('hidden');
+                }
+            }
 
             if (this.initialized) {
                 // Remember this site for later
-                Craft.setLocalStorage('BaseElementIndex.siteId', this.siteId);
+                Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
 
                 // Update the elements
                 this.updateElements();
@@ -3226,7 +3272,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Batch actions setup
             // -------------------------------------------------------------
 
-            if (this.settings.context === 'index' && response.actions && response.actions.length) {
+            if (response.actions && response.actions.length) {
                 this.actions = response.actions;
                 this.actionsHeadHtml = response.actionsHeadHtml;
                 this.actionsFootHtml = response.actionsFootHtml;
@@ -3292,7 +3338,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
-                checkboxMode: (this.settings.context === 'index' && this.actions),
+                checkboxMode: !!this.actions,
                 onSelectionChange: $.proxy(this, '_handleSelectionChange')
             });
 
@@ -3351,8 +3397,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $btn = $('<div class="btn menubtn" data-icon="settings" title="' + Craft.t('app', 'Actions') + '"/>').appendTo($menuTrigger);
 
                 var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
-                    $safeList = this._createMenuTriggerList(safeMenuActions),
-                    $destructiveList = this._createMenuTriggerList(destructiveMenuActions);
+                    $safeList = this._createMenuTriggerList(safeMenuActions, false),
+                    $destructiveList = this._createMenuTriggerList(destructiveMenuActions, true);
 
                 if ($safeList) {
                     $safeList.appendTo($menu);
@@ -3387,7 +3433,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
         },
 
-        _createMenuTriggerList: function(actions) {
+        _createMenuTriggerList: function(actions, destructive) {
             if (actions && actions.length) {
                 var $ul = $('<ul/>');
 
@@ -3395,6 +3441,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     var actionClass = actions[i].type;
                     $('<li/>').append($('<a/>', {
                         id: Craft.formatInputId(actionClass) + '-actiontrigger',
+                        'class': (destructive ? 'error' : null),
                         'data-action': actionClass,
                         text: actions[i].name
                     })).appendTo($ul);
@@ -3427,6 +3474,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
+            onSelectSite: $.noop,
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,
@@ -3544,7 +3592,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Set up lazy-loading
             if (this.settings.batchSize) {
                 if (this.settings.context === 'index') {
-                    this.$scroller = Garnish.$win;
+                    this.$scroller = Craft.cp.$contentContainer;
                 }
                 else {
                     this.$scroller = this.elementIndex.$main;
@@ -4307,7 +4355,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             else {
                 // Auto-focus the Search box
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.elementIndex.$search.focus();
+                    this.elementIndex.$search.trigger('focus');
                 }
             }
 
@@ -4619,7 +4667,7 @@ Craft.AdminTable = Garnish.Base.extend(
                 });
             }
 
-            this.$deleteBtns = this.$table.find('.delete');
+            this.$deleteBtns = this.$table.find('.delete:not(.disabled)');
             this.addListener(this.$deleteBtns, 'click', 'handleDeleteBtnClick');
 
             this.updateUI();
@@ -4809,6 +4857,2542 @@ Craft.AdminTable = Garnish.Base.extend(
             onDeleteItem: $.noop
         }
     });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Asset index class
+ */
+Craft.AssetEditor = Craft.BaseElementEditor.extend(
+    {
+        updateForm: function(response) {
+            this.base(response);
+
+            if (this.$element.data('id')) {
+                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .image-preview-container.editable');
+
+                if ($imageEditorTrigger.length) {
+                    this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
+                }
+            }
+
+        },
+
+        showImageEditor: function()
+        {
+            new Craft.AssetImageEditor(this.$element.data('id'), {
+                onSave: $.proxy(this, 'reloadForm'),
+                allowDegreeFractions: Craft.isImagick
+            });
+        }
+
+    });
+
+// Register it!
+Craft.registerElementEditorClass('craft\\elements\\Asset', Craft.AssetEditor);
+
+/** global: Craft */
+/** global: Garnish */
+
+/**
+ * Asset image editor class
+ */
+
+Craft.AssetImageEditor = Garnish.Modal.extend(
+    {
+        // jQuery objects
+        $body: null,
+        $footer: null,
+        $imageTools: null,
+        $buttons: null,
+        $cancelBtn: null,
+        $replaceBtn: null,
+        $saveBtn: null,
+        $editorContainer: null,
+        $straighten: null,
+        $croppingCanvas: null,
+        $spinnerCanvas: null,
+
+        // FabricJS objects
+        canvas: null,
+        image: null,
+        viewport: null,
+        focalPoint: null,
+        grid: null,
+        croppingCanvas: null,
+        clipper: null,
+        croppingRectangle: null,
+        cropperHandles: null,
+        cropperGrid: null,
+        croppingShade: null,
+
+        // Image state attributes
+        imageStraightenAngle: 0,
+        viewportRotation: 0,
+        originalWidth: 0,
+        originalHeight: 0,
+        imageVerticeCoords: null,
+        zoomRatio: 1,
+
+        // Editor state attributes
+        animationInProgress: false,
+        currentView: '',
+        assetId: null,
+        cacheBust: null,
+        draggingCropper: false,
+        scalingCropper: false,
+        draggingFocal: false,
+        previousMouseX: 0,
+        previousMouseY: 0,
+        shiftKeyHeld: false,
+        editorHeight: 0,
+        editorWidth: 0,
+        cropperState: false,
+        scaleFactor: 1,
+        flipData: {},
+        focalPointState: false,
+        croppingConstraint: false,
+        spinnerInterval: null,
+        maxImageSize: null,
+        lastLoadedDimensions: null,
+        imageIsLoading: false,
+
+        // Rendering proxy functions
+        renderImage: null,
+        renderCropper: null,
+
+        init: function(assetId, settings) {
+            this.cacheBust = Date.now();
+
+            this.setSettings(settings, Craft.AssetImageEditor.defaults);
+
+            this.assetId = assetId;
+            this.flipData = {x: 0, y: 0};
+
+            // Build the modal
+            this.$container = $('<form class="modal fitted imageeditor"></form>').appendTo(Garnish.$bod);
+            this.$body = $('<div class="body"></div>').appendTo(this.$container);
+            this.$footer = $('<div class="footer"/>').appendTo(this.$container);
+
+            this.base(this.$container, this.settings);
+
+            this.$buttons = $('<div class="buttons right"/>').appendTo(this.$footer);
+            this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
+            this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Save') + '</div>').appendTo(this.$buttons);
+
+            if (this.settings.allowSavingAsNew) {
+                this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as a new asset') + '</div>').appendTo(this.$buttons);
+                this.addListener(this.$saveBtn, 'activate', this.saveImage.bind(this));
+            }
+
+            this.addListener(this.$replaceBtn, 'activate', this.saveImage.bind(this));
+            this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
+            this.removeListener(this.$shade, 'click');
+
+            this.maxImageSize = this.getMaxImageSize();
+
+            Craft.postActionRequest('assets/image-editor', {assetId: assetId}, $.proxy(this, 'loadEditor'));
+        },
+
+        /**
+         * Get the max image size that is viewable in the editor currently
+         */
+        getMaxImageSize: function() {
+            var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth;
+            var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
+
+            return  Math.max(browserViewportHeight, browserViewportWidth) * (window.devicePixelRatio > 1 ? 2 : 1);
+        },
+
+        /**
+         * Load the editor markup and start loading components and the image.
+         *
+         * @param data
+         */
+        loadEditor: function(data) {
+
+            if (!data.html) {
+                alert(Craft.t('Could not load the image editor.', 'app'));
+            }
+
+            this.$body.html(data.html);
+            this.$tabs = $('.tabs li', this.$body);
+            this.$viewsContainer = $('.views', this.$body);
+            this.$views = $('> div', this.$viewsContainer);
+            this.$imageTools = $('.image-container .image-tools', this.$body);
+            this.$editorContainer = $('.image-container .image', this.$body);
+            this.editorHeight = this.$editorContainer.innerHeight();
+            this.editorWidth = this.$editorContainer.innerWidth();
+
+            this._showSpinner();
+
+            this.updateSizeAndPosition();
+
+            // Load the canvas on which we'll host our image and set up the proxy render function
+            this.canvas = new fabric.StaticCanvas('image-canvas');
+
+            // Set up the cropping canvas jquery element for tracking all the nice events
+            this.$croppingCanvas = $('#cropping-canvas', this.$editorContainer);
+            this.$croppingCanvas.width(this.editorWidth);
+            this.$croppingCanvas.height(this.editorHeight);
+
+            this.canvas.enableRetinaScaling = true;
+            this.renderImage = function() {
+                Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
+            }.bind(this);
+
+            // Load the image from URL
+            var imageUrl = Craft.getActionUrl('assets/edit-image', {
+                assetId: this.assetId,
+                size: this.maxImageSize,
+                cacheBust: this.cacheBust
+            });
+
+            // Load image and set up the initial properties
+            fabric.Image.fromURL(imageUrl, $.proxy(function(imageObject) {
+
+                this.image = imageObject;
+                this.image.set({
+                    originX: 'center',
+                    originY: 'center',
+                    left: this.editorWidth / 2,
+                    top: this.editorHeight / 2
+                });
+                this.canvas.add(this.image);
+
+                this.originalHeight = this.image.getHeight();
+                this.originalWidth = this.image.getWidth();
+                this.zoomRatio = 1;
+
+                this.lastLoadedDimensions = this.getScaledImageDimensions();
+
+                // Set up the image bounding box, viewport and position everything
+                this._setFittedImageVerticeCoordinates();
+                this._repositionEditorElements();
+
+                // Set up the focal point
+                var focalState = {
+                    imageDimensions: this.getScaledImageDimensions(),
+                    offsetX: 0,
+                    offsetY: 0
+                };
+
+                var focal = false;
+                if (data.focalPoint) {
+                    // Transform the focal point coordinates from relative to absolute
+                    var focalData = data.focalPoint;
+
+                    // Resolve for the current image dimensions.
+                    var adjustedX = focalState.imageDimensions.width * focalData.x;
+                    var adjustedY = focalState.imageDimensions.height * focalData.y;
+
+                    focalState.offsetX = adjustedX - focalState.imageDimensions.width / 2;
+                    focalState.offsetY = adjustedY - focalState.imageDimensions.height / 2;
+
+                    focal = true;
+                }
+
+                this.storeFocalPointState(focalState);
+
+                if (focal) {
+                    this._createFocalPoint();
+                }
+
+                this._createViewport();
+                this.storeCropperState();
+
+                // Add listeners to buttons
+                this._addControlListeners();
+
+                // Add mouse event listeners
+                this.addListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
+                this.addListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
+                this.addListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
+                this.addListener(this.$croppingCanvas, 'mouseout', function(ev) {
+                    this._handleMouseUp(ev);
+                    this._handleMouseMove(ev);
+                }.bind(this));
+
+                this._hideSpinner();
+
+                // Render it, finally
+                this.renderImage();
+
+                // Make sure verything gets fired for the first tab
+                this.$tabs.first().trigger('click');
+            }, this));
+        },
+
+        /**
+         * Reload the image to better fit the current available image editor viewport.
+         */
+        _reloadImage: function () {
+
+            if (this.imageIsLoading) {
+                return;
+            }
+
+            this.imageIsLoading = true;
+            this.maxImageSize = this.getMaxImageSize();
+
+            // Load the image from URL
+            var imageUrl = Craft.getActionUrl('assets/edit-image', {
+                assetId: this.assetId,
+                size: this.maxImageSize,
+                cacheBust: this.cacheBust
+            });
+
+            this.image.setSrc(imageUrl, function(imageObject) {
+                this.originalHeight = imageObject.getHeight();
+                this.originalWidth = imageObject.getWidth();
+                this.lastLoadedDimensions = {width: this.originalHeight, height: this.originalWidth};
+                this.updateSizeAndPosition();
+                this.renderImage();
+                this.imageIsLoading = false;
+            }.bind(this));
+        },
+
+        /**
+         * Update the modal size and position on browser resize
+         */
+        updateSizeAndPosition: function() {
+            if (!this.$container) {
+                return;
+            }
+
+            // Fullscreen modal
+            var innerWidth = window.innerWidth;
+            var innerHeight = window.innerHeight;
+
+            this.$container.css({
+                'width': innerWidth,
+                'min-width': innerWidth,
+                'left': 0,
+
+                'height': innerHeight,
+                'min-height': innerHeight,
+                'top': 0
+            });
+
+            this.$body.css({
+                'height': innerHeight - 58
+            });
+
+            if (innerWidth < innerHeight) {
+                this.$container.addClass('vertical');
+            }
+            else {
+                this.$container.removeClass('vertical');
+            }
+
+            if (this.$spinnerCanvas) {
+                this.$spinnerCanvas.css({
+                    left: ((this.$spinnerCanvas.parent().width()/2)-(this.$spinnerCanvas.width()/2))+'px',
+                    top: ((this.$spinnerCanvas.parent().height()/2)-(this.$spinnerCanvas.height()/2))+'px'
+                });
+            }
+
+            // If image is already loaded, make sure it looks pretty.
+            if (this.$editorContainer && this.image) {
+                this._repositionEditorElements();
+            }
+        },
+
+        /**
+         * Reposition the editor elements to accurately reflect the editor state with current dimensions
+         */
+        _repositionEditorElements: function() {
+
+            // Remember what the dimensions were before the resize took place
+            var previousEditorDimensions = {
+                width: this.editorWidth,
+                height: this.editorHeight
+            };
+
+            this.editorHeight = this.$editorContainer.innerHeight();
+            this.editorWidth = this.$editorContainer.innerWidth();
+
+            this.canvas.setDimensions({
+                width: this.editorWidth,
+                height: this.editorHeight
+            });
+
+            var currentScaledDimensions = this.getScaledImageDimensions();
+
+            // If we're cropping now, we have to reposition the cropper correctly in case
+            // the area for image changes, forcing the image size to change as well.
+            if (this.currentView === 'crop') {
+                this.zoomRatio = this.getZoomToFitRatio(this.getScaledImageDimensions());
+                var previouslyOccupiedArea = this._getBoundingRectangle(this.imageVerticeCoords);
+                this._setFittedImageVerticeCoordinates();
+                this._repositionCropper(previouslyOccupiedArea);
+            } else {
+                // Otherwise just recalculate the image zoom ratio
+                this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
+            }
+
+            // Reposition the image relatively to the previous editor dimensions.
+            this._repositionImage(previousEditorDimensions);
+            this._repositionViewport();
+            this._repositionFocalPoint(previousEditorDimensions);
+            this._zoomImage();
+
+            this.renderImage();
+
+            if (currentScaledDimensions.width / this.lastLoadedDimensions.width > 1.5 || currentScaledDimensions.height / this.lastLoadedDimensions.height > 1.5) {
+                this._reloadImage();
+            }
+        },
+
+        /**
+         * Reposition image based on how the editor dimensions have changed.
+         * This ensures keeping the image center offset, if there is any.
+         *
+         * @param previousEditorDimensions
+         */
+        _repositionImage: function(previousEditorDimensions) {
+            this.image.set({
+                left: this.image.left - (previousEditorDimensions.width - this.editorWidth) / 2,
+                top: this.image.top - (previousEditorDimensions.height - this.editorHeight) / 2
+            });
+        },
+
+        /**
+         * Create the viewport for image editor.
+         */
+        _createViewport: function() {
+            this.viewport = new fabric.Rect({
+                width: this.image.width,
+                height: this.image.height,
+                fill: 'rgba(127,0,0,1)',
+                originX: 'center',
+                originY: 'center',
+                globalCompositeOperation: 'destination-in', // This clips everything outside of the viewport
+                left: this.image.left,
+                top: this.image.top
+            });
+            this.canvas.add(this.viewport);
+            this.renderImage();
+        },
+
+        /**
+         * Create the focal point.
+         */
+        _createFocalPoint: function() {
+            var focalPointState = this.focalPointState;
+            var sizeFactor = this.getScaledImageDimensions().width / focalPointState.imageDimensions.width;
+
+            var focalX = focalPointState.offsetX * sizeFactor * this.zoomRatio * this.scaleFactor;
+            var focalY = focalPointState.offsetY * sizeFactor * this.zoomRatio * this.scaleFactor;
+
+            // Adjust by image margins
+            focalX += this.image.left;
+            focalY += this.image.top;
+
+            var deltaX = 0;
+            var deltaY = 0;
+
+            // When creating a fresh focal point, drop it dead in the center of the viewport, not the image.
+            if (this.viewport && focalPointState.offsetX === 0 && focalPointState.offsetY === 0) {
+                if (this.currentView !== 'crop') {
+                    deltaX = this.viewport.left - this.image.left;
+                    deltaY = this.viewport.top - this.image.top;
+
+                } else {
+                    // Unless we have a cropper showing, in which case drop it in the middle of the cropper
+                    deltaX = this.clipper.left - this.image.left;
+                    deltaY = this.clipper.top - this.image.top;
+                }
+
+                // Bump focal to middle of viewport
+                focalX += deltaX;
+                focalY += deltaY;
+
+                // Reflect changes in saved state
+                focalPointState.offsetX += deltaX / (sizeFactor * this.zoomRatio * this.scaleFactor);
+                focalPointState.offsetY += deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
+            }
+
+            this.focalPoint = new fabric.Group([
+                new fabric.Circle({radius: 8, fill: 'rgba(0,0,0,0.5)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
+                new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'})
+            ], {
+                originX: 'center',
+                originY: 'center',
+                left: focalX,
+                top: focalY
+            });
+
+            this.storeFocalPointState(focalPointState);
+            this.canvas.add(this.focalPoint);
+        },
+
+        /**
+         * Toggle focal point
+         */
+        toggleFocalPoint: function() {
+            if (!this.focalPoint) {
+                this._createFocalPoint();
+            } else {
+                this.canvas.remove(this.focalPoint);
+                this.focalPoint = null;
+            }
+
+            this.renderImage();
+        },
+
+        /**
+         * Reposition the viewport to handle editor resizing.
+         */
+        _repositionViewport: function() {
+            if (this.viewport) {
+                var dimensions = {
+                    left: this.editorWidth / 2,
+                    top: this.editorHeight / 2
+                };
+
+                // If we're cropping, nothing exciting happens for the viewport
+                if (this.currentView === 'crop') {
+                    dimensions.width = this.editorWidth;
+                    dimensions.height = this.editorHeight;
+                } else {
+                    // If this is the first initial reposition, no cropper state yet
+                    if (this.cropperState) {
+
+                        // Recall the state
+                        var state = this.cropperState;
+
+                        var scaledImageDimensions = this.getScaledImageDimensions();
+                        // Make sure we have the correct current image size
+                        var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                        // Set the viewport dimensions
+                        dimensions.width = state.width * sizeFactor * this.zoomRatio;
+                        dimensions.height = state.height * sizeFactor * this.zoomRatio;
+
+                        // Adjust the image position to show the correct part of the image in the viewport
+                        this.image.set({
+                            left: (this.editorWidth / 2) - (state.offsetX * sizeFactor),
+                            top: (this.editorHeight / 2) - (state.offsetY * sizeFactor)
+                        });
+                    } else {
+                        $.extend(dimensions, this.getScaledImageDimensions());
+                    }
+                }
+                this.viewport.set(dimensions);
+            }
+        },
+
+        _repositionFocalPoint: function(previousEditorDimensions) {
+            if (this.focalPoint) {
+                var offsetX = this.focalPoint.left - this.editorWidth / 2;
+                var offsetY = this.focalPoint.top - this.editorHeight / 2;
+
+                var currentWidth = this.image.width;
+                var newWidth = this.getScaledImageDimensions().width * this.zoomRatio;
+                var ratio = newWidth / currentWidth / this.scaleFactor;
+
+                offsetX -= (previousEditorDimensions.width - this.editorWidth) / 2;
+                offsetY -= (previousEditorDimensions.height - this.editorHeight) / 2;
+
+                offsetX *= ratio;
+                offsetY *= ratio;
+
+                this.focalPoint.set({
+                    left: this.editorWidth / 2 + offsetX,
+                    top: this.editorHeight / 2 + offsetY
+                });
+            }
+        },
+
+        /**
+         * Return true if the image orientation has changed
+         */
+        hasOrientationChanged: function() {
+            return this.viewportRotation % 180 !== 0;
+        },
+
+        /**
+         * Return the current image dimensions that would be used in the current image area with no straightening or rotation applied.
+         */
+        getScaledImageDimensions: function() {
+            var imageRatio = this.originalHeight / this.originalWidth;
+            var editorRatio = this.editorHeight / this.editorWidth;
+
+            var dimensions = {};
+            if (imageRatio > editorRatio) {
+                dimensions.height = Math.min(this.editorHeight, this.originalHeight);
+                dimensions.width = Math.round(this.originalWidth / (this.originalHeight / dimensions.height));
+            } else {
+                dimensions.width = Math.min(this.editorWidth, this.originalWidth);
+                dimensions.height = Math.round(this.originalHeight * (dimensions.width / this.originalWidth));
+            }
+
+            return dimensions;
+        },
+
+        /**
+         * Set the image dimensions to reflect the current zoom ratio.
+         */
+        _zoomImage: function() {
+            var imageDimensions = this.getScaledImageDimensions();
+            this.image.set({
+                width: imageDimensions.width * this.zoomRatio,
+                height: imageDimensions.height * this.zoomRatio
+            });
+        },
+
+        /**
+         * Set up listeners for the controls.
+         */
+        _addControlListeners: function() {
+
+            // Tabs
+            this.addListener(this.$tabs, 'click', '_handleTabClick');
+
+            // Focal point
+            this.addListener($('.focal-point'), 'click', function(ev) {
+                this.toggleFocalPoint(ev);
+            }.bind(this));
+
+            // Rotate controls
+            this.addListener($('.rotate-left'), 'click', function() {
+                this.rotateImage(-90);
+            }.bind(this));
+            this.addListener($('.rotate-right'), 'click', function() {
+                this.rotateImage(90);
+            }.bind(this));
+            this.addListener($('.flip-vertical'), 'click', function() {
+                this.flipImage('y');
+            }.bind(this));
+            this.addListener($('.flip-horizontal'), 'click', function() {
+                this.flipImage('x');
+            }.bind(this));
+
+            // Straighten slider
+            this.straighteningInput = new Craft.SlideRuleInput("slide-rule", {
+                onStart: function() {
+                    this._showGrid();
+                }.bind(this),
+                onChange: function(slider) {
+                    this.straighten(slider);
+                }.bind(this),
+                onEnd: function() {
+                    this._hideGrid();
+                    this._cleanupFocalPointAfterStraighten();
+                }.bind(this)
+            });
+
+            // Cropper scale modifier key
+            this.addListener(Garnish.$doc, 'keydown', function(ev) {
+                if (ev.keyCode === Garnish.SHIFT_KEY) {
+                    this.shiftKeyHeld = true;
+                }
+            }.bind(this));
+            this.addListener(Garnish.$doc, 'keyup', function(ev) {
+                if (ev.keyCode === Garnish.SHIFT_KEY) {
+                    this.shiftKeyHeld = false;
+                }
+            }.bind(this));
+
+            // Cropper constraint menu
+            var constraintMenu = new Garnish.MenuBtn($('.crop .menubtn', this.$container), {
+                onOptionSelect: function (option) {
+                    $('.constraint', this.$container).html($(option).html());
+                    this.setCroppingConstraint($(option).data('constraint'));
+                    this.enforceCroppingConstraint();
+                }.bind(this)
+            });
+            constraintMenu.menu.$container.addClass('dark');
+        },
+
+        /**
+         * Handle tab click.
+         *
+         * @param ev
+         */
+        _handleTabClick: function(ev) {
+            if (!this.animationInProgress) {
+                var $tab = $(ev.currentTarget);
+                var view = $tab.data('view');
+                this.$tabs.removeClass('selected');
+                $tab.addClass('selected');
+                this.showView(view);
+            }
+        },
+
+        /**
+         * Show a view.
+         *
+         * @param view
+         */
+        showView: function(view) {
+            if (this.currentView === view) {
+                return;
+            }
+
+            this.$views.addClass('hidden');
+            var $view = this.$views.filter('[data-view="' + view + '"]');
+            $view.removeClass('hidden');
+
+            if (view === 'rotate') {
+                this.enableSlider();
+            } else {
+                this.disableSlider();
+            }
+
+
+            // Now that most likely our editor dimensions have changed, time to reposition stuff
+            this.updateSizeAndPosition();
+
+            // See if we have to enable or disable crop mode as we transition between tabs
+            if (this.currentView === 'crop' && view !== 'crop') {
+                this.disableCropMode();
+            } else if (this.currentView !== 'crop' && view === 'crop') {
+                this.enableCropMode();
+            }
+
+            // Mark the current view
+            this.currentView = view;
+        },
+
+        /**
+         * Store the current cropper state.
+         *
+         * Cropper state is always assumed to be saved at a zoom ratio of 1 to be used
+         * as the basis for recalculating the cropper position and dimensions.
+         *
+         * @param [state]
+         */
+        storeCropperState: function(state) {
+            // If we're asked to store a specific state.
+            if (state) {
+                this.cropperState = state;
+            } else if (this.clipper) {
+                var zoomFactor = 1 / this.zoomRatio;
+
+                this.cropperState = {
+                    offsetX: (this.clipper.left - this.image.left) * zoomFactor,
+                    offsetY: (this.clipper.top - this.image.top) * zoomFactor,
+                    height: this.clipper.height * zoomFactor,
+                    width: this.clipper.width * zoomFactor,
+                    imageDimensions: this.getScaledImageDimensions()
+                };
+            } else {
+                var dimensions = this.getScaledImageDimensions();
+                this.cropperState = {
+                    offsetX: 0,
+                    offsetY: 0,
+                    height: dimensions.height,
+                    width: dimensions.width,
+                    imageDimensions: dimensions
+                };
+            }
+        },
+
+        /**
+         * Store focal point coordinates in a manner that is not tied to zoom ratio and rotation.
+         */
+        storeFocalPointState: function(state) {
+            // If we're asked to store a specific state.
+            if (state) {
+                this.focalPointState = state;
+            } else if (this.focalPoint) {
+                var zoomFactor = 1 / this.zoomRatio;
+                this.focalPointState = {
+                    offsetX: (this.focalPoint.left - this.image.left) * zoomFactor / this.scaleFactor,
+                    offsetY: (this.focalPoint.top - this.image.top) * zoomFactor / this.scaleFactor,
+                    imageDimensions: this.getScaledImageDimensions()
+                };
+            }
+        },
+
+        /**
+         * Rotate the image along with the viewport.
+         *
+         * @param degrees
+         */
+        rotateImage: function(degrees) {
+            if (!this.animationInProgress) {
+
+                // We're not that kind of an establishment, sir.
+                if (degrees !== 90 && degrees !== -90) {
+                    return false;
+                }
+
+                this.animationInProgress = true;
+                this.viewportRotation += degrees;
+
+                // Normalize the viewport rotation angle so it's between 0 and 359
+                this.viewportRotation = parseInt((this.viewportRotation + 360) % 360, 10);
+
+                var newAngle = this.image.angle + degrees;
+                var scaledImageDimensions = this.getScaledImageDimensions();
+                var imageZoomRatio;
+
+                if (this.hasOrientationChanged()) {
+                    imageZoomRatio = this.getZoomToCoverRatio({height: scaledImageDimensions.width, width: scaledImageDimensions.height});
+                } else {
+                    imageZoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
+                }
+
+                // In cases when for some reason we've already zoomed in on the image,
+                // use existing zoom.
+                if (this.zoomRatio > imageZoomRatio) {
+                    imageZoomRatio = this.zoomRatio;
+                }
+
+                var viewportProperties = {
+                    angle: degrees === 90 ? '+=90' : '-=90'
+                };
+
+                var imageProperties = {
+                    angle: newAngle,
+                    width: scaledImageDimensions.width * imageZoomRatio,
+                    height: scaledImageDimensions.height * imageZoomRatio
+                };
+
+                var scaleFactor = 1;
+                if (this.scaleFactor < 1) {
+                    scaleFactor = 1 / this.scaleFactor;
+                    this.scaleFactor = 1;
+                } else {
+                    if (this.viewport.width > this.editorHeight) {
+                        scaleFactor = this.editorHeight / this.viewport.width;
+                    } else if (this.viewport.height > this.editorWidth) {
+                        scaleFactor = this.editorWidth / this.viewport.height;
+                    }
+                    this.scaleFactor = scaleFactor;
+                }
+
+                if (scaleFactor < 1) {
+                    imageProperties.width *= scaleFactor;
+                    imageProperties.height *= scaleFactor;
+                }
+
+                var state = this.cropperState;
+
+                // Make sure we reposition the image as well to focus on the same image area
+                var deltaX = state.offsetX;
+                var deltaY = state.offsetY;
+                var angleInRadians = degrees * (Math.PI / 180);
+
+                // Calculate how the cropper would need to move in a circle to maintain
+                // the focus on the same region if the image was rotated with zoom intact.
+                var newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
+                var newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
+
+                var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                var modifiedDeltaX = newDeltaX * sizeFactor * this.zoomRatio * this.scaleFactor;
+                var modifiedDeltaY = newDeltaY * sizeFactor * this.zoomRatio * this.scaleFactor;
+
+                imageProperties.left = this.editorWidth / 2 - modifiedDeltaX;
+                imageProperties.top = this.editorHeight / 2 - modifiedDeltaY;
+
+                state.offsetX = newDeltaX;
+                state.offsetY = newDeltaY;
+
+                var temp = state.width;
+                state.width = state.height;
+                state.height = temp;
+
+                this.storeCropperState(state);
+
+                if (this.focalPoint) {
+                    this.canvas.remove(this.focalPoint);
+                }
+
+                this.viewport.animate(viewportProperties, {
+                    duration: this.settings.animationDuration,
+                    onComplete: function() {
+                        // If we're zooming the image in or out, better do the same to viewport
+                        var temp = this.viewport.height * scaleFactor;
+                        this.viewport.height = this.viewport.width * scaleFactor;
+                        this.viewport.width = temp;
+                        this.viewport.set({angle: 0});
+                    }.bind(this)
+                });
+
+                // Animate the rotation and dimension change
+                this.image.animate(imageProperties, {
+                    onChange: this.canvas.renderAll.bind(this.canvas),
+                    duration: this.settings.animationDuration,
+                    onComplete: function() {
+                        var cleanAngle = parseFloat((this.image.angle + 360) % 360);
+                        this.image.set({angle: cleanAngle});
+                        this.animationInProgress = false;
+                        if (this.focalPoint) {
+                            this._adjustFocalPointByAngle(degrees);
+                            this.straighten(this.straighteningInput);
+                            this.canvas.add(this.focalPoint);
+                        } else {
+                            this._resetFocalPointPosition();
+                        }
+                    }.bind(this)
+                });
+            }
+        },
+
+        /**
+         * Flip an image along an axis.
+         *
+         * @param axis
+         */
+        flipImage: function(axis) {
+            if (!this.animationInProgress) {
+                this.animationInProgress = true;
+
+                if (this.hasOrientationChanged()) {
+                    axis = axis === 'y' ? 'x' : 'y';
+                }
+
+                if (this.focalPoint) {
+                    this.canvas.remove(this.focalPoint);
+                } else {
+                    this._resetFocalPointPosition();
+                }
+
+                var editorCenter = {x: this.editorWidth / 2, y: this.editorHeight / 2};
+                this.straighteningInput.setValue(-this.imageStraightenAngle);
+                this.imageStraightenAngle = -this.imageStraightenAngle;
+                var properties = {
+                    angle: this.viewportRotation + this.imageStraightenAngle
+                };
+
+                var deltaY, deltaX;
+                var cropperState = this.cropperState;
+                var focalPointState = this.focalPointState;
+
+                // Reposition the image, viewport, and stored cropper and focal point states.
+                if ((axis === 'y' && this.hasOrientationChanged()) || (axis !== 'y' && !this.hasOrientationChanged())) {
+                    cropperState.offsetX = -cropperState.offsetX;
+                    focalPointState.offsetX = -focalPointState.offsetX;
+                    deltaX = this.image.left - editorCenter.x;
+                    properties.left = editorCenter.x - deltaX;
+                } else {
+                    cropperState.offsetY = -cropperState.offsetY;
+                    focalPointState.offsetY = -focalPointState.offsetY;
+                    deltaY = this.image.top - editorCenter.y;
+                    properties.top = editorCenter.y - deltaY;
+                }
+
+                if (axis === 'y') {
+                    properties.scaleY = this.image.scaleY * -1;
+                    this.flipData.y = 1 - this.flipData.y;
+                } else {
+                    properties.scaleX = this.image.scaleX * -1;
+                    this.flipData.x = 1 - this.flipData.x;
+                }
+
+                this.storeCropperState(cropperState);
+                this.storeFocalPointState(focalPointState);
+
+                this.image.animate(properties, {
+                    onChange: this.canvas.renderAll.bind(this.canvas),
+                    duration: this.settings.animationDuration,
+                    onComplete: function() {
+                        this.animationInProgress = false;
+                        if (this.focalPoint) {
+                            // Well this is handy
+                            this._adjustFocalPointByAngle(0);
+                            this.canvas.add(this.focalPoint);
+                        }
+                    }.bind(this)
+                });
+            }
+        },
+
+        /**
+         * Perform the straightening with input slider.
+         *
+         * @param {Craft.SlideRuleInput} slider
+         */
+        straighten: function(slider) {
+            if (!this.animationInProgress) {
+                this.animationInProgress = true;
+
+                var previousAngle = this.image.angle;
+
+                this.imageStraightenAngle = (this.settings.allowDegreeFractions ? parseFloat(slider.value) : Math.round(parseFloat(slider.value))) % 360;
+
+                // Straighten the image
+                this.image.set({
+                    angle: this.viewportRotation + this.imageStraightenAngle
+                });
+
+                // Set the new zoom ratio
+                this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
+                this._zoomImage();
+
+                if (this.cropperState) {
+                    this._adjustEditorElementsOnStraighten(previousAngle);
+                }
+
+                this.renderImage();
+
+                this.animationInProgress = false;
+            }
+        },
+
+        /**
+         * Adjust the cropped viewport when straightening the image to correct for
+         * bumping into edges, keeping focus on the cropped area center and to
+         * maintain the illusion that the image is being straightened relative to the viewport center.
+         *
+         * @param {integer} previousAngle integer the previous image angle before straightening
+         */
+        _adjustEditorElementsOnStraighten: function(previousAngle) {
+            var scaledImageDimensions = this.getScaledImageDimensions();
+            var angleDelta = this.image.angle - previousAngle;
+            var state = this.cropperState;
+
+            var currentZoomRatio = this.zoomRatio;
+            var adjustmentRatio = 1;
+
+            var deltaX, deltaY, newCenterX, newCenterY, sizeFactor;
+
+            do {
+                // Get the cropper center coordinates
+                var cropperCenterX = state.offsetX;
+                var cropperCenterY = state.offsetY;
+                var angleInRadians = angleDelta * (Math.PI / 180);
+
+                // Calculate how the cropper would need to move in a circle to maintain
+                // the focus on the same region if the image was rotated with zoom intact.
+                newCenterX = cropperCenterX * Math.cos(angleInRadians) - cropperCenterY * Math.sin(angleInRadians);
+                newCenterY = cropperCenterX * Math.sin(angleInRadians) + cropperCenterY * Math.cos(angleInRadians);
+
+                sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                // Figure out the final image offset to keep the viewport focused where we need it
+                deltaX = newCenterX * currentZoomRatio * sizeFactor;
+                deltaY = newCenterY * currentZoomRatio * sizeFactor;
+
+                // If the image would creep in the viewport, figure out how to math around it.
+                var imageVertices = this.getImageVerticeCoords(currentZoomRatio);
+                var rectangle = {
+                    width: this.viewport.width,
+                    height: this.viewport.height,
+                    left: this.editorWidth / 2 - this.viewport.width / 2 + deltaX,
+                    top: this.editorHeight / 2 - this.viewport.height / 2 + deltaY
+                };
+                adjustmentRatio = this._getZoomRatioToFitRectangle(rectangle, imageVertices);
+                currentZoomRatio = currentZoomRatio * adjustmentRatio;
+
+                // If we had to make adjustments, do the calculations again
+            } while (adjustmentRatio !== 1);
+
+            // Reposition the image correctly
+            this.image.set({
+                left: this.editorWidth / 2 - deltaX,
+                top: this.editorHeight / 2 - deltaY
+            });
+
+            // Finally, store the new cropper state to reflect the rotation change.
+            state.offsetX = newCenterX;
+            state.offsetY = newCenterY;
+            state.width = this.viewport.width / currentZoomRatio / sizeFactor;
+            state.height = this.viewport.height / currentZoomRatio / sizeFactor;
+
+            this.storeCropperState(state);
+
+            // Zoom the image in and we're done.
+            this.zoomRatio = currentZoomRatio;
+
+            if (this.focalPoint) {
+                this._adjustFocalPointByAngle(angleDelta);
+
+                if (!this._isCenterInside(this.focalPoint, this.viewport)) {
+                    this.focalPoint.set({opacity: 0});
+                } else {
+                    this.focalPoint.set({opacity: 1});
+                }
+            } else if (angleDelta !== 0) {
+                this._resetFocalPointPosition();
+            }
+
+            this._zoomImage();
+        },
+
+        /**
+         * If focal point is active and outside of viewport after straightening, reset it.
+         */
+        _cleanupFocalPointAfterStraighten: function() {
+            if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.viewport)) {
+                this.focalPoint.set({opacity: 1});
+                var state = this.focalPointState;
+                state.offsetX = 0;
+                state.offsetY = 0;
+                this.storeFocalPointState(state);
+                this.toggleFocalPoint();
+            }
+        },
+
+        /**
+         * Reset focal point to the middle of image.
+         */
+        _resetFocalPointPosition: function () {
+            var state = this.focalPointState;
+            state.offsetX = 0;
+            state.offsetY = 0;
+            this.storeFocalPointState(state);
+        },
+
+        /**
+         * Returns true if a center of an object is inside another rectangle shaped object that is not rotated.
+         *
+         * @param object
+         * @param containingObject
+         *
+         * @returns {boolean}
+         */
+        _isCenterInside: function(object, containingObject) {
+            return (object.left > containingObject.left - containingObject.width / 2
+                && object.top > containingObject.top - containingObject.height / 2
+                && object.left < containingObject.left + containingObject.width / 2
+                && object.top < containingObject.top + containingObject.height / 2
+            );
+        },
+
+        /**
+         * Adjust the focal point by an angle in degrees.
+         * @param angle
+         */
+        _adjustFocalPointByAngle: function(angle) {
+            var angleInRadians = angle * (Math.PI / 180);
+            var state = this.focalPointState;
+
+            var focalX = state.offsetX;
+            var focalY = state.offsetY;
+
+            // Calculate how the focal point would need to move in a circle to keep on the same spot
+            // on the image if it was rotated with zoom intact.
+            var newFocalX = focalX * Math.cos(angleInRadians) - focalY * Math.sin(angleInRadians);
+            var newFocalY = focalX * Math.sin(angleInRadians) + focalY * Math.cos(angleInRadians);
+            var sizeFactor = this.getScaledImageDimensions().width / state.imageDimensions.width;
+
+            var adjustedFocalX = newFocalX * sizeFactor * this.zoomRatio;
+            var adjustedFocalY = newFocalY * sizeFactor * this.zoomRatio;
+
+            this.focalPoint.left = this.image.left + adjustedFocalX;
+            this.focalPoint.top = this.image.top + adjustedFocalY;
+
+            state.offsetX = newFocalX;
+            state.offsetY = newFocalY;
+            this.storeFocalPointState(state);
+        },
+
+        /**
+         * Get the zoom ratio required to fit a rectangle within another rectangle, that is defined by vertices.
+         * If the rectangle fits, 1 will be returned.
+         *
+         * @param rectangle
+         * @param containingVertices
+         */
+        _getZoomRatioToFitRectangle: function(rectangle, containingVertices) {
+            var rectangleVertices = this._getRectangleVertices(rectangle);
+            var vertex;
+
+            // Check if any of the viewport vertices end up out of bounds
+            for (var verticeIndex = 0; verticeIndex < rectangleVertices.length; verticeIndex++) {
+                vertex = rectangleVertices[verticeIndex];
+
+                if (!this.arePointsInsideRectangle([vertex], containingVertices)) {
+                    break;
+                }
+
+                vertex = false;
+            }
+
+            // If there's no vertex set after loop, it means that all of them are inside the image rectangle
+            var adjustmentRatio;
+
+            if (!vertex) {
+                adjustmentRatio = 1;
+            } else {
+                // Find out which edge got crossed by the vertex
+                var edge = this._getEdgeCrossed(containingVertices, vertex);
+
+                var rectangleCenter = {
+                    x: rectangle.left + rectangle.width / 2,
+                    y: rectangle.top + rectangle.height / 2
+                };
+
+                // Calculate how much further that edge needs to be.
+                // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+                var distanceFromVertexToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y - edge[0].y, 2) + Math.pow(edge[1].x - edge[0].x, 2));
+                var distanceFromCenterToEdge = Math.abs((edge[1].y - edge[0].y) * rectangleCenter.x - (edge[1].x - edge[0].x) * rectangleCenter.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y - edge[0].y, 2) + Math.pow(edge[1].x - edge[0].x, 2));
+
+                // Adjust the zoom ratio
+                adjustmentRatio = ((distanceFromVertexToEdge + distanceFromCenterToEdge) / distanceFromCenterToEdge);
+            }
+
+            return adjustmentRatio;
+        },
+
+        /**
+         * Save the image.
+         *
+         * @param ev
+         */
+        saveImage: function(ev) {
+            var $button = $(ev.currentTarget);
+            if ($button.hasClass('disabled')) {
+                return false;
+            }
+
+            $('.btn', this.$buttons).addClass('disabled');
+            this.$buttons.append('<div class="spinner"></div>');
+
+            var postData = {
+                assetId: this.assetId,
+                viewportRotation: this.viewportRotation,
+                imageRotation: this.imageStraightenAngle,
+                replace: $button.hasClass('replace') ? 1 : 0
+            };
+
+            if (this.cropperState) {
+                var cropData = {};
+
+                cropData.height = this.cropperState.height;
+                cropData.width = this.cropperState.width;
+                cropData.offsetX = this.cropperState.offsetX;
+                cropData.offsetY = this.cropperState.offsetY;
+
+                postData.imageDimensions = this.cropperState.imageDimensions;
+
+                postData.cropData = cropData;
+            } else {
+                postData.imageDimensions = this.getScaledImageDimensions();
+            }
+
+            if (this.focalPoint) {
+                postData.focalPoint = this.focalPointState;
+            }
+
+            postData.flipData = this.flipData;
+            postData.zoom = this.zoomRatio;
+
+            Craft.postActionRequest('assets/save-image', postData, function(data) {
+                this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                this.onSave();
+                this.hide();
+                Craft.cp.runQueue();
+            }.bind(this));
+        },
+
+        /**
+         * Return image zoom ratio depending on the straighten angle to cover a viewport by given dimensions.
+         *
+         * @param dimensions
+         */
+        getZoomToCoverRatio: function(dimensions) {
+            // Convert the angle to radians
+            var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
+
+            // Calculate the dimensions of the scaled image using the magic of math
+            var scaledWidth = Math.sin(angleInRadians) * dimensions.height + Math.cos(angleInRadians) * dimensions.width;
+            var scaledHeight = Math.sin(angleInRadians) * dimensions.width + Math.cos(angleInRadians) * dimensions.height;
+
+            // Calculate the ratio
+            return Math.max(scaledWidth / dimensions.width, scaledHeight / dimensions.height);
+        },
+
+        /**
+         * Return image zoom ratio depending on the straighten angle to fit inside a viewport by given dimensions.
+         *
+         * @param dimensions
+         */
+        getZoomToFitRatio: function(dimensions) {
+
+            // Get the bounding box for a rotated image
+            var boundingBox = this._getImageBoundingBox(dimensions);
+
+            // Scale the bounding box to fit
+            var scale = 1;
+            if (boundingBox.height > this.editorHeight || boundingBox.width > this.editorWidth) {
+                var vertScale = this.editorHeight / boundingBox.height;
+                var horiScale = this.editorWidth / boundingBox.width;
+                scale = Math.min(horiScale, vertScale);
+            }
+
+            return scale;
+        },
+
+        /**
+         * Return the combined zoom ratio to fit a rectangle inside image that's been zoomed to fit.
+         */
+        getCombinedZoomRatio: function(dimensions) {
+            return this.getZoomToCoverRatio(dimensions) / this.getZoomToFitRatio(dimensions);
+        },
+
+        /**
+         * Draw the grid.
+         *
+         * @private
+         */
+        _showGrid: function() {
+            if (!this.grid) {
+                var strokeOptions = {
+                    strokeWidth: 1,
+                    stroke: 'rgba(255,255,255,0.5)'
+                };
+
+                var lineCount = 8;
+                var gridWidth = this.viewport.width;
+                var gridHeight = this.viewport.height;
+                var xStep = gridWidth / (lineCount + 1);
+                var yStep = gridHeight / (lineCount + 1);
+
+                var grid = [
+                    new fabric.Rect({
+                        strokeWidth: 2,
+                        stroke: 'rgba(255,255,255,1)',
+                        originX: 'center',
+                        originY: 'center',
+                        width: gridWidth,
+                        height: gridHeight,
+                        left: gridWidth / 2,
+                        top: gridHeight / 2,
+                        fill: 'rgba(255,255,255,0)'
+                    })
+                ];
+
+                var i;
+                for (i = 1; i <= lineCount; i++) {
+                    grid.push(new fabric.Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions));
+                }
+                for (i = 1; i <= lineCount; i++) {
+                    grid.push(new fabric.Line([0, i * yStep, gridWidth, i * yStep], strokeOptions));
+                }
+
+                this.grid = new fabric.Group(grid, {
+                    left: this.editorWidth / 2,
+                    top: this.editorHeight / 2,
+                    originX: 'center',
+                    originY: 'center',
+                    angle: this.viewport.angle
+                });
+
+                this.canvas.add(this.grid);
+                this.renderImage();
+            }
+        },
+
+        /**
+         * Hide the grid
+         */
+        _hideGrid: function() {
+            this.canvas.remove(this.grid);
+            this.grid = null;
+            this.renderImage();
+        },
+
+        /**
+         * Remove all the events when hiding the editor.
+         */
+        onFadeOut: function() {
+            this.removeListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
+            this.removeListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
+            this.removeListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
+            this.removeListener(this.$croppingCanvas, 'mouseout', function(ev) {
+                this._handleMouseUp(ev);
+                this._handleMouseMove(ev);
+            }.bind(this));
+            this.destroy();
+        },
+
+        /**
+         * Make sure underlying content is not scrolled by accident.
+         */
+        show: function() {
+            this.base();
+
+            $('html').addClass('noscroll');
+        },
+
+        /**
+         * Allow the content to scroll.
+         */
+        hide: function() {
+            this.removeAllListeners();
+            this.straighteningInput.removeAllListeners();
+            $('html').removeClass('noscroll');
+            this.base();
+        },
+
+        /**
+         * onSave callback.
+         */
+        onSave: function() {
+            this.settings.onSave();
+        },
+
+        /**
+         * Enable the rotation slider.
+         */
+        enableSlider: function() {
+            this.$imageTools.removeClass('hidden');
+        },
+
+        /**
+         * Disable the rotation slider.
+         */
+        disableSlider: function() {
+            this.$imageTools.addClass('hidden');
+        },
+
+        /**
+         * Switch to crop mode.
+         */
+        enableCropMode: function() {
+            var imageDimensions = this.getScaledImageDimensions();
+            this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
+
+            var viewportProperties = {
+                width: this.editorWidth,
+                height: this.editorHeight
+            };
+
+            var imageProperties = {
+                width: imageDimensions.width * this.zoomRatio,
+                height: imageDimensions.height * this.zoomRatio,
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2
+            };
+
+            var callback = function() {
+                this._setFittedImageVerticeCoordinates();
+
+                // Restore cropper
+                var state = this.cropperState;
+                var scaledImageDimensions = this.getScaledImageDimensions();
+                var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                // Restore based on the stored information
+                var cropperData = {
+                    left: this.image.left + (state.offsetX * sizeFactor * this.zoomRatio),
+                    top: this.image.top + (state.offsetY * sizeFactor * this.zoomRatio),
+                    width: state.width * sizeFactor * this.zoomRatio,
+                    height: state.height * sizeFactor * this.zoomRatio
+                };
+
+                this._showCropper(cropperData);
+
+                if (this.focalPoint) {
+                    sizeFactor = scaledImageDimensions.width / this.focalPointState.imageDimensions.width;
+                    this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
+                    this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
+                    this.canvas.add(this.focalPoint);
+                }
+            }.bind(this);
+
+            this._editorModeTransition(callback, imageProperties, viewportProperties);
+        },
+
+        /**
+         * Switch out of crop mode.
+         */
+        disableCropMode: function() {
+
+            var viewportProperties = {};
+
+            var imageProperties = {
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2
+            };
+
+            this._hideCropper();
+            var targetZoom = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
+            var inverseZoomFactor = targetZoom / this.zoomRatio;
+            this.zoomRatio = targetZoom;
+
+            var offsetX = this.clipper.left - this.image.left;
+            var offsetY = this.clipper.top - this.image.top;
+
+            var imageOffsetX = offsetX * inverseZoomFactor;
+            var imageOffsetY = offsetY * inverseZoomFactor;
+            imageProperties.left = (this.editorWidth / 2) - imageOffsetX;
+            imageProperties.top = (this.editorHeight / 2) - imageOffsetY;
+
+            // Calculate the cropper dimensions after all the zooming
+            viewportProperties.height = this.clipper.height * inverseZoomFactor;
+            viewportProperties.width = this.clipper.width * inverseZoomFactor;
+
+            if (!this.focalPoint || (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper))) {
+                if (this.focalPoint) {
+                    this.toggleFocalPoint();
+                }
+
+                this._resetFocalPointPosition();
+            }
+
+            var callback = function() {
+                // Reposition focal point correctly
+                if (this.focalPoint) {
+                    var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
+                    this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
+                    this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
+                    this.canvas.add(this.focalPoint);
+                }
+            }.bind(this);
+
+            this._editorModeTransition(callback, imageProperties, viewportProperties);
+        },
+
+        /**
+         * Transition between cropping end editor modes
+         *
+         * @param callback
+         * @param imageProperties
+         * @param viewportProperties
+         * @private
+         */
+        _editorModeTransition: function (callback, imageProperties, viewportProperties) {
+
+            if (!this.animationInProgress) {
+                this.animationInProgress = true;
+
+                // Without this it looks semi-broken during animation
+                if (this.focalPoint) {
+                    this.canvas.remove(this.focalPoint);
+                    this.renderImage();
+                }
+
+                this.image.animate(imageProperties, {
+                    onChange: this.canvas.renderAll.bind(this.canvas),
+                    duration: this.settings.animationDuration,
+                    onComplete: function() {
+                        callback();
+                        this.animationInProgress = false;
+                        this.renderImage();
+                    }.bind(this)
+                });
+
+                this.viewport.animate(viewportProperties, {
+                    duration: this.settings.animationDuration
+                });
+            }
+        },
+
+        _showSpinner: function() {
+            this.$spinnerCanvas = $('<canvas id="spinner-canvas"></canvas>').appendTo($('.image', this.$container));
+            var canvas = document.getElementById('spinner-canvas');
+            var context = canvas.getContext('2d');
+            var start = new Date();
+            var lines = 16,
+                cW = context.canvas.width,
+                cH = context.canvas.height;
+
+            var draw = function() {
+                var rotation = parseInt(((new Date() - start) / 1000) * lines) / lines;
+                context.save();
+                context.clearRect(0, 0, cW, cH);
+                context.translate(cW / 2, cH / 2);
+                context.rotate(Math.PI * 2 * rotation);
+                for (var i = 0; i < lines; i++) {
+
+                    context.beginPath();
+                    context.rotate(Math.PI * 2 / lines);
+                    context.moveTo(cW / 10, 0);
+                    context.lineTo(cW / 4, 0);
+                    context.lineWidth = cW / 30;
+                    context.strokeStyle = "rgba(255,255,255," + i / lines + ")";
+                    context.stroke();
+                }
+                context.restore();
+            };
+            this.spinnerInterval = window.setInterval(draw, 1000 / 30);
+        },
+
+        _hideSpinner: function () {
+            window.clearInterval(this.spinnerInterval);
+            this.$spinnerCanvas.remove();
+            this.$spinnerCanvas = null;
+        },
+
+        /**
+         * Show the cropper.
+         *
+         * @param clipperData
+         */
+        _showCropper: function(clipperData) {
+            this._setupCropperLayer(clipperData);
+            this._redrawCropperElements();
+            this.renderCropper();
+        },
+
+        /**
+         * Hide the cropper.
+         */
+        _hideCropper: function() {
+            if (this.clipper) {
+                this.croppingCanvas.remove(this.clipper);
+                this.croppingCanvas.remove(this.croppingShade);
+                this.croppingCanvas.remove(this.cropperHandles);
+                this.croppingCanvas.remove(this.cropperGrid);
+                this.croppingCanvas.remove(this.croppingRectangle);
+
+                this.croppingCanvas = null;
+                this.renderCropper = null;
+            }
+        },
+
+        /**
+         * Draw the cropper.
+         *
+         * @param clipperData
+         */
+        _setupCropperLayer: function(clipperData) {
+            // Set up the canvas for cropper
+            this.croppingCanvas = new fabric.StaticCanvas('cropping-canvas', {
+                backgroundColor: 'rgba(0,0,0,0)',
+                hoverCursor: 'default',
+                selection: false
+            });
+
+            this.croppingCanvas.setDimensions({
+                width: this.editorWidth,
+                height: this.editorHeight
+            });
+
+            this.renderCropper = function() {
+                Garnish.requestAnimationFrame(this.croppingCanvas.renderAll.bind(this.croppingCanvas));
+            }.bind(this);
+
+
+            $('#cropping-canvas', this.$editorContainer).css({
+                position: 'absolute',
+                top: 0,
+                left: 0
+            });
+
+            this.croppingShade = new fabric.Rect({
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2,
+                originX: 'center',
+                originY: 'center',
+                width: this.editorWidth,
+                height: this.editorHeight,
+                fill: 'rgba(0,0,0,0.7)'
+            });
+
+            // Calculate the cropping rectangle size
+            var imageDimensions = this.getScaledImageDimensions();
+            var rectangleRatio = this.imageStraightenAngle === 0 ? 1 : this.getCombinedZoomRatio(imageDimensions) * 1.2;
+            var rectWidth = imageDimensions.width / rectangleRatio;
+            var rectHeight = imageDimensions.height / rectangleRatio;
+
+            if (this.hasOrientationChanged()) {
+                var temp = rectHeight;
+                rectHeight = rectWidth;
+                rectWidth = temp;
+            }
+
+            // Set up the cropping viewport rectangle
+            this.clipper = new fabric.Rect({
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2,
+                originX: 'center',
+                originY: 'center',
+                width: rectWidth,
+                height: rectHeight,
+                stroke: 'black',
+                fill: 'rgba(128,0,0,1)',
+                strokeWidth: 0
+            });
+
+            // Set from clipper data
+            if (clipperData) {
+                this.clipper.set(clipperData);
+            }
+
+            this.clipper.globalCompositeOperation = 'destination-out';
+            this.croppingCanvas.add(this.croppingShade);
+            this.croppingCanvas.add(this.clipper);
+        },
+
+        /**
+         * Redraw the cropper boundaries
+         */
+        _redrawCropperElements: function() {
+            if (this.cropperHandles) {
+                this.croppingCanvas.remove(this.cropperHandles);
+                this.croppingCanvas.remove(this.cropperGrid);
+                this.croppingCanvas.remove(this.croppingRectangle);
+            }
+            var lineOptions = {
+                strokeWidth: 4,
+                stroke: 'rgb(255,255,255)',
+                fill: false
+            };
+
+            var gridOptions = {
+                strokeWidth: 2,
+                stroke: 'rgba(255,255,255,0.5)'
+            };
+
+            // Draw the handles
+            var pathGroup = [
+                new fabric.Path('M 0,10 L 0,0 L 10,0', lineOptions),
+                new fabric.Path('M ' + (this.clipper.width - 8) + ',0 L ' + (this.clipper.width + 4) + ',0 L ' + (this.clipper.width + 4) + ',10', lineOptions),
+                new fabric.Path('M ' + (this.clipper.width + 4) + ',' + (this.clipper.height - 8) + ' L' + (this.clipper.width + 4) + ',' + (this.clipper.height + 4) + ' L ' + (this.clipper.width - 8) + ',' + (this.clipper.height + 4), lineOptions),
+                new fabric.Path('M 10,' + (this.clipper.height + 4) + ' L 0,' + (this.clipper.height + 4) + ' L 0,' + (this.clipper.height - 8), lineOptions)
+            ];
+
+            this.cropperHandles = new fabric.Group(pathGroup, {
+                left: this.clipper.left,
+                top: this.clipper.top,
+                originX: 'center',
+                originY: 'center'
+            });
+
+            // Don't forget the rectangle
+            this.croppingRectangle = new fabric.Rect({
+                left: this.clipper.left,
+                top: this.clipper.top,
+                width: this.clipper.width,
+                height: this.clipper.height,
+                fill: 'rgba(0,0,0,0)',
+                stroke: 'rgba(255,255,255,0.8)',
+                strokeWidth: 2,
+                originX: 'center',
+                originY: 'center'
+            });
+
+            this.cropperGrid = new fabric.Group(
+                [
+                    new fabric.Line([this.clipper.width * 0.33, 0, this.clipper.width * 0.33, this.clipper.height], gridOptions),
+                    new fabric.Line([this.clipper.width * 0.66, 0, this.clipper.width * 0.66, this.clipper.height], gridOptions),
+                    new fabric.Line([0, this.clipper.height * 0.33, this.clipper.width, this.clipper.height * 0.33], gridOptions),
+                    new fabric.Line([0, this.clipper.height * 0.66, this.clipper.width, this.clipper.height * 0.66], gridOptions)
+                ], {
+                    left: this.clipper.left,
+                    top: this.clipper.top,
+                    originX: 'center',
+                    originY: 'center'
+                }
+            );
+
+            this.croppingCanvas.add(this.cropperHandles);
+            this.croppingCanvas.add(this.cropperGrid);
+            this.croppingCanvas.add(this.croppingRectangle);
+        },
+
+        /**
+         * Reposition the cropper when the image editor dimensions change.
+         *
+         * @param previousImageArea
+         */
+        _repositionCropper: function(previousImageArea) {
+            if (!this.croppingCanvas) {
+                return;
+            }
+
+            // Get the current clipper offset relative to center
+            var currentOffset = {
+                x: this.clipper.left - this.croppingCanvas.width / 2,
+                y: this.clipper.top - this.croppingCanvas.height / 2
+            };
+
+            // Resize the cropping canvas
+            this.croppingCanvas.setDimensions({
+                width: this.editorWidth,
+                height: this.editorHeight
+            });
+
+            // Check by what factor will the new final bounding box be different
+            var currentArea = this._getBoundingRectangle(this.imageVerticeCoords);
+            var areaFactor = currentArea.width / previousImageArea.width;
+
+            // Adjust the cropper size to scale along with the bounding box
+            this.clipper.width = Math.round(this.clipper.width * areaFactor);
+            this.clipper.height = Math.round(this.clipper.height * areaFactor);
+
+            // Adjust the coordinates: re-position clipper in relation to the new center to adjust
+            // for editor size changes and then multiply by the size factor to adjust for image size changes
+            this.clipper.left = this.editorWidth / 2 + (currentOffset.x * areaFactor);
+            this.clipper.top = this.editorHeight / 2 + (currentOffset.y * areaFactor);
+
+            // Resize the cropping shade
+            this.croppingShade.set({
+                width: this.editorWidth,
+                height: this.editorHeight,
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2
+            });
+
+            this._redrawCropperElements();
+            this.renderCropper();
+        },
+
+        /**
+         * Get the dimensions of a bounding rectangle by a set of four coordinates.
+         *
+         * @param coordinateSet
+         */
+        _getBoundingRectangle: function(coordinateSet) {
+            return {
+                width: Math.max(coordinateSet.a.x, coordinateSet.b.x, coordinateSet.c.x, coordinateSet.d.x) - Math.min(coordinateSet.a.x, coordinateSet.b.x, coordinateSet.c.x, coordinateSet.d.x),
+                height: Math.max(coordinateSet.a.y, coordinateSet.b.y, coordinateSet.c.y, coordinateSet.d.y) - Math.min(coordinateSet.a.y, coordinateSet.b.y, coordinateSet.c.y, coordinateSet.d.y)
+            };
+        },
+
+        /**
+         * Handle the mouse being clicked.
+         *
+         * @param ev
+         */
+        _handleMouseDown: function(ev) {
+            // Focal before resize before dragging
+            var focal = this.focalPoint && this._isMouseOver(ev, this.focalPoint);
+            var move = this.croppingCanvas && this._isMouseOver(ev, this.clipper);
+            var handle = this.croppingCanvas && this._cropperHandleHitTest(ev);
+
+            if (handle || move || focal) {
+                this.previousMouseX = ev.pageX;
+                this.previousMouseY = ev.pageY;
+
+                if (focal) {
+                    this.draggingFocal = true;
+                } else if (handle) {
+                    this.scalingCropper = handle;
+                } else if (move) {
+                    this.draggingCropper = true;
+                }
+            }
+        },
+
+        /**
+         * Handle the mouse being moved.
+         *
+         * @param ev
+         */
+        _handleMouseMove: function(ev) {
+            if (this.focalPoint && this.draggingFocal) {
+                this._handleFocalDrag(ev);
+                this.storeFocalPointState();
+                this.renderImage();
+            } else if (this.draggingCropper || this.scalingCropper) {
+                if (this.draggingCropper) {
+                    this._handleCropperDrag(ev);
+                } else {
+                    this._handleCropperResize(ev);
+                }
+
+                this._redrawCropperElements();
+
+                this.storeCropperState();
+                this.renderCropper();
+            } else {
+                this._setMouseCursor(ev);
+            }
+
+            this.previousMouseX = ev.pageX;
+            this.previousMouseY = ev.pageY;
+        },
+
+        /**
+         * Handle mouse being released.
+         *
+         * @param ev
+         */
+        _handleMouseUp: function(ev) {
+            this.draggingCropper = false;
+            this.scalingCropper = false;
+            this.draggingFocal = false;
+        },
+
+        /**
+         * Handle cropper being dragged.
+         *
+         * @param ev
+         */
+        _handleCropperDrag: function(ev) {
+            var deltaX = ev.pageX - this.previousMouseX;
+            var deltaY = ev.pageY - this.previousMouseY;
+
+            if (deltaX === 0 && deltaY === 0) {
+                return;
+            }
+
+            var rectangle = {
+                left: this.clipper.left - this.clipper.width / 2,
+                top: this.clipper.top - this.clipper.height / 2,
+                width: this.clipper.width,
+                height: this.clipper.height
+            };
+
+            var vertices = this._getRectangleVertices(rectangle, deltaX, deltaY);
+
+            // Just make sure that the cropper stays inside the image
+            if (!this.arePointsInsideRectangle(vertices, this.imageVerticeCoords)) {
+                return;
+            }
+
+            this.clipper.set({
+                left: this.clipper.left + deltaX,
+                top: this.clipper.top + deltaY
+            });
+
+        },
+
+        /**
+         * Handle focal point being dragged.
+         *
+         * @param ev
+         */
+        _handleFocalDrag: function(ev) {
+            if (this.focalPoint) {
+                var deltaX = ev.pageX - this.previousMouseX;
+                var deltaY = ev.pageY - this.previousMouseY;
+
+                if (deltaX === 0 && deltaY === 0) {
+                    return;
+                }
+
+                var newX = this.focalPoint.left + deltaX;
+                var newY = this.focalPoint.top + deltaY;
+
+                // Just make sure that the focal point stays inside the image
+                if (this.currentView === 'crop') {
+                    if (!this.arePointsInsideRectangle([{x: newX, y: newY}], this.imageVerticeCoords)) {
+                        return;
+                    }
+                } else {
+                    if (!(this.viewport.left - this.viewport.width / 2 - newX < 0 && this.viewport.left + this.viewport.width / 2 - newX > 0
+                        && this.viewport.top - this.viewport.height / 2 - newY < 0 && this.viewport.top + this.viewport.height / 2 - newY > 0)) {
+                        return;
+                    }
+                }
+
+                this.focalPoint.set({
+                    left: this.focalPoint.left + deltaX,
+                    top: this.focalPoint.top + deltaY
+                });
+            }
+        },
+
+        /**
+         * Set the cropping constraint
+         * @param constraint
+         */
+        setCroppingConstraint: function(constraint) {
+
+            // In case this caused the sidebar width to change.
+            this.updateSizeAndPosition();
+
+            switch (constraint) {
+                case 'none':
+                    constraint = false;
+                    break;
+
+                case 'original':
+                    constraint = this.originalWidth / this.originalHeight;
+                    break;
+
+                case 'current':
+                    constraint = this.clipper.width / this.clipper.height;
+                    break;
+
+                default:
+                    constraint = parseFloat(constraint);
+                    break;
+            }
+
+            this.croppingConstraint = constraint;
+        },
+
+        /**
+         * Enforce the cropping constraint
+         */
+        enforceCroppingConstraint: function () {
+            if (this.animationInProgress || !this.croppingConstraint) {
+                return;
+            }
+
+            this.animationInProgress = true;
+
+            // Mock the clipping rectangle for collision tests
+            var rectangle = {
+                left: this.clipper.left - this.clipper.width / 2,
+                top: this.clipper.top - this.clipper.height / 2,
+                width: this.clipper.width,
+                height: this.clipper.height
+            };
+
+            // If wider than it should be
+            if (this.clipper.width > this.clipper.height * this.croppingConstraint)
+            {
+                var previousHeight = rectangle.height;
+
+                // Make it taller!
+                rectangle.height = this.clipper.width / this.croppingConstraint;
+
+                // Getting really awkward having to convert between 0;0 being center or top-left corner.
+                rectangle.top -= (rectangle.height - previousHeight) / 2;
+
+                // If the clipper would end up out of bounds, make it narrower instead.
+                if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
+                    rectangle.width = this.clipper.height * this.croppingConstraint;
+                    rectangle.height = rectangle.width / this.croppingConstraint;
+                }
+            } else {
+                // Follow the same pattern, if taller than it should be.
+                var previousWidth = rectangle.width;
+                rectangle.width = this.clipper.height * this.croppingConstraint;
+                rectangle.left -= (rectangle.width - previousWidth) / 2;
+
+                if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
+                    rectangle.height = this.clipper.width / this.croppingConstraint;
+                    rectangle.width = rectangle.height * this.croppingConstraint;
+                }
+            }
+
+            var properties = {
+                height: rectangle.height,
+                width: rectangle.width
+            };
+
+            // Make sure to redraw cropper handles and gridlines when resizing
+            this.clipper.animate(properties, {
+                onChange: function() {
+                    this._redrawCropperElements();
+                    this.croppingCanvas.renderAll();
+                }.bind(this),
+                duration: this.settings.animationDuration,
+                onComplete: function() {
+                    this._redrawCropperElements();
+                    this.animationInProgress = false;
+                    this.renderCropper();
+                }.bind(this)
+            });
+        },
+
+        /**
+         * Handle cropper being resized.
+         *
+         * @param ev
+         */
+        _handleCropperResize: function(ev) {
+            // Size deltas
+            var deltaX = ev.pageX - this.previousMouseX;
+            var deltaY = ev.pageY - this.previousMouseY;
+
+            // Center deltas
+            var topDelta = 0;
+            var leftDelta = 0;
+
+            if (this.scalingCropper === 'b' || this.scalingCropper === 't') {
+                deltaX = 0;
+            }
+
+            if (this.scalingCropper === 'l' || this.scalingCropper === 'r') {
+                deltaY = 0;
+            }
+
+            if (deltaX === 0 && deltaY === 0) {
+                return;
+            }
+
+            var rectangle = {
+                left: this.clipper.left - this.clipper.width / 2,
+                top: this.clipper.top - this.clipper.height / 2,
+                width: this.clipper.width,
+                height: this.clipper.height
+            };
+
+            // Lock the aspect ratio if needed
+            if (this.croppingConstraint) {
+                var change = 0;
+
+                // Take into account the mouse direction and figure out the "real" change in cropper size
+                switch (this.scalingCropper) {
+                    case 't':
+                        change = -deltaY;
+                        break;
+                    case 'b':
+                        change = deltaY;
+                        break;
+                    case 'r':
+                        change = deltaX;
+                        break;
+                    case 'l':
+                        change = -deltaX;
+                        break;
+                    case 'tr':
+                        change = -deltaY + deltaX;
+                        break;
+                    case 'tl':
+                        change = -deltaY - deltaX;
+                        break;
+                    case 'br':
+                        change = deltaY + deltaX;
+                        break;
+                    case 'bl':
+                        change = deltaY - deltaX;
+                        break;
+                }
+
+                if (this.croppingConstraint > 1) {
+                    deltaX = change;
+                    deltaY = deltaX / this.croppingConstraint;
+                } else {
+                    deltaY = change;
+                    deltaX = deltaY * this.croppingConstraint;
+                }
+
+                rectangle.height += deltaY;
+                rectangle.width += deltaX;
+
+                // Make the cropper compress/expand relative to the correct edge to make it feel "right"
+                if (this.scalingCropper.match(/t/)) {
+                    rectangle.top -= deltaY;
+                    rectangle.left -= deltaX / 2;
+                    topDelta = -deltaY/2;
+                }
+
+                if (this.scalingCropper.match(/b/)) {
+                    rectangle.left += -deltaX / 2;
+                    topDelta = deltaY/2;
+                }
+
+                if (this.scalingCropper.match(/r/)) {
+                    rectangle.top += -deltaY / 2;
+                    leftDelta = deltaX/2;
+                }
+
+                if (this.scalingCropper.match(/l/)) {
+                    rectangle.top -= deltaY / 2;
+                    rectangle.left -= deltaX;
+                    leftDelta = -deltaX/2;
+                }
+            } else {
+
+                // Lock the aspect ratio
+                if (this.shiftKeyHeld &&
+                    (this.scalingCropper === 'tl' || this.scalingCropper === 'tr' ||
+                    this.scalingCropper === 'bl' || this.scalingCropper === 'br')
+                ) {
+                    var ratio;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        ratio = this.clipper.width / this.clipper.height;
+                        deltaY = deltaX / ratio;
+                        deltaY *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
+                    } else {
+                        ratio = this.clipper.width / this.clipper.height;
+                        deltaX = deltaY * ratio;
+                        deltaX *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
+                    }
+                }
+
+                if (this.scalingCropper.match(/t/)) {
+                    rectangle.top += deltaY;
+                    rectangle.height -= deltaY;
+                }
+                if (this.scalingCropper.match(/b/)) {
+                    rectangle.height += deltaY;
+                }
+                if (this.scalingCropper.match(/r/)) {
+                    rectangle.width += deltaX;
+                }
+                if (this.scalingCropper.match(/l/)) {
+                    rectangle.left += deltaX;
+                    rectangle.width -= deltaX;
+                }
+
+                topDelta = deltaY/2;
+                leftDelta = deltaX/2;
+            }
+
+            if (rectangle.height < 30 || rectangle.width < 30) {
+                return;
+            }
+
+            if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
+                return;
+            }
+
+            this.clipper.set({
+                top: this.clipper.top + topDelta,
+                left: this.clipper.left + leftDelta,
+                width: rectangle.width,
+                height: rectangle.height
+            });
+
+            this._redrawCropperElements();
+        },
+
+        /**
+         * Set mouse cursor by it's position over cropper.
+         *
+         * @param ev
+         */
+        _setMouseCursor: function(ev) {
+            var cursor = 'default';
+            var handle = this.croppingCanvas && this._cropperHandleHitTest(ev);
+            if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
+                cursor = 'pointer';
+            } else if (handle) {
+                if (handle === 't' || handle === 'b') {
+                    cursor = 'ns-resize';
+                } else if (handle === 'l' || handle === 'r') {
+                    cursor = 'ew-resize';
+                } else if (handle === 'tl' || handle === 'br') {
+                    cursor = 'nwse-resize';
+                } else if (handle === 'bl' || handle === 'tr') {
+                    cursor = 'nesw-resize';
+                }
+            } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
+                cursor = 'move';
+            }
+
+            $('.body').css('cursor', cursor);
+        },
+
+        /**
+         * Test whether the mouse cursor is on any cropper handles.
+         *
+         * @param ev
+         */
+        _cropperHandleHitTest: function(ev) {
+            var parentOffset = this.$croppingCanvas.offset();
+            var mouseX = ev.pageX - parentOffset.left;
+            var mouseY = ev.pageY - parentOffset.top;
+
+            // Compensate for center origin coordinate-wise
+            var lb = this.clipper.left - this.clipper.width / 2;
+            var rb = lb + this.clipper.width;
+            var tb = this.clipper.top - this.clipper.height / 2;
+            var bb = tb + this.clipper.height;
+
+            // Left side top/bottom
+            if (mouseX < lb + 10 && mouseX > lb - 3) {
+                if (mouseY < tb + 10 && mouseY > tb - 3) {
+                    return 'tl';
+                } else if (mouseY < bb + 3 && mouseY > bb - 10) {
+                    return 'bl';
+                }
+            }
+            // Right side top/bottom
+            if (mouseX > rb - 13 && mouseX < rb + 3) {
+                if (mouseY < tb + 10 && mouseY > tb - 3) {
+                    return 'tr';
+                } else if (mouseY < bb + 2 && mouseY > bb - 10) {
+                    return 'br';
+                }
+            }
+
+            // Left or right
+            if (mouseX < lb + 3 && mouseX > lb - 3 && mouseY < bb - 10 && mouseY > tb + 10) {
+                return 'l';
+            }
+            if (mouseX < rb + 1 && mouseX > rb - 5 && mouseY < bb - 10 && mouseY > tb + 10) {
+                return 'r';
+            }
+
+            // Top or bottom
+            if (mouseY < tb + 4 && mouseY > tb - 2 && mouseX > lb + 10 && mouseX < rb - 10) {
+                return 't';
+            }
+            if (mouseY < bb + 2 && mouseY > bb - 4 && mouseX > lb + 10 && mouseX < rb - 10) {
+                return 'b';
+            }
+
+            return false;
+        },
+
+        /**
+         * Test whether the mouse cursor is on a fabricJS object.
+         *
+         * @param object
+         * @param event
+         *
+         * @return boolean
+         */
+
+        _isMouseOver: function(event, object) {
+            var parentOffset = this.$croppingCanvas.offset();
+            var mouseX = event.pageX - parentOffset.left;
+            var mouseY = event.pageY - parentOffset.top;
+
+            // Compensate for center origin coordinate-wise
+            var lb = object.left - object.width / 2;
+            var rb = lb + object.width;
+            var tb = object.top - object.height / 2;
+            var bb = tb + object.height;
+
+            return (mouseX >= lb && mouseX <= rb && mouseY >= tb && mouseY <= bb);
+        },
+
+        /**
+         * Get vertices of a rectangle defined by left,top,height and width properties.
+         * Optionally it's possible to provide offsetX and offsetY values.
+         * Left and top properties of rectangle reference the top-left corner.
+         *
+         * @param rectangle
+         * @param [offsetX]
+         * @param [offsetY]
+         */
+        _getRectangleVertices: function(rectangle, offsetX, offsetY) {
+            if (typeof offsetX === 'undefined') {
+                offsetX = 0;
+            }
+            if (typeof offsetY === 'undefined') {
+                offsetY = 0;
+            }
+
+            var topLeft = {
+                x: rectangle.left + offsetX,
+                y: rectangle.top + offsetY
+            };
+
+            var topRight = {x: topLeft.x + rectangle.width, y: topLeft.y};
+            var bottomRight = {x: topRight.x, y: topRight.y + rectangle.height};
+            var bottomLeft = {x: topLeft.x, y: bottomRight.y};
+
+            return [topLeft, topRight, bottomRight, bottomLeft];
+        },
+
+        /**
+         * Set image vertice coordinates for an image that's been zoomed to fit.
+         */
+        _setFittedImageVerticeCoordinates: function() {
+            this.imageVerticeCoords = this.getImageVerticeCoords('fit');
+        },
+
+        /**
+         * Get image vertice coords by a zoom mode and taking into account the straightening angle.
+         * The zoomMode can be either "cover", "fit" or a discrete float value.
+         *
+         * @param zoomMode
+         */
+        getImageVerticeCoords: function(zoomMode) {
+            var angleInRadians = -1 * ((this.hasOrientationChanged() ? 90 : 0) + this.imageStraightenAngle) * (Math.PI / 180);
+
+            var imageDimensions = this.getScaledImageDimensions();
+
+            var ratio;
+
+            if (typeof zoomMode === "number") {
+                ratio = zoomMode;
+            } else if (zoomMode === "cover") {
+                ratio = this.getZoomToCoverRatio(imageDimensions);
+            } else {
+                ratio = this.getZoomToFitRatio(imageDimensions);
+            }
+
+            // Get the dimensions of the scaled image
+            var scaledHeight = imageDimensions.height * ratio;
+            var scaledWidth = imageDimensions.width * ratio;
+
+            // Calculate the segments of the containing box for the image.
+            // When referring to top/bottom or right/left segments, these are on the
+            // right-side and bottom projection of the containing box for the zoomed out image.
+            var topVerticalSegment = Math.cos(angleInRadians) * scaledHeight;
+            var bottomVerticalSegment = Math.sin(angleInRadians) * scaledWidth;
+            var rightHorizontalSegment = Math.cos(angleInRadians) * scaledWidth;
+            var leftHorizontalSegment = Math.sin(angleInRadians) * scaledHeight;
+
+            // Calculate the offsets from editor box for the image-containing box
+            var verticalOffset = (this.editorHeight - (topVerticalSegment + bottomVerticalSegment)) / 2;
+            var horizontalOffset = (this.editorWidth - (leftHorizontalSegment + rightHorizontalSegment)) / 2;
+
+            // Finally, calculate the image vertice coordinates
+            return {
+                a: {
+                    x: horizontalOffset + rightHorizontalSegment,
+                    y: verticalOffset
+                },
+                b: {
+                    x: this.editorWidth - horizontalOffset,
+                    y: verticalOffset + topVerticalSegment
+                },
+                c: {
+                    x: horizontalOffset + leftHorizontalSegment,
+                    y: this.editorHeight - verticalOffset
+                },
+                d: {
+                    x: horizontalOffset,
+                    y: verticalOffset + bottomVerticalSegment
+                }
+            };
+        },
+
+        /**
+         * Debug stuff by continuously rendering a fabric object on canvas.
+         *
+         * @param fabricObj
+         */
+        _debug: function(fabricObj) {
+            this.canvas.remove(this.debugger);
+            this.debugger = fabricObj;
+            this.canvas.add(this.debugger);
+        },
+
+        /**
+         * Given an array of points in the form of {x: int, y:int} and a rectangle in the form of
+         * {a:{x:int, y:int}, b:{x:int, y:int}, c:{x:int, y:int}} (the fourth vertice is unnecessary)
+         * return true if the point is in the rectangle.
+         *
+         * Adapted from: http://stackoverflow.com/a/2763387/2040791
+         *
+         * @param points
+         * @param rectangle
+         */
+        arePointsInsideRectangle: function(points, rectangle) {
+
+            // Pre-calculate the vectors and scalar products for two rectangle edges
+            var ab = this._getVector(rectangle.a, rectangle.b);
+            var bc = this._getVector(rectangle.b, rectangle.c);
+            var scalarAbAb = this._getScalarProduct(ab, ab);
+            var scalarBcBc = this._getScalarProduct(bc, bc);
+
+            for (var i = 0; i < points.length; i++) {
+                var point = points[i];
+
+                // Calculate the vectors for two rectangle sides and for
+                // the vector from vertices a and b to the point P
+                var ap = this._getVector(rectangle.a, point);
+                var bp = this._getVector(rectangle.b, point);
+
+                // Calculate scalar or dot products for some vector combinations
+                var scalarAbAp = this._getScalarProduct(ab, ap);
+                var scalarBcBp = this._getScalarProduct(bc, bp);
+
+                var projectsOnAB = 0 <= scalarAbAp && scalarAbAp <= scalarAbAb;
+                var projectsOnBC = 0 <= scalarBcBp && scalarBcBp <= scalarBcBc;
+
+                if (!(projectsOnAB && projectsOnBC)) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
+
+        /**
+         * Returns an object representing the vector between points a and b.
+         *
+         * @param a
+         * @param b
+         */
+        _getVector: function(a, b) {
+            return {x: b.x - a.x, y: b.y - a.y};
+        },
+
+        /**
+         * Returns the scalar product of two vectors
+         *
+         * @param a
+         * @param b
+         */
+        _getScalarProduct: function(a, b) {
+            return a.x * b.x + a.y * b.y;
+        },
+
+        /**
+         * Returns the magnitude of a vector.
+         *
+         * @param vector
+         */
+        _getVectorMagnitude: function(vector) {
+            return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        },
+
+        /**
+         * Returns the angle between two vectors in degrees with two decimal points
+         *
+         * @param a
+         * @param b
+         */
+        _getAngleBetweenVectors: function(a, b) {
+            return Math.round(Math.acos(Math.min(1, this._getScalarProduct(a, b) / (this._getVectorMagnitude(a) * this._getVectorMagnitude(b)))) * 180 / Math.PI * 100) / 100;
+        },
+
+        /**
+         * Return the rectangle edge crossed by an imaginary line drawn from editor center to a vertex
+         *
+         * @param rectangle
+         * @param vertex
+         *
+         * @returns {*}
+         */
+        _getEdgeCrossed: function(rectangle, vertex) {
+            // Determine over which edge the vertex is
+            var edgePoints = [
+                [rectangle.a, rectangle.b],
+                [rectangle.b, rectangle.c],
+                [rectangle.c, rectangle.d],
+                [rectangle.d, rectangle.a]
+            ];
+
+            var centerPoint = {x: this.editorWidth / 2, y: this.editorHeight / 2};
+            var smallestDiff = 180;
+            var edgeCrossed = null;
+
+            // Test each edge
+            for (var edgeIndex = 0; edgeIndex < edgePoints.length; edgeIndex++) {
+                var edge = edgePoints[edgeIndex];
+                var toCenter = this._getVector(edge[0], centerPoint);
+                var edgeVector = this._getVector(edge[0], edge[1]);
+                var toVertex = this._getVector(edge[0], vertex);
+
+                // If the angle between toCenter/toVertex is the sum of
+                // angles between edgeVector/toCenter and edgeVector/toVertex, it means that
+                // the edgeVector is between the other two meaning that this is the offending vertex.
+                // To avoid the rounding errors, we'll take the closest match
+                var diff = Math.abs(this._getAngleBetweenVectors(toCenter, toVertex) - (this._getAngleBetweenVectors(toCenter, edgeVector) + this._getAngleBetweenVectors(edgeVector, toVertex)));
+
+                if (diff < smallestDiff) {
+                    smallestDiff = diff;
+                    edgeCrossed = edge;
+                }
+            }
+
+            return edgeCrossed;
+        },
+
+        /**
+         * Get the image bounding box by image scaled dimensions, taking ingo account the straightening angle.
+         *
+         * @param dimensions
+         */
+        _getImageBoundingBox: function(dimensions) {
+
+            var box = {};
+
+            var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
+
+            var proportion = dimensions.height / dimensions.width;
+            box.height = dimensions.width * (Math.sin(angleInRadians) + Math.cos(angleInRadians) * proportion);
+            box.width = dimensions.width * (Math.cos(angleInRadians) + Math.sin(angleInRadians) * proportion);
+
+            if (this.hasOrientationChanged()) {
+                var temp = box.width;
+                box.width = box.height;
+                box.height = temp;
+            }
+
+            return box;
+        }
+    },
+    {
+        defaults: {
+            animationDuration: 100,
+            allowSavingAsNew: true,
+            onSave: $.noop,
+            allowDegreeFractions: true
+        }
+    }
+);
 
 /** global: Craft */
 /** global: Garnish */
@@ -5463,7 +8047,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 var $parentSource = $($parentSources[i]);
 
                 if (!$parentSource.hasClass('expanded')) {
-                    $parentSource.children('.toggle').click();
+                    $parentSource.children('.toggle').trigger('click');
                 }
             }
 
@@ -5490,7 +8074,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var options = {
                 url: Craft.getActionUrl('assets/save-asset'),
                 fileInput: this.$uploadInput,
-                dropZone: this.$main
+                dropZone: this.$container
             };
 
             options.events = {
@@ -5512,7 +8096,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     return;
                 }
                 if (!this.isIndexBusy) {
-                    this.$uploadButton.parent().find('input[name=assets-upload]').click();
+                    this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
                 }
             }, this));
 
@@ -5645,6 +8229,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     this.promptHandler.addPrompt(response);
                 }
+
+                Craft.cp.runQueue();
             }
             else {
                 if (response.error) {
@@ -5910,7 +8496,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             // Collapse any temp-expanded drop targets that aren't parents of this one
             this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-            this.dropTargetFolder.siblings('.toggle').click();
+            this.dropTargetFolder.siblings('.toggle').trigger('click');
 
             // Keep a record of that
             this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -5918,7 +8504,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _collapseFolder: function($source) {
             if ($source.parent().hasClass('expanded')) {
-                $source.siblings('.toggle').click();
+                $source.siblings('.toggle').trigger('click');
             }
         },
 
@@ -6305,6 +8891,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                         this.$container.removeClass('uploading');
                     }
                 }.bind(this));
+
+                Craft.cp.runQueue();
             }
         },
 
@@ -6737,7 +9325,7 @@ Craft.AuthManager = Garnish.Base.extend(
                         if (!Garnish.isMobileBrowser(true)) {
                             // Auto-focus the renew button
                             setTimeout(function() {
-                                $renewSessionBtn.focus();
+                                $renewSessionBtn.trigger('focus');
                             }, 100);
                         }
                     }
@@ -6841,7 +9429,7 @@ Craft.AuthManager = Garnish.Base.extend(
                         if (!Garnish.isMobileBrowser(true)) {
                             // Auto-focus the password input
                             setTimeout($.proxy(function() {
-                                this.$passwordInput.focus();
+                                this.$passwordInput.trigger('focus');
                             }, this), 100);
                         }
                     }, this),
@@ -6954,7 +9542,7 @@ Craft.AuthManager = Garnish.Base.extend(
                         Garnish.shake(this.loginModal.$container);
 
                         if (!Garnish.isMobileBrowser(true)) {
-                            this.$passwordInput.focus();
+                            this.$passwordInput.trigger('focus');
                         }
                     }
                 }
@@ -6994,6 +9582,12 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
         $newCategoryBtnGroup: null,
         $newCategoryBtn: null,
 
+        init: function(elementType, $container, settings) {
+            this.on('selectSource', $.proxy(this, 'updateButton'));
+            this.on('selectSite', $.proxy(this, 'updateButton'));
+            this.base(elementType, $container, settings);
+        },
+
         afterInit: function() {
             // Find which of the visible groups the user has permission to create new categories in
             this.editableGroups = [];
@@ -7024,7 +9618,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        onSelectSource: function() {
+        updateButton: function() {
+            if (!this.$source) {
+                return;
+            }
+
             // Get the handle of the selected source
             var selectedSourceHandle = this.$source.data('handle');
 
@@ -7115,13 +9713,19 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
                 history.replaceState({}, '', Craft.getUrl(uri));
             }
-
-            this.base();
         },
 
         _getGroupTriggerHref: function(group) {
             if (this.settings.context === 'index') {
-                return 'href="' + Craft.getUrl('categories/' + group.handle + '/new') + '"';
+                var uri = 'categories/' + group.handle + '/new';
+                if (this.siteId && this.siteId != Craft.primarySiteId) {
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == this.siteId) {
+                            uri += '/'+Craft.sites[i].handle;
+                        }
+                    }
+                }
+                return 'href="' + Craft.getUrl(uri) + '"';
             }
             else {
                 return 'data-id="' + group.id + '"';
@@ -8046,58 +10650,116 @@ Craft.charts.utils = {
 /** global: Craft */
 /** global: Garnish */
 /**
+ * Color input
+ */
+Craft.ColorInput = Garnish.Base.extend({
+    $container: null,
+    $input: null,
+    $colorContainer: null,
+    $colorPreview: null,
+    $colorInput: null,
+
+    init: function(container) {
+        this.$container = $(container);
+        this.$input = this.$container.children('.color-input');
+        this.$colorContainer = this.$container.children('.color');
+        this.$colorPreview = this.$colorContainer.children('.color-preview');
+
+        this.createColorInput();
+        this.handleTextChange();
+
+        this.addListener(this.$input, 'textchange', 'handleTextChange');
+    },
+
+    createColorInput: function() {
+        var input = document.createElement('input');
+        input.setAttribute('type', 'color');
+
+        if (input.type !== 'color') {
+            // The browser doesn't support input[type=color]
+            return;
+        }
+
+        this.$colorContainer.removeClass('static');
+        this.$colorInput = $(input)
+            .addClass('hidden')
+            .insertAfter(this.$input);
+
+        this.addListener(this.$colorContainer, 'click', function() {
+            this.$colorInput.trigger('click');
+        });
+
+        this.addListener(this.$colorInput, 'change', 'updateColor');
+    },
+
+    updateColor: function() {
+        this.$input.val(this.$colorInput.val());
+        this.$input.data('garnish-textchange-value', this.$colorInput.val());
+        this.handleTextChange();
+    },
+
+    handleTextChange: function() {
+        var val = this.$input.val();
+
+        // If empty, set the preview to transparent
+        if (!val.length || val === '#') {
+            this.$colorPreview.css('background-color', '');
+            return;
+        }
+
+        // Make sure the value starts with a #
+        if (val[0] !== '#') {
+            val = '#'+val;
+            this.$input.val(val);
+            this.$input.data('garnish-textchange-value', val);
+        }
+
+        this.$colorPreview.css('background-color', val);
+
+        if (this.$colorInput) {
+            this.$colorInput.val(val);
+        }
+    }
+}, {
+    _browserSupportsColorInputs: null,
+
+    doesBrowserSupportColorInputs: function()
+    {
+        if (Craft.ColorInput._browserSupportsColorInputs === null)
+        {
+
+        }
+
+        return Craft.ColorInput._browserSupportsColorInputs;
+    }
+});
+
+/** global: Craft */
+/** global: Garnish */
+/**
  * CP class
  */
 Craft.CP = Garnish.Base.extend(
     {
         authManager: null,
 
-        $container: null,
-        $alerts: null,
-        $globalSidebar: null,
-        $globalSidebarTopbar: null,
-        $systemNameLink: null,
-        $systemName: null,
         $nav: null,
-        $subnav: null,
-        $pageHeader: null,
-        $containerTopbar: null,
-
-        $overflowNavMenuItem: null,
-        $overflowNavMenuBtn: null,
-        $overflowNavMenu: null,
-        $overflowNavMenuList: null,
-
-        $overflowSubnavMenuItem: null,
-        $overflowSubnavMenuBtn: null,
-        $overflowSubnavMenu: null,
-        $overflowSubnavMenuList: null,
-
-        $notificationWrapper: null,
+        $mainContainer: null,
+        $alerts: null,
+        $crumbs: null,
         $notificationContainer: null,
         $main: null,
-        $content: null,
-        $collapsibleTables: null,
         $primaryForm: null,
+        $header: null,
+        $mainContent: null,
+        $details: null,
+        $selectedTab: null,
+        $sidebar: null,
+        $contentContainer: null,
 
-        navItems: null,
-        totalNavItems: null,
-        visibleNavItems: null,
-        totalNavWidth: null,
-        showingOverflowNavMenu: false,
-        showingNavToggle: null,
-        showingSidebarToggle: null,
-
-        subnavItems: null,
-        totalSubnavItems: null,
-        visibleSubnavItems: null,
-        totalSubnavWidth: null,
-        showingOverflowSubnavMenu: false,
-
-        selectedItemLabel: null,
+        $collapsibleTables: null,
 
         fixedHeader: false,
-        fixedNotifications: false,
 
         enableQueue: true,
         jobInfo: null,
@@ -8120,78 +10782,31 @@ Craft.CP = Garnish.Base.extend(
             }
 
             // Find all the key elements
-            this.$container = $('#container');
-            this.$alerts = $('#alerts');
-            this.$globalSidebar = $('#global-sidebar');
-            this.$pageHeader = $('#page-header');
-            this.$containerTopbar = this.$container.find('.topbar');
-            this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
-            this.$systemNameLink = this.$globalSidebarTopbar.children('a.system-name');
-            this.$systemName = this.$systemNameLink.children('h2');
             this.$nav = $('#nav');
-            this.$subnav = $('#subnav');
-            this.$sidebar = $('#sidebar');
-            this.$notificationWrapper = $('#notifications-wrapper');
+            this.$mainContainer = $('#main-container');
+            this.$alerts = $('#alerts');
+            this.$crumbs = $('#crumbs');
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
-            this.$content = $('#content');
+            this.$primaryForm = $('#main-form');
+            this.$header = $('#header');
+            this.$mainContent = $('#main-content');
+            this.$details = $('#details');
+            this.$sidebar = $('#sidebar');
+            this.$contentContainer = $('#content-container');
+
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
 
-            // global sidebar
-            this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
-
-            // Find all the nav items
-            this.navItems = [];
-            this.totalNavWidth = Craft.CP.baseNavWidth;
-
-            var $navItems = this.$nav.children();
-            this.totalNavItems = $navItems.length;
-            this.visibleNavItems = this.totalNavItems;
-
-            var i, $li, width;
-
-            for (i = 0; i < this.totalNavItems; i++) {
-                $li = $($navItems[i]);
-                width = $li.width();
-
-                this.navItems.push($li);
-                this.totalNavWidth += width;
-            }
-
-            // Find all the sub nav items
-            this.subnavItems = [];
-            this.totalSubnavWidth = Craft.CP.baseSubnavWidth;
-
-            var $subnavItems = this.$subnav.children();
-            this.totalSubnavItems = $subnavItems.length;
-            this.visibleSubnavItems = this.totalSubnavItems;
-
-            for (i = 0; i < this.totalSubnavItems; i++) {
-                $li = $($subnavItems[i]);
-                width = $li.width();
-
-                this.subnavItems.push($li);
-                this.totalSubnavWidth += width;
-            }
-
-            // sidebar
-
-            this.addListener(this.$sidebar.find('nav ul'), 'resize', 'updateResponsiveSidebar');
-
-            this.$sidebarLinks = $('nav a', this.$sidebar);
-            this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
-
-            this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
-            this.updateFixedNotifications();
+            this.updateSidebarMenuLabel();
 
             this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
             this.updateFixedHeader();
 
             Garnish.$doc.ready($.proxy(function() {
-                // Set up the window resize listener
-                this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-                this.onWindowResize();
+                // Update responsive tables on window resize
+                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
+                this.updateResponsiveTables();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -8199,6 +10814,10 @@ Craft.CP = Garnish.Base.extend(
 
                 $errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
                 $otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+
+                // Wait a frame before initializing any confirm-unload forms,
+                // so other JS that runs on ready() has a chance to initialize
+                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
             }, this));
 
             // Alerts
@@ -8206,11 +10825,12 @@ Craft.CP = Garnish.Base.extend(
                 this.initAlerts();
             }
 
+            // Toggles
+            this.addListener($('#nav-toggle'), 'click', 'toggleNav');
+            this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
+
             // Does this page have a primary form?
-            if (this.$container.prop('nodeName') === 'FORM') {
-                this.$primaryForm = this.$container;
-            }
-            else {
+            if (!this.$primaryForm.length) {
                 this.$primaryForm = $('form[data-saveshortcut]:first');
             }
 
@@ -8226,69 +10846,77 @@ Craft.CP = Garnish.Base.extend(
                 });
             }
 
-            Garnish.$win.on('load', $.proxy(function() {
-                // Look for forms that we should watch for changes on
-                this.$confirmUnloadForms = $('form[data-confirm-unload]');
-
-                if (this.$confirmUnloadForms.length) {
-                    if (!Craft.forceConfirmUnload) {
-                        this.initialFormValues = [];
-                    }
-
-                    for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                        var $form = $(this.$confirmUnloadForms);
-
-                        if (!Craft.forceConfirmUnload) {
-                            this.initialFormValues[i] = $form.serialize();
-                        }
-
-                        this.addListener($form, 'submit', function() {
-                            this.removeListener(Garnish.$win, 'beforeunload');
-                        });
-                    }
-
-                    this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-                        for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                            if (
-                                Craft.forceConfirmUnload ||
-                                this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
-                            ) {
-                                var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
-
-                                if (ev) {
-                                    ev.originalEvent.returnValue = message;
-                                }
-                                else {
-                                    window.event.returnValue = message;
-                                }
-
-                                return message;
-                            }
-                        }
-                    });
-                }
-            }, this));
+            this.initTabs();
 
             if (this.$edition.hasClass('hot')) {
                 this.addListener(this.$edition, 'click', 'showUpgradeModal');
             }
 
             if ($.isTouchCapable()) {
-                this.$container.on('focus', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputFocus'));
-                this.$container.on('blur', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputBlur'));
+                this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
+                this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('target', '_blank')
+                }
+            });
+        },
+
+        initConfirmUnloadForms: function() {
+            // Look for forms that we should watch for changes on
+            this.$confirmUnloadForms = $('form[data-confirm-unload]');
+
+            if (!this.$confirmUnloadForms.length) {
+                return;
+            }
+
+            if (!Craft.forceConfirmUnload) {
+                this.initialFormValues = [];
+            }
+
+            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                var $form = $(this.$confirmUnloadForms);
+
+                if (!Craft.forceConfirmUnload) {
+                    this.initialFormValues[i] = $form.serialize();
+                }
+
+                this.addListener($form, 'submit', function() {
+                    this.removeListener(Garnish.$win, 'beforeunload');
+                });
+            }
+
+            this.addListener(Garnish.$win, 'beforeunload', function(ev) {
+                for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                    if (
+                        Craft.forceConfirmUnload ||
+                        this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
+                    ) {
+                        var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
+
+                        if (ev) {
+                            ev.originalEvent.returnValue = message;
+                        }
+                        else {
+                            window.event.returnValue = message;
+                        }
+
+                        return message;
+                    }
+                }
+            });
         },
 
         _handleInputFocus: function() {
-            Garnish.$bod.addClass('focused');
             this.updateFixedHeader();
-            this.updateResponsiveGlobalSidebar();
         },
 
         _handleInputBlur: function() {
-            Garnish.$bod.removeClass('focused');
             this.updateFixedHeader();
-            this.updateResponsiveGlobalSidebar();
         },
 
         submitPrimaryForm: function() {
@@ -8299,154 +10927,95 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.submit();
+            this.$primaryForm.trigger('submit');
         },
 
         updateSidebarMenuLabel: function() {
-            Garnish.$win.trigger('resize');
-
-            var $selectedLink = $('a.sel:first', this.$sidebar);
-
-            this.selectedItemLabel = $selectedLink.html();
-        },
-
-        /**
-         * Handles stuff that should happen when the window is resized.
-         */
-        onWindowResize: function() {
-            // Get the new window width
-            this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
-
-
-            // Update the responsive global sidebar
-            this.updateResponsiveGlobalSidebar();
-
-            // Update the responsive nav
-            this.updateResponsiveNav();
-
-            // Update the responsive sidebar
-            this.updateResponsiveSidebar();
-
-            // Update any responsive tables
-            this.updateResponsiveTables();
-        },
-
-        updateResponsiveGlobalSidebar: function() {
-            if (Garnish.$bod.hasClass('focused')) {
-                this.$globalSidebar.height(this.$container.height());
-            }
-            else {
-                var globalSidebarHeight = window.innerHeight;
-
-                this.$globalSidebar.height(globalSidebarHeight);
-            }
-        },
-
-        updateResponsiveNav: function() {
-            if (this.onWindowResize._cpWidth <= 992) {
-                if (!this.showingNavToggle) {
-                    this.showNavToggle();
-                }
-            }
-            else {
-                if (this.showingNavToggle) {
-                    this.hideNavToggle();
-                }
-            }
-        },
-
-        showNavToggle: function() {
-            this.$navBtn = $('<a class="show-nav" title="' + Craft.t('app', 'Show nav') + '"></a>').prependTo(this.$containerTopbar);
-
-            this.addListener(this.$navBtn, 'click', 'toggleNav');
-
-            this.showingNavToggle = true;
-        },
-
-        hideNavToggle: function() {
-            this.$navBtn.remove();
-            this.showingNavToggle = false;
+            var $item = this.$sidebar.find('a.sel:first');
+            var $label = $item.children('.label');
+            $('#selected-sidebar-item-label').text($label.length ? $label.text() : $item.text());
+            Garnish.$bod.removeClass('showing-sidebar');
         },
 
         toggleNav: function() {
-            if (Garnish.$bod.hasClass('showing-nav')) {
-                Garnish.$bod.toggleClass('showing-nav');
-            }
-            else {
-                Garnish.$bod.toggleClass('showing-nav');
-            }
-
-        },
-
-        updateResponsiveSidebar: function() {
-            if (this.$sidebar.length > 0) {
-                if (this.onWindowResize._cpWidth < 769) {
-                    if (!this.showingSidebarToggle) {
-                        this.showSidebarToggle();
-                    }
-                }
-                else {
-                    if (this.showingSidebarToggle) {
-                        this.hideSidebarToggle();
-                    }
-                }
-            }
-        },
-
-        showSidebarToggle: function() {
-            var $selectedLink = $('a.sel:first', this.$sidebar);
-
-            this.selectedItemLabel = $selectedLink.html();
-
-            this.$sidebarBtn = $('<a class="show-sidebar" title="' + Craft.t('app', 'Show sidebar') + '">' + this.selectedItemLabel + '</a>').prependTo(this.$content);
-
-            this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
-
-            this.showingSidebarToggle = true;
-        },
-
-        selectSidebarItem: function(ev) {
-            var $link = $(ev.currentTarget);
-
-            this.selectedItemLabel = $link.html();
-
-            if (this.$sidebarBtn) {
-                this.$sidebarBtn.html(this.selectedItemLabel);
-
-                this.toggleSidebar();
-            }
-        },
-
-        hideSidebarToggle: function() {
-            if (this.$sidebarBtn) {
-                this.$sidebarBtn.remove();
-            }
-
-            this.showingSidebarToggle = false;
+            Garnish.$bod.toggleClass('showing-nav');
         },
 
         toggleSidebar: function() {
-            var $contentWithSidebar = this.$content.filter('.has-sidebar');
-
-            $contentWithSidebar.toggleClass('showing-sidebar');
-
-            this.updateResponsiveContent();
+            Garnish.$bod.toggleClass('showing-sidebar');
         },
-        updateResponsiveContent: function() {
-            var $contentWithSidebar = this.$content.filter('.has-sidebar');
 
-            if ($contentWithSidebar.hasClass('showing-sidebar')) {
-                var sidebarHeight = $('nav', this.$sidebar).height();
+        initTabs: function() {
+            this.$selectedTab = null;
 
-                if ($contentWithSidebar.height() <= sidebarHeight) {
-                    var newContentHeight = sidebarHeight + 48;
-                    $contentWithSidebar.css('height', newContentHeight + 'px');
+            var $tabs = $('#tabs').find('> ul > li');
+            var tabs = [];
+            var tabWidths = [];
+            var totalWidth = 0;
+            var i, a, href;
+
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i] = $($tabs[i]);
+                tabWidths[i] = tabs[i].width();
+                totalWidth += tabWidths[i];
+
+                // Does it link to an anchor?
+                a = tabs[i].children('a');
+                href = a.attr('href');
+                if (href && href.charAt(0) === '#') {
+                    this.addListener(a, 'click', function(ev) {
+                        ev.preventDefault();
+                        this.selectTab(ev.currentTarget);
+                    });
+
+                    if (href === document.location.hash) {
+                        this.selectTab(a);
+                    }
+                }
+
+                if (!this.$selectedTab && a.hasClass('sel')) {
+                    this.$selectedTab = a;
                 }
             }
-            else {
-                $contentWithSidebar.css('min-height', 0);
-                $contentWithSidebar.css('height', 'auto');
+
+            // Now set their max widths
+            for (i = 0; i < $tabs.length; i++) {
+                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
+        },
+
+        selectTab: function(tab) {
+            var $tab = $(tab);
+
+            if (this.$selectedTab) {
+                if (this.$selectedTab.get(0) === $tab.get(0)) {
+                    return;
+                }
+                this.deselectTab();
+            }
+
+            $tab.addClass('sel');
+            var href = $tab.attr('href')
+            $(href).removeClass('hidden');
+            if (typeof history !== 'undefined') {
+                history.replaceState(undefined, undefined, href);
+            }
+            Garnish.$win.trigger('resize');
+            // Fixes Redactor fixed toolbars on previously hidden panes
+            Garnish.$doc.trigger('scroll');
+            this.$selectedTab = $tab;
+        },
+
+        deselectTab: function() {
+            if (!this.$selectedTab) {
+                return;
+            }
+
+            this.$selectedTab.removeClass('sel');
+            if (this.$selectedTab.attr('href').charAt(0) === '#') {
+                $(this.$selectedTab.attr('href')).addClass('hidden');
+            }
+            this.$selectedTab = null;
         },
 
         updateResponsiveTables: function() {
@@ -8488,86 +11057,32 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        /**
-         * Adds the last visible nav item to the overflow menu.
-         */
-        addLastVisibleNavItemToOverflowMenu: function() {
-            this.navItems[this.visibleNavItems - 1].prependTo(this.$overflowNavMenuList);
-            this.visibleNavItems--;
-        },
-
-        /**
-         * Adds the first overflow nav item back to the main nav menu.
-         */
-        addFirstOverflowNavItemToMainMenu: function() {
-            this.navItems[this.visibleNavItems].insertBefore(this.$overflowNavMenuItem);
-            this.visibleNavItems++;
-        },
-
-        /**
-         * Adds the last visible nav item to the overflow menu.
-         */
-        addLastVisibleSubnavItemToOverflowMenu: function() {
-            this.subnavItems[this.visibleSubnavItems - 1].prependTo(this.$overflowSubnavMenuList);
-            this.visibleSubnavItems--;
-        },
-
-        /**
-         * Adds the first overflow nav item back to the main nav menu.
-         */
-        addFirstOverflowSubnavItemToMainMenu: function() {
-            this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem);
-            this.visibleSubnavItems++;
-        },
-
         updateFixedHeader: function() {
-            this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
-            this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
-
-            if (Garnish.$win.scrollTop() > this.updateFixedHeader._topbarHeight) {
+            // Have we scrolled passed the top of #main?
+            if (this.$main.length && this.$main[0].getBoundingClientRect().top < 0) {
                 if (!this.fixedHeader) {
-                    this.$pageHeader.addClass('fixed');
+                    var headerHeight = this.$header.outerHeight();
+                    var css = {
+                        top: headerHeight + 'px',
+                        'max-height': 'calc(100vh - ' + headerHeight + 'px)'
+                    };
+                    this.$sidebar.css(css);
+                    this.$details.css(css);
 
-                    if (Garnish.$bod.hasClass('showing-nav') && Garnish.$win.width() <= 992) {
-                        this.$pageHeader.css('top', Garnish.$win.scrollTop());
-                    }
-                    else {
-                        if (Garnish.$bod.hasClass('focused')) {
-                            this.$pageHeader.css('top', Garnish.$win.scrollTop());
-                        }
-                        else {
-                            this.$pageHeader.css('top', 0);
-                        }
-                    }
-
-                    this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);
+                    this.$mainContent.css('margin-top', this.$header.outerHeight());
+                    Garnish.$bod.addClass('fixed-header');
                     this.fixedheader = true;
                 }
             }
-            else {
-                if (this.fixedheader) {
-                    this.$pageHeader.removeClass('fixed');
-                    this.$pageHeader.css('top', 0);
-                    this.$main.css('margin-top', 0);
-                    this.fixedheader = false;
-                }
-            }
-        },
-
-        updateFixedNotifications: function() {
-            this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
-
-            if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight) {
-                if (!this.fixedNotifications) {
-                    this.$notificationWrapper.addClass('fixed');
-                    this.fixedNotifications = true;
-                }
-            }
-            else {
-                if (this.fixedNotifications) {
-                    this.$notificationWrapper.removeClass('fixed');
-                    this.fixedNotifications = false;
-                }
+            else if (this.fixedheader) {
+                Garnish.$bod.removeClass('fixed-header');
+                this.$details.css({
+                    top: null,
+                    'max-height': null
+                });
+                this.$header.css('top', 0);
+                this.$mainContent.css('margin-top', 0);
+                this.fixedheader = false;
             }
         },
 
@@ -8637,8 +11152,10 @@ Craft.CP = Garnish.Base.extend(
         },
 
         displayAlerts: function(alerts) {
+            this.$alerts.remove();
+
             if (Garnish.isArray(alerts) && alerts.length) {
-                this.$alerts = $('<ul id="alerts"/>').insertBefore(this.$containerTopbar);
+                this.$alerts = $('<ul id="alerts"/>').prependTo(this.$mainContainer);
 
                 for (var i = 0; i < alerts.length; i++) {
                     $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);
@@ -8664,6 +11181,13 @@ Craft.CP = Garnish.Base.extend(
                             if (textStatus === 'success') {
                                 if (response.success) {
                                     $transferDomainLink.parent().remove();
+
+                                    // Was that the last one?
+                                    if (this.$alerts.children().length === 0) {
+                                        this.$alerts.remove();
+                                        this.$alerts = null;
+                                    }
+
                                     this.displayNotice(Craft.t('app', 'License transferred.'));
                                 }
                                 else {
@@ -8927,11 +11451,7 @@ Craft.CP = Garnish.Base.extend(
         }
     },
     {
-        maxWidth: 1051, //1024,
-        navHeight: 38,
-        baseNavWidth: 30,
-        subnavHeight: 38,
-        baseSubnavWidth: 30,
+        //maxWidth: 1051, //1024,
         notificationDuration: 2000,
 
         JOB_STATUS_WAITING: 1,
@@ -8940,6 +11460,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
+Garnish.$scrollContainer = $('#content-container');
 Craft.cp = new Craft.CP();
 
 
@@ -8980,7 +11501,7 @@ var JobProgressIcon = Garnish.Base.extend(
         _progressBar: null,
 
         init: function() {
-            this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+            this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
             this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
             this.$label = $('<span class="label"></span>').appendTo(this.$a);
@@ -9021,10 +11542,10 @@ var JobProgressIcon = Garnish.Base.extend(
         setProgress: function(progress, animate) {
             if (this._canvasSupported) {
                 if (animate) {
-                    this._animateArc(0, progress/100);
+                    this._animateArc(0, progress / 100);
                 }
                 else {
-                    this._setArc(0, progress/100);
+                    this._setArc(0, progress / 100);
                 }
             }
             else {
@@ -9771,7 +12292,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
         select: function() {
             this.base();
-            this.$labelInput.focus();
+            this.$labelInput.trigger('focus');
         },
 
         createSettings: function() {
@@ -9964,7 +12485,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
                     this.updateSizeAndPosition();
 
                     if (!this.$deleteActionRadios.first().prop('checked')) {
-                        this.$deleteActionRadios.first().click();
+                        this.$deleteActionRadios.first().trigger('click');
                     }
                     else {
                         this.validateDeleteInputs();
@@ -10024,7 +12545,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         onFadeIn: function() {
             // Auto-focus the first radio
             if (!Garnish.isMobileBrowser(true)) {
-                this.$deleteActionRadios.first().focus();
+                this.$deleteActionRadios.first().trigger('focus');
             }
 
             this.base();
@@ -10075,13 +12596,14 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
-        radioCheckboxes: {},
+        radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
+            this.radioCheckboxes = {};
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
@@ -10133,14 +12655,14 @@ Craft.EditableTable = Garnish.Base.extend(
 
         addRow: function() {
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
-                $tr = this.createRow(rowId, this.columns, this.baseName, {});
+                $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
             new Craft.EditableTable.Row(this, $tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
-            $tr.find('input,textarea,select').first().focus();
+            $tr.find('input,textarea,select').first().trigger('focus');
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -10151,9 +12673,10 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number'],
+        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
         defaults: {
             rowIdPrefix: '',
+            defaultValues: {},
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },
@@ -10196,6 +12719,38 @@ Craft.EditableTable = Garnish.Base.extend(
                     }
 
                     switch (col.type) {
+                        case 'checkbox':
+                            Craft.ui.createCheckbox({
+                                name: name,
+                                value: col.value || '1',
+                                checked: !!value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            Craft.ui.createColorInput({
+                                name: name,
+                                value: value,
+                                small: true
+                            }).appendTo($cell);
+                            break;
+
+                        case 'date':
+                            Craft.ui.createDateInput({
+                                name: name,
+                                value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'lightswitch':
+                            Craft.ui.createLightswitch({
+                                name: name,
+                                value: col.value || '1',
+                                on: !!value,
+                                small: true
+                            }).appendTo($cell);
+                            break;
+
                         case 'select':
                             Craft.ui.createSelect({
                                 name: name,
@@ -10205,16 +12760,8 @@ Craft.EditableTable = Garnish.Base.extend(
                             }).appendTo($cell);
                             break;
 
-                        case 'checkbox':
-                            Craft.ui.createCheckbox({
-                                name: name,
-                                value: col.value || '1',
-                                checked: !!value
-                            }).appendTo($cell);
-                            break;
-
-                        case 'lightswitch':
-                            Craft.ui.createLightswitch({
+                        case 'time':
+                            Craft.ui.createTimeInput({
                                 name: name,
                                 value: value
                             }).appendTo($cell);
@@ -10224,7 +12771,7 @@ Craft.EditableTable = Garnish.Base.extend(
                             $('<textarea/>', {
                                 'name': name,
                                 'rows': 1,
-                                'value': value,
+                                'val': value,
                                 'placeholder': col.placeholder
                             }).appendTo($cell);
                     }
@@ -10296,7 +12843,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea', this.$tds[i]);
+                    var $textarea = $('textarea, input.text', this.$tds[i]);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -10309,6 +12856,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     if (col.type === 'singleline' || col.type === 'number') {
                         this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
+                        $textarea.trigger('textchange');
                     }
 
                     textareasByColId[colId] = $textarea;
@@ -10420,8 +12968,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             this.$textareas.css('min-height', tallestTextareaHeight);
 
-            // If the <td> is still taller, go with that insted
-            var tdHeight = this.$textareas.first().parent().height();
+            // If the <td> is still taller, go with that instead
+            var tdHeight = this.$textareas.filter(':visible').first().parent().height();
 
             if (tdHeight > tallestTextareaHeight) {
                 this.$textareas.css('min-height', tdHeight);
@@ -10613,7 +13161,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
         submitForm: function() {
             // Don't let handleFormSubmit() interrupt this time
             this.disable();
-            this.$form.submit();
+            this.$form.trigger('submit');
             this.enable();
         }
     });
@@ -10703,7 +13251,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
         focusPasswordInput: function() {
             if (!Garnish.isMobileBrowser(true)) {
-                this.$passwordInput.focus();
+                this.$passwordInput.trigger('focus');
             }
         },
 
@@ -10786,6 +13334,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         $newEntryBtnGroup: null,
         $newEntryBtn: null,
 
+        init: function(elementType, $container, settings) {
+            this.on('selectSource', $.proxy(this, 'updateButton'));
+            this.on('selectSite', $.proxy(this, 'updateButton'));
+            this.base(elementType, $container, settings);
+        },
+
         afterInit: function() {
             // Find which of the visible sections the user has permission to create new entries in
             this.publishableSections = [];
@@ -10821,7 +13375,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             return this.base();
         },
 
-        onSelectSource: function() {
+        updateButton: function() {
+            if (!this.$source) {
+                return;
+            }
+
             var handle;
 
             // Get the handle of the selected source
@@ -10861,7 +13419,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
                 // Otherwise only show a menu button
                 if (selectedSection) {
-                    href = this._getSectionTriggerHref(selectedSection);
+                    href = this._getSectionTriggerHref(selectedSection, true);
                     label = (this.settings.context === 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
                     this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
@@ -10919,13 +13477,19 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
                 history.replaceState({}, '', Craft.getUrl(uri));
             }
-
-            this.base();
         },
 
-        _getSectionTriggerHref: function(section) {
+        _getSectionTriggerHref: function(section, includeSite) {
             if (this.settings.context === 'index') {
-                return 'href="' + Craft.getUrl('entries/' + section.handle + '/new') + '"';
+                var uri = 'entries/' + section.handle + '/new';
+                if (includeSite && this.siteId && this.siteId != Craft.primarySiteId) {
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == this.siteId) {
+                            uri += '/'+Craft.sites[i].handle;
+                        }
+                    }
+                }
+                return 'href="' + Craft.getUrl(uri) + '"';
             }
             else {
                 return 'data-id="' + section.id + '"';
@@ -11222,7 +13786,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         gridSettings: {
             itemSelector: '.fld-tab:not(.hidden)',
             minColWidth: 240,
-            percentageWidths: false,
             fillMode: 'grid',
             snapToGrid: 30
         },
@@ -11813,8 +14376,8 @@ Craft.Grid = Garnish.Base.extend(
         $items: null,
         items: null,
         totalCols: null,
+        colGutterDrop: null,
         colPctWidth: null,
-        sizeUnit: null,
 
         possibleItemColspans: null,
         possibleItemPositionsByColspan: null,
@@ -11844,13 +14407,6 @@ Craft.Grid = Garnish.Base.extend(
 
             this.setSettings(settings, Craft.Grid.defaults);
 
-            if (this.settings.mode === 'pct') {
-                this.sizeUnit = '%';
-            }
-            else {
-                this.sizeUnit = 'px';
-            }
-
             // Set the refreshCols() proxy that container resizes will trigger
             this.handleContainerHeightProxy = $.proxy(function() {
                 this.refreshCols(false, true);
@@ -11869,7 +14425,6 @@ Craft.Grid = Garnish.Base.extend(
             this.$items = $().add(this.$items.add(items));
             this.setItems();
             this.refreshCols(true, true);
-            $(items).velocity('finish');
         },
 
         removeItems: function(items) {
@@ -11896,7 +14451,7 @@ Craft.Grid = Garnish.Base.extend(
             delete this.setItems._;
         },
 
-        refreshCols: function(force, animate) {
+        refreshCols: function(force) {
             if (this._refreshingCols) {
                 this._refreshColsAfterRefresh = true;
                 if (force) {
@@ -11947,6 +14502,7 @@ Craft.Grid = Garnish.Base.extend(
             }
 
             this.totalCols = this.refreshCols._.totalCols;
+            this.colGutterDrop = this.settings.gutter * (this.totalCols - 1) / this.totalCols;
 
             // Temporarily stop listening to container resizes
             this.removeListener(this.$container, 'resize');
@@ -12003,10 +14559,7 @@ Craft.Grid = Garnish.Base.extend(
                 }
                 else {
                     this.$items.css('position', 'absolute');
-
-                    if (this.settings.mode === 'pct') {
-                        this.colPctWidth = (100 / this.totalCols);
-                    }
+                    this.colPctWidth = (100 / this.totalCols);
 
                     // The setup
 
@@ -12042,7 +14595,7 @@ Craft.Grid = Garnish.Base.extend(
 
                         for (this.refreshCols._.colspan = this.refreshCols._.minColspan; this.refreshCols._.colspan <= this.refreshCols._.maxColspan; this.refreshCols._.colspan++) {
                             // Get the height for this colspan
-                            this.refreshCols._.$item.css('width', this.getItemWidth(this.refreshCols._.colspan) + this.sizeUnit);
+                            this.refreshCols._.$item.css('width', this.getItemWidthCss(this.refreshCols._.colspan));
                             this.itemHeightsByColspan[this.refreshCols._.item][this.refreshCols._.colspan] = this.refreshCols._.$item.outerHeight();
 
                             this.possibleItemColspans[this.refreshCols._.item].push(this.refreshCols._.colspan);
@@ -12130,39 +14683,13 @@ Craft.Grid = Garnish.Base.extend(
                     // And the layout with the least empty space is...
                     this.layout = this.refreshCols._.shortestLayouts[$.inArray(Math.min.apply(null, this.refreshCols._.emptySpaces), this.refreshCols._.emptySpaces)];
 
-                    // Figure out the left padding based on the number of empty columns
-                    this.refreshCols._.totalEmptyCols = 0;
-
-                    for (this.refreshCols._.i = this.layout.colHeights.length - 1; this.refreshCols._.i >= 0; this.refreshCols._.i--) {
-                        if (this.layout.colHeights[this.refreshCols._.i] === 0) {
-                            this.refreshCols._.totalEmptyCols++;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-
-                    this.leftPadding = this.getItemWidth(this.refreshCols._.totalEmptyCols) / 2;
-
-                    if (this.settings.mode === 'fixed') {
-                        this.leftPadding += (this.$container.width() - (this.settings.minColWidth * this.totalCols)) / 2;
-                    }
-
                     // Set the item widths and left positions
                     for (this.refreshCols._.i = 0; this.refreshCols._.i < this.items.length; this.refreshCols._.i++) {
                         this.refreshCols._.css = {
-                            width: this.getItemWidth(this.layout.colspans[this.refreshCols._.i]) + this.sizeUnit
+                            width: this.getItemWidthCss(this.layout.colspans[this.refreshCols._.i])
                         };
-                        this.refreshCols._.css[Craft.left] = this.leftPadding + this.getItemWidth(this.layout.positions[this.refreshCols._.i]) + this.sizeUnit;
-
-                        if (animate) {
-                            this.items[this.refreshCols._.i].velocity(this.refreshCols._.css, {
-                                queue: false
-                            });
-                        }
-                        else {
-                            this.items[this.refreshCols._.i].velocity('finish').css(this.refreshCols._.css);
-                        }
+                        this.refreshCols._.css[Craft.left] = this.getItemLeftPosCss(this.layout.positions[this.refreshCols._.i]);
+                        this.items[this.refreshCols._.i].css(this.refreshCols._.css);
                     }
 
                     // If every item is at position 0, then let them lay out au naturel
@@ -12175,7 +14702,7 @@ Craft.Grid = Garnish.Base.extend(
                         this.$items.css('position', 'absolute');
 
                         // Now position the items
-                        this.positionItems(animate);
+                        this.positionItems();
 
                         // Update the positions as the items' heigthts change
                         this.addListener(this.$items, 'resize', 'onItemResize');
@@ -12211,12 +14738,23 @@ Craft.Grid = Garnish.Base.extend(
         },
 
         getItemWidth: function(colspan) {
-            if (this.settings.mode === 'pct') {
-                return (this.colPctWidth * colspan);
-            }
-            else {
-                return (this.settings.minColWidth * colspan);
-            }
+            return (this.colPctWidth * colspan);
+        },
+
+        getItemWidthCss: function(colspan) {
+            return 'calc(' + this.getItemWidth(colspan) + '% - ' + this.colGutterDrop + 'px)';
+        },
+
+        getItemWidthInPx: function(colspan) {
+            return this.getItemWidth(colspan)/100 * this.$container.width() - this.colGutterDrop;
+        },
+
+        getItemLeftPosCss: function(position) {
+            return 'calc(' + '(' + this.getItemWidth(1) + '% + ' + (this.settings.gutter - this.colGutterDrop) + 'px) * ' + position + ')';
+        },
+
+        getItemLeftPosInPx: function(position) {
+            return (this.getItemWidth(1)/100 * this.$container.width() + (this.settings.gutter - this.colGutterDrop)) * position;
         },
 
         createLayouts: function(item, prevPositions, prevColspans, prevColHeights, prevEmptySpace) {
@@ -12237,7 +14775,7 @@ Craft.Grid = Garnish.Base.extend(
             return true;
         },
 
-        positionItems: function(animate) {
+        positionItems: function() {
             this.positionItems._ = {};
 
             this.positionItems._.colHeights = [];
@@ -12255,15 +14793,11 @@ Craft.Grid = Garnish.Base.extend(
                 }
 
                 this.positionItems._.top = Math.max.apply(null, this.positionItems._.affectedColHeights);
+                if (this.positionItems._.top > 0) {
+                    this.positionItems._.top += this.settings.gutter;
+                }
 
-                if (animate) {
-                    this.items[this.positionItems._.i].velocity({top: this.positionItems._.top}, {
-                        queue: false
-                    });
-                }
-                else {
-                    this.items[this.positionItems._.i].velocity('finish').css('top', this.positionItems._.top);
-                }
+                this.items[this.positionItems._.i].css('top', this.positionItems._.top);
 
                 // Now add the new heights to those columns
                 for (this.positionItems._.col = this.layout.positions[this.positionItems._.i]; this.positionItems._.col <= this.positionItems._.endingCol; this.positionItems._.col++) {
@@ -12309,7 +14843,7 @@ Craft.Grid = Garnish.Base.extend(
             cols: null,
             maxCols: null,
             minColWidth: 320,
-            mode: 'pct',
+            gutter: 14,
             fillMode: 'top',
             colClass: 'col',
             snapToGrid: null,
@@ -12474,6 +15008,7 @@ Craft.ImageUpload = Garnish.Base.extend(
             options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
             options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
             options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
+            options.events.fileuploadfail = $.proxy(this, '_onUploadError');
 
             this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -12482,7 +15017,7 @@ Craft.ImageUpload = Garnish.Base.extend(
 
         initButtons: function() {
             this.$container.find(this.settings.uploadButtonSelector).on('click', $.proxy(function(ev) {
-                this.$container.find(this.settings.fileInputSelector).click();
+                this.$container.find(this.settings.fileInputSelector).trigger('click');
             }, this));
 
             this.$container.find(this.settings.deleteButtonSelector).on('click', $.proxy(function(ev) {
@@ -12540,6 +15075,18 @@ Craft.ImageUpload = Garnish.Base.extend(
             if (this.uploader.isLastUpload()) {
                 this.progressBar.hideProgressBar();
                 this.$container.removeClass('uploading');
+            }
+        },
+
+        /**
+         * On a file being uploaded.
+         */
+        _onUploadError: function(event, data) {
+            if (data.jqXHR.responseJSON.error) {
+                alert(data.jqXHR.responseJSON.error);
+                this.$container.removeClass('uploading');
+                this.progressBar.hideProgressBar();
+                this.progressBar.resetProgressBar();
             }
         }
     },
@@ -12659,8 +15206,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val(this.settings.value);
             this.$outerContainer.addClass('on');
             this.$outerContainer.attr('aria-checked', 'true');
-            this.on = true;
-            this.onChange();
+
+            if (this.on !== (this.on = true)) {
+                this.onChange();
+            }
         },
 
         turnOff: function() {
@@ -12673,8 +15222,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val('');
             this.$outerContainer.removeClass('on');
             this.$outerContainer.attr('aria-checked', 'false');
-            this.on = false;
-            this.onChange();
+
+            if (this.on !== (this.on = false)) {
+                this.onChange();
+            }
         },
 
         toggle: function(event) {
@@ -12807,7 +15358,6 @@ Craft.LivePreview = Garnish.Base.extend(
     {
         $extraFields: null,
         $trigger: null,
-        $spinner: null,
         $shade: null,
         $editorContainer: null,
         $editor: null,
@@ -12871,7 +15421,6 @@ Craft.LivePreview = Garnish.Base.extend(
             // Find the DOM elements
             this.$extraFields = $(this.settings.extraFields);
             this.$trigger = $(this.settings.trigger);
-            this.$spinner = this.settings.spinner ? $(this.settings.spinner) : this.$trigger.find('.spinner');
             this.$fieldPlaceholder = $('<div/>');
 
             // Set the initial editor width
@@ -12933,7 +15482,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this.trigger('beforeEnter');
 
-            $(document.activeElement).blur();
+            $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
                 this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
@@ -12988,7 +15537,6 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             if (this.updateIframe()) {
-                this.$spinner.removeClass('hidden');
                 this.addListener(this.$iframe, 'load', function() {
                     this.slideIn();
                     this.removeListener(this.$iframe, 'load');
@@ -13016,8 +15564,6 @@ Craft.LivePreview = Garnish.Base.extend(
 
         slideIn: function() {
             $('html').addClass('noscroll');
-            this.$spinner.addClass('hidden');
-
             this.$shade.velocity('fadeIn');
 
             this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function() {
@@ -13211,7 +15757,6 @@ Craft.LivePreview = Garnish.Base.extend(
 
         defaults: {
             trigger: '.livepreviewbtn',
-            spinner: null,
             fields: null,
             extraFields: null,
             previewUrl: null,
@@ -13223,203 +15768,6 @@ Craft.LivePreview = Garnish.Base.extend(
 Craft.LivePreview.init = function(settings) {
     Craft.livePreview = new Craft.LivePreview(settings);
 };
-
-/** global: Craft */
-/** global: Garnish */
-/**
- * Pane class
- */
-Craft.Pane = Garnish.Base.extend(
-    {
-        $pane: null,
-        $content: null,
-        $sidebar: null,
-        $tabsContainer: null,
-
-        tabs: null,
-        selectedTab: null,
-        hasSidebar: null,
-
-        init: function(pane) {
-            this.$pane = $(pane);
-
-            // Is this already a pane?
-            if (this.$pane.data('pane')) {
-                Garnish.log('Double-instantiating a pane on an element');
-                this.$pane.data('pane').destroy();
-            }
-
-            this.$pane.data('pane', this);
-
-            this.$content = this.$pane.find('.content:not(.hidden):first');
-
-            // Initialize the tabs
-            this.$tabsContainer = this.$pane.children('.tabs');
-            var $tabs = this.$tabsContainer.find('a');
-
-            if ($tabs.length) {
-                this.tabs = {};
-
-                // Find the tabs that link to a div on the page
-                for (var i = 0; i < $tabs.length; i++) {
-                    var $tab = $($tabs[i]),
-                        href = $tab.attr('href');
-
-                    if (href && href.charAt(0) === '#') {
-                        this.tabs[href] = {
-                            $tab: $tab,
-                            $target: $(href)
-                        };
-
-                        this.addListener($tab, 'activate', 'selectTab');
-                    }
-
-                    if (!this.selectedTab && $tab.hasClass('sel')) {
-                        this.selectedTab = href;
-                    }
-                }
-
-                if (document.location.hash && typeof this.tabs[document.location.hash] !== 'undefined') {
-                    this.tabs[document.location.hash].$tab.trigger('activate');
-                }
-                else if (!this.selectedTab) {
-                    $($tabs[0]).trigger('activate');
-                }
-            }
-
-            if (this.$pane.hasClass('meta')) {
-                var $inputs = Garnish.findInputs(this.$pane);
-                this.addListener($inputs, 'focus', 'focusMetaField');
-                this.addListener($inputs, 'blur', 'blurMetaField');
-            }
-
-            this.initContent();
-        },
-
-        focusMetaField: function(ev) {
-            $(ev.currentTarget).closest('.field')
-                .removeClass('has-errors')
-                .addClass('has-focus');
-        },
-
-        blurMetaField: function(ev) {
-            $(ev.currentTarget).closest('.field')
-                .removeClass('has-focus');
-        },
-
-        /**
-         * Selects a tab.
-         */
-        selectTab: function(ev) {
-            if (!this.selectedTab || ev.currentTarget !== this.tabs[this.selectedTab].$tab[0]) {
-                // Hide the selected tab
-                this.deselectTab();
-
-                var $tab = $(ev.currentTarget).addClass('sel');
-                this.selectedTab = $tab.attr('href');
-
-                var $target = this.tabs[this.selectedTab].$target;
-                $target.removeClass('hidden');
-
-                if ($target.hasClass('content')) {
-                    this.$content = $target;
-                }
-
-                Garnish.$win.trigger('resize');
-
-                // Fixes Redactor fixed toolbars on previously hidden panes
-                Garnish.$doc.trigger('scroll');
-            }
-        },
-
-        /**
-         * Deselects the current tab.
-         */
-        deselectTab: function() {
-            if (this.selectedTab) {
-                this.tabs[this.selectedTab].$tab.removeClass('sel');
-                this.tabs[this.selectedTab].$target.addClass('hidden');
-            }
-        },
-
-        initContent: function() {
-            this.hasSidebar = this.$content.hasClass('has-sidebar');
-
-            if (this.hasSidebar) {
-                this.$sidebar = this.$content.children('.sidebar');
-
-                this.addListener(this.$content, 'resize', function() {
-                    this.updateSidebarStyles();
-                });
-
-                this.addListener(this.$sidebar, 'resize', 'setMinContentSizeForSidebar');
-                this.setMinContentSizeForSidebar();
-
-                this.addListener(Garnish.$win, 'resize', 'updateSidebarStyles');
-                this.addListener(Garnish.$win, 'scroll', 'updateSidebarStyles');
-
-                this.updateSidebarStyles();
-            }
-        },
-
-        setMinContentSizeForSidebar: function() {
-            if (true || this.$pane.hasClass('showing-sidebar')) {
-                this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0) - 48;
-            }
-            else {
-                this.setMinContentSizeForSidebar._minHeight = 0;
-            }
-
-            this.$content.css('min-height', this.setMinContentSizeForSidebar._minHeight);
-        },
-
-        updateSidebarStyles: function() {
-            var $pageHeader = $('#page-header');
-
-            this.updateSidebarStyles._styles = {};
-
-            this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
-            this.updateSidebarStyles._pageHeaderHeight = $pageHeader.outerHeight();
-            this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0) - this.updateSidebarStyles._pageHeaderHeight;
-            this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
-            this.updateSidebarStyles._windowHeight = Garnish.$win.height();
-
-            // Have we scrolled passed the top of the pane?
-            if (Garnish.$win.width() > 768 && this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset) {
-                // Set the top position to the difference
-                this.updateSidebarStyles._styles.position = 'fixed';
-                this.updateSidebarStyles._styles.top = (24 + this.updateSidebarStyles._pageHeaderHeight) + 'px';
-            } else {
-                this.updateSidebarStyles._styles.position = 'absolute';
-
-                if (Garnish.$win.width() > 768) {
-                    this.updateSidebarStyles._styles.top = 'auto';
-                }
-                else {
-                    this.updateSidebarStyles._styles.top = '50px';
-                }
-            }
-
-            // Now figure out how tall the sidebar can be
-            this.updateSidebarStyles._styles.maxHeight = Math.min(
-                this.updateSidebarStyles._paneHeight - (this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._paneOffset),
-                this.updateSidebarStyles._windowHeight
-            );
-
-            if(this.updateSidebarStyles._paneHeight > this.updateSidebarStyles._windowHeight) {
-                this.updateSidebarStyles._styles.height = this.updateSidebarStyles._styles.maxHeight;
-            } else {
-                this.updateSidebarStyles._styles.height = this.updateSidebarStyles._paneHeight;
-            }
-
-            this.$sidebar.css(this.updateSidebarStyles._styles);
-        },
-
-        destroy: function() {
-            this.base();
-            this.$pane.data('pane', null);
-        }
-    });
 
 /** global: Craft */
 /** global: Garnish */
@@ -13459,7 +15807,7 @@ Craft.PasswordInput = Garnish.Base.extend(
                 // Swap the inputs, while preventing the focus animation
                 $input.addClass('focus');
                 this.$currentInput.replaceWith($input);
-                $input.focus();
+                $input.trigger('focus');
                 $input.removeClass('focus');
 
                 // Restore the input value
@@ -13834,6 +16182,177 @@ Craft.PromptHandler = Garnish.Base.extend({
     }
 });
 
+/** global: Garnish */
+
+Craft.SlideRuleInput = Garnish.Base.extend({
+
+    $container: null,
+    $options: null,
+    $selectedOption: null,
+    $input: null,
+    value: null,
+
+    startPositionX: null,
+
+    init: function(id, settings) {
+        this.setSettings(settings, Craft.SlideRuleInput.defaultSettings);
+
+        this.value = 0;
+        this.graduationsMin = -70;
+        this.graduationsMax = 70;
+        this.slideMin = -45;
+        this.slideMax = 45;
+
+        this.$container = $('#' + id);
+        this.$overlay = $('<div class="overlay"></div>').appendTo(this.$container);
+        this.$cursor = $('<div class="cursor"></div>').appendTo(this.$container);
+        this.$graduations = $('<div class="graduations"></div>').appendTo(this.$container);
+        this.$graduationsUl = $('<ul></ul>').appendTo(this.$graduations);
+
+        for (var i = this.graduationsMin; i <= this.graduationsMax; i++) {
+            var $li = $('<li class="graduation" data-graduation="' + i + '"><div class="label">' + i + '</div></li>').appendTo(this.$graduationsUl);
+
+            if ((i % 5) === 0) {
+                $li.addClass('main-graduation');
+            }
+
+            if (i === 0) {
+                $li.addClass('selected');
+            }
+        }
+
+        this.$options = this.$container.find('.graduation');
+
+        this.addListener(this.$container, 'resize', $.proxy(this, '_handleResize'));
+        this.addListener(this.$container, 'tapstart', $.proxy(this, '_handleTapStart'));
+        this.addListener(Garnish.$bod, 'tapmove', $.proxy(this, '_handleTapMove'));
+        this.addListener(Garnish.$bod, 'tapend', $.proxy(this, '_handleTapEnd'));
+
+        // Set to zero
+
+        // this.setValue(0);
+
+        setTimeout($.proxy(function() {
+            // (n -1) options because the border is placed on the left of the 10px box
+            this.graduationsCalculatedWidth = (this.$options.length - 1) * 10;
+            this.$graduationsUl.css('left', (-this.graduationsCalculatedWidth / 2) + this.$container.width() / 2);
+        }, this), 50);
+    },
+
+    _handleResize: function() {
+        var left = this.valueToPosition(this.value);
+        this.$graduationsUl.css('left', left);
+    },
+
+    _handleTapStart: function(ev, touch) {
+        ev.preventDefault();
+
+        this.startPositionX = touch.position.x;
+        this.startLeft = this.$graduationsUl.position().left;
+
+        this.dragging = true;
+        this.onStart();
+    },
+
+    _handleTapMove: function(ev, touch) {
+        if (this.dragging) {
+            ev.preventDefault();
+
+            var curX = this.startPositionX - touch.position.x;
+            var left = this.startLeft - curX;
+            var value = this.positionToValue(left);
+
+            this.setValue(value);
+
+            this.onChange();
+        }
+    },
+
+    setValue: function(value) {
+        var left = this.valueToPosition(value);
+        if (value < this.slideMin) {
+            value = this.slideMin;
+            left = this.valueToPosition(value);
+
+        }
+        else if (value > this.slideMax) {
+            value = this.slideMax;
+            left = this.valueToPosition(value);
+        }
+
+        this.$graduationsUl.css('left', left);
+
+        if (value >= this.slideMin && value <= this.slideMax) {
+            this.$options.removeClass('selected');
+
+            $.each(this.$options, function(key, option) {
+                if ($(option).data('graduation') > 0) {
+                    if ($(option).data('graduation') <= value) {
+                        $(option).addClass('selected');
+                    }
+                }
+                if ($(option).data('graduation') < 0) {
+                    if ($(option).data('graduation') >= value) {
+                        $(option).addClass('selected');
+                    }
+                }
+
+                if ($(option).data('graduation') == 0) {
+                    $(option).addClass('selected');
+                }
+            });
+        }
+
+        this.value = value;
+    },
+
+    _handleTapEnd: function(ev) {
+        if (this.dragging) {
+            ev.preventDefault();
+            this.dragging = false;
+            this.onEnd();
+        }
+    },
+
+    positionToValue: function(position) {
+        var scaleMin = (this.graduationsMin * -1);
+        var scaleMax = (this.graduationsMin - this.graduationsMax) * -1;
+
+        return (( ( this.$graduations.width() / 2 ) + (position * -1) ) / this.graduationsCalculatedWidth) * scaleMax - scaleMin;
+    },
+
+    valueToPosition: function(value) {
+        var scaleMin = (this.graduationsMin * -1);
+        var scaleMax = (this.graduationsMin - this.graduationsMax) * -1;
+
+        return -((value + scaleMin) * this.graduationsCalculatedWidth / scaleMax - this.$graduations.width() / 2);
+    },
+
+    onStart: function() {
+        if (typeof this.settings.onChange === 'function') {
+            this.settings.onStart(this);
+        }
+    },
+
+    onChange: function() {
+        if (typeof this.settings.onChange === 'function') {
+            this.settings.onChange(this);
+        }
+    },
+
+    onEnd: function() {
+        if (typeof this.settings.onChange === 'function') {
+            this.settings.onEnd(this);
+        }
+    },
+
+    defaultSettings: {
+        onStart: $.noop,
+        onChange: $.noop,
+        onEnd: $.noop
+    }
+});
+
 /** global: Craft */
 /** global: Garnish */
 /**
@@ -13932,7 +16451,7 @@ Craft.Structure = Garnish.Base.extend(
         },
 
         initToggle: function($toggle) {
-            $toggle.click($.proxy(function(ev) {
+            $toggle.on('click', $.proxy(function(ev) {
                 var $li = $(ev.currentTarget).closest('li'),
                     elementId = $li.children('.row').find('.element:first').data('id'),
                     viewStateKey = $.inArray(elementId, this.state.collapsedElementIds);
@@ -14722,6 +17241,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
+                        if (!response.success) {
+                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            this.tableView.elementIndex.updateElements();
+                            return;
+                        }
                         Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
                         this.onPositionChange();
 
@@ -15087,7 +17611,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
                     $header
                         .addClass('ordered ' + selectedSortDir)
-                        .click($.proxy(this, '_handleSelectedSortHeaderClick'));
+                        .on('click', $.proxy(this, '_handleSelectedSortHeaderClick'));
                 }
                 else {
                     // Is this attribute sortable?
@@ -15096,7 +17620,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     if ($sortAttribute.length) {
                         $header
                             .addClass('orderable')
-                            .click($.proxy(this, '_handleUnselectedSortHeaderClick'));
+                            .on('click', $.proxy(this, '_handleUnselectedSortHeaderClick'));
                     }
                 }
             }
@@ -15600,7 +18124,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.killSearchMenu();
             this.$addTagInput.val('');
-            this.$addTagInput.focus();
+            this.$addTagInput.trigger('focus');
 
             if (!id) {
                 // We need to create the tag first
@@ -15660,19 +18184,21 @@ Craft.ui =
     {
         createTextInput: function(config) {
             var $input = $('<input/>', {
-                'class': 'text',
-                type: (config.type || 'text'),
-                id: config.id,
-                size: config.size,
-                name: config.name,
-                value: config.value,
-                maxlength: config.maxlength,
-                autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
-                disabled: this.getDisabledValue(config.disabled),
-                readonly: config.readonly,
-                title: config.title,
-                placeholder: config.placeholder
+                attr: {
+                    'class': 'text',
+                    type: (config.type || 'text'),
+                    id: config.id,
+                    size: config.size,
+                    name: config.name,
+                    value: config.value,
+                    maxlength: config.maxlength,
+                    autofocus: this.getAutofocusValue(config.autofocus),
+                    autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
+                    disabled: this.getDisabledValue(config.disabled),
+                    readonly: config.readonly,
+                    title: config.title,
+                    placeholder: config.placeholder
+                }
             });
 
             if (config.class) {
@@ -15983,6 +18509,134 @@ Craft.ui =
 
         createLightswitchField: function(config) {
             return this.createField(this.createLightswitch(config), config);
+        },
+
+        createColorInput: function(config) {
+            var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
+            var containerId = config.containerId || id + '-container';
+            var name = config.name || null;
+            var value = config.value || null;
+            var small = config.small || false;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                id: containerId,
+                'class': 'flex color-container'
+            });
+
+            var $colorPreviewContainer = $('<div/>', {
+                'class': 'color static' + (small ? ' small' : '')
+            }).appendTo($container);
+
+            var $colorPreview = $('<div/>', {
+                'class': 'color-preview',
+                style: config.value ? {backgroundColor: config.value} : null
+            }).appendTo($colorPreviewContainer);
+
+            var $input = this.createTextInput({
+                id: id,
+                name: name,
+                value: value,
+                size: 10,
+                'class': 'color-input',
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            new Craft.ColorInput($container);
+            return $container;
+        },
+
+        createColorField: function(config) {
+            return this.createField(this.createColorInput(config), config);
+        },
+
+        createDateInput: function(config) {
+            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000))+'-date';
+            var name = config.name || null;
+            var inputName = name ? name+'[date]' : null;
+            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            var formattedValue = value ? Craft.formatDate(value) : null;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                'class': 'datewrapper'
+            });
+
+            var $input = this.createTextInput({
+                id: id,
+                name: inputName,
+                value: formattedValue,
+                placeholder: ' ',
+                autocomplete: false,
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            $('<div data-icon="date"></div>').appendTo($container);
+
+            if (name) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: name+'[timezone]',
+                    val: Craft.timezone
+                }).appendTo($container);
+            }
+
+            $input.datepicker($.extend({
+                defaultDate: value || new Date()
+            }, Craft.datepickerOptions));
+
+            return $container;
+        },
+
+        createDateField: function(config) {
+            return this.createField(this.createDateInput(config), config);
+        },
+
+        createTimeInput: function(config) {
+            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000))+'-time';
+            var name = config.name || null;
+            var inputName = name ? name+'[time]' : null;
+            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            var disabled = config.disabled || false;
+
+            var $container = $('<div/>', {
+                'class': 'timewrapper'
+            });
+
+            var $input = this.createTextInput({
+                id: id,
+                name: inputName,
+                placeholder: ' ',
+                autocomplete: false,
+                autofocus: autofocus,
+                disabled: disabled
+            }).appendTo($container);
+
+            $('<div data-icon="time"></div>').appendTo($container);
+
+            if (name) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: name+'[timezone]',
+                    val: Craft.timezone
+                }).appendTo($container);
+            }
+
+            $input.timepicker(Craft.timepickerOptions);
+            if (value) {
+                $input.timepicker('setTime', value.getHours()*3600 + value.getMinutes()*60 + value.getSeconds());
+            }
+
+            return $container;
+        },
+
+        createTimeField: function(config) {
+            return this.createField(this.createTimeInput(config), config);
         },
 
         createField: function(input, config) {

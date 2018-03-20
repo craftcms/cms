@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -14,7 +14,7 @@ use craft\base\ElementInterface;
  * Dropdown represents a Dropdown field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Dropdown extends BaseOptionsField
 {
@@ -37,19 +37,11 @@ class Dropdown extends BaseOptionsField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->translatedOptions();
-
-        // If this is a new entry, look for a default option
-        if ($this->isFresh($element)) {
-            $value = $this->defaultValue();
-        }
-
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'options' => $options
-            ]);
+        return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+            'name' => $this->handle,
+            'value' => $value,
+            'options' => $this->translatedOptions(),
+        ]);
     }
 
     // Protected Methods

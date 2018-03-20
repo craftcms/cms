@@ -7,7 +7,6 @@ Craft.LivePreview = Garnish.Base.extend(
     {
         $extraFields: null,
         $trigger: null,
-        $spinner: null,
         $shade: null,
         $editorContainer: null,
         $editor: null,
@@ -71,7 +70,6 @@ Craft.LivePreview = Garnish.Base.extend(
             // Find the DOM elements
             this.$extraFields = $(this.settings.extraFields);
             this.$trigger = $(this.settings.trigger);
-            this.$spinner = this.settings.spinner ? $(this.settings.spinner) : this.$trigger.find('.spinner');
             this.$fieldPlaceholder = $('<div/>');
 
             // Set the initial editor width
@@ -133,7 +131,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this.trigger('beforeEnter');
 
-            $(document.activeElement).blur();
+            $(document.activeElement).trigger('blur');
 
             if (!this.$editor) {
                 this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
@@ -188,7 +186,6 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             if (this.updateIframe()) {
-                this.$spinner.removeClass('hidden');
                 this.addListener(this.$iframe, 'load', function() {
                     this.slideIn();
                     this.removeListener(this.$iframe, 'load');
@@ -216,8 +213,6 @@ Craft.LivePreview = Garnish.Base.extend(
 
         slideIn: function() {
             $('html').addClass('noscroll');
-            this.$spinner.addClass('hidden');
-
             this.$shade.velocity('fadeIn');
 
             this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function() {
@@ -411,7 +406,6 @@ Craft.LivePreview = Garnish.Base.extend(
 
         defaults: {
             trigger: '.livepreviewbtn',
-            spinner: null,
             fields: null,
             extraFields: null,
             previewUrl: null,

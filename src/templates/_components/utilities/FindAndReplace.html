@@ -5,18 +5,18 @@
     {{ csrfInput() }}
 
     {{ forms.textField({
+        label: "Find Text"|t('app'),
         first: true,
-        name: 'find',
-        placeholder: "Find"|t('app')
+        name: 'find'
     }) }}
 
     {{ forms.textField({
-        name: 'replace',
-        placeholder: "Replace"|t('app')
+        label: "Replace Text"|t('app'),
+        name: 'replace'
     }) }}
 
     <div class="buttons">
-        <input type="submit" class="btn submit" value="{{ "Go!"|t('app') }}" />
+        <input type="submit" class="btn submit" value="{{ "Find and Replace"|t('app') }}" />
         <div class="utility-status"></div>
     </div>
 </form>

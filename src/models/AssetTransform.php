@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -18,9 +18,8 @@ use craft\validators\UniqueValidator;
  * The AssetTransform model class.
  *
  * @property bool $isNamedTransform Whether this is a named transform
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetTransform extends Model
 {
@@ -73,6 +72,11 @@ class AssetTransform extends Model
     public $position = 'center-center';
 
     /**
+     * @var string Position
+     */
+    public $interlace = 'none';
+
+    /**
      * @var int|null Quality
      */
     public $quality;
@@ -113,6 +117,16 @@ class AssetTransform extends Model
                     'bottom-left',
                     'bottom-center',
                     'bottom-right',
+                ],
+            ],
+            [
+                ['interlace'],
+                'in',
+                'range' => [
+                    'none',
+                    'line',
+                    'plane',
+                    'partition',
                 ],
             ],
             [
@@ -173,9 +187,8 @@ class AssetTransform extends Model
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'dimensionChangeTime';
-
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dimensionChangeTime';
+        return $attributes;
     }
 }

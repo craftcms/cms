@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -12,9 +12,8 @@ use yii\web\HttpException;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Response extends \yii\web\Response
 {
@@ -82,7 +81,6 @@ class Response extends \yii\web\Response
      * Sets a Last-Modified header based on a given file path.
      *
      * @param string $path The file to read the last modified date from.
-     *
      * @return static self reference
      */
     public function setLastModifiedHeader(string $path)
@@ -98,11 +96,9 @@ class Response extends \yii\web\Response
 
     /**
      * @inheritdoc \yii\web\Response::sendFile()
-     *
-     * @param string      $filePath
+     * @param string $filePath
      * @param string|null $attachmentName
-     * @param array       $options
-     *
+     * @param array $options
      * @return static self reference
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
@@ -115,11 +111,9 @@ class Response extends \yii\web\Response
 
     /**
      * @inheritdoc \yii\web\Response::sendContentAsFile()
-     *
      * @param string $content
      * @param string $attachmentName
-     * @param array  $options
-     *
+     * @param array $options
      * @return static self reference
      * @throws HttpException
      */
@@ -133,13 +127,11 @@ class Response extends \yii\web\Response
 
     /**
      * Attempts to closes the connection with the HTTP client, without ending PHP script execution.
-     *
      * This method relies on [flush()](http://php.net/manual/en/function.flush.php), which may not actually work if
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
      * @see http://stackoverflow.com/a/141026
      * @throws \Throwable An exception will be thrown if content has already been output.
-     * @return void
      */
     public function sendAndClose()
     {
@@ -200,7 +192,6 @@ class Response extends \yii\web\Response
 
     /**
      * Clear the output buffer to prevent corrupt downloads.
-     *
      * Need to check the OB status first, or else some PHP versions will throw an E_NOTICE
      * since we have a custom error handler (http://pear.php.net/bugs/bug.php?id=9670).
      */

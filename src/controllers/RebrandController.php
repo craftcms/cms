@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -13,7 +13,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -21,11 +20,10 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
  * cropping and deleting site logos and icons.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class RebrandController extends Controller
 {

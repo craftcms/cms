@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -28,12 +28,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Dashboard service.
- *
- * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `Craft::$app->getDashboard()`]].
+ * Dashboard service.
+ * An instance of the Dashboard service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDashboard()|<code>Craft::$app->dashboard</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Dashboard extends Component
 {
@@ -96,7 +95,6 @@ class Dashboard extends Component
      * Creates a widget with a given config.
      *
      * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
-     *
      * @return WidgetInterface
      */
     public function createWidget($config): WidgetInterface
@@ -142,7 +140,6 @@ class Dashboard extends Component
      * Returns whether the current user has a widget of the given type.
      *
      * @param string $type The widget type
-     *
      * @return bool Whether the current user has a widget of the given type
      */
     public function doesUserHaveWidget(string $type): bool
@@ -151,7 +148,7 @@ class Dashboard extends Component
             ->where([
                 'userId' => Craft::$app->getUser()->getIdentity()->id,
                 'type' => $type,
-                'enabled' => '1'
+                'enabled' => true
             ])
             ->exists();
     }
@@ -160,7 +157,6 @@ class Dashboard extends Component
      * Returns a widget by its ID.
      *
      * @param int $id The widget’s ID
-     *
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
     public function getWidgetById(int $id)
@@ -169,19 +165,14 @@ class Dashboard extends Component
             ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])
             ->one();
 
-        if ($result) {
-            return $this->createWidget($result);
-        }
-
-        return null;
+        return $result ? $this->createWidget($result) : null;
     }
 
     /**
      * Saves a widget for the current user.
      *
-     * @param WidgetInterface $widget        The widget to be saved
-     * @param bool            $runValidation Whether the widget should be validated
-     *
+     * @param WidgetInterface $widget The widget to be saved
+     * @param bool $runValidation Whether the widget should be validated
      * @return bool Whether the widget was saved successfully
      * @throws \Throwable if reasons
      */
@@ -256,7 +247,6 @@ class Dashboard extends Component
      * Soft-deletes a widget by its ID.
      *
      * @param int $widgetId The widget’s ID
-     *
      * @return bool Whether the widget was deleted successfully
      */
     public function deleteWidgetById(int $widgetId): bool
@@ -274,7 +264,6 @@ class Dashboard extends Component
      * Soft-deletes a widget.
      *
      * @param WidgetInterface $widget The widget to be deleted
-     *
      * @return bool Whether the widget was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -321,7 +310,6 @@ class Dashboard extends Component
      * Reorders widgets.
      *
      * @param int[] $widgetIds The widget IDs
-     *
      * @return bool Whether the widgets were reordered successfully
      * @throws \Throwable if reasons
      */
@@ -351,7 +339,6 @@ class Dashboard extends Component
      *
      * @param int $widgetId
      * @param int $colspan
-     *
      * @return bool
      */
     public function changeWidgetColspan(int $widgetId, int $colspan): bool
@@ -398,7 +385,6 @@ class Dashboard extends Component
      * Gets a widget's record.
      *
      * @param int|null $widgetId
-     *
      * @return WidgetRecord
      */
     private function _getUserWidgetRecordById(int $widgetId = null): WidgetRecord
@@ -426,8 +412,6 @@ class Dashboard extends Component
      * Throws a "No widget exists" exception.
      *
      * @param int $widgetId
-     *
-     * @return void
      * @throws WidgetNotFoundException
      */
     private function _noWidgetExists(int $widgetId)
@@ -450,7 +434,7 @@ class Dashboard extends Component
         }
 
         $results = $this->_createWidgetsQuery()
-            ->where(['userId' => $userId, 'enabled' => '1'])
+            ->where(['userId' => $userId, 'enabled' => true])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 

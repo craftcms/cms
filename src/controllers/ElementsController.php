@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -23,11 +23,10 @@ use yii\web\Response;
 /**
  * The ElementsController class is a controller that handles various element related actions including retrieving and
  * saving element and their corresponding HTML.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementsController extends BaseElementsController
 {
@@ -233,7 +232,8 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $request->getBodyParam('elementId');
-        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->currentSite->id;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
         $elementType = $request->getBodyParam('elementType');
@@ -319,8 +319,7 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param bool             $includeSites
-     *
+     * @param bool $includeSites
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */

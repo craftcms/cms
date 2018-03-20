@@ -1,6 +1,4 @@
 {% extends "_layouts/cp" %}
-
-{% set docsUrl = 'http://craftcms.com/docs/sections-and-entries#sections' %}
 {% set fullPageForm = true %}
 
 {% import "_includes/forms" as forms %}
@@ -111,7 +109,7 @@
             singleUri: {
                 type: 'singleline',
                 heading: "URI"|t('app'),
-                info: "What the entry URI should be."|t('app'),
+                info: "What the entry URI should be for the site. Leave blank if this is the homepage."|t('app'),
                 placeholder: "Leave blank if this is the homepage"|t('app'),
                 code: true,
                 class: 'type-single'~(section.type != 'single' ? ' hidden')
@@ -119,7 +117,7 @@
             uriFormat: {
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
-                info: "What entry URIs should look like for the site."|t('app'),
+                info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 placeholder: "Leave blank if entries don’t have URLs"|t('app'),
                 code: true,
                 class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
@@ -140,6 +138,19 @@
         staticRows: true,
         errors: siteErrors|unique
     }) }}
+
+    {% if craft.app.getIsMultiSite() %}
+        <div class="type-channel {% if section.type != 'channel' %}hidden{% endif %}">
+            {{ forms.checkboxField({
+                label: 'Propagate entries across all enabled sites?'|t('app'),
+                instructions: 'Whether entries should be propagated across all the sites the section is enabled in. If this is disabled, each entry will only belong to the site it was created in.'|t('app'),
+                id: 'propagateEntries',
+                name: 'propagateEntries',
+                checked: section.propagateEntries,
+                warning: section.id and section.propagateEntries ? 'Changing this may result in data loss.'|t('app')
+            }) }}
+        </div>
+    {% endif %}
 
     <div class="type-structure {% if section.type != 'structure' %}hidden{% endif %}">
         {{ forms.textField({

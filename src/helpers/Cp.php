@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -16,7 +16,7 @@ use yii\base\Event;
  * Class Cp
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Cp
 {
@@ -33,8 +33,7 @@ class Cp
 
     /**
      * @param string|null $path
-     * @param bool        $fetch
-     *
+     * @param bool $fetch
      * @return array
      */
     public static function alerts(string $path = null, bool $fetch = false): array
@@ -85,7 +84,7 @@ class Cp
                 // If the license key path starts with the root project path, trim the project path off
                 $rootPath = Craft::getAlias('@root');
                 if (strpos($keyPath, $rootPath.'/') === 0) {
-                    $keyPath = substr($keyPath, strlen($rootPath)+1);
+                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
                 }
 
                 $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [

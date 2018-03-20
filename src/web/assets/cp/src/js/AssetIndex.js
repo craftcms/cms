@@ -651,7 +651,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 var $parentSource = $($parentSources[i]);
 
                 if (!$parentSource.hasClass('expanded')) {
-                    $parentSource.children('.toggle').click();
+                    $parentSource.children('.toggle').trigger('click');
                 }
             }
 
@@ -678,7 +678,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var options = {
                 url: Craft.getActionUrl('assets/save-asset'),
                 fileInput: this.$uploadInput,
-                dropZone: this.$main
+                dropZone: this.$container
             };
 
             options.events = {
@@ -700,7 +700,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     return;
                 }
                 if (!this.isIndexBusy) {
-                    this.$uploadButton.parent().find('input[name=assets-upload]').click();
+                    this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
                 }
             }, this));
 
@@ -833,6 +833,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     this.promptHandler.addPrompt(response);
                 }
+
+                Craft.cp.runQueue();
             }
             else {
                 if (response.error) {
@@ -1098,7 +1100,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             // Collapse any temp-expanded drop targets that aren't parents of this one
             this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-            this.dropTargetFolder.siblings('.toggle').click();
+            this.dropTargetFolder.siblings('.toggle').trigger('click');
 
             // Keep a record of that
             this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -1106,7 +1108,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _collapseFolder: function($source) {
             if ($source.parent().hasClass('expanded')) {
-                $source.siblings('.toggle').click();
+                $source.siblings('.toggle').trigger('click');
             }
         },
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Category;
+use craft\errors\InvalidElementException;
+use craft\events\ElementEvent;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -28,14 +30,21 @@ use yii\web\ServerErrorHttpException;
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CategoriesController extends Controller
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
+     */
+    const EVENT_PREVIEW_CATEGORY = 'previewCategory';
+
     // Public Methods
     // =========================================================================
 
@@ -61,9 +70,8 @@ class CategoriesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param int|null           $groupId       The category group’s ID, if editing an existing group.
+     * @param int|null $groupId The category group’s ID, if editing an existing group.
      * @param CategoryGroup|null $categoryGroup The category group being edited, if there were any validation errors.
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested category group cannot be found
      */
@@ -213,7 +221,6 @@ class CategoriesController extends Controller
      * Displays the category index page.
      *
      * @param string|null $groupHandle The category group’s handle.
-     *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit categories
      */
@@ -225,6 +232,10 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
+        $this->view->registerTranslations('app', [
+            'New category',
+        ]);
+
         return $this->renderTemplate('categories/_index', [
             'groupHandle' => $groupHandle,
             'groups' => $groups
@@ -234,11 +245,10 @@ class CategoriesController extends Controller
     /**
      * Displays the category edit page.
      *
-     * @param string        $groupHandle The category group’s handle.
-     * @param int|null      $categoryId  The category’s ID, if editing an existing category.
-     * @param string|null   $siteHandle  The site handle, if specified.
-     * @param Category|null $category    The category being edited, if there were any validation errors.
-     *
+     * @param string $groupHandle The category group’s handle.
+     * @param int|null $categoryId The category’s ID, if editing an existing category.
+     * @param string|null $siteHandle The site handle, if specified.
+     * @param Category|null $category The category being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
@@ -386,7 +396,8 @@ class CategoriesController extends Controller
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'];
 
-        if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id) {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id) {
             $variables['continueEditingUrl'] .= '/'.$site->handle;
         }
 
@@ -409,6 +420,13 @@ class CategoriesController extends Controller
         $this->_enforceEditCategoryPermissions($category);
         $this->_populateCategoryModel($category);
 
+        // Fire a 'previewCategory' event
+        if ($this->hasEventHandlers(self::EVENT_PREVIEW_CATEGORY)) {
+            $this->trigger(self::EVENT_PREVIEW_CATEGORY, new ElementEvent([
+                'element' => $category,
+            ]));
+        }
+
         return $this->_showCategory($category);
     }
 
@@ -416,6 +434,7 @@ class CategoriesController extends Controller
      * Saves an category.
      *
      * @return Response|null
+     * @throws ServerErrorHttpException
      */
     public function actionSaveCategory()
     {
@@ -432,6 +451,26 @@ class CategoriesController extends Controller
             // Swap $category with the duplicate
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
+            } catch (InvalidElementException $e) {
+                /** @var Category $clone */
+                $clone = $e->element;
+
+                if ($request->getAcceptsJson()) {
+                    return $this->asJson([
+                        'success' => false,
+                        'errors' => $clone->getErrors(),
+                    ]);
+                }
+
+                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate category.'));
+
+                // Send the original category back to the template, with any validation errors on the clone
+                $category->addErrors($clone->getErrors());
+                Craft::$app->getUrlManager()->setRouteParams([
+                    'category' => $category
+                ]);
+
+                return null;
             } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
@@ -527,9 +566,8 @@ class CategoriesController extends Controller
     /**
      * Redirects the client to a URL for viewing a disabled category on the front end.
      *
-     * @param int      $categoryId
+     * @param int $categoryId
      * @param int|null $siteId
-     *
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested category cannot be found
@@ -572,9 +610,8 @@ class CategoriesController extends Controller
     /**
      * Shows an category/draft/version based on a token.
      *
-     * @param int      $categoryId
+     * @param int $categoryId
      * @param int|null $siteId
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
@@ -598,8 +635,6 @@ class CategoriesController extends Controller
      * Preps category category variables.
      *
      * @param array &$variables
-     *
-     * @return void
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -625,6 +660,7 @@ class CategoriesController extends Controller
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
         } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -633,7 +669,8 @@ class CategoriesController extends Controller
         }
 
         if (empty($variables['site'])) {
-            $variables['site'] = Craft::$app->getSites()->currentSite;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
@@ -662,7 +699,6 @@ class CategoriesController extends Controller
             } else {
                 $variables['category'] = new Category();
                 $variables['category']->groupId = $variables['group']->id;
-                $variables['category']->fieldLayoutId = $variables['group']->fieldLayoutId;
                 $variables['category']->enabled = true;
                 $variables['category']->siteId = $site->id;
             }
@@ -680,8 +716,7 @@ class CategoriesController extends Controller
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($variables['category']->getErrors($field->handle)) {
-                        $hasErrors = true;
+                    if ($hasErrors = $variables['category']->hasErrors($field->handle)) {
                         break;
                     }
                 }
@@ -689,7 +724,7 @@ class CategoriesController extends Controller
 
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#tab'.($index + 1),
+                'url' => '#'.$tab->getHtmlId(),
                 'class' => $hasErrors ? 'error' : null
             ];
         }
@@ -735,8 +770,6 @@ class CategoriesController extends Controller
      * Enforces all Edit Category permissions.
      *
      * @param Category $category
-     *
-     * @return void
      */
     private function _enforceEditCategoryPermissions(Category $category)
     {
@@ -753,8 +786,6 @@ class CategoriesController extends Controller
      * Populates an Category with post data.
      *
      * @param Category $category
-     *
-     * @return void
      */
     private function _populateCategoryModel(Category $category)
     {
@@ -768,20 +799,19 @@ class CategoriesController extends Controller
         $category->setFieldValuesFromRequest($fieldsLocation);
 
         // Parent
-        $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
+        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: '';
+            }
 
-        if (is_array($parentId)) {
-            $parentId = reset($parentId) ?: null;
+            $category->newParentId = $parentId ?: '';
         }
-
-        $category->newParentId = $parentId ?: null;
     }
 
     /**
      * Displays a category.
      *
      * @param Category $category
-     *
      * @return Response
      * @throws ServerErrorHttpException if the category doesn't have a URL for the site it's configured with, or if the category's site ID is invalid
      */
@@ -790,7 +820,7 @@ class CategoriesController extends Controller
         $categoryGroupSiteSettings = $category->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$category->siteId]) || !$categoryGroupSiteSettings[$category->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The category '.$category->id.' doesn\'t have a URL for the site '.$category->siteId.'.');
+            throw new ServerErrorHttpException('The category '.$category->id.' doesn’t have a URL for the site '.$category->siteId.'.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($category->siteId);

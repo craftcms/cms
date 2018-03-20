@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -19,13 +19,11 @@ use yii\db\Connection;
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
  * @property string|string[]|Volume $volume The handle(s) of the volume(s) that resulting assets must belong to.
- *
  * @method Asset[]|array all($db = null)
- * @method Asset|array|false one($db = null)
- * @method Asset|array|false nth(int $n, Connection $db = null)
- *
+ * @method Asset|array|null one($db = null)
+ * @method Asset|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetQuery extends ElementQuery
 {
@@ -104,7 +102,6 @@ class AssetQuery extends ElementQuery
      * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
      *
      * @param string|string[]|Volume|null $value The property value
-     *
      * @return static self reference
      */
     public function volume($value)
@@ -128,7 +125,6 @@ class AssetQuery extends ElementQuery
      * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
      *
      * @param string|string[]|Volume $value The property value
-     *
      * @return static self reference
      * @deprecated since Craft 3.0. Use [[volume()]] instead.
      */
@@ -143,13 +139,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[volumeId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function volumeId($value)
     {
         $this->volumeId = $value;
-
         return $this;
     }
 
@@ -157,7 +151,6 @@ class AssetQuery extends ElementQuery
      * Sets the [[volumeId]] property.
      *
      * @param int|int[] $value The property value
-     *
      * @return static self reference
      * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
      */
@@ -172,13 +165,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[folderId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function folderId($value)
     {
         $this->folderId = $value;
-
         return $this;
     }
 
@@ -186,13 +177,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[filename]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function filename($value)
     {
         $this->filename = $value;
-
         return $this;
     }
 
@@ -200,13 +189,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[kind]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function kind($value)
     {
         $this->kind = $value;
-
         return $this;
     }
 
@@ -214,13 +201,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[width]] property.
      *
      * @param int|null $value The property value
-     *
      * @return static self reference
      */
     public function width(int $value = null)
     {
         $this->width = $value;
-
         return $this;
     }
 
@@ -228,13 +213,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[height]] property.
      *
      * @param int|null $value The property value
-     *
      * @return static self reference
      */
     public function height(int $value = null)
     {
         $this->height = $value;
-
         return $this;
     }
 
@@ -242,13 +225,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[size]] property.
      *
      * @param int|null $value The property value
-     *
      * @return static self reference
      */
     public function size(int $value = null)
     {
         $this->size = $value;
-
         return $this;
     }
 
@@ -256,13 +237,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[dateModified]] property.
      *
      * @param mixed $value The property value
-     *
      * @return static self reference
      */
     public function dateModified($value)
     {
         $this->dateModified = $value;
-
         return $this;
     }
 
@@ -270,13 +249,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[includeSubfolders]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function includeSubfolders(bool $value = true)
     {
         $this->includeSubfolders = $value;
-
         return $this;
     }
 
@@ -284,13 +261,11 @@ class AssetQuery extends ElementQuery
      * Sets the [[withTransforms]] property.
      *
      * @param string|array|null $value The transforms to include.
-     *
      * @return self The query object itself
      */
     public function withTransforms(array $value = null)
     {
         $this->withTransforms = $value;
-
         return $this;
     }
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -22,11 +22,10 @@ use yii\base\Module;
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
- * @property string           $handle   The plugin’s handle (alias of [[id]])
+ * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Plugin extends Module implements PluginInterface
 {
@@ -208,17 +207,16 @@ class Plugin extends Module implements PluginInterface
      */
     public function getCpNavItem()
     {
-        if (($iconPath = $this->cpNavIconPath()) !== null) {
-            $iconSvg = file_get_contents($iconPath);
-        } else {
-            $iconSvg = false;
-        }
-
-        return [
+        $ret = [
             'label' => $this->name,
             'url' => $this->id,
-            'iconSvg' => $iconSvg
         ];
+
+        if (($iconPath = $this->cpNavIconPath()) !== null) {
+            $ret['icon'] = $iconPath;
+        }
+
+        return $ret;
     }
 
     // Protected Methods

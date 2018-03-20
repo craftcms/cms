@@ -43,7 +43,7 @@
 
                     if (textStatus === 'success') {
                         var message = Craft.t('app', '{ctrl}C to copy.', {
-                            ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+                            ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
                         });
 
                         prompt(message, response.url);

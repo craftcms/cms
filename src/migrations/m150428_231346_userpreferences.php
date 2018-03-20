@@ -5,6 +5,7 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
+use craft\helpers\Localization;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -67,7 +68,7 @@ class m150428_231346_userpreferences extends Migration
         $this->createTable($this->_prefsTable, [
             'userId' => $this->integer()->notNull(),
             'preferences' => $this->text(),
-            'PRIMARY KEY(userId)',
+            'PRIMARY KEY([[userId]])',
         ]);
     }
 
@@ -117,7 +118,7 @@ class m150428_231346_userpreferences extends Migration
                 $prefs = [];
 
                 if (!empty($user['preferredLocale'])) {
-                    $prefs['language'] = $user['preferredLocale'];
+                    $prefs['language'] = Localization::normalizeLanguage($user['preferredLocale']);
                 }
 
                 if ($user['weekStartDay'] != 0) {

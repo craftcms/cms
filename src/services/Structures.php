@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -20,12 +20,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Structures service.
- *
- * An instance of the Structures service is globally accessible in Craft via [[Application::structures `Craft::$app->getStructures()`]].
+ * Structures service.
+ * An instance of the Structures service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getStructures()|<code>Craft::$app->structures</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Structures extends Component
 {
@@ -60,7 +59,6 @@ class Structures extends Component
      * Returns a structure by its ID.
      *
      * @param int $structureId
-     *
      * @return Structure|null
      */
     public function getStructureById(int $structureId)
@@ -74,18 +72,13 @@ class Structures extends Component
             ->where(['id' => $structureId])
             ->one();
 
-        if ($result) {
-            return new Structure($result);
-        }
-
-        return null;
+        return $result ? new Structure($result) : null;
     }
 
     /**
      * Saves a structure
      *
      * @param Structure $structure
-     *
      * @return bool Whether the structure was saved successfully
      * @throws StructureNotFoundException if $structure->id is invalid
      */
@@ -118,7 +111,6 @@ class Structures extends Component
      * Deletes a structure by its ID.
      *
      * @param int $structureId
-     *
      * @return bool
      */
     public function deleteStructureById(int $structureId): bool
@@ -141,9 +133,8 @@ class Structures extends Component
     /**
      * Returns the descendant level delta for a given element.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
-     *
      * @return int
      */
     public function getElementLevelDelta(int $structureId, ElementInterface $element): int
@@ -168,11 +159,10 @@ class Structures extends Component
     /**
      * Prepends an element to another within a given structure.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
      * @param ElementInterface $parentElement
-     * @param string           $mode Whether this is an "insert", "update", or "auto".
-     *
+     * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
@@ -190,11 +180,10 @@ class Structures extends Component
     /**
      * Appends an element to another within a given structure.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
      * @param ElementInterface $parentElement
-     * @param string           $mode Whether this is an "insert", "update", or "auto".
-     *
+     * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
@@ -212,10 +201,9 @@ class Structures extends Component
     /**
      * Prepends an element to the root of a given structure.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
-     * @param string           $mode Whether this is an "insert", "update", or "auto".
-     *
+     * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
@@ -233,10 +221,9 @@ class Structures extends Component
     /**
      * Appends an element to the root of a given structure.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
-     * @param string           $mode Whether this is an "insert", "update", or "auto".
-     *
+     * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
@@ -254,11 +241,10 @@ class Structures extends Component
     /**
      * Moves an element before another within a given structure.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
      * @param ElementInterface $nextElement
-     * @param string           $mode Whether this is an "insert", "update", or "auto".
-     *
+     * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
@@ -276,11 +262,10 @@ class Structures extends Component
     /**
      * Moves an element after another within a given structure.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
      * @param ElementInterface $prevElement
-     * @param string           $mode Whether this is an "insert", "update", or "auto".
-     *
+     * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
@@ -301,9 +286,8 @@ class Structures extends Component
     /**
      * Returns a structure element record from given structure and element IDs.
      *
-     * @param int              $structureId
+     * @param int $structureId
      * @param ElementInterface $element
-     *
      * @return StructureElement|null
      */
     private function _getElementRecord(int $structureId, ElementInterface $element)
@@ -325,7 +309,6 @@ class Structures extends Component
      * Returns the root node for a given structure ID, or creates one if it doesn't exist.
      *
      * @param int $structureId
-     *
      * @return StructureElement
      */
     private function _getRootElementRecord(int $structureId): StructureElement
@@ -352,12 +335,11 @@ class Structures extends Component
     /**
      * Updates a ElementInterface with the new structure attributes from a StructureElement record.
      *
-     * @param  int              $structureId
-     * @param  ElementInterface $element
-     * @param  StructureElement $targetElementRecord
-     * @param  string           $action
-     * @param  string           $mode
-     *
+     * @param int $structureId
+     * @param ElementInterface $element
+     * @param StructureElement $targetElementRecord
+     * @param string $action
+     * @param string $mode
      * @return bool Whether it was done
      * @throws \Throwable if reasons
      */
@@ -405,10 +387,21 @@ class Structures extends Component
                 return false;
             }
 
-            $element->root = $elementRecord->root;
-            $element->lft = $elementRecord->lft;
-            $element->rgt = $elementRecord->rgt;
-            $element->level = $elementRecord->level;
+            // Update the element with the latest values.
+            // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
+            $values = (new Query())
+                ->select(['root', 'lft', 'rgt', 'level'])
+                ->from('{{%structureelements}}')
+                ->where([
+                    'structureId' => $structureId,
+                    'elementId' => $element->id,
+                ])
+                ->one();
+
+            $element->root = $values['root'];
+            $element->lft = $values['lft'];
+            $element->rgt = $values['rgt'];
+            $element->level = $values['level'];
 
             // Tell the element about it
             $element->afterMoveInStructure($structureId);

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -22,11 +22,10 @@ use yii\web\Response;
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
  * saving, deleting, searching and creating tags and tag groups in the control panel.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TagsController extends Controller
 {
@@ -52,9 +51,8 @@ class TagsController extends Controller
     /**
      * Edit a tag group.
      *
-     * @param int|null      $tagGroupId The tag group’s ID, if any.
-     * @param TagGroup|null $tagGroup   The tag group being edited, if there were any validation errors.
-     *
+     * @param int|null $tagGroupId The tag group’s ID, if any.
+     * @param TagGroup|null $tagGroup The tag group being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
@@ -250,7 +248,6 @@ class TagsController extends Controller
 
         $tag = new Tag();
         $tag->groupId = $group->id;
-        $tag->fieldLayoutId = $group->fieldLayoutId;
         $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields

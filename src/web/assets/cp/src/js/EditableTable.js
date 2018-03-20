@@ -17,13 +17,14 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
-        radioCheckboxes: {},
+        radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
+            this.radioCheckboxes = {};
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
@@ -75,14 +76,14 @@ Craft.EditableTable = Garnish.Base.extend(
 
         addRow: function() {
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
-                $tr = this.createRow(rowId, this.columns, this.baseName, {});
+                $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
             new Craft.EditableTable.Row(this, $tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
-            $tr.find('input,textarea,select').first().focus();
+            $tr.find('input,textarea,select').first().trigger('focus');
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -93,9 +94,10 @@ Craft.EditableTable = Garnish.Base.extend(
         }
     },
     {
-        textualColTypes: ['singleline', 'multiline', 'number'],
+        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
         defaults: {
             rowIdPrefix: '',
+            defaultValues: {},
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },
@@ -138,6 +140,38 @@ Craft.EditableTable = Garnish.Base.extend(
                     }
 
                     switch (col.type) {
+                        case 'checkbox':
+                            Craft.ui.createCheckbox({
+                                name: name,
+                                value: col.value || '1',
+                                checked: !!value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'color':
+                            Craft.ui.createColorInput({
+                                name: name,
+                                value: value,
+                                small: true
+                            }).appendTo($cell);
+                            break;
+
+                        case 'date':
+                            Craft.ui.createDateInput({
+                                name: name,
+                                value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'lightswitch':
+                            Craft.ui.createLightswitch({
+                                name: name,
+                                value: col.value || '1',
+                                on: !!value,
+                                small: true
+                            }).appendTo($cell);
+                            break;
+
                         case 'select':
                             Craft.ui.createSelect({
                                 name: name,
@@ -147,16 +181,8 @@ Craft.EditableTable = Garnish.Base.extend(
                             }).appendTo($cell);
                             break;
 
-                        case 'checkbox':
-                            Craft.ui.createCheckbox({
-                                name: name,
-                                value: col.value || '1',
-                                checked: !!value
-                            }).appendTo($cell);
-                            break;
-
-                        case 'lightswitch':
-                            Craft.ui.createLightswitch({
+                        case 'time':
+                            Craft.ui.createTimeInput({
                                 name: name,
                                 value: value
                             }).appendTo($cell);
@@ -166,7 +192,7 @@ Craft.EditableTable = Garnish.Base.extend(
                             $('<textarea/>', {
                                 'name': name,
                                 'rows': 1,
-                                'value': value,
+                                'val': value,
                                 'placeholder': col.placeholder
                             }).appendTo($cell);
                     }
@@ -238,7 +264,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea', this.$tds[i]);
+                    var $textarea = $('textarea, input.text', this.$tds[i]);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -251,6 +277,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     if (col.type === 'singleline' || col.type === 'number') {
                         this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
+                        $textarea.trigger('textchange');
                     }
 
                     textareasByColId[colId] = $textarea;
@@ -362,8 +389,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             this.$textareas.css('min-height', tallestTextareaHeight);
 
-            // If the <td> is still taller, go with that insted
-            var tdHeight = this.$textareas.first().parent().height();
+            // If the <td> is still taller, go with that instead
+            var tdHeight = this.$textareas.filter(':visible').first().parent().height();
 
             if (tdHeight > tallestTextareaHeight) {
                 this.$textareas.css('min-height', tdHeight);

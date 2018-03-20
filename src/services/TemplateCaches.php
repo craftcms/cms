@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -15,7 +15,6 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
 use yii\base\Component;
@@ -23,12 +22,11 @@ use yii\base\Event;
 use yii\web\Response;
 
 /**
- * Class TemplateCaches service.
- *
- * An instance of the TemplateCaches service is globally accessible in Craft via [[Application::templateCaches `Craft::$app->getTemplateCaches()`]].
+ * Template Caches service.
+ * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|<code>Craft::$app->templateCaches</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TemplateCaches extends Component
 {
@@ -116,9 +114,8 @@ class TemplateCaches extends Component
     /**
      * Returns a cached template by its key.
      *
-     * @param string $key    The template cache key
-     * @param bool   $global Whether the cache would have been stored globally.
-     *
+     * @param string $key The template cache key
+     * @param bool $global Whether the cache would have been stored globally.
      * @return string|null
      */
     public function getTemplateCache(string $key, bool $global)
@@ -136,6 +133,7 @@ class TemplateCaches extends Component
         // Take the opportunity to delete any expired caches
         $this->deleteExpiredCachesIfOverdue();
 
+        /** @noinspection PhpUnhandledExceptionInspection */
         $query = (new Query())
             ->select(['body'])
             ->from([self::$_templateCachesTable])
@@ -143,7 +141,7 @@ class TemplateCaches extends Component
                 'and',
                 [
                     'cacheKey' => $key,
-                    'siteId' => Craft::$app->getSites()->currentSite->id
+                    'siteId' => Craft::$app->getSites()->getCurrentSite()->id
                 ],
                 ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
             ]);
@@ -167,8 +165,6 @@ class TemplateCaches extends Component
      * Starts a new template cache.
      *
      * @param string $key The template cache key.
-     *
-     * @return void
      */
     public function startTemplateCache(string $key)
     {
@@ -196,8 +192,6 @@ class TemplateCaches extends Component
      * Includes an element criteria in any active caches.
      *
      * @param Event $event The 'afterPrepare' element query event
-     *
-     * @return void
      */
     public function includeElementQueryInTemplateCaches(Event $event)
     {
@@ -236,8 +230,6 @@ class TemplateCaches extends Component
      * Includes an element in any active caches.
      *
      * @param int $elementId The element ID.
-     *
-     * @return void
      */
     public function includeElementInTemplateCaches(int $elementId)
     {
@@ -259,14 +251,12 @@ class TemplateCaches extends Component
     /**
      * Ends a template cache.
      *
-     * @param string      $key        The template cache key.
-     * @param bool        $global     Whether the cache should be stored globally.
-     * @param string|null $duration   How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
-     * @param mixed|null  $expiration When the cache should expire.
-     * @param string      $body       The contents of the cache.
-     *
+     * @param string $key The template cache key.
+     * @param bool $global Whether the cache should be stored globally.
+     * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
+     * @param mixed|null $expiration When the cache should expire.
+     * @param string $body The contents of the cache.
      * @throws \Throwable
-     * @return void
      */
     public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
     {
@@ -318,7 +308,7 @@ class TemplateCaches extends Component
                     self::$_templateCachesTable,
                     [
                         'cacheKey' => $key,
-                        'siteId' => Craft::$app->getSites()->currentSite->id,
+                        'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
                         'path' => $global ? null : $this->_getPath(),
                         'expiryDate' => Db::prepareDateForDb($expiration),
                         'body' => $body
@@ -379,7 +369,6 @@ class TemplateCaches extends Component
      * Deletes a cache by its ID(s).
      *
      * @param int|array $cacheId The cache ID.
-     *
      * @return bool
      */
     public function deleteCacheById($cacheId): bool
@@ -399,7 +388,6 @@ class TemplateCaches extends Component
      * Deletes caches by a given element class.
      *
      * @param string $elementType The element class.
-     *
      * @return bool
      */
     public function deleteCachesByElementType(string $elementType): bool
@@ -431,7 +419,6 @@ class TemplateCaches extends Component
      * Deletes caches that include a given element(s).
      *
      * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
-     *
      * @return bool
      */
     public function deleteCachesByElement($elements): bool
@@ -466,11 +453,10 @@ class TemplateCaches extends Component
     /**
      * Deletes caches that include an a given element ID(s).
      *
-     * @param int|int[] $elementId             The ID of the element(s) whose caches should be cleared.
-     * @param bool      $deleteQueryCaches     Whether a DeleteStaleTemplateCaches job should be added to the queue, deleting any
-     *                                         query caches that may now involve this element, but hadn't previously.
-     *                                         (Defaults to `true`.)
-     *
+     * @param int|int[] $elementId The ID of the element(s) whose caches should be cleared.
+     * @param bool $deleteQueryCaches Whether a DeleteStaleTemplateCaches job
+     * should be added to the queue, deleting any query caches that may now
+     * involve this element, but hadn't previously. (Defaults to `true`.)
      * @return bool
      */
     public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
@@ -531,8 +517,7 @@ class TemplateCaches extends Component
      * Deletes caches that include elements that match a given element query's parameters.
      *
      * @param ElementQuery $query The element query that should be used to find elements whose caches
-     *                            should be deleted.
-     *
+     * should be deleted.
      * @return bool
      */
     public function deleteCachesByElementQuery(ElementQuery $query): bool
@@ -553,7 +538,6 @@ class TemplateCaches extends Component
      * Deletes a cache by its key(s).
      *
      * @param int|array $key The cache key(s) to delete.
-     *
      * @return bool
      */
     public function deleteCachesByKey($key): bool

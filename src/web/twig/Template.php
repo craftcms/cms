@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig;
@@ -13,8 +13,7 @@ use Craft;
  * Base Twig template class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
- *
+ * @since 3.0
  * @method int[] getDebugInfo()
  */
 abstract class Template extends \Twig_Template
@@ -41,7 +40,6 @@ abstract class Template extends \Twig_Template
      *
      * @param array $context
      * @param array $blocks
-     *
      * @throws \Twig_Error
      * @throws \Twig_Error_Runtime
      */
