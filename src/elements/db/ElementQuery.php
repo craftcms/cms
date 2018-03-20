@@ -1141,17 +1141,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      * as the field value. If the latter, the array key should be the field name while the array value should be
      * the corresponding field definition which can be either an object property name or a PHP callable
      * returning the corresponding field value. The signature of the callable should be:
+     *
      * ```php
      * function ($model, $field) {
      *     // return field value
      * }
      * ```
+     *
      * For example, the following code declares four fields:
+     *
      * - `email`: the field name is the same as the property name `email`;
      * - `firstName` and `lastName`: the field names are `firstName` and `lastName`, and their
      *   values are obtained from the `first_name` and `last_name` properties;
      * - `fullName`: the field name is `fullName`. Its value is obtained by concatenating `first_name`
      *   and `last_name`.
+     *
      * ```php
      * return [
      *     'email',
@@ -1328,6 +1332,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Returns the condition that should be applied to the element query for a given status.
      * For example, if you support a status called “pending”, which maps back to a `pending` database column that will
      * either be 0 or 1, this method could do this:
+     *
      * ```php
      * protected function statusCondition($status)
      * {

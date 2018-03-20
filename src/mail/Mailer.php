@@ -46,6 +46,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * Plugins can register additional email keys using the
      * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
      * by providing the corresponding language strings.
+     *
      * ```php
      * Craft::$app->mailer->composeFromKey('account_activation', [
      *     'link' => $activationUrl
