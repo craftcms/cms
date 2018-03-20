@@ -18,6 +18,7 @@
 - `craft\validators\LanguageValidator` now has a `notAllowed` property, which can be used to customize the error message.
 - `craft\web\View::renderString()` and `renderObjectTemplate()` no longer escape dynamically-output HTML in the template by default.
 - The `defineBehaviors` event on `craft\web\twig\variables\CraftVariable` is no longer deprecated.
+- Craft now requires Yii 2.0.15 or later.
 
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
