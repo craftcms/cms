@@ -20,7 +20,8 @@ class Console extends \yii\helpers\Console
      * You may optionally format the string with ANSI codes by
      * passing additional parameters using the constants defined in [[\yii\helpers\Console]].
      * Example:
-     * ```
+     *
+     * ```php
      * Console::stdout('This will be red and underlined.', Console::FG_RED, Console::UNDERLINE);
      * ```
      *
