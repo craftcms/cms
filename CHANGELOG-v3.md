@@ -46,6 +46,7 @@
 - Fixed a bug where the `baseCpUrl` config setting wasn’t being factored in when generating action URLs for the Control Panel. ([#2581](https://github.com/craftcms/cms/issues/2581))
 - Fixed a bug where some Control Panel messages were not getting translated. ([#2583](https://github.com/craftcms/cms/issues/2583))
 - Fixed a bug where Color fields’ color previews weren’t showing the selected color in element indexes and entry versions. ([#2587](https://github.com/craftcms/cms/issues/2587))
+- Fixed a bug where datepickers weren’t visible in Live Preview. ([#2591](https://github.com/craftcms/cms/issues/2591))
 
 ## 3.0.0-RC15 - 2018-03-13
 

@@ -1415,7 +1415,7 @@ body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px;
 body .selectize-dropdown .active { color: #29323d; background-color: #d5d8dd; }
 
 /* datepicker */
-.ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 240px; z-index: 100 !important; }
+.ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 240px; z-index: 101 !important; }
 body.ltr .ui-datepicker { margin-left: 1px; }
 body.rtl .ui-datepicker { margin-right: 1px; }
 
