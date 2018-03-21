@@ -327,8 +327,8 @@ class Table extends Field
     /**
      * Normalizes a cell’s value.
      *
-     * @param string $type  The cell type
-     * @param mixed  $value The cell value
+     * @param string $type The cell type
+     * @param mixed $value The cell value
      *
      * @return mixed
      * @see normalizeValue()
@@ -368,8 +368,8 @@ class Table extends Field
     /**
      * Validates a cell’s value.
      *
-     * @param string      $type   The cell type
-     * @param mixed       $value  The cell value
+     * @param string $type The cell type
+     * @param mixed $value The cell value
      * @param string|null &$error The error text to set on the element
      *
      * @return bool Whether the value is valid
@@ -391,9 +391,9 @@ class Table extends Field
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed                 $value
+     * @param mixed $value
      * @param ElementInterface|null $element
-     * @param bool                  $static
+     * @param bool $static
      *
      * @return string|null
      */
@@ -440,7 +440,7 @@ class Table extends Field
             'maxRows' => $this->maxRows,
             'minRows' => $this->minRows,
             'static' => $static,
-            'addRowLabel'=> $this->addRowLabel
+            'addRowLabel' => $this->addRowLabel
         ]);
     }
 }

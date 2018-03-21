@@ -12613,12 +12613,12 @@ Craft.EditableTable = Garnish.Base.extend(
             this.radioCheckboxes = {};
             this.maxRows = maxRows;
             this.minRows = minRows;
-            
-            if (this.maxRows != null) {
+
+            if (this.maxRows !== null) {
                 this.hasMaxRows = true;
             }
 
-            if (this.minRows != null) {
+            if (this.minRows !== null) {
                 this.hasMinRows = true;
             }
 
@@ -12688,9 +12688,6 @@ Craft.EditableTable = Garnish.Base.extend(
         canDeleteRow: function() {
             return (this.rowCount > this.minRows);
         },
-        canAddRow: function() {
-            return (this.rowCount < this.maxRows);
-        },
         deleteRow: function(row) {
             if (this.hasMaxRows && this.hasMinRows) {
                 if (!this.canDeleteRow()) {
@@ -12708,6 +12705,9 @@ Craft.EditableTable = Garnish.Base.extend(
             this.updateAddRowButton();
             // onDeleteRow callback
             this.settings.onDeleteRow(row.$tr);
+        },
+        canAddRow: function() {
+            return (this.rowCount < this.maxRows);
         },
         addRow: function() {
             if (this.hasMaxRows && this.hasMinRows) {
