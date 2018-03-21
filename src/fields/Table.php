@@ -436,6 +436,7 @@ class Table extends Field
             'cols' => $this->columns,
             'rows' => $value,
             'maxRows' => $this->maxRows,
+            'minRows' => $this->minRows,
             'static' => $static,
             'addRowLabel'=> $this->addRowLabel
         ]);
