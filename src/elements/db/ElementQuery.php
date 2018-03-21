@@ -1783,13 +1783,13 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Any other empty value means we should set it
         if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
+                if (empty($this->id)) {
+                    throw new QueryAbortedException;
+                }
+
                 $ids = $this->id;
                 if (!is_array($ids)) {
                     $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
-                }
-
-                if (empty($ids)) {
-                    throw new QueryAbortedException;
                 }
 
                 if (!$db instanceof \craft\db\Connection) {

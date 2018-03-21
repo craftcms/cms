@@ -51,6 +51,7 @@
 - Fixed a bug where datepickers weren’t visible in Live Preview. ([#2591](https://github.com/craftcms/cms/issues/2591))
 - Fixed a bug where fields’ Translation Method settings weren’t listing “Translate for each site group” as an option after changing the field type, until the field was saved and re-edited. ([#2602](https://github.com/craftcms/cms/issues/2602))
 - Fixed an error that occurred when attempting to set a value on a newly-created field within a content migration. ([#2597](https://github.com/craftcms/cms/issues/2597))
+- Fixed a SQL error that occurred if an element query was executed with the `fixedOrder` param enabled but the `id` param wasn’t set. ([#2607](https://github.com/craftcms/cms/issues/2607))
 
 ## 3.0.0-RC15 - 2018-03-13
 
