@@ -28,6 +28,7 @@
 - `craft\web\View::renderString()` and `renderObjectTemplate()` no longer escape dynamically-output HTML in the template by default.
 - The `defineBehaviors` event on `craft\web\twig\variables\CraftVariable` is no longer deprecated.
 - Craft now requires Yii 2.0.15 or later.
+- Plugin settings defined in config files are no longer recursively merged with the database-stored settings. ([#2561](https://github.com/craftcms/cms/issues/2561))
 
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))

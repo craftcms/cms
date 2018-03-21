@@ -742,7 +742,7 @@ class Plugins extends Component
         if ($row !== null) {
             $config['isInstalled'] = true;
 
-            $settings = ArrayHelper::merge(
+            $settings = array_merge(
                 $row['settings'] ?? [],
                 Craft::$app->getConfig()->getConfigFromFile($handle)
             );
