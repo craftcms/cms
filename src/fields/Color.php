@@ -142,7 +142,7 @@ class Color extends Field implements PreviewableFieldInterface
         }
 
         return Html::encodeParams(
-            '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
+            '<div class="color" style="cursor: default;"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
             [
                 'bgColor' => $value->getHex()
             ]);
@@ -155,10 +155,10 @@ class Color extends Field implements PreviewableFieldInterface
     {
         /** @var ColorData|null $value */
         if (!$value) {
-            return '<div class="color small static"><div class="colorpreview"></div></div>';
+            return '<div class="color small static"><div class="color-preview"></div></div>';
         }
 
-        return "<div class='color small static'><div class='colorpreview' style='background-color: {$value->getHex()};'></div></div>".
+        return "<div class='color small static'><div class='color-preview' style='background-color: {$value->getHex()};'></div></div>".
             "<div class='colorhex code'>{$value->getHex()}</div>";
     }
 }
