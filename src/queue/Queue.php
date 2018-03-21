@@ -501,7 +501,8 @@ EOD;
     private function _createWaitingJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => false, 'timeUpdated' => null, 'delay' => 0]);
+            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere('[[timePushed]] + [[delay]] < :time', ['time' => time()]);
     }
 
     /**
