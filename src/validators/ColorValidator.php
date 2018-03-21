@@ -24,7 +24,7 @@ class ColorValidator extends RegularExpressionValidator
     /**
      * @inheritdoc
      */
-    public $pattern = '/^#[0-9a-f]{6}$/';
+    public $pattern = '/^#[0-9a-fA-F]{6}$/';
 
     /**
      * @inheritdoc
