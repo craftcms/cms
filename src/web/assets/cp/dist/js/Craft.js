@@ -1,4 +1,4 @@
-/*!   - 2018-03-19 */
+/*!   - 2018-03-21 */
 (function($){
 
 /** global: Craft */
@@ -12592,7 +12592,10 @@ Craft.EditableTable = Garnish.Base.extend(
         sorter: null,
         biggestId: -1,
         maxRows: null,
+        minRows: null,
         rowCount: null,
+        hasMaxRows: false,
+        hasMinRows: false,
 
         $table: null,
         $tbody: null,
@@ -12600,14 +12603,26 @@ Craft.EditableTable = Garnish.Base.extend(
 
         radioCheckboxes: null,
 
-        init: function(id, baseName, columns, settings, maxRows) {
+        init: function(id, baseName, columns, settings, maxRows, minRows) {
+
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
             this.maxRows = maxRows;
+            this.minRows = minRows;
             this.rowCount = 0;
+
+            if (this.maxRows != null) {
+                this.hasMaxRows = true;
+            }
+
+            if (this.minRows != null) {
+                this.hasMinRows = true;
+            }
+
+            console.log("this.maxRows: ", this.maxRows, " maxRows: ", maxRows, "this.minRows: ", this.minRows, " minRows: ", minRows);
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
@@ -12622,6 +12637,12 @@ Craft.EditableTable = Garnish.Base.extend(
             } else {
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
+            }
+
+            if (this.hasMinRows && this.rowCount == 0) {
+                for (var i = 0; i < this.minRows; i++) {
+                    this.addRow()
+                }
             }
         },
 
@@ -12646,7 +12667,6 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$addRowBtn = this.$table.next('.add');
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
-
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
 
@@ -12656,36 +12676,47 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
-
-        canAddRow: function() {
-            if (this.rowCount >= this.maxRows) {
-              this.removeListener(this.$addRowBtn, 'activate');
-              return false;
+        updateAddRowButton: function(){
+            if ((this.hasMaxRows && this.rowCount >= this.maxRows) ||
+                (this.hasMinRows && this.rowCount < this.minRows)) {
+              this.$addRowBtn.css('opacity', '0.2');
+            } else {
+                this.$addRowBtn.css('opacity', '1');
             }
-          this.removeListener(this.$addRowBtn, 'activate');
-          this.$addRowBtn = this.$table.next('.add');
-          this.addListener(this.$addRowBtn, 'activate', 'addRow');
-          return true;
         },
-
+        canDeleteRow: function() {
+            return (this.rowCount > this.minRows);
+        },
+        canAddRow: function() {
+            return (this.rowCount < this.maxRows);
+        },
         deleteRow: function(row) {
-
-            this.sorter.removeItems(row.$tr);
-            row.$tr.remove();
-            this.rowCount--;
-            console.log("Row count: ", this.rowCount);
-
-            // onDeleteRow callback
-            this.settings.onDeleteRow(row.$tr);
-        },
-
-        addRow: function() {
-            if (!this.canAddRow()) {
+            if (!this.canDeleteRow()) {
                 return;
             }
 
-            this.rowCount++;
-            console.log("Row count: ", this.rowCount);
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+
+            if (this.hasMinRows && this.hasMinRows) {
+                this.rowCount--;
+                console.log("Row count: ", this.rowCount);
+            }
+
+            this.updateAddRowButton();
+            // onDeleteRow callback
+            this.settings.onDeleteRow(row.$tr);
+        },
+        addRow: function() {
+
+            if (this.hasMaxRows && this.hasMinRows) {
+                if (!this.canAddRow() && this.hasMaxRows) {
+                    return;
+                }
+
+                this.rowCount++;
+                console.log("Row count: ", this.rowCount);
+            }
 
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
@@ -12696,6 +12727,8 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
+
+            this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
