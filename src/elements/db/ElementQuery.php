@@ -904,6 +904,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->distinct();
         }
 
+        if ($this->groupBy) {
+            $this->query->groupBy = $this->groupBy;
+        }
+
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
         }
