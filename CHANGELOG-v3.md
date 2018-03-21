@@ -12,6 +12,7 @@
 - Improved the page header styles in the Control Panel.
 - It’s now possible to define custom values for the `@web` and `@webroot` aliases from the `aliases` config setting. ([#2566](https://github.com/craftcms/cms/issues/2566))
 - Console requests will now look for a `web/`, `public/`, or `public_html/` folder alongside the `craft` executable when setting the default value for the `@webroot` alias.
+- System message templates are now passed `fromName` and `fromEmail` variables, set to the system email settings values.
 - `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.

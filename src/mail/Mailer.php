@@ -100,8 +100,12 @@ class Mailer extends \yii\swiftmailer\Mailer
                 Craft::$app->language = $message->language;
             }
 
-            $variables = $message->variables ?: [];
-            $variables['emailKey'] = $message->key;
+            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
+            $variables = ($message->variables ?: []) + [
+                    'emailKey' => $message->key,
+                    'fromEmail' => $settings->fromEmail,
+                    'fromName' => $settings->fromName,
+                ];
 
             // Render the subject and textBody
             $subject = $view->renderString($subjectTemplate, $variables);
