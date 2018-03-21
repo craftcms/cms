@@ -13,15 +13,15 @@ Craft.EditableTable = Garnish.Base.extend(
         sorter: null,
         biggestId: -1,
 
+        $table: null,
+        $tbody: null,
+        $addRowBtn: null,
+
         maxRows: null,
         minRows: null,
         rowCount: 0,
         hasMaxRows: false,
         hasMinRows: false,
-
-        $table: null,
-        $tbody: null,
-        $addRowBtn: null,
 
         radioCheckboxes: null,
 
@@ -32,10 +32,9 @@ Craft.EditableTable = Garnish.Base.extend(
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
-
             this.maxRows = maxRows;
             this.minRows = minRows;
-
+            
             if (this.maxRows != null) {
                 this.hasMaxRows = true;
             }
@@ -46,6 +45,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
+            this.rowCount = this.$tbody.find('tr').length;
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
@@ -58,8 +58,6 @@ Craft.EditableTable = Garnish.Base.extend(
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
-
-            this.rowCount = this.$tbody.find('tr').length;
 
             if (this.hasMinRows && this.rowCount < this.minRows) {
                 for (var i = 0; i < this.minRows; i++) {
@@ -115,8 +113,10 @@ Craft.EditableTable = Garnish.Base.extend(
             return (this.rowCount < this.maxRows);
         },
         deleteRow: function(row) {
-            if (!this.canDeleteRow()) {
-                return;
+            if (this.hasMaxRows && this.hasMinRows) {
+                if (!this.canDeleteRow()) {
+                    return;
+                }
             }
 
             this.sorter.removeItems(row.$tr);
