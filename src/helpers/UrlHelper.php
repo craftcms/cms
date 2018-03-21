@@ -131,7 +131,7 @@ class UrlHelper
 
         if (static::isRootRelativeUrl($url)) {
             // Prepend the current request's scheme and host name
-            $url = static::host().$url;
+            $url = static::siteHost().$url;
         }
 
         return preg_replace('/^https?:/', $scheme.':', $url);
@@ -295,7 +295,7 @@ class UrlHelper
         // Let's auto-detect.
 
         // If the siteUrl is https or the current request is https, use it.
-        $scheme = parse_url(static::baseUrl(), PHP_URL_SCHEME);
+        $scheme = parse_url(static::baseSiteUrl(), PHP_URL_SCHEME);
 
         $request = Craft::$app->getRequest();
         if (($scheme !== false && strtolower($scheme) === 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
@@ -307,36 +307,84 @@ class UrlHelper
     }
 
     /**
-     * Returns the current site’s base URL (with a trailing slash).
+     * Returns either the current site’s base URL or the CP base URL, depending on the type of request this is.
      *
      * @return string
+     * @throws SiteNotFoundException if this is a site request and yet there's no current site for some reason
      */
     public static function baseUrl(): string
     {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return static::baseCpUrl();
+        }
+        return static::baseSiteUrl();
+    }
+
+    /**
+     * Returns the current site’s base URL (with a trailing slash).
+     *
+     * @return string
+     * @throws SiteNotFoundException if there's no current site for some reason
+     */
+    public static function baseSiteUrl(): string
+    {
         try {
             $currentSite = Craft::$app->getSites()->getCurrentSite();
+            if ($currentSite->baseUrl) {
+                return rtrim(Craft::getAlias($currentSite->baseUrl), '/').'/';
+            }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
-            $currentSite = null;
         }
 
-        if ($currentSite && $currentSite->baseUrl) {
-            $baseUrl = Craft::getAlias($currentSite->baseUrl);
-        } else {
-            // Figure it out for ourselves, then
-            $request = Craft::$app->getRequest();
-            if ($request->getIsConsoleRequest()) {
-                $baseUrl = '';
-            } else {
-                $baseUrl = $request->getHostInfo().$request->getBaseUrl();
-            }
+        // Use the request's base URL as a fallback
+        return static::baseRequestUrl();
+    }
+
+    /**
+     * Returns the Control Panel’s base URL (with a trailing slash) (sans-CP trigger).
+     *
+     * @return string
+     */
+    public static function baseCpUrl(): string
+    {
+        // Is a custom base CP URL being defined in the config?
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->baseCpUrl) {
+            return rtrim($generalConfig->baseCpUrl, '/').'/';
         }
 
-        return rtrim($baseUrl, '/').'/';
+        // Use the request's base URL as a fallback
+        return static::baseRequestUrl();
+    }
+
+    /**
+     * Returns the base URL (with a trailing slash) for the current request.
+     *
+     * @return string
+     */
+    public static function baseRequestUrl(): string
+    {
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return '/';
+        }
+
+        return rtrim($request->getHostInfo().$request->getBaseUrl(), '/').'/';
+    }
+
+    /**
+     * Returns the host info for the CP or the current site, depending on the request type.
+     *
+     * @return string
+     * @throws SiteNotFoundException
+     */
+    public static function host(): string
+    {
+        return static::hostInfo(static::baseUrl());
     }
 
     /**
@@ -345,18 +393,39 @@ class UrlHelper
      * @return string
      * @throws SiteNotFoundException
      */
-    public static function host(): string
+    public static function siteHost(): string
     {
-        $host = static::baseUrl();
+        return static::hostInfo(static::baseSiteUrl());
+    }
 
+    /**
+     * Returns the Control Panel's host.
+     *
+     * @return string
+     */
+    public static function cpHost(): string
+    {
+        return static::hostInfo(static::baseCpUrl());
+    }
+
+    /**
+     * Parses a URL for the host info.
+     *
+     * @param string $url
+     * @return string
+     */
+    public static function hostInfo(string $url): string
+    {
         // If there's no host info in the base URL, default to the request's host info
-        if (($slashes = strpos($host, '//')) === false) {
+        if (($slashes = strpos($url, '//')) === false) {
             $request = Craft::$app->getRequest();
             if ($request->getIsConsoleRequest()) {
                 return '';
             }
             return $request->getHostInfo();
         }
+
+        $host = $url;
 
         // Trim off the URI
         $uriPos = strpos($host, '/', $slashes + 2);
@@ -440,30 +509,14 @@ class UrlHelper
                 $baseUrl = static::host().$request->getScriptUrl();
             }
         } else if ($cpUrl) {
-            // Did they set the base URL manually?
-            $baseUrl = $generalConfig->baseCpUrl;
+            $baseUrl = static::baseCpUrl();
 
-            if ($baseUrl) {
-                // Make sure it ends in a slash
-                $baseUrl = StringHelper::ensureRight($baseUrl, '/');
-
-                if ($scheme !== null) {
-                    // Make sure we're using the right scheme
-                    $baseUrl = static::urlWithScheme($baseUrl, $scheme);
-                }
-            } else if ($request->getIsConsoleRequest()) {
-                // No way to know for sure, so just guess
-                $baseUrl = '/';
-            } else {
-                // Figure it out for ourselves, then
-                $baseUrl = static::host().$request->getBaseUrl();
-
-                if ($scheme !== null) {
-                    $baseUrl = static::urlWithScheme($baseUrl, $scheme);
-                }
+            if ($scheme !== null) {
+                // Make sure we're using the right scheme
+                $baseUrl = static::urlWithScheme($baseUrl, $scheme);
             }
         } else {
-            $baseUrl = static::baseUrl();
+            $baseUrl = static::baseSiteUrl();
         }
 
         // Put it all together

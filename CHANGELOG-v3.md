@@ -6,6 +6,12 @@
 - Added the `defineBehaviors` event to `craft\base\Component` and `craft\db\Query`.
 - Added `craft\helpers\FileHelper::hasAnythingChanged()`.
 - Added `craft\helpers\Localization::normalizeLanguage()`.
+- Added `craft\helpers\UrlHelper::baseCpUrl()`.
+- Added `craft\helpers\UrlHelper::baseRequestUrl()`.
+- Added `craft\helpers\UrlHelper::baseSiteUrl()`.
+- Added `craft\helpers\UrlHelper::cpHost()`.
+- Added `craft\helpers\UrlHelper::hostInfo()`.
+- Added `craft\helpers\UrlHelper::siteHost()`.
 - Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
 
 ### Changed
@@ -13,6 +19,8 @@
 - It’s now possible to define custom values for the `@web` and `@webroot` aliases from the `aliases` config setting. ([#2566](https://github.com/craftcms/cms/issues/2566))
 - Console requests will now look for a `web/`, `public/`, or `public_html/` folder alongside the `craft` executable when setting the default value for the `@webroot` alias.
 - System message templates are now passed `fromName` and `fromEmail` variables, set to the system email settings values.
+- `craft\helpers\UrlHelper::baseUrl()` now returns the base CP or site URL, depending on the request type.
+- `craft\helpers\UrlHelper::host()` now returns the CP or site host info, depending on the request type.
 - `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
@@ -35,6 +43,7 @@
 - Fixed a bug where Control Panel resource requests could 404 in load-balanced environments. ([#2500](https://github.com/craftcms/cms/issues/2500))
 - Fixed a bug where you would get a PHP error in `craft\fields\PlainText` when updating from a really old Craft install.
 - Fixed a bug where new entry versions weren’t being generated when publishing drafts. ([#2579](https://github.com/craftcms/cms/issues/2579))
+- Fixed a bug where the `baseCpUrl` config setting wasn’t being factored in when generating action URLs for the Control Panel. ([#2581](https://github.com/craftcms/cms/issues/2581))
 
 ## 3.0.0-RC15 - 2018-03-13
 
