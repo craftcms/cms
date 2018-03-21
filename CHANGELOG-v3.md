@@ -53,6 +53,7 @@
 - Fixed an error that occurred when attempting to set a value on a newly-created field within a content migration. ([#2597](https://github.com/craftcms/cms/issues/2597))
 - Fixed a SQL error that occurred if an element query was executed with the `fixedOrder` param enabled but the `id` param wasn’t set. ([#2607](https://github.com/craftcms/cms/issues/2607))
 - Fixed a bug where newlines could be counted as two characters when validating the length of Plain Text field values. ([#2257](https://github.com/craftcms/cms/issues/2257))
+- Fixed a bug where delayed jobs would never get run when using Craft’s built-in queue driver. ([#2609](https://github.com/craftcms/cms/issues/2609))
 
 ## 3.0.0-RC15 - 2018-03-13
 
