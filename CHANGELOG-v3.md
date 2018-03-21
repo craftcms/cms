@@ -34,6 +34,7 @@
 - Fixed an error that would occur if a `SiteGroupNotFoundException` was thrown. ([#2595](https://github.com/craftcms/cms/issues/2595))
 - Fixed a bug where Control Panel resource requests could 404 in load-balanced environments. ([#2500](https://github.com/craftcms/cms/issues/2500))
 - Fixed a bug where you would get a PHP error in `craft\fields\PlainText` when updating from a really old Craft install.
+- Fixed a bug where new entry versions weren’t being generated when publishing drafts. ([#2579](https://github.com/craftcms/cms/issues/2579))
 
 ## 3.0.0-RC15 - 2018-03-13
 
