@@ -96,8 +96,10 @@ class Table extends Field
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
-
+        $rules[] = ['minRows', 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number'];
+        $rules[] = ['maxRows', 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number'];
+        $rules[] = ['minRows', 'integer', 'min' => 0];
+        $rules[] = ['maxRows', 'integer', 'max' => 0];
         return $rules;
     }
 
