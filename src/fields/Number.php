@@ -121,6 +121,9 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
+        if (!is_numeric($this->min) || !is_numeric($this->max) || !is_numeric($this->decimals)) {
+            return false;
+        }
         return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
     }
 
