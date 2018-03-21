@@ -12681,8 +12681,10 @@ Craft.EditableTable = Garnish.Base.extend(
             if ((this.hasMaxRows && this.rowCount >= this.maxRows) ||
                 (this.hasMinRows && this.rowCount < this.minRows)) {
                 this.$addRowBtn.css('opacity', '0.2');
+                this.$addRowBtn.css('pointer-events', 'none');
             } else {
                 this.$addRowBtn.css('opacity', '1');
+                this.$addRowBtn.css('pointer-events', 'auto');
             }
         },
         canDeleteRow: function() {
@@ -12710,12 +12712,8 @@ Craft.EditableTable = Garnish.Base.extend(
             return (this.rowCount < this.maxRows);
         },
         addRow: function() {
-            if (this.hasMaxRows && this.hasMinRows) {
-                if (!this.canAddRow()) {
-                    return;
-                }
-
-                this.rowCount++;
+            if (!this.canAddRow()) {
+                return;
             }
 
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
@@ -12728,6 +12726,7 @@ Craft.EditableTable = Garnish.Base.extend(
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
 
+            this.rowCount++;
             this.updateAddRowButton();
 
             // onAddRow callback
