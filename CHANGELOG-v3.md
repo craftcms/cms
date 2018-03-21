@@ -54,6 +54,7 @@
 - Fixed a SQL error that occurred if an element query was executed with the `fixedOrder` param enabled but the `id` param wasn’t set. ([#2607](https://github.com/craftcms/cms/issues/2607))
 - Fixed a bug where newlines could be counted as two characters when validating the length of Plain Text field values. ([#2257](https://github.com/craftcms/cms/issues/2257))
 - Fixed a bug where delayed jobs would never get run when using Craft’s built-in queue driver. ([#2609](https://github.com/craftcms/cms/issues/2609))
+- Fixed a SQL error that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 
 ## 3.0.0-RC15 - 2018-03-13
 
