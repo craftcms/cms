@@ -328,7 +328,9 @@ class Api extends Component
                 $pluginLicenses[] = "{$handle}:{$licenseKey}";
             }
         }
-        $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+        if (!empty($pluginLicenses)) {
+            $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+        }
 
         return $headers;
     }
