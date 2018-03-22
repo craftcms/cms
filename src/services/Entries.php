@@ -25,6 +25,7 @@ class Entries extends Component
 
     /**
      * Returns an entry by its ID.
+     *
      * ```php
      * $entry = Craft::$app->entries->getEntryById($entryId);
      * ```

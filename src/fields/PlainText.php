@@ -68,6 +68,19 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function __construct(array $config = [])
+    {
+        // This existed at one point way back in the day.
+        if (isset($config['maxLengthUnit'])) {
+            unset($config['maxLengthUnit']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -120,7 +133,8 @@ class PlainText extends Field implements PreviewableFieldInterface
         if ($value !== null) {
             $value = LitEmoji::shortcodeToUnicode($value);
         }
-        return $value;
+
+        return preg_replace('/\R/', "\n", $value);
     }
 
     /**

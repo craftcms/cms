@@ -144,8 +144,12 @@ class Request extends \yii\web\Request
 
         // Set the @webroot and @web aliases now (instead of from yii\web\Application::bootstrap())
         // in case a site's base URL requires @web, and so we can include the host info in @web
-        Craft::setAlias('@webroot', dirname($this->getScriptFile()));
-        Craft::setAlias('@web', $this->getHostInfo().$this->getBaseUrl());
+        if (Craft::getRootAlias('@webroot') === false) {
+            Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+        }
+        if (Craft::getRootAlias('@web') === false) {
+            Craft::setAlias('@web', $this->getHostInfo().$this->getBaseUrl());
+        }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -460,10 +464,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the named request body parameter value.
      * If the parameter does not exist, the second parameter passed to this method will be returned.
+     *
      * ```php
      * $foo = Craft::$app->request->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
      * ```
+     *
      * You can also specify a nested parameter using a dot-delimited string.
+     *
      * ```php
      * $bar = Craft::$app->request->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
      * ```
@@ -539,10 +546,13 @@ class Request extends \yii\web\Request
     /**
      * Returns the named GET parameter value.
      * If the GET parameter does not exist, the second parameter to this method will be returned.
+     *
      * ```php
      * $foo = Craft::$app->request->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
      * ```
+     *
      * You can also specify a nested parameter using a dot-delimited string.
+     *
      * ```php
      * $bar = Craft::$app->request->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
      * ```

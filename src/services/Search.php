@@ -754,7 +754,7 @@ class Search extends Component
      */
     private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize): string
     {
-        $cleanKeywordsLength = mb_strlen($cleanKeywords);
+        $cleanKeywordsLength = strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -762,14 +762,14 @@ class Search extends Component
 
         if ($cleanKeywordsLength > $maxSize) {
             // Time to truncate.
-            $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxSize);
+            $cleanKeywords = strcut($cleanKeywords, 0, $maxSize);
 
             // Make sure we don't cut off a word in the middle.
-            if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
-                $position = mb_strrpos($cleanKeywords, ' ');
+            if ($cleanKeywords[strlen($cleanKeywords) - 1] !== ' ') {
+                $position = strrpos($cleanKeywords, ' ');
 
                 if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    $cleanKeywords = substr($cleanKeywords, 0, $position + 1);
                 }
             }
         }

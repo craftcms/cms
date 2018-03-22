@@ -403,12 +403,13 @@ class View extends \yii\web\View
      */
     public function renderString(string $template, array $variables = []): string
     {
+        $twig = $this->getTwig();
+        $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
-        $templateObj = $this->getTwig()->createTemplate($template);
-        $result = $templateObj->render($variables);
+        $result = $twig->createTemplate($template)->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
-
+        $twig->setDefaultEscaperStrategy();
         return $result;
     }
 
@@ -468,13 +469,14 @@ class View extends \yii\web\View
             $variables['object'] = $object;
 
             // Render it!
+            $twig->setDefaultEscaperStrategy(false);
             $lastRenderingTemplate = $this->_renderingTemplate;
             $this->_renderingTemplate = 'string:'.$template;
             /** @var Template $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
-
             $this->_renderingTemplate = $lastRenderingTemplate;
+            $twig->setDefaultEscaperStrategy();
 
             // Re-enable strict variables
             if ($strictVariables) {
@@ -512,34 +514,46 @@ class View extends \yii\web\View
     /**
      * Finds a template on the file system and returns its path.
      * All of the following files will be searched for, in this order:
+     *
      * - TemplateName
      * - TemplateName.html
      * - TemplateName.twig
      * - TemplateName/index.html
      * - TemplateName/index.twig
+     *
      * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
      * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
      * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
+     *
      * For example if you set the following in config/general.php:
+     *
      * ```php
      * 'defaultTemplateExtensions' => ['htm'],
      * 'indexTemplateFilenames' => ['default'],
      * ```
+     *
      * then the following files would be searched for instead:
+     *
      * - TemplateName
      * - TemplateName.htm
      * - TemplateName/default.htm
+     *
      * The actual directory that those files will depend on the current [[setTemplateMode()|template mode]]
      * (probably `templates/` if it’s a front-end site request, and `vendor/craftcms/cms/src/templates/` if it’s a Control
      * Panel request).
+     *
      * If this is a front-end site request, a folder named after the current site handle will be checked first.
+     *
      * - templates/SiteHandle/...
      * - templates/...
+     *
      * And finally, if this is a Control Panel request _and_ the template name includes multiple segments _and_ the first
      * segment of the template name matches a plugin’s handle, then Craft will look for a template named with the
      * remaining segments within that plugin’s templates/ subfolder.
+     *
      * To put it all together, here’s where Craft would look for a template named “foo/bar”, depending on the type of
      * request it is:
+     *
      * - Front-end site requests:
      *     - templates/SiteHandle/foo/bar
      *     - templates/SiteHandle/foo/bar.html
@@ -1040,21 +1054,28 @@ JS;
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
      * attributes will get namespaced as well, by prepending the namespace and a dash to their values.
      * For example, the following HTML:
+     *
      * ```html
      * <label for="title">Title</label>
      * <input type="text" name="title" id="title">
      * ```
+     *
      * would become this, if it were namespaced with “foo”:
+     *
      * ```html
      * <label for="foo-title">Title</label>
      * <input type="text" name="foo[title]" id="foo-title">
      * ```
+     *
      * Attributes that are already namespaced will get double-namespaced. For example, the following HTML:
+     *
      * ```html
      * <label for="bar-title">Title</label>
      * <input type="text" name="bar[title]" id="title">
      * ```
+     *
      * would become:
+     *
      * ```html
      * <label for="foo-bar-title">Title</label>
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
@@ -1160,16 +1181,20 @@ JS;
     /**
      * Queues up a method to be called by a given template hook.
      * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
+     *
      * ```php
      * Craft::$app->view->hook('myAwesomeHook', function(&$context) {
      *     $context['foo'] = 'bar';
      *     return 'Hey!';
      * });
      * ```
+     *
      * you would then be able to add this to any template:
+     *
      * ```twig
      * {% hook "myAwesomeHook" %}
      * ```
+     *
      * When the hook tag gets invoked, your template hook function will get called. The $context argument will be the
      * current Twig context array, which you’re free to manipulate. Any changes you make to it will be available to the
      * template following the tag. Whatever your template hook function returns will be output in place of the tag in
