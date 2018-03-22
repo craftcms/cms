@@ -898,7 +898,7 @@ body.rtl .status { margin-left: 10px; }
 
 .status.black { background-color: #32475E; }
 
-.status.disabled { opacity: 1; }
+.status.white, .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
 /*  Progress bar
