@@ -13,6 +13,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -271,6 +272,30 @@ class Api extends Component
             }
         }
 
+        // did we just get a new license key?
+        if ($response->hasHeader('X-Craft-License')) {
+            $license = $response->getHeaderLine('X-Craft-License');
+            $path = Craft::$app->getPath()->getLicenseKeyPath();
+
+            //  just in case there's some race condition where two licenses were requested simultaneously...
+            if ($this->cmsLicenseKey() !== null) {
+                $i = 0;
+                do {
+                    $newPath = "{$path}.".++$i;
+                } while (file_exists($newPath));
+                $path = $newPath;
+                Craft::warning("A new license key was issued, but we already had one. Writing it to {$path} instead.", __METHOD__);
+            }
+
+            try {
+                FileHelper::writeToFile($path, chunk_split($license, 50));
+            } catch (\ErrorException $err) {
+                // log and keep going
+                Craft::error("Could not write new license key to {$path}: {$err->getMessage()}\nLicense key: {$license}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($err);
+            }
+        }
+
         if ($e !== null) {
             throw $e;
         }
@@ -314,7 +339,7 @@ class Api extends Component
         }
 
         // Craft license
-        $headers['X-Craft-License'] = $this->cmsLicenseKey();
+        $headers['X-Craft-License'] = $this->cmsLicenseKey() ?? '🙏';
 
         // plugin info
         $pluginLicenses = [];
