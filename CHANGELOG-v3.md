@@ -12,6 +12,7 @@
 - Added `craft\helpers\UrlHelper::cpHost()`.
 - Added `craft\helpers\UrlHelper::hostInfo()`.
 - Added `craft\helpers\UrlHelper::siteHost()`.
+- Added `craft\validators\ColorValidator::normalizeColor()`.
 - Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
 
 ### Changed
@@ -21,6 +22,7 @@
 - System message templates are now passed `fromName` and `fromEmail` variables, set to the system email settings values.
 - `craft\helpers\UrlHelper::baseUrl()` now returns the base CP or site URL, depending on the request type.
 - `craft\helpers\UrlHelper::host()` now returns the CP or site host info, depending on the request type.
+- `craft\validators\ColorValidator::validateAttribute()` now attempts to normalize the model’s color value before validating it.
 - `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
@@ -57,6 +59,7 @@
 - Fixed a SQL error that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 - Fixed a SQL error that could occur if saving a `sortOrder` value that exceeded a `TINYINT` column’s capacity. ([#2613](https://github.com/craftcms/cms/issues/2613))
 - Fixed a bug where plugins weren’t sorted alphabetically by name by default in the Control Panel sidebar. ([#2614](https://github.com/craftcms/cms/pull/2614))
+- Fixed a bug where Color fields’ Default Color settings were being overly strict about the color value. ([#2588](https://github.com/craftcms/cms/issues/2588))
 
 ## 3.0.0-RC15 - 2018-03-13
 
