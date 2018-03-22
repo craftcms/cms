@@ -426,8 +426,14 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
+        /** @var Field $field */
         if (!$field::hasContentColumn()) {
             return $includeCurrent ? [get_class($field)] : [];
+        }
+
+        // If the field has any validation errors and has an ID, swap it with the saved field
+        if (!$field->getIsNew() && $field->hasErrors()) {
+            $field = $this->getFieldById($field->id);
         }
 
         $types = [];

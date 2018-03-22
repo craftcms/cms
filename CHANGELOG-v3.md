@@ -60,6 +60,7 @@
 - Fixed a SQL error that could occur if saving a `sortOrder` value that exceeded a `TINYINT` column’s capacity. ([#2613](https://github.com/craftcms/cms/issues/2613))
 - Fixed a bug where plugins weren’t sorted alphabetically by name by default in the Control Panel sidebar. ([#2614](https://github.com/craftcms/cms/pull/2614))
 - Fixed a bug where Color fields’ Default Color settings were being overly strict about the color value. ([#2588](https://github.com/craftcms/cms/issues/2588))
+- Fixed a PHP error that would occur when saving a Number field, if a non-integer number was entered into its Min Value, Max Value, or Decimal Points settings. ([#2612](https://github.com/craftcms/cms/issues/2612))
 
 ## 3.0.0-RC15 - 2018-03-13
 
