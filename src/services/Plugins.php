@@ -211,6 +211,10 @@ class Plugins extends Component
             }
         }
         unset($row);
+        
+        // Sort plugins by their names
+        $names = array_column($this->_plugins, 'name');
+        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
