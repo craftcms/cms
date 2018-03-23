@@ -32,6 +32,7 @@
 - Craft now requires Yii 2.0.15 or later.
 - Plugin settings defined in config files are no longer recursively merged with the database-stored settings. ([#2561](https://github.com/craftcms/cms/issues/2561))
 - Element queries now support the `groupBy` parameter. ([#2603](https://github.com/craftcms/cms/issues/2603))
+- Statuses can now explicitly be set to `white`. ([#2628](https://github.com/craftcms/cms/pull/2628))
 
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
