@@ -18,14 +18,11 @@ class EtService extends BaseApplicationComponent
 
 	const ENDPOINT_PING = 'app/ping';
 	const ENDPOINT_CHECK_FOR_UPDATES = 'app/checkForUpdates';
-	const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
 	const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
 	const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
 	const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
 	const ENDPOINT_GET_UPDATE_FILE_INFO = 'app/getUpdateFileInfo';
 	const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
-	const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
-	const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
 
 	// Public Methods
 	// =========================================================================
@@ -207,49 +204,6 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Transfers the installed license to the current domain.
-	 *
-	 * @return true|string Returns true if the request was successful, otherwise returns the error.
-	 */
-	public function transferLicenseToCurrentDomain()
-	{
-		$et = $this->_createEtTransport(static::ENDPOINT_TRANSFER_LICENSE);
-		$etResponse = $et->phoneHome();
-
-		if (!empty($etResponse->data['success']))
-		{
-			return true;
-		}
-		else
-		{
-			// Did they at least say why?
-			if (!empty($etResponse->errors))
-			{
-				switch ($etResponse->errors[0])
-				{
-					// Validation errors
-					case 'not_public_domain':
-					{
-						// So...
-						return true;
-					}
-
-					default:
-					{
-						$error = $etResponse->data['error'];
-					}
-				}
-			}
-			else
-			{
-				$error = Craft::t('Craft is unable to transfer your license to this domain at this time.');
-			}
-
-			return $error;
-		}
-	}
-
-	/**
 	 * Fetches info about the available Craft editions from Elliott.
 	 *
 	 * @return EtModel|null
@@ -359,48 +313,6 @@ class EtService extends BaseApplicationComponent
 			'pluginHandle' => $pluginHandle
 		));
 		$etResponse = $et->phoneHome();
-
-		return $etResponse;
-	}
-
-	/**
-	 * Transfers a given plugin to the current Craft license.
-	 *
-	 * @string $pluginHandle The plugin handle that should be transferred
-	 *
-	 * @return EtModel
-	 */
-	public function transferPlugin($pluginHandle)
-	{
-		$et = $this->_createEtTransport(static::ENDPOINT_TRANSFER_PLUGIN);
-		$et->setData(array(
-			'pluginHandle' => $pluginHandle
-		));
-		$etResponse = $et->phoneHome();
-
-		return $etResponse;
-	}
-
-	/**
-	 * Unregisters a given plugin from the current Craft license.
-	 *
-	 * @string $pluginHandle The plugin handle that should be unregistered
-	 *
-	 * @return EtModel
-	 */
-	public function unregisterPlugin($pluginHandle)
-	{
-		$et = $this->_createEtTransport(static::ENDPOINT_UNREGISTER_PLUGIN);
-		$et->setData(array(
-			'pluginHandle' => $pluginHandle
-		));
-		$etResponse = $et->phoneHome();
-
-		if (!empty($etResponse->data['success']))
-		{
-			// Remove our record of the license key
-			craft()->plugins->setPluginLicenseKey($pluginHandle, null);
-		}
 
 		return $etResponse;
 	}
