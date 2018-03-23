@@ -420,6 +420,47 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Returns whether any files in a source directory have changed, compared to another directory.
+     *
+     * @param string $dir the source directory to check for changes in
+     * @param string $ref the reference directory
+     * @return bool
+     * @throws InvalidArgumentException if $dir or $ref isn't a directory
+     * @throws ErrorException if we can't get a handle on $src
+     */
+    public static function hasAnythingChanged(string $dir, string $ref): bool
+    {
+        if (!is_dir($dir)) {
+            throw new InvalidArgumentException("The src argument must be a directory: {$dir}");
+        }
+
+        if (!is_dir($ref)) {
+            throw new InvalidArgumentException("The ref argument must be a directory: {$ref}");
+        }
+
+        if (!($handle = opendir($dir))) {
+            throw new ErrorException("Unable to open the directory: {$dir}");
+        }
+
+        while (($file = readdir($handle)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $path = $dir.DIRECTORY_SEPARATOR.$file;
+            $refPath = $ref.DIRECTORY_SEPARATOR.$file;
+            if (is_dir($path)) {
+                if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
+                    return true;
+                }
+            } else if (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns whether file locks can be used when writing to files.
      *
      * @return bool

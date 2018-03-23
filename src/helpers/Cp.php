@@ -49,11 +49,11 @@ class Cp
 
         if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
-            // relying on cached Elliott info
+            // relying on cached Craftnet info
             $updatesService->getUpdates();
 
             // Get the license key status
-            $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
+            $licenseKeyStatus = Craft::$app->getCache()->get('licenseKeyStatus');
 
             // Invalid license?
             if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
@@ -77,7 +77,7 @@ class Cp
 
             // Domain mismatch?
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
+                $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
 
                 $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
 
@@ -87,19 +87,11 @@ class Cp
                     $keyPath = substr($keyPath, strlen($rootPath) + 1);
                 }
 
-                $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                    'file' => $keyPath,
-                    'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-                ]);
-
-                // Can they actually do something about it?
-                if ($user->admin) {
-                    $action = '<a class="go domain-mismatch">'.Craft::t('app', 'Transfer it to this domain?').'</a>';
-                } else {
-                    $action = Craft::t('app', 'Please notify one of your site’s admins.');
-                }
-
-                $alerts[] = $message.' '.$action;
+                $alerts[] = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                        'file' => $keyPath,
+                        'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
+                    ]).
+                    ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('app', 'Learn more').'</a>';
             }
         }
 

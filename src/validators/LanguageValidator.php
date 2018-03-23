@@ -8,6 +8,8 @@
 namespace craft\validators;
 
 use Craft;
+use craft\helpers\Localization;
+use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
 
 /**
@@ -18,6 +20,38 @@ use yii\validators\Validator;
  */
 class LanguageValidator extends Validator
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @param bool Whether to limit the value to the sites' languages
+     */
+    public $onlySiteLanguages = true;
+
+    /**
+     * @param string The error message to use if the value isn't allowed.
+     */
+    public $notAllowed;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->notAllowed === null) {
+            if ($this->onlySiteLanguages) {
+                $this->notAllowed = Craft::t('app', '{value} is not a valid site language.');
+            } else {
+                $this->notAllowed = Craft::t('app', '{value} is not a valid language.');
+            }
+        }
+
+        parent::init();
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -26,11 +60,38 @@ class LanguageValidator extends Validator
      */
     public function validateAttribute($model, $attribute)
     {
-        $language = $model->$attribute;
+        $original = $model->$attribute;
+        $value = Localization::normalizeLanguage($original);
 
-        if ($language && !in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
-            $message = Craft::t('app', 'Your system isn’t set up to save content for the language “{language}”.', ['language' => $language]);
-            $this->addError($model, $attribute, $message);
+        $result = $this->validateValue($value);
+        if (!empty($result)) {
+            $this->addError($model, $attribute, $result[0], $result[1]);
+        } else if ($value !== $original) {
+            // update the model with the normalized value
+            try {
+                $model->$attribute = $value;
+            } catch (UnknownPropertyException $e) {
+                // fine, validate the original value
+                parent::validateAttribute($model, $attribute);
+            }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validateValue($value)
+    {
+        if ($this->onlySiteLanguages) {
+            $allowed = Craft::$app->getI18n()->getSiteLocaleIds();
+        } else {
+            $allowed = Craft::$app->getI18n()->getAllLocaleIds();
+        }
+
+        if ($value && !in_array($value, $allowed, true)) {
+            return [$this->notAllowed, []];
+        }
+
+        return null;
     }
 }

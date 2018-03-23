@@ -795,9 +795,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function behaviors()
     {
-        return [
-            'customFields' => ContentBehavior::class,
-        ];
+        $behaviors = parent::behaviors();
+        $behaviors['customFields'] = ContentBehavior::class;
+        return $behaviors;
     }
 
     /**
@@ -1087,6 +1087,18 @@ abstract class Element extends Component implements ElementInterface
             $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('site', $field->name), $error);
             $this->addError($attribute, $error);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addError($attribute, $error = '')
+    {
+        if (strncmp($attribute, 'field:', 6) === 0) {
+            $attribute = substr($attribute, 6);
+        }
+
+        parent::addError($attribute, $error);
     }
 
     /**
@@ -2125,9 +2137,8 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        return static::find()
+        return $query
             ->id($elementIds[$key + $dir])
-            ->siteId($query->siteId)
             ->one();
     }
 }

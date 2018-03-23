@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\services\Api;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
@@ -327,6 +328,70 @@ class PluginStoreController extends Controller
         Craft::$app->getSession()->remove('pluginStore.craftData');
 
         return $this->asJson(true);
+    }
+
+    /**
+     * Returns Plugin Store data.
+     *
+     * @return string
+     */
+    public function actionPluginStoreData()
+    {
+        $pluginStoreData = Craft::$app->getApi()->getPluginStoreData();
+
+        return Json::encode($pluginStoreData);
+    }
+
+    /**
+     * Returns plugin details.
+     *
+     * @return string
+     */
+    public function actionPluginDetails()
+    {
+        $pluginId = Craft::$app->getRequest()->getBodyParam('pluginId');
+        $pluginDetails = Craft::$app->getApi()->getPluginDetails($pluginId);
+
+        return Json::encode($pluginDetails);
+    }
+
+    /**
+     * Returns developer details.
+     *
+     * @return string
+     */
+    public function actionDeveloper()
+    {
+        $developerId = Craft::$app->getRequest()->getBodyParam('developerId');
+        $developer = Craft::$app->getApi()->getDeveloper($developerId);
+
+        return Json::encode($developer);
+    }
+
+    /**
+     * Order checkout.
+     *
+     * @return string
+     */
+    public function actionCheckout()
+    {
+        $craftId = Craft::$app->getRequest()->getBodyParam('craftId');
+        $identity = Craft::$app->getRequest()->getBodyParam('identity');
+        $cardToken = Craft::$app->getRequest()->getBodyParam('cardToken');
+        $replaceCard = Craft::$app->getRequest()->getBodyParam('replaceCard');
+        $cartItems = Craft::$app->getRequest()->getBodyParam('cartItems');
+
+        $order = [
+            'craftId' => $craftId,
+            'identity' => $identity,
+            'cardToken' => $cardToken,
+            'replaceCard' => $replaceCard,
+            'cartItems' => $cartItems,
+        ];
+
+        $response = Craft::$app->getApi()->checkout($order);
+
+        return Json::encode($response);
     }
 
     // Private Methods

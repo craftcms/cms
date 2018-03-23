@@ -296,8 +296,8 @@ class Cp extends Component
      */
     public function areAlertsCached(): bool
     {
-        // The license key status gets cached on each Elliott request
-        return (Craft::$app->getEt()->getLicenseKeyStatus() !== false);
+        // The license key status gets cached on each Craftnet request
+        return (Craft::$app->getCache()->get('licenseKeyStatus') !== false);
     }
 
     /**

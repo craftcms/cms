@@ -1,5 +1,76 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC16 - 2018-03-23
+
+### Added
+- Added the `defineBehaviors` event to `craft\base\Component` and `craft\db\Query`.
+- Added `craft\helpers\FileHelper::hasAnythingChanged()`.
+- Added `craft\helpers\Localization::normalizeLanguage()`.
+- Added `craft\helpers\UrlHelper::baseCpUrl()`.
+- Added `craft\helpers\UrlHelper::baseRequestUrl()`.
+- Added `craft\helpers\UrlHelper::baseSiteUrl()`.
+- Added `craft\helpers\UrlHelper::cpHost()`.
+- Added `craft\helpers\UrlHelper::hostInfo()`.
+- Added `craft\helpers\UrlHelper::siteHost()`.
+- Added `craft\services\Api::request()`.
+- Added `craft\services\Config::getConfigFilePath()`.
+- Added `craft\validators\ColorValidator::normalizeColor()`.
+- Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
+
+### Changed
+- Improved the page header styles in the Control Panel.
+- It’s now possible to define custom values for the `@web` and `@webroot` aliases from the `aliases` config setting. ([#2566](https://github.com/craftcms/cms/issues/2566))
+- Console requests will now look for a `web/`, `public/`, or `public_html/` folder alongside the `craft` executable when setting the default value for the `@webroot` alias.
+- System message templates are now passed `fromName` and `fromEmail` variables, set to the system email settings values.
+- `craft\helpers\UrlHelper::baseUrl()` now returns the base CP or site URL, depending on the request type.
+- `craft\helpers\UrlHelper::host()` now returns the CP or site host info, depending on the request type.
+- `craft\validators\ColorValidator::validateAttribute()` now attempts to normalize the model’s color value before validating it.
+- `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
+- `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
+- `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
+- `craft\validators\LanguageValidator` now has a `notAllowed` property, which can be used to customize the error message.
+- `craft\web\View::renderString()` and `renderObjectTemplate()` no longer escape dynamically-output HTML in the template by default.
+- The `defineBehaviors` event on `craft\web\twig\variables\CraftVariable` is no longer deprecated.
+- Craft now requires Yii 2.0.15 or later.
+- Plugin settings defined in config files are no longer recursively merged with the database-stored settings. ([#2561](https://github.com/craftcms/cms/issues/2561))
+- Element queries now support the `groupBy` parameter. ([#2603](https://github.com/craftcms/cms/issues/2603))
+- Statuses can now explicitly be set to `white`. ([#2628](https://github.com/craftcms/cms/pull/2628))
+- The Settings → Email → Settings page now displays a warning if `config/app.php` is overriding the `mailer` component. ([#2554](https://github.com/craftcms/cms/issues/2554))
+
+### Removed
+- Removed `craft\errors\ApiException`.
+
+### Fixed
+- Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
+- Fixed a bug where front-end Asset uploads would be handled incorrectly in multi-site environments. ([#2551](https://github.com/craftcms/cms/issues/2551))
+- Fixed a bug where custom field validation errors weren’t being reported on the edit page. ([#2572](https://github.com/craftcms/cms/issues/2572))
+- Fixed a bug where it was possible to set an invalid language on the initial site, when installing Craft from the command line. ([#2573](https://github.com/craftcms/cms/issues/2573))
+- Fixed a bug where users’ preferred languages were not always getting migrated correctly when updating to Craft 3. ([#2574](https://github.com/craftcms/cms/issues/2574))
+- Fixed a bug where switching transform format could cause sub-optimal transforms to be used. ([#2565](https://github.com/craftcms/cms/issues/2565))
+- Fixed a bug where invoking `craft\services\Feeds` during a console request would cause a PHP error. ([#2576](https://github.com/craftcms/cms/issues/2576))
+- Fixed a bug where you could get a PHP serialization error on some element queries inside of a `{% cache %}` tag. ([#2586](https://github.com/craftcms/cms/issues/2586))
+- Fixed a bug where `queue` commands weren’t working. ([#2594](https://github.com/craftcms/cms/issues/2594))
+- Fixed an error that would occur if a `SiteGroupNotFoundException` was thrown. ([#2595](https://github.com/craftcms/cms/issues/2595))
+- Fixed a bug where Control Panel resource requests could 404 in load-balanced environments. ([#2500](https://github.com/craftcms/cms/issues/2500))
+- Fixed a bug where you would get a PHP error in `craft\fields\PlainText` when updating from a really old Craft install.
+- Fixed a bug where new entry versions weren’t being generated when publishing drafts. ([#2579](https://github.com/craftcms/cms/issues/2579))
+- Fixed a bug where the `baseCpUrl` config setting wasn’t being factored in when generating action URLs for the Control Panel. ([#2581](https://github.com/craftcms/cms/issues/2581))
+- Fixed a bug where some Control Panel messages were not getting translated. ([#2583](https://github.com/craftcms/cms/issues/2583))
+- Fixed a bug where Color fields’ color previews weren’t showing the selected color in element indexes and entry versions. ([#2587](https://github.com/craftcms/cms/issues/2587))
+- Fixed a bug where datepickers and timepickers weren’t always visible in Live Preview. ([#2591](https://github.com/craftcms/cms/issues/2591))
+- Fixed a bug where fields’ Translation Method settings weren’t listing “Translate for each site group” as an option after changing the field type, until the field was saved and re-edited. ([#2602](https://github.com/craftcms/cms/issues/2602))
+- Fixed an error that occurred when attempting to set a value on a newly-created field within a content migration. ([#2597](https://github.com/craftcms/cms/issues/2597))
+- Fixed a SQL error that occurred if an element query was executed with the `fixedOrder` param enabled but the `id` param wasn’t set. ([#2607](https://github.com/craftcms/cms/issues/2607))
+- Fixed a bug where newlines could be counted as two characters when validating the length of Plain Text field values. ([#2257](https://github.com/craftcms/cms/issues/2257))
+- Fixed a bug where delayed jobs would never get run when using Craft’s built-in queue driver. ([#2609](https://github.com/craftcms/cms/issues/2609))
+- Fixed a SQL error that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
+- Fixed a SQL error that could occur if saving a `sortOrder` value that exceeded a `TINYINT` column’s capacity. ([#2613](https://github.com/craftcms/cms/issues/2613))
+- Fixed a bug where plugins weren’t sorted alphabetically by name by default in the Control Panel sidebar. ([#2614](https://github.com/craftcms/cms/pull/2614))
+- Fixed a bug where Color fields’ Default Color settings were being overly strict about the color value. ([#2588](https://github.com/craftcms/cms/issues/2588))
+- Fixed a PHP error that would occur when saving a Number field, if a non-integer number was entered into its Min Value, Max Value, or Decimal Points settings. ([#2612](https://github.com/craftcms/cms/issues/2612))
+- Fixed a bug where calling `getPrev({status: null})` or `getNext({status: null})` on an element wasn’t working if the neighboring element wasn’t enabled.
+- Fixed a bug where `craft\web\Request::getSegments()` was returning an array with an empty string on homepage requests, rather than an empty array. ([#2633](https://github.com/craftcms/cms/issues/2633))
+
 ## 3.0.0-RC15 - 2018-03-13
 
 ### Added
@@ -23,13 +94,13 @@
 ### Fixed
 - Fixed an error that occurred when creating a new entry draft. ([#2544](https://github.com/craftcms/cms/issues/2544))
 - Fixed a bug where the primary action button on element index pages was getting positioned off-screen on IE11. ([#2545](https://github.com/craftcms/cms/issues/2545))
-- Fixed a bug where custom fields were taking precidence over actual element properties when their names conflicted (e.g. `author`). ([#2548](https://github.com/craftcms/cms/issues/2548))
+- Fixed a bug where custom fields were taking precedence over actual element properties when their names conflicted (e.g. `author`). ([#2548](https://github.com/craftcms/cms/issues/2548))
 - Fixed a bug where `craft\db\pgsql\Schema::gatLastInsertID()` was prepending the default schema to the sequence name even if a schema was already present.
 - Fixed a bug where loading the Plugin Store would fail if Craft didn’t have a valid license key yet.
 - Fixed a “Headers already sent” error that would occur when calling `Craft::dd()`.
 - Fixed a bug where submitting a form from the front-end could cause Asset folders to be created even if there was nothing to put in them. ([#2303](https://github.com/craftcms/cms/issues/2303))
 - Fixed a bug where file upload drop zone could be too small on the Assets index page. ([#2479](https://github.com/craftcms/cms/issues/2479))
-- Fixed a bug where asset reference tags were not getting parsed correcctly when transforms were used. ([#2524](https://github.com/craftcms/cms/issues/2524))
+- Fixed a bug where asset reference tags were not getting parsed correctly when transforms were used. ([#2524](https://github.com/craftcms/cms/issues/2524))
 - Fixed a bug where buggy SVGs would break the Control Panel in some cases. ([#2543](https://github.com/craftcms/cms/issues/2543))
 - Fixed a bug where Assets fields weren’t validating the file types of files uploaded via front-end entry forms. ([#2550](https://github.com/craftcms/cms/issues/2550))
 - Fixed a bug where action URLs were including the request’s host name rather than the current site’s host name, if they differed. ([#2558](https://github.com/craftcms/cms/issues/2558))

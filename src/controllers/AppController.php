@@ -252,28 +252,6 @@ class AppController extends Controller
     }
 
     /**
-     * Transfers the Craft license to the current domain.
-     *
-     * @return Response
-     */
-    public function actionTransferLicenseToCurrentDomain(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePostRequest();
-        $this->requireAdmin();
-
-        $response = Craft::$app->getEt()->transferLicenseToCurrentDomain();
-
-        if ($response === true) {
-            return $this->asJson([
-                'success' => true
-            ]);
-        }
-
-        return $this->asErrorJson($response);
-    }
-
-    /**
      * Returns the edition upgrade modal.
      *
      * @return Response

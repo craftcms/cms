@@ -1497,7 +1497,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Saves the asset field layout.
+     * Saves the user field layout.
      *
      * @return Response|null
      */

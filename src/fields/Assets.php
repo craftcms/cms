@@ -283,88 +283,90 @@ class Assets extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
+        // Everything has been handled for propagating fields already.
+        if (!$element->propagating) {
+            // Were there any uploaded files?
+            $uploadedFiles = $this->_getUploadedFiles($element);
 
-        // Were there any uploaded files?
-        $uploadedFiles = $this->_getUploadedFiles($element);
+            if (!empty($uploadedFiles)) {
+                $targetFolderId = $this->_determineUploadFolderId($element);
 
-        if (!empty($uploadedFiles)) {
-            $targetFolderId = $this->_determineUploadFolderId($element);
-
-            // Convert them to assets
-            $assetIds = [];
-
-            foreach ($uploadedFiles as $file) {
-                $tempPath = AssetsHelper::tempFilePath($file['filename']);
-                if ($file['type'] === 'upload') {
-                    move_uploaded_file($file['location'], $tempPath);
-                }
-                if ($file['type'] === 'data') {
-                    FileHelper::writeToFile($tempPath, $file['data']);
-                }
-
-                $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
-                $asset = new Asset();
-                $asset->tempFilePath = $tempPath;
-                $asset->filename = $file['filename'];
-                $asset->newFolderId = $targetFolderId;
-                $asset->volumeId = $folder->volumeId;
-                $asset->setScenario(Asset::SCENARIO_CREATE);
-                $asset->avoidFilenameConflicts = true;
-                Craft::$app->getElements()->saveElement($asset);
-
-                $assetIds[] = $asset->id;
-            }
-
-            // Override the field value with newly-uploaded assets' IDs
-            $query = $this->normalizeValue($assetIds, $element);
-            $element->setFieldValue($this->handle, $query);
-        } else {
-            // Just get the pre-normalized asset query
-            $query = $element->getFieldValue($this->handle);
-        }
-
-        // Are there any related assets?
-        /** @var AssetQuery $query */
-        /** @var Asset[] $assets */
-        $assets = $query->all();
-
-        if (!empty($assets)) {
-            $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element);
-
-            // Figure out which (if any) we need to move into place
-            $assetsToMove = [];
-
-            if ($this->useSingleFolder) {
-                // Move only those Assets that have had their folder changed.
-                foreach ($assets as $asset) {
-                    if ($targetFolderId != $asset->folderId) {
-                        $assetsToMove[] = $asset;
-                    }
-                }
-            } else {
+                // Convert them to assets
                 $assetIds = [];
 
-                foreach ($assets as $elementFile) {
-                    $assetIds[] = $elementFile->id;
+                foreach ($uploadedFiles as $file) {
+                    $tempPath = AssetsHelper::tempFilePath($file['filename']);
+                    if ($file['type'] === 'upload') {
+                        move_uploaded_file($file['location'], $tempPath);
+                    }
+                    if ($file['type'] === 'data') {
+                        FileHelper::writeToFile($tempPath, $file['data']);
+                    }
+
+                    $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
+                    $asset = new Asset();
+                    $asset->tempFilePath = $tempPath;
+                    $asset->filename = $file['filename'];
+                    $asset->newFolderId = $targetFolderId;
+                    $asset->volumeId = $folder->volumeId;
+                    $asset->setScenario(Asset::SCENARIO_CREATE);
+                    $asset->avoidFilenameConflicts = true;
+                    Craft::$app->getElements()->saveElement($asset);
+
+                    $assetIds[] = $asset->id;
                 }
 
-                // Find the files with temp sources and just move those.
-                $query = Asset::find();
-                Craft::configure($query, [
-                    'id' => $assetIds,
-                    'volumeId' => ':empty:'
-                ]);
-                $assetsToMove = $query->all();
+                // Override the field value with newly-uploaded assets' IDs
+                $query = $this->normalizeValue($assetIds, $element);
+                $element->setFieldValue($this->handle, $query);
+            } else {
+                // Just get the pre-normalized asset query
+                $query = $element->getFieldValue($this->handle);
             }
 
-            if (!empty($assetsToMove) && !empty($targetFolderId)) {
-                $assetService = Craft::$app->getAssets();
-                $folder = $assetService->getFolderById($targetFolderId);
+            // Are there any related assets?
+            /** @var AssetQuery $query */
+            /** @var Asset[] $assets */
+            $assets = $query->all();
 
-                // Resolve all conflicts by keeping both
-                foreach ($assetsToMove as $asset) {
-                    $asset->avoidFilenameConflicts = true;
-                    $assetService->moveAsset($asset, $folder);
+            if (!empty($assets)) {
+                $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element);
+
+                // Figure out which (if any) we need to move into place
+                $assetsToMove = [];
+
+                if ($this->useSingleFolder) {
+                    // Move only those Assets that have had their folder changed.
+                    foreach ($assets as $asset) {
+                        if ($targetFolderId != $asset->folderId) {
+                            $assetsToMove[] = $asset;
+                        }
+                    }
+                } else {
+                    $assetIds = [];
+
+                    foreach ($assets as $elementFile) {
+                        $assetIds[] = $elementFile->id;
+                    }
+
+                    // Find the files with temp sources and just move those.
+                    $query = Asset::find();
+                    Craft::configure($query, [
+                        'id' => $assetIds,
+                        'volumeId' => ':empty:'
+                    ]);
+                    $assetsToMove = $query->all();
+                }
+
+                if (!empty($assetsToMove) && !empty($targetFolderId)) {
+                    $assetService = Craft::$app->getAssets();
+                    $folder = $assetService->getFolderById($targetFolderId);
+
+                    // Resolve all conflicts by keeping both
+                    foreach ($assetsToMove as $asset) {
+                        $asset->avoidFilenameConflicts = true;
+                        $assetService->moveAsset($asset, $folder);
+                    }
                 }
             }
         }

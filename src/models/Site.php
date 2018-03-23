@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
+use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
 use yii\base\InvalidConfigException;
@@ -106,7 +107,7 @@ class Site extends Model
             [['groupId', 'name', 'handle', 'language'], 'required'],
             [['id', 'groupId'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
-            [['language'], 'string', 'max' => 12],
+            [['language'], LanguageValidator::class, 'onlySiteLanguages' => false],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['baseUrl'], UrlValidator::class, 'allowAlias' => true, 'defaultScheme' => 'http'],
         ];

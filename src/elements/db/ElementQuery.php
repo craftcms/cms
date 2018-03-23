@@ -480,10 +480,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function behaviors()
     {
+        $behaviors = parent::behaviors();
         /** @noinspection PhpUndefinedClassInspection */
-        return [
-            'customFields' => ElementQueryBehavior::class,
-        ];
+        $behaviors['customFields'] = ElementQueryBehavior::class;
+        return $behaviors;
     }
 
     // Element criteria parameter setters
@@ -902,6 +902,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->distinct) {
             $this->query->distinct();
+        }
+
+        if ($this->groupBy) {
+            $this->query->groupBy = $this->groupBy;
         }
 
         if ($this->id) {
@@ -1779,13 +1783,13 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Any other empty value means we should set it
         if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
+                if (empty($this->id)) {
+                    throw new QueryAbortedException;
+                }
+
                 $ids = $this->id;
                 if (!is_array($ids)) {
                     $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
-                }
-
-                if (empty($ids)) {
-                    throw new QueryAbortedException;
                 }
 
                 if (!$db instanceof \craft\db\Connection) {

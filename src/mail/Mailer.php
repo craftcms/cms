@@ -100,17 +100,16 @@ class Mailer extends \yii\swiftmailer\Mailer
                 Craft::$app->language = $message->language;
             }
 
-            $variables = $message->variables ?: [];
-            $variables['emailKey'] = $message->key;
+            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
+            $variables = ($message->variables ?: []) + [
+                    'emailKey' => $message->key,
+                    'fromEmail' => $settings->fromEmail,
+                    'fromName' => $settings->fromName,
+                ];
 
             // Render the subject and textBody
-            // Don't let Twig use the HTML escaping strategy on the subject or plain text portion body of the email.
-            /** @var \Twig_Extension_Escaper $ext */
-            $ext = $view->getTwig()->getExtension(\Twig_Extension_Escaper::class);
-            $ext->setDefaultStrategy(false);
             $subject = $view->renderString($subjectTemplate, $variables);
             $textBody = $view->renderString($textBodyTemplate, $variables);
-            $ext->setDefaultStrategy('html');
 
             // Is there a custom HTML template set?
             if (Craft::$app->getEdition() >= Craft::Client && $this->template) {
