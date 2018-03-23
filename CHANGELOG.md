@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a PHP error that could occur on case-sensitive file systems when loading RSS feeds. ([#2514](https://github.com/craftcms/cms/pull/2514))
+- Fixed a PHP error that would occur when trying to use POP as an email protocol in Settings → Email in the Control Panel.
+- Fixed a PHP error that would occur when trying to delete an Asset with an ID that didn't exist.
+- Fixed a bug where any URL segments that only contained the number `0` were ignored, on paginated requests.
+
 ## 2.6.3012 - 2018-02-27
 
 ### Changed
