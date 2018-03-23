@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
+use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -180,10 +181,10 @@ class EtTransport
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {
                                 $pluginsService = Craft::$app->getPlugins();
 
-                                foreach ($etModel->pluginLicenseKeyStatuses as $packageName => $licenseKeyStatus) {
-                                    if ($plugin = $pluginsService->getPluginByPackageName($packageName)) {
-                                        /** @var Plugin $plugin */
-                                        $pluginsService->setPluginLicenseKeyStatus($plugin->id, $licenseKeyStatus);
+                                foreach ($etModel->pluginLicenseKeyStatuses as $handle => $licenseKeyStatus) {
+                                    try {
+                                        $pluginsService->setPluginLicenseKeyStatus($handle, $licenseKeyStatus);
+                                    } catch (InvalidPluginException $e) {
                                     }
                                 }
                             }
@@ -260,7 +261,7 @@ class EtTransport
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->id);
+            $pluginLicenseKeys[$plugin->id] = $pluginsService->getPluginLicenseKey($plugin->id);
         }
 
         return $pluginLicenseKeys;
