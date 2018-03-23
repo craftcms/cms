@@ -12,6 +12,7 @@
 - Added `craft\helpers\UrlHelper::cpHost()`.
 - Added `craft\helpers\UrlHelper::hostInfo()`.
 - Added `craft\helpers\UrlHelper::siteHost()`.
+- Added `craft\services\Config::getConfigFilePath()`.
 - Added `craft\validators\ColorValidator::normalizeColor()`.
 - Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
 

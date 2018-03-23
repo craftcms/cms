@@ -146,6 +146,17 @@ class Config extends Component
     }
 
     /**
+     * Returns the path to a config file.
+     *
+     * @param string $filename The filename (sans .php extension)
+     * @return string
+     */
+    public function getConfigFilePath(string $filename): string
+    {
+        return $this->configDir.DIRECTORY_SEPARATOR.$filename.'.php';
+    }
+
+    /**
      * Loads a config file from the config/ folder, checks if it's a multi-environment
      * config, and returns the values.
      *
@@ -154,7 +165,7 @@ class Config extends Component
      */
     public function getConfigFromFile(string $filename): array
     {
-        $path = $this->configDir.DIRECTORY_SEPARATOR.$filename.'.php';
+        $path = $this->getConfigFilePath($filename);
 
         if (!file_exists($path)) {
             return [];
