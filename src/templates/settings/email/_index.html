@@ -31,68 +31,68 @@
 
 
 {% block content %}
-        <input type="hidden" name="action" value="system-settings/save-email-settings">
-        {{ redirectInput('settings') }}
+    <input type="hidden" name="action" value="system-settings/save-email-settings">
+    {{ redirectInput('settings') }}
 
+    {{ forms.textField({
+        first: true,
+        label: "System Email Address"|t('app'),
+        instructions: "The email address Craft CMS will use when sending email."|t('app'),
+        id: 'fromEmail',
+        name: 'fromEmail',
+        value: settings.fromEmail,
+        autofocus: true,
+        required: true,
+        errors: (freshSettings ? null : settings.getErrors('fromEmail'))
+    }) }}
+
+    {{ forms.textField({
+        label: "Sender Name"|t('app'),
+        instructions: "The “From” name Craft CMS will use when sending email."|t('app'),
+        id: 'fromName',
+        name: 'fromName',
+        value: settings.fromName,
+        required: true,
+        errors: (freshSettings ? null : settings.getErrors('fromName'))
+    }) }}
+
+    {% if CraftEdition >= CraftClient %}
         {{ forms.textField({
-            first: true,
-            label: "System Email Address"|t('app'),
-            instructions: "The email address Craft CMS will use when sending email."|t('app'),
-            id: 'fromEmail',
-            name: 'fromEmail',
-            value: settings.fromEmail,
-            autofocus: true,
-            required: true,
-            errors: (freshSettings ? null : settings.getErrors('fromEmail'))
+            label: "HTML Email Template"|t('app'),
+            instructions: "The template Craft CMS will use for HTML emails"|t('app'),
+            id: 'template',
+            name: 'template',
+            value: settings.template,
+            errors: (freshSettings ? null : settings.getErrors('template'))
         }) }}
+    {% endif %}
 
-        {{ forms.textField({
-            label: "Sender Name"|t('app'),
-            instructions: "The “From” name Craft CMS will use when sending email."|t('app'),
-            id: 'fromName',
-            name: 'fromName',
-            value: settings.fromName,
-            required: true,
-            errors: (freshSettings ? null : settings.getErrors('fromName'))
-        }) }}
+    <hr>
 
-        {% if CraftEdition >= CraftClient %}
-            {{ forms.textField({
-                label: "HTML Email Template"|t('app'),
-                instructions: "The template Craft CMS will use for HTML emails"|t('app'),
-                id: 'template',
-                name: 'template',
-                value: settings.template,
-                errors: (freshSettings ? null : settings.getErrors('template'))
-            }) }}
-        {% endif %}
-
-        <hr>
-
-        {{ forms.selectField({
-            label: "Transport Type"|t('app'),
-            instructions: "How should Craft CMS send the emails?"|t('app'),
-            id: 'transportType',
-            name: 'transportType',
-            options: transportTypeOptions,
-            value: className(adapter),
-            errors: adapter.getErrors('type') ?? null,
-            toggle: true
-        }) }}
+    {{ forms.selectField({
+        label: "Transport Type"|t('app'),
+        instructions: "How should Craft CMS send the emails?"|t('app'),
+        id: 'transportType',
+        name: 'transportType',
+        options: transportTypeOptions,
+        value: className(adapter),
+        errors: adapter.getErrors('type') ?? null,
+        toggle: true
+    }) }}
 
 
-        {% for _adapter in allTransportAdapters %}
-            {% set isCurrent = (className(_adapter) == className(adapter)) %}
-            <div id="{{ className(_adapter)|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-                {% namespace 'transportTypes['~className(_adapter)~']' %}
-                    {{ (isCurrent ? adapter : _adapter).getSettingsHtml()|raw }}
-                {% endnamespace %}
-            </div>
-        {% endfor %}
-
-        <hr>
-
-        <div class="buttons">
-            <div id="test" class="btn formsubmit" data-action="system-settings/test-email-settings">{{ "Test"|t('app') }}</div>
+    {% for _adapter in allTransportAdapters %}
+        {% set isCurrent = (className(_adapter) == className(adapter)) %}
+        <div id="{{ className(_adapter)|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+            {% namespace 'transportTypes['~className(_adapter)~']' %}
+                {{ (isCurrent ? adapter : _adapter).getSettingsHtml()|raw }}
+            {% endnamespace %}
         </div>
+    {% endfor %}
+
+    <hr>
+
+    <div class="buttons">
+        <div id="test" class="btn formsubmit" data-action="system-settings/test-email-settings">{{ "Test"|t('app') }}</div>
+    </div>
 {% endblock %}
