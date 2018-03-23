@@ -12,6 +12,7 @@
 - Added `craft\helpers\UrlHelper::cpHost()`.
 - Added `craft\helpers\UrlHelper::hostInfo()`.
 - Added `craft\helpers\UrlHelper::siteHost()`.
+- Added `craft\services\Api::request()`.
 - Added `craft\services\Config::getConfigFilePath()`.
 - Added `craft\validators\ColorValidator::normalizeColor()`.
 - Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
@@ -35,6 +36,9 @@
 - Element queries now support the `groupBy` parameter. ([#2603](https://github.com/craftcms/cms/issues/2603))
 - Statuses can now explicitly be set to `white`. ([#2628](https://github.com/craftcms/cms/pull/2628))
 - The Settings → Email → Settings page now displays a warning if `config/app.php` is overriding the `mailer` component. ([#2554](https://github.com/craftcms/cms/issues/2554))
+
+### Removed
+- Removed `craft\errors\ApiException`.
 
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
