@@ -95,16 +95,7 @@ class Color extends Field implements PreviewableFieldInterface
             return null;
         }
 
-        $value = strtolower($value);
-
-        if ($value[0] !== '#') {
-            $value = '#'.$value;
-        }
-
-        if (strlen($value) === 4) {
-            $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
-        }
-
+        $value = ColorValidator::normalizeColor($value);
         return new ColorData($value);
     }
 

@@ -190,7 +190,7 @@ interface ElementInterface extends ComponentInterface
      * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
      * with the following keys:
      * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color (green, orange, red, yellow, pink, purple, blue, turquoise, light, grey, or black)
+     * - **`color`** – The status color (green, orange, red, yellow, pink, purple, blue, turquoise, light, grey, black, or white)
      * You can customize the database query condition that should be applied for your custom statuses from
      * [[\craft\elements\db\ElementQuery::statusCondition()]].
      *

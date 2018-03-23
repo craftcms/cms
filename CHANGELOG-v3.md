@@ -12,6 +12,8 @@
 - Added `craft\helpers\UrlHelper::cpHost()`.
 - Added `craft\helpers\UrlHelper::hostInfo()`.
 - Added `craft\helpers\UrlHelper::siteHost()`.
+- Added `craft\services\Config::getConfigFilePath()`.
+- Added `craft\validators\ColorValidator::normalizeColor()`.
 - Added `craft\web\twig\Environment::getDefaultEscaperStrategy()` and `setDefaultEscaperStrategy()`.
 
 ### Changed
@@ -21,6 +23,7 @@
 - System message templates are now passed `fromName` and `fromEmail` variables, set to the system email settings values.
 - `craft\helpers\UrlHelper::baseUrl()` now returns the base CP or site URL, depending on the request type.
 - `craft\helpers\UrlHelper::host()` now returns the CP or site host info, depending on the request type.
+- `craft\validators\ColorValidator::validateAttribute()` now attempts to normalize the model’s color value before validating it.
 - `craft\validators\LanguageValidator` can now be used to validate raw values, in addition to model attributes.
 - `craft\validators\LanguageValidator` will now normalize the model attribute into the correct language format (e.g. `en-US` rather than `en_us`).
 - `craft\validators\LanguageValidator` now has an `onlySiteLanguages` property, which can be set to `false` to validate the value against all known languages.
@@ -30,6 +33,8 @@
 - Craft now requires Yii 2.0.15 or later.
 - Plugin settings defined in config files are no longer recursively merged with the database-stored settings. ([#2561](https://github.com/craftcms/cms/issues/2561))
 - Element queries now support the `groupBy` parameter. ([#2603](https://github.com/craftcms/cms/issues/2603))
+- Statuses can now explicitly be set to `white`. ([#2628](https://github.com/craftcms/cms/pull/2628))
+- The Settings → Email → Settings page now displays a warning if `config/app.php` is overriding the `mailer` component. ([#2554](https://github.com/craftcms/cms/issues/2554))
 
 ### Fixed
 - Fixed a bug where database backups could fail on PostgreSQL if the database password contained special characters. ([#2568](https://github.com/craftcms/cms/issues/2568))
@@ -48,7 +53,7 @@
 - Fixed a bug where the `baseCpUrl` config setting wasn’t being factored in when generating action URLs for the Control Panel. ([#2581](https://github.com/craftcms/cms/issues/2581))
 - Fixed a bug where some Control Panel messages were not getting translated. ([#2583](https://github.com/craftcms/cms/issues/2583))
 - Fixed a bug where Color fields’ color previews weren’t showing the selected color in element indexes and entry versions. ([#2587](https://github.com/craftcms/cms/issues/2587))
-- Fixed a bug where datepickers weren’t visible in Live Preview. ([#2591](https://github.com/craftcms/cms/issues/2591))
+- Fixed a bug where datepickers and timepickers weren’t always visible in Live Preview. ([#2591](https://github.com/craftcms/cms/issues/2591))
 - Fixed a bug where fields’ Translation Method settings weren’t listing “Translate for each site group” as an option after changing the field type, until the field was saved and re-edited. ([#2602](https://github.com/craftcms/cms/issues/2602))
 - Fixed an error that occurred when attempting to set a value on a newly-created field within a content migration. ([#2597](https://github.com/craftcms/cms/issues/2597))
 - Fixed a SQL error that occurred if an element query was executed with the `fixedOrder` param enabled but the `id` param wasn’t set. ([#2607](https://github.com/craftcms/cms/issues/2607))
@@ -57,6 +62,10 @@
 - Fixed a SQL error that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 - Fixed a SQL error that could occur if saving a `sortOrder` value that exceeded a `TINYINT` column’s capacity. ([#2613](https://github.com/craftcms/cms/issues/2613))
 - Fixed a bug where plugins weren’t sorted alphabetically by name by default in the Control Panel sidebar. ([#2614](https://github.com/craftcms/cms/pull/2614))
+- Fixed a bug where Color fields’ Default Color settings were being overly strict about the color value. ([#2588](https://github.com/craftcms/cms/issues/2588))
+- Fixed a PHP error that would occur when saving a Number field, if a non-integer number was entered into its Min Value, Max Value, or Decimal Points settings. ([#2612](https://github.com/craftcms/cms/issues/2612))
+- Fixed a bug where calling `getPrev({status: null})` or `getNext({status: null})` on an element wasn’t working if the neighboring element wasn’t enabled.
+- Fixed a bug where `craft\web\Request::getSegments()` was returning an array with an empty string on homepage requests, rather than an empty array. ([#2633](https://github.com/craftcms/cms/issues/2633))
 
 ## 3.0.0-RC15 - 2018-03-13
 

@@ -2282,6 +2282,7 @@ ul.tree,
   background-color: $black;
 }
 
+.status.white,
 .status.disabled {
   opacity: 1;
 }
@@ -3922,7 +3923,7 @@ body .selectize-dropdown .active {
 
 /* timepicker */
 .ui-timepicker-wrapper {
-  z-index: 100;
+  z-index: 101;
 }
 
 .ui-timepicker-list {

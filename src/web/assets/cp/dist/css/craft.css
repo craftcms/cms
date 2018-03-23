@@ -898,7 +898,7 @@ body.rtl .status { margin-left: 10px; }
 
 .status.black { background-color: #32475E; }
 
-.status.disabled { opacity: 1; }
+.status.white, .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
 /*  Progress bar
@@ -1454,7 +1454,7 @@ body.rtl .ui-datepicker-next:after { content: 'leftangle'; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px; -webkit-box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15); }
 
 /* timepicker */
-.ui-timepicker-wrapper { z-index: 100; }
+.ui-timepicker-wrapper { z-index: 101; }
 
 .ui-timepicker-list { overflow-y: auto; width: calc(14px + 6em); height: 210px; z-index: 100; }
 body.ltr .ui-timepicker-list { margin-left: 1px; }
