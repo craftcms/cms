@@ -31,6 +31,19 @@
 
 
 {% block content %}
+    {% if customMailerFiles|length %}
+        <div class="readable">
+            <blockquote class="note warning">
+                <p>
+                    {{ 'It looks like these settings are being overridden by {paths}.'|t('app', {
+                        paths: customMailerFiles|join(', ')
+                    }) }}
+                </p>
+            </blockquote>
+        </div>
+        <hr>
+    {% endif %}
+
     <input type="hidden" name="action" value="system-settings/save-email-settings">
     {{ redirectInput('settings') }}
 
