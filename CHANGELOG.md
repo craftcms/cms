@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.6.3013 - 2018-03-23
+
 ### Removed
 - Removed support for transferring a Craft license to the current domain. (Domain transfers can be done from [Craft ID](https://id.craftcms.com) now.)
 - Removed support for transferring a Commerce license to the current Craft license, or unregistering a Commerce license from the current Craft license. (Plugin license registration can be done from [Craft ID](https://id.craftcms.com) now.)
