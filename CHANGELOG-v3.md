@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC16 - 2018-03-23
 
 ### Added
 - Added the `defineBehaviors` event to `craft\base\Component` and `craft\db\Query`.
