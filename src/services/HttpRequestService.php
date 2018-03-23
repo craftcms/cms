@@ -132,11 +132,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Get the path segments
-		$this->_segments = array_values(array_filter(explode('/', $path), function($value)
-		{
-			// Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
-			return $value !== '';
-		}));
+		$this->_segments = $this->_getSegments($path);
 
 		// Is this a CP request?
 		$this->_isCpRequest = ($this->getSegment(1) == craft()->config->get('cpTrigger'));
@@ -184,7 +180,7 @@ class HttpRequestService extends \CHttpRequest
 				$newPath = $this->decodePathInfo($match[1]);
 
 				// Reset the segments without the pagination stuff
-				$this->_segments = array_values(array_filter(explode('/', $newPath)));
+				$this->_segments = $this->_getSegments($newPath);
 			}
 		}
 
@@ -1510,6 +1506,21 @@ class HttpRequestService extends \CHttpRequest
 
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Returns the segments of a given path.
+	 *
+	 * @param string $path
+	 * @return string[]
+	 */
+	private function _getSegments($path)
+	{
+		return array_values(array_filter(explode('/', $path), function($segment)
+		{
+			// Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
+			return $segment !== '';
+		}));
+	}
 
 	/**
 	 * Returns the query string path.

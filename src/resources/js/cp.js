@@ -635,37 +635,6 @@ Craft.CP = Garnish.Base.extend(
 
 	initAlerts: function()
 	{
-		// Is there a domain mismatch?
-		var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-		if ($transferDomainLink.length)
-		{
-			this.addListener($transferDomainLink, 'click', $.proxy(function(ev)
-			{
-				ev.preventDefault();
-
-				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
-				{
-					Craft.queueActionRequest('app/transferLicenseToCurrentDomain', $.proxy(function(response, textStatus)
-					{
-						if (textStatus == 'success')
-						{
-							if (response.success)
-							{
-								$transferDomainLink.parent().remove();
-								this.displayNotice(Craft.t('License transferred.'));
-							}
-							else
-							{
-								this.displayError(response.error);
-							}
-						}
-
-					}, this));
-				}
-			}, this));
-		}
-
 		// Are there any shunnable alerts?
 		var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
