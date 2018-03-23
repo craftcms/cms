@@ -62,6 +62,7 @@
 - Fixed a bug where plugins weren’t sorted alphabetically by name by default in the Control Panel sidebar. ([#2614](https://github.com/craftcms/cms/pull/2614))
 - Fixed a bug where Color fields’ Default Color settings were being overly strict about the color value. ([#2588](https://github.com/craftcms/cms/issues/2588))
 - Fixed a PHP error that would occur when saving a Number field, if a non-integer number was entered into its Min Value, Max Value, or Decimal Points settings. ([#2612](https://github.com/craftcms/cms/issues/2612))
+- Fixed a bug where calling `getPrev({status: null})` or `getNext({status: null})` on an element wasn’t working if the neighboring element wasn’t enabled.
 
 ## 3.0.0-RC15 - 2018-03-13
 
