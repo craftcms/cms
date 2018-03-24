@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that could occur if `config/app.php` was overriding the `mutex` component.
+
 ## 3.0.0-RC16 - 2018-03-23
 
 ### Added
