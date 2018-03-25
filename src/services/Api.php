@@ -257,7 +257,24 @@ class Api extends Component
             $cache->set('licensedDomain', $response->getHeaderLine('X-Craft-License-Domain'), $duration);
         }
         if ($response->hasHeader('X-Craft-License-Edition')) {
-            $cache->set('licensedEdition', $response->getHeaderLine('X-Craft-License-Edition'), $duration);
+            $licensedEdition = $response->getHeaderLine('X-Craft-License-Edition');
+
+            switch ($licensedEdition)
+            {
+                case 'personal':
+                    $licensedEdition = Craft::Personal;
+                    break;
+                case 'client':
+                    $licensedEdition = Craft::Client;
+                    break;
+                case 'pro':
+                    $licensedEdition = Craft::Pro;
+                    break;
+                default:
+                    Craft::error('Invalid X-Craft-License-Edition header value: '. $licensedEdition, __METHOD__);
+            }
+
+            $cache->set('licensedEdition', $licensedEdition, $duration);
         }
         if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
             $pluginsService = Craft::$app->getPlugins();

@@ -1,5 +1,11 @@
 # Craft CMS 3.0 Working Changelog
 
+## 3.0.0-RC16.1 - 2018-03-25
+
+### Fixed
+- Fixed a PHP error that could occur if `config/app.php` was overriding the `mutex` component.
+- Fixed a bug where Craft was showing invalid license edition notices when it shouldn’t have.
+
 ## 3.0.0-RC16 - 2018-03-23
 
 ### Added
