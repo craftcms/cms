@@ -287,7 +287,7 @@ const utils = {
                 case 'cms-edition':
                     lineItems.push({
                         type: lineItem.purchasable.type,
-                        edition: edition,
+                        edition: lineItem.purchasable.handle,
                         licenseKey: lineItem.cmsLicenseKey,
                         autoRenew: true,
                     })
