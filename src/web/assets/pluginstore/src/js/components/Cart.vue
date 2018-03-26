@@ -242,7 +242,7 @@
                     autoRenew: true,
                 }
 
-                this.$store.dispatch('addToCart', item)
+                this.$store.dispatch('addToCart', [item])
             },
 
             addAllToCart () {

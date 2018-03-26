@@ -83,12 +83,11 @@ const getters = {
  */
 const actions = {
 
-    addToCart({commit, state}, item) {
+    addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
             const cart = state.remoteCart
-            let items = utils.getCartItemsData(cart)
-            items.push(item)
-
+            let existingItems = utils.getCartItemsData(cart)
+            let items = existingItems.concat(newItems)
             let data = {
                 items,
             }

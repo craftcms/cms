@@ -180,7 +180,7 @@
                     autoRenew: true,
                 }
 
-                this.$store.dispatch('addToCart', item)
+                this.$store.dispatch('addToCart', [item])
                     .then(() => {
                         this.loading = false;
                         this.$root.openGlobalModal('cart')

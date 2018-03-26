@@ -134,7 +134,7 @@
                     autoRenew: true,
                 }
 
-                this.addToCart(item)
+                this.addToCart([item])
             },
 
             installCraft(edition) {
