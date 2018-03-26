@@ -117,4 +117,9 @@ trait PluginTrait
      * @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.)
      */
     public $isInstalled = false;
+
+    /**
+     * @var string The minimum required version the plugin has to be so it can be updated.
+     */
+    public $minVersionRequired;
 }
