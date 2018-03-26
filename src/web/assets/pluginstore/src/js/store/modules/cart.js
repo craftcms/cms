@@ -6,7 +6,6 @@ import Vuex from 'vuex'
 Vue.use(Vuex);
 
 const state = {
-    items: [],
     checkoutStatus: null,
     remoteCart: null,
     cartForm: null,
@@ -228,8 +227,6 @@ const mutations = {
 
     [types.RESET_CART](state) {
         state.remoteCart = null;
-        state.items = [];
-
     },
 
     [types.CHECKOUT](state, {order}) {
