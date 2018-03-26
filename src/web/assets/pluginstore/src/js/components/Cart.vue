@@ -231,9 +231,19 @@
         methods: {
 
             ...mapActions([
-                'addToCart',
                 'removeFromCart'
             ]),
+
+            addToCart(plugin) {
+                const item = {
+                    type: 'plugin-edition',
+                    plugin: plugin.handle,
+                    edition: 'standard',
+                    autoRenew: true,
+                }
+
+                this.$store.dispatch('addToCart', item)
+            },
 
             addAllToCart () {
                 let $store = this.$store;
