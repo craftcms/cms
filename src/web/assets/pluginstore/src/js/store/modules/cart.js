@@ -86,8 +86,16 @@ const actions = {
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
             const cart = state.remoteCart
-            let existingItems = utils.getCartItemsData(cart)
-            let items = existingItems.concat(newItems)
+            let items = utils.getCartItemsData(cart)
+
+            newItems.forEach(newItem => {
+                const alreadyInCart = items.find(item => item.plugin === newItem.plugin)
+
+                if(!alreadyInCart) {
+                    items.push(newItem)
+                }
+            })
+
             let data = {
                 items,
             }
