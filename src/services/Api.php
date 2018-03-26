@@ -12,6 +12,7 @@ use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
@@ -358,7 +359,7 @@ class Api extends Component
         }
 
         // Craft license
-        $headers['X-Craft-License'] = $this->cmsLicenseKey();
+        $headers['X-Craft-License'] = App::licenseKey();
 
         // plugin info
         $pluginLicenses = [];
@@ -411,31 +412,5 @@ class Api extends Component
         $versions[$db->getDriverName()] = $db->getVersion();
 
         return $versions;
-    }
-
-    /**
-     * @return string|null
-     */
-    protected function cmsLicenseKey()
-    {
-        $path = Craft::$app->getPath()->getLicenseKeyPath();
-
-        // Check to see if the key exists and it's not a temp one.
-        if (!is_file($path)) {
-            return null;
-        }
-
-        $contents = file_get_contents($path);
-        if (empty($contents) || $contents === 'temp') {
-            return null;
-        }
-
-        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $contents));
-
-        if (strlen($licenseKey) !== 250) {
-            return null;
-        }
-
-        return $licenseKey;
     }
 }
