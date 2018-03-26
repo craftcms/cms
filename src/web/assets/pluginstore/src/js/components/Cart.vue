@@ -75,8 +75,8 @@
                             <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
                         </td>
                         <td>
-                            <strong>{{ plugin.price|currency }}</strong>
-                            <div class="light">{{ plugin.renewalPrice|currency }} per year for updates</div>
+                            <strong>{{ plugin.editions[0].price|currency }}</strong>
+                            <div class="light">{{ plugin.editions[0].renewalPrice|currency }} per year for updates</div>
                         </td>
                         <td class="thin">
                             <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>

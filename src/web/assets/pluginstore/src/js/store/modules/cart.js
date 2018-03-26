@@ -49,7 +49,7 @@ const getters = {
 
         return plugins.filter(p => {
             if (p) {
-                return p.price > 0;
+                return p.editions[0].price > 0;
             }
         });
     },

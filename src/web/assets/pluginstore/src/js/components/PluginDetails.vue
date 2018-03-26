@@ -16,12 +16,12 @@
             </div>
 
             <div class="buttons">
-                <div v-if="pluginSnippet.price != '0.00' && pluginSnippet.price != null">
+                <div v-if="pluginSnippet.editions[0].price != '0.00' && pluginSnippet.editions[0].price != null">
                     <a v-if="isInTrial(pluginSnippet) || isInstalled(pluginSnippet)" class="btn disabled">{{ "Installed"|t('app') }}</a>
                     <a v-else @click="tryPlugin(pluginSnippet)" class="btn">{{ "Try"|t('app') }}</a>
 
                     <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.price) }) }}</a>
+                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].price) }) }}</a>
                 </div>
                 <div v-else>
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
