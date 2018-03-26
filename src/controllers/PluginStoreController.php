@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -65,6 +66,7 @@ class PluginStoreController extends Controller
         $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = '.Json::encode($cmsInfo).';', View::POS_BEGIN);
         $view->registerJs('window.allowUpdates = '.Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates).';', View::POS_BEGIN);
+        $view->registerJs('window.cmsLicenseKey = '.Json::encode(App::licenseKey()).';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
