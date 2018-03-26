@@ -60,9 +60,9 @@ const getters = {
             return [];
         }
 
-        let plugins = rootState.craftData.installedPlugins.map(id => {
+        let plugins = rootState.craftData.installedPlugins.map(installedPlugin => {
             if (rootState.pluginStoreData.plugins) {
-                return rootState.pluginStoreData.plugins.find(p => p.id == id)
+                return rootState.pluginStoreData.plugins.find(p => p.handle == installedPlugin.handle)
             }
         });
 

@@ -45,6 +45,48 @@
             </div>
         </template>
 
+        <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
+
+            <div v-if="pendingActiveTrials.length > 1" class="right">
+                <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
+            </div>
+
+            <h2>{{ "Active Trials"|t('app') }}</h2>
+
+            <table class="data fullwidth">
+                <thead>
+                <tr>
+                    <th class="thin"></th>
+                    <th>{{ "Plugin Name"|t('app') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(plugin, index) in pendingActiveTrials">
+                    <template v-if="plugin">
+                        <td class="thin">
+                            <a href="#">
+                                <div class="plugin-icon">
+                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                                    <div class="default-icon" v-else></div>
+                                </div>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
+                        </td>
+                        <td>
+                            <strong>{{ plugin.price|currency }}</strong>
+                            <div class="light">{{ plugin.renewalPrice|currency }} per year for updates</div>
+                        </td>
+                        <td class="thin">
+                            <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>
+                        </td>
+                    </template>
+                </tr>
+                </tbody>
+            </table>
+        </template>
+
         <!--
         <div v-if="cartPlugins.length > 0">
             <table class="data fullwidth">
@@ -177,7 +219,9 @@
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if(p) {
-                        return !this.cartPlugins.find(cartP => p.id == cartP.id)
+                        return !this.remoteCart.lineItems   .find(item => {
+                            return item.purchasable.pluginId == p.id;
+                        })
                     }
                 })
             },
