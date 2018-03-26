@@ -1,4 +1,4 @@
-/*!   - 2018-03-21 */
+/*!   - 2018-03-18 */
 (function($){
 
 /** global: Craft */
@@ -11169,37 +11169,6 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initAlerts: function() {
-            // Is there a domain mismatch?
-            var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-            if ($transferDomainLink.length) {
-                this.addListener($transferDomainLink, 'click', $.proxy(function(ev) {
-                    ev.preventDefault();
-
-                    if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?'))) {
-                        Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                if (response.success) {
-                                    $transferDomainLink.parent().remove();
-
-                                    // Was that the last one?
-                                    if (this.$alerts.children().length === 0) {
-                                        this.$alerts.remove();
-                                        this.$alerts = null;
-                                    }
-
-                                    this.displayNotice(Craft.t('app', 'License transferred.'));
-                                }
-                                else {
-                                    this.displayError(response.error);
-                                }
-                            }
-
-                        }, this));
-                    }
-                }, this));
-            }
-
             // Are there any shunnable alerts?
             var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
@@ -12596,35 +12565,17 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
-        maxRows: null,
-        minRows: null,
-        rowCount: 0,
-        hasMaxRows: false,
-        hasMinRows: false,
-
         radioCheckboxes: null,
 
-        init: function(id, baseName, columns, settings, maxRows, minRows) {
-
+        init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
-            this.maxRows = maxRows;
-            this.minRows = minRows;
-
-            if (this.maxRows !== null) {
-                this.hasMaxRows = true;
-            }
-
-            if (this.minRows !== null) {
-                this.hasMinRows = true;
-            }
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
-            this.rowCount = this.$tbody.find('tr').length;
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
@@ -12637,14 +12588,6 @@ Craft.EditableTable = Garnish.Base.extend(
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
-
-            if (this.hasMinRows && this.rowCount < this.minRows) {
-                for (var i = 0; i < this.minRows; i++) {
-                    this.addRow()
-                }
-            }
-
-            this.updateAddRowButton();
         },
 
         isVisible: function() {
@@ -12668,6 +12611,7 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$addRowBtn = this.$table.next('.add');
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
+
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
 
@@ -12677,45 +12621,8 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
-        updateAddRowButton: function() {
-            if ((this.hasMaxRows && this.rowCount >= this.maxRows) ||
-                (this.hasMinRows && this.rowCount < this.minRows)) {
-                this.$addRowBtn.css('opacity', '0.2');
-                this.$addRowBtn.css('pointer-events', 'none');
-            } else {
-                this.$addRowBtn.css('opacity', '1');
-                this.$addRowBtn.css('pointer-events', 'auto');
-            }
-        },
-        canDeleteRow: function() {
-            return (this.rowCount > this.minRows);
-        },
-        deleteRow: function(row) {
-            if (this.hasMaxRows && this.hasMinRows) {
-                if (!this.canDeleteRow()) {
-                    return;
-                }
-            }
 
-            this.sorter.removeItems(row.$tr);
-            row.$tr.remove();
-
-            if (this.hasMinRows && this.hasMinRows) {
-                this.rowCount--;
-            }
-
-            this.updateAddRowButton();
-            // onDeleteRow callback
-            this.settings.onDeleteRow(row.$tr);
-        },
-        canAddRow: function() {
-            return (this.rowCount < this.maxRows);
-        },
         addRow: function() {
-            if (!this.canAddRow()) {
-                return;
-            }
-
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
@@ -12725,9 +12632,6 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
-
-            this.rowCount++;
-            this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -13042,7 +12946,11 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         deleteRow: function() {
-            this.table.deleteRow(this);
+            this.table.sorter.removeItems(this.$tr);
+            this.$tr.remove();
+
+            // onDeleteRow callback
+            this.table.settings.onDeleteRow(this.$tr);
         }
     },
     {

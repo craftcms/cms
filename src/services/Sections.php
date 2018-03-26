@@ -323,6 +323,7 @@ class Sections extends Component
 
     /**
      * Saves a section.
+     *
      * ```php
      * use craft\models\Section;
      * use craft\models\Section_SiteSettings;

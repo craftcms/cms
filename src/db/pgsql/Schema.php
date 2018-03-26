@@ -134,13 +134,10 @@ class Schema extends \yii\db\pgsql\Schema
             $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
         }
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $envCommand = 'PGPASSWORD="'.addslashes($dbConfig->password).'"';
-
         if (Platform::isWindows()) {
-            $envCommand = 'set '.$envCommand.'&&';
+            $envCommand = 'set PGPASSWORD="{password}" && ';
         } else {
-            $envCommand .= ' ';
+            $envCommand = 'PGPASSWORD="{password}" ';
         }
 
         return $envCommand.
@@ -174,6 +171,7 @@ class Schema extends \yii\db\pgsql\Schema
 
     /**
      * Returns all indexes for the given table. Each array element is of the following structure:
+     *
      * ```php
      * [
      *     'IndexName1' => ['col1' [, ...]],

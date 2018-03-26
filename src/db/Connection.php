@@ -523,6 +523,7 @@ class Connection extends \yii\db\Connection
             '{port}' => $dbConfig->port,
             '{server}' => $dbConfig->server,
             '{user}' => $dbConfig->user,
+            '{password}' => addslashes($dbConfig->password),
             '{database}' => $dbConfig->database,
             '{schema}' => $dbConfig->schema,
         ];

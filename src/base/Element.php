@@ -153,6 +153,17 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
+     *
+     * ```php
+     * Event::on(craft\elements\Entry::class, craft\base\Element::EVENT_SET_ROUTE, function(craft\events\SetElementRouteEvent $e) {
+     *     // @var craft\elements\Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     if ($entry->uri === 'pricing') {
+     *         $e->route = 'module/pricing/index';
+     *     }
+     * }
+     * ```
      */
     const EVENT_SET_ROUTE = 'setRoute';
 
@@ -784,9 +795,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function behaviors()
     {
-        return [
-            'customFields' => ContentBehavior::class,
-        ];
+        $behaviors = parent::behaviors();
+        $behaviors['customFields'] = ContentBehavior::class;
+        return $behaviors;
     }
 
     /**
@@ -2126,9 +2137,8 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        return static::find()
+        return $query
             ->id($elementIds[$key + $dir])
-            ->siteId($query->siteId)
             ->one();
     }
 }

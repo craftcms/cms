@@ -9,6 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
+use yii\base\ErrorException;
 
 /**
  * @inheritdoc
@@ -81,11 +83,9 @@ class AssetManager extends \yii\web\AssetManager
             return call_user_func($this->hashCallback, $path);
         }
 
-        // Return as two directories - one representing the path, and a subdirectory representing the modified time
+        // don't include the file modified time in the path in case this is a load-balanced environment
         $path = realpath($path);
-        $mtime = FileHelper::lastModifiedTime($path);
-
-        return sprintf('%x', crc32($path)).DIRECTORY_SEPARATOR.sprintf('%x', crc32($mtime));
+        return sprintf('%x', crc32($path.'|'.$this->linkAssets));
     }
 
     /**
@@ -93,13 +93,26 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishDirectory($src, $options): array
     {
+        // Make sure forceCopy is set (accurately) so we know whether we should update CSS files later
+        if ($this->linkAssets) {
+            $options['forceCopy'] = false;
+        } else if (!isset($options['forceCopy']) && ($options['forceCopy'] = $this->forceCopy) == false) {
+            // see if any of the files have been updated
+            $dir = $this->hash($src);
+            $dstDir = $this->basePath.DIRECTORY_SEPARATOR.$dir;
+            if (!is_dir($dstDir) || FileHelper::hasAnythingChanged($src, $dstDir) === true) {
+                $options['forceCopy'] = true;
+            }
+        }
+
         list($dir, $url) = parent::publishDirectory($src, $options);
+
+        if ($options['forceCopy']) {
+            $this->_addTimestampsToCssUrls($dir);
+        }
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);
-
-        // Clear out any older instances of the same directory
-        $this->_clearOldDirs($dir);
 
         return [$dir, $url];
     }
@@ -114,9 +127,6 @@ class AssetManager extends \yii\web\AssetManager
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);
 
-        // Clear out any older instances of the same file
-        $this->_clearOldDirs(dirname($file));
-
         if ($this->appendTimestamp && strpos($url, '?') === false && ($timestamp = @filemtime($src)) > 0) {
             $url .= '?v='.$timestamp;
         }
@@ -125,21 +135,31 @@ class AssetManager extends \yii\web\AssetManager
     }
 
     /**
-     * Deletes outdated published directories that live alongside a newly-published one.
+     * Finds CSS files within the published directory and adds timestamps to any url()'s within them.
      *
-     * @param string $newDir The directory that was just published
+     * @param string $dir
      */
-    private function _clearOldDirs($newDir)
+    private function _addTimestampsToCssUrls(string $dir)
     {
-        // Does this look like it was named using our hash()?
-        $name = basename($newDir);
-        if (preg_match('/^[a-f0-9]{8}$/', $name)) {
-            $parent = dirname($newDir);
-            if (preg_match('/^[a-f0-9]{8}$/', basename($parent))) {
-                FileHelper::clearDirectory($parent, [
-                    'except' => [$name]
-                ]);
-            }
+        $timestamp = time();
+
+        $cssFiles = FileHelper::findFiles($dir, [
+            'only' => ['*.css'],
+            'recursive' => true,
+        ]);
+
+        foreach ($cssFiles as $path) {
+            $content = file_get_contents($path);
+            $content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', function($match) use ($timestamp) {
+                $url = $match[3];
+                // Ignore root-relative, absolute, and data: URLs
+                if (preg_match('/^(\/|https?:\/\/|data:)/', $url)) {
+                    return $match[0];
+                }
+                $url = UrlHelper::urlWithParams($url, ['v' => $timestamp]);
+                return $match[1].$url.$match[4];
+            }, $content);
+            file_put_contents($path, $content);
         }
     }
 }

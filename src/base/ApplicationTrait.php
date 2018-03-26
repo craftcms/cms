@@ -27,7 +27,7 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
 use yii\base\InvalidConfigException;
-use yii\mutex\FileMutex;
+use yii\mutex\Mutex;
 use yii\queue\db\Queue;
 use yii\web\ServerErrorHttpException;
 
@@ -69,6 +69,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\mail\Mailer $mailer The mailer component
  * @property \craft\services\Matrix $matrix The matrix service
  * @property \craft\db\MigrationManager $migrator The application’s migration manager
+ * @property \yii\mutex\Mutex $mutex The application’s mutex service
  * @property \craft\services\Path $path The path service
  * @property \craft\services\Plugins $plugins The plugins service
  * @property \craft\services\PluginStore $pluginStore The plugin store service
@@ -400,7 +401,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
 
-        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) === 1);
+        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName());
     }
 
     /**
@@ -887,9 +888,9 @@ trait ApplicationTrait
     /**
      * Returns the application’s mutex service.
      *
-     * @return FileMutex The application’s mutex service
+     * @return Mutex The application’s mutex service
      */
-    public function getMutex(): FileMutex
+    public function getMutex(): Mutex
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('mutex');

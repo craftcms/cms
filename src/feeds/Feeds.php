@@ -77,8 +77,10 @@ class Feeds extends Component
             $cacheDuration = ConfigHelper::durationInSeconds($cacheDuration);
         }
 
-        // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
-        Craft::$app->getSession()->close();
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+            Craft::$app->getSession()->close();
+        }
 
         Reader::setHttpClient(new GuzzleClient());
 

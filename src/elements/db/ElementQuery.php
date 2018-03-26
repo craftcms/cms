@@ -480,10 +480,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function behaviors()
     {
+        $behaviors = parent::behaviors();
         /** @noinspection PhpUndefinedClassInspection */
-        return [
-            'customFields' => ElementQueryBehavior::class,
-        ];
+        $behaviors['customFields'] = ElementQueryBehavior::class;
+        return $behaviors;
     }
 
     // Element criteria parameter setters
@@ -904,6 +904,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->distinct();
         }
 
+        if ($this->groupBy) {
+            $this->query->groupBy = $this->groupBy;
+        }
+
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
         }
@@ -1141,17 +1145,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      * as the field value. If the latter, the array key should be the field name while the array value should be
      * the corresponding field definition which can be either an object property name or a PHP callable
      * returning the corresponding field value. The signature of the callable should be:
+     *
      * ```php
      * function ($model, $field) {
      *     // return field value
      * }
      * ```
+     *
      * For example, the following code declares four fields:
+     *
      * - `email`: the field name is the same as the property name `email`;
      * - `firstName` and `lastName`: the field names are `firstName` and `lastName`, and their
      *   values are obtained from the `first_name` and `last_name` properties;
      * - `fullName`: the field name is `fullName`. Its value is obtained by concatenating `first_name`
      *   and `last_name`.
+     *
      * ```php
      * return [
      *     'email',
@@ -1328,6 +1336,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Returns the condition that should be applied to the element query for a given status.
      * For example, if you support a status called “pending”, which maps back to a `pending` database column that will
      * either be 0 or 1, this method could do this:
+     *
      * ```php
      * protected function statusCondition($status)
      * {
@@ -1774,13 +1783,13 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Any other empty value means we should set it
         if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
+                if (empty($this->id)) {
+                    throw new QueryAbortedException;
+                }
+
                 $ids = $this->id;
                 if (!is_array($ids)) {
                     $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
-                }
-
-                if (empty($ids)) {
-                    throw new QueryAbortedException;
                 }
 
                 if (!$db instanceof \craft\db\Connection) {

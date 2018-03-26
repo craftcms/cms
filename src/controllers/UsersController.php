@@ -1497,7 +1497,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Saves the asset field layout.
+     * Saves the user field layout.
      *
      * @return Response|null
      */
@@ -1871,7 +1871,7 @@ class UsersController extends Controller
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
 
-        /** @var User|false $userToProcess */
+        /** @var User|null $userToProcess */
         $userToProcess = User::find()
             ->uid($uid)
             ->status(null)
@@ -1908,7 +1908,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|false $user
+     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
