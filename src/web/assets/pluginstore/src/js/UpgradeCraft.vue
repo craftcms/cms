@@ -122,9 +122,19 @@
         },
 
         methods: {
+            ...mapActions({
+                addToCart: 'addToCart',
+            }),
 
             buyCraft(edition) {
-                console.log('buy craft '+edition);
+                const item = {
+                    type: 'cms-edition',
+                    edition: edition,
+                    licenseKey: window.cmsLicenseKey,
+                    autoRenew: true,
+                }
+
+                this.addToCart(item)
             },
 
             installCraft(edition) {
