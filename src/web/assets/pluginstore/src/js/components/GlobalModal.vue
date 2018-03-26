@@ -11,7 +11,9 @@
                         <h1>Cart</h1>
                     </header>
                     <div class="body">
-                        <cart @continue-shopping="$root.closeGlobalModal()"></cart>
+                        <div class="content">
+                            <cart @continue-shopping="$root.closeGlobalModal()"></cart>
+                        </div>
                     </div>
                 </template>
 
