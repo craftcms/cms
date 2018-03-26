@@ -221,6 +221,50 @@ class Api extends Component
     }
 
     /**
+     * Create a cart.
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function createCart(array $data)
+    {
+        $response = $this->request('POST', 'carts', [
+            RequestOptions::BODY => Json::encode($data),
+        ]);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Get a cart by its order number.
+     *
+     * @param string $orderNumber
+     *
+     * @return array
+     */
+    public function getCart(string $orderNumber)
+    {
+        $response = $this->request('GET', 'carts/'.$orderNumber);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Update a cart.
+     *
+     * @param string $orderNumber
+     * @param array  $data
+     *
+     * @return array
+     */
+    public function updateCart(string $orderNumber, array $data)
+    {
+        $response = $this->request('POST', 'carts/'.$orderNumber, [
+            RequestOptions::BODY => Json::encode($data),
+        ]);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
      * @param string $method
      * @param string $uri
      * @param array $options
