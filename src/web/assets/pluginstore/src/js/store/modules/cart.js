@@ -29,7 +29,7 @@ const getters = {
 
     isInCart(state) {
         return plugin => {
-            return state.items.find(p => p.id == plugin.id)
+            return state.remoteCart.lineItems.find(lineItem => lineItem.purchasable.pluginId == plugin.id)
         }
     },
 
