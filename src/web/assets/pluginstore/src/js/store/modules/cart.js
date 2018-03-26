@@ -17,10 +17,6 @@ const state = {
  */
 const getters = {
 
-    cartItems(state) {
-        return state.items;
-    },
-
     isInTrial(state, rootState) {
         return plugin => {
             return rootState.activeTrialPlugins.find(p => p.id == plugin.id)

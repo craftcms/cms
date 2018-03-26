@@ -246,7 +246,6 @@
         computed: {
 
             ...mapGetters({
-                cartItems: 'cartItems',
                 cartTotal: 'cartTotal',
                 craftIdAccount: 'craftIdAccount',
                 countries: 'countries',
