@@ -61,7 +61,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="(plugin, index) in pendingActiveTrials">
+                <tr v-for="plugin in pendingActiveTrials">
                     <template v-if="plugin">
                         <td class="thin">
                             <a href="#">
