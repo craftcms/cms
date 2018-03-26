@@ -28,12 +28,12 @@
             save() {
                 this.$emit('beforeSave');
                 let vm = this;
-                this.stripe.createToken(this.card).then(result => {
+                this.stripe.createSource(this.card).then(result => {
                     if (result.error) {
                         vm.error = result.error.message;
                         vm.$emit('error', result.error);
                     } else {
-                        vm.$emit('save', vm.card, result.token);
+                        vm.$emit('save', vm.card, result.source);
                     }
                 });
             },
