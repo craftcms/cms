@@ -4,6 +4,7 @@
 
 ### Changed
 - Hardened against errors when deleting folders in Assets.
+- Plain Text fields now have the option to be styled with a monospaced font. ([#2636](https://github.com/craftcms/cms/pull/2636))
 
 ## 3.0.0-RC16.1 - 2018-03-25
 
