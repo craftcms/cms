@@ -246,11 +246,19 @@
             },
 
             addAllToCart () {
-                let $store = this.$store;
+                let $store = this.$store
+                let items = []
 
-                this.pendingActiveTrials.forEach(activeTrial => {
-                    $store.dispatch('addToCart', activeTrial)
+                this.pendingActiveTrials.forEach(activeTrialPlugin => {
+                    items.push({
+                        type: 'plugin-edition',
+                        plugin: activeTrialPlugin.handle,
+                        edition: 'standard',
+                        autoRenew: true,
+                    })
                 })
+
+                $store.dispatch('addToCart', items)
             },
 
             payment() {
