@@ -60,14 +60,6 @@ const actions = {
 
 const mutations = {
 
-    [types.INSTALL_PLUGIN] (state, { plugin }) {
-        const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id);
-
-        if (!record) {
-            state.craftData.installedPlugins.push(plugin.id)
-        }
-    },
-
     [types.RECEIVE_CRAFT_DATA] (state, { data }) {
         state.craftData = data
     },
