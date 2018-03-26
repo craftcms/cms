@@ -1,6 +1,6 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
@@ -444,7 +444,7 @@ class Table extends Field
             'maxRows' => $this->maxRows,
             'minRows' => $this->minRows,
             'static' => $static,
-            'addRowLabel' => $this->addRowLabel
+            'addRowLabel' => $this->addRowLabel,
         ]);
     }
 }
