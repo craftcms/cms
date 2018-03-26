@@ -98,7 +98,6 @@
 
             ...mapGetters({
                 isInTrial: 'isInTrial',
-                cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
                 cartTotal: 'cartTotal',
                 remoteCart: 'remoteCart',
@@ -107,7 +106,7 @@
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if(p) {
-                        return !this.remoteCart.lineItems   .find(item => {
+                        return !this.remoteCart.lineItems.find(item => {
                             return item.purchasable.pluginId == p.id;
                         })
                     }

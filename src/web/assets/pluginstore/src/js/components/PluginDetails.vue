@@ -104,7 +104,6 @@
 
             ...mapGetters({
                 plugins: 'allPlugins',
-                cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
                 isInTrial: 'isInTrial',
                 isInCart: 'isInCart',

@@ -41,20 +41,6 @@ const getters = {
         return 0;
     },
 
-    cartPlugins(state, rootState) {
-        let items = state.items.filter(({id}) => {
-            if (rootState.pluginStoreData.plugins) {
-                return rootState.pluginStoreData.plugins.find(p => p.id === id)
-            }
-        });
-
-        return items.map(({id}) => {
-            if (rootState.pluginStoreData.plugins) {
-                return rootState.pluginStoreData.plugins.find(p => p.id === id)
-            }
-        })
-    },
-
     activeTrialPlugins(state, rootState) {
         if (!rootState.craftData.installedPlugins) {
             return [];
