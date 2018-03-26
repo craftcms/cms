@@ -9,6 +9,7 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\events\MailMessageEvent;
 use craft\helpers\Template;
 use Swift_TransportException;
 use yii\base\InvalidConfigException;
@@ -24,6 +25,14 @@ use yii\mail\MessageInterface;
  */
 class Mailer extends \yii\swiftmailer\Mailer
 {
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @event MailMessageEvent The event that is triggered before sending the email.
+     */
+    const EVENT_BEFORE_SEND = 'beforeSend';
+
     // Properties
     // =========================================================================
 
@@ -153,6 +162,21 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setTo($to);
             $message->setCc(null);
             $message->setBcc(null);
+        }
+
+        $event = new MailMessageEvent([
+            'message' => $message
+        ]);
+
+        // Fire a 'beforeSend' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SEND)) {
+            $this->trigger(self::EVENT_BEFORE_SEND, $event);
+        }
+
+        // Don't send if the event is no longer valid
+        if (! $event->isValid) {
+            Craft::error('Error sending email: Cancelled by '.self::EVENT_BEFORE_SEND.' event.');
+            return false;
         }
 
         try {
