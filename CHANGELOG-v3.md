@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Plugins can now specify a `minVersionRequired` public property, which will prevent the plugin from getting updated unless a minimum prior version had been installed.
+
 ### Changed
 - Hardened against errors when deleting folders in Assets.
 - Plain Text fields now have the option to be styled with a monospaced font. ([#2636](https://github.com/craftcms/cms/pull/2636))
