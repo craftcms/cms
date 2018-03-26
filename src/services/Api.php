@@ -130,7 +130,7 @@ class Api extends Component
      */
     public function checkout(array $order): array
     {
-        $response = $this->request('POST', 'checkout', [
+        $response = $this->request('POST', 'payments', [
             RequestOptions::BODY => Json::encode($order),
         ]);
 
