@@ -1,4 +1,4 @@
-/*!   - 2018-03-18 */
+/*!   - 2018-03-26 */
 (function($){
 
 /** global: Craft */
@@ -12565,17 +12565,29 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
+        maxRows: null,
+        minRows: null,
+        rowCount: 0,
+        hasMaxRows: false,
+        hasMinRows: false,
+
         radioCheckboxes: null,
 
-        init: function(id, baseName, columns, settings) {
+        init: function(id, baseName, columns, settings, maxRows, minRows) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
+            this.maxRows = maxRows;
+            this.minRows = minRows;
+
+            this.hasMinRows = this.minRows !== null;
+            this.hasMaxRows = this.maxRows !== null;
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
+            this.rowCount = this.$tbody.find('tr').length;
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
@@ -12588,6 +12600,14 @@ Craft.EditableTable = Garnish.Base.extend(
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
+
+            if (this.hasMinRows && this.rowCount < this.minRows) {
+                for (var i = 0; i < this.minRows; i++) {
+                    this.addRow()
+                }
+            }
+
+            this.updateAddRowButton();
         },
 
         isVisible: function() {
@@ -12611,7 +12631,6 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$addRowBtn = this.$table.next('.add');
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
-
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
 
@@ -12621,8 +12640,45 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
+        updateAddRowButton: function() {
+            if ((this.hasMaxRows && this.rowCount >= this.maxRows) ||
+                (this.hasMinRows && this.rowCount < this.minRows)) {
+                this.$addRowBtn.css('opacity', '0.2');
+                this.$addRowBtn.css('pointer-events', 'none');
+            } else {
+                this.$addRowBtn.css('opacity', '1');
+                this.$addRowBtn.css('pointer-events', 'auto');
+            }
+        },
+        canDeleteRow: function() {
+            return (this.rowCount > this.minRows);
+        },
+        deleteRow: function(row) {
+            if (this.hasMaxRows && this.hasMinRows) {
+                if (!this.canDeleteRow()) {
+                    return;
+                }
+            }
 
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+
+            if (this.hasMinRows && this.hasMinRows) {
+                this.rowCount--;
+            }
+
+            this.updateAddRowButton();
+            // onDeleteRow callback
+            this.settings.onDeleteRow(row.$tr);
+        },
+        canAddRow: function() {
+            return (this.rowCount < this.maxRows);
+        },
         addRow: function() {
+            if (!this.canAddRow()) {
+                return;
+            }
+
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
@@ -12632,6 +12688,9 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
+
+            this.rowCount++;
+            this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -12946,11 +13005,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         deleteRow: function() {
-            this.table.sorter.removeItems(this.$tr);
-            this.$tr.remove();
-
-            // onDeleteRow callback
-            this.table.settings.onDeleteRow(this.$tr);
+            this.table.deleteRow(this);
         }
     },
     {

@@ -26,7 +26,6 @@ Craft.EditableTable = Garnish.Base.extend(
         radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings, maxRows, minRows) {
-
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
@@ -35,13 +34,8 @@ Craft.EditableTable = Garnish.Base.extend(
             this.maxRows = maxRows;
             this.minRows = minRows;
 
-            if (this.maxRows !== null) {
-                this.hasMaxRows = true;
-            }
-
-            if (this.minRows !== null) {
-                this.hasMinRows = true;
-            }
+            this.hasMinRows = this.minRows !== null;
+            this.hasMaxRows = this.maxRows !== null;
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');

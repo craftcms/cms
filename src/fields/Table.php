@@ -44,15 +44,18 @@ class Table extends Field
     /**
      * @var string|null Custom add row button label
      */
-    public $addRowLabel = 'Add a row';
+    public $addRowLabel;
+
     /**
      * @var int|null Maximum number of Rows allowed
      */
     public $maxRows;
+
     /**
      * @var int|null Minimum number of Rows allowed
      */
     public $minRows;
+
     /**
      * @var array|null The columns that should be shown in the table
      */
@@ -78,6 +81,14 @@ class Table extends Field
     {
         parent::init();
 
+        if ($this->addRowLabel === null) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
+
+        if ($this->defaults === '') {
+            $this->defaults = [];
+        }
+
         // Convert default date cell values to ISO8601 strings
         if (!empty($this->columns) && $this->defaults !== null) {
             foreach ($this->columns as $colId => $col) {
@@ -96,13 +107,11 @@ class Table extends Field
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = ['minRows', 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number'];
-        $rules[] = ['maxRows', 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number'];
-        $rules[] = ['minRows', 'integer', 'min' => 0];
-        $rules[] = ['maxRows', 'integer', 'min' => 0];
+        $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number'];
+        $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number'];
+        $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
         return $rules;
     }
-
 
     /**
      * @inheritdoc
@@ -182,7 +191,6 @@ class Table extends Field
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
-
         $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
             [
                 'label' => Craft::t('app', 'Table Columns'),
@@ -220,7 +228,6 @@ class Table extends Field
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
 
         $input = '<input type="hidden" name="'.$this->handle.'" value="">';
@@ -329,7 +336,6 @@ class Table extends Field
      *
      * @param string $type The cell type
      * @param mixed $value The cell value
-     *
      * @return mixed
      * @see normalizeValue()
      */
@@ -371,7 +377,6 @@ class Table extends Field
      * @param string $type The cell type
      * @param mixed $value The cell value
      * @param string|null &$error The error text to set on the element
-     *
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
@@ -394,7 +399,6 @@ class Table extends Field
      * @param mixed $value
      * @param ElementInterface|null $element
      * @param bool $static
-     *
      * @return string|null
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)
