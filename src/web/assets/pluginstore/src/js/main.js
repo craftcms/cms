@@ -249,14 +249,6 @@ Garnish.$doc.ready(function() {
                     e.preventDefault();
                     $this.openGlobalModal('payment');
                 });
-
-                // Reset cart button
-                let $resetCartButton = $('#reset-cart-button');
-
-                $resetCartButton.on('click', (e) => {
-                    e.preventDefault();
-                    this.$store.dispatch('resetCart');
-                });
             }
         },
 
