@@ -38,6 +38,9 @@
                     </div>
                 </div>
             </div>
+            <div>
+                <div v-if="loading" class="spinner"></div>
+            </div>
         </div>
 
         <div class="plugin-details-body">
@@ -93,6 +96,7 @@
             return {
                 plugin: null,
                 pluginSnippet: null,
+                loading: false,
             }
         },
 
@@ -167,8 +171,20 @@
             ]),
 
             buyPlugin(plugin) {
-                this.$store.dispatch('addToCart', plugin);
-                this.$root.openGlobalModal('cart');
+                this.loading = true
+
+                const item = {
+                    type: 'plugin-edition',
+                    plugin: plugin.handle,
+                    edition: 'standard',
+                    autoRenew: true,
+                }
+
+                this.$store.dispatch('addToCart', item)
+                    .then(() => {
+                        this.loading = false;
+                        this.$root.openGlobalModal('cart')
+                    })
             },
 
             tryPlugin(plugin) {

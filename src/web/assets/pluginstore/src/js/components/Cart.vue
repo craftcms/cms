@@ -2,6 +2,50 @@
     <div>
         <h2>{{ "Items in your cart"|t('app') }}</h2>
 
+        <template v-if="remoteCart">
+            <template v-if="remoteCart.lineItems.length">
+                <table class="data fullwidth">
+                    <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(lineItem, lineItemKey) in remoteCart.lineItems">
+                        <td v-if="lineItem.purchasable.type === 'cms-edition'">Craft {{ lineItem.purchasable.name }}</td>
+                        <td v-else="lineItem.purchasable.type === 'plugin-edition'">
+                            {{ lineItem.purchasable.fullName }}
+                        </td>
+
+                        <td class="rightalign">{{ lineItem.total|currency }}</td>
+                        <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(lineItemKey)"></a></td>
+                    </tr>
+                    <tr>
+                        <th class="rightalign">Items Price</th>
+                        <td class="rightalign"><strong>{{ remoteCart.itemTotal|currency }}</strong></td>
+                        <td class="thin"></td>
+                    </tr>
+                    <tr>
+                        <th class="rightalign">Total Price</th>
+                        <td class="rightalign"><strong>{{ remoteCart.totalPrice|currency }}</strong></td>
+                        <td class="thin"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <p>Renew for 3 years and save $XX.00</p>
+
+                <p><a @click="payment()" class="btn submit">{{ "Process My Order"|t('app') }}</a></p>
+            </template>
+
+            <div v-else>
+                <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continue-shopping')">{{ "Continue shopping"|t('app') }}</a></p>
+            </div>
+        </template>
+
+        <!--
         <div v-if="cartPlugins.length > 0">
             <table class="data fullwidth">
                 <thead>
@@ -111,6 +155,7 @@
                 </tbody>
             </table>
         </template>
+        -->
     </div>
 </template>
 
@@ -126,6 +171,7 @@
                 cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
                 cartTotal: 'cartTotal',
+                remoteCart: 'remoteCart',
             }),
 
             pendingActiveTrials() {

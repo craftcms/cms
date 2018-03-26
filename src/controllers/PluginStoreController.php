@@ -367,29 +367,62 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Order checkout.
+     * Checkout.
      *
-     * @return string
+     * @return Response
      */
     public function actionCheckout()
     {
-        $craftId = Craft::$app->getRequest()->getBodyParam('craftId');
-        $identity = Craft::$app->getRequest()->getBodyParam('identity');
-        $cardToken = Craft::$app->getRequest()->getBodyParam('cardToken');
-        $replaceCard = Craft::$app->getRequest()->getBodyParam('replaceCard');
-        $cartItems = Craft::$app->getRequest()->getBodyParam('cartItems');
+        $data = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
 
-        $order = [
-            'craftId' => $craftId,
-            'identity' => $identity,
-            'cardToken' => $cardToken,
-            'replaceCard' => $replaceCard,
-            'cartItems' => $cartItems,
-        ];
+        $response = Craft::$app->getApi()->checkout($data);
 
-        $response = Craft::$app->getApi()->checkout($order);
+        return $this->asJson($response);
+    }
 
-        return Json::encode($response);
+    /**
+     * Create a cart.
+     *
+     * @return Response
+     */
+    public function actionCreateCart()
+    {
+        $data = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
+        $response = Craft::$app->getApi()->createCart($data);
+
+        return $this->asJson($response);
+    }
+
+
+    /**
+     * Get a cart.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionGetCart()
+    {
+        $orderNumber = Craft::$app->getRequest()->getRequiredParam('orderNumber');
+        $response = Craft::$app->getApi()->getCart($orderNumber);
+
+        return $this->asJson($response);
+    }
+
+    /**
+     * Update a cart.
+     *
+     * @return Response
+     */
+    public function actionUpdateCart()
+    {
+        $data = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
+
+        $orderNumber = $data['orderNumber'];
+        unset($data['orderNumber']);
+
+        $response = Craft::$app->getApi()->updateCart($orderNumber, $data);
+
+        return $this->asJson($response);
     }
 
     // Private Methods

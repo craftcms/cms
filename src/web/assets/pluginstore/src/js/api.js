@@ -3,20 +3,54 @@ import qs from 'qs';
 
 export default {
 
-    saveCartState(cb, cartState) {
-        localStorage.setItem('cartState', JSON.stringify(cartState));
-
-        return cb();
+    createCart(data, cb, errorCb) {
+        axios.post(Craft.getActionUrl('plugin-store/create-cart'), data)
+            .then(response => {
+                return cb(response.data);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
     },
 
-    getCartState(cb) {
-        let cartState = localStorage.getItem('cartState');
+    updateCart(orderNumber, data, cb, errorCb) {
+        data.orderNumber = orderNumber;
 
-        if(cartState) {
-            cartState = JSON.parse(cartState);
+        axios.post(Craft.getActionUrl('plugin-store/update-cart'), data)
+            .then(response => {
+                return cb(response.data);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
+    },
+
+    resetOrderNumber() {
+        localStorage.removeItem('orderNumber');
+    },
+
+    saveOrderNumber(orderNumber) {
+        localStorage.setItem('orderNumber', orderNumber);
+    },
+
+    getOrderNumber(cb) {
+        const orderNumber = localStorage.getItem('orderNumber');
+
+        return cb(orderNumber);
+    },
+
+    getCart(orderNumber, cb, errorCb) {
+        const data = {
+            orderNumber
         }
 
-        return cb(cartState);
+        axios.get(Craft.getActionUrl('plugin-store/get-cart', data))
+            .then(response => {
+                return cb(response.data);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
     },
 
     getDeveloper(developerId, cb, errorCb) {
@@ -82,10 +116,8 @@ export default {
             });
     },
 
-    checkout(order) {
-        let params = qs.stringify(order);
-
-        return axios.post(Craft.getActionUrl('plugin-store/checkout'), params);
-    }
+    checkout(data) {
+        return axios.post(Craft.getActionUrl('plugin-store/checkout'), data);
+    },
 
 }

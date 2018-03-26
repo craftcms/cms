@@ -46,7 +46,7 @@ Garnish.$doc.ready(function() {
         computed: {
 
             ...mapGetters({
-                cartPlugins: 'cartPlugins',
+                remoteCart: 'remoteCart',
                 craftIdAccount: 'craftIdAccount',
             }),
 
@@ -54,9 +54,15 @@ Garnish.$doc.ready(function() {
 
         watch: {
 
-            cartPlugins() {
+            remoteCart() {
                 if(window.enableCraftId) {
-                    $('.badge', this.$cartButton).html(this.cartPlugins.length);
+                    let totalQty = 0;
+
+                    if(this.remoteCart) {
+                        totalQty = this.remoteCart.totalQty;
+                    }
+
+                    $('.badge', this.$cartButton).html(totalQty);
                 }
             },
 
@@ -212,7 +218,7 @@ Garnish.$doc.ready(function() {
                     this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
                 });
 
-            this.$store.dispatch('getCartState')
+            this.$store.dispatch('getCart')
         },
 
         mounted() {

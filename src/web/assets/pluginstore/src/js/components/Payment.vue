@@ -24,7 +24,8 @@
 					<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 					<template v-if="identityMode == 'guest'">
-						<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName" :errors="guestIdentityErrors.fullName"></text-field>
+						<text-field id="firstName" placeholder="First Name" v-model="guestIdentity.firstName" :errors="guestIdentityErrors.firstName"></text-field>
+						<text-field id="lastName" placeholder="Last Name" v-model="guestIdentity.lastName" :errors="guestIdentityErrors.lastName"></text-field>
 						<text-field id="email" placeholder="Email" v-model="guestIdentity.email" :errors="guestIdentityErrors.email"></text-field>
 						<input type="submit" class="btn submit" value="Continue" />
 					</template>
@@ -38,9 +39,9 @@
 						<p v-else class="light">Not connected to Craft ID.</p>
 					</div>
 					<div v-if="identityMode == 'guest'">
-						<template v-if="guestIdentity.fullName && guestIdentity.email">
+						<template v-if="guestIdentity.firstName && guestIdentity.lastName && guestIdentity.email">
 							<ul>
-								<li>{{ guestIdentity.fullName }} <em>(Guest)</em></li>
+								<li>{{ guestIdentity.firstName }} {{ guestIdentity.lastName }}<em>(Guest)</em></li>
 								<li>{{ guestIdentity.email }}</li>
 							</ul>
 						</template>
@@ -170,7 +171,7 @@
 			<p v-if="error" class="error">{{ error }}</p>
 
 			<div class="buttons">
-				<a class="btn submit" :class="{ disabled: !readyToPay }" @click="checkout()">Pay {{ cartTotal() | currency }}</a>
+				<a class="btn submit" :class="{ disabled: !readyToPay }" @click="checkout()">Pay {{ cartTotal | currency }}</a>
 				<div v-if="loading" class="spinner"></div>
 			</div>
 
@@ -210,12 +211,14 @@
 
                 identityMode: 'craftid',
                 guestIdentity: {
-                    fullName: "",
+                    firstName: "",
+                    lastName: "",
                     email: "",
                 },
 
                 guestIdentityErrors: {
-                    fullName: false,
+                    firstName: false,
+                    lastName: false,
 					email: false,
 				},
 
@@ -248,6 +251,7 @@
                 craftIdAccount: 'craftIdAccount',
                 countries: 'countries',
                 states: 'states',
+                remoteCart: 'remoteCart',
             }),
 
 			readyToPay() {
@@ -322,55 +326,46 @@
 		methods: {
 
             checkout() {
-              	if(this.readyToPay) {
-              	    this.loading = true;
+            	if(this.readyToPay) {
+            	    this.loading = true
 
-              	    let craftId = null;
-              	    let identity = null;
                     let cardToken = null;
 
                     switch(this.identityMode) {
                         case 'craftid':
-                            craftId = this.craftIdAccount.id;
-
                             switch(this.paymentMode) {
-								case 'newCard':
-								    cardToken = this.cardToken.id;
-								    break;
-							}
+                                case 'newCard':
+                                    cardToken = this.cardToken.id;
+                                    break;
+								default:
+								    cardToken = this.craftIdAccount.cardToken
+                            }
                             break;
                         case 'guest':
-                            identity = {
-                                fullName: this.guestIdentity.fullName,
-                                email: this.guestIdentity.email,
-                            };
+                            debugger;
                             cardToken = this.guestCardToken.id;
                             break;
                     }
 
-              	    let order = {
-              	        craftId: craftId,
-              	        identity: identity,
-						cardToken: cardToken,
-						replaceCard: (this.replaceCard ? 1 : 0),
-						billingInfos: this.billing,
-						replaceBillingInfos: (this.replaceBillingInfos ? 1 : 0),
-						cartItems: this.cartItems,
-					};
+					let data = {
+            	        orderNumber: this.remoteCart.number,
+						token: cardToken,
+						expectedPrice: this.remoteCart.totalPrice,
+					}
 
-                    this.$store.dispatch('checkout', order)
-						.then(response => {
-							this.loading = false;
+					this.$store.dispatch('checkout', data)
+                        .then(response => {
+                            this.loading = false;
                             this.error = false;
-							this.$root.lastOrder = order;
-							this.$root.modalStep = 'thankYou';
+                            // this.$root.lastOrder = order;
+                            this.$root.modalStep = 'thankYou';
 
-							this.$store.dispatch('resetCart');
-						})
-						.catch(response => {
-						    this.loading = false;
-						    this.error = response.statusText;
-						});
+                            this.$store.dispatch('resetCart');
+                        })
+                        .catch(response => {
+                            this.loading = false;
+                            this.error = response.statusText;
+                        });
 				}
 			},
 
@@ -382,16 +377,20 @@
 						}
 					    break;
 					case 'guest':
-                        if(!this.guestIdentity.fullName) {
-                            this.guestIdentityErrors.fullName = true;
-                        } else {
-                            this.guestIdentityErrors.fullName = false;
+                        this.guestIdentityErrors.firstName = false;
+                        this.guestIdentityErrors.lastName = false;
+                        this.guestIdentityErrors.email = false;
+
+                        if(!this.guestIdentity.firstName) {
+                            this.guestIdentityErrors.firstName = true;
+                        }
+
+                        if(!this.guestIdentity.lastName) {
+                            this.guestIdentityErrors.lastName = true;
                         }
 
                         if(!this.guestIdentity.email) {
                             this.guestIdentityErrors.email = true;
-                        } else {
-                            this.guestIdentityErrors.email = false;
                         }
 
                         let validates = true;
@@ -405,6 +404,14 @@
                         }
 
                         if(validates) {
+                            let data = {
+                                email: this.guestIdentity.email,
+                                billingAddress: {
+                                    firstName: this.guestIdentity.firstName,
+                                    lastName: this.guestIdentity.lastName,
+								},
+							}
+                            this.$store.dispatch('saveCart', data);
                             this.activeSection = 'paymentMethod';
                         }
 					    break;
@@ -473,7 +480,7 @@
 								}
 							    break;
 							case 'guest':
-							    if(this.guestIdentity.fullName && this.guestIdentity.email) {
+							    if(this.guestIdentity.firstName && this.guestIdentity.lastName && this.guestIdentity.email) {
 							        return true;
 								}
 							    break;
@@ -484,7 +491,7 @@
 							case 'craftid':
 								switch(this.paymentMode) {
 									case 'existingCard':
-										if(this.craftIdAccount.card) {
+										if(this.craftIdAccount && this.craftIdAccount.card) {
 											return true;
 										}
 										break;
@@ -534,6 +541,12 @@
             },
 
 		},
+
+		created() {
+            this.guestIdentity.firstName = this.remoteCart.billingAddress.firstName;
+            this.guestIdentity.lastName = this.remoteCart.billingAddress.lastName;
+            this.guestIdentity.email = this.remoteCart.email;
+		}
 
     }
 </script>
