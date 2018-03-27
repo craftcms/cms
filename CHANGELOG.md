@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where an exception could expose a partial server path in some circumstances.
+
 ## 2.6.3013 - 2018-03-23
 
 ### Removed
