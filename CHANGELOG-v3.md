@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed issues that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
+- Fixed an error that occurred on multi-site installs when creating a new entry from an entry selection modal, if the user didn’t have permission to edit the primary site. ([#2627](https://github.com/craftcms/cms/issues/2627))
 
 ## 3.0.0-RC16.1 - 2018-03-25
 
