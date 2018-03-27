@@ -56,7 +56,30 @@ const getters = {
 
     remoteCart(state) {
         return state.remoteCart
+    },
+
+    cartItems(state, rootState) {
+        const lineItems = state.remoteCart.lineItems
+
+        let cartItems = []
+
+        lineItems.forEach(lineItem => {
+            let cartItem = {};
+
+            cartItem.lineItem = lineItem;
+
+            if (lineItem.purchasable.type === 'plugin-edition') {
+                cartItem.plugin = rootState.pluginStoreData.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle);
+            }
+
+            cartItems.push(cartItem)
+        })
+
+        console.log('cartItems', cartItems)
+
+        return cartItems
     }
+
 };
 
 /**

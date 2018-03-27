@@ -3,32 +3,53 @@
         <h2>{{ "Items in your cart"|t('app') }}</h2>
 
         <template v-if="remoteCart">
-            <template v-if="remoteCart.lineItems.length">
+            <template v-if="cartItems.length">
                 <table class="data fullwidth">
                     <thead>
                     <tr>
+                        <th></th>
                         <th>Item</th>
                         <th></th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(lineItem, lineItemKey) in remoteCart.lineItems">
-                        <td v-if="lineItem.purchasable.type === 'cms-edition'">Craft {{ lineItem.purchasable.name }}</td>
-                        <td v-else="lineItem.purchasable.type === 'plugin-edition'">
-                            {{ lineItem.purchasable.fullName }}
+                    <tr v-for="(item, itemKey) in cartItems">
+                        <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
+                            <td class="thin">
+                                <div class="plugin-icon">
+                                    <img :src="craftData.craftLogo" width="32" height="32" />
+                                </div>
+                            </td>
+                            <td>Craft {{ item.lineItem.purchasable.name }}</td>
+                        </template>
+
+                        <template v-else="item.lineItem.purchasable.type === 'plugin-edition'">
+                            <td class="thin">
+                                <div class="plugin-icon">
+                                    <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" height="32" />
+                                </div>
+                            </td>
+                            <td>
+                                {{ item.plugin.name}}
+                                <div class="light">{{ item.plugin.shortDescription }}</div>
+                            </td>
+                        </template>
+
+                        <td class="rightalign">
+                            <strong>{{ item.lineItem.total|currency }}</strong>
+                            <div class="light">{{ item.lineItem.purchasable.renewalPrice|currency }} per year for updates</div>
                         </td>
 
-                        <td class="rightalign">{{ lineItem.total|currency }}</td>
-                        <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(lineItemKey)"></a></td>
+                        <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                     </tr>
                     <tr>
-                        <th class="rightalign">Items Price</th>
+                        <th class="rightalign" colspan="2">Items Price</th>
                         <td class="rightalign"><strong>{{ remoteCart.itemTotal|currency }}</strong></td>
                         <td class="thin"></td>
                     </tr>
                     <tr>
-                        <th class="rightalign">Total Price</th>
+                        <th class="rightalign" colspan="2">Total Price</th>
                         <td class="rightalign"><strong>{{ remoteCart.totalPrice|currency }}</strong></td>
                         <td class="thin"></td>
                     </tr>
@@ -64,15 +85,14 @@
                 <tr v-for="plugin in pendingActiveTrials">
                     <template v-if="plugin">
                         <td class="thin">
-                            <a href="#">
-                                <div class="plugin-icon">
-                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                                    <div class="default-icon" v-else></div>
-                                </div>
-                            </a>
+                            <div class="plugin-icon">
+                                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                                <div class="default-icon" v-else></div>
+                            </div>
                         </td>
                         <td>
-                            <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
+                            {{ plugin.name }}
+                            <div class="light">{{ plugin.shortDescription }}</div>
                         </td>
                         <td>
                             <strong>{{ plugin.editions[0].price|currency }}</strong>
@@ -101,6 +121,8 @@
                 activeTrialPlugins: 'activeTrialPlugins',
                 cartTotal: 'cartTotal',
                 remoteCart: 'remoteCart',
+                cartItems: 'cartItems',
+                craftData: 'craftData',
             }),
 
             pendingActiveTrials() {
