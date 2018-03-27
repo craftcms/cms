@@ -48,6 +48,7 @@ class HandleValidator extends Validator
         'no',
         'rawContent',
         'rules',
+        'searchKeywords',
         'section',
         'this',
         'true',

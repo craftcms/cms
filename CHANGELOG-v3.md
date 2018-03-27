@@ -8,6 +8,7 @@
 ### Changed
 - Hardened against errors when deleting folders in Assets.
 - Plain Text fields now have the option to be styled with a monospaced font. ([#2636](https://github.com/craftcms/cms/pull/2636))
+- `searchKeywords` is now a reserved field handle. ([#2645](https://github.com/craftcms/cms/issues/2645))
 
 ### Fixed
 - Fixed issues that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
