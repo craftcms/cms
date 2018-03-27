@@ -712,6 +712,16 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getLoginErrorMessage($errorCode, $loginName)
 	{
+		// Set the default error message.
+		if (craft()->config->get('useEmailAsUsername'))
+		{
+			$error = Craft::t('Invalid email or password.');
+		}
+		else
+		{
+			$error = Craft::t('Invalid username or password.');
+		}
+
 		switch ($errorCode)
 		{
 			case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
@@ -721,31 +731,40 @@ class UserSessionService extends \CWebUser
 			}
 			case UserIdentity::ERROR_ACCOUNT_LOCKED:
 			{
-				$error = Craft::t('Account locked.');
+				// If this is set, let it fallback to default:.
+				if (!craft()->config->get('preventUserEnumeration'))
+				{
+					$error = Craft::t('Account locked.');
+				}
+
 				break;
 			}
 			case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 			{
-				$user = craft()->users->getUserByUsernameOrEmail($loginName);
-
-				if ($user)
+				if (!craft()->config->get('preventUserEnumeration'))
 				{
-					$timeRemaining = $user->getRemainingCooldownTime();
+					$user = craft()->users->getUserByUsernameOrEmail($loginName);
 
-					if ($timeRemaining)
+					if ($user)
 					{
-						$humanTimeRemaining = $timeRemaining->humanDuration();
-						$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+						$timeRemaining = $user->getRemainingCooldownTime();
+
+						if ($timeRemaining)
+						{
+							$humanTimeRemaining = $timeRemaining->humanDuration();
+							$error = Craft::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+						}
+						else
+						{
+							$error = Craft::t('Account locked.');
+						}
 					}
 					else
 					{
 						$error = Craft::t('Account locked.');
 					}
 				}
-				else
-				{
-					$error = Craft::t('Account locked.');
-				}
+
 				break;
 			}
 			case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
@@ -772,18 +791,6 @@ class UserSessionService extends \CWebUser
 			{
 				$error = Craft::t('Account has not been activated.');
 				break;
-			}
-			default:
-			{
-				if (craft()->config->get('useEmailAsUsername'))
-				{
-					$error = Craft::t('Invalid email or password.');
-				}
-				else
-				{
-					$error = Craft::t('Invalid username or password.');
-				}
-
 			}
 		}
 

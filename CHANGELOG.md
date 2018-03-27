@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## Changed
+- The `preventUserEnumeration` config setting is now applied to locked user accounts.
+
 ### Fixed
 - Fixed a bug where an exception could expose a partial server path in some circumstances.
 
