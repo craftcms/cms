@@ -59,6 +59,10 @@ const getters = {
     },
 
     cartItems(state, rootState) {
+        if(!state.remoteCart || !rootState.pluginStoreData.plugins) {
+            return [];
+        }
+
         const lineItems = state.remoteCart.lineItems
 
         let cartItems = []
@@ -74,7 +78,7 @@ const getters = {
 
             cartItems.push(cartItem)
         })
-        
+
         return cartItems
     }
 
