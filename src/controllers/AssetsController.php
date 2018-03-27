@@ -916,7 +916,12 @@ class AssetsController extends Controller
             /** @var Volume $volume */
             $volume = $asset->getVolume();
 
-            $imageUrl = $asset->getUrl();
+            if ($volume->hasUrls) {
+                $imageUrl = $asset->getUrl();
+            } else {
+                $source = $asset->getTransformSource();
+                $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
+            }
 
             $width = $asset->getWidth();
             $height = $asset->getHeight();
