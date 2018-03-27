@@ -169,7 +169,7 @@ class PluginStore extends Component
     /**
      * Returns the OAuth token.
      *
-     * @return mixed
+     * @return CraftIdToken|null
      */
     public function getToken()
     {
@@ -178,15 +178,23 @@ class PluginStore extends Component
         // Get the token from the session
         $token = Craft::$app->getSession()->get('pluginStore.token');
 
-        // Or use the token from the database otherwise
-        if (!$token || ($token && $token->hasExpired())) {
-            $oauthTokenRecord = OauthTokenRecord::find()
-                ->where(['userId' => $userId])
-                ->one();
+        if ($token && !$token->hasExpired()) {
+            return $token;
+        }
 
-            if ($oauthTokenRecord) {
-                return new CraftIdToken($oauthTokenRecord->getAttributes());
-            }
+        // Or use the token from the database otherwise
+        $oauthTokenRecord = OauthTokenRecord::find()
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$oauthTokenRecord) {
+            return null;
+        }
+
+        $token = new CraftIdToken($oauthTokenRecord->getAttributes());
+
+        if (!$token || ($token && $token->hasExpired())) {
+            return null;
         }
 
         return $token;
