@@ -341,7 +341,6 @@
                             }
                             break;
                         case 'guest':
-                            debugger;
                             cardToken = this.guestCardToken.id;
                             break;
                     }
