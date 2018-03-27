@@ -1,5 +1,5 @@
 <template>
-    <div id="upgrade-craft">
+    <div v-if="craftData" id="upgrade-craft">
         <div id="upgrade-craft-compare" class="body">
             <table class="data fullwidth">
                 <thead>
