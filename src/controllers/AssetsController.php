@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -886,6 +887,51 @@ class AssetsController extends Controller
         }
         return Craft::$app->getResponse()
             ->sendFile($fullPath, null, ['inline' => true]);
+    }
+
+    /**
+     * Return the file preview for an Asset.
+     *
+     * @return Response
+     * @throws BadRequestHttpException if not a valid request
+     */
+    public function actionPreviewFile(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+
+        $asset = Asset::find()->id($assetId)->one();
+
+        if (!$asset) {
+            return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
+        }
+
+        if (!$asset->getSupportsPreview()) {
+            return $this->asErrorJson(Craft::t('app', 'Asset cannot be previewed'));
+        }
+
+        if ($asset->kind === 'image') {
+            /** @var Volume $volume */
+            $volume = $asset->getVolume();
+
+            $imageUrl = $asset->getUrl();
+
+            $width = $asset->getWidth();
+            $height = $asset->getHeight();
+            $modalHtml = "<img src=\"$imageUrl\" width=\"{$width}\" height=\"{$height}\" data-maxWidth=\"{$width}\" data-maxHeight=\"{$height}\"/>";
+        } else {
+            $localCopy = $asset->getCopyOfFile();
+            $content = htmlspecialchars(file_get_contents($localCopy));
+            $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
+            $modalHtml = '<div class="highlight '.$asset->kind.'"><pre><code class="language-'.$language.'">'.$content.'</code></pre></div>';
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'modalHtml' => $modalHtml,
+        ]);
     }
 
     /**
