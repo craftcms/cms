@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.0.0-RC15",
+  "version": "3.0.0-RC16.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -42,7 +42,7 @@
     "pixelandtonic/imagine": "~0.7.1.2",
     "seld/cli-prompt": "~1.0.3",
     "twig/twig": "~2.4.4",
-    "yiisoft/yii2": "~2.0.14.2",
+    "yiisoft/yii2": "~2.0.15.1",
     "yiisoft/yii2-debug": "~2.0.10",
     "yiisoft/yii2-swiftmailer": "~2.1.0",
     "yiisoft/yii2-queue": "~2.0.1",

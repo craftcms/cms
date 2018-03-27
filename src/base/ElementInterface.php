@@ -78,6 +78,7 @@ interface ElementInterface extends ComponentInterface
      * The returned [[ElementQueryInterface]] instance can be further customized by calling
      * methods defined in [[ElementQueryInterface]] before `one()` or `all()` is called to return
      * populated [[ElementInterface]] instances. For example,
+     *
      * ```php
      * // Find the entry whose ID is 5
      * $entry = Entry::find()->id(5)->one();
@@ -86,8 +87,10 @@ interface ElementInterface extends ComponentInterface
      *     ->orderBy('filename')
      *     ->all();
      * ```
+     *
      * If you want to define custom criteria parameters for your elements, you can do so by overriding
      * this method and returning a custom query class. For example,
+     *
      * ```php
      * class Product extends Element
      * {
@@ -98,8 +101,10 @@ interface ElementInterface extends ComponentInterface
      *     }
      * }
      * ```
+     *
      * You can also set default criteria parameters on the ElementQuery if you don’t have a need for
      * a custom query class. For example,
+     *
      * ```php
      * class Customer extends ActiveRecord
      * {
@@ -117,11 +122,14 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns a single element instance by a primary key or a set of element criteria parameters.
      * The method accepts:
+     *
      *  - an int: query by a single ID value and return the corresponding element (or null if not found).
      *  - an array of name-value pairs: query by a set of parameter values and return the first element
      *    matching all of them (or null if not found).
+     *
      * Note that this method will automatically call the `one()` method and return an
      * [[ElementInterface|\craft\base\Element]] instance. For example,
+     *
      * ```php
      * // find a single entry whose ID is 10
      * $entry = Entry::findOne(10);
@@ -141,6 +149,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns a list of elements that match the specified ID(s) or a set of element criteria parameters.
      * The method accepts:
+     *
      *  - an int: query by a single ID value and return an array containing the corresponding element
      *    (or an empty array if not found).
      *  - an array of integers: query by a list of ID values and return the corresponding elements (or an
@@ -149,8 +158,10 @@ interface ElementInterface extends ComponentInterface
      *    primary keys and not an empty set of element criteria parameters.
      *  - an array of name-value pairs: query by a set of parameter values and return an array of elements
      *    matching all of them (or an empty array if none was found).
+     *
      * Note that this method will automatically call the `all()` method and return an array of
      * [[ElementInterface|\craft\base\Element]] instances. For example,
+     *
      * ```php
      * // find the entries whose ID is 10
      * $entries = Entry::findAll(10);
@@ -179,7 +190,7 @@ interface ElementInterface extends ComponentInterface
      * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
      * with the following keys:
      * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color (green, orange, red, yellow, pink, purple, blue, turquoise, light, grey, or black)
+     * - **`color`** – The status color (green, orange, red, yellow, pink, purple, blue, turquoise, light, grey, black, or white)
      * You can customize the database query condition that should be applied for your custom statuses from
      * [[\craft\elements\db\ElementQuery::statusCondition()]].
      *
@@ -234,12 +245,16 @@ interface ElementInterface extends ComponentInterface
      * [[\craft\services\Search]] will call this method when it is indexing keywords for one of your elements,
      * and for each attribute it returns, it will fetch the corresponding property’s value on the element.
      * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
+     *
      * ```php
      * return ['color'];
      * ```
+     *
      * Not only will the “color” attribute’s values start getting indexed, but users will also be able to search
      * directly against that attribute’s values using this search syntax:
+     *
      *     color:blue
+     *
      * There is no need for this method to worry about the ‘title’ or ‘slug’ attributes, or custom field handles;
      * those are indexed automatically.
      *
@@ -265,20 +280,24 @@ interface ElementInterface extends ComponentInterface
      * Returns the sort options for the element type.
      * This method should return an array, where the keys reference database column names that should be sorted on,
      * and where the values define the user-facing labels.
+     *
      * ```php
      * return [
      *     'columnName1' => Craft::t('app', 'Attribute Label 1'),
      *     'columnName2' => Craft::t('app', 'Attribute Label 2'),
      * ];
      * ```
+     *
      * If you want to sort by multilple columns simultaneously, you can specify multiple column names in the key,
      * separated by commas.
+     *
      * ```php
      * return [
      *     'columnName1, columnName2 asc' => Craft::t('app', 'Attribute Label 1'),
      *     'columnName3'                  => Craft::t('app', 'Attribute Label 2'),
      * ];
      * ```
+     *
      * If you do that, you can specify the sort direction for the subsequent columns (`asc` or `desc`. There is no point
      * in specifying the sort direction for the first column, though, since the end user has full control over that.
      * Note that this method will only get called once for the entire index; not each time that a new source is
@@ -705,6 +724,7 @@ interface ElementInterface extends ComponentInterface
      * attribute, rather than simply showing the attribute’s raw value.
      * For example, if your elements have an “email” attribute that you want to wrap in a `mailto:` link, your
      * getTableAttributesHtml() method could do this:
+     *
      * ```php
      * switch ($attribute) {
      *     case 'email':
@@ -713,8 +733,10 @@ interface ElementInterface extends ComponentInterface
      * }
      * return parent::getTableAttributeHtml($attribute);
      * ```
+     *
      * [[Element::getTableAttributeHtml()]] provides a couple handy attribute checks by default, so it is a good
      * idea to let the parent method get called (as shown above). They are:
+     *
      * - If the attribute name is ‘link’ or ‘uri’, it will be linked to the front-end URL.
      * - If the attribute is a custom field handle, it will pass the responsibility off to the field class.
      * - If the attribute value is a DateTime object, the date will be formatted with a localized date format.

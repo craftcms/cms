@@ -898,7 +898,7 @@ body.rtl .status { margin-left: 10px; }
 
 .status.black { background-color: #32475E; }
 
-.status.disabled { opacity: 1; }
+.status.white, .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
 /*  Progress bar
@@ -1415,7 +1415,7 @@ body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px;
 body .selectize-dropdown .active { color: #29323d; background-color: #d5d8dd; }
 
 /* datepicker */
-.ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 240px; z-index: 100 !important; }
+.ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 240px; z-index: 101 !important; }
 body.ltr .ui-datepicker { margin-left: 1px; }
 body.rtl .ui-datepicker { margin-right: 1px; }
 
@@ -1454,7 +1454,7 @@ body.rtl .ui-datepicker-next:after { content: 'leftangle'; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px; -webkit-box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15); }
 
 /* timepicker */
-.ui-timepicker-wrapper { z-index: 100; }
+.ui-timepicker-wrapper { z-index: 101; }
 
 .ui-timepicker-list { overflow-y: auto; width: calc(14px + 6em); height: 210px; z-index: 100; }
 body.ltr .ui-timepicker-list { margin-left: 1px; }
