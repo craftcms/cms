@@ -149,11 +149,6 @@
 						</div>
 					</div>
 
-					<template v-if="identityMode == 'craftid'">
-						<checkbox-field id="replaceBillingInfos" v-model="replaceBillingInfos" label="Save as my new billing informations" />
-					</template>
-
-					<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
 					<input type="submit" class="btn submit" value="Continue" />
 				</form>
 				<template v-else>
@@ -164,7 +159,6 @@
 						<li>{{ billing.businessAddressLine2 }}</li>
 						<li><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
 						<li>{{ billing.businessCountry }}</li>
-						<li>{{ billing.businessNotes }}</li>
 					</ul>
 				</template>
 			</div>
@@ -240,9 +234,7 @@
                     businessState: '',
                     businessCity: '',
                     businessZipCode: '',
-                    businessNotes: '',
                 },
-				replaceBillingInfos: false,
             }
         },
 
@@ -275,7 +267,6 @@
                         businessState: this.craftIdAccount.businessState,
                         businessCity: this.craftIdAccount.businessCity,
                         businessZipCode: this.craftIdAccount.businessZipCode,
-                        businessNotes: this.craftIdAccount.businessNotes,
 					}
 				}
                 return this.guestBilling;
