@@ -754,7 +754,7 @@ class Search extends Component
      */
     private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize): string
     {
-        $cleanKeywordsLength = mb_strlen($cleanKeywords);
+        $cleanKeywordsLength = strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -769,7 +769,7 @@ class Search extends Component
                 $position = mb_strrpos($cleanKeywords, ' ');
 
                 if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    $cleanKeywords = substr($cleanKeywords, 0, $position + 1);
                 }
             }
         }

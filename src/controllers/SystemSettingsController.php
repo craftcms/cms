@@ -185,11 +185,22 @@ class SystemSettingsController extends Controller
         // Sort them by name
         ArrayHelper::multisort($transportTypeOptions, 'label');
 
+        // See if it looks like config/app.php is overriding the mailer component
+        $customMailerFiles = [];
+        $configService = Craft::$app->getConfig();
+        foreach (['app', 'app.web', 'app.console'] as $file) {
+            $config = $configService->getConfigFromFile($file);
+            if (isset($config['components']) && array_key_exists('mailer', $config['components'])) {
+                $customMailerFiles[] = $configService->getConfigFilePath($file);
+            }
+        }
+
         return $this->renderTemplate('settings/email/_index', [
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
             'allTransportAdapters' => $allTransportAdapters,
+            'customMailerFiles' => $customMailerFiles,
         ]);
     }
 

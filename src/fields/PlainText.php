@@ -43,6 +43,11 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $placeholder;
 
     /**
+     * @var bool Whether the input should use monospace font
+     */
+    public $code = false;
+
+    /**
      * @var bool Whether the input should allow line breaks
      */
     public $multiline = false;
@@ -64,6 +69,19 @@ class PlainText extends Field implements PreviewableFieldInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // This existed at one point way back in the day.
+        if (isset($config['maxLengthUnit'])) {
+            unset($config['maxLengthUnit']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -120,7 +138,8 @@ class PlainText extends Field implements PreviewableFieldInterface
         if ($value !== null) {
             $value = LitEmoji::shortcodeToUnicode($value);
         }
-        return $value;
+
+        return preg_replace('/\R/', "\n", $value);
     }
 
     /**

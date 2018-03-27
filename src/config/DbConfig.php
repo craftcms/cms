@@ -34,6 +34,7 @@ class DbConfig extends BaseObject
      * if you wanted to enable a SSL database connection (assuming SSL is enabled in MySQL
      * (https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'`
      * can connect via SSL, you'd set these:
+     *
      * ```php
      * [
      *     PDO::MYSQL_ATTR_SSL_KEY    => '/path/to/my/client-key.pem',

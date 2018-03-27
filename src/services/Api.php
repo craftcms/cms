@@ -14,6 +14,7 @@ use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\CraftIdToken;
 use GuzzleHttp\Client;
@@ -80,6 +81,28 @@ class Api extends Component
     {
         $response = $this->request('GET', 'updates');
         return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns all country data.
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getCountries(): array
+    {
+        $cacheKey = 'countryListData';
+        $cache = Craft::$app->getCache();
+
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
+        $response = $this->request('GET', 'countries');
+        $countries = Json::decode((string)$response->getBody());
+        $cache->set($cacheKey, $countries, 60 * 60 * 24 * 7);
+
+        return $countries;
     }
 
     /**
@@ -284,7 +307,7 @@ class Api extends Component
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
         $options = ArrayHelper::merge($options, [
-            'headers' => $this->getHeaders(),
+            'headers' => $this->headers(),
         ]);
 
         $e = null;
@@ -310,7 +333,24 @@ class Api extends Component
             $cache->set('licensedDomain', $response->getHeaderLine('X-Craft-License-Domain'), $duration);
         }
         if ($response->hasHeader('X-Craft-License-Edition')) {
-            $cache->set('licensedEdition', $response->getHeaderLine('X-Craft-License-Edition'), $duration);
+            $licensedEdition = $response->getHeaderLine('X-Craft-License-Edition');
+
+            switch ($licensedEdition)
+            {
+                case 'personal':
+                    $licensedEdition = Craft::Personal;
+                    break;
+                case 'client':
+                    $licensedEdition = Craft::Client;
+                    break;
+                case 'pro':
+                    $licensedEdition = Craft::Pro;
+                    break;
+                default:
+                    Craft::error('Invalid X-Craft-License-Edition header value: '. $licensedEdition, __METHOD__);
+            }
+
+            $cache->set('licensedEdition', $licensedEdition, $duration);
         }
         if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
             $pluginsService = Craft::$app->getPlugins();
@@ -325,6 +365,30 @@ class Api extends Component
             }
         }
 
+        // did we just get a new license key?
+        if ($response->hasHeader('X-Craft-License')) {
+            $license = $response->getHeaderLine('X-Craft-License');
+            $path = Craft::$app->getPath()->getLicenseKeyPath();
+
+            //  just in case there's some race condition where two licenses were requested simultaneously...
+            if ($this->cmsLicenseKey() !== null) {
+                $i = 0;
+                do {
+                    $newPath = "{$path}.".++$i;
+                } while (file_exists($newPath));
+                $path = $newPath;
+                Craft::warning("A new license key was issued, but we already had one. Writing it to {$path} instead.", __METHOD__);
+            }
+
+            try {
+                FileHelper::writeToFile($path, chunk_split($license, 50));
+            } catch (\ErrorException $err) {
+                // log and keep going
+                Craft::error("Could not write new license key to {$path}: {$err->getMessage()}\nLicense key: {$license}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($err);
+            }
+        }
+
         if ($e !== null) {
             throw $e;
         }
@@ -332,12 +396,15 @@ class Api extends Component
         return $response;
     }
 
+    // Protected Methods
+    // =========================================================================
+
     /**
      * Returns the headers that should be sent with API requests.
      *
      * @return array
      */
-    public function getHeaders(): array
+    protected function headers(): array
     {
         $headers = [
             'Accept' => 'application/json',
@@ -368,7 +435,7 @@ class Api extends Component
         }
 
         // Craft license
-        $headers['X-Craft-License'] = App::licenseKey();
+        $headers['X-Craft-License'] = App::licenseKey() ?? '🙏';
 
         // plugin info
         $pluginLicenses = [];
@@ -377,18 +444,17 @@ class Api extends Component
         $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
             $handle = $plugin->getHandle();
-            $headers['X-Craft-System'] .= ",{$handle}:{$plugin->getVersion()}";
+            $headers['X-Craft-System'] .= ",plugin-{$handle}:{$plugin->getVersion()}";
             if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
                 $pluginLicenses[] = "{$handle}:{$licenseKey}";
             }
         }
-        $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+        if (!empty($pluginLicenses)) {
+            $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+        }
 
         return $headers;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns platform info.

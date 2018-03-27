@@ -24,6 +24,7 @@ use craft\helpers\Json;
 use yii\base\Component;
 use yii\db\Exception;
 use yii\helpers\Inflector;
+use yii\web\HttpException;
 
 /**
  * The Plugins service provides APIs for managing plugins.
@@ -198,6 +199,16 @@ class Plugins extends Component
             if ($plugin !== null) {
                 // If we're not updating, check if the plugin's version number changed, but not its schema version.
                 if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
+
+                    /** @var Plugin $plugin */
+                    if ($plugin->minVersionRequired && version_compare($row['version'], $plugin->minVersionRequired, '<')) {
+                        throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
+                            'version' => $plugin->minVersionRequired,
+                            'targetVersion' => $plugin->version,
+                            'plugin' => $plugin->name
+                        ]));
+                    }
+
                     // Update our record of the plugin's version number
                     Craft::$app->getDb()->createCommand()
                         ->update(
@@ -211,6 +222,10 @@ class Plugins extends Component
             }
         }
         unset($row);
+        
+        // Sort plugins by their names
+        $names = array_column($this->_plugins, 'name');
+        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -742,7 +757,7 @@ class Plugins extends Component
         if ($row !== null) {
             $config['isInstalled'] = true;
 
-            $settings = ArrayHelper::merge(
+            $settings = array_merge(
                 $row['settings'] ?? [],
                 Craft::$app->getConfig()->getConfigFromFile($handle)
             );
