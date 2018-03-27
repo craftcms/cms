@@ -62,7 +62,7 @@ class Image
         $formats = Craft::$app->getImages()->getSupportedImageFormats();
 
         $alwaysManipulatable = ['svg'];
-        $neverManipulatable = ['pdf'];
+        $neverManipulatable = ['pdf', 'json', 'html', 'htm'];
 
         $formats = array_merge($formats, $alwaysManipulatable);
         $formats = array_diff($formats, $neverManipulatable);
