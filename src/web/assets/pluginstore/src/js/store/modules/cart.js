@@ -74,9 +74,7 @@ const getters = {
 
             cartItems.push(cartItem)
         })
-
-        console.log('cartItems', cartItems)
-
+        
         return cartItems
     }
 
