@@ -149,7 +149,10 @@
 						</div>
 					</div>
 
-					<checkbox-field id="replaceBillingInfos" v-model="replaceBillingInfos" label="Save as my new billing informations" />
+					<template v-if="identityMode == 'craftid'">
+						<checkbox-field id="replaceBillingInfos" v-model="replaceBillingInfos" label="Save as my new billing informations" />
+					</template>
+
 					<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
 					<input type="submit" class="btn submit" value="Continue" />
 				</form>
