@@ -32,21 +32,14 @@
                             </td>
                             <td>
                                 {{ item.plugin.name}}
-                                <div class="light">{{ item.plugin.shortDescription }}</div>
                             </td>
                         </template>
 
                         <td class="rightalign">
                             <strong>{{ item.lineItem.total|currency }}</strong>
-                            <div class="light">{{ item.lineItem.purchasable.renewalPrice|currency }} per year for updates</div>
                         </td>
 
                         <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
-                    </tr>
-                    <tr>
-                        <th class="rightalign" colspan="2">Items Price</th>
-                        <td class="rightalign"><strong>{{ remoteCart.itemTotal|currency }}</strong></td>
-                        <td class="thin"></td>
                     </tr>
                     <tr>
                         <th class="rightalign" colspan="2">Total Price</th>
@@ -92,11 +85,9 @@
                         </td>
                         <td>
                             {{ plugin.name }}
-                            <div class="light">{{ plugin.shortDescription }}</div>
                         </td>
                         <td>
                             <strong>{{ plugin.editions[0].price|currency }}</strong>
-                            <div class="light">{{ plugin.editions[0].renewalPrice|currency }} per year for updates</div>
                         </td>
                         <td class="thin">
                             <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>
