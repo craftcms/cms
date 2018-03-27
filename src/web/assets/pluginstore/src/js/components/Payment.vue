@@ -346,7 +346,8 @@
                     }
 
 					let data = {
-            	        orderNumber: this.remoteCart.number,
+						identityMode: this.identityMode,
+						orderNumber: this.remoteCart.number,
 						token: cardToken,
 						expectedPrice: this.remoteCart.totalPrice,
 					}

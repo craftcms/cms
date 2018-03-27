@@ -15,6 +15,7 @@ use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use craft\models\CraftIdToken;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -124,15 +125,23 @@ class Api extends Component
     /**
      * Order checkout.
      *
-     * @param array $order
+     * @param array $data
+     * @param CraftIdToken|null $craftIdToken
      *
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function checkout(array $order): array
+    public function checkout(array $data, CraftIdToken $craftIdtoken = null): array
     {
+        $headers = [];
+
+        if ($craftIdtoken) {
+            $headers['Authorization'] = 'Bearer '.$craftIdtoken->accessToken;
+        }
+
         $response = $this->request('POST', 'payments', [
-            RequestOptions::BODY => Json::encode($order),
+            'headers' => $headers,
+            RequestOptions::BODY => Json::encode($data),
         ]);
 
         return Json::decode((string)$response->getBody());

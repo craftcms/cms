@@ -375,9 +375,25 @@ class PluginStoreController extends Controller
      */
     public function actionCheckout()
     {
-        $data = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
+        $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
 
-        $response = Craft::$app->getApi()->checkout($data);
+        $identityMode = (isset($payload['identityMode']) ? $payload['identityMode'] : null);
+        $orderNumber = (isset($payload['orderNumber']) ? $payload['orderNumber'] : null);
+        $token = (isset($payload['token']) ? $payload['token'] : null);
+        $expectedPrice = (isset($payload['expectedPrice']) ? $payload['expectedPrice'] : null);
+
+        $data = [
+            'orderNumber' => $orderNumber,
+            'token' => $token,
+            'expectedPrice' => $expectedPrice,
+        ];
+
+        if($identityMode === 'craftid') {
+            $craftIdToken = Craft::$app->getPluginStore()->getToken();
+            $response = Craft::$app->getApi()->checkout($data, $craftIdToken);
+        } else {
+            $response = Craft::$app->getApi()->checkout($data);
+        }
 
         return $this->asJson($response);
     }
