@@ -247,15 +247,19 @@ class PluginStoreController extends Controller
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
 
 
+        // Countries
+
+        $countriesData = Craft::$app->getApi()->getCountries();
+
+        $data['countries'] = $countriesData['countries'];
+
+
         // ET upgrade info
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
         if (isset($etResponse->data->editions)) {
             $upgradeInfo = $etResponse->data;
-
-            $data['countries'] = $upgradeInfo->countries;
-            $data['states'] = $upgradeInfo->states;
 
             $data['upgradeInfo'] = $upgradeInfo;
 

@@ -135,7 +135,7 @@
 								</div>
 								<div class="multitextrow">
 									<div class="text">
-										<select-input v-model="billing.businessCountry" :options="countryOptions" />
+										<select-input v-model="billing.businessCountry" :options="countryOptions" @input="onCountryChange" />
 									</div>
 									<div class="text">
 										<select-input v-model="billing.businessState" :options="stateOptions" />
@@ -235,6 +235,8 @@
                     businessCity: '',
                     businessZipCode: '',
                 },
+
+				stateOptions: [],
             }
         },
 
@@ -275,25 +277,14 @@
 			countryOptions() {
                 let options = [];
 
-                this.countries.forEach(country => {
-                    options.push({
-						label: country.name,
-						value: country.iso,
-					});
-				})
-
-				return options;
-			},
-
-			stateOptions() {
-                let options = [];
-
-                this.states.forEach(state => {
-                    options.push({
-						label: state.name,
-						value: state.abbr,
-					});
-				})
+                for (let iso in this.countries) {
+                    if (this.countries.hasOwnProperty(iso)) {
+                        options.push({
+							label: this.countries[iso].name,
+							value: iso,
+						})
+                    }
+                }
 
 				return options;
 			},
@@ -532,6 +523,34 @@
 
                 window.open(url, name, specs);
             },
+
+			onCountryChange(iso) {
+				if (!this.countries[iso]) {
+                    this.stateOptions = []
+					return
+				}
+
+				const country = this.countries[iso]
+
+				if(!country.states) {
+                    this.stateOptions = []
+					return
+				}
+
+				const states = country.states
+				let options = []
+
+				for (let iso in states) {
+					if (states.hasOwnProperty(iso)) {
+						options.push({
+							label: states[iso],
+							value: iso,
+						})
+					}
+				}
+
+				this.stateOptions = options
+			}
 
 		},
 
