@@ -69,8 +69,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
                 $img.css({'width': width, 'height': height});
 
-                console.log(width / height, imageRatio);
-
                 this.desiredWidth = width;
                 this.desiredHeight = height;
             }
@@ -79,10 +77,10 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
             if (this.loaded && $img.length) {
                 // Correct anomalities
-                var containerWidth = Math.min(Math.max(200, $img.height() * imageRatio), this.updateSizeAndPosition._windowWidth - (this.settings.minGutter * 2)),
-                    containerHeight = Math.min(Math.max(200, containerWidth / imageRatio), this.updateSizeAndPosition._windowHeight - (this.settings.minGutter * 2));
+                var containerWidth = Math.round(Math.min(Math.max(200, $img.height() * imageRatio), this.updateSizeAndPosition._windowWidth - (this.settings.minGutter * 2))),
+                    containerHeight = Math.round(Math.min(Math.max(200, containerWidth / imageRatio), this.updateSizeAndPosition._windowHeight - (this.settings.minGutter * 2)));
 
-                containerWidth = containerHeight * imageRatio;
+                containerWidth = Math.round(containerHeight * imageRatio);
 
                 this.$container.css({
                     'width': containerWidth,
@@ -95,7 +93,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     'left': (this.updateSizeAndPosition._windowWidth - containerWidth) / 2
                 });
 
-                $img.css({'width': this.$container.width(), 'height': this.$container.height()});
+                $img.css({'width': containerWidth, 'height': containerHeight});
             } else {
                 this.$container.find('.highlight')
                     .height(this.$container.height())
