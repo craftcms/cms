@@ -931,6 +931,7 @@ class AssetsController extends Controller
             $content = htmlspecialchars(file_get_contents($localCopy));
             $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
             $modalHtml = '<div class="highlight '.$asset->kind.'"><pre><code class="language-'.$language.'">'.$content.'</code></pre></div>';
+            unlink($localCopy);
         }
 
         return $this->asJson([
