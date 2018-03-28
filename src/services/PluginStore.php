@@ -55,11 +55,6 @@ class PluginStore extends Component
      */
     public $stripeApiKey;
 
-    /**
-     * @var bool Enabled Craft ID
-     */
-    public $enableCraftId = false;
-
     // Public Methods
     // =========================================================================
 

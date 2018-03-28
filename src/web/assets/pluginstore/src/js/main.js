@@ -55,15 +55,13 @@ Garnish.$doc.ready(function() {
         watch: {
 
             remoteCart() {
-                if(window.enableCraftId) {
-                    let totalQty = 0;
+                let totalQty = 0;
 
-                    if(this.remoteCart) {
-                        totalQty = this.remoteCart.totalQty;
-                    }
-
-                    $('.badge', this.$cartButton).html(totalQty);
+                if(this.remoteCart) {
+                    totalQty = this.remoteCart.totalQty;
                 }
+
+                $('.badge', this.$cartButton).html(totalQty);
             },
 
             crumbs(crumbs) {
@@ -175,10 +173,8 @@ Garnish.$doc.ready(function() {
 
             // On all data loaded
             this.$on('allDataLoaded', function() {
-                if(window.enableCraftId) {
-                    this.$pluginStoreActions.removeClass('hidden');
-                    this.$pluginStoreActionsSpinner.addClass('hidden');
-                }
+                this.$pluginStoreActions.removeClass('hidden');
+                this.$pluginStoreActionsSpinner.addClass('hidden');
             }.bind(this));
 
             // Dispatch actions
@@ -207,9 +203,7 @@ Garnish.$doc.ready(function() {
                     if(this.craftIdDataLoaded) {
                         this.$emit('allDataLoaded');
                     } else {
-                        if(window.enableCraftId) {
-                            this.$pluginStoreActionsSpinner.removeClass('hidden');
-                        }
+                        this.$pluginStoreActionsSpinner.removeClass('hidden');
                     }
                 })
                 .catch(response => {
@@ -228,34 +222,32 @@ Garnish.$doc.ready(function() {
 
             let $this = this;
 
-            if(window.enableCraftId) {
-                // Cart button
-                this.$cartButton = $('#cart-button');
+            // Cart button
+            this.$cartButton = $('#cart-button');
 
-                this.$cartButton.on('click', (e) => {
-                    e.preventDefault();
-                    $this.openGlobalModal('cart');
-                });
+            this.$cartButton.on('click', (e) => {
+                e.preventDefault();
+                $this.openGlobalModal('cart');
+            });
 
-                this.$cartButton.keydown(e => {
-                    switch(e.which) {
-                        case 13: // Enter
-                        case 32: // Space
-                            e.preventDefault();
-                            $this.openGlobalModal('cart');
-                            break;
+            this.$cartButton.keydown(e => {
+                switch(e.which) {
+                    case 13: // Enter
+                    case 32: // Space
+                        e.preventDefault();
+                        $this.openGlobalModal('cart');
+                        break;
 
-                    }
-                });
+                }
+            });
 
-                // Payment button
-                let $paymentButton = $('#payment-button');
+            // Payment button
+            let $paymentButton = $('#payment-button');
 
-                $paymentButton.on('click', (e) => {
-                    e.preventDefault();
-                    $this.openGlobalModal('payment');
-                });
-            }
+            $paymentButton.on('click', (e) => {
+                e.preventDefault();
+                $this.openGlobalModal('payment');
+            });
         },
 
     });

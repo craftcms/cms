@@ -64,7 +64,6 @@ export default {
     getDeveloper(developerId, cb, errorCb) {
         let params = qs.stringify({
             developerId: developerId,
-            enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
         })
 
@@ -84,7 +83,6 @@ export default {
 
     getPluginStoreData(cb, errorCb) {
         let data = qs.stringify({
-            enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
         });
 
@@ -104,7 +102,6 @@ export default {
     getPluginDetails(pluginId, cb, errorCb) {
         let params = qs.stringify({
             pluginId: pluginId,
-            enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
         });
 

@@ -62,7 +62,6 @@ class PluginStoreController extends Controller
         $view->registerJsFile('https://js.stripe.com/v3/');
         $view->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
         $view->registerJs('window.stripeApiKey = "'.Craft::$app->getPluginStore()->stripeApiKey.'";', View::POS_BEGIN);
-        $view->registerJs('window.enableCraftId = "'.Craft::$app->getPluginStore()->enableCraftId.'";', View::POS_BEGIN);
         $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = '.Json::encode($cmsInfo).';', View::POS_BEGIN);
         $view->registerJs('window.allowUpdates = '.Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates).';', View::POS_BEGIN);
@@ -70,9 +69,7 @@ class PluginStoreController extends Controller
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
-        return $this->renderTemplate('plugin-store/_index', [
-            'enableCraftId' => Craft::$app->getPluginStore()->enableCraftId,
-        ]);
+        return $this->renderTemplate('plugin-store/_index');
     }
 
     /**

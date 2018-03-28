@@ -10,10 +10,6 @@ const getters = {
 
     pluginStoreData: state => state.data,
 
-    enableCraftId(state) {
-        return window.enableCraftId;
-    },
-
     pluginStoreGetAllCategories(state) {
         return state.data.categories;
     },
