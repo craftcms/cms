@@ -153,11 +153,11 @@
 				</form>
 				<template v-else>
 					<ul>
-						<li>{{ billing.businessName }}</li>
-						<li>{{ billing.businessTaxId }}</li>
-						<li>{{ billing.businessAddressLine1 }}</li>
-						<li>{{ billing.businessAddressLine2 }}</li>
-						<li><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
+						<li v-if="billing.businessName">{{ billing.businessName }}</li>
+						<li v-if="billing.businessTaxId">{{ billing.businessTaxId }}</li>
+						<li v-if="billing.businessAddressLine1">{{ billing.businessAddressLine1 }}</li>
+						<li v-if="billing.businessAddressLine2">{{ billing.businessAddressLine2 }}</li>
+						<li v-if="billing.businessCity || billing.businessState || billing.businessZipCode"><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
 						<li v-if="billingCountryName">{{ billingCountryName }}</li>
 					</ul>
 				</template>
