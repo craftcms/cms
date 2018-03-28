@@ -442,7 +442,7 @@ class Table extends Field
             'cols' => $this->columns,
             'rows' => $value,
             'static' => $static,
-            'addRowLabel' => $this->addRowLabel,
+            'addRowLabel' => Craft::t('site', $this->addRowLabel),
             'defaultValues' => [
                 'minRows' => $this->minRows ?: null,
                 'maxRows' => $this->maxRows ?: null,
