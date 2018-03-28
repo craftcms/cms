@@ -105,7 +105,7 @@ class FeedsService extends BaseApplicationComponent
 
 			if ($permalink)
 			{
-				$urlModel = new UrlModel();
+				$urlModel = new urlModel();
 				$urlModel->url = $item->get_permalink();
 
 				if (!$urlModel->validate())
