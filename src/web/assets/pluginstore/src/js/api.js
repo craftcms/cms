@@ -4,7 +4,11 @@ import qs from 'qs';
 export default {
 
     createCart(data, cb, errorCb) {
-        axios.post(Craft.getActionUrl('plugin-store/create-cart'), data)
+        axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 return cb(response.data);
             })
@@ -16,7 +20,11 @@ export default {
     updateCart(orderNumber, data, cb, errorCb) {
         data.orderNumber = orderNumber;
 
-        axios.post(Craft.getActionUrl('plugin-store/update-cart'), data)
+        axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 return cb(response.data);
             })
@@ -58,10 +66,13 @@ export default {
             developerId: developerId,
             enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
-            [Craft.csrfTokenName]: Craft.csrfTokenValue
         })
 
-        axios.post(Craft.getActionUrl('plugin-store/developer'), params)
+        axios.post(Craft.getActionUrl('plugin-store/developer'), params, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 let developer = response.data;
                 return cb(developer);
@@ -75,10 +86,13 @@ export default {
         let data = qs.stringify({
             enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
-            [Craft.csrfTokenName]: Craft.csrfTokenValue
         });
 
-        axios.post(Craft.getActionUrl('plugin-store/plugin-store-data'), data)
+        axios.post(Craft.getActionUrl('plugin-store/plugin-store-data'), data, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 return cb(response.data);
             })
@@ -92,10 +106,13 @@ export default {
             pluginId: pluginId,
             enableCraftId: window.enableCraftId,
             cms: window.cmsInfo,
-            [Craft.csrfTokenName]: Craft.csrfTokenValue
         });
 
-        axios.post(Craft.getActionUrl('plugin-store/plugin-details'), params)
+        axios.post(Craft.getActionUrl('plugin-store/plugin-details'), params, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 let pluginDetails = response.data;
                 return cb(pluginDetails);
@@ -117,7 +134,11 @@ export default {
     },
 
     checkout(data) {
-        return axios.post(Craft.getActionUrl('plugin-store/checkout'), data);
+        return axios.post(Craft.getActionUrl('plugin-store/checkout'), data, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        });
     },
 
 }
