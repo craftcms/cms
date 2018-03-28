@@ -394,6 +394,7 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 			if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId]))
 			{
 				$block = new MatrixBlockModel();
+				$block->postId  = $blockId;
 				$block->fieldId = $this->model->id;
 				$block->typeId  = $blockType->id;
 				$block->ownerId = $ownerId;

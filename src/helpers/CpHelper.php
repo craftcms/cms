@@ -74,22 +74,11 @@ class CpHelper
 				$licenseKeyPath = craft()->path->getLicenseKeyPath();
 				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
 
-				$message = Craft::t('The license located at {file} belongs to {domain}.', array(
-					'file'   => $licenseKeyFile,
-					'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-				));
-
-				// Can they actually do something about it?
-				if ($user->admin)
-				{
-					$action = '<a class="go domain-mismatch">'.Craft::t('Transfer it to this domain').'</a>';
-				}
-				else
-				{
-					$action = Craft::t('Please notify one of your site’s admins.');
-				}
-
-				$alerts[] = $message.' '.$action;
+				$alerts[] = Craft::t('The license located at {file} belongs to {domain}.', array(
+						'file' => $licenseKeyFile,
+						'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
+					)).
+					' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('Learn more').'</a>';
 			}
 		}
 

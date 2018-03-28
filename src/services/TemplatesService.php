@@ -1372,7 +1372,8 @@ class TemplatesService extends BaseApplicationComponent
 
 		if (PathHelper::ensurePathIsContained($name) === false)
 		{
-			throw new \Twig_Error_Loader(Craft::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
+		    Craft::log('Someone tried to load a template outside the templates folder: '. $name, LogLevel::Error);
+			throw new \Twig_Error_Loader(Craft::t('Looks like you try to load a template outside the template folder.'));
 		}
 	}
 

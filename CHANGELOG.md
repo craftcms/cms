@@ -2,7 +2,36 @@
 
 ## Unreleased
 
-## 2.6.3010 - 2018-02-21
+## Changed
+- The `preventUserEnumeration` config setting is now applied to locked user accounts.
+
+### Fixed
+- Fixed a bug where an exception could expose a partial server path in some circumstances.
+
+## 2.6.3013 - 2018-03-23
+
+### Removed
+- Removed support for transferring a Craft license to the current domain. (Domain transfers can be done from [Craft ID](https://id.craftcms.com) now.)
+- Removed support for transferring a Commerce license to the current Craft license, or unregistering a Commerce license from the current Craft license. (Plugin license registration can be done from [Craft ID](https://id.craftcms.com) now.)
+
+### Fixed
+- Fixed a PHP error that could occur on case-sensitive file systems when loading RSS feeds. ([#2514](https://github.com/craftcms/cms/pull/2514))
+- Fixed a PHP error that would occur when trying to use POP as an email protocol in Settings → Email in the Control Panel.
+- Fixed a PHP error that would occur when trying to delete an Asset with an ID that didn't exist.
+- Fixed a bug where any URL segments that only contained the number `0` were ignored, on paginated requests.
+
+## 2.6.3012 - 2018-02-27
+
+### Changed
+- Craft now throws an exception if it detects that a `max_input_vars` error occurred. ([#876](https://github.com/craftcms/cms/issues/876))
+- Improved styles to support 5 levels of nested user permissions. ([#2467](https://github.com/craftcms/cms/issues/2467))
+
+### Fixed
+- Fixed a bug where entry version data was not including newly-created Matrix block IDs, so they would be re-created from scratch when loading the version. ([#2498](https://github.com/craftcms/cms/issues/2498))
+- Fixed an error that could occur if an email template included any Twig filters with a single underscore.
+- Fixed a bug where lightswitch inputs could trigger a `change` event when they didn’t actually change. ([#2494](https://github.com/craftcms/cms/issues/2494))
+
+## 2.6.3011 - 2018-02-21
 
 ### Changed
 - Reverted the fix to ([#2433](https://github.com/craftcms/cms/issues/2433)) as it broke backwards compatibility.
