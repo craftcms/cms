@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Added
+- Assets now have a “Link” table attribute option.
+
 ## 3.0.0-RC17 - 2018-03-28
 
 ### Added
