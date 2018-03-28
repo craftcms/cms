@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC17 - 2018-03-28
 
 ### Added
 - Plugins can now specify a `minVersionRequired` public property, which will prevent the plugin from getting updated unless a minimum prior version had been installed.
