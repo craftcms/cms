@@ -21,9 +21,6 @@
 - Fixed a bug where available plugin updates weren’t getting reported in the Control Panel, and plugin installation counters weren’t getting updated in the Plugin Store. ([#2642](https://github.com/craftcms/cms/issues/2642))
 - Fixed a bug where Craft could consider HTML and JSON files to be manipulatable images.
 
-### Removed
-- Removed Asset `View asset` element action.
-
 ## 3.0.0-RC16.1 - 2018-03-25
 
 ### Fixed
