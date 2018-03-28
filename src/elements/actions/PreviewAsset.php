@@ -17,7 +17,7 @@ use craft\helpers\Json;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Preview extends ElementAction
+class PreviewAsset extends ElementAction
 {
     // Properties
     // =========================================================================

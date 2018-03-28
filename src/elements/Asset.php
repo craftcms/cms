@@ -19,7 +19,7 @@ use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
-use craft\elements\actions\Preview;
+use craft\elements\actions\PreviewAsset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetTransformException;
@@ -209,7 +209,7 @@ class Asset extends Element
 
             $actions[] = Craft::$app->getElements()->createAction(
                 [
-                    'type' => Preview::class,
+                    'type' => PreviewAsset::class,
                     'label' => Craft::t('app', 'Preview file'),
                 ]
             );
