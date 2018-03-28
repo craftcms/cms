@@ -390,7 +390,7 @@ class Api extends Component
         $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
             $handle = $plugin->getHandle();
-            $headers['X-Craft-System'] .= ",{$handle}:{$plugin->getVersion()}";
+            $headers['X-Craft-System'] .= ",plugin-{$handle}:{$plugin->getVersion()}";
             if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
                 $pluginLicenses[] = "{$handle}:{$licenseKey}";
             }

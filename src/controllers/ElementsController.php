@@ -257,20 +257,14 @@ class ElementsController extends BaseElementsController
         }
 
         // Instantiate the element
-        if ($elementId !== null) {
-            $element = $elementsService->getElementById($elementId, $elementType, $siteId);
-
-            if (!$element) {
-                throw new BadRequestHttpException('No element exists with the ID '.$elementId);
-            }
-        } else {
-            $element = new $elementType();
-        }
+        /** @var Element $element */
+        $attributes = $request->getBodyParam('attributes', []);
+        $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$siteId)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
@@ -295,22 +289,47 @@ class ElementsController extends BaseElementsController
             $siteId = $newSiteId;
 
             if ($elementId !== null) {
-                $element = $elementsService->getElementById($elementId, $elementType, $siteId);
+                $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
             } else {
                 $element->siteId = $siteId;
             }
         }
-
-        // Populate it with any posted attributes
-        $attributes = $request->getBodyParam('attributes', []);
-        $attributes['siteId'] = $siteId;
-        Craft::configure($element, $attributes);
 
         // Make sure it's editable
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
         if (!$element->getIsEditable()) {
             throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
         }
+
+        return $element;
+    }
+
+    /**
+     * Returns the editor element populated with the posted attributes.
+     *
+     * @param int|null $elementId
+     * @param string $elementType
+     * @param int $siteId
+     * @param array $attributes
+     * @return ElementInterface
+     * @throws BadRequestHttpException
+     */
+    private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
+    {
+        /** @var Element $element */
+        if ($elementId !== null) {
+            $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
+
+            if (!$element) {
+                throw new BadRequestHttpException('No element exists with the ID '.$elementId);
+            }
+        } else {
+            $element = new $elementType();
+        }
+
+        // Populate it with any posted attributes
+        Craft::configure($element, $attributes);
+        $element->siteId = $siteId;
 
         return $element;
     }

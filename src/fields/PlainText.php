@@ -43,6 +43,11 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $placeholder;
 
     /**
+     * @var bool Whether the input should use monospace font
+     */
+    public $code = false;
+
+    /**
      * @var bool Whether the input should allow line breaks
      */
     public $multiline = false;
