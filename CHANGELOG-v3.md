@@ -5,6 +5,12 @@
 ### Added
 - Assets now have a “Link” table attribute option.
 
+### Changed
+- Table fields’ Min Rows and Max Rows settings can now be set independently of each other.
+
+### Fixed
+- Fixed a JavaScript error that occurred when editing Table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
+
 ## 3.0.0-RC17 - 2018-03-28
 
 ### Added
