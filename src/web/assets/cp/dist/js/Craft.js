@@ -12577,11 +12577,6 @@ Craft.EditableTable = Garnish.Base.extend(
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
-            this.minRows = settings['defaultValues']['minRows'];
-            this.maxRows = settings['defaultValues']['maxRows'];
-
-            this.hasMinRows = this.minRows !== null;
-            this.hasMaxRows = this.maxRows !== null;
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
@@ -12599,13 +12594,11 @@ Craft.EditableTable = Garnish.Base.extend(
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
 
-            if (this.hasMinRows && this.rowCount < this.minRows) {
-                for (var i = 0; i < this.minRows; i++) {
+            if (this.settings.minRows && this.rowCount < this.settings.minRows) {
+                for (var i = 0; i < this.settings.minRows; i++) {
                     this.addRow()
                 }
             }
-
-            this.updateAddRowButton();
         },
 
         isVisible: function() {
@@ -12627,6 +12620,7 @@ Craft.EditableTable = Garnish.Base.extend(
             }
 
             this.$addRowBtn = this.$table.next('.add');
+            this.updateAddRowButton();
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
         initializeIfVisible: function() {
@@ -12639,8 +12633,10 @@ Craft.EditableTable = Garnish.Base.extend(
             }
         },
         updateAddRowButton: function() {
-            if ((this.hasMaxRows && this.rowCount >= this.maxRows) ||
-                (this.hasMinRows && this.rowCount < this.minRows)) {
+            if (
+                (this.settings.maxRows && this.rowCount >= this.settings.maxRows) ||
+                (this.settings.minRows && this.rowCount < this.settings.minRows)
+            ) {
                 this.$addRowBtn.css('opacity', '0.2');
                 this.$addRowBtn.css('pointer-events', 'none');
             } else {
@@ -12649,10 +12645,10 @@ Craft.EditableTable = Garnish.Base.extend(
             }
         },
         canDeleteRow: function() {
-            return (this.rowCount > this.minRows);
+            return (this.rowCount > this.settings.minRows);
         },
         deleteRow: function(row) {
-            if (this.hasMaxRows && this.hasMinRows) {
+            if (this.settings.maxRows && this.settings.minRows) {
                 if (!this.canDeleteRow()) {
                     return;
                 }
@@ -12661,7 +12657,7 @@ Craft.EditableTable = Garnish.Base.extend(
             this.sorter.removeItems(row.$tr);
             row.$tr.remove();
 
-            if (this.hasMinRows && this.hasMinRows) {
+            if (this.settings.minRows && this.settings.maxRows) {
                 this.rowCount--;
             }
 
@@ -12670,10 +12666,10 @@ Craft.EditableTable = Garnish.Base.extend(
             this.settings.onDeleteRow(row.$tr);
         },
         canAddRow: function() {
-            return (this.rowCount < this.maxRows);
+            return (this.rowCount < this.settings.maxRows);
         },
         addRow: function() {
-            if (this.hasMinRows && this.hasMaxRows) {
+            if (this.settings.minRows && this.settings.maxRows) {
                 if (!this.canAddRow()) {
                     return;
                 }
@@ -12705,6 +12701,8 @@ Craft.EditableTable = Garnish.Base.extend(
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
+            minRows: null,
+            maxRows: null,
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },
