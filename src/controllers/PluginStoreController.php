@@ -385,11 +385,13 @@ class PluginStoreController extends Controller
         $orderNumber = (isset($payload['orderNumber']) ? $payload['orderNumber'] : null);
         $token = (isset($payload['token']) ? $payload['token'] : null);
         $expectedPrice = (isset($payload['expectedPrice']) ? $payload['expectedPrice'] : null);
+        $makePrimary = (isset($payload['makePrimary']) ? $payload['makePrimary'] : false);
 
         $data = [
             'orderNumber' => $orderNumber,
             'token' => $token,
             'expectedPrice' => $expectedPrice,
+            'makePrimary' => $makePrimary,
         ];
 
         if($identityMode === 'craftid') {

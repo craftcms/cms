@@ -335,6 +335,7 @@
 						orderNumber: this.remoteCart.number,
 						token: cardToken,
 						expectedPrice: this.remoteCart.totalPrice,
+						makePrimary: this.replaceCard,
 					}
 
 					this.$store.dispatch('checkout', data)
