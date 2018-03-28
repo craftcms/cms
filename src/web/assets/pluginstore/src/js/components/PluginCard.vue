@@ -24,7 +24,6 @@
 
         props: ['plugin'],
 
-
         computed: {
 
             ...mapGetters({

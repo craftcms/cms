@@ -216,7 +216,6 @@ Garnish.$doc.ready(function() {
         },
 
         mounted() {
-
             this.pageTitle = this.$options.filters.t("Plugin Store", 'app');
             this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app');
 
