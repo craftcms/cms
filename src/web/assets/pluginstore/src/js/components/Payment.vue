@@ -118,7 +118,7 @@
 									<text-input placeholder="Business Name" id="business-name" v-model="billing.businessName" />
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId" />
+									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId" :error="billingErrors.businessTaxId" />
 								</div>
 							</div>
 						</div>
@@ -237,6 +237,10 @@
                 },
 
 				stateOptions: [],
+
+				billingErrors: {
+                    businessTaxId: false,
+				}
             }
         },
 
@@ -251,7 +255,11 @@
             }),
 
 			readyToPay() {
-                if(!this.activeSection && this.sectionValidates('identity') && this.sectionValidates('paymentMethod')) {
+                if(!this.activeSection
+					&& this.sectionValidates('identity')
+					&& this.sectionValidates('paymentMethod')
+					&& this.sectionValidates('billing')
+				) {
                     return true;
 				}
 
@@ -448,7 +456,9 @@
 			},
 
 			saveBilling() {
-              	this.activeSection = null;
+              	if(this.sectionValidates('billing')) {
+                    this.activeSection = null
+				}
 			},
 
             onCardFormSave(card, token) {
@@ -511,13 +521,35 @@
 							    break;
                         }
 					    break;
+
+					case 'billing':
+                        this.billingErrors.businessTaxId = false
+
+						const iso = this.billing.businessCountry
+
+                        if(!this.countries[iso]) {
+                            return true
+                        }
+
+                        const billingCountry = this.countries[iso]
+
+                        if (!billingCountry.euMember) {
+                            return true;
+						}
+
+						if (this.billing.businessTaxId) {
+                            return true
+						}
+
+                        this.billingErrors.businessTaxId = true
+						return false
 				}
 
 				return false;
 			},
 
             isSectionActive(section) {
-                if(this.activeSection == section) {
+                if(this.activeSection === section) {
 					return true;
 				}
 
