@@ -1,4 +1,4 @@
-/*!   - 2018-03-26 */
+/*!   - 2018-03-28 */
 (function($){
 
 /** global: Craft */
@@ -12565,22 +12565,20 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
-        maxRows: null,
-        minRows: null,
         rowCount: 0,
         hasMaxRows: false,
         hasMinRows: false,
 
         radioCheckboxes: null,
 
-        init: function(id, baseName, columns, settings, maxRows, minRows) {
+        init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
-            this.maxRows = maxRows;
-            this.minRows = minRows;
+            this.minRows = settings['defaultValues']['minRows'];
+            this.maxRows = settings['defaultValues']['maxRows'];
 
             this.hasMinRows = this.minRows !== null;
             this.hasMaxRows = this.maxRows !== null;
@@ -12675,8 +12673,10 @@ Craft.EditableTable = Garnish.Base.extend(
             return (this.rowCount < this.maxRows);
         },
         addRow: function() {
-            if (!this.canAddRow()) {
-                return;
+            if (this.hasMinRows && this.hasMaxRows) {
+                if (!this.canAddRow()) {
+                    return;
+                }
             }
 
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
