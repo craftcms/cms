@@ -14,15 +14,22 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             this.id = assetId;
 
             this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
+
+            this.base(this.$container, $.extend({
+                resizable: true
+            }, settings));
+
+            var containerHeight = this.updateSizeAndPosition._windowHeight * 0.66;
+            var containerWidth = Math.min(containerHeight / 3 * 4, this.updateSizeAndPosition._windowHeight - this.settings.minGutter * 2);
+            containerHeight = containerWidth / 4 * 3;
+
+            this._resizeContainer(containerWidth, containerHeight);
+
             this.$spinner = $('<div class="spinner big centeralign"></div>').appendTo(this.$container);
             var top = (this.$container.height() / 2 - this.$spinner.height() / 2) + 'px',
                 left = (this.$container.width() / 2 - this.$spinner.width() / 2) + 'px';
 
             this.$spinner.css({left: left, top: top, position: 'absolute'});
-
-            this.base(this.$container, $.extend({
-                resizable: true
-            }, settings));
 
             Craft.postActionRequest('assets/preview-file', {assetId: this.id}, function(response, textStatus) {
                 this.$container.removeClass('loading');
@@ -34,14 +41,17 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                         this.$container.append(response.modalHtml);
                         var $highlight = this.$container.find('.highlight');
 
-                        if ($highlight && $highlight.hasClass('json')) {
+                        if ($highlight.length && $highlight.hasClass('json')) {
                             var $target = $highlight.find('code');
 
                             $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
                         }
 
                         this.updateSizeAndPosition();
-                        Prism.highlightAll();
+
+                        if ($highlight.length) {
+                            Prism.highlightAll();
+                        }
                     } else {
                         alert(response.error);
 
@@ -81,25 +91,28 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     containerHeight = Math.round(Math.min(Math.max(200, containerWidth / imageRatio), this.updateSizeAndPosition._windowHeight - (this.settings.minGutter * 2)));
 
                 containerWidth = Math.round(containerHeight * imageRatio);
-
-                this.$container.css({
-                    'width': containerWidth,
-                    'min-width': containerWidth,
-                    'max-width': containerWidth,
-                    'height': containerHeight,
-                    'min-height': containerHeight,
-                    'max-height': containerHeight,
-                    'top': (this.updateSizeAndPosition._windowHeight - containerHeight) / 2,
-                    'left': (this.updateSizeAndPosition._windowWidth - containerWidth) / 2
-                });
+                this._resizeContainer(containerWidth, containerHeight);
 
                 $img.css({'width': containerWidth, 'height': containerHeight});
-            } else {
+            } else if (this.loaded) {
                 this.$container.find('.highlight')
                     .height(this.$container.height())
                     .width(this.$container.width())
                     .css({'overflow': 'auto'});
             }
+        },
+
+        _resizeContainer: function (containerWidth, containerHeight) {
+            this.$container.css({
+                'width': containerWidth,
+                'min-width': containerWidth,
+                'max-width': containerWidth,
+                'height': containerHeight,
+                'min-height': containerHeight,
+                'max-height': containerHeight,
+                'top': (this.updateSizeAndPosition._windowHeight - containerHeight) / 2,
+                'left': (this.updateSizeAndPosition._windowWidth - containerWidth) / 2
+            });
         }
     }
 );
