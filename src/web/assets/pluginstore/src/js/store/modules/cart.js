@@ -9,6 +9,7 @@ const state = {
     checkoutStatus: null,
     remoteCart: null,
     cartForm: null,
+    stripePublicKey: null,
 };
 
 /**
@@ -80,6 +81,10 @@ const getters = {
         })
 
         return cartItems
+    },
+
+    stripePublicKey(state) {
+        return state.stripePublicKey
     }
 
 };
@@ -248,6 +253,7 @@ const mutations = {
 
     [types.RECEIVE_CART](state, {response}) {
         state.remoteCart = response.cart
+        state.stripePublicKey = response.stripePublicKey
     },
 
     [types.RESET_CART](state) {

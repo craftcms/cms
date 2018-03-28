@@ -50,11 +50,6 @@ class PluginStore extends Component
      */
     public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
 
-    /**
-     * @var string Stripe API key
-     */
-    public $stripeApiKey;
-
     // Public Methods
     // =========================================================================
 

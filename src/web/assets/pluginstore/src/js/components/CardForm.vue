@@ -13,6 +13,8 @@
 
 
 <script>
+    import { mapGetters } from 'vuex'
+
     export default {
 
         props: ['loading'],
@@ -22,6 +24,13 @@
           	 	error: null,
 			};
 		},
+
+        computed: {
+
+            ...mapGetters({
+                stripePublicKey: 'stripePublicKey',
+            }),
+        },
 
         methods: {
 
@@ -49,7 +58,7 @@
         },
 
         mounted() {
-            this.stripe = Stripe(window.stripeApiKey);
+            this.stripe = Stripe(this.stripePublicKey);
             this.elements = this.stripe.elements({locale: 'en'});
             this.card = this.elements.create('card');
 
