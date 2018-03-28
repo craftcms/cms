@@ -1280,6 +1280,11 @@ class Asset extends Element
 
         if ($this->getSupportsPreview()) {
             $attributes['data-previewable-file'] = null;
+
+            if ($this->kind === self::KIND_IMAGE) {
+                $attributes['data-image-width'] = $this->width;
+                $attributes['data-image-height'] = $this->height;
+            }
         }
         return $attributes;
     }

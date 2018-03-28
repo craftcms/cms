@@ -15,6 +15,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
             this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
 
+            settings = $.extend(this.defaultSettings, settings);
             this.base(this.$container, $.extend({
                 resizable: true
             }, settings));
@@ -22,6 +23,13 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             var containerHeight = this.updateSizeAndPosition._windowHeight * 0.66;
             var containerWidth = Math.min(containerHeight / 3 * 4, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
             containerHeight = containerWidth / 4 * 3;
+
+            if (settings.startingWidth && settings.startingHeight) {
+                containerWidth =  Math.min(settings.startingWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
+                var ratio = settings.startingWidth / settings.startingHeight;
+                containerHeight = Math.min(containerWidth / ratio, this.updateSizeAndPosition._windowHeight - this.settings.minGutter * 2);
+                containerWidth = containerHeight * ratio;
+            }
 
             this._resizeContainer(containerWidth, containerHeight);
 
@@ -39,6 +47,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     if (response.success) {
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
+
                         var $highlight = this.$container.find('.highlight');
 
                         if ($highlight.length && $highlight.hasClass('json')) {
@@ -47,11 +56,16 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                             $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
                         }
 
-                        this.updateSizeAndPosition();
-
                         if ($highlight.length) {
                             Prism.highlightAll();
+                        } else {
+                            this.$container.find('img').css({
+                                width: containerWidth,
+                                height: containerHeight
+                            });
                         }
+
+                        this.updateSizeAndPosition();
                     } else {
                         alert(response.error);
 
@@ -73,14 +87,16 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                     desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
                     desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
                     width = Math.min(desiredWidth, maxWidth),
-                    height = Math.round(Math.min(desiredHeight, width / imageRatio));
+                    height = Math.round(Math.min(maxHeight, width / imageRatio));
 
                 width = Math.round(height * imageRatio);
 
                 $img.css({'width': width, 'height': height});
+                this._resizeContainer(width, height);
 
                 this.desiredWidth = width;
                 this.desiredHeight = height;
+
             }
 
             this.base();
@@ -113,6 +129,12 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                 'top': (this.updateSizeAndPosition._windowHeight - containerHeight) / 2,
                 'left': (this.updateSizeAndPosition._windowWidth - containerWidth) / 2
             });
+        }
+    },
+    {
+        defaultSettings: {
+            startingWidth: null,
+            startingHeight: null
         }
     }
 );

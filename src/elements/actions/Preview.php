@@ -69,7 +69,12 @@ class Preview extends ElementAction
         },
         activate: function(\$selectedItems)
         {
-             var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'));
+            var settings = {};
+            if (\$selectedItems.find('.element').data('image-width')) {
+                settings.startingWidth = \$selectedItems.find('.element').data('image-width');
+                settings.startingHeight = \$selectedItems.find('.element').data('image-height');
+            }
+            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), settings);
         }
     });
 })();
