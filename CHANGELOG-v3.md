@@ -4,19 +4,21 @@
 
 ### Added
 - Plugins can now specify a `minVersionRequired` public property, which will prevent the plugin from getting updated unless a minimum prior version had been installed.
-- Added a `Preview file` element action for assets.
-- Added `Prism` syntax highlighting library.
+- Added a “Preview file” action for assets, which replaces “View asset”.
+- Prism.js is now available to for Control Panel use.
+- Added `craft\elements\actions\PreviewAsset`.
+- Added `craft\web\assets\prismjs\PrismJsAsset`.
 
 ### Changed
-- Hardened against errors when deleting folders in Assets.
+- Improved defenses against errors when deleting asset folders.
 - Plain Text fields now have the option to be styled with a monospaced font. ([#2636](https://github.com/craftcms/cms/pull/2636))
 - `searchKeywords` is now a reserved field handle. ([#2645](https://github.com/craftcms/cms/issues/2645))
-- Craft will now never even consider HTML and JSON files to be manipulatable images, despite Imagick's best efforts.
 
 ### Fixed
 - Fixed issues that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 - Fixed an error that occurred on multi-site installs when creating a new entry from an entry selection modal, if the user didn’t have permission to edit the primary site. ([#2627](https://github.com/craftcms/cms/issues/2627))
-- Fixed a bug where available plugin updates weren’t getting reported in the Control Panel. ([#2642](https://github.com/craftcms/cms/issues/2642))
+- Fixed a bug where available plugin updates weren’t getting reported in the Control Panel, and plugin installation counters weren’t getting updated in the Plugin Store. ([#2642](https://github.com/craftcms/cms/issues/2642))
+- Fixed a bug where Craft could consider HTML and JSON files to be manipulatable images.
 
 ### Removed
 - Removed Asset `View asset` element action.
