@@ -37,6 +37,33 @@ $minLargeScreenWidth: 1824px;
   transform: translate(-50%, -50%);
 }
 
+.license-status {
+  &:before {
+    border: 1px solid;
+    border-radius: 9px;
+    width: 17px;
+    height: 17px;
+    line-height: 17px;
+    margin-right: 5px;
+  }
+
+  &.installed {
+    color: $successColor;
+
+    &:before {
+      border-color: $successColor;
+    }
+  }
+
+  &.licensed {
+    color: $noticeColor;
+
+    &:before {
+      border-color: $noticeColor;
+    }
+  }
+}
+
 
 /* Plugin Store actions */
 
@@ -593,6 +620,11 @@ ul.categories {
     .buttons {
       margin-top: 0;
       white-space: nowrap;
+
+      .license-status {
+        margin-top: 6px;
+        margin-right: 14px;
+      }
     }
   }
 
@@ -776,31 +808,6 @@ ul.categories {
       &.license-statuses td {
         padding-top: 0;
         padding-bottom: 14px;
-
-        .license-status:before {
-          border: 1px solid;
-          border-radius: 9px;
-          width: 17px;
-          height: 17px;
-          line-height: 17px;
-          margin-right: 5px;
-        }
-
-        .installed {
-          color: $successColor;
-
-          &:before {
-            border-color: $successColor;
-          }
-        }
-
-        .licensed {
-          color: $noticeColor;
-
-          &:before {
-            border-color: $noticeColor;
-          }
-        }
       }
     }
 

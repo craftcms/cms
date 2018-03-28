@@ -35,7 +35,13 @@ const getters = {
 
     states: state => {
         return state.craftData.states;
-    }
+    },
+
+    pluginHasLicenseKey(state) {
+        return pluginHandle => {
+            return state.craftData.installedPlugins.find(plugin => plugin.handle === pluginHandle && plugin.hasLicenseKey) ? true : false
+        };
+    },
 
 };
 
