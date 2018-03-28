@@ -158,7 +158,7 @@
 						<li>{{ billing.businessAddressLine1 }}</li>
 						<li>{{ billing.businessAddressLine2 }}</li>
 						<li><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
-						<li>{{ billing.businessCountry }}</li>
+						<li>{{ billingCountryName() }}</li>
 					</ul>
 				</template>
 			</div>
@@ -291,7 +291,7 @@
 
 			craftIdDataLoading() {
                 return this.$root.craftIdDataLoading;
-			}
+			},
 
         },
 
@@ -554,7 +554,19 @@
 				}
 
 				this.stateOptions = options
-			}
+			},
+
+            billingCountryName() {
+                if(!this.billing.businessCountry) {
+                    return
+                }
+
+                if(!this.countries[this.billing.businessCountry]) {
+                    return
+                }
+
+                return this.countries[this.billing.businessCountry].name
+            }
 
 		},
 
