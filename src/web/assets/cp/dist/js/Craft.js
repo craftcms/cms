@@ -16019,7 +16019,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             startingHeight: null
         }
     }
-
 );
 
 /** global: Craft */
