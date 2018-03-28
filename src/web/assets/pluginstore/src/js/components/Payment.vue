@@ -158,7 +158,7 @@
 						<li>{{ billing.businessAddressLine1 }}</li>
 						<li>{{ billing.businessAddressLine2 }}</li>
 						<li><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
-						<li>{{ billingCountryName() }}</li>
+						<li v-if="billingCountryName">{{ billingCountryName }}</li>
 					</ul>
 				</template>
 			</div>
@@ -293,6 +293,19 @@
                 return this.$root.craftIdDataLoading;
 			},
 
+            billingCountryName() {
+                const iso = this.billing.businessCountry
+
+				if (!iso) {
+                    return
+				}
+
+                if(!this.countries[iso]) {
+                    return
+                }
+
+                return this.countries[iso].name
+			}
         },
 
         watch: {
@@ -555,18 +568,6 @@
 
 				this.stateOptions = options
 			},
-
-            billingCountryName() {
-                if(!this.billing.businessCountry) {
-                    return
-                }
-
-                if(!this.countries[this.billing.businessCountry]) {
-                    return
-                }
-
-                return this.countries[this.billing.businessCountry].name
-            }
 
 		},
 
