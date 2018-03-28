@@ -4,9 +4,8 @@
 {%- set rows = rows ?? [] %}
 {%- set initJs = not static and (initJs ?? true) -%}
 
-
 <table id="{{ id }}" class="shadow-box editable"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+       {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
             {% for col in cols %}
