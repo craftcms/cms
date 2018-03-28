@@ -7,7 +7,7 @@ Vue.use(Vuex);
 
 const state = {
     checkoutStatus: null,
-    remoteCart: null,
+    cart: null,
     cartForm: null,
     stripePublicKey: null,
 };
@@ -25,13 +25,13 @@ const getters = {
 
     isInCart(state) {
         return plugin => {
-            return state.remoteCart.lineItems.find(lineItem => lineItem.purchasable.pluginId == plugin.id)
+            return state.cart.lineItems.find(lineItem => lineItem.purchasable.pluginId == plugin.id)
         }
     },
 
     cartTotal(state) {
-        if(state.remoteCart) {
-            return state.remoteCart.totalPrice;
+        if(state.cart) {
+            return state.cart.totalPrice;
         }
 
         return 0;
@@ -55,16 +55,16 @@ const getters = {
         });
     },
 
-    remoteCart(state) {
-        return state.remoteCart
+    cart(state) {
+        return state.cart
     },
 
     cartItems(state, rootState) {
-        if(!state.remoteCart || !rootState.pluginStoreData.plugins) {
+        if(!state.cart || !rootState.pluginStoreData.plugins) {
             return [];
         }
 
-        const lineItems = state.remoteCart.lineItems
+        const lineItems = state.cart.lineItems
 
         let cartItems = []
 
@@ -96,7 +96,7 @@ const actions = {
 
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
-            const cart = state.remoteCart
+            const cart = state.cart
             let items = utils.getCartItemsData(cart)
 
             newItems.forEach(newItem => {
@@ -122,7 +122,7 @@ const actions = {
 
     removeFromCart({commit, state}, lineItemKey) {
         return new Promise((resolve, reject) => {
-            const cart = state.remoteCart
+            const cart = state.cart
 
             let items = utils.getCartItemsData(cart)
             items.splice(lineItemKey, 1)
@@ -196,9 +196,9 @@ const actions = {
 
     saveCart({commit, state}, data) {
         return new Promise((resolve, reject) => {
-            const remoteCart = state.remoteCart
+            const cart = state.cart
 
-            api.updateCart(remoteCart.number, data, response => {
+            api.updateCart(cart.number, data, response => {
                 commit(types.RECEIVE_CART, {response})
                 resolve(response)
             }, response => {
@@ -223,8 +223,8 @@ const actions = {
 
     getOrderNumber({state}) {
         return new Promise((resolve, reject) => {
-            if (state.remoteCart && state.remoteCart.number) {
-                const orderNumber = state.remoteCart.number
+            if (state.cart && state.cart.number) {
+                const orderNumber = state.cart.number
                 resolve(orderNumber)
             } else {
                 api.getOrderNumber(orderNumber => {
@@ -252,12 +252,12 @@ const actions = {
 const mutations = {
 
     [types.RECEIVE_CART](state, {response}) {
-        state.remoteCart = response.cart
+        state.cart = response.cart
         state.stripePublicKey = response.stripePublicKey
     },
 
     [types.RESET_CART](state) {
-        state.remoteCart = null;
+        state.cart = null;
     },
 
     [types.CHECKOUT](state, {order}) {

@@ -2,7 +2,7 @@
     <div>
         <h2>{{ "Items in your cart"|t('app') }}</h2>
 
-        <template v-if="remoteCart">
+        <template v-if="cart">
             <template v-if="cartItems.length">
                 <table class="data fullwidth">
                     <thead>
@@ -43,7 +43,7 @@
                     </tr>
                     <tr>
                         <th class="rightalign" colspan="2">Total Price</th>
-                        <td class="rightalign"><strong>{{ remoteCart.totalPrice|currency }}</strong></td>
+                        <td class="rightalign"><strong>{{ cart.totalPrice|currency }}</strong></td>
                         <td class="thin"></td>
                     </tr>
                     </tbody>
@@ -111,7 +111,7 @@
                 isInTrial: 'isInTrial',
                 activeTrialPlugins: 'activeTrialPlugins',
                 cartTotal: 'cartTotal',
-                remoteCart: 'remoteCart',
+                cart: 'cart',
                 cartItems: 'cartItems',
                 craftData: 'craftData',
             }),
@@ -119,7 +119,7 @@
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if(p) {
-                        return !this.remoteCart.lineItems.find(item => {
+                        return !this.cart.lineItems.find(item => {
                             return item.purchasable.pluginId == p.id;
                         })
                     }

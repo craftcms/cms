@@ -251,7 +251,7 @@
                 craftIdAccount: 'craftIdAccount',
                 countries: 'countries',
                 states: 'states',
-                remoteCart: 'remoteCart',
+                cart: 'cart',
             }),
 
 			readyToPay() {
@@ -353,9 +353,9 @@
 
 					let data = {
 						identityMode: this.identityMode,
-						orderNumber: this.remoteCart.number,
+						orderNumber: this.cart.number,
 						token: cardToken,
-						expectedPrice: this.remoteCart.totalPrice,
+						expectedPrice: this.cart.totalPrice,
 						makePrimary: this.replaceCard,
 					}
 
@@ -608,9 +608,9 @@
 		},
 
 		created() {
-            this.guestIdentity.firstName = this.remoteCart.billingAddress.firstName;
-            this.guestIdentity.lastName = this.remoteCart.billingAddress.lastName;
-            this.guestIdentity.email = this.remoteCart.email;
+            this.guestIdentity.firstName = this.cart.billingAddress.firstName;
+            this.guestIdentity.lastName = this.cart.billingAddress.lastName;
+            this.guestIdentity.email = this.cart.email;
 		}
 
     }

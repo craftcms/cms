@@ -46,7 +46,7 @@ Garnish.$doc.ready(function() {
         computed: {
 
             ...mapGetters({
-                remoteCart: 'remoteCart',
+                cart: 'cart',
                 craftIdAccount: 'craftIdAccount',
             }),
 
@@ -54,11 +54,11 @@ Garnish.$doc.ready(function() {
 
         watch: {
 
-            remoteCart() {
+            cart() {
                 let totalQty = 0;
 
-                if(this.remoteCart) {
-                    totalQty = this.remoteCart.totalQty;
+                if(this.cart) {
+                    totalQty = this.cart.totalQty;
                 }
 
                 $('.badge', this.$cartButton).html(totalQty);
