@@ -441,10 +441,12 @@ class Table extends Field
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,
-            'maxRows' => $this->maxRows,
-            'minRows' => $this->minRows,
             'static' => $static,
-            'addRowLabel' => $this->addRowLabel,
+            'addRowLabel' => Craft::t('site', $this->addRowLabel),
+            'defaultValues' => [
+                'minRows' => $this->minRows ?: null,
+                'maxRows' => $this->maxRows ?: null,
+            ],
         ]);
     }
 }
