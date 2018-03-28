@@ -15902,7 +15902,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             }, settings));
 
             var containerHeight = this.updateSizeAndPosition._windowHeight * 0.66;
-            var containerWidth = Math.min(containerHeight / 3 * 4, this.updateSizeAndPosition._windowHeight - this.settings.minGutter * 2);
+            var containerWidth = Math.min(containerHeight / 3 * 4, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
             containerHeight = containerWidth / 4 * 3;
 
             this._resizeContainer(containerWidth, containerHeight);
