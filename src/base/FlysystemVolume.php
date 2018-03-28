@@ -272,7 +272,14 @@ abstract class FlysystemVolume extends Volume
 
         // The files are moved, but the directories remain. Delete them.
         foreach ($directoryList as $dir) {
-            $this->deleteDir($dir);
+            try {
+                $this->deleteDir($dir);
+            } catch (\Throwable $e) {
+                // This really varies between volume types and whether folders are virtual or real
+                // So just in case, catch the exception, log it and then move on
+                Craft::warning($e->getMessage());
+                continue;
+            }
         }
     }
 

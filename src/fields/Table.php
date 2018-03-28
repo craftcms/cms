@@ -42,6 +42,21 @@ class Table extends Field
     // =========================================================================
 
     /**
+     * @var string|null Custom add row button label
+     */
+    public $addRowLabel;
+
+    /**
+     * @var int|null Maximum number of Rows allowed
+     */
+    public $maxRows;
+
+    /**
+     * @var int|null Minimum number of Rows allowed
+     */
+    public $minRows;
+
+    /**
      * @var array|null The columns that should be shown in the table
      */
     public $columns;
@@ -66,6 +81,10 @@ class Table extends Field
     {
         parent::init();
 
+        if ($this->addRowLabel === null) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
+
         if ($this->defaults === '') {
             $this->defaults = [];
         }
@@ -80,6 +99,18 @@ class Table extends Field
                 }
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number'];
+        $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number'];
+        $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
+        return $rules;
     }
 
     /**
@@ -410,7 +441,12 @@ class Table extends Field
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,
-            'static' => $static
+            'static' => $static,
+            'addRowLabel' => Craft::t('site', $this->addRowLabel),
+            'defaultValues' => [
+                'minRows' => $this->minRows ?: null,
+                'maxRows' => $this->maxRows ?: null,
+            ],
         ]);
     }
 }

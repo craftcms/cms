@@ -762,11 +762,11 @@ class Search extends Component
 
         if ($cleanKeywordsLength > $maxSize) {
             // Time to truncate.
-            $cleanKeywords = strcut($cleanKeywords, 0, $maxSize);
+            $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxSize);
 
             // Make sure we don't cut off a word in the middle.
-            if ($cleanKeywords[strlen($cleanKeywords) - 1] !== ' ') {
-                $position = strrpos($cleanKeywords, ' ');
+            if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
+                $position = mb_strrpos($cleanKeywords, ' ');
 
                 if ($position) {
                     $cleanKeywords = substr($cleanKeywords, 0, $position + 1);

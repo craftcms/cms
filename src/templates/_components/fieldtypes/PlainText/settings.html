@@ -22,6 +22,12 @@
 }) }}
 
 {{ forms.checkboxField({
+    label: "Use a monospaced font"|t('app'),
+    name: 'code',
+    checked: field.code,
+}) }}
+
+{{ forms.checkboxField({
     label: "Allow line breaks"|t('app'),
     name: 'multiline',
     checked: field.multiline,

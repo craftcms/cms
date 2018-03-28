@@ -82,6 +82,28 @@ class Api extends Component
     }
 
     /**
+     * Returns all country data.
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getCountries(): array
+    {
+        $cacheKey = 'countryListData';
+        $cache = Craft::$app->getCache();
+
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
+        $response = $this->request('GET', 'countries');
+        $countries = Json::decode((string)$response->getBody());
+        $cache->set($cacheKey, $countries, 60 * 60 * 24 * 7);
+
+        return $countries;
+    }
+
+    /**
      * Returns plugins data for the Plugin Store.
      *
      * @return array
@@ -368,7 +390,7 @@ class Api extends Component
         $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
             $handle = $plugin->getHandle();
-            $headers['X-Craft-System'] .= ",{$handle}:{$plugin->getVersion()}";
+            $headers['X-Craft-System'] .= ",plugin-{$handle}:{$plugin->getVersion()}";
             if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
                 $pluginLicenses[] = "{$handle}:{$licenseKey}";
             }

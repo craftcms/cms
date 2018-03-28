@@ -1,4 +1,4 @@
-/*!   - 2018-03-18 */
+/*!   - 2018-03-28 */
 (function($){
 
 /** global: Craft */
@@ -12565,6 +12565,10 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
+        rowCount: 0,
+        hasMaxRows: false,
+        hasMinRows: false,
+
         radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
@@ -12573,9 +12577,15 @@ Craft.EditableTable = Garnish.Base.extend(
             this.columns = columns;
             this.setSettings(settings, Craft.EditableTable.defaults);
             this.radioCheckboxes = {};
+            this.minRows = settings['defaultValues']['minRows'];
+            this.maxRows = settings['defaultValues']['maxRows'];
+
+            this.hasMinRows = this.minRows !== null;
+            this.hasMaxRows = this.maxRows !== null;
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
+            this.rowCount = this.$tbody.find('tr').length;
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
@@ -12588,6 +12598,14 @@ Craft.EditableTable = Garnish.Base.extend(
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
+
+            if (this.hasMinRows && this.rowCount < this.minRows) {
+                for (var i = 0; i < this.minRows; i++) {
+                    this.addRow()
+                }
+            }
+
+            this.updateAddRowButton();
         },
 
         isVisible: function() {
@@ -12611,7 +12629,6 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$addRowBtn = this.$table.next('.add');
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
-
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
 
@@ -12621,8 +12638,47 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
+        updateAddRowButton: function() {
+            if ((this.hasMaxRows && this.rowCount >= this.maxRows) ||
+                (this.hasMinRows && this.rowCount < this.minRows)) {
+                this.$addRowBtn.css('opacity', '0.2');
+                this.$addRowBtn.css('pointer-events', 'none');
+            } else {
+                this.$addRowBtn.css('opacity', '1');
+                this.$addRowBtn.css('pointer-events', 'auto');
+            }
+        },
+        canDeleteRow: function() {
+            return (this.rowCount > this.minRows);
+        },
+        deleteRow: function(row) {
+            if (this.hasMaxRows && this.hasMinRows) {
+                if (!this.canDeleteRow()) {
+                    return;
+                }
+            }
 
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+
+            if (this.hasMinRows && this.hasMinRows) {
+                this.rowCount--;
+            }
+
+            this.updateAddRowButton();
+            // onDeleteRow callback
+            this.settings.onDeleteRow(row.$tr);
+        },
+        canAddRow: function() {
+            return (this.rowCount < this.maxRows);
+        },
         addRow: function() {
+            if (this.hasMinRows && this.hasMaxRows) {
+                if (!this.canAddRow()) {
+                    return;
+                }
+            }
+
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
@@ -12632,6 +12688,9 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
+
+            this.rowCount++;
+            this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -12946,11 +13005,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         deleteRow: function() {
-            this.table.sorter.removeItems(this.$tr);
-            this.$tr.remove();
-
-            // onDeleteRow callback
-            this.table.settings.onDeleteRow(this.$tr);
+            this.table.deleteRow(this);
         }
     },
     {
@@ -15879,6 +15934,147 @@ Craft.PasswordInput = Garnish.Base.extend(
             onToggleInput: $.noop
         }
     });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Preview File Modal
+ */
+Craft.PreviewFileModal = Garnish.Modal.extend(
+    {
+        id: null,
+        $spinner: null,
+        type: null,
+        loaded: null,
+
+        init: function(assetId, settings) {
+            this.id = assetId;
+
+            this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
+
+            settings = $.extend(this.defaultSettings, settings);
+            this.base(this.$container, $.extend({
+                resizable: true
+            }, settings));
+
+            var containerHeight = this.updateSizeAndPosition._windowHeight * 0.66;
+            var containerWidth = Math.min(containerHeight / 3 * 4, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
+            containerHeight = containerWidth / 4 * 3;
+
+            if (settings.startingWidth && settings.startingHeight) {
+                containerWidth =  Math.min(settings.startingWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
+                var ratio = settings.startingWidth / settings.startingHeight;
+                containerHeight = Math.min(containerWidth / ratio, this.updateSizeAndPosition._windowHeight - this.settings.minGutter * 2);
+                containerWidth = containerHeight * ratio;
+            }
+
+            this._resizeContainer(containerWidth, containerHeight);
+
+            this.$spinner = $('<div class="spinner big centeralign"></div>').appendTo(this.$container);
+            var top = (this.$container.height() / 2 - this.$spinner.height() / 2) + 'px',
+                left = (this.$container.width() / 2 - this.$spinner.width() / 2) + 'px';
+
+            this.$spinner.css({left: left, top: top, position: 'absolute'});
+
+            Craft.postActionRequest('assets/preview-file', {assetId: this.id}, function(response, textStatus) {
+                this.$container.removeClass('loading');
+                this.$spinner.remove();
+
+                if (textStatus === 'success') {
+                    if (response.success) {
+                        this.loaded = true;
+                        this.$container.append(response.modalHtml);
+
+                        var $highlight = this.$container.find('.highlight');
+
+                        if ($highlight.length && $highlight.hasClass('json')) {
+                            var $target = $highlight.find('code');
+
+                            $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
+                        }
+
+                        if ($highlight.length) {
+                            Prism.highlightAll();
+                        } else {
+                            this.$container.find('img').css({
+                                width: containerWidth,
+                                height: containerHeight
+                            });
+                        }
+
+                        this.updateSizeAndPosition();
+                    } else {
+                        alert(response.error);
+
+                        this.hide();
+                    }
+                }
+            }.bind(this));
+        },
+
+        updateSizeAndPosition: function() {
+            var $img = this.$container.find('img');
+
+            if (this.loaded && $img.length) {
+                // Make sure we maintain the ratio
+
+                var maxWidth = $img.data('maxwidth'),
+                    maxHeight = $img.data('maxheight'),
+                    imageRatio = maxWidth / maxHeight,
+                    desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
+                    desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
+                    width = Math.min(desiredWidth, maxWidth),
+                    height = Math.round(Math.min(maxHeight, width / imageRatio));
+
+                width = Math.round(height * imageRatio);
+
+                $img.css({'width': width, 'height': height});
+                this._resizeContainer(width, height);
+
+                this.desiredWidth = width;
+                this.desiredHeight = height;
+
+            }
+
+            this.base();
+
+            if (this.loaded && $img.length) {
+                // Correct anomalities
+                var containerWidth = Math.round(Math.min(Math.max(200, $img.height() * imageRatio), this.updateSizeAndPosition._windowWidth - (this.settings.minGutter * 2))),
+                    containerHeight = Math.round(Math.min(Math.max(200, containerWidth / imageRatio), this.updateSizeAndPosition._windowHeight - (this.settings.minGutter * 2)));
+
+                containerWidth = Math.round(containerHeight * imageRatio);
+                this._resizeContainer(containerWidth, containerHeight);
+
+                $img.css({'width': containerWidth, 'height': containerHeight});
+            } else if (this.loaded) {
+                this.$container.find('.highlight')
+                    .height(this.$container.height())
+                    .width(this.$container.width())
+                    .css({'overflow': 'auto'});
+            }
+        },
+
+        _resizeContainer: function (containerWidth, containerHeight) {
+            this.$container.css({
+                'width': containerWidth,
+                'min-width': containerWidth,
+                'max-width': containerWidth,
+                'height': containerHeight,
+                'min-height': containerHeight,
+                'max-height': containerHeight,
+                'top': (this.updateSizeAndPosition._windowHeight - containerHeight) / 2,
+                'left': (this.updateSizeAndPosition._windowWidth - containerWidth) / 2
+            });
+        }
+    },
+    {
+        defaultSettings: {
+            startingWidth: null,
+            startingHeight: null
+        }
+    }
+);
 
 /** global: Craft */
 /** global: Garnish */
