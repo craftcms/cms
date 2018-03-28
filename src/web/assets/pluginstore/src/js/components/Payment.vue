@@ -344,8 +344,11 @@
                             this.error = false;
                             // this.$root.lastOrder = order;
                             this.$root.modalStep = 'thankYou';
-
                             this.$store.dispatch('resetCart');
+
+                            if(this.replaceCard) {
+                                this.$store.dispatch('getCraftData');
+                            }
                         })
                         .catch(response => {
                             this.loading = false;
