@@ -5,6 +5,7 @@
 ### Added
 - Plugins can now specify a `minVersionRequired` public property, which will prevent the plugin from getting updated unless a minimum prior version had been installed.
 - Added a “Preview file” action for assets, which replaces “View asset”.
+- Table fields now have “Min Rows”, “Max Rows”, and “Add Row Label” settings. ([#2372](https://github.com/craftcms/cms/issues/2372))
 - Prism.js is now available to for Control Panel use.
 - Added `craft\elements\actions\PreviewAsset`.
 - Added `craft\web\assets\prismjs\PrismJsAsset`.
