@@ -30,6 +30,7 @@
 						<input type="submit" class="btn submit" value="Continue" />
 					</template>
 				</form>
+
 				<template v-else>
 					<div v-if="identityMode == 'craftid'">
 						<ul v-if="craftIdAccount">
