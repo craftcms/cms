@@ -523,26 +523,30 @@
 					    break;
 
 					case 'billing':
-                        this.billingErrors.businessTaxId = false
+						this.billingErrors.businessTaxId = false
+						this.billingErrors.businessState = false
 
 						const iso = this.billing.businessCountry
 
-                        if(!this.countries[iso]) {
-                            return true
-                        }
-
-                        const billingCountry = this.countries[iso]
-
-                        if (!billingCountry.euMember) {
-                            return true;
+						if(!this.countries[iso]) {
+							return true
 						}
 
-						if (this.billing.businessTaxId) {
-                            return true
+						const billingCountry = this.countries[iso]
+
+						if (billingCountry.euMember && !this.billing.businessTaxId) {
+							this.billingErrors.businessTaxId = true
 						}
 
-                        this.billingErrors.businessTaxId = true
-						return false
+						if (billingCountry.stateRequired && !this.billing.businessState) {
+							this.billingErrors.businessState = true
+						}
+
+						if (this.billingErrors.businessTaxId || this.billingErrors.businessState) {
+							return false
+						}
+						
+						return true
 				}
 
 				return false;
