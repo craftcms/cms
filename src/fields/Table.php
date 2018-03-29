@@ -113,12 +113,18 @@ class Table extends Field
         return $rules;
     }
 
-    public function hasMinRows()
+    /**
+     * @return bool whether minRows was set
+     */
+    public function hasMinRows(): bool
     {
         return $this->minRows;
     }
 
-    public function hasMaxRows()
+    /**
+     * @return bool whether maxRows was set
+     */
+    public function hasMaxRows(): bool
     {
         return $this->maxRows;
     }
