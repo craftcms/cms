@@ -290,16 +290,16 @@ const utils = {
                     lineItems.push({
                         type: lineItem.purchasable.type,
                         plugin: lineItem.purchasable.plugin.handle,
-                        autoRenew: true,
                         edition: lineItem.purchasable.handle,
+                        autoRenew: lineItem.options.autoRenew,
                     })
                     break;
                 case 'cms-edition':
                     lineItems.push({
                         type: lineItem.purchasable.type,
                         edition: lineItem.purchasable.handle,
-                        licenseKey: lineItem.cmsLicenseKey,
-                        autoRenew: true,
+                        licenseKey: lineItem.options.licenseKey,
+                        autoRenew: lineItem.options.autoRenew,
                     })
                     break;
             }
