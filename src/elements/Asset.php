@@ -1279,14 +1279,11 @@ class Asset extends Element
             $attributes['data-editable-image'] = null;
         }
 
-        if ($this->getSupportsPreview()) {
-            $attributes['data-previewable-file'] = null;
-
-            if ($this->kind === self::KIND_IMAGE) {
-                $attributes['data-image-width'] = $this->width;
-                $attributes['data-image-height'] = $this->height;
-            }
+        if ($this->kind === self::KIND_IMAGE) {
+            $attributes['data-image-width'] = $this->width;
+            $attributes['data-image-height'] = $this->height;
         }
+
         return $attributes;
     }
 

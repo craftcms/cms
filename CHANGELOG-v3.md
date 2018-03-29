@@ -8,6 +8,9 @@
 
 ### Changed
 - Table fields’ Min Rows and Max Rows settings can now be set independently of each other.
+- It's now possible to open asset preview with `Shift+Space` keyboard combination and navigate through assets with arrow keys.
+- Asset Preview modal is now available to asset field inputs as well as asset select modals.
+- Updated JavaScript dependencies.
 
 ### Fixed
 - Fixed a JavaScript error that occurred when editing Table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
