@@ -1,6 +1,6 @@
 # Craft CMS 3.0 Working Changelog
 
-## Unreleased
+## 3.0.0-RC17.1 - 2018-03-29
 
 ### Added
 - Added a `shift` + `spacebar` keyboard shortcut for opening asset previews, and arrow keys can be used to navigate between assets from the preview modal.
