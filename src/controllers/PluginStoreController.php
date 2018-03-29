@@ -241,6 +241,11 @@ class PluginStoreController extends Controller
         $data['installedPlugins'] = $installedPlugins;
 
 
+        // Current user
+
+        $data['currentUser'] = Craft::$app->getUser()->getIdentity();
+
+
         // Craft ID account
 
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();

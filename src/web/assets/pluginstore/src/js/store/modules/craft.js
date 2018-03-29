@@ -25,6 +25,10 @@ const getters = {
         })
     },
 
+    currentUser: state => {
+        return state.craftData.currentUser;
+    },
+
     craftIdAccount: state => {
         return state.craftData.craftId
     },

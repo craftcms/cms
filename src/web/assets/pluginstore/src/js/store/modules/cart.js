@@ -160,7 +160,7 @@ const actions = {
         })
     },
 
-    getCart({dispatch, commit}) {
+    getCart({dispatch, commit, rootState}) {
         return new Promise((resolve, reject) => {
             dispatch('getOrderNumber')
                 .then(orderNumber => {
@@ -173,13 +173,7 @@ const actions = {
                         })
                     } else {
                         const data = {
-                            email: 'ben@pixelandtonic.com',
-                            billingAddress: {
-                                firstName: 'Benjamin',
-                                lastName: 'David',
-                            },
-                            items: [],
-                            licenseKey: 'cmsLicenseKey',
+                            email: rootState.craft.craftData.currentUser.email,
                         }
 
                         api.createCart(data, response => {

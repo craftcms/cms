@@ -187,6 +187,8 @@ Garnish.$doc.ready(function() {
                     if(this.pluginStoreDataLoaded) {
                         this.$emit('allDataLoaded');
                     }
+
+                    this.$store.dispatch('getCart')
                 })
                 .catch(response => {
                     this.craftIdDataLoading = false;
@@ -211,8 +213,6 @@ Garnish.$doc.ready(function() {
                     this.pluginStoreDataError = true;
                     this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
                 });
-
-            this.$store.dispatch('getCart')
         },
 
         mounted() {
