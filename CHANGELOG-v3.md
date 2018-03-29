@@ -8,6 +8,7 @@
 
 ### Changed
 - Table fields’ Min Rows and Max Rows settings can now be set independently of each other.
+- Updated JavaScript dependencies.
 
 ### Fixed
 - Fixed a JavaScript error that occurred when editing Table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
