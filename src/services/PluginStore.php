@@ -147,7 +147,6 @@ class PluginStore extends Component
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
             $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
-            $oauthTokenRecord->refreshToken = $oauthToken->refreshToken;
             $oauthTokenRecord->save();
         }
     }
@@ -268,37 +267,5 @@ class PluginStore extends Component
         }
 
         return $record;
-    }
-
-
-    /**
-     * Save token to DB.
-     *
-     * @param CraftIdToken $token
-     * @return bool
-     */
-    private function _saveToken(CraftIdToken $token)
-    {
-        // is new ?
-        $isNewToken = !$token->id;
-
-        // populate record
-        $record = $this->_getOauthTokenRecordById($token->id);
-        $record->userId = $token->userId;
-        $record->accessToken = $token->accessToken;
-        $record->expiryDate = $token->expiryDate;
-        $record->refreshToken = $token->refreshToken;
-
-        // save record
-        if ($record->save(false)) {
-            // populate id
-            if ($isNewToken) {
-                $token->id = $record->id;
-            }
-
-            return true;
-        }
-
-        return false;
     }
 }
