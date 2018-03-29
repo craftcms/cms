@@ -273,7 +273,6 @@ const utils = {
                 lastName: cart.billingAddress.lastName,
             },
             items: [],
-            licenseKey: 'cmsLicenseKey',
         }
 
         data.items = this.getCartItemsData(cart);
