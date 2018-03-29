@@ -65,7 +65,7 @@ class PreviewAsset extends ElementAction
         {
             var \$element = \$selectedItems.find('.element');
 
-            return \$element.length === 1 && Garnish.hasAttr(\$selectedItems.find('.element'), 'data-previewable-file');
+            return \$element.length === 1;
         },
         activate: function(\$selectedItems)
         {
@@ -74,7 +74,7 @@ class PreviewAsset extends ElementAction
                 settings.startingWidth = \$selectedItems.find('.element').data('image-width');
                 settings.startingHeight = \$selectedItems.find('.element').data('image-height');
             }
-            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), settings);
+            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), \$selectedItems, settings);
         }
     });
 })();

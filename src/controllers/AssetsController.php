@@ -901,6 +901,7 @@ class AssetsController extends Controller
         $this->requireAcceptsJson();
 
         $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+        $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
 
         $asset = Asset::find()->id($assetId)->one();
 
@@ -938,6 +939,7 @@ class AssetsController extends Controller
         return $this->asJson([
             'success' => true,
             'modalHtml' => $modalHtml,
+            'requestId' => $requestId
         ]);
     }
 
