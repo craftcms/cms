@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed a JavaScript error that occurred when editing Table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
 - Fixed a database error that could occur when saving non-ASCII characters in a Plain Text field. ([#2650](https://github.com/craftcms/cms/issues/2650))
+- Fixed issues that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 
 ## 3.0.0-RC17 - 2018-03-28
 
