@@ -769,7 +769,7 @@ class Search extends Component
                 $position = mb_strrpos($cleanKeywords, ' ');
 
                 if ($position) {
-                    $cleanKeywords = substr($cleanKeywords, 0, $position + 1);
+                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
                 }
             }
         }

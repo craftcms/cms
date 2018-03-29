@@ -3,6 +3,8 @@
 {%- set cols = cols ?? [] %}
 {%- set rows = rows ?? [] %}
 {%- set initJs = not static and (initJs ?? true) -%}
+{%- set minRows = minRows ?? 'null' %}
+{%- set maxRows = maxRows ?? 'null' %}
 
 <table id="{{ id }}" class="shadow-box editable"
        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
@@ -103,7 +105,9 @@
     {% set defaultValues = defaultValues ?? null %}
     {% js %}
         new Craft.EditableTable("{{ jsId }}", "{{ jsName }}", {{ jsCols|raw }}, {
-            defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }}
+            defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }},
+            minRows: {{ minRows ? minRows : 'null' }},
+            maxRows: {{ maxRows ? maxRows : 'null' }}
         });
     {% endjs %}
 {% endif %}

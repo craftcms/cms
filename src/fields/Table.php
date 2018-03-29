@@ -107,10 +107,26 @@ class Table extends Field
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number'];
-        $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number'];
+        $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
+        $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
         return $rules;
+    }
+
+    /**
+     * @return bool whether minRows was set
+     */
+    public function hasMinRows(): bool
+    {
+        return $this->minRows;
+    }
+
+    /**
+     * @return bool whether maxRows was set
+     */
+    public function hasMaxRows(): bool
+    {
+        return $this->maxRows;
     }
 
     /**
@@ -441,12 +457,10 @@ class Table extends Field
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,
+            'minRows' => $this->minRows,
+            'maxRows' => $this->maxRows,
             'static' => $static,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
-            'defaultValues' => [
-                'minRows' => $this->minRows ?: null,
-                'maxRows' => $this->maxRows ?: null,
-            ],
         ]);
     }
 }

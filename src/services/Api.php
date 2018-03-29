@@ -11,6 +11,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
+use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -298,16 +299,23 @@ class Api extends Component
 
             $cache->set('licensedEdition', $licensedEdition, $duration);
         }
-        if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
-            $pluginsService = Craft::$app->getPlugins();
-            $pluginLicenseStatuses = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
 
-            foreach ($pluginLicenseStatuses as $info) {
+        $pluginLicenseStatuses = [];
+        $pluginsService = Craft::$app->getPlugins();
+        foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
+            $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
+        }
+        if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
+            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
+            foreach ($pluginLicenseInfo as $info) {
                 list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
-                try {
-                    $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
-                } catch (InvalidPluginException $pluginException) {
-                }
+                $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
+            }
+        }
+        foreach ($pluginLicenseStatuses as $pluginHandle => $pluginLicenseStatus) {
+            try {
+                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+            } catch (InvalidPluginException $pluginException) {
             }
         }
 

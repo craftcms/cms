@@ -299,6 +299,7 @@ class Asset extends Element
             'imageSize' => ['label' => Craft::t('app', 'Image Size')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
@@ -1278,14 +1279,11 @@ class Asset extends Element
             $attributes['data-editable-image'] = null;
         }
 
-        if ($this->getSupportsPreview()) {
-            $attributes['data-previewable-file'] = null;
-
-            if ($this->kind === self::KIND_IMAGE) {
-                $attributes['data-image-width'] = $this->width;
-                $attributes['data-image-height'] = $this->height;
-            }
+        if ($this->kind === self::KIND_IMAGE) {
+            $attributes['data-image-width'] = $this->width;
+            $attributes['data-image-height'] = $this->height;
         }
+
         return $attributes;
     }
 

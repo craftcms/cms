@@ -21,6 +21,8 @@
     <div class="btn add icon dashed">{{ selectionLabel }}</div>
 </div>
 
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+
 {% set jsSettings = {
     id: id|namespaceInputId,
     name: name|namespaceInputName,
