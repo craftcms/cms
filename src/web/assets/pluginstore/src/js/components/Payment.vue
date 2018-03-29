@@ -116,10 +116,10 @@
 						<div class="input">
 							<div class="multitext">
 								<div class="multitextrow">
-									<text-input placeholder="Business Name" id="business-name" v-model="billing.businessName" />
+									<text-input placeholder="Business Name" id="business-name" v-model="billingInfo.businessName" />
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId" :error="billingErrors.businessTaxId" />
+									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billingInfo.businessTaxId" :error="billingErrors.businessTaxId" />
 								</div>
 							</div>
 						</div>
@@ -129,22 +129,22 @@
 						<div class="input">
 							<div class="multitext">
 								<div class="multitextrow">
-									<text-input placeholder="Address Line 1" id="address-line-1" v-model="billing.businessAddressLine1" />
+									<text-input placeholder="Address Line 1" id="address-1" v-model="billingInfo.address1" />
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2" />
+									<text-input placeholder="Address Line 2" id="address-2" v-model="billingInfo.address2" />
 								</div>
 								<div class="multitextrow">
 									<div class="text">
-										<select-input v-model="billing.businessCountry" :options="countryOptions" @input="onCountryChange" />
+										<select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" />
 									</div>
 									<div class="text">
-										<select-input v-model="billing.businessState" :options="stateOptions" />
+										<select-input v-model="billingInfo.state" :options="stateOptions" />
 									</div>
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="City" id="businessCity" v-model="billing.businessCity" />
-									<text-input placeholder="Zip Code" id="zip-code" v-model="billing.businessZipCode" />
+									<text-input placeholder="City" id="city" v-model="billingInfo.city" />
+									<text-input placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" />
 								</div>
 							</div>
 						</div>
@@ -154,11 +154,11 @@
 				</form>
 				<template v-else>
 					<ul>
-						<li v-if="billing.businessName">{{ billing.businessName }}</li>
-						<li v-if="billing.businessTaxId">{{ billing.businessTaxId }}</li>
-						<li v-if="billing.businessAddressLine1">{{ billing.businessAddressLine1 }}</li>
-						<li v-if="billing.businessAddressLine2">{{ billing.businessAddressLine2 }}</li>
-						<li v-if="billing.businessCity || billing.businessState || billing.businessZipCode"><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
+						<li v-if="billingInfo.businessName">{{ billingInfo.businessName }}</li>
+						<li v-if="billingInfo.businessTaxId">{{ billingInfo.businessTaxId }}</li>
+						<li v-if="billingInfo.address1">{{ billingInfo.address1 }}</li>
+						<li v-if="billingInfo.address2">{{ billingInfo.address2 }}</li>
+						<li v-if="billingInfo.city || billingInfo.state || billingInfo.zipCode"><span v-if="billingInfo.city">{{ billingInfo.city }}, </span>{{ billingInfo.state }} {{ billingInfo.zipCode }}</li>
 						<li v-if="billingCountryName">{{ billingCountryName }}</li>
 					</ul>
 				</template>
@@ -188,7 +188,7 @@
     import SelectInput from './inputs/SelectInput';
     import CreditCard from './CreditCard';
     import CardForm from './CardForm';
-    import {mapGetters, mapActions} from 'vuex'
+    import {mapGetters} from 'vuex'
 
     export default {
         components: {
@@ -226,16 +226,16 @@
 				replaceCard: false,
 				paymentMethodLoading: false,
 
-                guestBilling: {
+				billingInfo: {
                     businessName: '',
                     businessTaxId: '',
-                    businessAddressLine1: '',
-                    businessAddressLine2: '',
-                    businessCountry: '',
-                    businessState: '',
-                    businessCity: '',
-                    businessZipCode: '',
-                },
+                    address1: '',
+                    address2: '',
+                    country: '',
+                    state: '',
+                    city: '',
+                    zipCode: '',
+				},
 
 				stateOptions: [],
 
@@ -267,22 +267,6 @@
 				return false;
 			},
 
-			billing() {
-                if(this.identityMode === 'craftid' && this.craftIdAccount) {
-					return {
-                        businessName: this.craftIdAccount.businessName,
-                        businessTaxId: this.craftIdAccount.businessTaxId,
-                        businessAddressLine1: this.craftIdAccount.businessAddressLine1,
-                        businessAddressLine2: this.craftIdAccount.businessAddressLine2,
-                        businessCountry: this.craftIdAccount.businessCountry,
-                        businessState: this.craftIdAccount.businessState,
-                        businessCity: this.craftIdAccount.businessCity,
-                        businessZipCode: this.craftIdAccount.businessZipCode,
-					}
-				}
-                return this.guestBilling;
-			},
-
 			countryOptions() {
                 let options = [];
 
@@ -303,7 +287,7 @@
 			},
 
             billingCountryName() {
-                const iso = this.billing.businessCountry
+                const iso = this.billingInfo.country
 
 				if (!iso) {
                     return
@@ -458,7 +442,30 @@
 
 			saveBilling() {
               	if(this.sectionValidates('billing')) {
-                    this.activeSection = null
+                    let data = {
+                        billingAddress: {
+                            businessName: this.billingInfo.businessName,
+                            businessTaxId: this.billingInfo.businessTaxId,
+                            address1: this.billingInfo.address1,
+                            address2: this.billingInfo.address2,
+                            country: this.billingInfo.country,
+                            state: this.billingInfo.state,
+                            city: this.billingInfo.city,
+                            zipCode: this.billingInfo.zipCode,
+                        },
+                    }
+
+                    if(this.identityMode === 'craftid') {
+						data.billingAddress.firstName = this.craftIdAccount.firstName
+						data.billingAddress.lastName = this.craftIdAccount.lastName
+                    } else if(this.identityMode === 'guest') {
+                        data.billingAddress.firstName = this.guestIdentity.firstName
+                        data.billingAddress.lastName = this.guestIdentity.lastName
+					}
+
+                    this.$store.dispatch('saveCart', data).then(() => {
+                        this.activeSection = null
+					})
 				}
 			},
 
@@ -525,9 +532,9 @@
 
 					case 'billing':
 						this.billingErrors.businessTaxId = false
-						this.billingErrors.businessState = false
+						this.billingErrors.state = false
 
-						const iso = this.billing.businessCountry
+						const iso = this.billingInfo.country
 
 						if(!this.countries[iso]) {
 							return true
@@ -535,15 +542,15 @@
 
 						const billingCountry = this.countries[iso]
 
-						if (billingCountry.euMember && !this.billing.businessTaxId) {
+						if (billingCountry.euMember && !this.billingInfo.businessTaxId) {
 							this.billingErrors.businessTaxId = true
 						}
 
-						if (billingCountry.stateRequired && !this.billing.businessState) {
-							this.billingErrors.businessState = true
+						if (billingCountry.stateRequired && !this.billingInfo.state) {
+							this.billingErrors.state = true
 						}
 
-						if (this.billingErrors.businessTaxId || this.billingErrors.businessState) {
+						if (this.billingErrors.businessTaxId || this.billingErrors.state) {
 							return false
 						}
 						
