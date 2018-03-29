@@ -30,6 +30,10 @@ class PluginsAsset extends AssetBundle
             'plugins.css',
         ];
 
+        $this->js = [
+            'PluginManager.js',
+        ];
+
         parent::init();
     }
 }

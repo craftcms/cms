@@ -456,6 +456,62 @@ class AppController extends Controller
         return $this->asJson(['success' => $success]);
     }
 
+    /**
+     * Fetches plugin license statuses.
+     *
+     * @return Response
+     */
+    public function actionGetPluginLicenseInfo(): Response
+    {
+        // Update our records
+        Craft::$app->getApi()->getLicenseInfo();
+
+        // Return the new plugin license info
+        $info = Craft::$app->getPlugins()->getAllPluginInfo();
+        $result = [];
+        foreach ($info as $handle => $pluginInfo) {
+            $result[$handle] = [
+                'licenseKey' => $pluginInfo['licenseKey'],
+                'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
+                'hasIssues' => $pluginInfo['hasIssues'],
+                'licenseStatusMessage' => $pluginInfo['licenseStatusMessage'],
+            ];
+        }
+        return $this->asJson($result);
+    }
+
+    /**
+     * Updates a plugin's license key.
+     *
+     * @return Response
+     */
+    public function actionUpdatePluginLicense(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireAdmin();
+
+        $request = Craft::$app->getRequest();
+        $handle = $request->getRequiredBodyParam('handle');
+        $newKey = $request->getRequiredBodyParam('key');
+
+        // Get the current key and set the new one
+        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService->setPluginLicenseKey($handle, $newKey ?: null);
+
+        // Update the status
+        Craft::$app->getApi()->getLicenseInfo();
+
+        // Return the new plugin license info
+        $info = $pluginsService->getPluginInfo($handle);
+        return $this->asJson([
+            'licenseKey' => $info['licenseKey'],
+            'licenseKeyStatus' => $info['licenseKeyStatus'],
+            'hasIssues' => $info['hasIssues'],
+            'licenseStatusMessage' => $info['licenseStatusMessage'],
+        ]);
+    }
+
     // Private Methods
     // =========================================================================
 
