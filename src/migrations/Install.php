@@ -434,7 +434,7 @@ class Install extends Migration
             'version' => $this->string()->notNull(),
             'schemaVersion' => $this->string()->notNull(),
             'licenseKey' => $this->char(24),
-            'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
+            'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'astray', 'unknown'])->notNull()->defaultValue('unknown'),
             'enabled' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),

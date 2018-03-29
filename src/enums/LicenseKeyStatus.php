@@ -23,5 +23,6 @@ abstract class LicenseKeyStatus
     const Valid = 'valid';
     const Invalid = 'invalid';
     const Mismatched = 'mismatched';
+    const Astray = 'astray';
     const Unknown = 'unknown';
 }

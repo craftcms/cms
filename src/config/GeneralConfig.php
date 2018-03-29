@@ -595,7 +595,7 @@ class GeneralConfig extends BaseObject
      */
     public $usePathInfo = false;
     /**
-     * @var bool|string Determines whether Craft will set the "secure" flag when saving cookies when calling `craft()->userSession->saveCookie()`.
+     * @var bool|string Determines whether Craft will set the "secure" flag when saving cookies when using `Craft::cookieConfig() to create a cookie`.
      * Valid values are `true`, `false`, and `'auto'`. Defaults to `'auto'`, which will set the secure flag if the page
      * you're currently accessing is over `https://`. `true` will always set the flag, regardless of protocol and `false`
      * will never automatically set the flag.

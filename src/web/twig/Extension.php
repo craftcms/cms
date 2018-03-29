@@ -863,6 +863,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
+            'SORT_REGULAR' => SORT_REGULAR,
+            'SORT_NUMERIC' => SORT_NUMERIC,
+            'SORT_STRING' => SORT_STRING,
+            'SORT_LOCALE_STRING' => SORT_LOCALE_STRING,
+            'SORT_NATURAL' => SORT_NATURAL,
+            'SORT_FLAG_CASE' => SORT_FLAG_CASE,
             'POS_HEAD' => View::POS_HEAD,
             'POS_BEGIN' => View::POS_BEGIN,
             'POS_END' => View::POS_END,
