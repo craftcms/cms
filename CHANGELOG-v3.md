@@ -4,6 +4,7 @@
 
 ### Added
 - Assets now have a “Link” table attribute option.
+- Added the `SORT_REGULAR`, `SORT_NUMERIC`, `SORT_STRING`, `SORT_LOCALE_STRING`, `SORT_NATURAL`, and `SORT_FLAG_CASE` global template variables.
 
 ### Changed
 - Table fields’ Min Rows and Max Rows settings can now be set independently of each other.
