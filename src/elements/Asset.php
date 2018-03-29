@@ -19,7 +19,7 @@ use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
-use craft\elements\actions\View;
+use craft\elements\actions\PreviewAsset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetTransformException;
@@ -207,15 +207,12 @@ class Asset extends Element
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
-            // View for public URLs
-            if ($volume->hasUrls) {
-                $actions[] = Craft::$app->getElements()->createAction(
-                    [
-                        'type' => View::class,
-                        'label' => Craft::t('app', 'View asset'),
-                    ]
-                );
-            }
+            $actions[] = Craft::$app->getElements()->createAction(
+                [
+                    'type' => PreviewAsset::class,
+                    'label' => Craft::t('app', 'Preview file'),
+                ]
+            );
 
             // Download
             $actions[] = DownloadAssetFile::class;
@@ -302,6 +299,7 @@ class Asset extends Element
             'imageSize' => ['label' => Craft::t('app', 'Image Size')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
@@ -931,6 +929,16 @@ class Asset extends Element
     }
 
     /**
+     * Returns whether this asset can be previewed.
+     *
+     * @return bool
+     */
+    public function getSupportsPreview(): bool
+    {
+        return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
+    }
+
+    /**
      * Returns whether a user-defined focal point is set on the asset.
      *
      * @return bool
@@ -1271,6 +1279,14 @@ class Asset extends Element
             $attributes['data-editable-image'] = null;
         }
 
+        if ($this->getSupportsPreview()) {
+            $attributes['data-previewable-file'] = null;
+
+            if ($this->kind === self::KIND_IMAGE) {
+                $attributes['data-image-width'] = $this->width;
+                $attributes['data-image-height'] = $this->height;
+            }
+        }
         return $attributes;
     }
 
