@@ -3,17 +3,17 @@
 ## Unreleased
 
 ### Added
+- Added a `shift` + `spacebar` keyboard shortcut for opening asset previews, and arrow keys can be used to navigate between assets from the preview modal.
+- Asset previews are now available in asset selection modals and Assets fields, via the `shift` + `spacebar` shortcut.
 - Assets now have a “Link” table attribute option.
 - Added the `SORT_REGULAR`, `SORT_NUMERIC`, `SORT_STRING`, `SORT_LOCALE_STRING`, `SORT_NATURAL`, and `SORT_FLAG_CASE` global template variables.
 
 ### Changed
 - Table fields’ Min Rows and Max Rows settings can now be set independently of each other.
-- It's now possible to open asset preview with `Shift+Space` keyboard combination and navigate through assets with arrow keys.
-- Asset Preview modal is now available to asset field inputs as well as asset select modals.
 - Updated JavaScript dependencies.
 
 ### Fixed
-- Fixed a JavaScript error that occurred when editing Table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
+- Fixed JavaScript errors that occurred when working with most editable table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
 - Fixed a database error that could occur when saving non-ASCII characters in a Plain Text field. ([#2650](https://github.com/craftcms/cms/issues/2650))
 - Fixed issues that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 
