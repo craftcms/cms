@@ -3,7 +3,6 @@ import * as types from '../mutation-types'
 
 const state = {
     craftData: {},
-    // installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
 };
 
 const getters = {
