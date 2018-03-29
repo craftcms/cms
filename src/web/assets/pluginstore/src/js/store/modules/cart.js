@@ -290,8 +290,8 @@ const utils = {
                     lineItems.push({
                         type: lineItem.purchasable.type,
                         plugin: lineItem.purchasable.plugin.handle,
-                        edition: 'standard',
                         autoRenew: true,
+                        edition: lineItem.purchasable.handle,
                     })
                     break;
                 case 'cms-edition':

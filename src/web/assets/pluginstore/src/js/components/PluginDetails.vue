@@ -197,7 +197,7 @@
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
-                    edition: 'standard',
+                    edition: plugin.editions[0].handle,
                     autoRenew: true,
                 }
 

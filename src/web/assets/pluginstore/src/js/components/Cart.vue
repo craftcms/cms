@@ -138,7 +138,7 @@
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
-                    edition: 'standard',
+                    edition: plugin.editions[0].handle,
                     autoRenew: true,
                 }
 
@@ -153,7 +153,7 @@
                     items.push({
                         type: 'plugin-edition',
                         plugin: activeTrialPlugin.handle,
-                        edition: 'standard',
+                        edition: activeTrialPlugin.editions[0].handle,
                         autoRenew: true,
                     })
                 })
