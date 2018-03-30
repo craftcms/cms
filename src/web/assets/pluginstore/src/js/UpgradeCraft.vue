@@ -138,7 +138,14 @@
             },
 
             installCraft(edition) {
-                console.log('install craft '+edition);
+                axios.post(Craft.getActionUrl('app/try-edition'), 'edition='+edition, {
+                        headers: {
+                            'X-CSRF-Token':  Craft.csrfTokenValue,
+                        }
+                    })
+                    .then(response => {
+                        console.log('upgradeded to craft '+edition);
+                    });
             },
 
         },

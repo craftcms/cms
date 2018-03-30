@@ -410,7 +410,7 @@ class AppController extends Controller
      * @return Response
      * @throws BadRequestHttpException if Craft isn’t allowed to test edition upgrades
      */
-    public function actionTestUpgrade(): Response
+    public function actionTryEdition(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -421,6 +421,20 @@ class AppController extends Controller
 
         if ($licensedEdition === null) {
             $licensedEdition = 0;
+        }
+
+        switch ($edition) {
+            case 'personal':
+                $edition = Craft::Personal;
+                break;
+            case 'client':
+                $edition = Craft::Client;
+                break;
+            case 'pro':
+                $edition = Craft::Pro;
+                break;
+            default:
+                throw new BadRequestHttpException('Invalid Craft edition: '.$edition);
         }
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
