@@ -4,6 +4,10 @@
 
 ### Changed
 - Improved asset preview file modal UX.
+- Craft will now throw an exception if the `defaultCpLanguage` config setting is set to an unsupported language ID.
+
+### Fixed
+- Fixed a bug where users’ Language preference would get set to German if the `defaultCpLanguage` config setting wasn’t set in the `xx-XX` format.
 
 ## 3.0.0-RC17.1 - 2018-03-29
 
