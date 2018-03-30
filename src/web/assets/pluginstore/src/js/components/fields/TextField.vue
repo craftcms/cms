@@ -4,7 +4,7 @@
             <label :id="id+'-label'" :for="id">{{ label }}</label>
         </div>
         <div class="input ltr" :class="{'errors': errors }">
-            <text-input :id="id" :placeholder="placeholder" :value="value" @input="$emit('input', $event)" />
+            <text-input :id="id" :placeholder="placeholder" :value="value" @input="$emit('input', $event)" :size="size" />
         </div>
     </div>
 </template>
@@ -14,7 +14,7 @@
 
     export default {
 
-        props: ['label', 'id', 'placeholder', 'value', 'errors'],
+        props: ['label', 'id', 'placeholder', 'value', 'errors', 'size'],
 
         components: {
             TextInput,

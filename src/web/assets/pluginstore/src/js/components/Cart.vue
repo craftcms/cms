@@ -49,8 +49,6 @@
                     </tbody>
                 </table>
 
-                <p>Renew for 3 years and save $XX.00</p>
-
                 <p><a @click="payment()" class="btn submit">{{ "Process My Order"|t('app') }}</a></p>
             </template>
 
@@ -114,6 +112,7 @@
                 cart: 'cart',
                 cartItems: 'cartItems',
                 craftData: 'craftData',
+                craftIdAccount: 'craftIdAccount',
             }),
 
             pendingActiveTrials() {
@@ -162,7 +161,11 @@
             },
 
             payment() {
-                this.$root.openGlobalModal('payment');
+                if(this.craftIdAccount) {
+                    this.$root.openGlobalModal('payment');
+                } else {
+                    this.$root.openGlobalModal('identity');
+                }
             }
 
         },

@@ -2,11 +2,6 @@
 	<form class="stripe-card-form" @submit.prevent="save()">
 		<div ref="cardElement" class="stripe-card" :class="{ error: error }"></div>
 		<p v-if="error" class="error">{{ error }}</p>
-
-		<!--
-		<input type="submit" class="btn btn-primary" value="Save"></input>
-		<button type="button" class="btn btn-secondary" @click="cancel()">Cancel</button>
-		-->
 		<div class="spinner" v-if="loading"></div>
 	</form>
 </template>
@@ -34,24 +29,26 @@
 
         methods: {
 
-            save() {
+            save(cb, cbError) {
+                this.error = null
                 this.$emit('beforeSave');
                 let vm = this;
-                this.stripe.createSource(this.card).then(result => {
-                    if (result.error) {
-                        vm.error = result.error.message;
-                        vm.$emit('error', result.error);
-                    } else {
-                        vm.$emit('save', vm.card, result.source);
-                    }
-                });
+                this.stripe.createSource(this.card)
+					.then(result => {
+						if (result.error) {
+							vm.error = result.error.message;
+							vm.$emit('error', result.error);
+							cbError();
+						} else {
+							vm.$emit('save', vm.card, result.source);
+							cb();
+						}
+					});
             },
 
             cancel() {
                 this.card.clear();
-
                 this.error = null;
-
                 this.$emit('cancel');
             }
 

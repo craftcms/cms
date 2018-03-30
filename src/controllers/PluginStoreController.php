@@ -301,6 +301,7 @@ class PluginStoreController extends Controller
         // Craft logo
 
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
+        $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/powered_by_stripe.svg');
 
         return $this->asJson($data);
     }
@@ -385,7 +386,7 @@ class PluginStoreController extends Controller
     {
         $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
 
-        $identityMode = (isset($payload['identityMode']) ? $payload['identityMode'] : null);
+        $craftId = (isset($payload['craftId']) ? $payload['craftId'] : false);
         $orderNumber = (isset($payload['orderNumber']) ? $payload['orderNumber'] : null);
         $token = (isset($payload['token']) ? $payload['token'] : null);
         $expectedPrice = (isset($payload['expectedPrice']) ? $payload['expectedPrice'] : null);
@@ -398,7 +399,7 @@ class PluginStoreController extends Controller
             'makePrimary' => $makePrimary,
         ];
 
-        if($identityMode === 'craftid') {
+        if($craftId) {
             $craftIdToken = Craft::$app->getPluginStore()->getToken();
             $response = Craft::$app->getApi()->checkout($data, $craftIdToken);
         } else {

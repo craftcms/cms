@@ -517,13 +517,16 @@ ul.categories {
 
 /* Payment */
 
-.block {
-  position: relative;
+.payment {
+  .blocks {
+    display: flex;
+    margin: 0 -20px;
 
-  .block-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
+    .block {
+      flex-grow: 1;
+      padding: 0 20px;
+      width: 50%;
+    }
   }
 }
 

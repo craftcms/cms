@@ -10,12 +10,17 @@ const state = {
     cart: null,
     cartForm: null,
     stripePublicKey: null,
+    identityMode: 'craftid',
 };
 
 /**
  * Getters
  */
 const getters = {
+
+    identityMode(state) {
+        return state.identityMode
+    },
 
     isInTrial(state, rootState) {
         return plugin => {
@@ -93,6 +98,10 @@ const getters = {
  * Actions
  */
 const actions = {
+
+    setIdentityMode({commit}, mode) {
+        commit(types.CHANGE_IDENTITY_MODE, {mode})
+    },
 
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
@@ -257,6 +266,10 @@ const mutations = {
     [types.CHECKOUT](state, {order}) {
 
     },
+
+    [types.CHANGE_IDENTITY_MODE](state, mode) {
+        state.identityMode = mode
+    }
 
 };
 
