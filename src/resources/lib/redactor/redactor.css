@@ -217,6 +217,24 @@
 .redactor-in:focus {
   outline: none; }
 
+.redactor-in h1:empty,
+.redactor-in h2:empty,
+.redactor-in h3:empty,
+.redactor-in h4:empty,
+.redactor-in h5:empty,
+.redactor-in h6:empty,
+.redactor-in p:empty,
+.redactor-in blockquote:empty {
+  min-height: 24px; }
+
+.redactor-in strong:empty, .redactor-in b:empty, .redactor-in em:empty, .redactor-in i:empty, .redactor-in sup:empty, .redactor-in sub:empty, .redactor-in u:empty, .redactor-in ins:empty {
+  display: inline-block;
+  min-width: 1px;
+  min-height: 1rem; }
+
+.redactor-in table {
+  empty-cells: show; }
+
 .redactor-scrollbar-measure {
   position: absolute;
   top: -9999px;
@@ -963,13 +981,6 @@
     margin: 0;
     padding: 0;
     margin-bottom: 12px; }
-    .redactor-styles h1:empty,
-    .redactor-styles h2:empty,
-    .redactor-styles h3:empty,
-    .redactor-styles h4:empty,
-    .redactor-styles h5:empty,
-    .redactor-styles h6:empty {
-      min-height: 24px; }
   .redactor-styles h1 {
     font-size: 40px;
     line-height: 44px; }
@@ -1000,9 +1011,6 @@
   .redactor-styles address {
     padding: 0;
     margin: 0; }
-  .redactor-styles p:empty,
-  .redactor-styles blockquote:empty {
-    min-height: 24px; }
   .redactor-styles p + h2,
   .redactor-styles p + h3,
   .redactor-styles p + h4,
@@ -1121,10 +1129,6 @@
     top: -.4rem; }
   .redactor-styles sub {
     bottom: -.2rem; }
-  .redactor-styles strong:empty, .redactor-styles b:empty, .redactor-styles em:empty, .redactor-styles i:empty, .redactor-styles sup:empty, .redactor-styles sub:empty, .redactor-styles u:empty, .redactor-styles ins:empty {
-    display: inline-block;
-    min-width: 1px;
-    min-height: 1rem; }
   .redactor-styles figcaption {
     margin: 4px 0;
     font-size: 12px;
@@ -1206,8 +1210,7 @@
   .redactor-styles table {
     border-collapse: collapse;
     max-width: 100%;
-    width: 100%;
-    empty-cells: show; }
+    width: 100%; }
     .redactor-styles table caption {
       text-transform: uppercase;
       padding: 0;

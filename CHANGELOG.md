@@ -4,6 +4,7 @@
 
 ## Changed
 - The `preventUserEnumeration` config setting is now applied to locked user accounts.
+- Updated Redactor to 2.12.
 
 ### Fixed
 - Fixed a bug where an exception could expose a partial server path in some circumstances.
