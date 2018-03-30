@@ -134,8 +134,6 @@ class RichTextFieldType extends BaseFieldType
 			'redactorLang'    => static::$_redactorLang,
 		);
 
-		$settings['redactorConfig']['toolbarFixed'] = false;
-
 		if (isset($this->model) && $this->model->translatable)
 		{
 			// Explicitly set the text direction

@@ -123,6 +123,14 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 	initRedactor: function()
 	{
+		if (this.redactorConfig.toolbarFixed) {
+			// Set the toolbarFixedTarget depending on the context
+			var target = this.$textarea.closest('.lp-editor');
+			if (target.length) {
+				this.redactorConfig.toolbarFixedTarget = target;
+			}
+		}
+
 		Craft.RichTextInput.currentInstance = this;
 		this.$textarea.redactor(this.redactorConfig);
 		delete Craft.RichTextInput.currentInstance;

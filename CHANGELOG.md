@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where an exception could expose a partial server path in some circumstances.
+- Fixed a bug where Rich Text fields weren’t respecting the `toolbarFixed` Redactor config option.
 
 ## 2.6.3013 - 2018-03-23
 
