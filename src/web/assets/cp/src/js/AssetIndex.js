@@ -945,6 +945,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
+        /**
+         * Do the after-update initializations
+         * @private
+         */
         _onUpdateElements: function(append, $newElements) {
             if (this.settings.context === 'index') {
                 if (!append) {
@@ -967,6 +971,53 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
 
             this.base(append, $newElements);
+
+            this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
+            this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+        },
+
+        /**
+         * Handle a keypress
+         * @private
+         */
+        _onKeyDown: function(ev) {
+            if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+                var $element = this.view.elementSelect.$focusedItem.find('.element');
+
+                if ($element.length) {
+                    this._loadPreview($element);
+                    ev.stopPropagation();
+
+                    return false;
+                }
+            }
+        },
+
+        /**
+         * Handle element being focused
+         * @private
+         */
+        _onElementFocus: function (ev) {
+            var $element = $(ev.item).find('.element');
+
+            if (Craft.PreviewFileModal.openInstance && $element.length) {
+                this._loadPreview($element);
+            }
+        },
+
+        /**
+         * Load the preview for an Asset element
+         * @private
+         */
+        _loadPreview: function($element) {
+            var settings = {};
+
+            if ($element.data('image-width')) {
+                settings.startingWidth = $element.data('image-width');
+                settings.startingHeight = $element.data('image-height');
+            }
+
+            new Craft.PreviewFileModal($element.data('id'), this.view.elementSelect, settings);
         },
 
         /**

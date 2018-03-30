@@ -1,4 +1,4 @@
-/*!   - 2018-03-28 */
+/*!   - 2018-03-29 */
 (function($){
 
 /** global: Craft */
@@ -8341,6 +8341,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
+        /**
+         * Do the after-update initializations
+         * @private
+         */
         _onUpdateElements: function(append, $newElements) {
             if (this.settings.context === 'index') {
                 if (!append) {
@@ -8363,6 +8367,53 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
 
             this.base(append, $newElements);
+
+            this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
+            this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+        },
+
+        /**
+         * Handle a keypress
+         * @private
+         */
+        _onKeyDown: function(ev) {
+            if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+                var $element = this.view.elementSelect.$focusedItem.find('.element');
+
+                if ($element.length) {
+                    this._loadPreview($element);
+                    ev.stopPropagation();
+
+                    return false;
+                }
+            }
+        },
+
+        /**
+         * Handle element being focused
+         * @private
+         */
+        _onElementFocus: function (ev) {
+            var $element = $(ev.item).find('.element');
+
+            if (Craft.PreviewFileModal.openInstance && $element.length) {
+                this._loadPreview($element);
+            }
+        },
+
+        /**
+         * Load the preview for an Asset element
+         * @private
+         */
+        _loadPreview: function($element) {
+            var settings = {};
+
+            if ($element.data('image-width')) {
+                settings.startingWidth = $element.data('image-width');
+                settings.startingHeight = $element.data('image-height');
+            }
+
+            new Craft.PreviewFileModal($element.data('id'), this.view.elementSelect, settings);
         },
 
         /**
@@ -8770,8 +8821,58 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.base.apply(this, arguments);
             this._attachUploader();
+
+            this.addListener(this.$elementsContainer, 'keydown', this._onKeyDown.bind(this));
+            this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
         },
 
+        /**
+         * Handle a keypress
+         * @private
+         */
+        _onKeyDown: function(ev) {
+            if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+                var $element = this.elementSelect.$focusedItem;
+
+                if ($element.length) {
+                    this._loadPreview($element);
+                    ev.stopPropagation();
+
+                    return false;
+                }
+            }
+        },
+
+        /**
+         * Handle element being focused
+         * @private
+         */
+        _onElementFocus: function (ev) {
+            var $element = $(ev.item);
+
+            if (Craft.PreviewFileModal.openInstance && $element.length) {
+                this._loadPreview($element);
+            }
+        },
+
+        /**
+         * Load the preview for an Asset element
+         * @private
+         */
+        _loadPreview: function($element) {
+            var settings = {};
+
+            if ($element.data('image-width')) {
+                settings.startingWidth = $element.data('image-width');
+                settings.startingHeight = $element.data('image-height');
+            }
+
+            new Craft.PreviewFileModal($element.data('id'), this.elementSelect, settings);
+        },
+
+        /**
+         * Create the element editor
+         */
         createElementEditor: function($element) {
             return Craft.createElementEditor(this.settings.elementType, $element, {
                 params: {
@@ -15940,30 +16041,78 @@ Craft.PasswordInput = Garnish.Base.extend(
  */
 Craft.PreviewFileModal = Garnish.Modal.extend(
     {
-        id: null,
         $spinner: null,
+        elementSelect: null,
         type: null,
         loaded: null,
+        requestId: 0,
 
-        init: function(assetId, settings) {
-            this.id = assetId;
+        /**
+         * Initialize the preview file modal.
+         * @returns {*|void}
+         */
+        init: function(assetId, elementSelect, settings) {
+            settings = $.extend(this.defaultSettings, settings);
+
+            settings.onHide = this._onHide.bind(this);
+
+            if (Craft.PreviewFileModal.openInstance) {
+                Craft.PreviewFileModal.openInstance.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
+                Craft.PreviewFileModal.openInstance.elementSelect = elementSelect;
+                return this.destroy();
+            }
+
+            Craft.PreviewFileModal.openInstance = this;
+            this.elementSelect = elementSelect;
 
             this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
 
-            settings = $.extend(this.defaultSettings, settings);
             this.base(this.$container, $.extend({
                 resizable: true
             }, settings));
+
+            this.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
+        },
+
+        /**
+         * When hiding, remove all traces and focus last focused element.
+         * @private
+         */
+        _onHide: function () {
+            Craft.PreviewFileModal.openInstance = null;
+            this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+
+            return this.destroy();
+        },
+
+        /**
+         * Load an asset, using starting width and height, if applicable
+         * @param assetId
+         * @param startingWidth
+         * @param startingHeight
+         */
+        loadAsset: function (assetId, startingWidth, startingHeight) {
+            this.$container.empty();
+            this.loaded = false;
+
+            this.desiredHeight = null;
+            this.desiredWidth = null;
 
             var containerHeight = this.updateSizeAndPosition._windowHeight * 0.66;
             var containerWidth = Math.min(containerHeight / 3 * 4, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
             containerHeight = containerWidth / 4 * 3;
 
-            if (settings.startingWidth && settings.startingHeight) {
-                containerWidth =  Math.min(settings.startingWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
-                var ratio = settings.startingWidth / settings.startingHeight;
+            if (startingWidth && startingHeight) {
+                var ratio = startingWidth / startingHeight;
+                containerWidth =  Math.min(startingWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
                 containerHeight = Math.min(containerWidth / ratio, this.updateSizeAndPosition._windowHeight - this.settings.minGutter * 2);
                 containerWidth = containerHeight * ratio;
+
+                // This might actually have put width over the viewport limits, so doublecheck
+                if (containerWidth > Math.min(startingWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2)) {
+                    containerWidth =  Math.min(startingWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
+                    containerHeight = containerWidth / ratio;
+                }
             }
 
             this._resizeContainer(containerWidth, containerHeight);
@@ -15973,13 +16122,18 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
                 left = (this.$container.width() / 2 - this.$spinner.width() / 2) + 'px';
 
             this.$spinner.css({left: left, top: top, position: 'absolute'});
+            this.requestId++;
 
-            Craft.postActionRequest('assets/preview-file', {assetId: this.id}, function(response, textStatus) {
-                this.$container.removeClass('loading');
-                this.$spinner.remove();
-
+            Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, function(response, textStatus) {
                 if (textStatus === 'success') {
                     if (response.success) {
+                        if (response.requestId != this.requestId) {
+                            return;
+                        }
+
+                        this.$container.removeClass('loading');
+                        this.$spinner.remove();
+
                         this.loaded = true;
                         this.$container.append(response.modalHtml);
 
@@ -16010,7 +16164,14 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             }.bind(this));
         },
 
+        /**
+         * Override default logic with some extra shenanigans
+         */
         updateSizeAndPosition: function() {
+            if (!this.loaded) {
+                return;
+            }
+
             var $img = this.$container.find('img');
 
             if (this.loaded && $img.length) {
@@ -16038,10 +16199,16 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
             if (this.loaded && $img.length) {
                 // Correct anomalities
-                var containerWidth = Math.round(Math.min(Math.max(200, $img.height() * imageRatio), this.updateSizeAndPosition._windowWidth - (this.settings.minGutter * 2))),
-                    containerHeight = Math.round(Math.min(Math.max(200, containerWidth / imageRatio), this.updateSizeAndPosition._windowHeight - (this.settings.minGutter * 2)));
+                var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), this.updateSizeAndPosition._windowWidth - (this.settings.minGutter * 2))),
+                    containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), this.updateSizeAndPosition._windowHeight - (this.settings.minGutter * 2)));
+                    containerWidth = Math.round(containerHeight * imageRatio);
 
-                containerWidth = Math.round(containerHeight * imageRatio);
+                // This might actually have put width over the viewport limits, so doublecheck that
+                if (containerWidth > Math.min(containerWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2)) {
+                    containerWidth =  Math.min(containerWidth, this.updateSizeAndPosition._windowWidth - this.settings.minGutter * 2);
+                    containerHeight = containerWidth / imageRatio;
+                }
+
                 this._resizeContainer(containerWidth, containerHeight);
 
                 $img.css({'width': containerWidth, 'height': containerHeight});
@@ -16053,6 +16220,12 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             }
         },
 
+        /**
+         * Resize the container to specified dimensions
+         * @param containerWidth
+         * @param containerHeight
+         * @private
+         */
         _resizeContainer: function (containerWidth, containerHeight) {
             this.$container.css({
                 'width': containerWidth,
@@ -16069,7 +16242,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     {
         defaultSettings: {
             startingWidth: null,
-            startingHeight: null
+            startingHeight: null,
         }
     }
 );
