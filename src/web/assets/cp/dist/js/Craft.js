@@ -1,4 +1,4 @@
-/*!   - 2018-03-29 */
+/*!   - 2018-03-30 */
 (function($){
 
 /** global: Craft */
@@ -16141,12 +16141,11 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
                         if ($highlight.length && $highlight.hasClass('json')) {
                             var $target = $highlight.find('code');
-
                             $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
                         }
 
                         if ($highlight.length) {
-                            Prism.highlightAll();
+                            Prism.highlightElement($highlight.find('code').get(0));
                         } else {
                             this.$container.find('img').css({
                                 width: containerWidth,
