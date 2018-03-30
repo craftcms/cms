@@ -1,5 +1,10 @@
 # Craft CMS 3.0 Working Changelog
 
+## Unreleased
+
+### Changed
+- Improved asset preview file modal UX.
+
 ## 3.0.0-RC17.1 - 2018-03-29
 
 ### Added

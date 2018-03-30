@@ -972,6 +972,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             this.base(append, $newElements);
 
+            this.removeListener(this.$elements, 'keydown');
             this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
             this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
         },
@@ -982,14 +983,18 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
          */
         _onKeyDown: function(ev) {
             if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
-                var $element = this.view.elementSelect.$focusedItem.find('.element');
+                if (Craft.PreviewFileModal.openInstance) {
+                    Craft.PreviewFileModal.openInstance.selfDestruct();
+                } else {
+                    var $element = this.view.elementSelect.$focusedItem.find('.element');
 
-                if ($element.length) {
-                    this._loadPreview($element);
-                    ev.stopPropagation();
-
-                    return false;
+                    if ($element.length) {
+                        this._loadPreview($element);
+                    }
                 }
+
+                ev.stopPropagation();
+                return false;
             }
         },
 
