@@ -22,8 +22,6 @@
 
 					<h2>Coupon Code</h2>
 					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="9" />
-
-					<div v-if="paymentMethodLoading" class="spinner"></div>
 				</div>
 
 				<div class="block">
@@ -123,7 +121,6 @@
             return {
                 error: false,
                 loading: false,
-                paymentMethodLoading: false,
                 paymentMode: 'existingCard',
                 cardToken: null,
                 guestCardToken: null,
@@ -211,7 +208,6 @@
                     if(this.paymentMode === 'newCard') {
                         // Save new card
                         if(!this.cardToken) {
-                            this.paymentMethodLoading = true;
                             this.$refs.newCard.save(() => {
                                 cb();
 							}, () => {
@@ -221,7 +217,6 @@
                     }
                 } else {
                     // Save guest card
-					this.paymentMethodLoading = true;
 					this.$refs.guestCard.save(() => {
 						cb();
 					}, () => {
@@ -256,12 +251,11 @@
 			},
 
             checkout() {
+                this.loading = true
+
                 this.savePaymentMethod(() => {
                     this.saveBillingInfo(() => {
                         // Ready to pay
-
-                        this.loading = true
-
                         let cardToken = null;
 
                         if (this.craftIdAccount) {
@@ -301,29 +295,27 @@
                                 this.error = response.statusText;
                             });
 					}, () => {
+                        this.loading = false
                         this.$root.displayError("Couldn't save billing informations.");
                     });
                 }, () => {
+                    this.loading = false
                     this.$root.displayError("Couldn't save payment method.");
 				});
 			},
 
             onCardFormSave(card, token) {
 				this.cardToken = token;
-                this.paymentMethodLoading = false;
 			},
 
             onCardFormError(error) {
-              	this.paymentMethodLoading = false;
 			},
 
             onGuestCardFormSave(card, token) {
 				this.guestCardToken = token;
-                this.paymentMethodLoading = false;
 			},
 
             onGuestCardFormError(error) {
-                this.paymentMethodLoading = false;
 			},
 
 			onCountryChange(iso) {
