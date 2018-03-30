@@ -1581,8 +1581,6 @@ input:-ms-input-placeholder { color: #b9bfc6; }
 
 .input .redactor-toolbar.toolbar-fixed-box { background: #fff; -webkit-box-shadow: 0 0 0 1px #e3e5e8; -moz-box-shadow: 0 0 0 1px #e3e5e8; box-shadow: 0 0 0 1px #e3e5e8; z-index: 1 !important; }
 
-.input .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
-
 .input .redactor-toolbar li a { color: #29323d; }
 
 .input .redactor-toolbar li a:hover { background-color: #d5d8dd; color: #29323d; }

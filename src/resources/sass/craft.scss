@@ -1458,7 +1458,6 @@ input:-ms-input-placeholder { @include placeholder-styles; }
 .input .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
 .input .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
 .input .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
-.input .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
 .input .redactor-toolbar li a { color: $textcolor; }
 .input .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
 .input .redactor-toolbar li a:active,
