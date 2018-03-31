@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<form v-if="!$root.craftIdDataLoading" @submit.prevent="checkout()" class="payment">
+		<form @submit.prevent="checkout()" class="payment">
 			<div class="blocks">
 				<div class="block">
 					<h2>Payment Method</h2>
@@ -92,8 +92,6 @@
 				</p>
 			</div>
 		</form>
-
-		<div v-else class="spinner"></div>
 	</div>
 </template>
 
