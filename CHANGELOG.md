@@ -10,6 +10,7 @@
 - Fixed a bug where an exception could expose a partial server path in some circumstances.
 - Fixed a bug where Rich Text fields weren’t respecting the `toolbarFixed` Redactor config option.
 - Fixed a bug where Rich Text fields would not honor the `imageTag` config setting when inserting an image.
+- Fixed a bug where the `modifyAssetFilename` hook was being run twice on asset upload. ([#2624](https://github.com/craftcms/cms/issues/2624)
 
 ## 2.6.3013 - 2018-03-23
 
