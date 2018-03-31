@@ -38,10 +38,14 @@
 						if (result.error) {
 							vm.error = result.error.message;
 							vm.$emit('error', result.error);
-							cbError();
+							if(cbError) {
+                                cbError();
+							}
 						} else {
 							vm.$emit('save', vm.card, result.source);
-							cb();
+							if(cb) {
+                                cb();
+							}
 						}
 					});
             },
