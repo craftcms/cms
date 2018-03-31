@@ -180,6 +180,7 @@ class Assets extends BaseRelationField
     {
         $rules = parent::getElementValidationRules();
         $rules[] = 'validateFileType';
+        $rules[] = 'validateFileSize';
 
         return $rules;
     }
@@ -221,6 +222,39 @@ class Assets extends BaseRelationField
                     'filename' => $filename
                 ]));
             }
+        }
+    }
+
+    /**
+     * Validates the files to make sure they are one of the allowed file kinds.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateFileSize(ElementInterface $element)
+    {
+
+        $maxSize = AssetsHelper::getMaxUploadSize();
+
+        $filenames = [];
+
+        // Get any uploaded filenames
+        $uploadedFiles = $this->_getUploadedFiles($element);
+        foreach ($uploadedFiles as $file) {
+            if ($file['type'] === 'data') {
+                if (strlen($file['data']) > $maxSize) {
+                    $filenames[] = $file['filename'];
+                }
+            } else {
+                if (filesize($file['location']) > $maxSize) {
+                    $filenames[] = $file['filename'];
+                }
+            }
+        }
+
+        foreach ($filenames as $filename) {
+            $element->addError($this->handle, Craft::t('app', '"{filename}" is too large.', [
+                'filename' => $filename
+            ]));
         }
     }
 
