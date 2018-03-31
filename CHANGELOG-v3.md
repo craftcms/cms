@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where users’ Language preference would get set to German if the `defaultCpLanguage` config setting wasn’t set in the `xx-XX` format.
+- Made Craft more defensive when generating thumbnails.
 
 ## 3.0.0-RC17.1 - 2018-03-29
 
