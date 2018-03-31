@@ -3,7 +3,7 @@
         <div v-if="label" class="heading">
             <label :id="id+'-label'" :for="id">{{ label }}</label>
         </div>
-        <div class="input ltr" :class="{'errors': errors }">
+        <div class="input ltr" :class="{'errors': errors, 'success': success }">
             <text-input :id="id" :placeholder="placeholder" :value="value" @input="$emit('input', $event)" :size="size" />
         </div>
     </div>
@@ -14,7 +14,7 @@
 
     export default {
 
-        props: ['label', 'id', 'placeholder', 'value', 'errors', 'size'],
+        props: ['label', 'id', 'placeholder', 'value', 'errors', 'size', 'success'],
 
         components: {
             TextInput,

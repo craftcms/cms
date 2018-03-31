@@ -21,7 +21,8 @@
 					</template>
 
 					<h2>Coupon Code</h2>
-					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="9" />
+					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="9" @input="couponCodeChange" :errors="couponCodeError" />
+					<div v-if="couponCodeLoading" class="spinner"></div>
 				</div>
 
 				<div class="block">
@@ -119,13 +120,16 @@
 
         data() {
             return {
-                error: false,
-                loading: false,
-                paymentMode: 'existingCard',
-                cardToken: null,
-                guestCardToken: null,
-                replaceCard: false,
+				error: false,
+				loading: false,
+				paymentMode: 'existingCard',
+				cardToken: null,
+				guestCardToken: null,
+				replaceCard: false,
 				couponCode: '',
+				couponCodeLoading: false,
+				couponCodeSuccess: false,
+				couponCodeError: false,
 
 				billingInfo: {
                     firstName: '',
@@ -345,6 +349,25 @@
 
 				this.stateOptions = options
 			},
+
+			couponCodeChange(value) {
+                this.couponCodeSuccess = false
+                this.couponCodeError = false
+
+				if (value) {
+					const data = {
+					    couponCode: value,
+					}
+
+                    this.$store.dispatch('saveCart', data)
+                        .then(response => {
+                            this.couponCodeSuccess = true
+                        })
+                        .catch(response => {
+                            this.couponCodeError = true
+                        })
+				}
+            }
 
 		},
 

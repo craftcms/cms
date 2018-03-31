@@ -64,6 +64,9 @@ $minLargeScreenWidth: 1824px;
   }
 }
 
+.input.success input {
+  border-color: $successColor;
+}
 
 /* Plugin Store actions */
 
