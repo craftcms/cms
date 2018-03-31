@@ -32,23 +32,10 @@
 						<div class="input">
 							<div class="multitext">
 								<div class="multitextrow">
-									<text-input placeholder="First Name" id="first-name" v-model="billingInfo.firstName" />
+									<text-input placeholder="First Name" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="Last Name" id="last-name" v-model="billingInfo.lastName" :error="billingInfoErrors.lastName" />
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="field">
-						<div class="input">
-							<div class="multitext">
-								<div class="multitextrow">
-									<text-input placeholder="Business Name" id="business-name" v-model="billingInfo.businessName" />
-								</div>
-								<div class="multitextrow">
-									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billingInfo.businessTaxId" :error="billingInfoErrors.businessTaxId" />
+									<text-input placeholder="Last Name" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
 								</div>
 							</div>
 						</div>
@@ -58,20 +45,33 @@
 						<div class="input">
 							<div class="multitext">
 								<div class="multitextrow">
-									<text-input placeholder="Address Line 1" id="address-1" v-model="billingInfo.address1" />
+									<text-input placeholder="Business Name" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="Address Line 2" id="address-2" v-model="billingInfo.address2" />
+									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="input">
+							<div class="multitext">
+								<div class="multitextrow">
+									<text-input placeholder="Address Line 1" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']" />
 								</div>
 								<div class="multitextrow">
-									<select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" />
+									<text-input placeholder="Address Line 2" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
 								</div>
 								<div class="multitextrow">
-									<select-input v-model="billingInfo.state" :options="stateOptions" />
+									<select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
 								</div>
 								<div class="multitextrow">
-									<text-input placeholder="City" id="city" v-model="billingInfo.city" />
-									<text-input placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" />
+									<select-input v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
+								</div>
+								<div class="multitextrow">
+									<text-input placeholder="City" id="city" v-model="billingInfo.city" :errors="errors['billingAddress.city']" />
+									<text-input placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" :errors="errors['billingAddress.zipCode']" />
 								</div>
 							</div>
 						</div>
@@ -148,6 +148,8 @@
                     businessTaxId: false,
                 },
 
+				errors: {},
+
 				stateOptions: [],
             }
         },
@@ -218,7 +220,9 @@
                                 cbError();
 							});
                         }
-                    }
+                    } else {
+                        cb();
+					}
                 } else {
                     // Save guest card
 					this.$refs.guestCard.save(() => {
@@ -247,16 +251,16 @@
 
                 this.$store.dispatch('saveCart', cartData)
                     .then(response => {
-						cb();
+						cb(response);
 					})
                     .catch(response => {
-                        cbError();
+                        cbError(response)
                     })
 			},
 
             checkout() {
+                this.errors = {}
                 this.loading = true
-
                 this.savePaymentMethod(() => {
                     this.saveBillingInfo(() => {
                         // Ready to pay
@@ -298,9 +302,12 @@
                                 this.loading = false;
                                 this.error = response.statusText;
                             });
-					}, () => {
+					}, (response) => {
+                        response.errors.forEach(error => {
+                            this.errors[error.param] = error.message
+						})
                         this.loading = false
-                        this.$root.displayError("Couldn't save billing informations.");
+                        this.$root.displayError("Couldn't save billing informations.")
                     });
                 }, () => {
                     this.loading = false

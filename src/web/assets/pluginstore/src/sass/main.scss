@@ -68,6 +68,10 @@ $minLargeScreenWidth: 1824px;
   border-color: $successColor;
 }
 
+.input.errors .select:not(.selectize) select {
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
 /* Plugin Store actions */
 
 #pluginstore-actions {
