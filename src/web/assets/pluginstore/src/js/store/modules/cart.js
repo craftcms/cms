@@ -202,8 +202,12 @@ const actions = {
             const cart = state.cart
 
             api.updateCart(cart.number, data, response => {
-                commit(types.RECEIVE_CART, {response})
-                resolve(response)
+                if (!response.errors) {
+                    commit(types.RECEIVE_CART, {response})
+                    resolve(response)
+                } else {
+                    reject(response)
+                }
             }, response => {
                 reject(response)
             })

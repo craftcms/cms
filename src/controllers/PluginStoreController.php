@@ -18,6 +18,7 @@ use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
 use craft\web\View;
 use craftcms\oauth2\client\provider\CraftId;
+use GuzzleHttp\Exception\RequestException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -444,14 +445,18 @@ class PluginStoreController extends Controller
      */
     public function actionUpdateCart()
     {
-        $data = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
+        $cartData = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
 
-        $orderNumber = $data['orderNumber'];
-        unset($data['orderNumber']);
+        $orderNumber = $cartData['orderNumber'];
+        unset($cartData['orderNumber']);
 
-        $response = Craft::$app->getApi()->updateCart($orderNumber, $data);
+        try {
+            $data = Craft::$app->getApi()->updateCart($orderNumber, $cartData);
+        } catch(RequestException $e) {
+            $data = Json::decode($e->getResponse()->getBody()->getContents());
+        }
 
-        return $this->asJson($response);
+        return $this->asJson($data);
     }
 
     // Private Methods
