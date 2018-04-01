@@ -200,17 +200,17 @@ Garnish.$doc.ready(function() {
                 .then(data => {
                     this.craftIdDataLoaded = true;
                     this.$emit('dataLoaded');
+
+                    // Load cart
+                    this.$store.dispatch('getCart')
+                        .then(() => {
+                            this.cartDataLoaded = true;
+                            this.$emit('dataLoaded');
+                        })
                 })
                 .catch(response => {
                     this.craftIdDataLoaded = true;
                 });
-
-            // Load cart
-            this.$store.dispatch('getCart')
-                .then(() => {
-                    this.cartDataLoaded = true;
-                    this.$emit('dataLoaded');
-                })
         },
 
         mounted() {

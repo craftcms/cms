@@ -434,9 +434,19 @@ class PluginStoreController extends Controller
     public function actionGetCart()
     {
         $orderNumber = Craft::$app->getRequest()->getRequiredParam('orderNumber');
-        $response = Craft::$app->getApi()->getCart($orderNumber);
 
-        return $this->asJson($response);
+        try {
+            $data = Craft::$app->getApi()->getCart($orderNumber);
+            return $this->asJson($data);
+        } catch(RequestException $e) {
+            $data = Json::decode($e->getResponse()->getBody()->getContents());
+            $errorMsg = $e->getMessage();
+            if(isset($data['message'])) {
+                $errorMsg = $data['message'];
+            }
+
+            return $this->asErrorJson($errorMsg);
+        }
     }
 
     /**

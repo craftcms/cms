@@ -168,12 +168,28 @@ const actions = {
                 .then(orderNumber => {
                     if (orderNumber) {
                         api.getCart(orderNumber, response => {
-                            commit(types.RECEIVE_CART, {response})
-                            resolve(response)
+                            if(!response.error) {
+                                commit(types.RECEIVE_CART, {response})
+                                resolve(response)
+                            } else {
+                                // Couldn’t get cart for this order number? Try to create a new one.
+                                const data = {
+                                    email: rootState.craft.craftData.currentUser.email,
+                                }
+
+                                api.createCart(data, response2 => {
+                                    commit(types.RECEIVE_CART, {response: response2})
+                                    dispatch('saveOrderNumber', {orderNumber: response2.cart.number})
+                                    resolve(response)
+                                }, response => {
+                                    reject(response)
+                                })
+                            }
                         }, response => {
                             reject(response)
                         })
                     } else {
+                        // No order number yet? Create a new cart.
                         const data = {
                             email: rootState.craft.craftData.currentUser.email,
                         }
