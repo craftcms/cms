@@ -10,14 +10,14 @@
 						<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
 
 						<template v-if="paymentMode === 'newCard'">
-							<card-form v-if="!cardToken" ref="newCard" @save="onCardFormSave" @error="onCardFormError"></card-form>
+							<card-form-v2 v-if="!cardToken" ref="newCard"></card-form-v2>
 							<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
 							<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
 						</template>
 					</template>
 
 					<template v-else>
-						<card-form ref="guestCard" @save="onGuestCardFormSave" @error="onGuestCardFormError"></card-form>
+							<card-form-v2 ref="guestCard"></card-form-v2>
 					</template>
 
 					<h2>Coupon Code</h2>
@@ -102,7 +102,7 @@
     import TextInput from './inputs/TextInput';
     import SelectInput from './inputs/SelectInput';
     import CreditCard from './CreditCard';
-    import CardForm from './CardForm';
+    import CardFormV2 from './CardFormV2';
     import {mapGetters} from 'vuex'
 
     export default {
@@ -112,7 +112,7 @@
             TextField,
             TextInput,
             CreditCard,
-            CardForm,
+            CardFormV2,
             SelectInput,
         },
 
@@ -212,19 +212,23 @@
                     if(this.paymentMode === 'newCard') {
                         // Save new card
                         if(!this.cardToken) {
-                            this.$refs.newCard.save(() => {
+                            this.$refs.newCard.save(response => {
+                                this.cardToken = response;
                                 cb();
 							}, () => {
                                 cbError();
 							});
-                        }
+                        } else {
+                            cb()
+						}
                     } else {
                         cb();
 					}
                 } else {
                     // Save guest card
-					this.$refs.guestCard.save(() => {
-						cb();
+					this.$refs.guestCard.save(response => {
+                        this.guestCardToken = response;
+                        cb();
 					}, () => {
 						cbError();
 					});
@@ -311,20 +315,6 @@
                     this.loading = false
                     this.$root.displayError("Couldn't save payment method.");
 				});
-			},
-
-            onCardFormSave(card, token) {
-				this.cardToken = token;
-			},
-
-            onCardFormError(error) {
-			},
-
-            onGuestCardFormSave(card, token) {
-				this.guestCardToken = token;
-			},
-
-            onGuestCardFormError(error) {
 			},
 
 			onCountryChange(iso) {
