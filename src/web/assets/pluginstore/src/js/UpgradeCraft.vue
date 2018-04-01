@@ -131,7 +131,7 @@
                     type: 'cms-edition',
                     edition: edition,
                     licenseKey: window.cmsLicenseKey,
-                    autoRenew: true,
+                    autoRenew: false,
                 }
 
                 this.addToCart([item])

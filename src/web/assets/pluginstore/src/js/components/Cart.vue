@@ -138,7 +138,7 @@
                     type: 'plugin-edition',
                     plugin: plugin.handle,
                     edition: plugin.editions[0].handle,
-                    autoRenew: true,
+                    autoRenew: false,
                 }
 
                 this.$store.dispatch('addToCart', [item])
@@ -153,7 +153,7 @@
                         type: 'plugin-edition',
                         plugin: activeTrialPlugin.handle,
                         edition: activeTrialPlugin.editions[0].handle,
-                        autoRenew: true,
+                        autoRenew: false,
                     })
                 })
 
