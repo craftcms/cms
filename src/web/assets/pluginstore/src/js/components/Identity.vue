@@ -8,6 +8,7 @@
 					<li>{{ craftIdAccount.name }}</li>
 					<li>{{ craftIdAccount.email }}</li>
 				</ul>
+				<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
 			</template>
 
 			<p v-else><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
@@ -17,9 +18,8 @@
 
 		<template v-if="identityMode === 'guest'">
 			<text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
+			<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
 		</template>
-
-		<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
 
 		<div v-if="loading" class="spinner"></div>
 	</form>
