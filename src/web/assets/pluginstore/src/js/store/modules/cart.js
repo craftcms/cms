@@ -154,14 +154,7 @@ const actions = {
             api.checkout(data)
                 .then(response => {
                     commit(types.CHECKOUT, {response})
-                    dispatch('resetCart')
-                        .then(() => {
-                            resolve(response)
-                        })
-                        .catch(() => {
-                            reject(response)
-                        })
-
+                    resolve(response)
                 })
                 .catch(response => {
                     reject(response)
