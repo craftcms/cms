@@ -118,6 +118,12 @@
 		},
 
 		mounted() {
+            this.$root.$on('craftIdUpdated', function() {
+                if(this.craftIdAccount) {
+                    this.$root.openGlobalModal('payment')
+                }
+            }.bind(this));
+
             this.guestEmail = this.cart.email
 		}
 

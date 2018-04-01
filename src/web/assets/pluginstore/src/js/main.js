@@ -141,7 +141,8 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                this.$store.dispatch('updateCraftId', { craftId });
+                this.$store.dispatch('updateCraftId', { craftId })
+                this.$emit('craftIdUpdated')
             },
 
         },
