@@ -178,6 +178,14 @@ class InstallController extends BaseUpdaterController
         $packageName = strip_tags($request->getRequiredBodyParam('packageName'));
         $handle = strip_tags($request->getRequiredBodyParam('handle'));
         $version = strip_tags($request->getRequiredBodyParam('version'));
+        $licenseKey = $request->getBodyParam('licenseKey');
+
+        if (
+            ($returnUrl = $request->getBodyParam('return')) !== null &&
+            !in_array($returnUrl, ['plugin-store', 'settings/plugins'], true)
+        ) {
+            $returnUrl = null;
+        }
 
         return [
             'packageName' => $packageName,
@@ -185,6 +193,8 @@ class InstallController extends BaseUpdaterController
             'version' => $version,
             'requirements' => [$packageName => $version],
             'removed' => false,
+            'licenseKey' => $licenseKey,
+            'returnUrl' => $returnUrl,
         ];
     }
 
@@ -247,8 +257,26 @@ class InstallController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
+    protected function sendFinished(array $state = []): YiiResponse
+    {
+        // Set the license key
+        if ($this->data['licenseKey'] !== null) {
+            try {
+                Craft::$app->getPlugins()->setPluginLicenseKey($this->data['handle'], $this->data['licenseKey']);
+            } catch (\Throwable $e) {
+                Craft::error("Could not set the license key on {$this->data['handle']}: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
+
+        return parent::sendFinished($state);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function returnUrl(): string
     {
-        return $this->_pluginRedirect ?? 'plugin-store';
+        return $this->_pluginRedirect ?? $this->data['returnUrl'] ?? 'plugin-store';
     }
 }

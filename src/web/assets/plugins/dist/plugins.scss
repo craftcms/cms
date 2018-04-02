@@ -43,7 +43,8 @@
           line-height: 0;
         }
 
-        svg {
+        svg, img {
+          display: block;
           width: 44px;
           height: 44px;
         }
