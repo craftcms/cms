@@ -365,7 +365,7 @@
                 this.couponCodeError = false
 
 				const data = {
-					couponCode: value,
+					couponCode: (value ? value : null),
 				}
 
 				this.$store.dispatch('saveCart', data)
