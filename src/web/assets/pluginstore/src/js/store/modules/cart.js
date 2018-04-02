@@ -49,7 +49,7 @@ const getters = {
 
         let plugins = rootState.craftData.installedPlugins.map(installedPlugin => {
             if (rootState.pluginStoreData.plugins) {
-                return rootState.pluginStoreData.plugins.find(p => p.handle == installedPlugin.handle)
+                return rootState.pluginStoreData.plugins.find(p => p.handle === installedPlugin.handle && !installedPlugin.hasLicenseKey)
             }
         });
 
