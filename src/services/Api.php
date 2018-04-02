@@ -114,7 +114,7 @@ class Api extends Component
      */
     public function getPluginStoreData(): array
     {
-        $response = $this->request('POST', 'plugin-store');
+        $response = $this->request('GET', 'plugin-store');
         return Json::decode((string)$response->getBody());
     }
 
@@ -128,7 +128,7 @@ class Api extends Component
      */
     public function getPluginDetails(int $pluginId): array
     {
-        $response = $this->request('POST', 'plugin/'.$pluginId);
+        $response = $this->request('GET', 'plugin/'.$pluginId);
         return Json::decode((string)$response->getBody());
     }
 
@@ -142,7 +142,7 @@ class Api extends Component
      */
     public function getDeveloper(int $developerId): array
     {
-        $response = $this->request('POST', 'developer/'.$developerId);
+        $response = $this->request('GET', 'developer/'.$developerId);
         return Json::decode((string)$response->getBody());
     }
 

@@ -360,7 +360,7 @@ class PluginStoreController extends Controller
      */
     public function actionPluginDetails()
     {
-        $pluginId = Craft::$app->getRequest()->getBodyParam('pluginId');
+        $pluginId = Craft::$app->getRequest()->getParam('pluginId');
         $pluginDetails = Craft::$app->getApi()->getPluginDetails($pluginId);
 
         return $this->asJson($pluginDetails);
@@ -373,7 +373,7 @@ class PluginStoreController extends Controller
      */
     public function actionDeveloper()
     {
-        $developerId = Craft::$app->getRequest()->getBodyParam('developerId');
+        $developerId = Craft::$app->getRequest()->getParam('developerId');
         $developer = Craft::$app->getApi()->getDeveloper($developerId);
 
         return $this->asJson($developer);
