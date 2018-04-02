@@ -66,14 +66,12 @@
 									<text-input placeholder="Address Line 2" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
 								</div>
 								<div class="multitextrow">
+									<input type="text" class="text" :class="{ error: errors['billingAddress.city'] }" placeholder="City" id="city" v-model="billingInfo.city" />
+									<input type="text" class="text" :class="{ error: errors['billingAddress.zipCode'] }" placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" />
+								</div>
+								<div class="multiselectrow">
 									<select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
-								</div>
-								<div class="multitextrow">
 									<select-input v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
-								</div>
-								<div class="multitextrow">
-									<text-input placeholder="City" id="city" v-model="billingInfo.city" :errors="errors['billingAddress.city']" />
-									<text-input placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" :errors="errors['billingAddress.zipCode']" />
 								</div>
 							</div>
 						</div>

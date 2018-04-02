@@ -535,6 +535,19 @@ ul.categories {
       width: 50%;
     }
   }
+
+  .multiselectrow {
+    display: flex;
+    .input {
+      width: 50%;
+      .select {
+        width: 100%;
+        select {
+          width: 100%;
+        }
+      }
+    }
+  }
 }
 
 
