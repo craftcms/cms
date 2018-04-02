@@ -3,25 +3,27 @@
 		<form @submit.prevent="checkout()" class="payment">
 			<div class="blocks">
 				<div class="block">
-					<h2>Payment Method</h2>
+					<div v-if="cartTotal > 0">
+						<h2>Payment Method</h2>
 
-					<template v-if="craftIdAccount">
-						<p v-if="craftIdAccount && craftIdAccount.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
-						<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
+						<template v-if="craftIdAccount">
+							<p v-if="craftIdAccount && craftIdAccount.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
+							<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
 
-						<template v-if="paymentMode === 'newCard'">
-							<card-form-v2 v-if="!cardToken" ref="newCard"></card-form-v2>
-							<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
-							<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
+							<template v-if="paymentMode === 'newCard'">
+								<card-form-v2 v-if="!cardToken" ref="newCard"></card-form-v2>
+								<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
+								<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
+							</template>
 						</template>
-					</template>
 
-					<template v-else>
+						<template v-else>
 							<card-form-v2 ref="guestCard"></card-form-v2>
-					</template>
+						</template>
+					</div>
 
 					<h2>Coupon Code</h2>
-					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="9" @input="couponCodeChange" :errors="couponCodeError" />
+					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError" />
 					<div v-if="couponCodeLoading" class="spinner"></div>
 				</div>
 
@@ -84,7 +86,7 @@
 			<div class="centeralign">
 				<p v-if="error" class="error">{{ error }}</p>
 
-				<input type="submit" class="btn submit" :value="'Pay ' + $options.filters.currency(cartTotal)" />
+				<input type="submit" class="btn submit" :value="'Pay ' + $options.filters.currency(staticCartTotal)" />
 				<div v-if="loading" class="spinner"></div>
 
 				<p>
@@ -149,6 +151,8 @@
 				errors: {},
 
 				stateOptions: [],
+
+				staticCartTotal: 0,
             }
         },
 
@@ -208,31 +212,35 @@
 		methods: {
 
             savePaymentMethod(cb, cbError) {
-                if (this.craftIdAccount) {
-                    if(this.paymentMode === 'newCard') {
-                        // Save new card
-                        if(!this.cardToken) {
-                            this.$refs.newCard.save(response => {
-                                this.cardToken = response;
-                                cb();
-							}, () => {
-                                cbError();
-							});
-                        } else {
-                            cb()
+                if(this.cartTotal > 0) {
+					if (this.craftIdAccount) {
+						if(this.paymentMode === 'newCard') {
+							// Save new card
+							if(!this.cardToken) {
+								this.$refs.newCard.save(response => {
+									this.cardToken = response;
+									cb();
+								}, () => {
+									cbError();
+								});
+							} else {
+								cb()
+							}
+						} else {
+							cb();
 						}
-                    } else {
-                        cb();
+					} else {
+						// Save guest card
+						this.$refs.guestCard.save(response => {
+							this.guestCardToken = response;
+							cb();
+						}, () => {
+							cbError();
+						});
 					}
                 } else {
-                    // Save guest card
-					this.$refs.guestCard.save(response => {
-                        this.guestCardToken = response;
-                        cb();
-					}, () => {
-						cbError();
-					});
-                }
+                    cb();
+				}
 			},
 
 			saveBillingInfo(cb, cbError) {
@@ -268,16 +276,18 @@
                         // Ready to pay
                         let cardToken = null;
 
-                        if (this.craftIdAccount) {
-                            switch(this.paymentMode) {
-                                case 'newCard':
-                                    cardToken = this.cardToken.id;
-                                    break;
-                                default:
-                                    cardToken = this.craftIdAccount.cardToken
-                            }
-                        } else {
-                            cardToken = this.guestCardToken.id;
+                        if(this.cartTotal > 0) {
+							if (this.craftIdAccount) {
+								switch(this.paymentMode) {
+									case 'newCard':
+										cardToken = this.cardToken.id;
+										break;
+									default:
+										cardToken = this.craftIdAccount.cardToken
+								}
+							} else {
+								cardToken = this.guestCardToken.id;
+							}
                         }
 
                         let checkoutData = {
@@ -290,26 +300,29 @@
 
                         this.$store.dispatch('checkout', checkoutData)
                             .then(response => {
-                                this.loading = false;
-                                this.error = false;
-                                // this.$root.lastOrder = order;
-                                this.$root.modalStep = 'thankYou';
-
-                                this.$store.dispatch('resetCart')
-                                    .then(() => {
-                                        if(this.replaceCard) {
-                                            this.$store.dispatch('getCraftData');
-                                        }
-                                    })
+                                this.$store.dispatch('savePluginLicenseKeys', this.cart)
+									.then(response => {
+                                        this.$store.dispatch('getCraftData')
+                                            .then(() => {
+                                                this.$store.dispatch('resetCart')
+													.then(() => {
+                                                        this.loading = false;
+                                                        this.error = false;
+                                                        this.$root.modalStep = 'thankYou';
+													})
+                                            })
+									})
                             })
                             .catch(response => {
                                 this.loading = false;
                                 this.error = response.statusText;
                             });
 					}, (response) => {
-                        response.errors.forEach(error => {
-                            this.errors[error.param] = error.message
-						})
+                        if(response.errors) {
+							response.errors.forEach(error => {
+								this.errors[error.param] = error.message
+							})
+                        }
                         this.loading = false
                         this.$root.displayError("Couldn't save billing informations.")
                     });
@@ -351,22 +364,29 @@
                 this.couponCodeSuccess = false
                 this.couponCodeError = false
 
-				if (value) {
-					const data = {
-					    couponCode: value,
-					}
-
-                    this.$store.dispatch('saveCart', data)
-                        .then(response => {
-                            this.couponCodeSuccess = true
-                        })
-                        .catch(response => {
-                            this.couponCodeError = true
-                        })
+				const data = {
+					couponCode: value,
 				}
+
+				this.$store.dispatch('saveCart', data)
+					.then(response => {
+						this.couponCodeSuccess = true
+						this.staticCartTotal = this.cartTotal
+
+					})
+					.catch(response => {
+						this.couponCodeError = true
+						this.staticCartTotal = this.cartTotal
+					})
+
             }
 
 		},
+
+		mounted() {
+            this.staticCartTotal = this.cartTotal;
+            this.couponCode = this.cart.couponCode
+		}
 
     }
 </script>

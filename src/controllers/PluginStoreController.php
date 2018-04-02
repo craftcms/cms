@@ -470,6 +470,25 @@ class PluginStoreController extends Controller
         return $this->asJson($data);
     }
 
+    /**
+     * Save plugin license keys.
+     *
+     * @return Response
+     * @throws \craft\errors\InvalidLicenseKeyException
+     * @throws \craft\errors\InvalidPluginException
+     */
+    public function actionSavePluginLicenseKeys()
+    {
+        $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
+        $pluginLicenseKeys = (isset($payload['pluginLicenseKeys']) ? $payload['pluginLicenseKeys'] : []);
+
+        foreach($pluginLicenseKeys as $pluginLicenseKey) {
+            Craft::$app->getPlugins()->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+        }
+
+        return $this->asJson(['success' => true]);
+    }
+
     // Private Methods
     // =========================================================================
 

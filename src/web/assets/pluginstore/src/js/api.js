@@ -138,4 +138,12 @@ export default {
         });
     },
 
+    savePluginLicenseKeys(data) {
+        return axios.post(Craft.getActionUrl('plugin-store/save-plugin-license-keys'), data, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        })
+    }
+
 }

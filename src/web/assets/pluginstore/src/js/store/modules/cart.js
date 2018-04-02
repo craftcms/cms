@@ -260,6 +260,33 @@ const actions = {
         api.saveOrderNumber(orderNumber)
     },
 
+    savePluginLicenseKeys({state}, cart) {
+        return new Promise((resolve, reject) => {
+            let pluginLicenseKeys = []
+
+            cart.lineItems.forEach(lineItem => {
+                if(lineItem.purchasable.type === 'plugin-edition') {
+                    pluginLicenseKeys.push({
+                        handle: lineItem.purchasable.plugin.handle,
+                        key: lineItem.options.licenseKey.substr(4)
+                    })
+                }
+            })
+
+            const data = {
+                pluginLicenseKeys
+            }
+
+            api.savePluginLicenseKeys(data)
+                .then(response => {
+                    resolve(response)
+                })
+                .catch(response => {
+                    reject(response)
+                });
+        })
+    }
+
 };
 
 /**
@@ -276,7 +303,7 @@ const mutations = {
         state.cart = null;
     },
 
-    [types.CHECKOUT](state, {order}) {
+    [types.CHECKOUT](state, {response}) {
 
     },
 
