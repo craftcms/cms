@@ -59,6 +59,8 @@
 
         <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
 
+            <hr />
+
             <div v-if="pendingActiveTrials.length > 1" class="right">
                 <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
             </div>
