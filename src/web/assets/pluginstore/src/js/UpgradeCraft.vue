@@ -37,8 +37,8 @@
                     <td></td>
                     <td>
                         <div class="btngroup">
-                            <a @click="buyCraft('client')" class="btn submit">Buy now</a>
-                            <a @click="installCraft('client')" class="btn">Try for free</a>
+                            <a @click="buyCraft('solo')" class="btn submit">Buy now</a>
+                            <a @click="installCraft('solo')" class="btn">Try for free</a>
                         </div>
                     </td>
                     <td>
@@ -124,6 +124,8 @@
         methods: {
             ...mapActions({
                 addToCart: 'addToCart',
+                tryEdition: 'tryEdition',
+                getCraftData: 'getCraftData',
             }),
 
             buyCraft(edition) {
@@ -138,14 +140,16 @@
             },
 
             installCraft(edition) {
-                axios.post(Craft.getActionUrl('app/try-edition'), 'edition='+edition, {
-                        headers: {
-                            'X-CSRF-Token':  Craft.csrfTokenValue,
-                        }
+                this.tryEdition(edition)
+                    .then(() =>  {
+                        this.getCraftData()
+                            .then(() => {
+                                this.$root.displayNotice("Craft CMS edition changed.");
+                            })
                     })
-                    .then(response => {
-                        console.log('upgradeded to craft '+edition);
-                    });
+                    .catch(() => {
+                        this.$root.displayError("Couldn’t change Craft CMS edition.");
+                    })
             },
 
         },

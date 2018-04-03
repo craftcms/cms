@@ -65,6 +65,18 @@ const actions = {
         commit(types.UPDATE_CRAFT_ID, craftId);
     },
 
+    tryEdition({commit}, edition) {
+        return new Promise((resolve, reject) => {
+            api.tryEdition(edition)
+                .then(response => {
+                    resolve(response)
+                })
+                .catch(response => {
+                    reject(response)
+                });
+        })
+    }
+
 };
 
 const mutations = {

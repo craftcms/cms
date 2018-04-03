@@ -135,6 +135,14 @@ export default {
                 'X-CSRF-Token':  Craft.csrfTokenValue,
             }
         })
+    },
+
+    tryEdition(edition) {
+        return axios.post(Craft.getActionUrl('app/try-edition'), 'edition='+edition, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        })
     }
 
 }
