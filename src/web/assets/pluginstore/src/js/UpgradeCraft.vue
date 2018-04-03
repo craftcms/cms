@@ -34,7 +34,7 @@
                             <div  @click="buyCraft('pro')" class="btn submit">Buy now</div>
 
                             <template v-if="craftData.CraftEdition === craftData.CraftPro && craftData.licensedEdition === craftData.CraftSolo">
-                                <div @click="installCraft()" class="btn">Uninstall</div>
+                                <div @click="installCraft('solo')" class="btn">Uninstall</div>
                             </template>
 
                             <template v-else>
