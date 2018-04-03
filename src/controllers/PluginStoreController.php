@@ -254,11 +254,7 @@ class PluginStoreController extends Controller
 
 
         // Countries
-
-        $countriesData = Craft::$app->getApi()->getCountries();
-
-        $data['countries'] = $countriesData['countries'];
-
+        $data['countries'] = Craft::$app->getApi()->getCountries();
 
         // ET upgrade info
 
