@@ -128,6 +128,7 @@
 				couponCodeLoading: false,
 				couponCodeSuccess: false,
 				couponCodeError: false,
+				couponCodeTimeout: false,
 
 				billingInfo: {
                     firstName: '',
@@ -359,24 +360,30 @@
 			},
 
 			couponCodeChange(value) {
+                clearTimeout(this.couponCodeTimeout)
                 this.couponCodeSuccess = false
                 this.couponCodeError = false
 
-				const data = {
-					couponCode: (value ? value : null),
-				}
+                this.couponCodeTimeout = setTimeout(function() {
+                    this.couponCodeLoading = true
 
-				this.$store.dispatch('saveCart', data)
-					.then(response => {
-						this.couponCodeSuccess = true
-						this.staticCartTotal = this.cartTotal
+                    const data = {
+                        couponCode: (value ? value : null),
+                    }
 
-					})
-					.catch(response => {
-						this.couponCodeError = true
-						this.staticCartTotal = this.cartTotal
-					})
-
+                    this.$store.dispatch('saveCart', data)
+                        .then(response => {
+                            this.couponCodeSuccess = true
+                            this.couponCodeError = false
+                            this.staticCartTotal = this.cartTotal
+                            this.couponCodeLoading = false
+                        })
+                        .catch(response => {
+                            this.couponCodeError = true
+                            this.staticCartTotal = this.cartTotal
+                            this.couponCodeLoading = false
+                        })
+				}.bind(this), 500)
             }
 
 		},
