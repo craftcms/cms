@@ -24,7 +24,7 @@
                 <tr class="price">
                     <th scope="row" class="feature">{{ "Price" }}</th>
                     <td>{{ "Free" }}</td>
-                    <td v-if="craftData.editions">{{ craftData.editions[1].formattedPrice }}</td>
+                    <td v-if="craftData.editions">{{ craftData.editions.pro.price|currency }}</td>
                 </tr>
                 <tr class="buybtns">
                     <td></td>
