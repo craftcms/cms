@@ -260,16 +260,18 @@ const actions = {
         api.saveOrderNumber(orderNumber)
     },
 
-    savePluginLicenseKeys({state}, cart) {
+    savePluginLicenseKeys({state, rootState}, cart) {
         return new Promise((resolve, reject) => {
             let pluginLicenseKeys = []
 
             cart.lineItems.forEach(lineItem => {
                 if(lineItem.purchasable.type === 'plugin-edition') {
-                    pluginLicenseKeys.push({
-                        handle: lineItem.purchasable.plugin.handle,
-                        key: lineItem.options.licenseKey.substr(4)
-                    })
+                    if(rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
+                        pluginLicenseKeys.push({
+                            handle: lineItem.purchasable.plugin.handle,
+                            key: lineItem.options.licenseKey.substr(4)
+                        })
+                    }
                 }
             })
 
