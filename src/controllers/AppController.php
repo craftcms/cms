@@ -413,11 +413,8 @@ class AppController extends Controller
         }
 
         switch ($edition) {
-            case 'personal':
-                $edition = Craft::Personal;
-                break;
-            case 'client':
-                $edition = Craft::Client;
+            case 'solo':
+                $edition = Craft::Solo;
                 break;
             case 'pro':
                 $edition = Craft::Pro;
