@@ -136,7 +136,8 @@ class Application extends \yii\web\Application
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
-            $headers->set('X-Powered-By', $this->name);
+            $original = $headers->get('X-Powered-By');
+            $headers->set('X-Powered-By', $original.($original ? ',' : '').$this->name);
         } else {
             // In case PHP is already setting one
             header_remove('X-Powered-By');
