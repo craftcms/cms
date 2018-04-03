@@ -389,7 +389,7 @@
 		},
 
 		mounted() {
-            this.staticCartTotal = this.cartTotal;
+            this.staticCartTotal = this.cartTotal
             this.couponCode = this.cart.couponCode
 		}
 
