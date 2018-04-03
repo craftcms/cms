@@ -273,7 +273,7 @@ class PluginStoreController extends Controller
             $data['CraftSolo'] = Craft::Solo;
             $data['CraftPro'] = Craft::Pro;
         }
-        
+
         // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
         $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/powered_by_stripe.svg');
