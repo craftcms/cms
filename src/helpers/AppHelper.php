@@ -99,7 +99,7 @@ class AppHelper
 			}
 			default:
 			{
-				return 'Personal';
+				return 'Solo';
 			}
 		}
 	}
