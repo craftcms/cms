@@ -62,12 +62,15 @@ class Api extends Component
     /**
      * Returns info about the current Craft license.
      *
+     * @param string[] $include
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function getLicenseInfo(): array
+    public function getLicenseInfo(array $include = []): array
     {
-        $response = $this->request('GET', 'cms-licenses');
+        $response = $this->request('GET', 'cms-licenses', [
+            'query' => ['include' => implode(',', $include)],
+        ]);
         $body = Json::decode((string)$response->getBody());
         return $body['license'];
     }
