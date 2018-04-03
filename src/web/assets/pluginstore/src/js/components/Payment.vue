@@ -391,6 +391,10 @@
 		mounted() {
             this.staticCartTotal = this.cartTotal
             this.couponCode = this.cart.couponCode
+
+			if(this.craftIdAccount) {
+                this.billingInfo = this.craftIdAccount.billingAddress
+            }
 		}
 
     }
