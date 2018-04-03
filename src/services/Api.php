@@ -388,7 +388,7 @@ class Api extends Component
             $path = Craft::$app->getPath()->getLicenseKeyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
-            if ($this->cmsLicenseKey() !== null) {
+            if (App::licenseKey() !== null) {
                 $i = 0;
                 do {
                     $newPath = "{$path}.".++$i;
