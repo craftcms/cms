@@ -31,7 +31,7 @@
                     <td></td>
                     <td>
                         <div class="btngroup">
-                            <template>
+                            <template v-if="craftData.licensedEdition < craftData.CraftPro">
                                 <template v-if="!isCmsEditionInCart('pro')">
                                     <div @click="buyCraft('pro')" class="btn submit">Buy now</div>
                                 </template>
@@ -40,12 +40,17 @@
                                 </template>
                             </template>
 
+
+                            <template v-if="craftData.canTestEditions && craftData.CraftPro != craftData.CraftEdition && craftData.CraftPro > craftData.licensedEdition">
+                                <div @click="installCraft('pro')" class="btn">Try for free</div>
+                            </template>
+
                             <template v-if="craftData.CraftEdition === craftData.CraftPro && craftData.licensedEdition === craftData.CraftSolo">
                                 <div @click="installCraft('solo')" class="btn">Uninstall</div>
                             </template>
 
-                            <template v-else>
-                                <div @click="installCraft('pro')" class="btn">Try for free</div>
+                            <template v-if="craftData.CraftPro === craftData.licensedEdition && craftData.CraftPro != craftData.CraftEdition">
+                                <div @click="installCraft('pro')" class="btn">Reinstall</div>
                             </template>
 
                             <div v-if="loading" class="spinner"></div>
