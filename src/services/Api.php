@@ -341,11 +341,8 @@ class Api extends Component
 
             switch ($licensedEdition)
             {
-                case 'personal':
-                    $licensedEdition = Craft::Personal;
-                    break;
-                case 'client':
-                    $licensedEdition = Craft::Client;
+                case 'solo':
+                    $licensedEdition = Craft::Solo;
                     break;
                 case 'pro':
                     $licensedEdition = Craft::Pro;

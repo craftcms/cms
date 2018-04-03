@@ -667,7 +667,6 @@ class Install extends Migration
             'email' => $this->string()->notNull(),
             'password' => $this->string(),
             'admin' => $this->boolean()->defaultValue(false)->notNull(),
-            'client' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
             'pending' => $this->boolean()->defaultValue(false)->notNull(),

@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Rebranding functions.

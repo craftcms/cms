@@ -260,11 +260,7 @@ class AppController extends Controller
     public function actionGetUpgradeModal(): Response
     {
         $this->requireAcceptsJson();
-
-        // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $this->requireAdmin();
-        }
+        $this->requireAdmin();
 
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
@@ -329,11 +325,7 @@ class AppController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-
-        // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $this->requireAdmin();
-        }
+        $this->requireAdmin();
 
         $request = Craft::$app->getRequest();
         $edition = $request->getRequiredBodyParam('edition');
@@ -366,11 +358,7 @@ class AppController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-
-        // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $this->requireAdmin();
-        }
+        $this->requireAdmin();
 
         $request = Craft::$app->getRequest();
         $model = new UpgradePurchase([

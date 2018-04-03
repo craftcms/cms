@@ -21,7 +21,7 @@
             document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 
             document.write(
-                    '{%- set hasLogo = (CraftEdition >= CraftClient and craft.rebrand.isLogoUploaded ? true : false) -%}'+
+                    '{%- set hasLogo = (CraftEdition == CraftPro and craft.rebrand.isLogoUploaded ? true : false) -%}'+
                     '<form id="login-form" method="post" accept-charset="UTF-8" {% if hasLogo -%}
             {%- set logo = craft.rebrand.logo -%}
             {%- set padding = logo.height + 30 -%}

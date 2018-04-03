@@ -15,7 +15,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,

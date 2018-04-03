@@ -171,7 +171,7 @@ class UserGroups extends Component
      * @param UserGroup $group The user group to be saved
      * @param bool $runValidation Whether the user group should be validated
      * @return bool
-     * @throws WrongEditionException if this is called from Craft Personal or Client editions
+     * @throws WrongEditionException if this is called from Craft Solo edition
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
@@ -220,7 +220,7 @@ class UserGroups extends Component
      *
      * @param int $groupId
      * @return bool
-     * @throws WrongEditionException if this is called from Craft Personal or Client editions
+     * @throws WrongEditionException if this is called from Craft Solo edition
      */
     public function deleteGroupById(int $groupId): bool
     {
