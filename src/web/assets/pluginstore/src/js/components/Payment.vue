@@ -290,7 +290,6 @@
                         }
 
                         let checkoutData = {
-                            craftId: !!this.craftIdAccount,
                             orderNumber: this.cart.number,
                             token: cardToken,
                             expectedPrice: this.cart.totalPrice,
