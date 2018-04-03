@@ -2,7 +2,16 @@ import api from '../../api'
 import * as types from '../mutation-types'
 
 const state = {
-    craftData: {},
+    craftData: {
+        editions: {
+            1: {
+                formattedPrice: '$299',
+                formattedSalePrice: '$299',
+                price: '299.0000',
+                salePrice: null,
+            },
+        }
+    },
 };
 
 const getters = {

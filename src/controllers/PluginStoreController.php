@@ -265,31 +265,17 @@ class PluginStoreController extends Controller
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
         if (isset($etResponse->data->editions)) {
-            $upgradeInfo = $etResponse->data;
-
-            $data['upgradeInfo'] = $upgradeInfo;
-
-
-            // Editions
-
-            $editions = [];
-            $formatter = Craft::$app->getFormatter();
-
-            foreach ($upgradeInfo->editions as $edition => $info) {
-                $editions[$edition]['price'] = $info['price'];
-                $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
-
-                if (isset($info['salePrice']) && $info['salePrice'] < $info['price']) {
-                    $editions[$edition]['salePrice'] = $info['salePrice'];
-                    $editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'], 'USD', [], [], true);
-                } else {
-                    $editions[$edition]['salePrice'] = null;
-                }
-            }
+            $data['editions'] = [
+                '1' => [
+                    'formattedPrice' => '$299',
+                    'formattedSalePrice' => '$299',
+                    'price' => '299.0000',
+                    'salePrice' => null,
+                ]
+            ];
 
             $canTestEditions = Craft::$app->getCanTestEditions();
 
-            $data['editions'] = $editions;
             $data['licensedEdition'] = $etResponse->licensedEdition;
             $data['canTestEditions'] = $canTestEditions;
 
