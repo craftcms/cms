@@ -88,6 +88,18 @@ class Api extends Component
     }
 
     /**
+     * Returns all CMS editions
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getCmsEditions(): array
+    {
+        $response = $this->request('GET', 'cms-editions');
+        return Json::decode((string)$response->getBody())['editions'];
+    }
+
+    /**
      * Returns all country data.
      *
      * @return array
@@ -95,7 +107,7 @@ class Api extends Component
      */
     public function getCountries(): array
     {
-        $cacheKey = 'countryListData';
+        $cacheKey = 'countries';
         $cache = Craft::$app->getCache();
 
         if ($cache->exists($cacheKey)) {
@@ -103,7 +115,7 @@ class Api extends Component
         }
 
         $response = $this->request('GET', 'countries');
-        $countries = Json::decode((string)$response->getBody());
+        $countries = Json::decode((string)$response->getBody())['countries'];
         $cache->set($cacheKey, $countries, 60 * 60 * 24 * 7);
 
         return $countries;
