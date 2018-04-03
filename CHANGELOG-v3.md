@@ -3,14 +3,30 @@
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\Assets::getMaxUploadSize().`
+### Changed
+- Improved asset preview file modal UX.
+- Craft will now throw an exception if the `defaultCpLanguage` config setting is set to an unsupported language ID.
+
+### Fixed
+- Fixed a bug where users’ Language preference would get set to German if the `defaultCpLanguage` config setting wasn’t set in the `xx-XX` format.
+- Made Craft more defensive when generating thumbnails.
+- Assets uploaded on frontend are now validated against maximum allowed file size. ([#2550](https://github.com/craftcms/cms/issues/2550))
+
+## 3.0.0-RC17.1 - 2018-03-29
+
+### Added
+- Added a `shift` + `spacebar` keyboard shortcut for opening asset previews, and arrow keys can be used to navigate between assets from the preview modal.
+- Asset previews are now available in asset selection modals and Assets fields, via the `shift` + `spacebar` shortcut.
 - Assets now have a “Link” table attribute option.
 - Added the `SORT_REGULAR`, `SORT_NUMERIC`, `SORT_STRING`, `SORT_LOCALE_STRING`, `SORT_NATURAL`, and `SORT_FLAG_CASE` global template variables.
 
 ### Changed
 - Table fields’ Min Rows and Max Rows settings can now be set independently of each other.
+- Updated JavaScript dependencies.
 
 ### Fixed
-- Fixed a JavaScript error that occurred when editing Table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
+- Fixed JavaScript errors that occurred when working with most editable table fields. ([#2654](https://github.com/craftcms/cms/issues/2654))
 - Fixed a database error that could occur when saving non-ASCII characters in a Plain Text field. ([#2650](https://github.com/craftcms/cms/issues/2650))
 - Fixed issues that could occur when saving content with multibyte characters. ([#1768](https://github.com/craftcms/cms/issues/1768))
 

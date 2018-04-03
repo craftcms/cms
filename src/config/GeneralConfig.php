@@ -9,8 +9,10 @@ namespace craft\config;
 
 use Craft;
 use craft\helpers\ConfigHelper;
+use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use yii\base\BaseObject;
+use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -742,6 +744,14 @@ class GeneralConfig extends BaseObject
 
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
+
+        // Normalize the default CP language
+        if ($this->defaultCpLanguage !== null) {
+            $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
+            if (!in_array($this->defaultCpLanguage, Craft::$app->getI18n()->getAppLocaleIds())) {
+                throw new InvalidConfigException('Unsupported language: '.$this->defaultCpLanguage);
+            }
+        }
     }
 
     /**

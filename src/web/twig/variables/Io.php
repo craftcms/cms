@@ -7,9 +7,7 @@
 
 namespace craft\web\twig\variables;
 
-use Craft;
 use craft\helpers\Assets;
-use craft\helpers\ConfigHelper;
 
 /**
  * Io variable.
@@ -29,23 +27,7 @@ class Io
      */
     public function getMaxUploadSize()
     {
-        $maxUpload = ConfigHelper::sizeInBytes(ini_get('upload_max_filesize'));
-        $maxPost = ConfigHelper::sizeInBytes(ini_get('post_max_size'));
-        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
-
-        $uploadInBytes = min($maxUpload, $maxPost);
-
-        if ($memoryLimit > 0) {
-            $uploadInBytes = min($uploadInBytes, $memoryLimit);
-        }
-
-        $configLimit = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
-
-        if ($configLimit) {
-            $uploadInBytes = min($uploadInBytes, $configLimit);
-        }
-
-        return $uploadInBytes;
+        return Assets::getMaxUploadSize();
     }
 
     /**

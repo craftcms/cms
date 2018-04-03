@@ -169,15 +169,6 @@ class EtTransport
                                 $this->_setLicenseKey($etModel->licenseKey);
                             }
 
-                            // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
-                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus, self::CACHE_DURATION);
-                            $cacheService->set('licensedEdition', $etModel->licensedEdition, self::CACHE_DURATION);
-                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0, self::CACHE_DURATION);
-
-                            if ($etModel->licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                                $cacheService->set('licensedDomain', $etModel->licensedDomain, self::CACHE_DURATION);
-                            }
-
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {
                                 $pluginsService = Craft::$app->getPlugins();
 
