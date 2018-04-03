@@ -173,8 +173,10 @@ const actions = {
                                 resolve(response)
                             } else {
                                 // Couldn’t get cart for this order number? Try to create a new one.
-                                const data = {
-                                    email: rootState.craft.craftData.currentUser.email,
+                                const data = {}
+
+                                if(!rootState.craft.craftData.craftId) {
+                                    data.email = rootState.craft.craftData.currentUser.email
                                 }
 
                                 api.createCart(data, response2 => {
@@ -190,8 +192,10 @@ const actions = {
                         })
                     } else {
                         // No order number yet? Create a new cart.
-                        const data = {
-                            email: rootState.craft.craftData.currentUser.email,
+                        const data = {}
+
+                        if(!rootState.craft.craftData.craftId) {
+                            data.email = rootState.craft.craftData.currentUser.email
                         }
 
                         api.createCart(data, response => {
