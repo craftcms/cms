@@ -9,6 +9,7 @@ namespace craft\web\assets\plugins;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\View;
 
 /**
  * Asset bundle for the Plugins page
@@ -35,5 +36,23 @@ class PluginsAsset extends AssetBundle
         ];
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view)
+    {
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('app', [
+                'Action',
+                'Documentation',
+                'Install',
+                'Missing',
+                'Status',
+            ]);
+        }
     }
 }

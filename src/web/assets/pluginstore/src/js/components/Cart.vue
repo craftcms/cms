@@ -49,8 +49,6 @@
                     </tbody>
                 </table>
 
-                <p>Renew for 3 years and save $XX.00</p>
-
                 <p><a @click="payment()" class="btn submit">{{ "Process My Order"|t('app') }}</a></p>
             </template>
 
@@ -60,6 +58,8 @@
         </template>
 
         <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
+
+            <hr />
 
             <div v-if="pendingActiveTrials.length > 1" class="right">
                 <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
@@ -114,6 +114,7 @@
                 cart: 'cart',
                 cartItems: 'cartItems',
                 craftData: 'craftData',
+                craftIdAccount: 'craftIdAccount',
             }),
 
             pendingActiveTrials() {
@@ -139,7 +140,7 @@
                     type: 'plugin-edition',
                     plugin: plugin.handle,
                     edition: plugin.editions[0].handle,
-                    autoRenew: true,
+                    autoRenew: false,
                 }
 
                 this.$store.dispatch('addToCart', [item])
@@ -154,7 +155,7 @@
                         type: 'plugin-edition',
                         plugin: activeTrialPlugin.handle,
                         edition: activeTrialPlugin.editions[0].handle,
-                        autoRenew: true,
+                        autoRenew: false,
                     })
                 })
 
@@ -162,7 +163,11 @@
             },
 
             payment() {
-                this.$root.openGlobalModal('payment');
+                if(this.craftIdAccount) {
+                    this.$root.openGlobalModal('payment');
+                } else {
+                    this.$root.openGlobalModal('identity');
+                }
             }
 
         },

@@ -13,6 +13,7 @@ use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\MigrationException;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
@@ -477,20 +478,45 @@ class AppController extends Controller
      */
     public function actionGetPluginLicenseInfo(): Response
     {
-        // Update our records
-        Craft::$app->getApi()->getLicenseInfo();
-
-        // Return the new plugin license info
-        $info = Craft::$app->getPlugins()->getAllPluginInfo();
+        // Update our records & use all licensed plugins as a starting point
+        $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
         $result = [];
+        if (!empty($licenseInfo['pluginLicenses'])) {
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
+                if (isset($pluginLicenseInfo['plugin'])) {
+                    $pluginInfo = $pluginLicenseInfo['plugin'];
+                    $result[$pluginInfo['handle']] = [
+                        'isInstalled' => false,
+                        'licenseKey' => $pluginLicenseInfo['key'],
+                        'licenseKeyStatus' => LicenseKeyStatus::Valid,
+                        'hasIssues' => false,
+                        'licenseStatusMessage' => null,
+                        'name' => $pluginInfo['name'],
+                        'description' => $pluginInfo['shortDescription'],
+                        'iconUrl' => $pluginInfo['icon']['url'] ?? $defaultIconUrl,
+                        'documentationUrl' => $pluginInfo['documentationUrl'] ?? null,
+                        'packageName' => $pluginInfo['packageName'],
+                        'latestVersion' => $pluginInfo['latestVersion'],
+                    ];
+                }
+            }
+        }
+
+        ArrayHelper::multisort($result, 'name');
+
+        // Override with info for the installed plugins
+        $info = Craft::$app->getPlugins()->getAllPluginInfo();
         foreach ($info as $handle => $pluginInfo) {
             $result[$handle] = [
+                'isInstalled' => true,
                 'licenseKey' => $pluginInfo['licenseKey'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'hasIssues' => $pluginInfo['hasIssues'],
                 'licenseStatusMessage' => $pluginInfo['licenseStatusMessage'],
             ];
         }
+
         return $this->asJson($result);
     }
 

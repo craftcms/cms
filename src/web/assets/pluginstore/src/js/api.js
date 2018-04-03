@@ -62,19 +62,16 @@ export default {
     },
 
     getDeveloper(developerId, cb, errorCb) {
-        let params = qs.stringify({
-            developerId: developerId,
-            cms: window.cmsInfo,
-        })
-
-        axios.post(Craft.getActionUrl('plugin-store/developer'), params, {
+        axios.get(Craft.getActionUrl('plugin-store/developer'), {
+                params: {
+                    developerId: developerId,
+                },
                 headers: {
                     'X-CSRF-Token':  Craft.csrfTokenValue,
                 }
             })
             .then(response => {
-                let developer = response.data;
-                return cb(developer);
+                return cb(response.data);
             })
             .catch(response => {
                 return errorCb(response);
@@ -82,11 +79,7 @@ export default {
     },
 
     getPluginStoreData(cb, errorCb) {
-        let data = qs.stringify({
-            cms: window.cmsInfo,
-        });
-
-        axios.post(Craft.getActionUrl('plugin-store/plugin-store-data'), data, {
+        axios.get(Craft.getActionUrl('plugin-store/plugin-store-data'), '', {
                 headers: {
                     'X-CSRF-Token':  Craft.csrfTokenValue,
                 }
@@ -100,12 +93,10 @@ export default {
     },
 
     getPluginDetails(pluginId, cb, errorCb) {
-        let params = qs.stringify({
-            pluginId: pluginId,
-            cms: window.cmsInfo,
-        });
-
-        axios.post(Craft.getActionUrl('plugin-store/plugin-details'), params, {
+        axios.get(Craft.getActionUrl('plugin-store/plugin-details'), {
+                params: {
+                    pluginId: pluginId,
+                },
                 headers: {
                     'X-CSRF-Token':  Craft.csrfTokenValue,
                 }
@@ -137,5 +128,13 @@ export default {
             }
         });
     },
+
+    savePluginLicenseKeys(data) {
+        return axios.post(Craft.getActionUrl('plugin-store/save-plugin-license-keys'), data, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        })
+    }
 
 }

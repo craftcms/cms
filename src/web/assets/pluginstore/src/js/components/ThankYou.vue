@@ -5,6 +5,9 @@
 			<div id="graphic" class="spinner big success"></div>
 			<h2>Thank You!</h2>
 			<p class="light">Your order has been processed, you will receive an email shortly containing your license keys.</p>
+			<p>
+				<a :href="managePluginsUrl" class="btn submit">Manage your plugins</a>
+			</p>
 		</div>
 
 		<!--<pre v-if="lastOrder">{{lastOrder}}</pre>-->
@@ -18,6 +21,10 @@
 
 		    lastOrder() {
 		        return this.$root.lastOrder;
+			},
+
+			managePluginsUrl() {
+		        return Craft.getCpUrl('settings/plugins')
 			}
 
 		},

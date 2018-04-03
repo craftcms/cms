@@ -5,7 +5,7 @@
 #plugins tbody .plugin-infos .icon, #plugins tbody .plugin-infos .details { display: table-cell; }
 #plugins tbody .plugin-infos .icon { vertical-align: top; padding-right: 14px; position: relative; }
 #plugins tbody .plugin-infos .icon a { display: block; line-height: 0; }
-#plugins tbody .plugin-infos .icon svg { width: 44px; height: 44px; }
+#plugins tbody .plugin-infos .icon svg, #plugins tbody .plugin-infos .icon img { display: block; width: 44px; height: 44px; }
 #plugins tbody .plugin-infos .icon .license-key-status { display: block; position: absolute; top: 26px; width: 20px; height: 20px; background: no-repeat 0 0 url(invalid-icon.svg); background-size: 100% 100%; }
 body.ltr #plugins tbody .plugin-infos .icon .license-key-status { left: 26px; }
 body.rtl #plugins tbody .plugin-infos .icon .license-key-status { right: 26px; }

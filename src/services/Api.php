@@ -62,12 +62,15 @@ class Api extends Component
     /**
      * Returns info about the current Craft license.
      *
+     * @param string[] $include
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function getLicenseInfo(): array
+    public function getLicenseInfo(array $include = []): array
     {
-        $response = $this->request('GET', 'cms-licenses');
+        $response = $this->request('GET', 'cms-licenses', [
+            'query' => ['include' => implode(',', $include)],
+        ]);
         $body = Json::decode((string)$response->getBody());
         return $body['license'];
     }
@@ -114,7 +117,7 @@ class Api extends Component
      */
     public function getPluginStoreData(): array
     {
-        $response = $this->request('POST', 'plugin-store');
+        $response = $this->request('GET', 'plugin-store');
         return Json::decode((string)$response->getBody());
     }
 
@@ -128,7 +131,7 @@ class Api extends Component
      */
     public function getPluginDetails(int $pluginId): array
     {
-        $response = $this->request('POST', 'plugin/'.$pluginId);
+        $response = $this->request('GET', 'plugin/'.$pluginId);
         return Json::decode((string)$response->getBody());
     }
 
@@ -142,7 +145,7 @@ class Api extends Component
      */
     public function getDeveloper(int $developerId): array
     {
-        $response = $this->request('POST', 'developer/'.$developerId);
+        $response = $this->request('GET', 'developer/'.$developerId);
         return Json::decode((string)$response->getBody());
     }
 

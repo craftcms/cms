@@ -10,12 +10,17 @@ const state = {
     cart: null,
     cartForm: null,
     stripePublicKey: null,
+    identityMode: 'craftid',
 };
 
 /**
  * Getters
  */
 const getters = {
+
+    identityMode(state) {
+        return state.identityMode
+    },
 
     isInTrial(state, rootState) {
         return plugin => {
@@ -44,7 +49,7 @@ const getters = {
 
         let plugins = rootState.craftData.installedPlugins.map(installedPlugin => {
             if (rootState.pluginStoreData.plugins) {
-                return rootState.pluginStoreData.plugins.find(p => p.handle == installedPlugin.handle)
+                return rootState.pluginStoreData.plugins.find(p => p.handle === installedPlugin.handle && !installedPlugin.hasLicenseKey)
             }
         });
 
@@ -93,6 +98,10 @@ const getters = {
  * Actions
  */
 const actions = {
+
+    setIdentityMode({commit}, mode) {
+        commit(types.CHANGE_IDENTITY_MODE, {mode})
+    },
 
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
@@ -145,14 +154,7 @@ const actions = {
             api.checkout(data)
                 .then(response => {
                     commit(types.CHECKOUT, {response})
-                    dispatch('resetCart')
-                        .then(() => {
-                            resolve(response)
-                        })
-                        .catch(() => {
-                            reject(response)
-                        })
-
+                    resolve(response)
                 })
                 .catch(response => {
                     reject(response)
@@ -166,12 +168,28 @@ const actions = {
                 .then(orderNumber => {
                     if (orderNumber) {
                         api.getCart(orderNumber, response => {
-                            commit(types.RECEIVE_CART, {response})
-                            resolve(response)
+                            if(!response.error) {
+                                commit(types.RECEIVE_CART, {response})
+                                resolve(response)
+                            } else {
+                                // Couldn’t get cart for this order number? Try to create a new one.
+                                const data = {
+                                    email: rootState.craft.craftData.currentUser.email,
+                                }
+
+                                api.createCart(data, response2 => {
+                                    commit(types.RECEIVE_CART, {response: response2})
+                                    dispatch('saveOrderNumber', {orderNumber: response2.cart.number})
+                                    resolve(response)
+                                }, response => {
+                                    reject(response)
+                                })
+                            }
                         }, response => {
                             reject(response)
                         })
                     } else {
+                        // No order number yet? Create a new cart.
                         const data = {
                             email: rootState.craft.craftData.currentUser.email,
                         }
@@ -193,8 +211,12 @@ const actions = {
             const cart = state.cart
 
             api.updateCart(cart.number, data, response => {
-                commit(types.RECEIVE_CART, {response})
-                resolve(response)
+                if (!response.errors) {
+                    commit(types.RECEIVE_CART, {response})
+                    resolve(response)
+                } else {
+                    reject(response)
+                }
             }, response => {
                 reject(response)
             })
@@ -238,6 +260,35 @@ const actions = {
         api.saveOrderNumber(orderNumber)
     },
 
+    savePluginLicenseKeys({state, rootState}, cart) {
+        return new Promise((resolve, reject) => {
+            let pluginLicenseKeys = []
+
+            cart.lineItems.forEach(lineItem => {
+                if(lineItem.purchasable.type === 'plugin-edition') {
+                    if(rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
+                        pluginLicenseKeys.push({
+                            handle: lineItem.purchasable.plugin.handle,
+                            key: lineItem.options.licenseKey.substr(4)
+                        })
+                    }
+                }
+            })
+
+            const data = {
+                pluginLicenseKeys
+            }
+
+            api.savePluginLicenseKeys(data)
+                .then(response => {
+                    resolve(response)
+                })
+                .catch(response => {
+                    reject(response)
+                });
+        })
+    }
+
 };
 
 /**
@@ -254,9 +305,13 @@ const mutations = {
         state.cart = null;
     },
 
-    [types.CHECKOUT](state, {order}) {
+    [types.CHECKOUT](state, {response}) {
 
     },
+
+    [types.CHANGE_IDENTITY_MODE](state, mode) {
+        state.identityMode = mode
+    }
 
 };
 

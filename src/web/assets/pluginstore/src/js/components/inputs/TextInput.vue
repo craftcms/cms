@@ -1,11 +1,22 @@
 <template>
-	<input class="text fullwidth" :class="{'error': error }" type="text" :id="id" :placeholder="placeholder" autocomplete="off" :value="value" @input="$emit('input', $event.target.value)">
+	<div class="input ltr" :class="{'errors': errors, 'success': success }">
+		<input
+				type="text"
+				class="text"
+				autocomplete="off"
+				:class="{'fullwidth': !size }"
+				:id="id"
+				:placeholder="placeholder"
+				:value="value"
+				:size="size"
+				@input="$emit('input', $event.target.value)" />
+	</div>
 </template>
 
 <script>
     export default {
 
-        props: ['id', 'placeholder', 'value', 'error'],
+        props: ['id', 'placeholder', 'value', 'size', 'errors', 'success'],
 
     }
 </script>

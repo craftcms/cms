@@ -64,6 +64,13 @@ $minLargeScreenWidth: 1824px;
   }
 }
 
+.input.success input {
+  border-color: $successColor;
+}
+
+.input.errors .select:not(.selectize) select {
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+}
 
 /* Plugin Store actions */
 
@@ -517,13 +524,29 @@ ul.categories {
 
 /* Payment */
 
-.block {
-  position: relative;
+.payment {
+  .blocks {
+    display: flex;
+    margin: 0 -20px;
 
-  .block-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
+    .block {
+      flex-grow: 1;
+      padding: 0 20px;
+      width: 50%;
+    }
+  }
+
+  .multiselectrow {
+    display: flex;
+    .input {
+      width: 50%;
+      .select {
+        width: 100%;
+        select {
+          width: 100%;
+        }
+      }
+    }
   }
 }
 

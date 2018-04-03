@@ -32,11 +32,10 @@ Garnish.$doc.ready(function() {
               plugin: null,
               pluginId: null,
               modalStep: null,
-              pluginStoreDataLoading: true,
               pluginStoreDataLoaded: false,
               pluginStoreDataError: false,
-              craftIdDataLoading: true,
               craftIdDataLoaded: false,
+              cartDataLoaded: false,
               showModal: false,
               lastOrder: null,
               statusMessage: null,
@@ -142,7 +141,8 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                this.$store.dispatch('updateCraftId', { craftId });
+                this.$store.dispatch('updateCraftId', { craftId })
+                this.$emit('craftIdUpdated')
             },
 
         },
@@ -171,47 +171,45 @@ Garnish.$doc.ready(function() {
             // Disconnect form
             this.$craftIdDisconnectForm = $('#craftid-disconnect-form');
 
-            // On all data loaded
-            this.$on('allDataLoaded', function() {
-                this.$pluginStoreActions.removeClass('hidden');
-                this.$pluginStoreActionsSpinner.addClass('hidden');
+            // On data loaded
+            this.$on('dataLoaded', function() {
+                if(this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded)) {
+                    this.$pluginStoreActionsSpinner.removeClass('hidden');
+                }
+
+                if(this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
+                    // All data loaded
+                    this.$pluginStoreActions.removeClass('hidden');
+                    this.$pluginStoreActionsSpinner.addClass('hidden');
+                }
             }.bind(this));
 
-            // Dispatch actions
-            this.$store.dispatch('getCraftData')
-                .then(data => {
-                    this.craftIdDataLoading = false;
-                    this.craftIdDataLoaded = true;
-                    this.$emit('craftIdDataLoaded');
-
-                    if(this.pluginStoreDataLoaded) {
-                        this.$emit('allDataLoaded');
-                    }
-
-                    this.$store.dispatch('getCart')
-                })
-                .catch(response => {
-                    this.craftIdDataLoading = false;
-                    this.craftIdDataLoaded = true;
-                    this.$emit('craftIdDataLoaded');
-                });
-
+            // Load Plugin Store data
             this.$store.dispatch('getPluginStoreData')
                 .then(data => {
-                    this.pluginStoreDataLoading = false;
                     this.pluginStoreDataLoaded = true;
-                    this.$emit('pluginStoreDataLoaded');
-
-                    if(this.craftIdDataLoaded) {
-                        this.$emit('allDataLoaded');
-                    } else {
-                        this.$pluginStoreActionsSpinner.removeClass('hidden');
-                    }
+                    this.$emit('dataLoaded');
                 })
                 .catch(response => {
-                    this.pluginStoreDataLoading = false;
                     this.pluginStoreDataError = true;
                     this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
+                });
+
+            // Load Craft data
+            this.$store.dispatch('getCraftData')
+                .then(data => {
+                    this.craftIdDataLoaded = true;
+                    this.$emit('dataLoaded');
+
+                    // Load cart
+                    this.$store.dispatch('getCart')
+                        .then(() => {
+                            this.cartDataLoaded = true;
+                            this.$emit('dataLoaded');
+                        })
+                })
+                .catch(response => {
+                    this.craftIdDataLoaded = true;
                 });
         },
 
