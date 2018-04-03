@@ -294,8 +294,7 @@ class PluginStoreController extends Controller
             $data['canTestEditions'] = $canTestEditions;
 
             $data['CraftEdition'] = Craft::$app->getEdition();
-            $data['CraftPersonal'] = Craft::Personal;
-            $data['CraftClient'] = Craft::Client;
+            $data['CraftSolo'] = Craft::Solo;
             $data['CraftPro'] = Craft::Pro;
         }
 

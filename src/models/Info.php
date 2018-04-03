@@ -7,6 +7,7 @@
 
 namespace craft\models;
 
+use Craft;
 use craft\base\Model;
 
 /**
@@ -38,7 +39,7 @@ class Info extends Model
     /**
      * @var int Edition
      */
-    public $edition = \Craft::Personal;
+    public $edition = Craft::Solo;
 
     /**
      * @var string System name

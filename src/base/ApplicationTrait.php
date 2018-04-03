@@ -376,8 +376,8 @@ trait ApplicationTrait
     public function getCanUpgradeEdition(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Only admin & client accounts can upgrade Craft
-        if ($this->getUser()->getIsAdmin() || Craft::$app->getEdition() === Craft::Client) {
+        // Only admin accounts can upgrade Craft
+        if ($this->getUser()->getIsAdmin()) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();

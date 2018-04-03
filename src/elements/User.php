@@ -421,11 +421,6 @@ class User extends Element implements IdentityInterface
     public $admin = false;
 
     /**
-     * @var bool Client
-     */
-    public $client = false;
-
-    /**
      * @var bool Locked
      */
     public $locked = false;
@@ -1017,7 +1012,7 @@ class User extends Element implements IdentityInterface
      */
     public function can(string $permission): bool
     {
-        if (Craft::$app->getEdition() >= Craft::Client) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->admin) {
                 return true;
             }
@@ -1095,10 +1090,6 @@ class User extends Element implements IdentityInterface
     {
         if ($this->getIsCurrent()) {
             return UrlHelper::cpUrl('myaccount');
-        }
-
-        if (Craft::$app->getEdition() === Craft::Client && $this->client) {
-            return UrlHelper::cpUrl('clientaccount');
         }
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -1291,7 +1282,6 @@ class User extends Element implements IdentityInterface
         $record->photoId = $this->photoId;
         $record->email = $this->email;
         $record->admin = $this->admin;
-        $record->client = $this->client;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
 

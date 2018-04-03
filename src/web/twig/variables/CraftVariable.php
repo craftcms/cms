@@ -113,24 +113,18 @@ class CraftVariable extends ServiceLocator
             'session' => UserSession::class,
         ];
 
-        switch (Craft::$app->getEdition()) {
-            case Craft::Pro:
-                /** @noinspection PhpDeprecationInspection */
-                $components = array_merge($components, [
-                    // Deprecated
-                    'userGroups' => UserGroups::class,
-                ]);
-            // no break
-            case Craft::Client:
-                /** @noinspection PhpDeprecationInspection */
-                /** @noinspection SuspiciousAssignmentsInspection */
-                $components = array_merge($components, [
-                    'rebrand' => Rebrand::class,
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            /** @noinspection PhpDeprecationInspection */
+            /** @noinspection PhpDeprecationInspection */
+            /** @noinspection SuspiciousAssignmentsInspection */
+            $components = array_merge($components, [
+                'rebrand' => Rebrand::class,
 
-                    // Deprecated
-                    'emailMessages' => EmailMessages::class,
-                    'userPermissions' => UserPermissions::class,
-                ]);
+                // Deprecated
+                'emailMessages' => EmailMessages::class,
+                'userGroups' => UserGroups::class,
+                'userPermissions' => UserPermissions::class,
+            ]);
         }
 
         // todo: remove all this before 3.0 GA

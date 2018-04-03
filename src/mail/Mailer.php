@@ -112,7 +112,7 @@ class Mailer extends \yii\swiftmailer\Mailer
             $textBody = $view->renderString($textBodyTemplate, $variables);
 
             // Is there a custom HTML template set?
-            if (Craft::$app->getEdition() >= Craft::Client && $this->template) {
+            if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
                 $template = $this->template;
             } else {
                 // Default to the _special/email.html template

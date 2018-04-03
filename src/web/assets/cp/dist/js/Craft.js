@@ -1,4 +1,4 @@
-/*!   - 2018-03-28 */
+/*!   - 2018-04-02 */
 (function($){
 
 /** global: Craft */
@@ -19110,10 +19110,6 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
             switch (this.edition) {
                 case 1: {
-                    this.$checkoutLogo.attr('class', 'logo craftclient').text('Client');
-                    break;
-                }
-                case 2: {
                     this.$checkoutLogo.attr('class', 'logo craftpro').text('Pro');
                     break;
                 }

@@ -36,7 +36,7 @@ class App
      */
     public static function editions(): array
     {
-        return [Craft::Personal, Craft::Client, Craft::Pro];
+        return [Craft::Solo, Craft::Pro];
     }
 
     /**
@@ -47,14 +47,7 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Client:
-                return 'Client';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                return 'Personal';
-        }
+        return ($edition == Craft::Pro) ? 'Pro' : 'Solo';
     }
 
     /**

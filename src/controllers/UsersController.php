@@ -501,73 +501,41 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
-        $isClientAccount = false;
 
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
-                switch ($userId) {
-                    case 'current':
-                        if ($user) {
-                            /** @var User $user */
-                            // Make sure it's actually the current user
-                            if (!$user->getIsCurrent()) {
-                                throw new BadRequestHttpException('Not the current user');
-                            }
-                        } else {
-                            // Get the current user
-                            $user = Craft::$app->getUser()->getIdentity();
+                if ($userId == 'current') {
+                    if ($user) {
+                        /** @var User $user */
+                        // Make sure it's actually the current user
+                        if (!$user->getIsCurrent()) {
+                            throw new BadRequestHttpException('Not the current user');
                         }
-                        break;
-                    case 'client':
-                        $isClientAccount = true;
-
-                        if ($user) {
-                            // Make sure it's the client account
-                            /** @var User $user */
-                            if (!$user->client) {
-                                throw new BadRequestHttpException('Not the client account');
-                            }
-                        } else {
-                            // Get the existing client account, if there is one
-                            /** @var User|null $user */
-                            $user = User::find()
-                                ->client()
-                                ->status(null)
-                                ->addSelect('users.passwordResetRequired')
-                                ->one();
-
-                            if (!$user) {
-                                // Registering the Client
-                                $user = new User();
-                                $user->client = true;
-                            }
+                    } else {
+                        // Get the current user
+                        $user = Craft::$app->getUser()->getIdentity();
+                    }
+                } else {
+                    if ($user) {
+                        // Make sure they have the right ID
+                        /** @var User $user */
+                        if ($user->id != $userId) {
+                            throw new BadRequestHttpException('Not the right user ID');
                         }
-                        break;
-                    default:
-                        if ($user) {
-                            // Make sure they have the right ID
-                            /** @var User $user */
-                            if ($user->id != $userId) {
-                                throw new BadRequestHttpException('Not the right user ID');
-                            }
-                        } else {
-                            // Get the user by its ID
-                            /** @var User|null $user */
-                            $user = User::find()
-                                ->id($userId)
-                                ->status(null)
-                                ->addSelect('users.passwordResetRequired')
-                                ->one();
+                    } else {
+                        // Get the user by its ID
+                        /** @var User|null $user */
+                        $user = User::find()
+                            ->id($userId)
+                            ->status(null)
+                            ->addSelect('users.passwordResetRequired')
+                            ->one();
 
-                            if (!$user) {
-                                throw new NotFoundHttpException('User not found');
-                            }
-
-                            if ($user->client) {
-                                $isClientAccount = true;
-                            }
+                        if (!$user) {
+                            throw new NotFoundHttpException('User not found');
                         }
+                    }
                 }
             } else {
                 if ($edition === Craft::Pro) {
@@ -604,7 +572,7 @@ class UsersController extends Controller
         $destructiveActions = [];
         $miscActions = [];
 
-        if ($edition >= Craft::Client && !$isNewUser) {
+        if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
                 case User::STATUS_PENDING:
                     $statusLabel = Craft::t('app', 'Unverified');
@@ -720,11 +688,7 @@ class UsersController extends Controller
                 $title = Craft::t('app', '{user}’s Account', ['user' => $user->getName()]);
             }
         } else {
-            if ($isClientAccount) {
-                $title = Craft::t('app', 'Register the client’s account');
-            } else {
-                $title = Craft::t('app', 'Register a new user');
-            }
+            $title = Craft::t('app', 'Register a new user');
         }
 
         $selectedTab = 'account';
@@ -764,14 +728,13 @@ class UsersController extends Controller
             }
         }
 
-        // Show the permission tab for the users that can change them on Craft Client+ editions (unless
-        // you're on Client and you're the admin account. No need to show since we always need an admin on Client)
+        // Show the permission tab for the users that can change them on Craft Pro editions
         if (
-            ($edition === Craft::Pro && (
-                    Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
-                    Craft::$app->getUser()->checkPermission('assignUserGroups')
-                )) ||
-            ($edition === Craft::Client && $isClientAccount && Craft::$app->getUser()->getIsAdmin())
+            $edition === Craft::Pro &&
+            (
+                Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
+                Craft::$app->getUser()->checkPermission('assignUserGroups')
+            )
         ) {
             $tabs['perms'] = [
                 'label' => Craft::t('app', 'Permissions'),
@@ -921,43 +884,23 @@ class UsersController extends Controller
                 $this->requirePermission('editUsers');
             }
         } else {
-            if ($edition === Craft::Client) {
-                // Make sure they're logged in
-                $this->requireAdmin();
+            // Make sure this is Craft Pro, since that's required for having multiple user accounts
+            Craft::$app->requireEdition(Craft::Pro);
 
-                // Make sure there's no Client user yet
-                $clientExists = User::find()
-                    ->client()
-                    ->status(null)
-                    ->exists();
-
-                if ($clientExists) {
-                    throw new BadRequestHttpException('A client account already exists');
-                }
-
-                $user = new User();
-                $user->client = true;
+            // Is someone logged in?
+            if ($currentUser) {
+                // Make sure they have permission to register users
+                $this->requirePermission('registerUsers');
             } else {
-                // Make sure this is Craft Pro, since that's required for having multiple user accounts
-                Craft::$app->requireEdition(Craft::Pro);
-
-                // Is someone logged in?
-                if ($currentUser) {
-                    // Make sure they have permission to register users
-                    $this->requirePermission('registerUsers');
-                } else {
-                    // Make sure public registration is allowed
-                    if (!Craft::$app->getSystemSettings()->getSetting('users',
-                        'allowPublicRegistration')
-                    ) {
-                        throw new ForbiddenHttpException('Public registration is not allowed');
-                    }
-
-                    $thisIsPublicRegistration = true;
+                // Make sure public registration is allowed
+                if (!Craft::$app->getSystemSettings()->getSetting('users', 'allowPublicRegistration')) {
+                    throw new ForbiddenHttpException('Public registration is not allowed');
                 }
 
-                $user = new User();
+                $thisIsPublicRegistration = true;
             }
+
+            $user = new User();
         }
 
         $isCurrentUser = $user->getIsCurrent();
@@ -1783,7 +1726,7 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
         $edition = Craft::$app->getEdition();
 
-        if ($edition >= Craft::Client && $currentUser->can('assignUserPermissions')) {
+        if ($edition === Craft::Pro && $currentUser->can('assignUserPermissions')) {
             // Save any user permissions
             if ($user->admin) {
                 $permissions = [];

@@ -40,8 +40,8 @@
                     '<a href="' + entry.url + '">' + entry.title + '</a> ' +
                     '<span class="light">' +
                     (entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
-                    (entry.dateCreated && entry.username && Craft.edition >= Craft.Client ? ', ' : '') +
-                    (entry.username && Craft.edition >= Craft.Client ? entry.username : '') +
+                    (entry.dateCreated && entry.username && Craft.edition == Craft.Pro ? ', ' : '') +
+                    (entry.username && Craft.edition == Craft.Pro ? entry.username : '') +
                     '</span>' +
                     '</td>' +
                     '</tr>'

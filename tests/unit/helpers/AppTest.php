@@ -21,13 +21,12 @@ class AppTest extends \Codeception\TestCase\Test
 
     public function testEditions()
     {
-        $this->assertEquals([Craft::Personal, Craft::Client, Craft::Pro], App::editions());
+        $this->assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
 
     public function testEditionName()
     {
-        $this->assertEquals('Personal', App::editionName(Craft::Personal));
-        $this->assertEquals('Client', App::editionName(Craft::Client));
+        $this->assertEquals('Solo', App::editionName(Craft::Solo));
         $this->assertEquals('Pro', App::editionName(Craft::Pro));
     }
 

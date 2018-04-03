@@ -36,9 +36,9 @@
                 <div class="btn test" data-edition="{{ edition }}">{{ "Reinstall"|t('app') }}</div>
             {% endif %}
 
-            {# Show the "Uninstall" button if this is the currently-installed edition, but they are only licensed to use Craft Personal #}
-            {# (Not necessary to show if the licensed edition is Client/Pro as they will have their own "Install" button) #}
-            {% if edition == CraftEdition and licensedEdition == CraftPersonal %}
+            {# Show the "Uninstall" button if this is the currently-installed edition, but they are only licensed to use Craft Solo #}
+            {# (Not necessary to show if the licensed edition is Pro as they will have their own "Install" button) #}
+            {% if edition == CraftEdition and licensedEdition == CraftSolo %}
                 <div class="btn test" data-edition="0">{{ "Uninstall"|t('app') }}</div>
             {% endif %}
         </div>
@@ -55,12 +55,8 @@
         <tr class="logos">
             <td></td>
             <th scope="col">
-                <h1 class="logo">Personal</h1>
-                <p>{{ "For sites built by and for the developer."|t('app') }}</p>
-            </th>
-            <th scope="col">
-                <h1 class="logo">Client</h1>
-                <p>{{ "For sites built for clients with only one content manager."|t('app') }}</p>
+                <h1 class="logo">Solo</h1>
+                <p>{{ "For personal projects."|t('app') }}</p>
             </th>
             <th scope="col">
                 <h1 class="logo">Pro</h1>
@@ -69,20 +65,17 @@
         </tr>
         <tr class="license-statuses">
             <td></td>
-            <td>{{ statusBadge(CraftPersonal, licensedEdition) }}</td>
-            <td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
+            <td>{{ statusBadge(CraftSolo, licensedEdition) }}</td>
             <td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
         </tr>
         <tr class="price">
             <th scope="row" class="feature">{{ "One-Time Price"|t('app') }}</th>
             <td>{{ "Free"|t('app') }}</td>
-            <td>{{ price(CraftClient, editions[CraftClient]) }}</td>
             <td>{{ price(CraftPro, editions[CraftPro]) }}</td>
         </tr>
         <tr class="buybtns">
             <td></td>
             <td></td>
-            <td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
             <td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
         </tr>
         </thead>
@@ -93,24 +86,20 @@
         <tr>
             <th class="feature" scope="row">{{ "Additional user accounts"|t('app') }}</th>
             <td>{{ "One Admin account"|t('app') }}</td>
-            <td>{{ "One “Client” account"|t('app') }}</td>
             <td>{{ "Unlimited"|t('app') }}</td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "User groups"|t('app') }}</th>
-            <td></td>
             <td></td>
             <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "User permissions"|t('app') }}</th>
             <td></td>
-            <td></td>
             <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Public user registration"|t('app') }}</th>
-            <td></td>
             <td></td>
             <td><span data-icon="check"></span></td>
         </tr>
@@ -122,18 +111,15 @@
             <th class="feature" scope="row">{{ "Custom login screen logo"|t('app') }}</th>
             <td></td>
             <td><span data-icon="check"></span></td>
-            <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Custom HTML email template"|t('app') }}</th>
             <td></td>
             <td><span data-icon="check"></span></td>
-            <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Custom email message wording"|t('app') }}</th>
             <td></td>
-            <td><span data-icon="check"></span></td>
             <td><span data-icon="check"></span></td>
         </tr>
         </tbody>

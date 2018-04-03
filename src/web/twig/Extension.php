@@ -894,8 +894,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         // CP-only variables
         if ($templateMode === View::TEMPLATE_MODE_CP) {
             $globals['CraftEdition'] = Craft::$app->getEdition();
-            $globals['CraftPersonal'] = Craft::Personal;
-            $globals['CraftClient'] = Craft::Client;
+            $globals['CraftSolo'] = Craft::Solo;
             $globals['CraftPro'] = Craft::Pro;
         }
 
