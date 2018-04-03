@@ -247,30 +247,23 @@ class PluginStoreController extends Controller
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
 
         // Countries
-        $data['countries'] = Craft::$app->getApi()->getCountries();
+        $api = Craft::$app->getApi();
+        $data['countries'] = $api->getCountries();
 
-        // ET upgrade info
-        $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
-
-        if (isset($etResponse->data->editions)) {
-            $data['editions'] = [
-                '1' => [
-                    'formattedPrice' => '$299',
-                    'formattedSalePrice' => '$299',
-                    'price' => '299.0000',
-                    'salePrice' => null,
-                ]
-            ];
-
-            $canTestEditions = Craft::$app->getCanTestEditions();
-
-            $data['licensedEdition'] = $etResponse->licensedEdition;
-            $data['canTestEditions'] = $canTestEditions;
-
-            $data['CraftEdition'] = Craft::$app->getEdition();
-            $data['CraftSolo'] = Craft::Solo;
-            $data['CraftPro'] = Craft::Pro;
+        // Craft editions
+        $data['cmsEditionPrices'] = [];
+        foreach ($api->getCmsEditions() as $editionInfo) {
+            if ($editionInfo['price']) {
+                $data['editions'][$editionInfo['handle']] = $editionInfo['price'];
+            }
         }
+
+        // Craft license/edition info
+        $data['licensedEdition'] = Craft::$app->getLicensedEdition();
+        $data['canTestEditions'] = Craft::$app->getCanTestEditions();
+        $data['CraftEdition'] = Craft::$app->getEdition();
+        $data['CraftSolo'] = Craft::Solo;
+        $data['CraftPro'] = Craft::Pro;
 
         // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
