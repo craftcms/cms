@@ -153,21 +153,14 @@ class Api extends Component
      * Order checkout.
      *
      * @param array $data
-     * @param CraftIdToken|null $craftIdToken
      *
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function checkout(array $data, CraftIdToken $craftIdtoken = null): array
+    public function checkout(array $data): array
     {
-        $headers = [];
-
-        if ($craftIdtoken) {
-            $headers['Authorization'] = 'Bearer '.$craftIdtoken->accessToken;
-        }
-
         $response = $this->request('POST', 'payments', [
-            'headers' => $headers,
+            'headers' => $this->getPluginStoreHeaders(),
             RequestOptions::BODY => Json::encode($data),
         ]);
 
@@ -267,8 +260,10 @@ class Api extends Component
     public function createCart(array $data)
     {
         $response = $this->request('POST', 'carts', [
+            'headers' => $this->getPluginStoreHeaders(),
             RequestOptions::BODY => Json::encode($data),
         ]);
+
         return Json::decode((string)$response->getBody());
     }
 
@@ -296,8 +291,10 @@ class Api extends Component
     public function updateCart(string $orderNumber, array $data)
     {
         $response = $this->request('POST', 'carts/'.$orderNumber, [
+            'headers' => $this->getPluginStoreHeaders(),
             RequestOptions::BODY => Json::encode($data),
         ]);
+
         return Json::decode((string)$response->getBody());
     }
 
@@ -495,5 +492,25 @@ class Api extends Component
         $versions[$db->getDriverName()] = $db->getVersion();
 
         return $versions;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns Plugin Store headers
+     * @return array
+     */
+    private function getPluginStoreHeaders()
+    {
+        $headers = [];
+
+        $craftIdToken = Craft::$app->getPluginStore()->getToken();
+
+        if ($craftIdToken) {
+            $headers['Authorization'] = 'Bearer '.$craftIdToken->accessToken;
+        }
+
+        return $headers;
     }
 }
