@@ -1,5 +1,5 @@
 <template>
-    <div v-if="craftData" id="upgrade-craft">
+    <div v-if="craftData && cart" id="upgrade-craft">
         <div id="upgrade-craft-compare" class="body">
             <table class="data fullwidth">
                 <thead>
@@ -31,7 +31,14 @@
                     <td></td>
                     <td>
                         <div class="btngroup">
-                            <div  @click="buyCraft('pro')" class="btn submit">Buy now</div>
+                            <template>
+                                <template v-if="!isCmsEditionInCart('pro')">
+                                    <div @click="buyCraft('pro')" class="btn submit">Buy now</div>
+                                </template>
+                                <template v-else>
+                                    <div class="btn submit disabled">Added to cart</div>
+                                </template>
+                            </template>
 
                             <template v-if="craftData.CraftEdition === craftData.CraftPro && craftData.licensedEdition === craftData.CraftSolo">
                                 <div @click="installCraft('solo')" class="btn">Uninstall</div>
@@ -114,6 +121,8 @@
         computed: {
             ...mapGetters({
                 craftData: 'craftData',
+                cart: 'cart',
+                isCmsEditionInCart: 'isCmsEditionInCart',
             }),
         },
 
@@ -125,6 +134,8 @@
             }),
 
             buyCraft(edition) {
+                this.loading = true
+
                 const item = {
                     type: 'cms-edition',
                     edition: edition,
@@ -133,6 +144,12 @@
                 }
 
                 this.addToCart([item])
+                    .then(() => {
+                        this.loading = false
+                    })
+                    .catch(() => {
+                        this.loading = false
+                    })
             },
 
             installCraft(edition) {

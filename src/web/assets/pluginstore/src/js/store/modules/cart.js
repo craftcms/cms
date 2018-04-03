@@ -34,6 +34,14 @@ const getters = {
         }
     },
 
+    isCmsEditionInCart(state) {
+        return cmsEdition => {
+            if(state.cart) {
+                return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
+            }
+        }
+    },
+
     cartTotal(state) {
         if(state.cart) {
             return state.cart.totalPrice;
