@@ -8,12 +8,8 @@
                         <img :src="craftData.craftLogo" width="70" height="70" />
                     </th>
                     <th scope="col">
-                        <h1 class="logo">Personal</h1>
-                        <p>{{ "For sites built by and for the developer." }}</p>
-                    </th>
-                    <th scope="col">
-                        <h1 class="logo">Client</h1>
-                        <p>{{ "For sites built for clients with only one content manager." }}</p>
+                        <h1 class="logo">Solo</h1>
+                        <p>{{ "For personal projects." }}</p>
                     </th>
                     <th scope="col">
                         <h1 class="logo">Pro</h1>
@@ -23,24 +19,16 @@
                 <tr class="license-statuses">
                     <td></td>
                     <td><craft-status-badge :edition="craftData.CraftPersonal" /></td>
-                    <td><craft-status-badge :edition="craftData.CraftClient" /></td>
                     <td><craft-status-badge :edition="craftData.CraftPro" /></td>
                 </tr>
                 <tr class="price">
-                    <th scope="row" class="feature">{{ "One-Time Price" }}</th>
+                    <th scope="row" class="feature">{{ "Price" }}</th>
                     <td>{{ "Free" }}</td>
-                    <td v-if="craftData.editions">{{ craftData.editions[1].formattedPrice }}</td>
                     <td v-if="craftData.editions">{{ craftData.editions[2].formattedPrice }}</td>
                 </tr>
                 <tr class="buybtns">
                     <td></td>
                     <td></td>
-                    <td>
-                        <div class="btngroup">
-                            <a @click="buyCraft('solo')" class="btn submit">Buy now</a>
-                            <a @click="installCraft('solo')" class="btn">Try for free</a>
-                        </div>
-                    </td>
                     <td>
                         <div class="btngroup">
                             <div  @click="buyCraft('pro')" class="btn submit">Buy now</div>
@@ -56,47 +44,40 @@
                 <tr>
                     <th class="feature" scope="row">{{ "Additional user accounts" }}</th>
                     <td>{{ "One Admin account" }}</td>
-                    <td>{{ "One “Client” account" }}</td>
                     <td>{{ "Unlimited" }}</td>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "User groups" }}</th>
-                    <td></td>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "User permissions" }}</th>
                     <td></td>
-                    <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "Public user registration" }}</th>
                     <td></td>
-                    <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
 
                 <tr>
-                    <th class="group" colspan="4">{{ "System Branding" }}</th>
+                    <th class="group" colspan="3">{{ "System Branding" }}</th>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "Custom login screen logo" }}</th>
                     <td></td>
-                    <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "Custom HTML email template" }}</th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
-                    <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "Custom email message wording" }}</th>
                     <td></td>
-                    <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 </tbody>
