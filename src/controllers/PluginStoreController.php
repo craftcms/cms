@@ -223,9 +223,7 @@ class PluginStoreController extends Controller
 
         $data = [];
 
-
         // Installed plugins
-
         $plugins = Craft::$app->getPlugins()->getComposerPluginInfo();
         $installedPlugins = [];
 
@@ -242,26 +240,18 @@ class PluginStoreController extends Controller
 
         $data['installedPlugins'] = $installedPlugins;
 
-
         // Current user
-
         $data['currentUser'] = Craft::$app->getUser()->getIdentity();
 
-
         // Craft ID account
-
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
 
-
         // Countries
-
         $countriesData = Craft::$app->getApi()->getCountries();
-
         $data['countries'] = $countriesData['countries'];
 
 
         // ET upgrade info
-
         $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
         if (isset($etResponse->data->editions)) {
@@ -283,10 +273,8 @@ class PluginStoreController extends Controller
             $data['CraftSolo'] = Craft::Solo;
             $data['CraftPro'] = Craft::Pro;
         }
-
-
-        // Craft logo
-
+        
+        // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
         $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/powered_by_stripe.svg');
 
