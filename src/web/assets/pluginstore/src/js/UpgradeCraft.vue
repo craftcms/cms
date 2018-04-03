@@ -18,7 +18,7 @@
                 </tr>
                 <tr class="license-statuses">
                     <td></td>
-                    <td><craft-status-badge :edition="craftData.CraftPersonal" /></td>
+                    <td><craft-status-badge :edition="craftData.CraftSolo" /></td>
                     <td><craft-status-badge :edition="craftData.CraftPro" /></td>
                 </tr>
                 <tr class="price">
@@ -32,7 +32,14 @@
                     <td>
                         <div class="btngroup">
                             <div  @click="buyCraft('pro')" class="btn submit">Buy now</div>
-                            <div @click="installCraft('pro')" class="btn">Try for free</div>
+
+                            <template v-if="craftData.CraftEdition === craftData.CraftPro && craftData.licensedEdition === craftData.CraftSolo">
+                                <div @click="installCraft()" class="btn">Uninstall</div>
+                            </template>
+
+                            <template v-else>
+                                <div @click="installCraft('pro')" class="btn">Try for free</div>
+                            </template>
                         </div>
                     </td>
                 </tr>
