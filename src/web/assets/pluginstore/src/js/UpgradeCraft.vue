@@ -40,6 +40,8 @@
                             <template v-else>
                                 <div @click="installCraft('pro')" class="btn">Try for free</div>
                             </template>
+
+                            <div v-if="loading" class="spinner"></div>
                         </div>
                     </td>
                 </tr>
@@ -99,6 +101,12 @@
 
     export default {
 
+        data() {
+            return {
+                loading: false,
+            }
+        },
+
         components: {
             CraftStatusBadge
         },
@@ -128,15 +136,19 @@
             },
 
             installCraft(edition) {
+                this.loading = true
+
                 this.tryEdition(edition)
                     .then(() =>  {
                         this.getCraftData()
                             .then(() => {
-                                this.$root.displayNotice("Craft CMS edition changed.");
+                                this.loading = false
+                                this.$root.displayNotice("Craft CMS edition changed.")
                             })
                     })
                     .catch(() => {
-                        this.$root.displayError("Couldn’t change Craft CMS edition.");
+                        this.loading = false
+                        this.$root.displayError("Couldn’t change Craft CMS edition.")
                     })
             },
 
