@@ -359,6 +359,7 @@ const utils = {
                         plugin: lineItem.purchasable.plugin.handle,
                         edition: lineItem.purchasable.handle,
                         autoRenew: lineItem.options.autoRenew,
+                        cmsLicenseKey: lineItem.options.cmsLicenseKey,
                     })
                     break;
                 case 'cms-edition':
