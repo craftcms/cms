@@ -155,6 +155,7 @@
                 this.addToCart([item])
                     .then(() => {
                         this.loading = false
+                        this.$root.openGlobalModal('cart')
                     })
                     .catch(() => {
                         this.loading = false
