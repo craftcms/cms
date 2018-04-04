@@ -196,6 +196,8 @@
             this.$root.$on('allDataLoaded', function() {
                 Craft.initUiElements(this.$refs.upgradecraft);
             }.bind(this));
+
+            Craft.initUiElements(this.$refs.upgradecraft);
         },
     }
 </script>
