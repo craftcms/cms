@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Stop displaying full exception messages to users, unless that exception is an instance of `UserException`
+
 ### Deprecated
 - Brought back and depretated the `Craft::Personal` and `Craft::Client` constants.
 

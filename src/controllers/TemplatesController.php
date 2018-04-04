@@ -12,6 +12,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\Controller;
 use ErrorException;
+use yii\base\UserException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -162,6 +163,12 @@ class TemplatesController extends Controller
             $statusCode = '500';
         }
 
+        if (!$exception instanceof UserException) {
+            $message = Craft::t('app', 'Server Error');
+        } else {
+            $message = $exception->getMessage();
+        }
+
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
@@ -187,7 +194,7 @@ class TemplatesController extends Controller
         }
 
         $variables = array_merge([
-            'message' => $exception->getMessage(),
+            'message' => $message,
             'code' => $exception->getCode(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
