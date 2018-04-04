@@ -2119,7 +2119,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($criteria instanceof ElementQueryInterface) {
-            $query = $criteria;
+            $query = clone $criteria;
         } else {
             $query = static::find()
                 ->siteId($this->siteId);
