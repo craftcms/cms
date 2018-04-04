@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Deprecated
+- Brought back and depretated the `Craft::Personal` and `Craft::Client` constants.
+
 ## 3.0.0.2 - 2018-04-04
 
 ### Fixed
