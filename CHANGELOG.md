@@ -3,15 +3,17 @@
 ## 2.6.3014 - 2018-04-04
 
 ## Changed
-- Renamed the Personal edition to “Solo”.
-- The `preventUserEnumeration` config setting is now applied to locked user accounts.
+- Renamed the Personal edition to “Solo”.x
 - Updated Redactor to 2.12.
 
 ### Fixed
-- Fixed a bug where an exception could expose a partial server path in some circumstances.
 - Fixed a bug where Rich Text fields weren’t respecting the `toolbarFixed` Redactor config option.
 - Fixed a bug where Rich Text fields would not honor the `imageTag` config setting when inserting an image.
 - Fixed a bug where the `modifyAssetFilename` hook was being run twice on asset upload. ([#2624](https://github.com/craftcms/cms/issues/2624)
+
+### Security
+- Fixed a bug where an exception could expose a partial server path in some circumstances.
+- Fixed a bug where an exception could expose a partial server path in some circumstances.
 
 ## 2.6.3013 - 2018-03-23
 
