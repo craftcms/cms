@@ -893,7 +893,7 @@ return [
     'Similar issues on GitHub' => 'Vergelijkbare issues op GitHub',
     'Similar questions on Stack Exchange' => 'Vergelijkbare vragen op Stack Exchange',
     'Single-line text' => 'Enkele-lijn tekst',
-    'Singles' => 'Eenmalig',
+    'Singles' => 'Singles',
     'Site' => 'Website',
     'Site Icon' => 'Site icoon',
     'Site Settings' => 'Website-instellingen',
