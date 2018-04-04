@@ -6,9 +6,9 @@ use Craft;
 use craft\db\Migration;
 
 /**
- * m180404_172937_edition_changes migration.
+ * m180404_182320_edition_changes migration.
  */
-class m180404_172937_edition_changes extends Migration
+class m180404_182320_edition_changes extends Migration
 {
     /**
      * @inheritdoc
@@ -16,6 +16,11 @@ class m180404_172937_edition_changes extends Migration
     public function safeUp()
     {
         $this->update('{{%info}}', ['edition' => 1], ['edition' => 2]);
+        $info = Craft::$app->getInfo();
+        if ($info->edition == 2) {
+            $info->edition = 1;
+            Craft::$app->saveInfo($info);
+        }
 
         if ($this->db->columnExists('{{%users}}', 'client')) {
             $this->dropColumn('{{%users}}', 'client');
@@ -29,7 +34,7 @@ class m180404_172937_edition_changes extends Migration
      */
     public function safeDown()
     {
-        echo "m180404_172937_edition_changes cannot be reverted.\n";
+        echo "m180404_182320_edition_changes cannot be reverted.\n";
         return false;
     }
 }
