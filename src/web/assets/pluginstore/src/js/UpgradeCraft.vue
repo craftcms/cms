@@ -1,5 +1,5 @@
 <template>
-    <div v-if="craftData && cart" id="upgrade-craft">
+    <div ref="upgradecraft" v-if="craftData && cart" id="upgrade-craft">
         <div id="upgrade-craft-compare" class="body">
             <table class="data fullwidth">
                 <thead>
@@ -22,7 +22,7 @@
                     <td><craft-status-badge :edition="craftData.CraftPro" /></td>
                 </tr>
                 <tr class="price">
-                    <th scope="row" class="feature">{{ "Price" }}</th>
+                    <th scope="row" class="feature"></th>
                     <td>{{ "Free" }}</td>
                     <td v-if="craftData.editions">{{ craftData.editions.pro.price|currency }}</td>
                 </tr>
@@ -60,44 +60,48 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <th class="group" colspan="4">{{ "User Accounts" }}</th>
+                    <th class="group" colspan="3">{{ "Features" }}</th>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Additional user accounts" }}</th>
-                    <td>{{ "One Admin account" }}</td>
-                    <td>{{ "Unlimited" }}</td>
+                    <th class="feature" scope="row">{{ "Content Modeling" }} <span class="info">Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts</span></th>
+                    <td><span data-icon="check"></span></td>
+                    <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "User groups" }}</th>
+                    <th class="feature" scope="row">{{ "Multi-site Multi-lingual" }} <span class="info">Includes Multiple locales, Section and entry locale targeting, Content translations</span></th>
+                    <td><span data-icon="check"></span></td>
+                    <td><span data-icon="check"></span></td>
+                </tr>
+                <tr>
+                    <th class="feature" scope="row">{{ "Cloud Storage Integration" }}</th>
+                    <td><span data-icon="check"></span></td>
+                    <td><span data-icon="check"></span></td>
+                </tr>
+                <tr>
+                    <th class="feature" scope="row">{{ "User Accounts" }} <span class="info">Includes User accounts, User groups, User permissions, Public user registration</span></th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "User permissions" }}</th>
+                    <th class="feature" scope="row">{{ "System Branding" }} <span class="info">Includes Custom login screen logo, Custom site icon, Custom HTML email template, Custom email message wording</span></th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Public user registration" }}</th>
-                    <td></td>
+                    <th class="group" colspan="3">{{ "Support" }}</th>
+                </tr>
+                <tr>
+                    <th class="feature" scope="row">{{ "Security & Bug Fixes" }}</th>
                     <td><span data-icon="check"></span></td>
-                </tr>
-
-                <tr>
-                    <th class="group" colspan="3">{{ "System Branding" }}</th>
-                </tr>
-                <tr>
-                    <th class="feature" scope="row">{{ "Custom login screen logo" }}</th>
-                    <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Custom HTML email template" }}</th>
-                    <td></td>
+                    <th class="feature" scope="row">{{ "Community Support (Slack, Stack Exchange)" }}</th>
+                    <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Custom email message wording" }}</th>
+                    <th class="feature" scope="row">{{ "Developer Support" }}</th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
@@ -183,7 +187,14 @@
                     path: '/',
                 }
             ];
+
             this.$root.pageTitle = 'Upgrade Craft CMS';
+        },
+
+        mounted() {
+            this.$root.$on('allDataLoaded', function() {
+                Craft.initUiElements(this.$refs.upgradecraft);
+            }.bind(this));
         },
     }
 </script>
