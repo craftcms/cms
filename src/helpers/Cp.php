@@ -96,7 +96,7 @@ class Cp
             }
 
             // Any plugin issues?
-            if (Craft::$app->getRequest()->getPathInfo() != 'settings/plugins') {
+            if ($path != 'settings/plugins') {
                 $pluginsService = Craft::$app->getPlugins();
                 $issuePlugins = [];
                 foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
