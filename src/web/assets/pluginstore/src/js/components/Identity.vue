@@ -1,6 +1,6 @@
 <template>
 	<form @submit.prevent="save()">
-		<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
+		<p><label><input type="radio" value="craftid" v-model="identityMode" /> {{ "Use your Craft ID"|t('app') }}</label></p>
 
 		<template v-if="identityMode === 'craftid'">
 			<template v-if="craftIdAccount">
@@ -11,14 +11,14 @@
 				<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
 			</template>
 
-			<p v-else><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
+			<p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
 		</template>
 
-		<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
+		<p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
 		<template v-if="identityMode === 'guest'">
 			<text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
-			<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+			<input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
 		</template>
 
 		<div v-if="loading" class="spinner"></div>

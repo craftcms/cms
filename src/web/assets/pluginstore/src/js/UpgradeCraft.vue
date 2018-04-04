@@ -9,11 +9,11 @@
                     </th>
                     <th scope="col">
                         <h1 class="logo">Solo</h1>
-                        <p>{{ "For personal projects." }}</p>
+                        <p>{{ "For personal projects."|t('app') }}</p>
                     </th>
                     <th scope="col">
                         <h1 class="logo">Pro</h1>
-                        <p>{{ "For everything else." }}</p>
+                        <p>{{ "For everything else."|t('app') }}</p>
                     </th>
                 </tr>
                 <tr class="license-statuses">
@@ -23,7 +23,7 @@
                 </tr>
                 <tr class="price">
                     <th scope="row" class="feature"></th>
-                    <td>{{ "Free" }}</td>
+                    <td>{{ "Free"|t('app') }}</td>
                     <td v-if="craftData.editions">{{ craftData.editions.pro.price|currency }}</td>
                 </tr>
                 <tr class="buybtns">
@@ -33,24 +33,24 @@
                         <div class="btngroup">
                             <template v-if="craftData.licensedEdition < craftData.CraftPro">
                                 <template v-if="!isCmsEditionInCart('pro')">
-                                    <div @click="buyCraft('pro')" class="btn submit">Buy now</div>
+                                    <div @click="buyCraft('pro')" class="btn submit">{{ "Buy now"|t('app') }}</div>
                                 </template>
                                 <template v-else>
-                                    <div class="btn submit disabled">Added to cart</div>
+                                    <div class="btn submit disabled">{{ "Added to cart"|t('app') }}</div>
                                 </template>
                             </template>
 
 
                             <template v-if="craftData.canTestEditions && craftData.CraftPro != craftData.CraftEdition && craftData.CraftPro > craftData.licensedEdition">
-                                <div @click="installCraft('pro')" class="btn">Try for free</div>
+                                <div @click="installCraft('pro')" class="btn">{{ "Try for free"|t('app') }}</div>
                             </template>
 
                             <template v-if="craftData.CraftEdition === craftData.CraftPro && craftData.licensedEdition === craftData.CraftSolo">
-                                <div @click="installCraft('solo')" class="btn">Uninstall</div>
+                                <div @click="installCraft('solo')" class="btn">{{ "Uninstall"|t('app') }}</div>
                             </template>
 
                             <template v-if="craftData.CraftPro === craftData.licensedEdition && craftData.CraftPro != craftData.CraftEdition">
-                                <div @click="installCraft('pro')" class="btn">Reinstall</div>
+                                <div @click="installCraft('pro')" class="btn">{{ "Reinstall"|t('app') }}</div>
                             </template>
 
                             <div v-if="loading" class="spinner"></div>
@@ -60,48 +60,48 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <th class="group" colspan="3">{{ "Features" }}</th>
+                    <th class="group" colspan="3">{{ "Features"|t('app') }}</th>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Content Modeling" }} <span class="info">Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts</span></th>
-                    <td><span data-icon="check"></span></td>
-                    <td><span data-icon="check"></span></td>
-                </tr>
-                <tr>
-                    <th class="feature" scope="row">{{ "Multi-site Multi-lingual" }} <span class="info">Includes Multiple locales, Section and entry locale targeting, Content translations</span></th>
+                    <th class="feature" scope="row">{{ "Content Modeling"|t('app') }} <span class="info">{{ "Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts"|t('app') }}</span></th>
                     <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Cloud Storage Integration" }}</th>
+                    <th class="feature" scope="row">{{ "Multi-site Multi-lingual"|t('app') }} <span class="info">{{ "Includes Multiple locales, Section and entry locale targeting, Content translations"|t('app') }}</span></th>
                     <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "User Accounts" }} <span class="info">Includes User accounts, User groups, User permissions, Public user registration</span></th>
+                    <th class="feature" scope="row">{{ "Cloud Storage Integration"|t('app') }}</th>
+                    <td><span data-icon="check"></span></td>
+                    <td><span data-icon="check"></span></td>
+                </tr>
+                <tr>
+                    <th class="feature" scope="row">{{ "User Accounts"|t('app') }} <span class="info">{{ "Includes User accounts, User groups, User permissions, Public user registration"|t('app') }}</span></th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "System Branding" }} <span class="info">Includes Custom login screen logo, Custom site icon, Custom HTML email template, Custom email message wording</span></th>
+                    <th class="feature" scope="row">{{ "System Branding"|t('app') }} <span class="info">{{ "Includes Custom login screen logo, Custom site icon, Custom HTML email template, Custom email message wording"|t('app') }}</span></th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="group" colspan="3">{{ "Support" }}</th>
+                    <th class="group" colspan="3">{{ "Support"|t('app') }}</th>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Security & Bug Fixes" }}</th>
-                    <td><span data-icon="check"></span></td>
-                    <td><span data-icon="check"></span></td>
-                </tr>
-                <tr>
-                    <th class="feature" scope="row">{{ "Community Support (Slack, Stack Exchange)" }}</th>
+                    <th class="feature" scope="row">{{ "Security & Bug Fixes"|t('app') }}</th>
                     <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Developer Support" }}</th>
+                    <th class="feature" scope="row">{{ "Community Support (Slack, Stack Exchange)"|t('app') }}</th>
+                    <td><span data-icon="check"></span></td>
+                    <td><span data-icon="check"></span></td>
+                </tr>
+                <tr>
+                    <th class="feature" scope="row">{{ "Developer Support"|t('app') }}</th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
@@ -189,7 +189,7 @@
                 }
             ];
 
-            this.$root.pageTitle = 'Upgrade Craft CMS';
+            this.$root.pageTitle = this.$options.filters.t('Upgrade Craft CMS', 'app');
         },
 
         mounted() {

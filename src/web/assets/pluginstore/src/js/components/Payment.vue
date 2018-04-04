@@ -4,7 +4,7 @@
 			<div class="blocks">
 				<div class="block">
 					<div v-if="cartTotal > 0">
-						<h2>Payment Method</h2>
+						<h2>{{ "Payment Method"|t('app') }}</h2>
 
 						<template v-if="craftIdAccount">
 							<p v-if="craftIdAccount && craftIdAccount.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
@@ -22,13 +22,13 @@
 						</template>
 					</div>
 
-					<h2>Coupon Code</h2>
+					<h2>{{ "Coupon Code"|t('app') }}</h2>
 					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError" />
 					<div v-if="couponCodeLoading" class="spinner"></div>
 				</div>
 
 				<div class="block">
-					<h2>Billing</h2>
+					<h2>{{ "Billing"|t('app') }}</h2>
 
 					<div class="field">
 						<div class="input">
@@ -84,7 +84,7 @@
 			<div class="centeralign">
 				<p v-if="error" class="error">{{ error }}</p>
 
-				<input type="submit" class="btn submit" :value="'Pay ' + $options.filters.currency(staticCartTotal)" />
+				<input type="submit" class="btn submit" :value="$options.filters.t('Pay', 'app')+ ' ' + $options.filters.currency(staticCartTotal)" />
 				<div v-if="loading" class="spinner"></div>
 
 				<p>
