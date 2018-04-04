@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where elements’ `getNext()` and `getPrev()` methods were modifying the element query passed into them. ([#2160](https://github.com/craftcms/cms/issues/2160))
+- Fixed a bug where Table fields could be pre-populated with one too many rows. ([#2680](https://github.com/craftcms/cms/pull/2680))
 
 ## 3.0.0.2 - 2018-04-04
 
