@@ -47,7 +47,7 @@ Craft.EditableTable = Garnish.Base.extend(
             }
 
             if (this.settings.minRows && this.rowCount < this.settings.minRows) {
-                for (var i = 0; i < this.settings.minRows; i++) {
+                for (var i = 1; i < this.settings.minRows; i++) {
                     this.addRow()
                 }
             }

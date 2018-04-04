@@ -1,4 +1,4 @@
-/*!   - 2018-04-03 */
+/*!   - 2018-04-04 */
 (function($){
 
 /** global: Craft */
@@ -12689,7 +12689,7 @@ Craft.EditableTable = Garnish.Base.extend(
             }
 
             if (this.settings.minRows && this.rowCount < this.settings.minRows) {
-                for (var i = 0; i < this.settings.minRows; i++) {
+                for (var i = 1; i < this.settings.minRows; i++) {
                     this.addRow()
                 }
             }
