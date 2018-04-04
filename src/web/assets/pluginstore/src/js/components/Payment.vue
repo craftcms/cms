@@ -392,7 +392,13 @@
             this.couponCode = this.cart.couponCode
 
 			if(this.craftIdAccount && this.craftIdAccount.billingAddress) {
-                this.billingInfo = this.craftIdAccount.billingAddress
+                if(this.craftIdAccount.billingAddress.country) {
+                    this.onCountryChange(this.craftIdAccount.billingAddress.country)
+				}
+
+                this.$nextTick(() => {
+                    this.billingInfo = this.craftIdAccount.billingAddress
+				})
             }
 		}
 

@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.1 - 2018-04-04
+
+### Deprecated
+- Brought back and depretated the `Craft::Personal` and `Craft::Client` constants.
+
+### Fixed
+- Fixed a bug where elements’ `getNext()` and `getPrev()` methods were modifying the element query passed into them. ([#2160](https://github.com/craftcms/cms/issues/2160))
+- Fixed a bug where Table fields could be pre-populated with one too many rows. ([#2680](https://github.com/craftcms/cms/pull/2680))
+
+### Security
+- Craft no longer sends exception messages to error templates, unless the exception is an instance of `yii\base\UserException`.
+
 ## 3.0.0.2 - 2018-04-04
 
 ### Fixed

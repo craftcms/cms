@@ -31,6 +31,15 @@ class Craft extends Yii
     const Solo = 0;
     const Pro = 1;
 
+    /**
+     * @deprecated in 3.0.0. Use [[Solo]] instead.
+     */
+    const Personal = 0;
+    /**
+     * @deprecated in 3.0.0. Use [[Pro]] instead.
+     */
+    const Client = 1;
+
     // Properties
     // =========================================================================
 
