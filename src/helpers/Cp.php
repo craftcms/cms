@@ -56,15 +56,17 @@ class Cp
             // Get the license key status
             $licenseKeyStatus = Craft::$app->getCache()->get('licenseKeyStatus');
 
-            // Invalid license?
-            if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
-                $alerts[] = Craft::t('app', 'Your license key is invalid.');
-            } else if (Craft::$app->getHasWrongEdition()) {
-                $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
-                        'edition' => Craft::$app->getEditionName(),
-                        'licensedEdition' => Craft::$app->getLicensedEditionName()
-                    ]).
-                    ' <a class="go edition-resolution">'.Craft::t('app', 'Resolve').'</a>';
+            if ($path !== 'plugin-store/upgrade-craft') {
+                // Invalid license?
+                if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
+                    $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
+                } else if (Craft::$app->getHasWrongEdition()) {
+                    $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
+                            'edition' => Craft::$app->getEditionName(),
+                            'licensedEdition' => Craft::$app->getLicensedEditionName()
+                        ]).
+                        ' <a class="go" href="'.UrlHelper::url('plugin-store/upgrade-craft').'">'.Craft::t('app', 'Resolve').'</a>';
+                }
             }
 
             if (
@@ -96,7 +98,7 @@ class Cp
             }
 
             // Any plugin issues?
-            if (Craft::$app->getRequest()->getPathInfo() != 'settings/plugins') {
+            if ($path != 'settings/plugins') {
                 $pluginsService = Craft::$app->getPlugins();
                 $issuePlugins = [];
                 foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
