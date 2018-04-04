@@ -55,8 +55,8 @@
 			<tr class="logos">
 				<td></td>
 				<th scope="col">
-					<h1 class="logo">Client</h1>
-					<p>{{ "For sites built for clients with only one content manager."|t }}</p>
+					<h1 class="logo">Solo</h1>
+					<p>{{ "For sites built by and for the developer."|t('app') }}</p>
 				</th>
 				<th scope="col">
 					<h1 class="logo">Pro</h1>
@@ -66,18 +66,19 @@
 			{% if CraftEdition > CraftPersonal or licensedEdition > CraftPersonal %}
 				<tr class="license-statuses">
 					<td></td>
+					<td>{{ statusBadge(CraftPersonal, licensedEdition) }}</td>
 					<td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
 					<td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
 				</tr>
 			{% endif %}
 			<tr class="price">
 				<th scope="row" class="feature">{{ "One-Time Price"|t }}</th>
-				<td>{{ price(CraftClient, editions[CraftClient]) }}</td>
+				<td>{{ "Free"|t('app') }}</td>
 				<td>{{ price(CraftPro, editions[CraftPro]) }}</td>
 			</tr>
 			<tr class="buybtns">
 				<td></td>
-				<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
+				<td></td>
 				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>
 		</thead>
@@ -87,7 +88,7 @@
 			</tr>
 			<tr>
 				<th class="feature" scope="row">{{ "Additional user accounts"|t }}</th>
-				<td>{{ "One “Client” account"|t }}</td>
+				<td>{{ "One Admin account"|t('app') }}</td>
 				<td>{{ "Unlimited"|t }}</td>
 			</tr>
 			<tr>
@@ -111,17 +112,17 @@
 			</tr>
 			<tr>
 				<th class="feature" scope="row">{{ "Custom login screen logo"|t }}</th>
-				<td><span data-icon="check"></span></td>
+				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
 				<th class="feature" scope="row">{{ "Custom HTML email template"|t }}</th>
-				<td><span data-icon="check"></span></td>
+				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr>
 				<th class="feature" scope="row">{{ "Custom email message wording"|t }}</th>
-				<td><span data-icon="check"></span></td>
+				<td></td>
 				<td><span data-icon="check"></span></td>
 			</tr>
 
@@ -164,7 +165,6 @@
 			</tr>
 			<tr class="buybtns">
 				<td></td>
-				<td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
 				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>
 		</tbody>
@@ -311,7 +311,6 @@
 		<p class="secure icon light">{{ "Your payment is safe and secure with {stripe}."|t({ stripe: '<a href="https://stripe.com/" target="_blank">Stripe</a>' })|raw }}
 	</form>
 </div>
-
 
 <div id="upgrademodal-success" class="body hidden">
 	<div class="message">

@@ -163,7 +163,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			throw new Exception(Craft::t('Uploaded file was empty'));
 		}
 
-		$fileName = AssetsHelper::cleanAssetName($file['name']);
+		$fileName = AssetsHelper::cleanAssetName($file['name'], true, true);
 
 		// Save the file to a temp location and pass this on to the source type implementation
 		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName), true);

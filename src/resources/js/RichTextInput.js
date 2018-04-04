@@ -123,6 +123,14 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 	initRedactor: function()
 	{
+		if (this.redactorConfig.toolbarFixed) {
+			// Set the toolbarFixedTarget depending on the context
+			var target = this.$textarea.closest('.lp-editor');
+			if (target.length) {
+				this.redactorConfig.toolbarFixedTarget = target;
+			}
+		}
+
 		Craft.RichTextInput.currentInstance = this;
 		this.$textarea.redactor(this.redactorConfig);
 		delete Craft.RichTextInput.currentInstance;
@@ -260,7 +268,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 								url += ':'+transform;
 							}
 
-							this.redactor.insert.node($('<figure><img src="'+url+'" /></figure>')[0]);
+							this.redactor.insert.node($('<'+this.redactor.opts.imageTag+'><img src="'+url+'" /></>')[0]);
 							this.redactor.code.sync();
 						}
 						this.redactor.observe.images();
