@@ -64,7 +64,7 @@ class Cp
                         'edition' => Craft::$app->getEditionName(),
                         'licensedEdition' => Craft::$app->getLicensedEditionName()
                     ]).
-                    ' <a class="go edition-resolution">'.Craft::t('app', 'Resolve').'</a>';
+                    ' <a class="go" href="'.UrlHelper::url('plugin-store/upgrade-craft').'">'.Craft::t('app', 'Resolve').'</a>';
             }
 
             if (
