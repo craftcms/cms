@@ -15,7 +15,7 @@
                 </p>
             </div>
 
-            <div class="buttons">
+            <div v-if="cart" class="buttons">
                 <template v-if="pluginSnippet.editions[0].price != '0.00' && pluginSnippet.editions[0].price != null">
 
                     <template v-if="isInstalled(pluginSnippet)">
@@ -130,6 +130,7 @@
                 isInCart: 'isInCart',
                 isInstalled: 'isInstalled',
                 pluginHasLicenseKey: 'pluginHasLicenseKey',
+                cart: 'cart',
             }),
 
             longDescription() {
