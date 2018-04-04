@@ -9,7 +9,7 @@
             <strong>{{ plugin.name }}</strong>
             <div>{{ plugin.shortDescription }}</div>
 
-            <p v-if="plugin.price != '0.00'" class="light">{{ plugin.price|currency }}</p>
+            <p v-if="plugin.editions[0].price != '0.00'" class="light">{{ plugin.editions[0].price|currency }}</p>
             <p class="light" v-else>Free</p>
 
             <div v-if="isInstalled(plugin)" class="installed" data-icon="check"></div>
@@ -23,7 +23,6 @@
     export default {
 
         props: ['plugin'],
-
 
         computed: {
 

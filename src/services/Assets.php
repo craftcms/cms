@@ -697,9 +697,17 @@ class Assets extends Component
             FileHelper::createDirectory($dir);
             $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
             $svgSize = max($width, $height);
-            Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
-                ->scaleToFit($width, $height)
-                ->saveAs($path);
+
+            // hail Mary
+            try {
+                Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
+                    ->scaleToFit($width, $height)
+                    ->saveAs($path);
+            } catch (ImageException $exception) {
+                Craft::warning($exception->getMessage());
+
+                return $this->getIconPath($asset);
+            }
         }
 
         return $path;

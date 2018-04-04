@@ -295,7 +295,7 @@ class UserPermissions extends Component
      * @param int $groupId
      * @param array $permissions
      * @return bool
-     * @throws WrongEditionException if this is called from Craft Personal or Client editions
+     * @throws WrongEditionException if this is called from Craft Solo edition
      */
     public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
@@ -378,11 +378,11 @@ class UserPermissions extends Component
      * @param int $userId
      * @param array $permissions
      * @return bool
-     * @throws WrongEditionException if this is called from Craft Personal edition
+     * @throws WrongEditionException if this is called from Craft Solo edition
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
-        Craft::$app->requireEdition(Craft::Client);
+        Craft::$app->requireEdition(Craft::Pro);
 
         // Delete any existing user permissions
         Craft::$app->getDb()->createCommand()

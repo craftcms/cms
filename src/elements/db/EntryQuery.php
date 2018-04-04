@@ -356,7 +356,7 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('entries.typeId', $this->typeId));
         }
 
-        if (Craft::$app->getEdition() >= Craft::Client) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
                 $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId));
             }

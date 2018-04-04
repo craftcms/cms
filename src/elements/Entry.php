@@ -378,7 +378,7 @@ class Entry extends Element
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
-        // Hide Author from Craft Personal/Client
+        // Hide Author from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
             unset($attributes['author']);
         }

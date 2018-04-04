@@ -258,12 +258,8 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php';
 
-            if (Craft::$app->getEdition() >= Craft::Client) {
-                $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php');
-
-                if (Craft::$app->getEdition() === Craft::Pro) {
-                    $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
-                }
+            if (Craft::$app->getEdition() === Craft::Pro) {
+                $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
             }
 
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;

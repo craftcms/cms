@@ -32,11 +32,10 @@ Garnish.$doc.ready(function() {
               plugin: null,
               pluginId: null,
               modalStep: null,
-              pluginStoreDataLoading: true,
               pluginStoreDataLoaded: false,
               pluginStoreDataError: false,
-              craftIdDataLoading: true,
               craftIdDataLoaded: false,
+              cartDataLoaded: false,
               showModal: false,
               lastOrder: null,
               statusMessage: null,
@@ -46,17 +45,22 @@ Garnish.$doc.ready(function() {
         computed: {
 
             ...mapGetters({
-                cartPlugins: 'cartPlugins',
+                cart: 'cart',
+                craftIdAccount: 'craftIdAccount',
             }),
 
         },
 
         watch: {
 
-            cartPlugins() {
-                if(window.enableCraftId) {
-                    this.$cartButton.html('Cart (' + this.cartPlugins.length + ')');
+            cart() {
+                let totalQty = 0;
+
+                if(this.cart) {
+                    totalQty = this.cart.totalQty;
                 }
+
+                $('.badge', this.$cartButton).html(totalQty);
             },
 
             crumbs(crumbs) {
@@ -86,12 +90,26 @@ Garnish.$doc.ready(function() {
 
                     crumbsNav.appendTo(this.$crumbs);
                 } else {
-                    this.$crumbs.removeClass('empty');
+                    this.$crumbs.addClass('empty');
                 }
             },
 
             pageTitle(pageTitle) {
                 this.$pageTitle.html(pageTitle);
+            },
+
+            craftIdAccount() {
+                if(this.craftIdAccount) {
+                    $('.label', this.$craftIdAccount).html(this.craftIdAccount.username);
+
+                    this.$craftIdAccount.removeClass('hidden');
+                    this.$craftIdConnectForm.addClass('hidden');
+                    this.$craftIdDisconnectForm.removeClass('hidden');
+                } else {
+                    this.$craftIdAccount.addClass('hidden');
+                    this.$craftIdConnectForm.removeClass('hidden');
+                    this.$craftIdDisconnectForm.addClass('hidden');
+                }
             }
 
         },
@@ -123,21 +141,8 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                let $accountInfoMenu = $('#account-info').data('menubtn').menu.$container;
-
-                if(craftId) {
-                    $('.craftid-connected').removeClass('hidden');
-                    $('.craftid-disconnected').addClass('hidden');
-                    $('.craftid-connected', $accountInfoMenu).removeClass('hidden');
-                    $('.craftid-disconnected', $accountInfoMenu).addClass('hidden');
-                } else {
-                    $('.craftid-connected').addClass('hidden');
-                    $('.craftid-disconnected').removeClass('hidden');
-                    $('.craftid-connected', $accountInfoMenu).addClass('hidden');
-                    $('.craftid-disconnected', $accountInfoMenu).removeClass('hidden');
-                }
-
-                this.$store.dispatch('updateCraftId', { craftId });
+                this.$store.dispatch('updateCraftId', { craftId })
+                this.$emit('craftIdUpdated')
             },
 
         },
@@ -153,66 +158,94 @@ Garnish.$doc.ready(function() {
                 this.$pageTitle.html(this.pageTitle)
             }
 
-            // Dispatch actions
-            this.$store.dispatch('getCraftData')
-                .then(data => {
-                    this.craftIdDataLoading = false;
-                    this.craftIdDataLoaded = true;
-                    this.$emit('craftIdDataLoaded');
-                })
-                .catch(response => {
-                    this.craftIdDataLoading = false;
-                    this.craftIdDataLoaded = true;
-                    this.$emit('craftIdDataLoaded');
-                });
+            // Plugin Store actions
+            this.$pluginStoreActions = $('#pluginstore-actions');
+            this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner');
 
+            // Craft ID account
+            this.$craftIdAccount = $('#craftid-account');
+
+            // Connect form
+            this.$craftIdConnectForm = $('#craftid-connect-form');
+
+            // Disconnect form
+            this.$craftIdDisconnectForm = $('#craftid-disconnect-form');
+
+            // On data loaded
+            this.$on('dataLoaded', function() {
+                if(this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded)) {
+                    this.$pluginStoreActionsSpinner.removeClass('hidden');
+                }
+
+                if(this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
+                    // All data loaded
+                    this.$pluginStoreActions.removeClass('hidden');
+                    this.$pluginStoreActionsSpinner.addClass('hidden');
+                    this.$emit('allDataLoaded');
+                }
+            }.bind(this));
+
+            // Load Plugin Store data
             this.$store.dispatch('getPluginStoreData')
                 .then(data => {
-                    this.pluginStoreDataLoading = false;
                     this.pluginStoreDataLoaded = true;
-                    this.$emit('pluginStoreDataLoaded');
+                    this.$emit('dataLoaded');
                 })
                 .catch(response => {
-                    this.pluginStoreDataLoading = false;
                     this.pluginStoreDataError = true;
                     this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
                 });
 
-            this.$store.dispatch('getCartState')
+            // Load Craft data
+            this.$store.dispatch('getCraftData')
+                .then(data => {
+                    this.craftIdDataLoaded = true;
+                    this.$emit('dataLoaded');
+
+                    // Load cart
+                    this.$store.dispatch('getCart')
+                        .then(() => {
+                            this.cartDataLoaded = true;
+                            this.$emit('dataLoaded');
+                        })
+                })
+                .catch(response => {
+                    this.craftIdDataLoaded = true;
+                });
         },
 
         mounted() {
-
             this.pageTitle = this.$options.filters.t("Plugin Store", 'app');
             this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app');
 
             let $this = this;
 
-            if(window.enableCraftId) {
-                // Cart Button
-                this.$cartButton = $('#cart-button');
+            // Cart button
+            this.$cartButton = $('#cart-button');
 
-                this.$cartButton.on('click', (e) => {
-                    e.preventDefault();
-                    $this.openGlobalModal('cart');
-                });
+            this.$cartButton.on('click', (e) => {
+                e.preventDefault();
+                $this.openGlobalModal('cart');
+            });
 
-                // Payment button
-                let $paymentButton = $('#payment-button');
+            this.$cartButton.keydown(e => {
+                switch(e.which) {
+                    case 13: // Enter
+                    case 32: // Space
+                        e.preventDefault();
+                        $this.openGlobalModal('cart');
+                        break;
 
-                $paymentButton.on('click', (e) => {
-                    e.preventDefault();
-                    $this.openGlobalModal('payment');
-                });
+                }
+            });
 
-                // reset-cart-button
-                let $resetCartButton = $('#reset-cart-button');
+            // Payment button
+            let $paymentButton = $('#payment-button');
 
-                $resetCartButton.on('click', (e) => {
-                    e.preventDefault();
-                    this.$store.dispatch('resetCart');
-                });
-            }
+            $paymentButton.on('click', (e) => {
+                e.preventDefault();
+                $this.openGlobalModal('payment');
+            });
         },
 
     });

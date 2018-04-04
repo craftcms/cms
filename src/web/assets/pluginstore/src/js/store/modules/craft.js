@@ -3,7 +3,6 @@ import * as types from '../mutation-types'
 
 const state = {
     craftData: {},
-    // installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
 };
 
 const getters = {
@@ -25,6 +24,10 @@ const getters = {
         })
     },
 
+    currentUser: state => {
+        return state.craftData.currentUser;
+    },
+
     craftIdAccount: state => {
         return state.craftData.craftId
     },
@@ -35,7 +38,13 @@ const getters = {
 
     states: state => {
         return state.craftData.states;
-    }
+    },
+
+    pluginHasLicenseKey(state) {
+        return pluginHandle => {
+            return state.craftData.installedPlugins.find(plugin => plugin.handle === pluginHandle && plugin.hasLicenseKey) ? true : false
+        };
+    },
 
 };
 
@@ -56,17 +65,21 @@ const actions = {
         commit(types.UPDATE_CRAFT_ID, craftId);
     },
 
+    tryEdition({commit}, edition) {
+        return new Promise((resolve, reject) => {
+            api.tryEdition(edition)
+                .then(response => {
+                    resolve(response)
+                })
+                .catch(response => {
+                    reject(response)
+                });
+        })
+    }
+
 };
 
 const mutations = {
-
-    [types.INSTALL_PLUGIN] (state, { plugin }) {
-        const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id);
-
-        if (!record) {
-            state.craftData.installedPlugins.push(plugin.id)
-        }
-    },
 
     [types.RECEIVE_CRAFT_DATA] (state, { data }) {
         state.craftData = data

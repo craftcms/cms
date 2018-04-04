@@ -9,59 +9,72 @@
 ] %}
 
 
-{% set info = craft.app.plugins.getAllPluginInfo() %}
+{% set info = craft.app.plugins.getAllPluginInfo()|multisort(
+    ['isEnabled', 'isInstalled', 'hasIssues', 'name'],
+    [SORT_DESC, SORT_DESC, SORT_DESC, SORT_ASC],
+    [SORT_NUMERIC, SORT_NUMERIC, SORT_NUMERIC, SORT_NATURAL]
+) %}
 
 
 {% block content %}
     {% if info|length %}
         <table id="plugins" class="data fullwidth collapsible">
-            <thead>
-                <th scope="col">{{ "Plugin"|t('app') }}</th>
-                <th scope="col">{{ "Settings"|t('app') }}</th>
-                <th scope="col">{{ "Developer"|t('app') }}</th>
-                <th scope="col">{{ "Documentation"|t('app') }}</th>
-                <th scope="col thin">{{ "Status"|t('app') }}</th>
-                <th scope="col"></th>
-            </thead>
             <tbody>
                 {% for handle, config in info %}
-                    <tr data-name="{{ config.name }}">
-                        <th data-title="{{ 'Name'|t('app') }}">
+                    <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
+                        <th>
                             <div class="plugin-infos">
-                                <div class="icon">{{ svg(craft.app.plugins.getPluginIconSvg(handle)) }}</div>
+                                <div class="icon">
+                                    {{ svg(craft.app.plugins.getPluginIconSvg(handle)) }}
+                                    {% if config.licenseKeyStatus == 'valid' or config.hasIssues %}
+                                        <span class="license-key-status {{ config.licenseKeyStatus }}"></span>
+                                    {% endif %}
+                                </div>
                                 <div class="details">
-                                    <div class="name">
+                                    <h2>
                                         {{ config.name }}
                                         <span class="light">{{ config.version }}</span>
-                                    </div>
+                                    </h2>
                                     {% if config.description %}
-                                        <div class="description">{{ config.description }}</div>
+                                        <p>{{ config.description }}</p>
+                                    {% endif %}
+                                    {% if config.developerUrl or config.developer or config.hasCpSettings or config.documentationUrl %}
+                                        <p class="links">
+                                            {%- spaceless %}
+                                            {#{% if config.developerUrl %}#}
+                                                {#<a href="{{ config.developerUrl }}" target="_blank">{{ config.developer ?: config.developerUrl }}</a>#}
+                                            {#{% elseif config.developer %}#}
+                                                {#{{ config.developer }}#}
+                                            {#{% endif %}#}
+                                            {% if config.documentationUrl %}
+                                                <a href="{{ config.documentationUrl }}" target="_blank">{{ "Documentation"|t('app') }}</a>
+                                            {% endif %}
+                                            {% if config.hasCpSettings %}
+                                                <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>
+                                            {% endif %}
+                                            {% endspaceless -%}
+                                        </p>
+                                    {% endif %}
+                                    {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
+                                    <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
+                                        <div>
+                                            <input class="text code{% if config.hasIssues %} error{% endif %}" size="29" maxlength="29" value="{{ config.licenseKey|replace('/.{4}/', '$0-')|trim('-') }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
+                                        </div>
+                                        <div class="spinner hidden"></div>
+                                    </div>
+                                    {% if showLicenseKey and config.licenseStatusMessage %}
+                                        <p class="error">{{ config.licenseStatusMessage|raw }}</p>
                                     {% endif %}
                                 </div>
                             </div>
                         </th>
-                        <td class="nowrap" data-title="{{ 'Settings'|t('app') }}">
-                            {% if config.hasCpSettings %}
-                                <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span> {{ "Settings"|t('app') }}</a>
-                            {% else %}
-                                <span class="light">—</span>
-                            {% endif %}
-                        </td>
-                        <td class="nowrap" data-title="{{ 'Developer'|t('app') }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
-                        <td class="nowrap" data-title="{{ 'Documentation'|t('app') }}">
-                            {% if config.documentationUrl %}
-                                <a href="{{ config.documentationUrl }}" title="{{ "{name} Documentation"|t('app', {name: config.name}) }}" target="_blank">{{ "Documentation"|t('app') }}</a>
-                            {% else %}
-                                <span class="light">—</span>
-                            {% endif %}
-                        </td>
-                        <td class="nowrap thin" data-title="{{ 'Status'|t('app') }}">
+                        <td class="nowrap" data-title="{{ 'Status'|t('app') }}">
                             {% if config.isEnabled %}
-                                <span class="status on"></span> {{ "Enabled"|t('app') }}
+                                <span class="status on"></span>{{ "Installed"|t('app') }}
                             {% elseif config.isInstalled %}
-                                <span class="status off"></span> {{ "Disabled"|t('app') }}
+                                <span class="status off"></span>{{ "Disabled"|t('app') }}
                             {% else %}
-                                <span class="status"></span> <span class="light">{{ "Not installed"|t('app') }}</span>
+                                <span class="status"></span><span class="light">{{ "Not installed"|t('app') }}</span>
                             {% endif %}
                         </td>
                         <td class="nowrap thin" data-title="{{ 'Action'|t('app') }}">
@@ -93,6 +106,10 @@
             </tbody>
         </table>
     {% else %}
-        <p>{{ "There are no available plugins."|t('app') }}
+        <p id="no-plugins">{{ "There are no available plugins."|t('app') }}
     {% endif %}
 {% endblock %}
+
+{% js %}
+new Craft.PluginManager();
+{% endjs %}

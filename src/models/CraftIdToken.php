@@ -37,11 +37,6 @@ class CraftIdToken extends Model
     public $accessToken;
 
     /**
-     * @var string|null
-     */
-    public $refreshToken;
-
-    /**
      * @var DateTime|null
      */
     public $expiryDate;

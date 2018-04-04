@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="input" :class="{'errors': errors }">
 		<div class="select">
 			<select :value="value" @input="$emit('input', $event.target.value)">
 				<option v-for="option in this.options" :value="option.value">{{ option.label }}</option>
@@ -12,7 +12,7 @@
 <script>
     export default {
 
-        props: ['options', 'value'],
+        props: ['options', 'value', 'errors'],
 
     }
 </script>

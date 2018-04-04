@@ -35,14 +35,19 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
          */
         _onKeyDown: function(ev) {
             if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
-                var $element = this.elementSelect.$focusedItem;
+                if (Craft.PreviewFileModal.openInstance) {
+                    Craft.PreviewFileModal.openInstance.selfDestruct();
+                } else {
+                    var $element = this.elementSelect.$focusedItem;
 
-                if ($element.length) {
-                    this._loadPreview($element);
-                    ev.stopPropagation();
-
-                    return false;
+                    if ($element.length) {
+                        this._loadPreview($element);
+                    }
                 }
+
+                ev.stopPropagation();
+
+                return false;
             }
         },
 

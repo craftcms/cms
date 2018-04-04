@@ -1,19 +1,26 @@
-#plugins .plugin-infos { display: table; }
-
-#plugins .plugin-infos .icon, #plugins .plugin-infos .details { display: table-cell; }
-
-#plugins .plugin-infos .icon { vertical-align: top; padding-right: 12px; }
-
-#plugins .plugin-infos .icon a { display: block; line-height: 0; }
-
-#plugins .plugin-infos .icon svg { width: 36px; height: 36px; }
-
-#plugins .plugin-infos .details { vertical-align: middle; }
-
-#plugins .plugin-infos .details .name .light { margin-left: 6px; }
-
-#plugins .plugin-infos .details .description { font-weight: normal; }
-
-#plugins:not(.collapsed) .plugin-infos .details { min-width: 150px; }
+#plugins tbody tr:first-child th, #plugins tbody tr:first-child td { border-top: none; padding-top: 0; }
+#plugins tbody tr:last-child th, #plugins tbody tr:last-child td { border-bottom: none; padding-bottom: 0; }
+#plugins tbody th, #plugins tbody td { padding-top: 20px; padding-bottom: 20px; }
+#plugins tbody .plugin-infos { font-weight: normal; display: table; }
+#plugins tbody .plugin-infos .icon, #plugins tbody .plugin-infos .details { display: table-cell; }
+#plugins tbody .plugin-infos .icon { vertical-align: top; padding-right: 14px; position: relative; }
+#plugins tbody .plugin-infos .icon a { display: block; line-height: 0; }
+#plugins tbody .plugin-infos .icon svg, #plugins tbody .plugin-infos .icon img { display: block; width: 44px; height: 44px; }
+#plugins tbody .plugin-infos .icon .license-key-status { display: block; position: absolute; top: 26px; width: 20px; height: 20px; background: no-repeat 0 0 url(invalid-icon.svg); background-size: 100% 100%; }
+body.ltr #plugins tbody .plugin-infos .icon .license-key-status { left: 26px; }
+body.rtl #plugins tbody .plugin-infos .icon .license-key-status { right: 26px; }
+#plugins tbody .plugin-infos .icon .license-key-status.valid { background-image: url(valid-icon.svg); }
+#plugins tbody .plugin-infos .details { vertical-align: middle; }
+#plugins tbody .plugin-infos .details h2 { margin-bottom: 0; font-size: 1em; }
+body.ltr #plugins tbody .plugin-infos .details h2 .light { margin-left: 6px; }
+body.rtl #plugins tbody .plugin-infos .details h2 .light { margin-right: 6px; }
+#plugins tbody .plugin-infos .details p { margin: 0.2em 0; }
+#plugins tbody .plugin-infos .details p.links a + a { margin-left: 20px; }
+#plugins tbody .plugin-infos .details p.links a span[data-icon] { margin-right: 3px; }
+#plugins tbody .plugin-infos .details .license-key { margin-top: 1em; }
+#plugins tbody .plugin-infos .details .license-key div { margin: 0; }
+#plugins tbody .plugin-infos .details .license-key div input.text { font-weight: bold; font-size: 11px !important; border-radius: 3px; padding: 3px 7px 1px; width: 19em; }
+#plugins tbody .plugin-infos .details .license-key .spinner { height: 26px; }
+#plugins tbody:not(.collapsed) .plugin-infos .details { min-width: 150px; }
 
 /*# sourceMappingURL=plugins.css.map */

@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'clientaccount' => false,
     'users/new' => 'users/edit-user',
     'users/<userId:\d+>' => 'users/edit-user',
     'settings/users' => ['template' => 'settings/users/groups/_index'],

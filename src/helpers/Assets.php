@@ -635,4 +635,30 @@ class Assets
 
         return $targetFilePath;
     }
+
+    /**
+     * Returns the maximum allowed upload size in bytes per all config settings combined.
+     *
+     * @return mixed
+     */
+    public static function getMaxUploadSize()
+    {
+        $maxUpload = ConfigHelper::sizeInBytes(ini_get('upload_max_filesize'));
+        $maxPost = ConfigHelper::sizeInBytes(ini_get('post_max_size'));
+        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
+
+        $uploadInBytes = min($maxUpload, $maxPost);
+
+        if ($memoryLimit > 0) {
+            $uploadInBytes = min($uploadInBytes, $memoryLimit);
+        }
+
+        $configLimit = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+
+        if ($configLimit) {
+            $uploadInBytes = min($uploadInBytes, $configLimit);
+        }
+
+        return $uploadInBytes;
+    }
 }

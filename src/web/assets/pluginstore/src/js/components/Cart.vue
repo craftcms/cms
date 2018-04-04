@@ -2,73 +2,64 @@
     <div>
         <h2>{{ "Items in your cart"|t('app') }}</h2>
 
-        <div v-if="cartPlugins.length > 0">
-            <table class="data fullwidth">
-                <thead>
-                <tr>
-                    <th class="thin"></th>
-                    <th>{{ "Plugin Name"|t('app') }}</th>
-                    <th>{{ "Price"|t('app') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(plugin, index) in cartPlugins">
-                    <template v-if="plugin">
-                        <td class="thin">
-                            <a href="#">
+        <template v-if="cart">
+            <template v-if="cartItems.length">
+                <table class="data fullwidth">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>Item</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(item, itemKey) in cartItems">
+                        <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
+                            <td class="thin">
                                 <div class="plugin-icon">
-                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                                    <div class="default-icon" v-else></div>
+                                    <img :src="craftData.craftLogo" width="32" height="32" />
                                 </div>
-                            </a>
-                        </td>
-                        <td>
-                            <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
-                        </td>
-                        <td>
-                            <strong>{{ plugin.price|currency }}</strong>
-                            <div class="light">{{ "{price} per year for updates"|t('app', { price: $root.$options.filters.currency(plugin.updatePrice) }) }}</div>
-                        </td>
-                        <td class="thin">
-                            <a class="btn" @click="removeFromCart(plugin)">
-                                <template v-if="isInTrial(plugin)">{{ "Buy later"|t('app') }}</template>
-                                <template v-else>{{ "Remove"|t('app') }}</template>
-                            </a>
-                        </td>
-                    </template>
-                </tr>
-                </tbody>
-            </table>
+                            </td>
+                            <td>Craft {{ item.lineItem.purchasable.name }}</td>
+                        </template>
 
-            <div class="cart-review">
-                <p>Renew for 3 years and save $XX.00</p>
+                        <template v-else="item.lineItem.purchasable.type === 'plugin-edition'">
+                            <td class="thin">
+                                <div class="plugin-icon">
+                                    <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" height="32" />
+                                </div>
+                            </td>
+                            <td>
+                                {{ item.plugin.name}}
+                            </td>
+                        </template>
 
-                <table class="fullwidth">
-                    <tr>
-                        <th>{{ "Subtotal"|t('app') }}</th>
-                        <td>$XX.00</td>
+                        <td class="rightalign">
+                            <strong>{{ item.lineItem.total|currency }}</strong>
+                        </td>
+
+                        <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                     </tr>
                     <tr>
-                        <th>{{ "Pro Rate Discount"|t('app') }}</th>
-                        <td>$XX.00</td>
+                        <th class="rightalign" colspan="2">Total Price</th>
+                        <td class="rightalign"><strong>{{ cart.totalPrice|currency }}</strong></td>
+                        <td class="thin"></td>
                     </tr>
-                    <tr>
-                        <th><strong>{{ "Total"|t('app') }}</strong></th>
-                        <td><strong>{{ cartTotal()|currency }}</strong></td>
-                    </tr>
+                    </tbody>
                 </table>
 
                 <p><a @click="payment()" class="btn submit">{{ "Process My Order"|t('app') }}</a></p>
+            </template>
+
+            <div v-else>
+                <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continue-shopping')">{{ "Continue shopping"|t('app') }}</a></p>
             </div>
-
-        </div>
-
-        <div v-else>
-            <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continue-shopping')">{{ "Continue shopping"|t('app') }}</a></p>
-        </div>
-
+        </template>
 
         <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
+
+            <hr />
 
             <div v-if="pendingActiveTrials.length > 1" class="right">
                 <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
@@ -84,22 +75,19 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="(plugin, index) in pendingActiveTrials">
+                <tr v-for="plugin in pendingActiveTrials">
                     <template v-if="plugin">
                         <td class="thin">
-                            <a href="#">
-                                <div class="plugin-icon">
-                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                                    <div class="default-icon" v-else></div>
-                                </div>
-                            </a>
+                            <div class="plugin-icon">
+                                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                                <div class="default-icon" v-else></div>
+                            </div>
                         </td>
                         <td>
-                            <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
+                            {{ plugin.name }}
                         </td>
                         <td>
-                            <strong>{{ plugin.price|currency }}</strong>
-                            <div class="light">{{ plugin.updatePrice|currency }} per year for updates</div>
+                            <strong>{{ plugin.editions[0].price|currency }}</strong>
                         </td>
                         <td class="thin">
                             <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>
@@ -121,15 +109,20 @@
 
             ...mapGetters({
                 isInTrial: 'isInTrial',
-                cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
                 cartTotal: 'cartTotal',
+                cart: 'cart',
+                cartItems: 'cartItems',
+                craftData: 'craftData',
+                craftIdAccount: 'craftIdAccount',
             }),
 
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if(p) {
-                        return !this.cartPlugins.find(cartP => p.id == cartP.id)
+                        return !this.cart.lineItems.find(item => {
+                            return item.purchasable.pluginId == p.id;
+                        })
                     }
                 })
             },
@@ -139,20 +132,44 @@
         methods: {
 
             ...mapActions([
-                'addToCart',
                 'removeFromCart'
             ]),
 
-            addAllToCart () {
-                let $store = this.$store;
+            addToCart(plugin) {
+                const item = {
+                    type: 'plugin-edition',
+                    plugin: plugin.handle,
+                    edition: plugin.editions[0].handle,
+                    autoRenew: false,
+                    cmsLicenseKey: window.cmsLicenseKey,
+                }
 
-                this.pendingActiveTrials.forEach(activeTrial => {
-                    $store.dispatch('addToCart', activeTrial)
+                this.$store.dispatch('addToCart', [item])
+            },
+
+            addAllToCart () {
+                let $store = this.$store
+                let items = []
+
+                this.pendingActiveTrials.forEach(activeTrialPlugin => {
+                    items.push({
+                        type: 'plugin-edition',
+                        plugin: activeTrialPlugin.handle,
+                        edition: activeTrialPlugin.editions[0].handle,
+                        autoRenew: false,
+                        cmsLicenseKey: window.cmsLicenseKey,
+                    })
                 })
+
+                $store.dispatch('addToCart', items)
             },
 
             payment() {
-                this.$root.openGlobalModal('payment');
+                if(this.craftIdAccount) {
+                    this.$root.openGlobalModal('payment');
+                } else {
+                    this.$root.openGlobalModal('identity');
+                }
             }
 
         },

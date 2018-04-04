@@ -1,6 +1,6 @@
 {% requireAdmin %}
 
-{% extends (CraftEdition >= CraftClient ? "settings/email/_layout" : "_layouts/cp") %}
+{% extends (CraftEdition == CraftPro ? "settings/email/_layout" : "_layouts/cp") %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
@@ -8,7 +8,7 @@
 
 {% set fullPageForm = true %}
 
-{% if CraftEdition >= CraftClient %}
+{% if CraftEdition == CraftPro %}
     {% set selectedNavItem = 'settings' %}
 {% else %}
     {% set title = "Email Settings"|t('app') %}
@@ -69,7 +69,7 @@
         errors: (freshSettings ? null : settings.getErrors('fromName'))
     }) }}
 
-    {% if CraftEdition >= CraftClient %}
+    {% if CraftEdition == CraftPro %}
         {{ forms.textField({
             label: "HTML Email Template"|t('app'),
             instructions: "The template Craft CMS will use for HTML emails"|t('app'),

@@ -37,6 +37,114 @@ $minLargeScreenWidth: 1824px;
   transform: translate(-50%, -50%);
 }
 
+.license-status {
+  &:before {
+    border: 1px solid;
+    border-radius: 9px;
+    width: 17px;
+    height: 17px;
+    line-height: 17px;
+    margin-right: 5px;
+  }
+
+  &.installed {
+    color: $successColor;
+
+    &:before {
+      border-color: $successColor;
+    }
+  }
+
+  &.licensed {
+    color: $noticeColor;
+
+    &:before {
+      border-color: $noticeColor;
+    }
+  }
+}
+
+.input.success input {
+  border-color: $successColor;
+}
+
+.input.errors .select:not(.selectize) select {
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Plugin Store actions */
+
+#pluginstore-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & > * {
+    margin-left: 18px !important;
+  }
+
+  #cart-button {
+    svg {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+      line-height: 0;
+      margin-right: 3px;
+    }
+
+    svg {
+      @include svg-mask($secondarySubmitColor);
+    }
+
+    &:hover svg {
+      @include svg-mask($secondarySubmitHoverColor);
+    }
+
+    .badge {
+      @include margin(0, 0, 0, -6px);
+      position: relative;
+      top: -1px;
+      display: inline-block;
+      flex-shrink: 1;
+      padding: 0 6px;
+      font-size: 11px;
+      line-height: 16px;
+      border-radius: 1em;
+      background: $submitColor;
+      color: #fff;
+      box-shadow: 0 0 0 2px $bgColor;
+    }
+  }
+
+  #craftid-account {
+    &:hover {
+      text-decoration: none;
+    }
+
+    .photo {
+      svg {
+        margin-right: 2px;
+        width: 22px;
+        height: 22px;
+        border-radius: 100%;
+        vertical-align: middle;
+      }
+    }
+
+    &:hover .label {
+      text-decoration: underline;
+    }
+  }
+  
+  #craftid-connect-form {
+    .ssl-status {
+      display: inline-block;
+    }
+  }
+}
+
+
 /* Graphic & Status */
 
 #content {
@@ -416,13 +524,29 @@ ul.categories {
 
 /* Payment */
 
-.block {
-  position: relative;
+.payment {
+  .blocks {
+    display: flex;
+    margin: 0 -20px;
 
-  .block-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
+    .block {
+      flex-grow: 1;
+      padding: 0 20px;
+      width: 50%;
+    }
+  }
+
+  .multiselectrow {
+    display: flex;
+    .input {
+      width: 50%;
+      .select {
+        width: 100%;
+        select {
+          width: 100%;
+        }
+      }
+    }
   }
 }
 
@@ -519,6 +643,15 @@ ul.categories {
     .buttons {
       margin-top: 0;
       white-space: nowrap;
+
+      a {
+        margin-left: 7px;
+      }
+
+      .license-status {
+        margin-top: 6px;
+        margin-right: 14px;
+      }
     }
   }
 
@@ -702,31 +835,6 @@ ul.categories {
       &.license-statuses td {
         padding-top: 0;
         padding-bottom: 14px;
-
-        .license-status:before {
-          border: 1px solid;
-          border-radius: 9px;
-          width: 17px;
-          height: 17px;
-          line-height: 17px;
-          margin-right: 5px;
-        }
-
-        .installed {
-          color: $successColor;
-
-          &:before {
-            border-color: $successColor;
-          }
-        }
-
-        .licensed {
-          color: $noticeColor;
-
-          &:before {
-            border-color: $noticeColor;
-          }
-        }
       }
     }
 

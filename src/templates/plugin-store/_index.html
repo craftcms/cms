@@ -3,55 +3,115 @@
 {% set title = 'Plugin Store'|t('app') %}
 
 {% do view.registerTranslations('app', [
-	"Active installs",
 	"Active Trials",
 	"Add to cart",
+	"Added to cart",
 	"Ascending",
+	"Billing",
 	"Buy later",
+	"Buy now",
 	"Buy {price}",
 	"Cart",
 	"Categories",
 	"Changelog",
+	"Cloud Storage Integration",
+	"Community Support (Slack, Stack Exchange)",
 	"Compatibility",
+	"Connect to your Craft ID",
 	"Contact",
-	"Description",
+	"Content Modeling",
+	"Continue as guest",
+	"Continue",
+	"Coupon Code",
 	"Descending",
+	"Description",
+	"Developer Support",
 	"Documentation",
+	"Features",
+	"For everything else.",
+	"For personal projects.",
+	"Free",
 	"Install",
 	"Installed",
+	"Item",
 	"Items in your cart",
 	"Last update",
 	"Last Update",
 	"License",
 	"Loading Plugin Store…",
+	"Manage your plugins",
+	"Multi-site Multi-lingual",
 	"Name",
 	"Page not found.",
+	"Pay",
+	"Payment Method",
 	"Plugin Name",
 	"Plugin Store",
 	"Popularity",
 	"Price",
 	"Pro Rate Discount",
 	"Process My Order",
+	"Reinstall",
 	"Screenshots",
 	"Search plugins",
+	"Security & Bug Fixes",
 	"See all",
 	"Staff Picks",
 	"Subtotal",
+	"Support",
+	"System Branding",
+	"Thank You!",
 	"The Plugin Store is not available, please try again later.",
 	"Total",
+	"Try for free",
 	"Try",
+	"Uninstall",
+	"Upgrade Craft CMS",
+	"Use your Craft ID",
+	"User Accounts",
 	"Version",
 	"Website",
+	"Your order has been processed, you will receive an email shortly containing your license keys.",
+	"Active installs",
 ]) %}
 
 {% block actionButton %}
-	{% if enableCraftId %}
-		<a id="cart-button">Cart (0)</a>
+
+	<div id="pluginstore-actions-spinner" class="spinner hidden"></div>
+
+	<div id="pluginstore-actions" class="hidden">
+
+		<a id="cart-button" role="button" tabindex="0">{{ svg('@app/icons/shopping-cart.svg') }} <span class="badge">0</span></a>
+
+		<a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@app/icons/craftid.svg') }}</span><span class="label">Account</span></a>
+
+		<div class="menu">
+			<ul>
+				<li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+				<li>
+					<form method="post" id="disconnect">
+						{{ csrfInput() }}
+						<input type="hidden" name="action" value="plugin-store/disconnect">
+						<a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
+					</form>
+				</li>
+			</ul>
+		</div>
+
+		<form id="craftid-connect-form" method="post">
+			{{ csrfInput() }}
+			<input type="hidden" name="action" value="plugin-store/connect">
+			<div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
+				<i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
+			</div>
+			<a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
+		</form>
+
 		{#
 		<a id="payment-button">Payment</a>
-		<a id="reset-cart-button">Reset cart</a>
 		#}
-	{% endif %}
+	</div>
+
 {% endblock %}
 
 {% set content %}
