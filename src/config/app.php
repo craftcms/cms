@@ -50,9 +50,6 @@ return [
         'entryRevisions' => [
             'class' => craft\services\EntryRevisions::class,
         ],
-        'et' => [
-            'class' => craft\services\Et::class,
-        ],
         'feeds' => [
             'class' => craft\feeds\Feeds::class,
         ],

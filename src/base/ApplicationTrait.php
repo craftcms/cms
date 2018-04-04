@@ -53,7 +53,6 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Elements $elements The elements service
  * @property \craft\services\Entries $entries The entries service
  * @property \craft\services\EntryRevisions $entryRevisions The entry revisions service
- * @property \craft\services\Et $et The E.T. service
  * @property \craft\feeds\Feeds $feeds The feeds service
  * @property \craft\services\Fields $fields The fields service
  * @property Formatter $formatter The formatter component
@@ -784,17 +783,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('entryRevisions');
-    }
-
-    /**
-     * Returns the E.T. service.
-     *
-     * @return \craft\services\Et The E.T. service
-     */
-    public function getEt()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('et');
     }
 
     /**
