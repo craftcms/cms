@@ -391,7 +391,7 @@
             this.staticCartTotal = this.cartTotal
             this.couponCode = this.cart.couponCode
 
-			if(this.craftIdAccount) {
+			if(this.craftIdAccount && this.craftIdAccount.billingAddress) {
                 this.billingInfo = this.craftIdAccount.billingAddress
             }
 		}
