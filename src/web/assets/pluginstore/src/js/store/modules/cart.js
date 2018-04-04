@@ -222,10 +222,6 @@ const actions = {
         return new Promise((resolve, reject) => {
             const cart = state.cart
 
-            if(!data.items) {
-                data.items = utils.getCartItemsData(cart)
-            }
-
             api.updateCart(cart.number, data, response => {
                 if (!response.errors) {
                     commit(types.RECEIVE_CART, {response})
