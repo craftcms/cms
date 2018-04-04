@@ -28,9 +28,8 @@ class Craft extends Yii
     // =========================================================================
 
     // Edition constants
-    const Personal = 0;
-    const Client = 1;
-    const Pro = 2;
+    const Solo = 0;
+    const Pro = 1;
 
     // Properties
     // =========================================================================

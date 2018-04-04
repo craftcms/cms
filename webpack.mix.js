@@ -12,9 +12,11 @@ mix.webpackConfig({
 const sourcePath = 'src/web/assets/pluginstore/src';
 const distPath = 'src/web/assets/pluginstore/dist';
 
+mix.setPublicPath(distPath);
+
 mix
-    .js(sourcePath + '/js/main.js', distPath + '/js/main.min.js')
-    .sass(sourcePath + '/sass/main.scss', distPath + '/css/')
+    .js(sourcePath + '/js/main.js', 'js')
+    .sass(sourcePath + '/sass/main.scss', 'css')
         .options({
             processCssUrls: false
         })

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use yii\base\Event;
@@ -55,15 +56,17 @@ class Cp
             // Get the license key status
             $licenseKeyStatus = Craft::$app->getCache()->get('licenseKeyStatus');
 
-            // Invalid license?
-            if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
-                $alerts[] = Craft::t('app', 'Your license key is invalid.');
-            } else if (Craft::$app->getHasWrongEdition()) {
-                $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
-                        'edition' => Craft::$app->getEditionName(),
-                        'licensedEdition' => Craft::$app->getLicensedEditionName()
-                    ]).
-                    ' <a class="go edition-resolution">'.Craft::t('app', 'Resolve').'</a>';
+            if ($path !== 'plugin-store/upgrade-craft') {
+                // Invalid license?
+                if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
+                    $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
+                } else if (Craft::$app->getHasWrongEdition()) {
+                    $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
+                            'edition' => Craft::$app->getEditionName(),
+                            'licensedEdition' => Craft::$app->getLicensedEditionName()
+                        ]).
+                        ' <a class="go" href="'.UrlHelper::url('plugin-store/upgrade-craft').'">'.Craft::t('app', 'Resolve').'</a>';
+                }
             }
 
             if (
@@ -92,6 +95,37 @@ class Cp
                         'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
                     ]).
                     ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('app', 'Learn more').'</a>';
+            }
+
+            // Any plugin issues?
+            if ($path != 'settings/plugins') {
+                $pluginsService = Craft::$app->getPlugins();
+                $issuePlugins = [];
+                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
+                    /** @var Plugin $plugin */
+                    if ($pluginsService->hasIssues($pluginHandle)) {
+                        $issuePlugins[] = $plugin->name;
+                    }
+                }
+                if (!empty($issuePlugins)) {
+                    if (count($issuePlugins) === 1) {
+                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
+                            'name' => reset($issuePlugins),
+                        ]);
+                    } else {
+                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
+                            'num' => count($issuePlugins),
+                        ]);
+                    }
+                    $message .= ' ';
+                    if (Craft::$app->getUser()->getIsAdmin()) {
+                        $message .= '<a class="go" href="'.UrlHelper::cpUrl('settings/plugins').'">'.Craft::t('app', 'Resolve').'</a>';
+                    } else {
+                        $message .= Craft::t('commerce', 'Please notify one of your site’s admins.');
+                    }
+
+                    $alerts[] = $message;
+                }
             }
         }
 

@@ -15,14 +15,35 @@
                 </p>
             </div>
 
-            <div class="buttons">
-                <div v-if="pluginSnippet.price != '0.00' && pluginSnippet.price != null">
-                    <a v-if="isInTrial(pluginSnippet) || isInstalled(pluginSnippet)" class="btn disabled">{{ "Installed"|t('app') }}</a>
-                    <a v-else @click="tryPlugin(pluginSnippet)" class="btn">{{ "Try"|t('app') }}</a>
+            <div v-if="cart" class="buttons">
+                <template v-if="pluginSnippet.editions[0].price != '0.00' && pluginSnippet.editions[0].price != null">
 
-                    <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.price) }) }}</a>
-                </div>
+                    <template v-if="isInstalled(pluginSnippet)">
+                        <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
+                            <div class="license-status installed" data-icon="check">{{ "Installed"|t('app') }}</div>
+                        </template>
+                        <template v-else>
+                            <div class="license-status installed" data-icon="check">{{ "Installed as a trial"|t('app') }}</div>
+
+                            <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                            <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].price) }) }}</a>
+                        </template>
+                    </template>
+
+                    <template v-else>
+                        <form method="post">
+                            <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
+                            <input type="hidden" name="action" value="pluginstore/install">
+                            <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
+                            <input type="hidden" name="handle" :value="pluginSnippet.handle">
+                            <input type="hidden" name="version" :value="pluginSnippet.version">
+                            <input type="submit" class="btn" :value="'Try'|t('app')">
+                        </form>
+
+                        <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                        <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].price) }) }}</a>
+                    </template>
+                </template>
                 <div v-else>
                     <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
 
@@ -37,6 +58,9 @@
                         </form>
                     </div>
                 </div>
+            </div>
+            <div>
+                <div v-if="loading" class="spinner"></div>
             </div>
         </div>
 
@@ -93,6 +117,7 @@
             return {
                 plugin: null,
                 pluginSnippet: null,
+                loading: false,
             }
         },
 
@@ -100,11 +125,12 @@
 
             ...mapGetters({
                 plugins: 'allPlugins',
-                cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
                 isInTrial: 'isInTrial',
                 isInCart: 'isInCart',
                 isInstalled: 'isInstalled',
+                pluginHasLicenseKey: 'pluginHasLicenseKey',
+                cart: 'cart',
             }),
 
             longDescription() {
@@ -167,13 +193,21 @@
             ]),
 
             buyPlugin(plugin) {
-                this.$store.dispatch('addToCart', plugin);
-                this.$root.openGlobalModal('cart');
-            },
+                this.loading = true
 
-            tryPlugin(plugin) {
-                this.$root.closeGlobalModal();
-                this.$router.push({ path: '/install/'+plugin.id });
+                const item = {
+                    type: 'plugin-edition',
+                    plugin: plugin.handle,
+                    edition: plugin.editions[0].handle,
+                    autoRenew: false,
+                    cmsLicenseKey: window.cmsLicenseKey,
+                }
+
+                this.$store.dispatch('addToCart', [item])
+                    .then(() => {
+                        this.loading = false;
+                        this.$root.openGlobalModal('cart')
+                    })
             },
 
             viewDeveloper(plugin) {

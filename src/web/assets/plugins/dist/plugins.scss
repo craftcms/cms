@@ -1,42 +1,126 @@
 @charset "UTF-8";
 @import "../../../../../lib/craftcms-sass/mixins";
 
-#plugins .plugin-infos {
-  display: table;
-}
+#plugins {
+  tbody {
+    tr {
+      &:first-child {
+        th, td {
+          border-top: none;
+          padding-top: 0;
+        }
+      }
 
-#plugins .plugin-infos .icon,
-#plugins .plugin-infos .details {
-  display: table-cell;
-}
+      &:last-child {
+        th, td {
+          border-bottom: none;
+          padding-bottom: 0;
+        }
+      }
+    }
+    th,
+    td {
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
 
-#plugins .plugin-infos .icon {
-  vertical-align: top;
-  padding-right: 12px;
-}
+    .plugin-infos {
+      font-weight: normal;
+      display: table;
 
-#plugins .plugin-infos .icon a {
-  display: block;
-  line-height: 0;
-}
+      .icon,
+      .details {
+        display: table-cell;
+      }
 
-#plugins .plugin-infos .icon svg {
-  width: 36px;
-  height: 36px;
-}
+      .icon {
+        vertical-align: top;
+        padding-right: 14px;
+        position: relative;
 
-#plugins .plugin-infos .details {
-  vertical-align: middle;
-}
+        a {
+          display: block;
+          line-height: 0;
+        }
 
-#plugins .plugin-infos .details .name .light {
-  margin-left: 6px;
-}
+        svg, img {
+          display: block;
+          width: 44px;
+          height: 44px;
+        }
 
-#plugins .plugin-infos .details .description {
-  font-weight: normal;
-}
+        .license-key-status {
+          display: block;
+          position: absolute;
+          top: 26px;
+          @include left(26px);
+          width: 20px;
+          height: 20px;
+          background: no-repeat 0 0 url(invalid-icon.svg) ;
+          background-size: 100% 100%;
 
-#plugins:not(.collapsed) .plugin-infos .details {
-  min-width: 150px;
+          &.valid {
+            background-image: url(valid-icon.svg);
+          }
+        }
+      }
+
+      .details {
+        vertical-align: middle;
+
+        h2 {
+          margin-bottom: 0;
+          font-size: 1em;
+
+          .light {
+            @include margin-left(6px);
+          }
+        }
+
+        p {
+          margin: 0.2em 0;
+
+          &.links {
+            a {
+              & + a {
+                margin-left: 20px;
+              }
+
+              span[data-icon] {
+                margin-right: 3px;
+              }
+            }
+          }
+        }
+
+        .license-key {
+          margin-top: 1em;
+
+          div {
+            margin: 0;
+
+            input.text {
+              font-weight: bold;
+              font-size: 11px !important;
+              border-radius: 3px;
+              padding: 3px 7px 1px;
+              width: 19em;
+            }
+          }
+
+          .spinner {
+            height: 26px;
+          }
+        }
+      }
+    }
+
+    &:not(.collapsed) {
+      .plugin-infos {
+        .details {
+          min-width: 150px;
+        }
+      }
+    }
+  }
 }

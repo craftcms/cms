@@ -20,6 +20,7 @@ Craft.CP = Garnish.Base.extend(
         $selectedTab: null,
         $sidebar: null,
         $contentContainer: null,
+        $edition: null,
 
         $collapsibleTables: null,
 
@@ -31,9 +32,6 @@ Craft.CP = Garnish.Base.extend(
         displayedJobInfoUnchanged: 1,
         trackJobProgressTimeout: null,
         jobProgressIcon: null,
-
-        $edition: null,
-        upgradeModal: null,
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
@@ -58,7 +56,6 @@ Craft.CP = Garnish.Base.extend(
             this.$details = $('#details');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
-
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
 
@@ -113,7 +110,9 @@ Craft.CP = Garnish.Base.extend(
             this.initTabs();
 
             if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', 'showUpgradeModal');
+                this.addListener(this.$edition, 'click', function() {
+                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+                });
             }
 
             if ($.isTouchCapable()) {
@@ -460,13 +459,6 @@ Craft.CP = Garnish.Base.extend(
 
                 }, this));
             }
-
-            // Is there an edition resolution link?
-            var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
-
-            if ($editionResolutionLink.length) {
-                this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
-            }
         },
 
         checkForUpdates: function(forceRefresh, callback) {
@@ -671,15 +663,6 @@ Craft.CP = Garnish.Base.extend(
                     this.jobProgressIcon.complete();
                     delete this.jobProgressIcon;
                 }
-            }
-        },
-
-        showUpgradeModal: function() {
-            if (!this.upgradeModal) {
-                this.upgradeModal = new Craft.UpgradeModal();
-            }
-            else {
-                this.upgradeModal.show();
             }
         }
     },

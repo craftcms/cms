@@ -58,7 +58,7 @@
     {% endif %}
 {% endjs %}
 
-{% set hasSystemIcon = CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %}
+{% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
 
 {% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
@@ -106,9 +106,6 @@
                 <hr>
                 <ul>
                     <li><a href="{{ url('myaccount') }}">{{ 'My Account'|t('app') }}</a></li>
-                    {% if CraftEdition == CraftClient and currentUser.admin %}
-                        <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
-                    {% endif %}
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
                 </ul>
             </div>

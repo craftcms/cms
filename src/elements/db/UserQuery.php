@@ -39,11 +39,6 @@ class UserQuery extends ElementQuery
     public $admin = false;
 
     /**
-     * @var bool Whether to only return the client user.
-     */
-    public $client = false;
-
-    /**
      * @var string|int|false|null The permission that the resulting users must have.
      */
     public $can;
@@ -120,18 +115,6 @@ class UserQuery extends ElementQuery
     public function admin(bool $value = true)
     {
         $this->admin = $value;
-        return $this;
-    }
-
-    /**
-     * Sets the [[client]] property.
-     *
-     * @param bool $value The property value (defaults to true)
-     * @return static self reference
-     */
-    public function client(bool $value = true)
-    {
-        $this->client = $value;
         return $this;
     }
 
@@ -265,7 +248,6 @@ class UserQuery extends ElementQuery
             'users.lastName',
             'users.email',
             'users.admin',
-            'users.client',
             'users.locked',
             'users.pending',
             'users.suspended',
@@ -280,8 +262,6 @@ class UserQuery extends ElementQuery
 
         if ($this->admin) {
             $this->subQuery->andWhere(['users.admin' => true]);
-        } else if ($this->client) {
-            $this->subQuery->andWhere(['users.client' => true]);
         } else {
             $this->_applyCanParam();
         }

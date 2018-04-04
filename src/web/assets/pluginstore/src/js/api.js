@@ -3,34 +3,75 @@ import qs from 'qs';
 
 export default {
 
-    saveCartState(cb, cartState) {
-        localStorage.setItem('cartState', JSON.stringify(cartState));
-
-        return cb();
+    createCart(data, cb, errorCb) {
+        axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
+            .then(response => {
+                return cb(response.data);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
     },
 
-    getCartState(cb) {
-        let cartState = localStorage.getItem('cartState');
+    updateCart(orderNumber, data, cb, errorCb) {
+        data.orderNumber = orderNumber;
 
-        if(cartState) {
-            cartState = JSON.parse(cartState);
+        axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
+            .then(response => {
+                return cb(response.data);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
+    },
+
+    resetOrderNumber() {
+        localStorage.removeItem('orderNumber');
+    },
+
+    saveOrderNumber(orderNumber) {
+        localStorage.setItem('orderNumber', orderNumber);
+    },
+
+    getOrderNumber(cb) {
+        const orderNumber = localStorage.getItem('orderNumber');
+
+        return cb(orderNumber);
+    },
+
+    getCart(orderNumber, cb, errorCb) {
+        const data = {
+            orderNumber
         }
 
-        return cb(cartState);
+        axios.get(Craft.getActionUrl('plugin-store/get-cart', data))
+            .then(response => {
+                return cb(response.data);
+            })
+            .catch(response => {
+                return errorCb(response);
+            });
     },
 
     getDeveloper(developerId, cb, errorCb) {
-        let params = qs.stringify({
-            developerId: developerId,
-            enableCraftId: window.enableCraftId,
-            cms: window.cmsInfo,
-            [Craft.csrfTokenName]: Craft.csrfTokenValue
-        })
-
-        axios.post(Craft.getActionUrl('plugin-store/developer'), params)
+        axios.get(Craft.getActionUrl('plugin-store/developer'), {
+                params: {
+                    developerId: developerId,
+                },
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
-                let developer = response.data;
-                return cb(developer);
+                return cb(response.data);
             })
             .catch(response => {
                 return errorCb(response);
@@ -38,13 +79,11 @@ export default {
     },
 
     getPluginStoreData(cb, errorCb) {
-        let data = qs.stringify({
-            enableCraftId: window.enableCraftId,
-            cms: window.cmsInfo,
-            [Craft.csrfTokenName]: Craft.csrfTokenValue
-        });
-
-        axios.post(Craft.getActionUrl('plugin-store/plugin-store-data'), data)
+        axios.get(Craft.getActionUrl('plugin-store/plugin-store-data'), '', {
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 return cb(response.data);
             })
@@ -54,14 +93,14 @@ export default {
     },
 
     getPluginDetails(pluginId, cb, errorCb) {
-        let params = qs.stringify({
-            pluginId: pluginId,
-            enableCraftId: window.enableCraftId,
-            cms: window.cmsInfo,
-            [Craft.csrfTokenName]: Craft.csrfTokenValue
-        });
-
-        axios.post(Craft.getActionUrl('plugin-store/plugin-details'), params)
+        axios.get(Craft.getActionUrl('plugin-store/plugin-details'), {
+                params: {
+                    pluginId: pluginId,
+                },
+                headers: {
+                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                }
+            })
             .then(response => {
                 let pluginDetails = response.data;
                 return cb(pluginDetails);
@@ -82,10 +121,28 @@ export default {
             });
     },
 
-    checkout(order) {
-        let params = qs.stringify(order);
+    checkout(data) {
+        return axios.post(Craft.getActionUrl('plugin-store/checkout'), data, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        });
+    },
 
-        return axios.post(Craft.getActionUrl('plugin-store/checkout'), params);
+    savePluginLicenseKeys(data) {
+        return axios.post(Craft.getActionUrl('plugin-store/save-plugin-license-keys'), data, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        })
+    },
+
+    tryEdition(edition) {
+        return axios.post(Craft.getActionUrl('app/try-edition'), 'edition='+edition, {
+            headers: {
+                'X-CSRF-Token':  Craft.csrfTokenValue,
+            }
+        })
     }
 
 }

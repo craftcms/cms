@@ -129,7 +129,7 @@
             {% endfor %}
         {% endif %}
 
-        {% if CraftEdition >= CraftClient and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
+        {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
             <div id="perms" class="hidden">
 
                 {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
@@ -250,7 +250,7 @@
 
 {% block details %}
     {% if not isNewUser %}
-        {% if CraftEdition >= CraftClient %}
+        {% if CraftEdition == CraftPro %}
             <form class="meta read-only" method="post" accept-charset="UTF-8">
                 {{ hiddenInputs }}
                 <div class="data first">
@@ -312,11 +312,6 @@
                     {% endif %}
                 {% endif %}
             </form>
-        {% endif %}
-
-        {% if user.getIsCurrent() and craft.cp.enableCraftId() %}
-            <hr>
-            {% include 'users/_pluginstore' %}
         {% endif %}
     {% endif %}
 

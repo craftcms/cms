@@ -21,7 +21,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $email Email
  * @property string $password Password
  * @property bool $admin Admin
- * @property bool $client Client
  * @property bool $locked Locked
  * @property bool $suspended Suspended
  * @property bool $pending Pending

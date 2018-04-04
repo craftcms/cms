@@ -125,6 +125,11 @@ class Plugins extends Component
     private $_enabledPluginInfo;
 
     /**
+     * @var array|null All of the stored info for disabled plugins, indexed by handles
+     */
+    private $_disabledPluginInfo;
+
+    /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
      */
     private $_classPluginHandles = [];
@@ -222,7 +227,7 @@ class Plugins extends Component
             }
         }
         unset($row);
-        
+
         // Sort plugins by their names
         $names = array_column($this->_plugins, 'name');
         array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
@@ -783,46 +788,114 @@ class Plugins extends Component
      *
      * @return array
      */
-    public function getAllPluginInfo()
+    public function getAllPluginInfo(): array
     {
         $this->loadPlugins();
-
-        // Get a list of disabled plugins
-        $disabledPlugins = (new Query())
-            ->select('handle')
-            ->from(['{{%plugins}}'])
-            ->where(['enabled' => false])
-            ->column();
 
         // Get the info arrays
         $info = [];
         $names = [];
-        $defaults = [
-            'developer' => null,
-            'developerUrl' => null,
-            'description' => null,
-            'documentationUrl' => null,
-        ];
 
-        foreach ($this->_composerPluginInfo as $handle => $config) {
-            // Get the plugin if it's installed
-            /** @var Plugin|null $plugin */
-            $plugin = $this->getPlugin($handle);
-
-            $config = array_merge($defaults, $config);
-            $config['isInstalled'] = $plugin !== null || in_array($handle, $disabledPlugins, true);
-            $config['isEnabled'] = $plugin !== null;
-            $config['moduleId'] = $handle;
-            $config['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
-
-            $info[$handle] = $config;
-            $names[] = $config['name'];
+        foreach (array_keys($this->_composerPluginInfo) as $handle) {
+            $info[$handle] = $this->getPluginInfo($handle);
+            $names[] = $info[$handle]['name'];
         }
 
         // Sort plugins by their names
         array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $info);
 
         return $info;
+    }
+
+    /**
+     * Returns info about a plugin, whether it's installed or not.
+     *
+     * @param string $handle The plugin’s handle
+     * @return array
+     * @throws InvalidPluginException if the plugin isn't Composer-installed
+     */
+    public function getPluginInfo(string $handle): array
+    {
+        if (!isset($this->_composerPluginInfo[$handle])) {
+            throw new InvalidPluginException($handle);
+        }
+
+        // Get the info in the DB, if it's installed
+        $this->_loadDisabledPluginInfo();
+        $pluginInfo = $this->_enabledPluginInfo[$handle] ?? $this->_disabledPluginInfo[$handle] ?? null;
+
+        // Get the plugin if it's enabled
+        /** @var Plugin|null $plugin */
+        $plugin = $this->getPlugin($handle);
+
+        $info = array_merge([
+            'developer' => null,
+            'developerUrl' => null,
+            'description' => null,
+            'documentationUrl' => null,
+        ], $this->_composerPluginInfo[$handle]);
+
+        $info['isInstalled'] = $installed = $pluginInfo !== null;
+        $info['isEnabled'] = $plugin !== null;
+        $info['moduleId'] = $handle;
+        $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
+        $info['licenseKey'] = $key = $pluginInfo['licenseKey'] ?? null;
+        $info['licenseKeyStatus'] = $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
+        $info['hasIssues'] = $hasIssues = $installed ? $this->hasIssues($handle) : false;
+
+        if ($hasIssues) {
+            switch ($status) {
+                case LicenseKeyStatus::Mismatched:
+                    $info['licenseStatusMessage'] = Craft::t('app', 'This license is tied to another Craft install. Visit {url} to resolve.', [
+                        'url' => '<a href="https://id.craftcms.com" target="_blank">id.craftcms.com</a>',
+                    ]);
+                    break;
+                case LicenseKeyStatus::Astray:
+                    $info['licenseStatusMessage'] = Craft::t('app', 'This license isn’t allowed to run version {version}.', [
+                        'version' => $this->_composerPluginInfo[$handle]['version'],
+                    ]);
+                    break;
+                default:
+                    $info['licenseStatusMessage'] = $key ? Craft::t('app', 'Your license key is invalid.') : Craft::t('app', 'A license key is required.');
+                    break;
+            }
+        } else {
+            $info['licenseStatusMessage'] = null;
+        }
+
+        return $info;
+    }
+
+    /**
+     * Returns whether a plugin has licensing issues.
+     *
+     * @param string $handle
+     * @return bool
+     * @throws InvalidPluginException if the plugin isn't installed
+     */
+    public function hasIssues(string $handle): bool
+    {
+        if (isset($this->_enabledPluginInfo[$handle])) {
+            $pluginInfo = $this->_enabledPluginInfo[$handle];
+        } else {
+            $this->_loadDisabledPluginInfo();
+            if (!isset($this->_disabledPluginInfo[$handle])) {
+                return false;
+            }
+            $pluginInfo = $this->_disabledPluginInfo[$handle];
+        }
+
+        $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
+
+        return (
+            $status !== LicenseKeyStatus::Valid &&
+            $status !== LicenseKeyStatus::Unknown &&
+            (
+                $status !== LicenseKeyStatus::Invalid ||
+                !empty($pluginInfo['licenseKey']) ||
+                !Craft::$app->getCanTestEditions()
+            )
+        );
     }
 
     /**
@@ -1034,5 +1107,18 @@ class Plugins extends Component
             'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
             'migrationPath' => $plugin->getBasePath().DIRECTORY_SEPARATOR.'migrations',
         ]);
+    }
+
+    /**
+     * Load
+     */
+    private function _loadDisabledPluginInfo()
+    {
+        if ($this->_disabledPluginInfo === null) {
+            $this->_disabledPluginInfo = $this->_createPluginQuery()
+                ->where(['enabled' => false])
+                ->indexBy('handle')
+                ->all();
+        }
     }
 }

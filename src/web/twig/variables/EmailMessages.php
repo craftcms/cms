@@ -10,7 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\models\SystemMessage;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Email functions.

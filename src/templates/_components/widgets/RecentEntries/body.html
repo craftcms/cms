@@ -7,7 +7,7 @@
                         <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
                         <span class="light">
                             {{ entry.dateCreated|timestamp('short') }}
-                            {%- if CraftEdition >= CraftClient and entry.author %}, {{ entry.author.username }}{% endif -%}
+                            {%- if CraftEdition == CraftPro and entry.author %}, {{ entry.author.username }}{% endif -%}
                         </span>
                     </td>
                 </tr>

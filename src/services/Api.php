@@ -13,9 +13,11 @@ use Craft;
 use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\models\CraftIdToken;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -60,12 +62,15 @@ class Api extends Component
     /**
      * Returns info about the current Craft license.
      *
+     * @param string[] $include
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function getLicenseInfo(): array
+    public function getLicenseInfo(array $include = []): array
     {
-        $response = $this->request('GET', 'cms-licenses');
+        $response = $this->request('GET', 'cms-licenses', [
+            'query' => ['include' => implode(',', $include)],
+        ]);
         $body = Json::decode((string)$response->getBody());
         return $body['license'];
     }
@@ -83,6 +88,18 @@ class Api extends Component
     }
 
     /**
+     * Returns all CMS editions
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getCmsEditions(): array
+    {
+        $response = $this->request('GET', 'cms-editions');
+        return Json::decode((string)$response->getBody())['editions'];
+    }
+
+    /**
      * Returns all country data.
      *
      * @return array
@@ -90,7 +107,7 @@ class Api extends Component
      */
     public function getCountries(): array
     {
-        $cacheKey = 'countryListData';
+        $cacheKey = 'countries';
         $cache = Craft::$app->getCache();
 
         if ($cache->exists($cacheKey)) {
@@ -98,7 +115,7 @@ class Api extends Component
         }
 
         $response = $this->request('GET', 'countries');
-        $countries = Json::decode((string)$response->getBody());
+        $countries = Json::decode((string)$response->getBody())['countries'];
         $cache->set($cacheKey, $countries, 60 * 60 * 24 * 7);
 
         return $countries;
@@ -112,7 +129,7 @@ class Api extends Component
      */
     public function getPluginStoreData(): array
     {
-        $response = $this->request('POST', 'plugin-store');
+        $response = $this->request('GET', 'plugin-store');
         return Json::decode((string)$response->getBody());
     }
 
@@ -126,7 +143,7 @@ class Api extends Component
      */
     public function getPluginDetails(int $pluginId): array
     {
-        $response = $this->request('POST', 'plugin/'.$pluginId);
+        $response = $this->request('GET', 'plugin/'.$pluginId);
         return Json::decode((string)$response->getBody());
     }
 
@@ -140,22 +157,23 @@ class Api extends Component
      */
     public function getDeveloper(int $developerId): array
     {
-        $response = $this->request('POST', 'developer/'.$developerId);
+        $response = $this->request('GET', 'developer/'.$developerId);
         return Json::decode((string)$response->getBody());
     }
 
     /**
      * Order checkout.
      *
-     * @param array $order
+     * @param array $data
      *
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function checkout(array $order): array
+    public function checkout(array $data): array
     {
-        $response = $this->request('POST', 'checkout', [
-            RequestOptions::BODY => Json::encode($order),
+        $response = $this->request('POST', 'payments', [
+            'headers' => $this->getPluginStoreHeaders(),
+            RequestOptions::BODY => Json::encode($data),
         ]);
 
         return Json::decode((string)$response->getBody());
@@ -245,6 +263,54 @@ class Api extends Component
     }
 
     /**
+     * Create a cart.
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function createCart(array $data)
+    {
+        $response = $this->request('POST', 'carts', [
+            'headers' => $this->getPluginStoreHeaders(),
+            RequestOptions::BODY => Json::encode($data),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Get a cart by its order number.
+     *
+     * @param string $orderNumber
+     *
+     * @return array
+     */
+    public function getCart(string $orderNumber)
+    {
+        $response = $this->request('GET', 'carts/'.$orderNumber);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Update a cart.
+     *
+     * @param string $orderNumber
+     * @param array  $data
+     *
+     * @return array
+     */
+    public function updateCart(string $orderNumber, array $data)
+    {
+        $response = $this->request('POST', 'carts/'.$orderNumber, [
+            'headers' => $this->getPluginStoreHeaders(),
+            RequestOptions::BODY => Json::encode($data),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
      * @param string $method
      * @param string $uri
      * @param array $options
@@ -284,11 +350,8 @@ class Api extends Component
 
             switch ($licensedEdition)
             {
-                case 'personal':
-                    $licensedEdition = Craft::Personal;
-                    break;
-                case 'client':
-                    $licensedEdition = Craft::Client;
+                case 'solo':
+                    $licensedEdition = Craft::Solo;
                     break;
                 case 'pro':
                     $licensedEdition = Craft::Pro;
@@ -325,7 +388,7 @@ class Api extends Component
             $path = Craft::$app->getPath()->getLicenseKeyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
-            if ($this->cmsLicenseKey() !== null) {
+            if (App::licenseKey() !== null) {
                 $i = 0;
                 do {
                     $newPath = "{$path}.".++$i;
@@ -389,7 +452,7 @@ class Api extends Component
         }
 
         // Craft license
-        $headers['X-Craft-License'] = $this->cmsLicenseKey() ?? '🙏';
+        $headers['X-Craft-License'] = App::licenseKey() ?? '🙏';
 
         // plugin info
         $pluginLicenses = [];
@@ -443,29 +506,23 @@ class Api extends Component
         return $versions;
     }
 
+    // Private Methods
+    // =========================================================================
+
     /**
-     * @return string|null
+     * Returns Plugin Store headers
+     * @return array
      */
-    protected function cmsLicenseKey()
+    private function getPluginStoreHeaders()
     {
-        $path = Craft::$app->getPath()->getLicenseKeyPath();
+        $headers = [];
 
-        // Check to see if the key exists and it's not a temp one.
-        if (!is_file($path)) {
-            return null;
+        $craftIdToken = Craft::$app->getPluginStore()->getToken();
+
+        if ($craftIdToken) {
+            $headers['Authorization'] = 'Bearer '.$craftIdToken->accessToken;
         }
 
-        $contents = file_get_contents($path);
-        if (empty($contents) || $contents === 'temp') {
-            return null;
-        }
-
-        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $contents));
-
-        if (strlen($licenseKey) !== 250) {
-            return null;
-        }
-
-        return $licenseKey;
+        return $headers;
     }
 }
