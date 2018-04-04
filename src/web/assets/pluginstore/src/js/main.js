@@ -181,6 +181,7 @@ Garnish.$doc.ready(function() {
                     // All data loaded
                     this.$pluginStoreActions.removeClass('hidden');
                     this.$pluginStoreActionsSpinner.addClass('hidden');
+                    this.$emit('allDataLoaded');
                 }
             }.bind(this));
 
