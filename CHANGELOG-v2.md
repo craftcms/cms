@@ -1,4 +1,4 @@
-# Craft CMS Changelog
+# Release Notes for Craft CMS 2.x
 
 ## 2.6.3014 - 2018-04-04
 
