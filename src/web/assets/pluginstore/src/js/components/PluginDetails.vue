@@ -199,6 +199,7 @@
                     plugin: plugin.handle,
                     edition: plugin.editions[0].handle,
                     autoRenew: false,
+                    cmsLicenseKey: window.cmsLicenseKey,
                 }
 
                 this.$store.dispatch('addToCart', [item])
