@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.0.1 - 2018-04-04
+
+### Fixed
+- Fixed a bug where Craft Pro installs were getting identified as Craft Solo in the Control Panel.
+
 ## 3.0.0 - 2018-04-04
 
 ### Added
