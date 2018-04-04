@@ -1,8 +1,9 @@
 # Craft CMS Changelog
 
-## Unreleased
+## 2.6.3014 - 2018-04-04
 
 ## Changed
+- Renamed the Personal edition to “Solo”.
 - The `preventUserEnumeration` config setting is now applied to locked user accounts.
 - Updated Redactor to 2.12.
 
