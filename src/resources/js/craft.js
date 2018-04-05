@@ -10361,6 +10361,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 					{
 						Craft.livePreview.updateIframe(true);
 					}
+					
+					// Trigger an event so that other js can react to this action
+					Garnish.$win.trigger('elementEditor.saveElement');
 
 					this.closeHud();
 					this.onSaveElement(response);
