@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft no longer displays an alert in the Control Panel if the currently installed edition is _lower than_ the licensed edition.
+
 ### Fixed
 - Fixed some UI issues with the upgrade modal.
 
