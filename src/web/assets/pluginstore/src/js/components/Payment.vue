@@ -120,7 +120,7 @@
             return {
 				error: false,
 				loading: false,
-				paymentMode: 'existingCard',
+				paymentMode: 'newCard',
 				cardToken: null,
 				guestCardToken: null,
 				replaceCard: false,
@@ -194,18 +194,6 @@
 
                 return this.countries[iso].name
 			}
-        },
-
-        watch: {
-
-            craftIdAccount(newVal) {
-                if(!newVal.card) {
-                    this.paymentMode = 'newCard';
-                }
-
-                return newVal;
-            }
-
         },
 
 		methods: {
@@ -392,6 +380,10 @@
             this.couponCode = this.cart.couponCode
 
 			if(this.craftIdAccount && this.craftIdAccount.billingAddress) {
+                if(this.craftIdAccount.card) {
+                    this.paymentMode = 'existingCard'
+                }
+
                 if(this.craftIdAccount.billingAddress.country) {
                     this.onCountryChange(this.craftIdAccount.billingAddress.country)
 				}
