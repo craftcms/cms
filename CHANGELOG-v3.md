@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where you could get an error on some pages in the Control Panel if you did not have Craft Commerce installed. ([#2691](https://github.com/craftcms/cms/pull/2691))
+
 ## 3.0.1 - 2018-04-04
 
 ### Deprecated
