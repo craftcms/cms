@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+### Fixed
+- Fixed some UI issues with the upgrade modal.
+
 ## 2.6.3014 - 2018-04-04
 
 ## Changed

@@ -67,12 +67,11 @@
 				<tr class="license-statuses">
 					<td></td>
 					<td>{{ statusBadge(CraftPersonal, licensedEdition) }}</td>
-					<td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
 					<td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
 				</tr>
 			{% endif %}
 			<tr class="price">
-				<th scope="row" class="feature">{{ "One-Time Price"|t }}</th>
+				<td></td>
 				<td>{{ "Free"|t('app') }}</td>
 				<td>{{ price(CraftPro, editions[CraftPro]) }}</td>
 			</tr>
@@ -164,6 +163,7 @@
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr class="buybtns">
+				<td></td>
 				<td></td>
 				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>
