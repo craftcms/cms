@@ -532,7 +532,13 @@ class GeneralConfig extends BaseObject
     /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
-     * The URL(s) must begin with either `http://`, `https://`, or `//` (protocol-relative).
+     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [[aliases|alias]].
+     *
+     * ```php
+     * 'siteUrl' => [
+     *     'siteA' => 'https://site-a.com/',
+     *     'siteB' => 'https://site-b.com/',
+     * ],```
      */
     public $siteUrl;
     /**
