@@ -3,7 +3,7 @@
 ## 3.0.1 - 2018-04-04
 
 ### Deprecated
-- Brought back and depretated the `Craft::Personal` and `Craft::Client` constants.
+- Brought back and deprecated the `Craft::Personal` and `Craft::Client` constants.
 
 ### Fixed
 - Fixed a bug where elements’ `getNext()` and `getPrev()` methods were modifying the element query passed into them. ([#2160](https://github.com/craftcms/cms/issues/2160))
