@@ -121,7 +121,7 @@ class Cp
                     if (Craft::$app->getUser()->getIsAdmin()) {
                         $message .= '<a class="go" href="'.UrlHelper::cpUrl('settings/plugins').'">'.Craft::t('app', 'Resolve').'</a>';
                     } else {
-                        $message .= Craft::t('commerce', 'Please notify one of your site’s admins.');
+                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
                     }
 
                     $alerts[] = $message;
