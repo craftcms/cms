@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 2.x
 
+## 2.6.3015 - 2018-04-06
+
+### Changed
+- Craft no longer displays an alert in the Control Panel if the currently installed edition is _lower than_ the licensed edition.
+
+### Fixed
+- Fixed some UI issues with the upgrade modal.
+
 ## 2.6.3014 - 2018-04-04
 
 ## Changed

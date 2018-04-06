@@ -1,6 +1,6 @@
 {% macro statusBadge(edition, licensedEdition) %}
 	{% if edition == CraftEdition %}
-		{% if edition == licensedEdition %}
+		{% if edition <= licensedEdition %}
 			<div class="license-status installed" data-icon="check">{{ "Installed"|t }}</div>
 		{% else %}
 			<div class="license-status installed" data-icon="check">{{ "Installed as a trial"|t }}</div>
@@ -12,10 +12,14 @@
 
 {% macro price(edition, info) %}
 	{% if info.salePrice %}
-		<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}
+		{% set price %}<span class="listedprice">{{ info.formattedPrice }}</span> {{ info.formattedSalePrice }}{% endset %}
 	{% else %}
-		{{ info.formattedPrice }}
+		{% set price = info.formattedPrice %}
 	{% endif %}
+	{{ "{price} plus {renewalPrice}/year for updates"|t({
+		price: price,
+		renewalPrice: info.formattedRenewalPrice
+	}) }}
 {% endmacro %}
 
 {% macro buybtn(edition, info, licensedEdition, canTestEditions) %}
@@ -31,15 +35,9 @@
 				<div class="btn test" data-edition="{{ edition }}">{{ "Try for free"|t }}</div>
 			{% endif %}
 
-			{# Show the "Reinstall" button if they’re licensed to use this edition but not currently on it #}
+			{# Show the "Reactivate" button if they’re licensed to use this edition but not currently on it #}
 			{% if edition == licensedEdition and edition != CraftEdition %}
-				<div class="btn test" data-edition="{{ edition }}">{{ "Reinstall"|t }}</div>
-			{% endif %}
-
-			{# Show the "Uninstall" button if this is the currently-installed edition, but they are only licensed to use Craft Personal #}
-			{# (Not necessary to show if the licensed edition is Client/Pro as they will have their own "Install" button) #}
-			{% if edition == CraftEdition and licensedEdition == CraftPersonal %}
-				<div class="btn test" data-edition="0">{{ "Uninstall"|t }}</div>
+				<div class="btn test" data-edition="{{ edition }}">{{ "Reactivate"|t }}</div>
 			{% endif %}
 		</div>
 	{% endspaceless -%}
@@ -56,29 +54,26 @@
 				<td></td>
 				<th scope="col">
 					<h1 class="logo">Solo</h1>
-					<p>{{ "For sites built by and for the developer."|t('app') }}</p>
+					<p>{{ "For when you’re building a website for yourself or a friend."|t('app') }}</p>
 				</th>
 				<th scope="col">
 					<h1 class="logo">Pro</h1>
-					<p>{{ "For everything else."|t }}</p>
+					<p>{{ "For when you’re building something professionally for a client or team."|t }}</p>
 				</th>
 			</tr>
-			{% if CraftEdition > CraftPersonal or licensedEdition > CraftPersonal %}
-				<tr class="license-statuses">
-					<td></td>
-					<td>{{ statusBadge(CraftPersonal, licensedEdition) }}</td>
-					<td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
-					<td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
-				</tr>
-			{% endif %}
+			<tr class="license-statuses">
+				<td></td>
+				<td>{{ statusBadge(CraftPersonal, licensedEdition) }}</td>
+				<td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
+			</tr>
 			<tr class="price">
-				<th scope="row" class="feature">{{ "One-Time Price"|t }}</th>
+				<td></td>
 				<td>{{ "Free"|t('app') }}</td>
 				<td>{{ price(CraftPro, editions[CraftPro]) }}</td>
 			</tr>
 			<tr class="buybtns">
 				<td></td>
-				<td></td>
+				<td>{{ buybtn(CraftPersonal, editions[CraftPersonal], licensedEdition, canTestEditions) }}</td>
 				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>
 		</thead>
@@ -164,6 +159,7 @@
 				<td><span data-icon="check"></span></td>
 			</tr>
 			<tr class="buybtns">
+				<td></td>
 				<td></td>
 				<td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
 			</tr>

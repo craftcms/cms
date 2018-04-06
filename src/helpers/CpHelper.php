@@ -46,13 +46,18 @@ class CpHelper
 			{
 				$alerts[] = Craft::t('Your license key is invalid.');
 			}
-			else if (craft()->hasWrongEdition())
+			else if (!craft()->canTestEditions())
 			{
-				$alerts[] = Craft::t('You’re running Craft {edition} with a Craft {licensedEdition} license.', array(
-						'edition' => craft()->getEditionName(),
-						'licensedEdition' => craft()->getLicensedEditionName()
-					)) .
-					' <a class="go edition-resolution">'.Craft::t('Resolve').'</a>';
+				$edition = craft()->getEdition();
+				$licensedEdition = craft()->getLicensedEdition();
+				if ($edition > $licensedEdition)
+				{
+					$alerts[] = Craft::t('You’re running Craft {edition} with a Craft {licensedEdition} license.', array(
+							'edition' => craft()->getEditionName(),
+							'licensedEdition' => craft()->getLicensedEditionName()
+						)) .
+						' <a class="go edition-resolution">'.Craft::t('Resolve').'</a>';
+				}
 			}
 
 			if ($path != 'updates' && $user->can('performUpdates'))
