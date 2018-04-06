@@ -238,14 +238,6 @@ Garnish.$doc.ready(function() {
 
                 }
             });
-
-            // Payment button
-            let $paymentButton = $('#payment-button');
-
-            $paymentButton.on('click', (e) => {
-                e.preventDefault();
-                $this.openGlobalModal('payment');
-            });
         },
 
     });
