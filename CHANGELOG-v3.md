@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Made VueAsset support the `useCompressedJs` config for the `vue` lib.
+
 ### Fixed
 - Fixed a bug where you could get an error on some pages in the Control Panel if you did not have Craft Commerce installed. ([#2691](https://github.com/craftcms/cms/pull/2691))
 - Fixed a bug on the Plugin Store’s Payment screen where the “Use a new credit card” radio option would not get selected even though it was the only one available.
