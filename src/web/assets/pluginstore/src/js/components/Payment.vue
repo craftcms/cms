@@ -11,14 +11,14 @@
 							<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
 
 							<template v-if="paymentMode === 'newCard'">
-								<card-form-v2 v-if="!cardToken" ref="newCard"></card-form-v2>
+								<credit-card v-if="!cardToken" ref="newCard"></credit-card>
 								<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
 								<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
 							</template>
 						</template>
 
 						<template v-else>
-							<card-form-v2 ref="guestCard"></card-form-v2>
+							<credit-card ref="guestCard"></credit-card>
 						</template>
 					</div>
 
@@ -101,7 +101,7 @@
     import TextField from './fields/TextField';
     import TextInput from './inputs/TextInput';
     import SelectInput from './inputs/SelectInput';
-    import CardFormV2 from './CardFormV2';
+    import CreditCard from './CreditCard';
     import {mapGetters} from 'vuex'
 
     export default {
@@ -110,7 +110,7 @@
             TextareaField,
             TextField,
             TextInput,
-            CardFormV2,
+            CreditCard,
             SelectInput,
         },
 
