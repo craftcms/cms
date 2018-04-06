@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<template v-if="craftData.CraftEdition == edition">
-			<template v-if="craftData.licensedEdition == edition">
+			<template v-if="craftData.licensedEdition >= edition">
 				<div class="license-status installed" data-icon="check">{{ "Installed"|t('app') }}</div>
 			</template>
 			<template v-else>

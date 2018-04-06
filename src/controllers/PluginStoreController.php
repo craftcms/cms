@@ -251,10 +251,13 @@ class PluginStoreController extends Controller
         $data['countries'] = $api->getCountries();
 
         // Craft editions
-        $data['cmsEditionPrices'] = [];
+        $data['editions'] = [];
         foreach ($api->getCmsEditions() as $editionInfo) {
             if ($editionInfo['price']) {
-                $data['editions'][$editionInfo['handle']] = $editionInfo['price'];
+                $data['editions'][$editionInfo['handle']] = [
+                    'price' => $editionInfo['price'],
+                    'renewalPrice' => $editionInfo['renewalPrice'],
+                ];
             }
         }
 
