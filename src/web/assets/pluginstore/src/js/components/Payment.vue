@@ -101,7 +101,6 @@
     import TextField from './fields/TextField';
     import TextInput from './inputs/TextInput';
     import SelectInput from './inputs/SelectInput';
-    import CreditCard from './CreditCard';
     import CardFormV2 from './CardFormV2';
     import {mapGetters} from 'vuex'
 
@@ -111,7 +110,6 @@
             TextareaField,
             TextField,
             TextInput,
-            CreditCard,
             CardFormV2,
             SelectInput,
         },
