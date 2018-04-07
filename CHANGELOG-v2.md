@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when saving a Single entry over Ajax. ([#2687](https://github.com/craftcms/cms/issues/2687))
+
 ## 2.6.3015 - 2018-04-06
 
 ### Changed
