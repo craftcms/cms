@@ -323,13 +323,13 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderId) {
-            if ($this->includeSubfolders) {
-                $folders = Craft::$app->getAssets()->getAllDescendantFolders(
-                    Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders)));
-            } else {
-                $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId));
+            $folderCondition = Db::parseParam('assets.folderId', $this->folderId);
+            if (is_numeric($this->folderId) && $this->includeSubfolders) {
+                $assetsService = Craft::$app->getAssets();
+                $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($this->folderId));
+                $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }
+            $this->subQuery->andWhere($folderCondition);
         }
 
         if ($this->filename) {
