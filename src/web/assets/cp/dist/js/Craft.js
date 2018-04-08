@@ -1,4 +1,4 @@
-/*!   - 2018-04-07 */
+/*!   - 2018-04-08 */
 (function($){
 
 /** global: Craft */
@@ -12670,6 +12670,14 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
             this.rowCount = this.$tbody.find('tr').length;
+
+            // Is this already an editable table?
+            if (this.$table.data('editable-table')) {
+                Garnish.log('Double-instantiating an editable table on an element');
+                this.$table.data('editable-table').destroy();
+            }
+
+            this.$table.data('editable-table', this);
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
