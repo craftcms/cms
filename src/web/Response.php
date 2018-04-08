@@ -33,7 +33,7 @@ class Response extends \yii\web\Response
      *
      * @return string|null
      */
-    public function getContentType(): string
+    public function getContentType()
     {
         // If the response hasn't been prepared yet, go with what the formatter is going to set
         if (!$this->_isPrepared) {
