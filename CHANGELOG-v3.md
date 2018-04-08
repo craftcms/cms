@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Craft now deletes all compiled templates whenever Craft or a plugin is updated. ([#2686](https://github.com/craftcms/cms/issues/2686))
 - `Craft.EditableTable` instances are now accessible via `.data('editable-table')` on their `<table>` element. ([#2694](https://github.com/craftcms/cms/issues/2694))
 - Updated Garnish to 0.1.22. ([#2689](https://github.com/craftcms/cms/issues/2689))
 

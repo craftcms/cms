@@ -17,6 +17,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
+use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as DebugModule;
@@ -180,8 +181,13 @@ class Application extends \yii\web\Application
         if ($this->getUpdates()->getHasCraftVersionChanged()) {
             $this->getUpdates()->updateCraftVersionInfo();
 
-            // Clear the template caches in case they've been compiled since this release was cut.
-            FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
+            // Delete all compiled templates
+            try {
+                FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath());
+            } catch (ErrorException $e) {
+                Craft::error('Could not delete compiled templates: '.$e->getMessage());
+                Craft::$app->getErrorHandler()->logException($e);
+            }
         }
 
         // If the system is offline, make sure they have permission to be here
