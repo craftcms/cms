@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated Garnish to 0.1.22. ([#2689](https://github.com/craftcms/cms/issues/2689))
+
 ### Fixed
 - Fixed an error that could occur in the Control Panel if any plugins with licensing issues were installed. ([#2691](https://github.com/craftcms/cms/pull/2691))
 - Fixed a bug on the Plugin Store’s Payment screen where the “Use a new credit card” radio option would not get selected automatically even if it was the only one available.
