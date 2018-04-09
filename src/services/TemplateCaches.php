@@ -368,7 +368,7 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its ID(s).
      *
-     * @param int|array $cacheId The cache ID.
+     * @param int|int[] $cacheId The cache ID(s)
      * @return bool
      */
     public function deleteCacheById($cacheId): bool
