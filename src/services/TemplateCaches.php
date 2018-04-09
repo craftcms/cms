@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
+use craft\events\DeleteTemplateCachesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -30,6 +31,19 @@ use yii\web\Response;
  */
 class TemplateCaches extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event SectionEvent The event that is triggered before template caches are deleted.
+     */
+    const EVENT_BEFORE_DELETE_CACHES = 'beforeDeleteCaches';
+
+    /**
+     * @event SectionEvent The event that is triggered after template caches are deleted.
+     */
+    const EVENT_AFTER_DELETE_CACHES = 'afterDeleteCaches';
+
     // Properties
     // =========================================================================
 
@@ -381,9 +395,23 @@ class TemplateCaches extends Component
             return false;
         }
 
+        // Fire a 'beforeDeleteCaches' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_CACHES)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_CACHES, new DeleteTemplateCachesEvent([
+                'cacheIds' => (array)$cacheId
+            ]));
+        }
+
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(self::$_templateCachesTable, ['id' => $cacheId])
             ->execute();
+
+        // Fire an 'afterDeleteCaches' event
+        if ($affectedRows && $this->hasEventHandlers(self::EVENT_AFTER_DELETE_CACHES)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_CACHES, new DeleteTemplateCachesEvent([
+                'cacheIds' => (array)$cacheId
+            ]));
+        }
 
         return (bool)$affectedRows;
     }

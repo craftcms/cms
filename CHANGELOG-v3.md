@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the `EVENT_BEFORE_DELETE_CACHES` and `EVENT_AFTER_DELETE_CACHES` events to `craft\services\TemplateCaches`.
+- Added `craft\events\DeleteTemplateCachesEvent`.
+
 ### Changed
 - Craft now deletes all compiled templates whenever Craft or a plugin is updated. ([#2686](https://github.com/craftcms/cms/issues/2686))
 - Matrix fields now set `$propagating` to `true` when saving Matrix blocks, if the owner element is propagating.
