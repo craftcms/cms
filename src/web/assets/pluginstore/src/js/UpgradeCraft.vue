@@ -18,8 +18,8 @@
                 </tr>
                 <tr class="license-statuses">
                     <td></td>
-                    <td><craft-status-badge :edition="craftData.CraftSolo" /></td>
-                    <td><craft-status-badge :edition="craftData.CraftPro" /></td>
+                    <td><status-badge :edition="craftData.CraftSolo" /></td>
+                    <td><status-badge :edition="craftData.CraftPro" /></td>
                 </tr>
                 <tr class="price">
                     <th scope="row" class="feature"></th>
@@ -92,13 +92,13 @@
 
 <script>
     import { mapGetters, mapActions } from 'vuex'
-    import CraftStatusBadge from './components/upgradecraft/CraftStatusBadge';
+    import StatusBadge from './components/upgradecraft/StatusBadge';
     import BuyBtn from './components/upgradecraft/BuyBtn';
 
     export default {
 
         components: {
-            CraftStatusBadge,
+            StatusBadge,
             BuyBtn
         },
 
