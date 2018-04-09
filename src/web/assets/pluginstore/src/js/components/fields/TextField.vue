@@ -9,14 +9,12 @@
 </template>
 
 <script>
-    import TextInput from '../inputs/TextInput';
-
     export default {
 
         props: ['label', 'id', 'placeholder', 'value', 'size', 'errors', 'success'],
 
         components: {
-            TextInput,
+            TextInput: require('../inputs/TextInput'),
         },
 
     }

@@ -14,15 +14,13 @@
 
 
 <script>
-    import Cleave from 'vue-cleave'
     import { mapGetters } from 'vuex'
-    import TextInput from './inputs/TextInput'
 
     export default {
 
         components: {
-            TextInput,
-            Cleave,
+            TextInput: require('./inputs/TextInput'),
+            Cleave: require('vue-cleave'),
         },
 
         data() {

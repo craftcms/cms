@@ -69,14 +69,12 @@
 
 <script>
     import { mapGetters } from 'vuex'
-    import PluginGrid from './components/PluginGrid';
-    import PluginSearch from './components/PluginSearch';
 
     export default {
 
         components: {
-            PluginGrid,
-            PluginSearch,
+            PluginGrid: require('./components/PluginGrid'),
+            PluginSearch: require('./components/PluginSearch'),
         },
 
         data () {

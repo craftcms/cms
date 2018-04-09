@@ -22,14 +22,12 @@
 <script>
     import filter from 'lodash/filter';
     import includes from 'lodash/includes';
-    import PluginGrid from './PluginGrid';
-    import SortMenuBtn from './SortMenuBtn';
 
     export default {
 
         components: {
-            PluginGrid,
-            SortMenuBtn,
+            PluginGrid: require('./PluginGrid'),
+            SortMenuBtn: require('./SortMenuBtn'),
         },
 
         props: ['plugins', 'sort'],

@@ -96,22 +96,16 @@
 </template>
 
 <script>
-    import CheckboxField from './fields/CheckboxField';
-    import TextareaField from './fields/TextareaField';
-    import TextField from './fields/TextField';
-    import TextInput from './inputs/TextInput';
-    import SelectInput from './inputs/SelectInput';
-    import CreditCard from './CreditCard';
     import {mapGetters} from 'vuex'
 
     export default {
         components: {
-            CheckboxField,
-            TextareaField,
-            TextField,
-            TextInput,
-            CreditCard,
-            SelectInput,
+            CheckboxField: require('./fields/CheckboxField'),
+            TextareaField: require('./fields/TextareaField'),
+            TextField: require('./fields/TextField'),
+            TextInput: require('./inputs/TextInput'),
+            CreditCard: require('./CreditCard'),
+            SelectInput: require('./inputs/SelectInput'),
         },
 
         data() {

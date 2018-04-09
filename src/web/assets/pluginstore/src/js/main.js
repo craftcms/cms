@@ -4,7 +4,6 @@ import { escapeHtml, formatNumber, t } from './filters/craft';
 import router from './router';
 import store from './store';
 import { mapGetters } from 'vuex';
-import GlobalModal from './components/GlobalModal';
 
 Vue.filter('currency', currency);
 Vue.filter('escapeHtml', escapeHtml);
@@ -20,7 +19,7 @@ Garnish.$doc.ready(function() {
         store,
 
         components: {
-            GlobalModal
+            GlobalModal: require('./components/GlobalModal')
         },
 
         data() {

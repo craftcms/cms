@@ -6,12 +6,11 @@
 
 <script>
     import { mapGetters } from 'vuex'
-    import PluginGrid from './components/PluginGrid';
 
     export default {
 
         components: {
-            PluginGrid,
+            PluginGrid: require('./components/PluginGrid'),
 		},
 
         computed: {

@@ -33,7 +33,6 @@
 </template>
 
 <script>
-    import PluginIndex from './components/PluginIndex';
     import { mapGetters } from 'vuex'
 
     export default {
@@ -46,7 +45,7 @@
         },
 
         components: {
-            PluginIndex,
+            PluginIndex: require('./components/PluginIndex'),
         },
 
         computed: {

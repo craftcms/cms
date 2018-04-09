@@ -53,20 +53,15 @@
 
 <script>
     import { mapGetters } from 'vuex'
-    import PluginDetails from './PluginDetails';
-    import Cart from './Cart';
-    import Payment from './Payment';
-    import ThankYou from './ThankYou';
-    import Identity from './Identity';
 
     export default {
 
         components: {
-            PluginDetails,
-            Cart,
-            Payment,
-            ThankYou,
-            Identity,
+            PluginDetails: require('./PluginDetails'),
+            Cart: require('./Cart'),
+            Payment: require('./Payment'),
+            ThankYou: require('./ThankYou'),
+            Identity: require('./Identity'),
         },
 
         props: ['pluginId', 'show'],

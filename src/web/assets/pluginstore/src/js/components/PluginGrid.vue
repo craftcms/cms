@@ -10,12 +10,10 @@
 
 
 <script>
-    import PluginCard from './PluginCard';
-
     export default {
 
         components: {
-            PluginCard,
+            PluginCard: require('./PluginCard'),
         },
 
         props: ['plugins', 'columns'],

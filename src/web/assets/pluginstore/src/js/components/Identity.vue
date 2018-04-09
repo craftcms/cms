@@ -27,12 +27,11 @@
 
 <script>
     import {mapGetters} from 'vuex'
-    import TextField from './fields/TextField';
 
     export default {
 
         components: {
-            TextField,
+            TextField: require('./fields/TextField'),
         },
 
 	    data() {

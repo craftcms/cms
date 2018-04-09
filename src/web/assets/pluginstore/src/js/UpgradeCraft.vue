@@ -92,14 +92,12 @@
 
 <script>
     import { mapGetters, mapActions } from 'vuex'
-    import StatusBadge from './components/upgradecraft/StatusBadge';
-    import BuyBtn from './components/upgradecraft/BuyBtn';
 
     export default {
 
         components: {
-            StatusBadge,
-            BuyBtn
+            StatusBadge: require('./components/upgradecraft/StatusBadge'),
+            BuyBtn: require('./components/upgradecraft/BuyBtn'),
         },
 
         computed: {
