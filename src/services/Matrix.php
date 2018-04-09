@@ -678,6 +678,7 @@ class Matrix extends Component
                 foreach ($blocks as $block) {
                     $block->ownerId = $owner->id;
                     $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
+                    $block->propagating = $owner->propagating;
 
                     Craft::$app->getElements()->saveElement($block, false, $propagate);
 
