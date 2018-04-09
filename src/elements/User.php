@@ -311,6 +311,7 @@ class User extends Element implements IdentityInterface
                 ->select(['id as source', 'photoId as target'])
                 ->from(['{{%users}}'])
                 ->where(['id' => $sourceElementIds])
+                ->andWhere(['not', ['photoId' => null]])
                 ->all();
 
             return [
