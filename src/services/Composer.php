@@ -45,6 +45,16 @@ class Composer extends Component
      */
     public $disablePackagist = true;
 
+    /**
+     * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
+     */
+    public $updateComposerClassMap = false;
+
+    /**
+     * @var string[]|null
+     */
+    private $_composerClasses;
+
     // Public Methods
     // =========================================================================
 
@@ -92,9 +102,6 @@ class Composer extends Component
             $io = new NullIO();
         }
 
-        // Preload Composer classes in case Composer needs to self-update
-        $this->preloadComposerClasses();
-
         // Get composer.json
         $jsonPath = $this->getJsonPath();
         $backup = file_get_contents($jsonPath);
@@ -109,6 +116,15 @@ class Composer extends Component
         // Update composer.json with the new (optimized) requirements
         $optimized = Craft::$app->getApi()->getOptimizedComposerRequirements($requirements, []);
         $this->updateRequirements($jsonPath, $optimized, false);
+
+        if ($this->updateComposerClassMap) {
+            // Start logging newly-autoloaded classes
+            $this->_composerClasses = [];
+            spl_autoload_register([$this, 'logComposerClass'], true, true);
+        } else {
+            // Preload Composer classes in case Composer needs to self-update
+            $this->preloadComposerClasses();
+        }
 
         // Run the installer
         $composer = $this->createComposer($io, $jsonPath);
@@ -127,6 +143,18 @@ class Composer extends Component
 
         // Change the working directory back
         chdir($wd);
+
+        if ($this->updateComposerClassMap) {
+            // Generate a new composer-classes.php
+            spl_autoload_unregister([$this, 'logComposerClass']);
+            $contents = "<?php\n\nreturn [\n";
+            sort($this->_composerClasses);
+            foreach ($this->_composerClasses as $class) {
+                $contents .= "    '{$class}',\n";
+            }
+            $contents .= "];\n";
+            FileHelper::writeToFile(dirname(__DIR__).'/config/composer-classes.php', $contents);
+        }
 
         // Return composer.json to normal
         file_put_contents($jsonPath, $backup);
@@ -255,6 +283,16 @@ class Composer extends Component
         if (isset($exception)) {
             throw $exception;
         }
+    }
+
+    /**
+     * Adds an autoloading class to the Composer class map
+     *
+     * @param string $className
+     */
+    public function logComposerClass(string $className)
+    {
+        $this->_composerClasses[] = $className;
     }
 
     // Protected Methods
