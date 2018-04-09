@@ -25,7 +25,7 @@
 </template>
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -68,7 +68,7 @@
                 this.loading = true
 
                 this.tryEdition(edition)
-                    .then(() =>  {
+                    .then(() => {
                         this.getCraftData()
                             .then(() => {
                                 this.loading = false

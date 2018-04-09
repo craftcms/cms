@@ -14,7 +14,7 @@
 
 
 <script>
-    import { mapGetters } from 'vuex'
+    import {mapGetters} from 'vuex'
 
     export default {
 
@@ -87,17 +87,17 @@
                 this.errors.exp = false
                 this.errors.cvc = false
 
-                if(!this.number) {
+                if (!this.number) {
                     this.errors.number = true
                     hasErrors = true
                 }
 
-                if(!this.exp) {
+                if (!this.exp) {
                     this.errors.exp = true
                     hasErrors = true
                 }
 
-                if(!this.cvc) {
+                if (!this.cvc) {
                     this.errors.cvc = true
                     hasErrors = true
                 }

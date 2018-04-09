@@ -1,9 +1,9 @@
 import Vue from 'vue';
-import { currency } from './filters/currency';
-import { escapeHtml, formatNumber, t } from './filters/craft';
+import {currency} from './filters/currency';
+import {escapeHtml, formatNumber, t} from './filters/craft';
 import router from './router';
 import store from './store';
-import { mapGetters } from 'vuex';
+import {mapGetters} from 'vuex';
 
 Vue.filter('currency', currency);
 Vue.filter('escapeHtml', escapeHtml);
@@ -23,22 +23,22 @@ Garnish.$doc.ready(function() {
         },
 
         data() {
-          return {
-              $crumbs: null,
-              $pageTitle: null,
-              crumbs: null,
-              pageTitle: 'Plugin Store',
-              plugin: null,
-              pluginId: null,
-              modalStep: null,
-              pluginStoreDataLoaded: false,
-              pluginStoreDataError: false,
-              craftIdDataLoaded: false,
-              cartDataLoaded: false,
-              showModal: false,
-              lastOrder: null,
-              statusMessage: null,
-          }
+            return {
+                $crumbs: null,
+                $pageTitle: null,
+                crumbs: null,
+                pageTitle: 'Plugin Store',
+                plugin: null,
+                pluginId: null,
+                modalStep: null,
+                pluginStoreDataLoaded: false,
+                pluginStoreDataError: false,
+                craftIdDataLoaded: false,
+                cartDataLoaded: false,
+                showModal: false,
+                lastOrder: null,
+                statusMessage: null,
+            }
         },
 
         computed: {
@@ -55,7 +55,7 @@ Garnish.$doc.ready(function() {
             cart() {
                 let totalQty = 0;
 
-                if(this.cart) {
+                if (this.cart) {
                     totalQty = this.cart.totalQty;
                 }
 
@@ -66,7 +66,7 @@ Garnish.$doc.ready(function() {
                 // Remove existing crumbs
                 $('nav', this.$crumbs).remove();
 
-                if(crumbs && crumbs.length > 0) {
+                if (crumbs && crumbs.length > 0) {
                     this.$crumbs.removeClass('empty');
 
                     // Create new crumbs
@@ -79,11 +79,11 @@ Garnish.$doc.ready(function() {
 
                     for (let i = 0; i < crumbs.length; i++) {
                         let item = crumbs[i];
-                        let link = $('<a href="#" data-path="'+item.path+'">'+item.label+'</a>').appendTo(crumbsLi);
+                        let link = $('<a href="#" data-path="' + item.path + '">' + item.label + '</a>').appendTo(crumbsLi);
 
                         link.on('click', (e) => {
                             e.preventDefault();
-                            $this.$router.push({ path: item.path })
+                            $this.$router.push({path: item.path})
                         });
                     }
 
@@ -98,7 +98,7 @@ Garnish.$doc.ready(function() {
             },
 
             craftIdAccount() {
-                if(this.craftIdAccount) {
+                if (this.craftIdAccount) {
                     $('.label', this.$craftIdAccount).html(this.craftIdAccount.username);
 
                     this.$craftIdAccount.removeClass('hidden');
@@ -140,7 +140,7 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                this.$store.dispatch('updateCraftId', { craftId })
+                this.$store.dispatch('updateCraftId', {craftId})
                 this.$emit('craftIdUpdated')
             },
 
@@ -153,7 +153,7 @@ Garnish.$doc.ready(function() {
             // Page title
             this.$pageTitle = $('#header').find('h1');
 
-            if(this.$pageTitle) {
+            if (this.$pageTitle) {
                 this.$pageTitle.html(this.pageTitle)
             }
 
@@ -172,11 +172,11 @@ Garnish.$doc.ready(function() {
 
             // On data loaded
             this.$on('dataLoaded', function() {
-                if(this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded)) {
+                if (this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded)) {
                     this.$pluginStoreActionsSpinner.removeClass('hidden');
                 }
 
-                if(this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
+                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
                     // All data loaded
                     this.$pluginStoreActions.removeClass('hidden');
                     this.$pluginStoreActionsSpinner.addClass('hidden');
@@ -228,7 +228,7 @@ Garnish.$doc.ready(function() {
             });
 
             this.$cartButton.keydown(e => {
-                switch(e.which) {
+                switch (e.which) {
                     case 13: // Enter
                     case 32: // Space
                         e.preventDefault();

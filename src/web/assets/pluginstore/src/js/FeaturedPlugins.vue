@@ -5,13 +5,13 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
+    import {mapGetters} from 'vuex'
 
     export default {
 
         components: {
             PluginGrid: require('./components/PluginGrid'),
-		},
+        },
 
         computed: {
 
@@ -20,19 +20,19 @@
                 getPluginsByIds: 'getPluginsByIds',
             }),
 
-			featuredPlugin() {
+            featuredPlugin() {
                 let featuredPlugin = this.getFeaturedPlugin(this.$route.params.id);
 
-                if(featuredPlugin) {
+                if (featuredPlugin) {
                     this.$root.pageTitle = this.$options.filters.escapeHtml(featuredPlugin.title);
                 }
 
                 return featuredPlugin;
-			}
+            }
 
         },
 
-        created () {
+        created() {
             this.$root.crumbs = [
                 {
                     label: this.$options.filters.t("Plugin Store", 'app'),

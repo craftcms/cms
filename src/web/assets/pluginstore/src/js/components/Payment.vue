@@ -110,19 +110,19 @@
 
         data() {
             return {
-				error: false,
-				loading: false,
-				paymentMode: 'newCard',
-				cardToken: null,
-				guestCardToken: null,
-				replaceCard: false,
-				couponCode: '',
-				couponCodeLoading: false,
-				couponCodeSuccess: false,
-				couponCodeError: false,
-				couponCodeTimeout: false,
+                error: false,
+                loading: false,
+                paymentMode: 'newCard',
+                cardToken: null,
+                guestCardToken: null,
+                replaceCard: false,
+                couponCode: '',
+                couponCodeLoading: false,
+                couponCodeSuccess: false,
+                couponCodeError: false,
+                couponCodeTimeout: false,
 
-				billingInfo: {
+                billingInfo: {
                     firstName: '',
                     lastName: '',
                     businessName: '',
@@ -133,17 +133,17 @@
                     state: '',
                     city: '',
                     zipCode: '',
-				},
+                },
 
                 billingInfoErrors: {
                     businessTaxId: false,
                 },
 
-				errors: {},
+                errors: {},
 
-				stateOptions: [],
+                stateOptions: [],
 
-				staticCartTotal: 0,
+                staticCartTotal: 0,
             }
         },
 
@@ -158,71 +158,71 @@
                 craftData: 'craftData',
             }),
 
-			countryOptions() {
+            countryOptions() {
                 let options = [];
 
                 for (let iso in this.countries) {
                     if (this.countries.hasOwnProperty(iso)) {
                         options.push({
-							label: this.countries[iso].name,
-							value: iso,
-						})
+                            label: this.countries[iso].name,
+                            value: iso,
+                        })
                     }
                 }
 
-				return options;
-			},
+                return options;
+            },
 
             billingCountryName() {
                 const iso = this.billingInfo.country
 
-				if (!iso) {
+                if (!iso) {
                     return
-				}
+                }
 
-                if(!this.countries[iso]) {
+                if (!this.countries[iso]) {
                     return
                 }
 
                 return this.countries[iso].name
-			}
+            }
         },
 
-		methods: {
+        methods: {
 
             savePaymentMethod(cb, cbError) {
-                if(this.cartTotal > 0) {
-					if (this.craftIdAccount) {
-						if(this.paymentMode === 'newCard') {
-							// Save new card
-							if(!this.cardToken) {
-								this.$refs.newCard.save(response => {
-									this.cardToken = response;
-									cb();
-								}, () => {
-									cbError();
-								});
-							} else {
-								cb()
-							}
-						} else {
-							cb();
-						}
-					} else {
-						// Save guest card
-						this.$refs.guestCard.save(response => {
-							this.guestCardToken = response;
-							cb();
-						}, () => {
-							cbError();
-						});
-					}
+                if (this.cartTotal > 0) {
+                    if (this.craftIdAccount) {
+                        if (this.paymentMode === 'newCard') {
+                            // Save new card
+                            if (!this.cardToken) {
+                                this.$refs.newCard.save(response => {
+                                    this.cardToken = response;
+                                    cb();
+                                }, () => {
+                                    cbError();
+                                });
+                            } else {
+                                cb()
+                            }
+                        } else {
+                            cb();
+                        }
+                    } else {
+                        // Save guest card
+                        this.$refs.guestCard.save(response => {
+                            this.guestCardToken = response;
+                            cb();
+                        }, () => {
+                            cbError();
+                        });
+                    }
                 } else {
                     cb();
-				}
-			},
+                }
+            },
 
-			saveBillingInfo(cb, cbError) {
+            saveBillingInfo(cb, cbError) {
                 let cartData = {
                     billingAddress: {
                         firstName: this.billingInfo.firstName,
@@ -240,12 +240,12 @@
 
                 this.$store.dispatch('saveCart', cartData)
                     .then(response => {
-						cb(response);
-					})
+                        cb(response);
+                    })
                     .catch(response => {
                         cbError(response)
                     })
-			},
+            },
 
             checkout() {
                 this.errors = {}
@@ -255,18 +255,18 @@
                         // Ready to pay
                         let cardToken = null;
 
-                        if(this.cartTotal > 0) {
-							if (this.craftIdAccount) {
-								switch(this.paymentMode) {
-									case 'newCard':
-										cardToken = this.cardToken.id;
-										break;
-									default:
-										cardToken = this.craftIdAccount.cardToken
-								}
-							} else {
-								cardToken = this.guestCardToken.id;
-							}
+                        if (this.cartTotal > 0) {
+                            if (this.craftIdAccount) {
+                                switch (this.paymentMode) {
+                                    case 'newCard':
+                                        cardToken = this.cardToken.id;
+                                        break;
+                                    default:
+                                        cardToken = this.craftIdAccount.cardToken
+                                }
+                            } else {
+                                cardToken = this.guestCardToken.id;
+                            }
                         }
 
                         let checkoutData = {
@@ -279,27 +279,27 @@
                         this.$store.dispatch('checkout', checkoutData)
                             .then(response => {
                                 this.$store.dispatch('savePluginLicenseKeys', this.cart)
-									.then(response => {
+                                    .then(response => {
                                         this.$store.dispatch('getCraftData')
                                             .then(() => {
                                                 this.$store.dispatch('resetCart')
-													.then(() => {
+                                                    .then(() => {
                                                         this.loading = false;
                                                         this.error = false;
                                                         this.$root.modalStep = 'thankYou';
-													})
+                                                    })
                                             })
-									})
+                                    })
                             })
                             .catch(response => {
                                 this.loading = false;
                                 this.error = response.statusText;
                             });
-					}, (response) => {
-                        if(response.errors) {
-							response.errors.forEach(error => {
-								this.errors[error.param] = error.message
-							})
+                    }, (response) => {
+                        if (response.errors) {
+                            response.errors.forEach(error => {
+                                this.errors[error.param] = error.message
+                            })
                         }
                         this.loading = false
                         this.$root.displayError("Couldn't save billing informations.")
@@ -307,38 +307,38 @@
                 }, () => {
                     this.loading = false
                     this.$root.displayError("Couldn't save payment method.");
-				});
-			},
+                });
+            },
 
-			onCountryChange(iso) {
-				if (!this.countries[iso]) {
+            onCountryChange(iso) {
+                if (!this.countries[iso]) {
                     this.stateOptions = []
-					return
-				}
+                    return
+                }
 
-				const country = this.countries[iso]
+                const country = this.countries[iso]
 
-				if(!country.states) {
+                if (!country.states) {
                     this.stateOptions = []
-					return
-				}
+                    return
+                }
 
-				const states = country.states
-				let options = []
+                const states = country.states
+                let options = []
 
-				for (let iso in states) {
-					if (states.hasOwnProperty(iso)) {
-						options.push({
-							label: states[iso],
-							value: iso,
-						})
-					}
-				}
+                for (let iso in states) {
+                    if (states.hasOwnProperty(iso)) {
+                        options.push({
+                            label: states[iso],
+                            value: iso,
+                        })
+                    }
+                }
 
-				this.stateOptions = options
-			},
+                this.stateOptions = options
+            },
 
-			couponCodeChange(value) {
+            couponCodeChange(value) {
                 clearTimeout(this.couponCodeTimeout)
                 this.couponCodeSuccess = false
                 this.couponCodeError = false
@@ -362,29 +362,29 @@
                             this.staticCartTotal = this.cartTotal
                             this.couponCodeLoading = false
                         })
-				}.bind(this), 500)
+                }.bind(this), 500)
             }
 
-		},
+        },
 
-		mounted() {
+        mounted() {
             this.staticCartTotal = this.cartTotal
             this.couponCode = this.cart.couponCode
 
-			if(this.craftIdAccount && this.craftIdAccount.billingAddress) {
-                if(this.craftIdAccount.card) {
+            if (this.craftIdAccount && this.craftIdAccount.billingAddress) {
+                if (this.craftIdAccount.card) {
                     this.paymentMode = 'existingCard'
                 }
 
-                if(this.craftIdAccount.billingAddress.country) {
+                if (this.craftIdAccount.billingAddress.country) {
                     this.onCountryChange(this.craftIdAccount.billingAddress.country)
-				}
+                }
 
                 this.$nextTick(() => {
                     this.billingInfo = this.craftIdAccount.billingAddress
-				})
+                })
             }
-		}
+        }
 
     }
 </script>

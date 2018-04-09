@@ -6,7 +6,7 @@ export default {
     createCart(data, cb, errorCb) {
         axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
                 headers: {
-                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                    'X-CSRF-Token': Craft.csrfTokenValue,
                 }
             })
             .then(response => {
@@ -22,7 +22,7 @@ export default {
 
         axios.post(Craft.getActionUrl('plugin-store/update-cart'), data, {
                 headers: {
-                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                    'X-CSRF-Token': Craft.csrfTokenValue,
                 }
             })
             .then(response => {
@@ -67,7 +67,7 @@ export default {
                     developerId: developerId,
                 },
                 headers: {
-                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                    'X-CSRF-Token': Craft.csrfTokenValue,
                 }
             })
             .then(response => {
@@ -81,7 +81,7 @@ export default {
     getPluginStoreData(cb, errorCb) {
         axios.get(Craft.getActionUrl('plugin-store/plugin-store-data'), '', {
                 headers: {
-                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                    'X-CSRF-Token': Craft.csrfTokenValue,
                 }
             })
             .then(response => {
@@ -98,7 +98,7 @@ export default {
                     pluginId: pluginId,
                 },
                 headers: {
-                    'X-CSRF-Token':  Craft.csrfTokenValue,
+                    'X-CSRF-Token': Craft.csrfTokenValue,
                 }
             })
             .then(response => {
@@ -124,7 +124,7 @@ export default {
     checkout(data) {
         return axios.post(Craft.getActionUrl('plugin-store/checkout'), data, {
             headers: {
-                'X-CSRF-Token':  Craft.csrfTokenValue,
+                'X-CSRF-Token': Craft.csrfTokenValue,
             }
         });
     },
@@ -132,15 +132,15 @@ export default {
     savePluginLicenseKeys(data) {
         return axios.post(Craft.getActionUrl('plugin-store/save-plugin-license-keys'), data, {
             headers: {
-                'X-CSRF-Token':  Craft.csrfTokenValue,
+                'X-CSRF-Token': Craft.csrfTokenValue,
             }
         })
     },
 
     tryEdition(edition) {
-        return axios.post(Craft.getActionUrl('app/try-edition'), 'edition='+edition, {
+        return axios.post(Craft.getActionUrl('app/try-edition'), 'edition=' + edition, {
             headers: {
-                'X-CSRF-Token':  Craft.csrfTokenValue,
+                'X-CSRF-Token': Craft.csrfTokenValue,
             }
         })
     }

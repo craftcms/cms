@@ -11,10 +11,10 @@ const getters = {
 
 const actions = {
 
-    getDeveloper({ commit }, developerId) {
+    getDeveloper({commit}, developerId) {
         return new Promise((resolve, reject) => {
             api.getDeveloper(developerId, developer => {
-                commit(types.RECEIVE_DEVELOPER, { developer });
+                commit(types.RECEIVE_DEVELOPER, {developer});
                 resolve(developer);
             }, response => {
                 reject(response);
@@ -26,7 +26,7 @@ const actions = {
 
 const mutations = {
 
-    [types.RECEIVE_DEVELOPER] (state, { developer }) {
+    [types.RECEIVE_DEVELOPER](state, {developer}) {
         state.developer = developer
     },
 

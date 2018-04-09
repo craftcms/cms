@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
+    import {mapGetters} from 'vuex'
 
     export default {
 
@@ -13,7 +13,7 @@
             PluginIndex: require('./components/PluginIndex'),
         },
 
-        data () {
+        data() {
             return {
                 categoryId: null,
             }
@@ -29,7 +29,7 @@
             category() {
                 let category = this.getCategoryById(this.categoryId);
 
-                if(category) {
+                if (category) {
                     this.$root.pageTitle = category.title;
                 }
 
@@ -44,7 +44,7 @@
 
         watch: {
 
-            '$route.params.id': function (id) {
+            '$route.params.id': function(id) {
                 this.categoryId = id;
             }
 

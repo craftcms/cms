@@ -107,7 +107,7 @@
 </template>
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -134,7 +134,7 @@
             }),
 
             longDescription() {
-                if(this.plugin.longDescription && this.plugin.longDescription.length > 0) {
+                if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return this.plugin.longDescription;
                 }
             },
@@ -150,7 +150,7 @@
             },
 
             licenseLabel() {
-                switch(this.plugin.license) {
+                switch (this.plugin.license) {
                     case 'craft':
                         return 'Craft';
 
@@ -189,7 +189,7 @@
         methods: {
 
             ...mapActions([
-               'addToCart'
+                'addToCart'
             ]),
 
             buyPlugin(plugin) {
@@ -213,13 +213,13 @@
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();
                 this.$root.pageTitle = this.$options.filters.escapeHtml(plugin.developerName);
-                this.$router.push({ path: '/developer/'+plugin.developerId})
+                this.$router.push({path: '/developer/' + plugin.developerId})
             },
 
             viewCategory(category) {
                 this.$root.closeGlobalModal();
                 this.$root.pageTitle = category.name;
-                this.$router.push({ path: '/categories/'+category.id})
+                this.$router.push({path: '/categories/' + category.id})
             },
 
             loadPlugin(pluginId) {

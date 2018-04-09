@@ -18,20 +18,20 @@
 
         props: ['plugins', 'columns'],
 
-        data () {
+        data() {
             return {
                 showingSearchResults: false,
                 sort: {
-					attribute: 'activeInstalls',
-					direction: 'desc',
-				},
+                    attribute: 'activeInstalls',
+                    direction: 'desc',
+                },
             }
         },
 
         computed: {
 
             pluginsToRender() {
-                if(!this.plugins) {
+                if (!this.plugins) {
                     return [];
                 }
 
@@ -40,23 +40,27 @@
                 let attribute = this.sort.attribute;
                 let direction = this.sort.direction;
 
-                function compareASC(a,b) {
-                    if (a[attribute] < b[attribute])
+                function compareASC(a, b) {
+                    if (a[attribute] < b[attribute]) {
                         return -1;
-                    if (a[attribute] > b[attribute])
+                    }
+                    if (a[attribute] > b[attribute]) {
                         return 1;
+                    }
                     return 0;
                 }
 
-                function compareDESC(a,b) {
-                    if (a[attribute] > b[attribute])
+                function compareDESC(a, b) {
+                    if (a[attribute] > b[attribute]) {
                         return -1;
-                    if (a[attribute] < b[attribute])
+                    }
+                    if (a[attribute] < b[attribute]) {
                         return 1;
+                    }
                     return 0;
                 }
 
-                if(direction === 'desc') {
+                if (direction === 'desc') {
                     plugins.sort(compareDESC);
                 } else {
                     plugins.sort(compareASC);

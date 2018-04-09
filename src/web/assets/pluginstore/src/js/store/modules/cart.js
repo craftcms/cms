@@ -36,14 +36,14 @@ const getters = {
 
     isCmsEditionInCart(state) {
         return cmsEdition => {
-            if(state.cart) {
+            if (state.cart) {
                 return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
             }
         }
     },
 
     cartTotal(state) {
-        if(state.cart) {
+        if (state.cart) {
             return state.cart.totalPrice;
         }
 
@@ -73,7 +73,7 @@ const getters = {
     },
 
     cartItems(state, rootState) {
-        if(!state.cart || !rootState.pluginStoreData.plugins) {
+        if (!state.cart || !rootState.pluginStoreData.plugins) {
             return [];
         }
 
@@ -119,7 +119,7 @@ const actions = {
             newItems.forEach(newItem => {
                 const alreadyInCart = items.find(item => item.plugin === newItem.plugin)
 
-                if(!alreadyInCart) {
+                if (!alreadyInCart) {
                     items.push(newItem)
                 }
             })
@@ -176,14 +176,14 @@ const actions = {
                 .then(orderNumber => {
                     if (orderNumber) {
                         api.getCart(orderNumber, response => {
-                            if(!response.error) {
+                            if (!response.error) {
                                 commit(types.RECEIVE_CART, {response})
                                 resolve(response)
                             } else {
                                 // Couldn’t get cart for this order number? Try to create a new one.
                                 const data = {}
 
-                                if(!rootState.craft.craftData.craftId) {
+                                if (!rootState.craft.craftData.craftId) {
                                     data.email = rootState.craft.craftData.currentUser.email
                                 }
 
@@ -202,7 +202,7 @@ const actions = {
                         // No order number yet? Create a new cart.
                         const data = {}
 
-                        if(!rootState.craft.craftData.craftId) {
+                        if (!rootState.craft.craftData.craftId) {
                             data.email = rootState.craft.craftData.currentUser.email
                         }
 
@@ -277,8 +277,8 @@ const actions = {
             let pluginLicenseKeys = []
 
             cart.lineItems.forEach(lineItem => {
-                if(lineItem.purchasable.type === 'plugin-edition') {
-                    if(rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
+                if (lineItem.purchasable.type === 'plugin-edition') {
+                    if (rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
                         pluginLicenseKeys.push({
                             handle: lineItem.purchasable.plugin.handle,
                             key: lineItem.options.licenseKey.substr(4)
@@ -352,7 +352,7 @@ const utils = {
         for (let i = 0; i < cart.lineItems.length; i++) {
             let lineItem = cart.lineItems[i]
 
-            switch(lineItem.purchasable.type) {
+            switch (lineItem.purchasable.type) {
                 case 'plugin-edition':
                     lineItems.push({
                         type: lineItem.purchasable.type,

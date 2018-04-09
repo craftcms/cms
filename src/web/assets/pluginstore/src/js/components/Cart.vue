@@ -101,7 +101,7 @@
 </template>
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -119,7 +119,7 @@
 
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
-                    if(p) {
+                    if (p) {
                         return !this.cart.lineItems.find(item => {
                             return item.purchasable.pluginId == p.id;
                         })
@@ -147,7 +147,7 @@
                 this.$store.dispatch('addToCart', [item])
             },
 
-            addAllToCart () {
+            addAllToCart() {
                 let $store = this.$store
                 let items = []
 
@@ -165,7 +165,7 @@
             },
 
             payment() {
-                if(this.craftIdAccount) {
+                if (this.craftIdAccount) {
                     this.$root.openGlobalModal('payment');
                 } else {
                     this.$root.openGlobalModal('identity');

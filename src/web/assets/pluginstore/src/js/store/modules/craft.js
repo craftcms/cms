@@ -12,12 +12,12 @@ const getters = {
     },
 
     installedPlugins: (state, rootState) => {
-        if(!rootState.allPlugins) {
+        if (!rootState.allPlugins) {
             return [];
         }
 
         return rootState.allPlugins.filter(p => {
-            if(state.craftData.installedPlugins) {
+            if (state.craftData.installedPlugins) {
                 return state.craftData.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle);
             }
             return false;
@@ -50,10 +50,10 @@ const getters = {
 
 const actions = {
 
-    getCraftData ({ commit }) {
+    getCraftData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCraftData(data => {
-                commit(types.RECEIVE_CRAFT_DATA, { data });
+                commit(types.RECEIVE_CRAFT_DATA, {data});
                 resolve(data);
             }, response => {
                 reject(response);
@@ -61,7 +61,7 @@ const actions = {
         })
     },
 
-    updateCraftId({ commit }, craftId) {
+    updateCraftId({commit}, craftId) {
         commit(types.UPDATE_CRAFT_ID, craftId);
     },
 
@@ -81,11 +81,11 @@ const actions = {
 
 const mutations = {
 
-    [types.RECEIVE_CRAFT_DATA] (state, { data }) {
+    [types.RECEIVE_CRAFT_DATA](state, {data}) {
         state.craftData = data
     },
 
-    [types.UPDATE_CRAFT_ID] (state, { craftId }) {
+    [types.UPDATE_CRAFT_ID](state, {craftId}) {
         state.craftData.craftId = craftId;
     },
 

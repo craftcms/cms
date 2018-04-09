@@ -52,7 +52,7 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
+    import {mapGetters} from 'vuex'
 
     export default {
 
@@ -87,7 +87,7 @@
         watch: {
 
             show(show) {
-                if(show) {
+                if (show) {
                     this.modal.show();
                 } else {
                     this.modal.hide();
@@ -99,7 +99,7 @@
         methods: {
 
             back() {
-                if(this.identityMode === 'craftid' || this.modalStep === 'identity') {
+                if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
                     this.$root.openGlobalModal('cart');
                 } else {
                     this.$root.openGlobalModal('identity');

@@ -91,7 +91,7 @@
 </template>
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -107,7 +107,7 @@
             }),
         },
 
-        created () {
+        created() {
             this.$root.crumbs = [
                 {
                     label: this.$options.filters.t("Plugin Store", 'app'),

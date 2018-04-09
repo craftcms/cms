@@ -32,7 +32,7 @@
 
         props: ['plugins', 'sort'],
 
-        data () {
+        data() {
             return {
                 searchQuery: '',
                 showSpinner: false,
@@ -51,7 +51,7 @@
 
                 let searchQuery = this.searchQuery;
 
-                if(!searchQuery) {
+                if (!searchQuery) {
                     this.$emit('hideResults');
                     return [];
                 }
@@ -59,33 +59,33 @@
                 this.$emit('showResults');
 
                 return filter(this.plugins, o => {
-                    if(o.packageName && includes(o.packageName.toLowerCase(), searchQuery.toLowerCase())) {
+                    if (o.packageName && includes(o.packageName.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.name && includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
+                    if (o.name && includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.shortDescription && includes(o.shortDescription.toLowerCase(), searchQuery.toLowerCase())) {
+                    if (o.shortDescription && includes(o.shortDescription.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.description && includes(o.description.toLowerCase(), searchQuery.toLowerCase())) {
+                    if (o.description && includes(o.description.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.developerName && includes(o.developerName.toLowerCase(), searchQuery.toLowerCase())) {
+                    if (o.developerName && includes(o.developerName.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.developerUrl && includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
+                    if (o.developerUrl && includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
 
-                    if(o.keywords.length > 0) {
+                    if (o.keywords.length > 0) {
                         for (let i = 0; i < o.keywords.length; i++) {
-                            if(includes(o.keywords[i].toLowerCase(), searchQuery.toLowerCase())) {
+                            if (includes(o.keywords[i].toLowerCase(), searchQuery.toLowerCase())) {
                                 return true;
                             }
                         }

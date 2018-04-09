@@ -16,7 +16,7 @@ const getters = {
 
     getFeaturedPlugin(state) {
         return id => {
-            if(state.data.featuredPlugins) {
+            if (state.data.featuredPlugins) {
                 return state.data.featuredPlugins.find(g => g.id == id)
             }
         };
@@ -30,14 +30,14 @@ const getters = {
 
     getCategoryById(state) {
         return id => {
-            if(state.data.categories) {
+            if (state.data.categories) {
                 return state.data.categories.find(c => c.id == id)
             }
         };
     },
 
     isInstalled(state, rootState) {
-        return  plugin => {
+        return plugin => {
             return rootState.installedPlugins.find(p => p.id == plugin.id)
         }
     },
@@ -48,7 +48,7 @@ const getters = {
 
     getPluginById(state, rootState) {
         return id => {
-            if(state.data.plugins) {
+            if (state.data.plugins) {
                 return state.data.plugins.find(p => p.id == id)
             }
 
@@ -67,14 +67,14 @@ const getters = {
     getPluginsByCategory(state, rootState) {
         return categoryId => {
             return state.data.plugins.filter(p => {
-                return p.categoryIds.find(c =>  c == categoryId);
+                return p.categoryIds.find(c => c == categoryId);
             })
         }
     },
 
     getPluginsByDeveloperId(state, rootState) {
         return developerId => {
-            if(state.data.plugins) {
+            if (state.data.plugins) {
                 return state.data.plugins.filter(p => p.developerId == developerId)
             }
         }
@@ -84,10 +84,10 @@ const getters = {
 
 const actions = {
 
-    getPluginStoreData ({ commit }) {
+    getPluginStoreData({commit}) {
         return new Promise((resolve, reject) => {
             api.getPluginStoreData(data => {
-                commit(types.RECEIVE_PLUGIN_STORE_DATA, { data });
+                commit(types.RECEIVE_PLUGIN_STORE_DATA, {data});
                 resolve(data);
             }, response => {
                 reject(response);
@@ -95,10 +95,10 @@ const actions = {
         })
     },
 
-    getPluginDetails({ commit }, pluginId) {
+    getPluginDetails({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginDetails(pluginId, data => {
-                commit(types.RECEIVE_PLUGIN_DETAILS, { data });
+                commit(types.RECEIVE_PLUGIN_DETAILS, {data});
                 resolve(data);
             }, response => {
                 reject(response);
@@ -110,11 +110,11 @@ const actions = {
 
 const mutations = {
 
-    [types.RECEIVE_PLUGIN_STORE_DATA] (state, { data }) {
+    [types.RECEIVE_PLUGIN_STORE_DATA](state, {data}) {
         state.data = data
     },
 
-    [types.RECEIVE_PLUGIN_DETAILS] (state, { data }) {
+    [types.RECEIVE_PLUGIN_DETAILS](state, {data}) {
         state.plugin = data
     },
 

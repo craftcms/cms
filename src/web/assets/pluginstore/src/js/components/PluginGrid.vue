@@ -23,8 +23,8 @@
             cssClass() {
                 let cssClass = 'ps-grid-plugins';
 
-                if(this.columns) {
-                    cssClass += ' ps-grid-plugins-'+this.columns;
+                if (this.columns) {
+                    cssClass += ' ps-grid-plugins-' + this.columns;
                 }
 
                 return cssClass;
