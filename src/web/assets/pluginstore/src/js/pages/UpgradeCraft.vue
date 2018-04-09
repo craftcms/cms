@@ -96,8 +96,8 @@
     export default {
 
         components: {
-            StatusBadge: require('./components/upgradecraft/StatusBadge'),
-            BuyBtn: require('./components/upgradecraft/BuyBtn'),
+            StatusBadge: require('../components/upgradecraft/StatusBadge'),
+            BuyBtn: require('../components/upgradecraft/BuyBtn'),
         },
 
         computed: {

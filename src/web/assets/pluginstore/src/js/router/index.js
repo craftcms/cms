@@ -1,12 +1,12 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Index from '../Index'
-import Category from '../Category'
-import UpgradeCraft from '../UpgradeCraft'
-import Developer from '../Developer'
-import FeaturedPlugins from '../FeaturedPlugins'
-import Tests from '../Tests'
-import NotFound from '../NotFound'
+import Index from '../pages/Index'
+import Category from '../pages/Category'
+import UpgradeCraft from '../pages/UpgradeCraft'
+import Developer from '../pages/Developer'
+import FeaturedPlugins from '../pages/FeaturedPlugins'
+import Tests from '../pages/Tests'
+import NotFound from '../pages/NotFound'
 
 Vue.use(VueRouter)
 

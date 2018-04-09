@@ -73,8 +73,8 @@
     export default {
 
         components: {
-            PluginGrid: require('./components/PluginGrid'),
-            PluginSearch: require('./components/PluginSearch'),
+            PluginGrid: require('../components/PluginGrid'),
+            PluginSearch: require('../components/PluginSearch'),
         },
 
         data() {

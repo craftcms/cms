@@ -45,7 +45,7 @@
         },
 
         components: {
-            PluginIndex: require('./components/PluginIndex'),
+            PluginIndex: require('../components/PluginIndex'),
         },
 
         computed: {

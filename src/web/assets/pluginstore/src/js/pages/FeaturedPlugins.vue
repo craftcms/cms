@@ -10,7 +10,7 @@
     export default {
 
         components: {
-            PluginGrid: require('./components/PluginGrid'),
+            PluginGrid: require('../components/PluginGrid'),
         },
 
         computed: {
