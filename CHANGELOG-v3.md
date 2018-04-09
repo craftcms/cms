@@ -5,6 +5,7 @@
 ### Changed
 - Craft now deletes all compiled templates whenever Craft or a plugin is updated. ([#2686](https://github.com/craftcms/cms/issues/2686))
 - `Craft.EditableTable` instances are now accessible via `.data('editable-table')` on their `<table>` element. ([#2694](https://github.com/craftcms/cms/issues/2694))
+- Updated Composer to 1.6.3. ([#2707](https://github.com/craftcms/cms/issues/2707))
 - Updated Garnish to 0.1.22. ([#2689](https://github.com/craftcms/cms/issues/2689))
 
 ### Fixed
@@ -15,6 +16,7 @@
 - Fixed an error that could occur when disabling a site on a Single section. ([#2695](https://github.com/craftcms/cms/issues/2695))
 - Fixed an error that could occur on requests without a content type on the response. ([#2704](https://github.com/craftcms/cms/issues/2704))
 - Fixed a bug where the `includeSubfolders` asset query param wasn’t including results in the parent folder. ([#2706](https://github.com/craftcms/cms/issues/2706))
+- Fixed an error that could occur when querying for users eager-loaded with their photos, if any of the resulting users didn’t have a photo. ([#2708](https://github.com/craftcms/cms/issues/2708))
 
 ## 3.0.1 - 2018-04-04
 
