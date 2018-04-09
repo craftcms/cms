@@ -19,6 +19,7 @@
 - Fixed a bug where the `includeSubfolders` asset query param wasn’t including results in the parent folder. ([#2706](https://github.com/craftcms/cms/issues/2706))
 - Fixed an error that could occur when querying for users eager-loaded with their photos, if any of the resulting users didn’t have a photo. ([#2708](https://github.com/craftcms/cms/issues/2708))
 - Fixed a bug where relational fields within Matrix fields wouldn’t save relations to elements that didn’t exist on all of the sites the owner element existed on. ([#2683](https://github.com/craftcms/cms/issues/2683))
+- Fixed a bug where relational fields were ignoring disabled related elements in various functions, including required field validation and value serialization.
 
 ## 3.0.1 - 2018-04-04
 

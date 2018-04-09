@@ -231,7 +231,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         /** @var ElementQueryInterface|ElementInterface[] $value */
         if ($value instanceof ElementQueryInterface) {
-            return $value->count() === 0;
+            return $this->_all($value)->count() === 0;
         }
 
         return empty($value);
@@ -305,7 +305,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var ElementQueryInterface $value */
-        return $value->ids();
+        return $this->_all($value)->ids();
     }
 
     /**
@@ -366,7 +366,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var ElementQuery $value */
         $titles = [];
 
-        foreach ($value->all() as $relatedElement) {
+        foreach ($this->_all($value)->all() as $relatedElement) {
             $titles[] = (string)$relatedElement;
         }
 
@@ -378,7 +378,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        $value = $value->all();
+        $value = $this->_all($value)->all();
 
         if (empty($value)) {
             return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
@@ -403,7 +403,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $element = $value->one();
+            $element = $this->_all($value)->one();
         } else {
             $element = $value[0] ?? null;
         }
@@ -514,10 +514,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             if ($value->id !== null) {
                 $targetIds = $value->id ?: [];
             } else {
-                $targetIds = $value
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->ids();
+                $targetIds = $this->_all($value)->ids();
             }
 
             /** @var int|int[]|false|null $targetIds */
@@ -772,5 +769,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function availableSources(): array
     {
         return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
+    }
+
+    /**
+     * Returns a clone of the element query value, prepped to include disabled elements.
+     *
+     * @param ElementQueryInterface $query
+     * @return ElementQueryInterface
+     */
+    private function _all(ElementQueryInterface $query): ElementQueryInterface
+    {
+        return (clone $query)->status(null)->enabledForSite(false);
     }
 }
