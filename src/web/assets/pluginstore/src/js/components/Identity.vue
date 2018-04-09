@@ -65,7 +65,7 @@
                 }
 
                 if (this.identityMode === 'guest' && !this.guestEmail) {
-                    return false;
+                    return false
                 }
 
                 return true
@@ -75,20 +75,20 @@
         methods: {
 
             connectCraftId() {
-                let width = 800;
-                let height = 600;
+                let width = 800
+                let height = 600
 
-                let winWidth = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
-                let winHeight = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+                let winWidth = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width
+                let winHeight = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height
 
-                let left = ((winWidth / 2) - (width / 2));
-                let top = ((winHeight / 2) - (height / 2));
+                let left = ((winWidth / 2) - (width / 2))
+                let top = ((winHeight / 2) - (height / 2))
 
-                let url = Craft.getActionUrl('plugin-store/connect', {redirectUrl: Craft.getActionUrl('plugin-store/modal-callback')});
-                let name = 'ConnectWithOauth';
-                let specs = 'location=0,status=0,width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
+                let url = Craft.getActionUrl('plugin-store/connect', {redirectUrl: Craft.getActionUrl('plugin-store/modal-callback')})
+                let name = 'ConnectWithOauth'
+                let specs = 'location=0,status=0,width=' + width + ',height=' + height + ',left=' + left + ',top=' + top
 
-                window.open(url, name, specs);
+                window.open(url, name, specs)
             },
 
             save() {
@@ -121,7 +121,7 @@
                 if (this.craftIdAccount) {
                     this.$root.openGlobalModal('payment')
                 }
-            }.bind(this));
+            }.bind(this))
 
             this.guestEmail = this.cart.email
         }

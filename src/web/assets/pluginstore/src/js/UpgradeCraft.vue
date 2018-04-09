@@ -113,17 +113,17 @@
                     label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
-            ];
+            ]
 
-            this.$root.pageTitle = this.$options.filters.t('Upgrade Craft CMS', 'app');
+            this.$root.pageTitle = this.$options.filters.t('Upgrade Craft CMS', 'app')
         },
 
         mounted() {
             this.$root.$on('allDataLoaded', function() {
-                Craft.initUiElements(this.$refs.upgradecraft);
-            }.bind(this));
+                Craft.initUiElements(this.$refs.upgradecraft)
+            }.bind(this))
 
-            Craft.initUiElements(this.$refs.upgradecraft);
+            Craft.initUiElements(this.$refs.upgradecraft)
         },
     }
 </script>

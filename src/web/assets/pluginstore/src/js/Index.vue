@@ -97,17 +97,17 @@
             }),
 
             indexBlocks() {
-                return this.pluginStoreData.indexBlocks;
+                return this.pluginStoreData.indexBlocks
             }
 
         },
 
         created() {
-            this.$root.pageTitle = this.$options.filters.t("Plugin Store", 'app');
+            this.$root.pageTitle = this.$options.filters.t("Plugin Store", 'app')
         },
 
         mounted() {
-            this.$root.crumbs = null;
+            this.$root.crumbs = null
         }
 
     }
