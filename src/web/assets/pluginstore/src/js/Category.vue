@@ -27,17 +27,17 @@
             }),
 
             category() {
-                let category = this.getCategoryById(this.categoryId);
+                let category = this.getCategoryById(this.categoryId)
 
                 if (category) {
-                    this.$root.pageTitle = category.title;
+                    this.$root.pageTitle = category.title
                 }
 
-                return category;
+                return category
             },
 
             plugins() {
-                return this.getPluginsByCategory(this.categoryId);
+                return this.getPluginsByCategory(this.categoryId)
             }
 
         },
@@ -45,7 +45,7 @@
         watch: {
 
             '$route.params.id': function(id) {
-                this.categoryId = id;
+                this.categoryId = id
             }
 
         },
@@ -56,9 +56,9 @@
                     label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
-            ];
+            ]
 
-            this.categoryId = this.$route.params.id;
+            this.categoryId = this.$route.params.id
         },
 
     }

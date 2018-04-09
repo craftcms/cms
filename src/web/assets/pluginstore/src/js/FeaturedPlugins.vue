@@ -21,13 +21,13 @@
             }),
 
             featuredPlugin() {
-                let featuredPlugin = this.getFeaturedPlugin(this.$route.params.id);
+                let featuredPlugin = this.getFeaturedPlugin(this.$route.params.id)
 
                 if (featuredPlugin) {
-                    this.$root.pageTitle = this.$options.filters.escapeHtml(featuredPlugin.title);
+                    this.$root.pageTitle = this.$options.filters.escapeHtml(featuredPlugin.title)
                 }
 
-                return featuredPlugin;
+                return featuredPlugin
             }
 
         },
@@ -38,7 +38,7 @@
                     label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
-            ];
+            ]
         },
 
     }

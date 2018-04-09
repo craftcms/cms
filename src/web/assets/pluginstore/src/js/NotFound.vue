@@ -10,8 +10,8 @@
     export default {
         computed: {
             statusMessage() {
-                return this.$options.filters.t("Page not found.", 'app');
+                return this.$options.filters.t("Page not found.", 'app')
             }
         }
-    };
+    }
 </script>

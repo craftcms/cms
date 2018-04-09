@@ -57,29 +57,29 @@
         },
 
         mounted() {
-            let developerId = this.$route.params.id;
+            let developerId = this.$route.params.id
 
-            this.loading = true;
+            this.loading = true
 
-            this.plugins = this.$store.getters.getPluginsByDeveloperId(developerId);
+            this.plugins = this.$store.getters.getPluginsByDeveloperId(developerId)
 
             this.$store.dispatch('getDeveloper', developerId)
                 .then(developer => {
-                    this.$root.pageTitle = this.$options.filters.escapeHtml(developer.developerName);
-                    this.$root.loading = false;
-                    this.loading = false;
+                    this.$root.pageTitle = this.$options.filters.escapeHtml(developer.developerName)
+                    this.$root.loading = false
+                    this.loading = false
                 })
                 .catch(response => {
-                    this.$root.loading = false;
-                    this.loading = false;
-                });
+                    this.$root.loading = false
+                    this.loading = false
+                })
 
             this.$root.crumbs = [
                 {
                     label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
-            ];
+            ]
         },
 
     }

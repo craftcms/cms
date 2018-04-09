@@ -121,7 +121,7 @@
                 return this.activeTrialPlugins.filter(p => {
                     if (p) {
                         return !this.cart.lineItems.find(item => {
-                            return item.purchasable.pluginId == p.id;
+                            return item.purchasable.pluginId == p.id
                         })
                     }
                 })
@@ -166,9 +166,9 @@
 
             payment() {
                 if (this.craftIdAccount) {
-                    this.$root.openGlobalModal('payment');
+                    this.$root.openGlobalModal('payment')
                 } else {
-                    this.$root.openGlobalModal('identity');
+                    this.$root.openGlobalModal('identity')
                 }
             }
 

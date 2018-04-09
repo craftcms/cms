@@ -4,4 +4,4 @@ const localStoragePlugin = store => {
     })
 }
 
-export default localStoragePlugin;
+export default localStoragePlugin

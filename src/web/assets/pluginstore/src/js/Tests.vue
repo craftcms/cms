@@ -33,7 +33,7 @@
 
         computed: {
             craftTranslation() {
-                return Craft.t('app', 'Go to {link}', {link: '<a href="#">test</a>'});
+                return Craft.t('app', 'Go to {link}', {link: '<a href="#">test</a>'})
             },
         },
 
@@ -43,20 +43,20 @@
                     label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
-            ];
+            ]
         },
 
         mounted() {
             this.modal = new Garnish.Modal(this.$refs.garnishmodalcontent, {
                 autoShow: false,
                 resizable: true
-            });
+            })
         },
 
         methods: {
             openModal() {
-                this.modal.show();
+                this.modal.show()
             },
         }
-    };
+    }
 </script>

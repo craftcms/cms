@@ -19,7 +19,7 @@
         methods: {
 
             change($event) {
-                this.checked = !this.checked;
+                this.checked = !this.checked
                 this.$emit('input', this.checked)
             }
 

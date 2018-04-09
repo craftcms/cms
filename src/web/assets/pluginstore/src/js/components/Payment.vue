@@ -159,7 +159,7 @@
             }),
 
             countryOptions() {
-                let options = [];
+                let options = []
 
                 for (let iso in this.countries) {
                     if (this.countries.hasOwnProperty(iso)) {
@@ -170,7 +170,7 @@
                     }
                 }
 
-                return options;
+                return options
             },
 
             billingCountryName() {
@@ -197,28 +197,28 @@
                             // Save new card
                             if (!this.cardToken) {
                                 this.$refs.newCard.save(response => {
-                                    this.cardToken = response;
-                                    cb();
+                                    this.cardToken = response
+                                    cb()
                                 }, () => {
-                                    cbError();
-                                });
+                                    cbError()
+                                })
                             } else {
                                 cb()
                             }
                         } else {
-                            cb();
+                            cb()
                         }
                     } else {
                         // Save guest card
                         this.$refs.guestCard.save(response => {
-                            this.guestCardToken = response;
-                            cb();
+                            this.guestCardToken = response
+                            cb()
                         }, () => {
-                            cbError();
-                        });
+                            cbError()
+                        })
                     }
                 } else {
-                    cb();
+                    cb()
                 }
             },
 
@@ -240,7 +240,7 @@
 
                 this.$store.dispatch('saveCart', cartData)
                     .then(response => {
-                        cb(response);
+                        cb(response)
                     })
                     .catch(response => {
                         cbError(response)
@@ -253,19 +253,19 @@
                 this.savePaymentMethod(() => {
                     this.saveBillingInfo(() => {
                         // Ready to pay
-                        let cardToken = null;
+                        let cardToken = null
 
                         if (this.cartTotal > 0) {
                             if (this.craftIdAccount) {
                                 switch (this.paymentMode) {
                                     case 'newCard':
-                                        cardToken = this.cardToken.id;
-                                        break;
+                                        cardToken = this.cardToken.id
+                                        break
                                     default:
                                         cardToken = this.craftIdAccount.cardToken
                                 }
                             } else {
-                                cardToken = this.guestCardToken.id;
+                                cardToken = this.guestCardToken.id
                             }
                         }
 
@@ -284,17 +284,17 @@
                                             .then(() => {
                                                 this.$store.dispatch('resetCart')
                                                     .then(() => {
-                                                        this.loading = false;
-                                                        this.error = false;
-                                                        this.$root.modalStep = 'thankYou';
+                                                        this.loading = false
+                                                        this.error = false
+                                                        this.$root.modalStep = 'thankYou'
                                                     })
                                             })
                                     })
                             })
                             .catch(response => {
-                                this.loading = false;
-                                this.error = response.statusText;
-                            });
+                                this.loading = false
+                                this.error = response.statusText
+                            })
                     }, (response) => {
                         if (response.errors) {
                             response.errors.forEach(error => {
@@ -303,11 +303,11 @@
                         }
                         this.loading = false
                         this.$root.displayError("Couldn't save billing informations.")
-                    });
+                    })
                 }, () => {
                     this.loading = false
-                    this.$root.displayError("Couldn't save payment method.");
-                });
+                    this.$root.displayError("Couldn't save payment method.")
+                })
             },
 
             onCountryChange(iso) {

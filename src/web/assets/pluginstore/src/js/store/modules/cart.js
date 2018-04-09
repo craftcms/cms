@@ -3,7 +3,7 @@ import * as types from '../mutation-types'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-Vue.use(Vuex);
+Vue.use(Vuex)
 
 const state = {
     checkoutStatus: null,
@@ -11,7 +11,7 @@ const state = {
     cartForm: null,
     stripePublicKey: null,
     identityMode: 'craftid',
-};
+}
 
 /**
  * Getters
@@ -44,28 +44,28 @@ const getters = {
 
     cartTotal(state) {
         if (state.cart) {
-            return state.cart.totalPrice;
+            return state.cart.totalPrice
         }
 
-        return 0;
+        return 0
     },
 
     activeTrialPlugins(state, rootState) {
         if (!rootState.craftData.installedPlugins) {
-            return [];
+            return []
         }
 
         let plugins = rootState.craftData.installedPlugins.map(installedPlugin => {
             if (rootState.pluginStoreData.plugins) {
                 return rootState.pluginStoreData.plugins.find(p => p.handle === installedPlugin.handle && !installedPlugin.hasLicenseKey)
             }
-        });
+        })
 
         return plugins.filter(p => {
             if (p) {
-                return p.editions[0].price > 0;
+                return p.editions[0].price > 0
             }
-        });
+        })
     },
 
     cart(state) {
@@ -74,7 +74,7 @@ const getters = {
 
     cartItems(state, rootState) {
         if (!state.cart || !rootState.pluginStoreData.plugins) {
-            return [];
+            return []
         }
 
         const lineItems = state.cart.lineItems
@@ -82,12 +82,12 @@ const getters = {
         let cartItems = []
 
         lineItems.forEach(lineItem => {
-            let cartItem = {};
+            let cartItem = {}
 
-            cartItem.lineItem = lineItem;
+            cartItem.lineItem = lineItem
 
             if (lineItem.purchasable.type === 'plugin-edition') {
-                cartItem.plugin = rootState.pluginStoreData.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle);
+                cartItem.plugin = rootState.pluginStoreData.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
             }
 
             cartItems.push(cartItem)
@@ -100,7 +100,7 @@ const getters = {
         return state.stripePublicKey
     }
 
-};
+}
 
 /**
  * Actions
@@ -146,7 +146,7 @@ const actions = {
 
             let data = {
                 items,
-            };
+            }
 
             api.updateCart(cart.number, data, response => {
                 commit(types.RECEIVE_CART, {response})
@@ -166,7 +166,7 @@ const actions = {
                 })
                 .catch(response => {
                     reject(response)
-                });
+                })
         })
     },
 
@@ -241,10 +241,10 @@ const actions = {
             dispatch('resetOrderNumber')
             dispatch('getCart')
                 .then(response => {
-                    resolve(response);
+                    resolve(response)
                 })
                 .catch(response => {
-                    reject(response);
+                    reject(response)
                 })
         })
     },
@@ -297,11 +297,11 @@ const actions = {
                 })
                 .catch(response => {
                     reject(response)
-                });
+                })
         })
     }
 
-};
+}
 
 /**
  * Mutations
@@ -314,7 +314,7 @@ const mutations = {
     },
 
     [types.RESET_CART](state) {
-        state.cart = null;
+        state.cart = null
     },
 
     [types.CHECKOUT](state, {response}) {
@@ -325,7 +325,7 @@ const mutations = {
         state.identityMode = mode
     }
 
-};
+}
 
 /**
  * Utils
@@ -342,9 +342,9 @@ const utils = {
             items: [],
         }
 
-        data.items = this.getCartItemsData(cart);
+        data.items = this.getCartItemsData(cart)
 
-        return data;
+        return data
     },
 
     getCartItemsData(cart) {
@@ -361,7 +361,7 @@ const utils = {
                         autoRenew: lineItem.options.autoRenew,
                         cmsLicenseKey: lineItem.options.cmsLicenseKey,
                     })
-                    break;
+                    break
                 case 'cms-edition':
                     lineItems.push({
                         type: lineItem.purchasable.type,
@@ -369,11 +369,11 @@ const utils = {
                         licenseKey: lineItem.options.licenseKey,
                         autoRenew: lineItem.options.autoRenew,
                     })
-                    break;
+                    break
             }
         }
 
-        return lineItems;
+        return lineItems
     }
 }
 

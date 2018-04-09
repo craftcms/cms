@@ -11,7 +11,7 @@ const getters = {
     pluginStoreData: state => state.data,
 
     pluginStoreGetAllCategories(state) {
-        return state.data.categories;
+        return state.data.categories
     },
 
     getFeaturedPlugin(state) {
@@ -19,12 +19,12 @@ const getters = {
             if (state.data.featuredPlugins) {
                 return state.data.featuredPlugins.find(g => g.id == id)
             }
-        };
+        }
     },
 
     getAllCategories(state) {
         return () => {
-            return state.data.categories;
+            return state.data.categories
         }
     },
 
@@ -33,7 +33,7 @@ const getters = {
             if (state.data.categories) {
                 return state.data.categories.find(c => c.id == id)
             }
-        };
+        }
     },
 
     isInstalled(state, rootState) {
@@ -43,7 +43,7 @@ const getters = {
     },
 
     allPlugins: (state, rootState) => {
-        return state.data.plugins;
+        return state.data.plugins
     },
 
     getPluginById(state, rootState) {
@@ -52,8 +52,8 @@ const getters = {
                 return state.data.plugins.find(p => p.id == id)
             }
 
-            return false;
-        };
+            return false
+        }
     },
 
     getPluginsByIds(state, rootState) {
@@ -61,13 +61,13 @@ const getters = {
             return state.data.plugins.filter(p => {
                 return ids.find(id => id == p.id)
             })
-        };
+        }
     },
 
     getPluginsByCategory(state, rootState) {
         return categoryId => {
             return state.data.plugins.filter(p => {
-                return p.categoryIds.find(c => c == categoryId);
+                return p.categoryIds.find(c => c == categoryId)
             })
         }
     },
@@ -80,17 +80,17 @@ const getters = {
         }
     },
 
-};
+}
 
 const actions = {
 
     getPluginStoreData({commit}) {
         return new Promise((resolve, reject) => {
             api.getPluginStoreData(data => {
-                commit(types.RECEIVE_PLUGIN_STORE_DATA, {data});
-                resolve(data);
+                commit(types.RECEIVE_PLUGIN_STORE_DATA, {data})
+                resolve(data)
             }, response => {
-                reject(response);
+                reject(response)
             })
         })
     },
@@ -98,15 +98,15 @@ const actions = {
     getPluginDetails({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginDetails(pluginId, data => {
-                commit(types.RECEIVE_PLUGIN_DETAILS, {data});
-                resolve(data);
+                commit(types.RECEIVE_PLUGIN_DETAILS, {data})
+                resolve(data)
             }, response => {
-                reject(response);
+                reject(response)
             })
         })
     },
 
-};
+}
 
 const mutations = {
 
@@ -118,7 +118,7 @@ const mutations = {
         state.plugin = data
     },
 
-};
+}
 
 export default {
     state,

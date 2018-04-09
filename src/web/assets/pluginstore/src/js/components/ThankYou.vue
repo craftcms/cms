@@ -20,7 +20,7 @@
         computed: {
 
             lastOrder() {
-                return this.$root.lastOrder;
+                return this.$root.lastOrder
             },
 
             managePluginsUrl() {

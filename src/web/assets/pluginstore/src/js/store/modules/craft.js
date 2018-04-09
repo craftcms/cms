@@ -3,29 +3,29 @@ import * as types from '../mutation-types'
 
 const state = {
     craftData: {},
-};
+}
 
 const getters = {
 
     craftData: (state) => {
-        return state.craftData;
+        return state.craftData
     },
 
     installedPlugins: (state, rootState) => {
         if (!rootState.allPlugins) {
-            return [];
+            return []
         }
 
         return rootState.allPlugins.filter(p => {
             if (state.craftData.installedPlugins) {
-                return state.craftData.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle);
+                return state.craftData.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle)
             }
-            return false;
+            return false
         })
     },
 
     currentUser: state => {
-        return state.craftData.currentUser;
+        return state.craftData.currentUser
     },
 
     craftIdAccount: state => {
@@ -33,36 +33,36 @@ const getters = {
     },
 
     countries: state => {
-        return state.craftData.countries;
+        return state.craftData.countries
     },
 
     states: state => {
-        return state.craftData.states;
+        return state.craftData.states
     },
 
     pluginHasLicenseKey(state) {
         return pluginHandle => {
             return state.craftData.installedPlugins.find(plugin => plugin.handle === pluginHandle && plugin.hasLicenseKey) ? true : false
-        };
+        }
     },
 
-};
+}
 
 const actions = {
 
     getCraftData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCraftData(data => {
-                commit(types.RECEIVE_CRAFT_DATA, {data});
-                resolve(data);
+                commit(types.RECEIVE_CRAFT_DATA, {data})
+                resolve(data)
             }, response => {
-                reject(response);
+                reject(response)
             })
         })
     },
 
     updateCraftId({commit}, craftId) {
-        commit(types.UPDATE_CRAFT_ID, craftId);
+        commit(types.UPDATE_CRAFT_ID, craftId)
     },
 
     tryEdition({commit}, edition) {
@@ -73,11 +73,11 @@ const actions = {
                 })
                 .catch(response => {
                     reject(response)
-                });
+                })
         })
     }
 
-};
+}
 
 const mutations = {
 
@@ -86,10 +86,10 @@ const mutations = {
     },
 
     [types.UPDATE_CRAFT_ID](state, {craftId}) {
-        state.craftData.craftId = craftId;
+        state.craftData.craftId = craftId
     },
 
-};
+}
 
 export default {
     state,

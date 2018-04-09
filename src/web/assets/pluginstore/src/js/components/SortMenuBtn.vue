@@ -22,14 +22,14 @@
             return {
                 defaultDirection: 'asc',
                 directions: null,
-            };
+            }
         },
 
         computed: {
 
             menuLabel() {
                 if (this.attributes) {
-                    return this.attributes[this.value.attribute];
+                    return this.attributes[this.value.attribute]
                 }
             }
 
@@ -50,7 +50,7 @@
             this.directions = {
                 asc: this.$options.filters.t("Ascending", 'app'),
                 desc: this.$options.filters.t("Descending", 'app'),
-            };
+            }
 
             if (!this.value.direction) {
                 this.$emit('update:value', {
@@ -59,7 +59,7 @@
                 })
             }
 
-            Craft.initUiElements();
+            Craft.initUiElements()
         },
 
     }

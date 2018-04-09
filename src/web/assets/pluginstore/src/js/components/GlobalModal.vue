@@ -69,7 +69,7 @@
         data() {
             return {
                 modal: null,
-            };
+            }
         },
 
         computed: {
@@ -79,7 +79,7 @@
             }),
 
             modalStep() {
-                return this.$root.modalStep;
+                return this.$root.modalStep
             }
 
         },
@@ -88,9 +88,9 @@
 
             show(show) {
                 if (show) {
-                    this.modal.show();
+                    this.modal.show()
                 } else {
-                    this.modal.hide();
+                    this.modal.hide()
                 }
             }
 
@@ -100,24 +100,24 @@
 
             back() {
                 if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
-                    this.$root.openGlobalModal('cart');
+                    this.$root.openGlobalModal('cart')
                 } else {
-                    this.$root.openGlobalModal('identity');
+                    this.$root.openGlobalModal('identity')
                 }
             }
 
         },
 
         mounted() {
-            let $this = this;
+            let $this = this
 
             this.modal = new Garnish.Modal(this.$refs.globalmodal, {
                 autoShow: false,
                 resizable: true,
                 onHide() {
-                    $this.$emit('update:show', false);
+                    $this.$emit('update:show', false)
                 }
-            });
+            })
         }
 
     }
