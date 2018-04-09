@@ -58,10 +58,10 @@
 
         components: {
             PluginDetails: require('./PluginDetails'),
-            Cart: require('./Cart'),
-            Payment: require('./Payment'),
-            ThankYou: require('./ThankYou'),
-            Identity: require('./Identity'),
+            Cart: require('./checkout/Cart'),
+            Payment: require('./checkout/Payment'),
+            ThankYou: require('./checkout/ThankYou'),
+            Identity: require('./checkout/Identity'),
         },
 
         props: ['pluginId', 'show'],

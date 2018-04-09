@@ -100,12 +100,12 @@
 
     export default {
         components: {
-            CheckboxField: require('./fields/CheckboxField'),
-            TextareaField: require('./fields/TextareaField'),
-            TextField: require('./fields/TextField'),
-            TextInput: require('./inputs/TextInput'),
-            CreditCard: require('./CreditCard'),
-            SelectInput: require('./inputs/SelectInput'),
+            CheckboxField: require('../fields/CheckboxField'),
+            TextareaField: require('../fields/TextareaField'),
+            TextField: require('../fields/TextField'),
+            TextInput: require('../inputs/TextInput'),
+            CreditCard: require('../CreditCard'),
+            SelectInput: require('../inputs/SelectInput'),
         },
 
         data() {

@@ -31,7 +31,7 @@
     export default {
 
         components: {
-            TextField: require('./fields/TextField'),
+            TextField: require('../fields/TextField'),
         },
 
         data() {
