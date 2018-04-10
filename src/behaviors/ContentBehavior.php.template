@@ -76,6 +76,17 @@ class ContentBehavior extends Behavior
     /**
      * @inheritdoc
      */
+    public function canGetProperty($name, $checkVars = true)
+    {
+        if ($checkVars && isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::canGetProperty($name, $checkVars);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canSetProperty($name, $checkVars = true)
     {
         if ($checkVars && isset(self::$fieldHandles[$name])) {
