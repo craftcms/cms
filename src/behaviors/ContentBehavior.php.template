@@ -78,7 +78,7 @@ class ContentBehavior extends Behavior
      */
     public function canSetProperty($name, $checkVars = true)
     {
-        if (isset(self::$fieldHandles[$name])) {
+        if ($checkVars && isset(self::$fieldHandles[$name])) {
             return true;
         }
         return parent::canSetProperty($name, $checkVars);
