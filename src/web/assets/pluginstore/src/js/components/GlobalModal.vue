@@ -52,21 +52,16 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
-    import PluginDetails from './PluginDetails';
-    import Cart from './Cart';
-    import Payment from './Payment';
-    import ThankYou from './ThankYou';
-    import Identity from './Identity';
+    import {mapGetters} from 'vuex'
 
     export default {
 
         components: {
-            PluginDetails,
-            Cart,
-            Payment,
-            ThankYou,
-            Identity,
+            PluginDetails: require('./PluginDetails'),
+            Cart: require('./checkout/Cart'),
+            Payment: require('./checkout/Payment'),
+            ThankYou: require('./checkout/ThankYou'),
+            Identity: require('./checkout/Identity'),
         },
 
         props: ['pluginId', 'show'],
@@ -74,7 +69,7 @@
         data() {
             return {
                 modal: null,
-            };
+            }
         },
 
         computed: {
@@ -84,7 +79,7 @@
             }),
 
             modalStep() {
-                return this.$root.modalStep;
+                return this.$root.modalStep
             }
 
         },
@@ -92,10 +87,10 @@
         watch: {
 
             show(show) {
-                if(show) {
-                    this.modal.show();
+                if (show) {
+                    this.modal.show()
                 } else {
-                    this.modal.hide();
+                    this.modal.hide()
                 }
             }
 
@@ -104,25 +99,25 @@
         methods: {
 
             back() {
-                if(this.identityMode === 'craftid' || this.modalStep === 'identity') {
-                    this.$root.openGlobalModal('cart');
+                if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
+                    this.$root.openGlobalModal('cart')
                 } else {
-                    this.$root.openGlobalModal('identity');
+                    this.$root.openGlobalModal('identity')
                 }
             }
 
         },
 
         mounted() {
-            let $this = this;
+            let $this = this
 
             this.modal = new Garnish.Modal(this.$refs.globalmodal, {
                 autoShow: false,
                 resizable: true,
                 onHide() {
-                    $this.$emit('update:show', false);
+                    $this.$emit('update:show', false)
                 }
-            });
+            })
         }
 
     }

@@ -3,7 +3,7 @@ import * as types from '../mutation-types'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-Vue.use(Vuex);
+Vue.use(Vuex)
 
 const state = {
     checkoutStatus: null,
@@ -11,7 +11,7 @@ const state = {
     cartForm: null,
     stripePublicKey: null,
     identityMode: 'craftid',
-};
+}
 
 /**
  * Getters
@@ -36,36 +36,36 @@ const getters = {
 
     isCmsEditionInCart(state) {
         return cmsEdition => {
-            if(state.cart) {
+            if (state.cart) {
                 return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
             }
         }
     },
 
     cartTotal(state) {
-        if(state.cart) {
-            return state.cart.totalPrice;
+        if (state.cart) {
+            return state.cart.totalPrice
         }
 
-        return 0;
+        return 0
     },
 
     activeTrialPlugins(state, rootState) {
         if (!rootState.craftData.installedPlugins) {
-            return [];
+            return []
         }
 
         let plugins = rootState.craftData.installedPlugins.map(installedPlugin => {
             if (rootState.pluginStoreData.plugins) {
                 return rootState.pluginStoreData.plugins.find(p => p.handle === installedPlugin.handle && !installedPlugin.hasLicenseKey)
             }
-        });
+        })
 
         return plugins.filter(p => {
             if (p) {
-                return p.editions[0].price > 0;
+                return p.editions[0].price > 0
             }
-        });
+        })
     },
 
     cart(state) {
@@ -73,8 +73,8 @@ const getters = {
     },
 
     cartItems(state, rootState) {
-        if(!state.cart || !rootState.pluginStoreData.plugins) {
-            return [];
+        if (!state.cart || !rootState.pluginStoreData.plugins) {
+            return []
         }
 
         const lineItems = state.cart.lineItems
@@ -82,12 +82,12 @@ const getters = {
         let cartItems = []
 
         lineItems.forEach(lineItem => {
-            let cartItem = {};
+            let cartItem = {}
 
-            cartItem.lineItem = lineItem;
+            cartItem.lineItem = lineItem
 
             if (lineItem.purchasable.type === 'plugin-edition') {
-                cartItem.plugin = rootState.pluginStoreData.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle);
+                cartItem.plugin = rootState.pluginStoreData.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
             }
 
             cartItems.push(cartItem)
@@ -100,7 +100,7 @@ const getters = {
         return state.stripePublicKey
     }
 
-};
+}
 
 /**
  * Actions
@@ -119,7 +119,7 @@ const actions = {
             newItems.forEach(newItem => {
                 const alreadyInCart = items.find(item => item.plugin === newItem.plugin)
 
-                if(!alreadyInCart) {
+                if (!alreadyInCart) {
                     items.push(newItem)
                 }
             })
@@ -146,7 +146,7 @@ const actions = {
 
             let data = {
                 items,
-            };
+            }
 
             api.updateCart(cart.number, data, response => {
                 commit(types.RECEIVE_CART, {response})
@@ -166,7 +166,7 @@ const actions = {
                 })
                 .catch(response => {
                     reject(response)
-                });
+                })
         })
     },
 
@@ -176,14 +176,14 @@ const actions = {
                 .then(orderNumber => {
                     if (orderNumber) {
                         api.getCart(orderNumber, response => {
-                            if(!response.error) {
+                            if (!response.error) {
                                 commit(types.RECEIVE_CART, {response})
                                 resolve(response)
                             } else {
                                 // Couldn’t get cart for this order number? Try to create a new one.
                                 const data = {}
 
-                                if(!rootState.craft.craftData.craftId) {
+                                if (!rootState.craft.craftData.craftId) {
                                     data.email = rootState.craft.craftData.currentUser.email
                                 }
 
@@ -202,7 +202,7 @@ const actions = {
                         // No order number yet? Create a new cart.
                         const data = {}
 
-                        if(!rootState.craft.craftData.craftId) {
+                        if (!rootState.craft.craftData.craftId) {
                             data.email = rootState.craft.craftData.currentUser.email
                         }
 
@@ -241,10 +241,10 @@ const actions = {
             dispatch('resetOrderNumber')
             dispatch('getCart')
                 .then(response => {
-                    resolve(response);
+                    resolve(response)
                 })
                 .catch(response => {
-                    reject(response);
+                    reject(response)
                 })
         })
     },
@@ -277,8 +277,8 @@ const actions = {
             let pluginLicenseKeys = []
 
             cart.lineItems.forEach(lineItem => {
-                if(lineItem.purchasable.type === 'plugin-edition') {
-                    if(rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
+                if (lineItem.purchasable.type === 'plugin-edition') {
+                    if (rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
                         pluginLicenseKeys.push({
                             handle: lineItem.purchasable.plugin.handle,
                             key: lineItem.options.licenseKey.substr(4)
@@ -297,11 +297,11 @@ const actions = {
                 })
                 .catch(response => {
                     reject(response)
-                });
+                })
         })
     }
 
-};
+}
 
 /**
  * Mutations
@@ -314,7 +314,7 @@ const mutations = {
     },
 
     [types.RESET_CART](state) {
-        state.cart = null;
+        state.cart = null
     },
 
     [types.CHECKOUT](state, {response}) {
@@ -325,7 +325,7 @@ const mutations = {
         state.identityMode = mode
     }
 
-};
+}
 
 /**
  * Utils
@@ -342,9 +342,9 @@ const utils = {
             items: [],
         }
 
-        data.items = this.getCartItemsData(cart);
+        data.items = this.getCartItemsData(cart)
 
-        return data;
+        return data
     },
 
     getCartItemsData(cart) {
@@ -352,7 +352,7 @@ const utils = {
         for (let i = 0; i < cart.lineItems.length; i++) {
             let lineItem = cart.lineItems[i]
 
-            switch(lineItem.purchasable.type) {
+            switch (lineItem.purchasable.type) {
                 case 'plugin-edition':
                     lineItems.push({
                         type: lineItem.purchasable.type,
@@ -361,7 +361,7 @@ const utils = {
                         autoRenew: lineItem.options.autoRenew,
                         cmsLicenseKey: lineItem.options.cmsLicenseKey,
                     })
-                    break;
+                    break
                 case 'cms-edition':
                     lineItems.push({
                         type: lineItem.purchasable.type,
@@ -369,11 +369,11 @@ const utils = {
                         licenseKey: lineItem.options.licenseKey,
                         autoRenew: lineItem.options.autoRenew,
                     })
-                    break;
+                    break
             }
         }
 
-        return lineItems;
+        return lineItems
     }
 }
 

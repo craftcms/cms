@@ -12,8 +12,10 @@ use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use yii\base\Component;
+use yii\base\ErrorException;
 use yii\base\Exception;
 
 /**
@@ -222,6 +224,14 @@ class Updates extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw new MigrateException($name, $handle, null, 0, $e);
+        }
+
+        // Delete all compiled templates
+        try {
+            FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath());
+        } catch (ErrorException $e) {
+            Craft::error('Could not delete compiled templates: '.$e->getMessage());
+            Craft::$app->getErrorHandler()->logException($e);
         }
     }
 

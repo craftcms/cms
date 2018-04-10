@@ -10,20 +10,20 @@
 
         props: ['label', 'id', 'value'],
 
-		data() {
-          	return {
-          	    checked: this.value,
-			}
-		},
+        data() {
+            return {
+                checked: this.value,
+            }
+        },
 
-		methods: {
+        methods: {
 
-          	change($event) {
-          	    this.checked = !this.checked;
+            change($event) {
+                this.checked = !this.checked
                 this.$emit('input', this.checked)
-			}
+            }
 
-		},
+        },
 
     }
 </script>

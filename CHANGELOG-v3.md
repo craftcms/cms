@@ -1,5 +1,37 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.2 - 2018-04-10
+
+### Added
+- Added the `EVENT_BEFORE_DELETE_CACHES` and `EVENT_AFTER_DELETE_CACHES` events to `craft\services\TemplateCaches`.
+- Added `craft\events\DeleteTemplateCachesEvent`.
+
+### Changed
+- Craft now deletes all compiled templates whenever Craft or a plugin is updated. ([#2686](https://github.com/craftcms/cms/issues/2686))
+- The Plugin Store now displays commercial plugins’ renewal prices. ([#2690](https://github.com/craftcms/cms/issues/2690))
+- The Plugin Store no longer shows the “Upgrade Craft CMS” link if Craft is already running (and licensed to run) the Pro edition. ([#2713](https://github.com/craftcms/cms/issues/2713))
+- Matrix fields now set `$propagating` to `true` when saving Matrix blocks, if the owner element is propagating.
+- `craft\helpers\ArrayHelper::toArray()` no longer throws a deprecation error when a string without commas is passed to it. ([#2711](https://github.com/craftcms/cms/issues/2711))
+- Editable tables now support an `html` column type, which will output cell values directly without encoding HTML entities. ([#2716](https://github.com/craftcms/cms/pull/2716))
+- `Craft.EditableTable` instances are now accessible via `.data('editable-table')` on their `<table>` element. ([#2694](https://github.com/craftcms/cms/issues/2694))
+- Updated Composer to 1.6.3. ([#2707](https://github.com/craftcms/cms/issues/2707))
+- Updated Garnish to 0.1.22. ([#2689](https://github.com/craftcms/cms/issues/2689))
+
+### Fixed
+- Fixed an error that could occur in the Control Panel if any plugins with licensing issues were installed. ([#2691](https://github.com/craftcms/cms/pull/2691))
+- Fixed a bug on the Plugin Store’s Payment screen where the “Use a new credit card” radio option would not get selected automatically even if it was the only one available.
+- Fixed a bug where `craft\web\assets\vue\VueAsset` didn’t respect the `useCompressedJs` config setting.
+- Fixed an error that occurred when saving a Single entry over Ajax. ([#2687](https://github.com/craftcms/cms/issues/2687))
+- Fixed an error that could occur when disabling a site on a Single section. ([#2695](https://github.com/craftcms/cms/issues/2695))
+- Fixed an error that could occur on requests without a content type on the response. ([#2704](https://github.com/craftcms/cms/issues/2704))
+- Fixed a bug where the `includeSubfolders` asset query param wasn’t including results in the parent folder. ([#2706](https://github.com/craftcms/cms/issues/2706))
+- Fixed an error that could occur when querying for users eager-loaded with their photos, if any of the resulting users didn’t have a photo. ([#2708](https://github.com/craftcms/cms/issues/2708))
+- Fixed a bug where relational fields within Matrix fields wouldn’t save relations to elements that didn’t exist on all of the sites the owner element existed on. ([#2683](https://github.com/craftcms/cms/issues/2683))
+- Fixed a bug where relational fields were ignoring disabled related elements in various functions, including required field validation and value serialization.
+- Fixed an error that would occur if a new custom field was created and added to an element’s field layout, and its value was accessed, all in the same request. ([#2705](https://github.com/craftcms/cms/issues/2705))
+- Fixed a bug where the `id` param was ignored when used on an eager-loaded elements’ criteria. ([#2717](https://github.com/craftcms/cms/issues/2717))
+- Fixed a bug where the default restore command for MySQL wouldn’t actually restore the database. ([#2714](https://github.com/craftcms/cms/issues/2714))
+
 ## 3.0.1 - 2018-04-04
 
 ### Deprecated

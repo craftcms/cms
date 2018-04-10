@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "keywords": [
     "cms",
     "craftcms",
@@ -27,7 +27,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
-    "composer/composer": "~1.5.2",
+    "composer/composer": "1.6.3",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.0",
     "craftcms/server-check": "~1.1.0",

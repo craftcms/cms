@@ -7,64 +7,66 @@
 </template>
 
 <script>
-    import clone from 'lodash/clone';
-    import PluginGrid from './PluginGrid';
-    import PluginSearch from './PluginSearch';
+    import clone from 'lodash/clone'
 
     export default {
 
         components: {
-            PluginGrid,
-            PluginSearch,
+            PluginGrid: require('./PluginGrid'),
+            PluginSearch: require('./PluginSearch'),
         },
 
         props: ['plugins', 'columns'],
 
-        data () {
+        data() {
             return {
                 showingSearchResults: false,
                 sort: {
-					attribute: 'activeInstalls',
-					direction: 'desc',
-				},
+                    attribute: 'activeInstalls',
+                    direction: 'desc',
+                },
             }
         },
 
         computed: {
 
             pluginsToRender() {
-                if(!this.plugins) {
-                    return [];
+                if (!this.plugins) {
+                    return []
                 }
 
-                let plugins = clone(this.plugins);
+                let plugins = clone(this.plugins)
 
-                let attribute = this.sort.attribute;
-                let direction = this.sort.direction;
+                let attribute = this.sort.attribute
+                let direction = this.sort.direction
 
-                function compareASC(a,b) {
-                    if (a[attribute] < b[attribute])
-                        return -1;
-                    if (a[attribute] > b[attribute])
-                        return 1;
-                    return 0;
+                function compareASC(a, b) {
+                    if (a[attribute] < b[attribute]) {
+                        return -1
+                    }
+                    if (a[attribute] > b[attribute]) {
+                        return 1
+                    }
+                    return 0
                 }
 
-                function compareDESC(a,b) {
-                    if (a[attribute] > b[attribute])
-                        return -1;
-                    if (a[attribute] < b[attribute])
-                        return 1;
-                    return 0;
+                function compareDESC(a, b) {
+                    if (a[attribute] > b[attribute]) {
+                        return -1
+                    }
+                    if (a[attribute] < b[attribute]) {
+                        return 1
+                    }
+                    return 0
                 }
 
-                if(direction === 'desc') {
-                    plugins.sort(compareDESC);
+                if (direction === 'desc') {
+                    plugins.sort(compareDESC)
                 } else {
-                    plugins.sort(compareASC);
+                    plugins.sort(compareASC)
                 }
 
-                return plugins;
+                return plugins
             }
 
         },

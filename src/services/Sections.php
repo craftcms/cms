@@ -1086,9 +1086,10 @@ class Sections extends Component
                     'e.id',
                     'typeId',
                     'siteId' => (new Query())
-                        ->select('i18n.siteId')
-                        ->from('{{%elements_sites}} i18n')
-                        ->where('[[i18n.elementId]] = [[e.id]]')
+                        ->select('es.siteId')
+                        ->from('{{%elements_sites}} es')
+                        ->where('[[es.elementId]] = [[e.id]]')
+                        ->andWhere(['in', 'es.siteId', ArrayHelper::getColumn($allSiteSettings, 'siteId')])
                         ->limit(1)
                 ])
                 ->from(['{{%entries}} e'])

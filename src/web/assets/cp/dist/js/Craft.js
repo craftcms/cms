@@ -1,4 +1,4 @@
-/*!   - 2018-04-04 */
+/*!   - 2018-04-08 */
 (function($){
 
 /** global: Craft */
@@ -1746,11 +1746,6 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             else {
                                 $title.text(response.newTitle);
                             }
-                        }
-
-                        // Update Live Preview
-                        if (typeof Craft.livePreview !== 'undefined') {
-                            Craft.livePreview.updateIframe(true);
                         }
 
                         this.closeHud();
@@ -12676,6 +12671,14 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$tbody = this.$table.children('tbody');
             this.rowCount = this.$tbody.find('tr').length;
 
+            // Is this already an editable table?
+            if (this.$table.data('editable-table')) {
+                Garnish.log('Double-instantiating an editable table on an element');
+                this.$table.data('editable-table').destroy();
+            }
+
+            this.$table.data('editable-table', this);
+
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
                 copyDraggeeInputValuesToHelper: true
@@ -15496,6 +15499,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
         _handleSuccessProxy: null,
         _handleErrorProxy: null,
+        _forceUpdateIframeProxy: null,
 
         _scrollX: null,
         _scrollY: null,
@@ -15533,6 +15537,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
             this._handleErrorProxy = $.proxy(this, 'handleError');
+            this._forceUpdateIframeProxy = $.proxy(this, 'forceUpdateIframe');
 
             // Find the DOM elements
             this.$extraFields = $(this.settings.extraFields);
@@ -15662,6 +15667,8 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.slideIn();
             }
 
+            Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+
             this.inPreviewMode = true;
             this.trigger('enter');
         },
@@ -15729,6 +15736,8 @@ Craft.LivePreview = Garnish.Base.extend(
             this.$iframeContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
                 this.$iframeContainer.hide();
             }, this));
+
+            Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
 
             this.inPreviewMode = false;
             this.trigger('exit');
@@ -15802,6 +15811,10 @@ Craft.LivePreview = Garnish.Base.extend(
             else {
                 return false;
             }
+        },
+
+        forceUpdateIframe: function() {
+            return this.updateIframe(true);
         },
 
         handleSuccess: function(data) {

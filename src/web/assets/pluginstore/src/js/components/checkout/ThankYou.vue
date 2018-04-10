@@ -17,23 +17,23 @@
 <script>
     export default {
 
-		computed: {
+        computed: {
 
-		    lastOrder() {
-		        return this.$root.lastOrder;
-			},
+            lastOrder() {
+                return this.$root.lastOrder
+            },
 
-			managePluginsUrl() {
-		        return Craft.getCpUrl('settings/plugins')
-			}
+            managePluginsUrl() {
+                return Craft.getCpUrl('settings/plugins')
+            }
 
-		},
+        },
 
-		mounted() {
-		    if(!this.lastOrder) {
-                this.$router.push({ path: '/'})
-			}
-		}
+        mounted() {
+            if (!this.lastOrder) {
+                this.$router.push({path: '/'})
+            }
+        }
 
-    };
+    }
 </script>

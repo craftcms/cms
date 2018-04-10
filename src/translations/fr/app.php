@@ -1123,6 +1123,7 @@ return [
     'View asset' => 'Voir la ressource',
     'View category' => 'Voir la catégorie',
     'View entry' => 'Voir l’entrée',
+    'View site' => 'Voir le site',
     'View source' => 'Visualiser l’emplacement',
     'Visit webpage' => 'Visiter la page',
     'Volume - {volume}' => 'Volume - {volume}',

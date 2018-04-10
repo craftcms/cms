@@ -14,53 +14,53 @@
 </template>
 
 <script>
-	export default {
+    export default {
 
-	    props: ['attributes', 'value'],
+        props: ['attributes', 'value'],
 
-	    data() {
-	      	return {
-	      	    defaultDirection: 'asc',
-				directions: null,
-			};
-		},
+        data() {
+            return {
+                defaultDirection: 'asc',
+                directions: null,
+            }
+        },
 
         computed: {
 
             menuLabel() {
-                if(this.attributes) {
-                    return this.attributes[this.value.attribute];
+                if (this.attributes) {
+                    return this.attributes[this.value.attribute]
                 }
             }
 
         },
 
-		methods: {
+        methods: {
 
-	      	selectAttribute(attribute) {
-                this.$emit('update:value', { attribute: attribute, direction: this.value.direction })
-			},
+            selectAttribute(attribute) {
+                this.$emit('update:value', {attribute: attribute, direction: this.value.direction})
+            },
 
-	      	selectDirection(direction) {
-                this.$emit('update:value', { attribute: this.value.attribute, direction: direction })
-			}
-		},
+            selectDirection(direction) {
+                this.$emit('update:value', {attribute: this.value.attribute, direction: direction})
+            }
+        },
 
-	    mounted() {
-	        this.directions = {
+        mounted() {
+            this.directions = {
                 asc: this.$options.filters.t("Ascending", 'app'),
                 desc: this.$options.filters.t("Descending", 'app'),
-            };
+            }
 
-            if(!this.value.direction) {
+            if (!this.value.direction) {
                 this.$emit('update:value', {
                     attribute: this.value.attribute,
                     direction: this.defaultDirection
-				})
+                })
             }
 
-            Craft.initUiElements();
-		},
+            Craft.initUiElements()
+        },
 
-	}
+    }
 </script>

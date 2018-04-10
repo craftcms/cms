@@ -18,44 +18,23 @@
                 </tr>
                 <tr class="license-statuses">
                     <td></td>
-                    <td><craft-status-badge :edition="craftData.CraftSolo" /></td>
-                    <td><craft-status-badge :edition="craftData.CraftPro" /></td>
+                    <td><status-badge :edition="craftData.CraftSolo" /></td>
+                    <td><status-badge :edition="craftData.CraftPro" /></td>
                 </tr>
                 <tr class="price">
                     <th scope="row" class="feature"></th>
                     <td>{{ "Free"|t('app') }}</td>
-                    <td v-if="craftData.editions">{{ craftData.editions.pro.price|currency }}</td>
+                    <td v-if="craftData.editions">
+                        {{ "{price} plus {renewalPrice}/year for updates"|t('app', {
+                            price: $options.filters.currency(craftData.editions.pro.price),
+                            renewalPrice: $options.filters.currency(craftData.editions.pro.renewalPrice)
+                        }) }}
+                    </td>
                 </tr>
                 <tr class="buybtns">
                     <td></td>
-                    <td></td>
-                    <td>
-                        <div class="btngroup">
-                            <template v-if="craftData.licensedEdition < craftData.CraftPro">
-                                <template v-if="!isCmsEditionInCart('pro')">
-                                    <div @click="buyCraft('pro')" class="btn submit">{{ "Buy now"|t('app') }}</div>
-                                </template>
-                                <template v-else>
-                                    <div class="btn submit disabled">{{ "Added to cart"|t('app') }}</div>
-                                </template>
-                            </template>
-
-
-                            <template v-if="craftData.canTestEditions && craftData.CraftPro != craftData.CraftEdition && craftData.CraftPro > craftData.licensedEdition">
-                                <div @click="installCraft('pro')" class="btn">{{ "Try for free"|t('app') }}</div>
-                            </template>
-
-                            <template v-if="craftData.CraftEdition === craftData.CraftPro && craftData.licensedEdition === craftData.CraftSolo">
-                                <div @click="installCraft('solo')" class="btn">{{ "Uninstall"|t('app') }}</div>
-                            </template>
-
-                            <template v-if="craftData.CraftPro === craftData.licensedEdition && craftData.CraftPro != craftData.CraftEdition">
-                                <div @click="installCraft('pro')" class="btn">{{ "Reinstall"|t('app') }}</div>
-                            </template>
-
-                            <div v-if="loading" class="spinner"></div>
-                        </div>
-                    </td>
+                    <td><buy-btn :edition="craftData.CraftSolo" edition-handle="solo" /></td>
+                    <td><buy-btn :edition="craftData.CraftPro" edition-handle="pro" /></td>
                 </tr>
                 </thead>
                 <tbody>
@@ -112,92 +91,39 @@
 </template>
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
-    import CraftStatusBadge from './components/CraftStatusBadge';
+    import {mapGetters} from 'vuex'
 
     export default {
 
-        data() {
-            return {
-                loading: false,
-            }
-        },
-
         components: {
-            CraftStatusBadge
+            StatusBadge: require('../components/upgradecraft/StatusBadge'),
+            BuyBtn: require('../components/upgradecraft/BuyBtn'),
         },
 
         computed: {
             ...mapGetters({
                 craftData: 'craftData',
-                cart: 'cart',
-                isCmsEditionInCart: 'isCmsEditionInCart',
+                cart: 'cart'
             }),
         },
 
-        methods: {
-            ...mapActions({
-                addToCart: 'addToCart',
-                tryEdition: 'tryEdition',
-                getCraftData: 'getCraftData',
-            }),
-
-            buyCraft(edition) {
-                this.loading = true
-
-                const item = {
-                    type: 'cms-edition',
-                    edition: edition,
-                    licenseKey: window.cmsLicenseKey,
-                    autoRenew: false,
-                }
-
-                this.addToCart([item])
-                    .then(() => {
-                        this.loading = false
-                        this.$root.openGlobalModal('cart')
-                    })
-                    .catch(() => {
-                        this.loading = false
-                    })
-            },
-
-            installCraft(edition) {
-                this.loading = true
-
-                this.tryEdition(edition)
-                    .then(() =>  {
-                        this.getCraftData()
-                            .then(() => {
-                                this.loading = false
-                                this.$root.displayNotice("Craft CMS edition changed.")
-                            })
-                    })
-                    .catch(() => {
-                        this.loading = false
-                        this.$root.displayError("Couldn’t change Craft CMS edition.")
-                    })
-            },
-
-        },
-
-        created () {
+        created() {
             this.$root.crumbs = [
                 {
                     label: this.$options.filters.t("Plugin Store", 'app'),
                     path: '/',
                 }
-            ];
+            ]
 
-            this.$root.pageTitle = this.$options.filters.t('Upgrade Craft CMS', 'app');
+            this.$root.pageTitle = this.$options.filters.t('Upgrade Craft CMS', 'app')
         },
 
         mounted() {
             this.$root.$on('allDataLoaded', function() {
-                Craft.initUiElements(this.$refs.upgradecraft);
-            }.bind(this));
+                Craft.initUiElements(this.$refs.upgradecraft)
+            }.bind(this))
 
-            Craft.initUiElements(this.$refs.upgradecraft);
+            Craft.initUiElements(this.$refs.upgradecraft)
         },
     }
 </script>

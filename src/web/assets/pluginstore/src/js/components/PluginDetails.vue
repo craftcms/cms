@@ -90,6 +90,10 @@
                                 </strong>
                             </li>
                             <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
+                            <li v-if="pluginSnippet.editions[0].renewalPrice">
+                                <span>{{ "Renewal price"|t('app') }}</span>
+                                <strong>{{ "{price}/year"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].renewalPrice) }) }}</strong>
+                            </li>
                         </ul>
 
                         <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
@@ -107,7 +111,7 @@
 </template>
 
 <script>
-    import { mapGetters, mapActions } from 'vuex'
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -134,45 +138,45 @@
             }),
 
             longDescription() {
-                if(this.plugin.longDescription && this.plugin.longDescription.length > 0) {
-                    return this.plugin.longDescription;
+                if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
+                    return this.plugin.longDescription
                 }
             },
 
             developerUrl() {
-                return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
+                return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId)
             },
 
             categories() {
                 return this.$store.getters.getAllCategories().filter(c => {
-                    return this.plugin.categoryIds.find(pc => pc == c.id);
-                });
+                    return this.plugin.categoryIds.find(pc => pc == c.id)
+                })
             },
 
             licenseLabel() {
-                switch(this.plugin.license) {
+                switch (this.plugin.license) {
                     case 'craft':
-                        return 'Craft';
+                        return 'Craft'
 
                     case 'mit':
-                        return 'MIT';
+                        return 'MIT'
                 }
             },
 
             lastUpdate() {
-                return Craft.formatDate(this.plugin.lastUpdate);
+                return Craft.formatDate(this.plugin.lastUpdate)
             },
 
             csrfTokenName() {
-                return Craft.csrfTokenName;
+                return Craft.csrfTokenName
             },
 
             csrfTokenValue() {
-                return Craft.csrfTokenValue;
+                return Craft.csrfTokenValue
             },
 
             allowUpdates() {
-                return window.allowUpdates;
+                return window.allowUpdates
             }
 
         },
@@ -180,8 +184,8 @@
         watch: {
 
             pluginId(pluginId) {
-                this.loadPlugin(pluginId);
-                return pluginId;
+                this.loadPlugin(pluginId)
+                return pluginId
             }
 
         },
@@ -189,7 +193,7 @@
         methods: {
 
             ...mapActions([
-               'addToCart'
+                'addToCart'
             ]),
 
             buyPlugin(plugin) {
@@ -205,40 +209,40 @@
 
                 this.$store.dispatch('addToCart', [item])
                     .then(() => {
-                        this.loading = false;
+                        this.loading = false
                         this.$root.openGlobalModal('cart')
                     })
             },
 
             viewDeveloper(plugin) {
-                this.$root.closeGlobalModal();
-                this.$root.pageTitle = this.$options.filters.escapeHtml(plugin.developerName);
-                this.$router.push({ path: '/developer/'+plugin.developerId})
+                this.$root.closeGlobalModal()
+                this.$root.pageTitle = this.$options.filters.escapeHtml(plugin.developerName)
+                this.$router.push({path: '/developer/' + plugin.developerId})
             },
 
             viewCategory(category) {
-                this.$root.closeGlobalModal();
-                this.$root.pageTitle = category.name;
-                this.$router.push({ path: '/categories/'+category.id})
+                this.$root.closeGlobalModal()
+                this.$root.pageTitle = category.name
+                this.$router.push({path: '/categories/' + category.id})
             },
 
             loadPlugin(pluginId) {
-                this.plugin = null;
-                this.pluginSnippet = this.$store.getters.getPluginById(pluginId);
+                this.plugin = null
+                this.pluginSnippet = this.$store.getters.getPluginById(pluginId)
 
                 this.$store.dispatch('getPluginDetails', pluginId)
                     .then(plugin => {
-                        this.plugin = plugin;
+                        this.plugin = plugin
                     })
                     .catch(response => {
-                        console.log('error', response);
-                    });
+                        console.log('error', response)
+                    })
             }
 
         },
 
         mounted() {
-            this.loadPlugin(this.pluginId);
+            this.loadPlugin(this.pluginId)
         }
 
     }
