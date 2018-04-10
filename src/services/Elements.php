@@ -1227,7 +1227,7 @@ class Elements extends Component
                             $map['criteria'] ?? [],
                             $pathCriterias[$targetPath] ?? []
                         ));
-                        $query->id = $uniqueTargetElementIds;
+                        $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();
 
