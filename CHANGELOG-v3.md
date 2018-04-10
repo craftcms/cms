@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.2 - 2018-04-10
 
 ### Added
 - Added the `EVENT_BEFORE_DELETE_CACHES` and `EVENT_AFTER_DELETE_CACHES` events to `craft\services\TemplateCaches`.
