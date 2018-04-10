@@ -626,10 +626,9 @@ class View extends \yii\web\View
 
         if (!empty($roots)) {
             foreach ($roots as $templateRoot => $basePaths) {
-                /** @var string[] $basePaths */
-                $templateRootLen = strlen($templateRoot);
-                if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
-                    $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1);
+
+                if ($subName = $this->getSubName($templateRoot, $name)) {
+                    /** @var string[] $basePaths */
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
                             return $this->_templatePaths[$key] = $path;
@@ -638,8 +637,32 @@ class View extends \yii\web\View
                 }
             }
         }
-
+        
         return false;
+    }
+
+    /**
+     * Get the name of the template to load depending on whether we have a front-end and back-end request.
+     *
+     * @param $templateRoot
+     * @param $name
+     *
+     * @return bool|string
+     */
+    public function getSubName($templateRoot, $name)
+    {
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+
+            $templateRootLen = strlen($templateRoot);
+
+            if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
+                return strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1);
+            }
+
+            return false;
+        }
+
+        return $name;
     }
 
     /**
