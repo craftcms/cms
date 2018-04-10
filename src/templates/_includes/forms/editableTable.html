@@ -31,6 +31,8 @@
                     {% set value = cell.value is defined ? cell.value : cell %}
                     {% if col.type == 'heading' %}
                         <th scope="row" class="{{ cell.class ?? col.class ?? '' }}">{{ value|raw }}</th>
+                    {% elseif col.type == 'html' %}
+                        <td class="{{ cell.class ?? col.class ?? '' }}">{{ value|raw }}</td>
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
