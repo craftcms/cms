@@ -9,6 +9,7 @@
 ### Changed
 - Craft now deletes all compiled templates whenever Craft or a plugin is updated. ([#2686](https://github.com/craftcms/cms/issues/2686))
 - The Plugin Store now displays commercial plugins’ renewal prices. ([#2690](https://github.com/craftcms/cms/issues/2690))
+- The Plugin Store no longer shows the “Upgrade Craft CMS” link if Craft is already running (and licensed to run) the Pro edition. ([#2713](https://github.com/craftcms/cms/issues/2713))
 - Matrix fields now set `$propagating` to `true` when saving Matrix blocks, if the owner element is propagating.
 - `craft\helpers\ArrayHelper::toArray()` no longer throws a deprecation error when a string without commas is passed to it. ([#2711](https://github.com/craftcms/cms/issues/2711))
 - Editable tables now support an `html` column type, which will output cell values directly without encoding HTML entities. ([#2716](https://github.com/craftcms/cms/pull/2716))
