@@ -182,7 +182,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'mysqldump'.
+        return 'mysql'.
             ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
             ' {database}'.
             ' < "{file}"';

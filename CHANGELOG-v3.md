@@ -30,6 +30,7 @@
 - Fixed a bug where relational fields were ignoring disabled related elements in various functions, including required field validation and value serialization.
 - Fixed an error that would occur if a new custom field was created and added to an element’s field layout, and its value was accessed, all in the same request. ([#2705](https://github.com/craftcms/cms/issues/2705))
 - Fixed a bug where the `id` param was ignored when used on an eager-loaded elements’ criteria. ([#2717](https://github.com/craftcms/cms/issues/2717))
+- Fixed a bug where the MySQL default database restore command wouldn’t actually restore the database. ([#2714](https://github.com/craftcms/cms/issues/2714))
 
 ## 3.0.1 - 2018-04-04
 
