@@ -29,7 +29,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             return [];
         }
 
-        if (is_string($object)) {
+        if (is_string($object) && strpos($object, ',') !== false) {
             Craft::$app->getDeprecator()->log('ArrayHelper::toArray(string)', 'Passing a string to ArrayHelper::toArray() has been deprecated. Use StringHelper::split() instead.');
 
             // Split it on the non-escaped commas
