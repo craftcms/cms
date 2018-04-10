@@ -90,6 +90,10 @@
                                 </strong>
                             </li>
                             <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
+                            <li v-if="pluginSnippet.editions[0].renewalPrice">
+                                <span>{{ "Renewal price"|t('app') }}</span>
+                                <strong>{{ "{price}/year"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].renewalPrice) }) }}</strong>
+                            </li>
                         </ul>
 
                         <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
