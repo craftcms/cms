@@ -6,6 +6,7 @@
 - Fixed a bug where the Clear Caches utility was not deleting template caches. ([#2720](https://github.com/craftcms/cms/issues/2720))
 - Fixed a bug where the Plugin Store was not displaying payment errors on checkout.
 - Fixed a bug where Control Panel-defined routes that contained special regular expression characters weren’t working. ([#2721](https://github.com/craftcms/cms/issues/2721))
+- Fixed a bug where it was not possible to save system messages in some cases.
 
 ## 3.0.2 - 2018-04-10
 
