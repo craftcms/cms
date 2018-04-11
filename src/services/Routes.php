@@ -163,7 +163,7 @@ class Routes extends Component
 
         foreach ($uriParts as $part) {
             if (is_string($part)) {
-                $uriPattern .= preg_quote($part, '/');
+                $uriPattern .= $part;
             } else if (is_array($part)) {
                 // Is the name a valid handle?
                 if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
@@ -183,7 +183,7 @@ class Routes extends Component
                 }
 
                 // Add the var as a named subpattern
-                $uriPattern .= '<'.preg_quote($subpatternName, '/').':'.$part[1].'>';
+                $uriPattern .= "<{$subpatternName}:{$part[1]}>";
             }
         }
 
