@@ -17,7 +17,6 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\models\CraftIdToken;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -296,7 +295,7 @@ class Api extends Component
      * Update a cart.
      *
      * @param string $orderNumber
-     * @param array  $data
+     * @param array $data
      *
      * @return array
      */
@@ -348,8 +347,7 @@ class Api extends Component
         if ($response->hasHeader('X-Craft-License-Edition')) {
             $licensedEdition = $response->getHeaderLine('X-Craft-License-Edition');
 
-            switch ($licensedEdition)
-            {
+            switch ($licensedEdition) {
                 case 'solo':
                     $licensedEdition = Craft::Solo;
                     break;
@@ -357,7 +355,7 @@ class Api extends Component
                     $licensedEdition = Craft::Pro;
                     break;
                 default:
-                    Craft::error('Invalid X-Craft-License-Edition header value: '. $licensedEdition, __METHOD__);
+                    Craft::error('Invalid X-Craft-License-Edition header value: '.$licensedEdition, __METHOD__);
             }
 
             $cache->set('licensedEdition', $licensedEdition, $duration);
@@ -511,6 +509,7 @@ class Api extends Component
 
     /**
      * Returns Plugin Store headers
+     *
      * @return array
      */
     private function getPluginStoreHeaders()

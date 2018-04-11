@@ -73,7 +73,7 @@ class ColorValidator extends RegularExpressionValidator
         $original = $value = $model->$attribute;
 
         if (is_string($value)) {
-           $value = self::normalizeColor($value);
+            $value = self::normalizeColor($value);
         }
 
         $result = $this->validateValue($value);
