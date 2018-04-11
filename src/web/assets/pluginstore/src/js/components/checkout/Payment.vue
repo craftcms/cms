@@ -291,9 +291,9 @@
                                             })
                                     })
                             })
-                            .catch(response => {
+                            .catch(error => {
                                 this.loading = false
-                                this.error = response.statusText
+                                this.error = error.response.data.error || error.response.statusText;
                             })
                     }, (response) => {
                         if (response.errors) {
