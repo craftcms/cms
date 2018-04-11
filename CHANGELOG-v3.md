@@ -10,6 +10,7 @@
 - Fixed a bug where the Plugin Store was not displaying payment errors on checkout.
 - Fixed a bug where Control Panel-defined routes that contained special regular expression characters weren’t working. ([#2721](https://github.com/craftcms/cms/issues/2721))
 - Fixed a bug where it was not possible to save system messages in some cases.
+- Fixed a bug where static translations within dynamic entry title formats were getting translated using the current site’s language, rather than the entry’s language. ([#2722](https://github.com/craftcms/cms/issues/2722))
 
 ## 3.0.2 - 2018-04-10
 
