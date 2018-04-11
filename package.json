@@ -19,6 +19,7 @@
     "vuex": "^2.3.1"
   },
   "devDependencies": {
+    "accounting": "^0.4.1",
     "autoprefixer": "^7.1.4",
     "bootstrap": "3.3.* || 3.2.* || 3.1.*",
     "craftcms-sass": "^1.0.0",
