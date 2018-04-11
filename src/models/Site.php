@@ -75,7 +75,7 @@ class Site extends Model
     /**
      * @var string|null Base URL
      */
-    public $baseUrl;
+    public $baseUrl = '@web/';
 
     /**
      * @var int Sort order
