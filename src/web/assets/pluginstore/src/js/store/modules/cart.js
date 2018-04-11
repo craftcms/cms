@@ -1,4 +1,4 @@
-import api from '../../api'
+import api from '../../api/cart'
 import * as types from '../mutation-types'
 import Vue from 'vue'
 import Vuex from 'vuex'

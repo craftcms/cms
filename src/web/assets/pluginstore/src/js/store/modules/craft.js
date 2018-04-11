@@ -1,4 +1,4 @@
-import api from '../../api'
+import api from '../../api/craft'
 import * as types from '../mutation-types'
 
 const state = {
