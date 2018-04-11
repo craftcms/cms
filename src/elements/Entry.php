@@ -868,6 +868,17 @@ EOD;
         return $html;
     }
 
+    /**
+     * Updates the entry's title, if its entry type has a dynamic title format.
+     */
+    public function updateTitle()
+    {
+        $entryType = $this->getType();
+        if (!$entryType->hasTitleField) {
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        }
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -890,7 +901,6 @@ EOD;
     public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
-        $entryType = $this->getType();
 
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
@@ -919,10 +929,7 @@ EOD;
             $this->expiryDate = null;
         }
 
-        if (!$entryType->hasTitleField) {
-            // Set the dynamic title
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
-        }
+        $this->updateTitle();
 
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time

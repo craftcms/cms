@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\Entry::updateTitle()`.
+
 ### Fixed
 - Fixed a bug where the Clear Caches utility was not deleting template caches. ([#2720](https://github.com/craftcms/cms/issues/2720))
 - Fixed a bug where the Plugin Store was not displaying payment errors on checkout.
