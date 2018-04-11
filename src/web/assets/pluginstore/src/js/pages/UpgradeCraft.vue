@@ -9,11 +9,11 @@
                     </th>
                     <th scope="col">
                         <h1 class="logo">Solo</h1>
-                        <p>{{ "For personal projects."|t('app') }}</p>
+                        <p>{{ "For when you’re building a website for yourself or a friend."|t('app') }}</p>
                     </th>
                     <th scope="col">
                         <h1 class="logo">Pro</h1>
-                        <p>{{ "For everything else."|t('app') }}</p>
+                        <p>{{ "For when you’re building something professionally for a client or team."|t('app') }}</p>
                     </th>
                 </tr>
                 <tr class="license-statuses">
