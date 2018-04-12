@@ -263,7 +263,7 @@ class Template
                 $value = $object->format($format);
             }
             if (!isset($filter)) {
-                $filter = 'date(\''.$format.'\')';
+                $filter = 'date(\''.addslashes($format).'\')';
             }
         }
 
