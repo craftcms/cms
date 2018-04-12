@@ -7,6 +7,7 @@
 
 ### Changed
 - New sites’ Base URLs now default to `@web/`.
+- Textual custom fields now ensure that they don’t contain 4+ byte characters. ([#2725](https://github.com/craftcms/cms/issues/2725))
 
 ### Fixed
 - Fixed a bug where the Clear Caches utility was not deleting template caches. ([#2720](https://github.com/craftcms/cms/issues/2720))
