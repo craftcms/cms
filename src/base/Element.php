@@ -1080,6 +1080,7 @@ abstract class Element extends Component implements ElementInterface
                 // Don't count multibyte characters as a single char
                 'encoding' => '8bit',
                 'max' => Db::getTextualColumnStorageCapacity($columnType) ?: null,
+                'disallowMb4' => true,
             ]);
         }
 
