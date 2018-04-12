@@ -197,7 +197,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
             new \Twig_SimpleFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new \Twig_SimpleFilter('encenc', [$this, 'encencFilter']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
