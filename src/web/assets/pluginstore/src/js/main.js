@@ -36,7 +36,6 @@ Garnish.$doc.ready(function() {
                 craftIdDataLoaded: false,
                 cartDataLoaded: false,
                 showModal: false,
-                lastOrder: null,
                 statusMessage: null,
             }
         },
