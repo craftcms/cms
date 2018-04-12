@@ -5,6 +5,9 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+/**
+ * State
+ */
 const state = {
     checkoutStatus: null,
     cart: null,

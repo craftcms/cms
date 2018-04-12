@@ -2,6 +2,9 @@ import axios from 'axios'
 
 export default {
 
+    /**
+     * Get developer.
+     */
     getDeveloper(developerId, cb, errorCb) {
         axios.get(Craft.getActionUrl('plugin-store/developer'), {
                 params: {

@@ -1,14 +1,23 @@
 import api from '../../api/developers'
 import * as types from '../mutation-types'
 
+/**
+ * State
+ */
 const state = {
     developer: [],
 }
 
+/**
+ * Getters
+ */
 const getters = {
     developer: state => state.developer,
 }
 
+/**
+ * Actions
+ */
 const actions = {
 
     getDeveloper({commit}, developerId) {
@@ -24,6 +33,9 @@ const actions = {
 
 }
 
+/**
+ * Mutations
+ */
 const mutations = {
 
     [types.RECEIVE_DEVELOPER](state, {developer}) {

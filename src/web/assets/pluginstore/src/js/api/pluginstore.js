@@ -2,6 +2,9 @@ import axios from 'axios'
 
 export default {
 
+    /**
+     * Get plugin store data.
+     */
     getPluginStoreData(cb, errorCb) {
         axios.get(Craft.getActionUrl('plugin-store/plugin-store-data'), '', {
                 headers: {
@@ -16,6 +19,9 @@ export default {
             })
     },
 
+    /**
+     * Get plugin details.
+     */
     getPluginDetails(pluginId, cb, errorCb) {
         axios.get(Craft.getActionUrl('plugin-store/plugin-details'), {
                 params: {

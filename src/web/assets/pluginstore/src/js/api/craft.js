@@ -2,6 +2,9 @@ import axios from 'axios'
 
 export default {
 
+    /**
+     * Get Craft data.
+     */
     getCraftData(cb, cbError) {
         axios.get(Craft.getActionUrl('plugin-store/craft-data'))
             .then(response => {
@@ -13,6 +16,9 @@ export default {
             })
     },
 
+    /**
+     * Try edition.
+     */
     tryEdition(edition) {
         return axios.post(Craft.getActionUrl('app/try-edition'), 'edition=' + edition, {
             headers: {

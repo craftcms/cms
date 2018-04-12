@@ -2,6 +2,9 @@ import axios from 'axios'
 
 export default {
 
+    /**
+     * Create cart.
+     */
     createCart(data, cb, errorCb) {
         axios.post(Craft.getActionUrl('plugin-store/create-cart'), data, {
                 headers: {
@@ -16,6 +19,9 @@ export default {
             })
     },
 
+    /**
+     * Update cart.
+     */
     updateCart(orderNumber, data, cb, errorCb) {
         data.orderNumber = orderNumber
 
@@ -32,20 +38,32 @@ export default {
             })
     },
 
+    /**
+     * Reset order number.
+     */
     resetOrderNumber() {
         localStorage.removeItem('orderNumber')
     },
 
+    /**
+     * Save order number
+     */
     saveOrderNumber(orderNumber) {
         localStorage.setItem('orderNumber', orderNumber)
     },
 
+    /**
+     * Get order number.
+     */
     getOrderNumber(cb) {
         const orderNumber = localStorage.getItem('orderNumber')
 
         return cb(orderNumber)
     },
 
+    /**
+     * Get cart.
+     */
     getCart(orderNumber, cb, errorCb) {
         const data = {
             orderNumber
@@ -60,6 +78,9 @@ export default {
             })
     },
 
+    /**
+     * Checkout.
+     */
     checkout(data) {
         return axios.post(Craft.getActionUrl('plugin-store/checkout'), data, {
             headers: {
@@ -68,6 +89,9 @@ export default {
         })
     },
 
+    /**
+     * Save plugin license keys
+     */
     savePluginLicenseKeys(data) {
         return axios.post(Craft.getActionUrl('plugin-store/save-plugin-license-keys'), data, {
             headers: {

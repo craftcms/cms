@@ -1,10 +1,16 @@
 import api from '../../api/craft'
 import * as types from '../mutation-types'
 
+/**
+ * State
+ */
 const state = {
     craftData: {},
 }
 
+/**
+ * Getters
+ */
 const getters = {
 
     craftData: (state) => {
@@ -48,6 +54,9 @@ const getters = {
 
 }
 
+/**
+ * Actions
+ */
 const actions = {
 
     getCraftData({commit}) {
@@ -79,6 +88,9 @@ const actions = {
 
 }
 
+/**
+ * Mutations
+ */
 const mutations = {
 
     [types.RECEIVE_CRAFT_DATA](state, {data}) {
