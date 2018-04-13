@@ -97,10 +97,6 @@
                 craftData: 'craftData',
             }),
 
-            indexBlocks() {
-                return this.pluginStoreData.indexBlocks
-            }
-
         },
 
         created() {
