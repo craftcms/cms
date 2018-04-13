@@ -223,6 +223,9 @@ class Schema extends \yii\db\pgsql\Schema
         return null;
     }
 
+    // Protected Methods
+    // =========================================================================
+
     /**
      * Collects extra foreign key information details for the given table.
      *
