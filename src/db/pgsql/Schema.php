@@ -160,7 +160,14 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'psql'.
+        if (Platform::isWindows()) {
+            $envCommand = 'set PGPASSWORD="{password}" && ';
+        } else {
+            $envCommand = 'PGPASSWORD="{password}" ';
+        }
+
+        return $envCommand.
+            'psql'.
             ' --dbname={database}'.
             ' --host={server}'.
             ' --port={port}'.
