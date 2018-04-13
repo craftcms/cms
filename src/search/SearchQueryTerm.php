@@ -39,7 +39,7 @@ class SearchQueryTerm extends BaseObject
     /**
      * @var bool
      */
-    public $subRight = false;
+    public $subRight = true;
 
     /**
      * @var null
