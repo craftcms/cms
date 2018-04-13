@@ -20,6 +20,7 @@
 - Fixed a bug where plugins’ “Last update” timestamps in the Plugin Store weren’t getting formatted correctly in Safari. ([#2733](https://github.com/craftcms/cms/issues/2733))
 - Fixed references to a nonexistant `Craft.eot` file in the Control Panel CSS. ([#2740](https://github.com/craftcms/cms/issues/2740))
 - Fixed a bug where the default PostgreSQL database restore command wasn’t setting the `PGPASSWORD` environment variable. ([#2741](https://github.com/craftcms/cms/pull/2741))
+- Fixed an error that could occur if the system time zone was not supported by the ICU library, on environments with the Intl extension loaded.
 
 ## 3.0.2 - 2018-04-10
 

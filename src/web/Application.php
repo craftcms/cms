@@ -111,6 +111,24 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setTimeZone($value)
+    {
+        parent::setTimeZone($value);
+
+        if ($this->getI18n()->getIsIntlLoaded()) {
+            // Make sure that ICU supports this timezone
+            try {
+                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
+            } catch (\IntlException $e) {
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                parent::setTimeZone('UTC');
+            }
+        }
+    }
+
+    /**
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
