@@ -164,7 +164,8 @@
             },
 
             lastUpdate() {
-                return Craft.formatDate(this.plugin.lastUpdate)
+                const date = new Date(this.plugin.lastUpdate.replace(/\s/, 'T'))
+                return Craft.formatDate(date)
             },
 
             csrfTokenName() {
