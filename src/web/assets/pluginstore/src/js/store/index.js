@@ -8,6 +8,7 @@ import craft from './modules/craft'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+    strict: true,
     modules: {
         cart,
         developers,
