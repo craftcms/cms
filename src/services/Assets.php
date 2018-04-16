@@ -143,10 +143,6 @@ class Assets extends Component
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
-        if (AssetsHelper::getFileKindByExtension($pathOnServer) === Asset::KIND_IMAGE) {
-            Image::cleanImageByPath($pathOnServer);
-        }
-
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
             $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
