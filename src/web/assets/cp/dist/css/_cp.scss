@@ -395,7 +395,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 
   #version {
-    margin-top: 5px;
+    margin-top: 4px;
     font-size: 12px;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
   }
@@ -617,6 +617,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         flex: 0 0 $sidebarWidth;
         width: $sidebarWidth;
         box-sizing: border-box;
+        padding-bottom: 48px;
       }
 
       #content-container {
@@ -704,7 +705,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         #content {
           flex: 1;
           background: #fff;
-          padding: 24px;
+          padding: 24px 24px 48px;
           word-wrap: break-word;
         }
       }
@@ -713,6 +714,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         flex: 0 0 $detailsWidth;
         width: $detailsWidth;
         background: hsl($hue, 10%, 85%);
+        padding-bottom: 32px;
 
         body.ltr & {
           box-shadow: inset 1px 0 0 $hairlineColorAlpha;
