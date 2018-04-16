@@ -29,7 +29,6 @@
         value: field.name,
         errors: field.getErrors('name'),
         required: true,
-        translatable: true,
         autofocus: true
     }) }}
 
@@ -53,7 +52,6 @@
         name: 'instructions',
         value: field.instructions,
         errors: field.getErrors('instructions'),
-        translatable: true
     }) }}
 
     {{ forms.selectField({
