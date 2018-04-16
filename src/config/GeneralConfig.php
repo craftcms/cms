@@ -532,7 +532,7 @@ class GeneralConfig extends BaseObject
      * 'siteUrl' => [
      *     'siteA' => 'https://site-a.com/',
      *     'siteB' => 'https://site-b.com/',
-     * ],```
+     * ],
      */
     public $siteUrl;
     /**
