@@ -441,9 +441,12 @@ class PluginStoreController extends Controller
     {
         $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
         $pluginLicenseKeys = (isset($payload['pluginLicenseKeys']) ? $payload['pluginLicenseKeys'] : []);
+        $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($pluginLicenseKeys as $pluginLicenseKey) {
-            Craft::$app->getPlugins()->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+            if (isset($plugins[$pluginLicenseKey['handle']])) {
+                Craft::$app->getPlugins()->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+            }
         }
 
         return $this->asJson(['success' => true]);
