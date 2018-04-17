@@ -557,13 +557,19 @@ class Sections extends Component
                     $newSiteIds = array_keys($allSiteSettings);
                     $persistentSiteIds = array_values(array_intersect($newSiteIds, $oldSiteIds));
 
+                    // Try to make that the primary site, if it's in the list
+                    $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+                    if (!in_array($siteId, $persistentSiteIds, false)) {
+                        $siteId = $persistentSiteIds[0];
+                    }
+
                     Craft::$app->getQueue()->push(new ResaveElements([
                         'description' => Craft::t('app', 'Resaving {section} entries', [
                             'section' => $section->name,
                         ]),
                         'elementType' => Entry::class,
                         'criteria' => [
-                            'siteId' => $persistentSiteIds[0],
+                            'siteId' => $siteId,
                             'sectionId' => $section->id,
                             'status' => null,
                             'enabledForSite' => false,

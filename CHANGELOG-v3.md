@@ -13,6 +13,7 @@
 - Control Panel panes now have at least 48 pixels of bottom padding. ([#2744](https://github.com/craftcms/cms/issues/2744))
 - Craft now intercepts 404-ing resource requests, and publishes the resources on the fly.
 - The Clear Caches utility now has a “Control Panel resources” option.
+- When enabling new sites for a section, the new sites’ content is now based on the primary site’s content, if the section was and still is enabled for the primary site. ([#2748](https://github.com/craftcms/cms/issues/2748))
 
 ### Fixed
 - Fixed a bug where the Clear Caches utility was not deleting template caches. ([#2720](https://github.com/craftcms/cms/issues/2720))
