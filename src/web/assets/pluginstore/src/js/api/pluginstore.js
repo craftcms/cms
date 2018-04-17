@@ -3,6 +3,26 @@ import axios from 'axios'
 export default {
 
     /**
+     * Get developer.
+     */
+    getDeveloper(developerId, cb, errorCb) {
+        axios.get(Craft.getActionUrl('plugin-store/developer'), {
+                params: {
+                    developerId: developerId,
+                },
+                headers: {
+                    'X-CSRF-Token': Craft.csrfTokenValue,
+                }
+            })
+            .then(response => {
+                return cb(response.data)
+            })
+            .catch(response => {
+                return errorCb(response)
+            })
+    },
+
+    /**
      * Get plugin store data.
      */
     getPluginStoreData(cb, errorCb) {
@@ -12,7 +32,7 @@ export default {
                 }
             })
             .then(response => {
-                return cb(response.data)
+                return cb(response)
             })
             .catch(response => {
                 return errorCb(response)
@@ -32,11 +52,11 @@ export default {
                 }
             })
             .then(response => {
-                let pluginDetails = response.data
-                return cb(pluginDetails)
+                return cb(response)
             })
             .catch(response => {
                 return errorCb(response)
             })
     },
+
 }

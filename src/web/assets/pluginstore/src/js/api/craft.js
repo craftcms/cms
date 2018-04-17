@@ -8,8 +8,7 @@ export default {
     getCraftData(cb, cbError) {
         axios.get(Craft.getActionUrl('plugin-store/craft-data'))
             .then(response => {
-                let craftData = response.data
-                return cb(craftData)
+                return cb(response)
             })
             .catch(response => {
                 return cbError(response)

@@ -14,7 +14,7 @@
 
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState} from 'vuex'
 
     export default {
 
@@ -39,8 +39,8 @@
 
         computed: {
 
-            ...mapGetters({
-                stripePublicKey: 'stripePublicKey',
+            ...mapState({
+                stripePublicKey: state => state.cart.stripePublicKey,
             }),
 
             expMonth() {

@@ -3,7 +3,7 @@
         <div class="ps-grid-wrapper has-sidebar">
             <div class="ps-grid-sidebar">
                 <div class="developer-card">
-                    <template v-if="loading">
+                    <template v-if="loading || !developer">
                         <div class="spinner"></div>
                     </template>
 
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState} from 'vuex'
 
     export default {
 
@@ -50,8 +50,8 @@
 
         computed: {
 
-            ...mapGetters({
-                developer: 'developer'
+            ...mapState({
+                developer: state => state.pluginStore.developer,
             }),
 
         },

@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<template v-if="craftData.CraftEdition == edition">
-			<template v-if="craftData.licensedEdition >= edition">
+		<template v-if="CraftEdition == edition">
+			<template v-if="licensedEdition >= edition">
 				<div class="license-status installed" data-icon="check">{{ "Installed"|t('app') }}</div>
 			</template>
 			<template v-else>
@@ -9,14 +9,14 @@
 			</template>
 		</template>
 
-		<template v-else-if="craftData.licensedEdition == edition">
+		<template v-else-if="licensedEdition == edition">
 			<div class="license-status licensed" data-icon="check">{{ "Licensed"|t('app') }}</div>
 		</template>
 	</div>
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState} from 'vuex'
 
     export default {
 
@@ -24,9 +24,11 @@
 
         computed: {
 
-            ...mapGetters({
-                craftData: 'craftData',
-            })
+            ...mapState({
+                cart: state => state.cart.cart,
+                licensedEdition: state => state.craft.licensedEdition,
+                CraftEdition: state => state.craft.CraftEdition,
+            }),
 
         }
 
