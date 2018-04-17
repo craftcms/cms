@@ -76,7 +76,7 @@ class SystemMessagesController extends Controller
         if (Craft::$app->getIsMultiSite()) {
             $language = Craft::$app->getRequest()->getBodyParam('language');
         } else {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {

@@ -1329,7 +1329,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            Craft::error('Someone tried to load a template outside the templates folder: '. $name);
+            Craft::error('Someone tried to load a template outside the templates folder: '.$name);
             throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }
@@ -1498,12 +1498,9 @@ JS;
                 $srcsets[] = $srcset.' '.$size.'w';
             }
 
-            $imgHtml = '<div class="elementthumb">'.
-                '<img '.
-                'sizes="'.($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
-                'srcset="'.implode(', ', $srcsets).'" '.
-                'alt="">'.
-                '</div> ';
+            $sizesHtml = ($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px';
+            $srcsetHtml = implode(', ', $srcsets);
+            $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
         } else {
             $imgHtml = '';
         }

@@ -1,4 +1,4 @@
-/*!   - 2018-04-08 */
+/*!   - 2018-04-17 */
 (function($){
 
 /** global: Craft */
@@ -2405,6 +2405,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
+            // Kill the old view class
+            if (this.view) {
+                this.view.destroy();
+                delete this.view;
+            }
+
+            this.$elements.html('');
+
             var params = this.getViewParams();
 
             Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
@@ -3247,12 +3255,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Cleanup
             // -------------------------------------------------------------
 
-            // Kill the old view class
-            if (this.view) {
-                this.view.destroy();
-                delete this.view;
-            }
-
             // Get rid of the old action triggers regardless of whether the new batch has actions or not
             if (this.actions) {
                 this.hideActionTriggers();
@@ -3319,7 +3321,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$elements.html(response.html);
             Craft.appendHeadHtml(response.headHtml);
             Craft.appendFootHtml(response.footHtml);
-            picturefill();
 
             // Create the view
             // -------------------------------------------------------------
@@ -3492,6 +3493,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         $scroller: null,
 
         elementIndex: null,
+        thumbLoader: null,
         elementSelect: null,
 
         loadingMore: false,
@@ -3519,6 +3521,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             this.setTotalVisible($elements.length);
             this.setMorePending(this.settings.batchSize && $elements.length == this.settings.batchSize);
+
+            // Instantiate the thumb loader
+            this.thumbLoader = new Craft.ElementThumbLoader();
+            this.thumbLoader.load($elements);
 
             if (this.settings.selectable) {
                 this.elementSelect = new Garnish.Select(
@@ -3750,7 +3756,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             var data = this.getLoadMoreParams();
 
-            Craft.postActionRequest('element-indexes/get-more-elements', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
                 this.loadingMore = false;
                 this.$loadingMoreSpinner.addClass('hidden');
 
@@ -3760,7 +3766,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     this.appendElements($newElements);
                     Craft.appendHeadHtml(response.headHtml);
                     Craft.appendFootHtml(response.footHtml);
-                    picturefill();
 
                     if (this.elementSelect) {
                         this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
@@ -3787,6 +3792,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         appendElements: function($newElements) {
             $newElements.appendTo(this.$elementContainer);
+            this.thumbLoader.load($newElements);
             this.onAppendElements($newElements);
         },
 
@@ -3822,6 +3828,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Remove the "loading-more" spinner, since we added that outside of the view container
             this.$loadingMoreSpinner.remove();
 
+            // Kill the thumb loader
+            this.thumbLoader.destroy();
+            delete this.thumbLoader;
+
             // Delete the element select
             if (this.elementSelect) {
                 this.elementIndex.off('enableElements', this._handleEnableElements);
@@ -3842,6 +3852,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             selectable: false,
             multiSelect: false,
             checkboxMode: false,
+            loadMoreElementsAction: 'element-indexes/get-more-elements',
             onAppendElements: $.noop,
             onSelectionChange: $.noop
         }
@@ -3854,6 +3865,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
     {
+        thumbLoader: null,
         elementSelect: null,
         elementSort: null,
         modal: null,
@@ -3914,6 +3926,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     .css('top', 0)
                     .css(Craft.left, 0);
             }
+
+            this.thumbLoader = new Craft.ElementThumbLoader();
 
             this.initElementSelect();
             this.initElementSort();
@@ -4038,6 +4052,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         addElements: function($elements) {
+            this.thumbLoader.load($elements);
+
             if (this.settings.selectable) {
                 this.elementSelect.addItems($elements);
             }
@@ -4427,8 +4443,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
             for (var i = 0; i < $selectedElements.length; i++) {
                 var $element = $($selectedElements[i]);
+                var elementInfo = Craft.getElementInfo($element);
 
-                info.push(Craft.getElementInfo($element));
+                info.push(elementInfo);
             }
 
             return info;
@@ -13211,6 +13228,82 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
             activate: null
         }
     });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Base Element Index View
+ */
+Craft.ElementThumbLoader = Garnish.Base.extend(
+    {
+        queue: null,
+        workers: [],
+
+        init: function() {
+            this.queue = [];
+
+            for (var i = 0; i < 3; i++) {
+                this.workers.push(new Craft.ElementThumbLoader.Worker(this));
+            }
+        },
+
+        load: function($elements) {
+            this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
+
+            if (this.queue.length) {
+                // See if there are any inactive workers
+                for (var i = 0; i < this.workers.length; i++) {
+                    if (!this.workers[i].active) {
+                        this.workers[i].loadNext();
+                    }
+                }
+            }
+        },
+
+        destroy: function() {
+            for (var i = 0; i < this.workers.length; i++) {
+                this.workers[i].destroy();
+            }
+
+            this.base();
+        }
+    }
+);
+
+Craft.ElementThumbLoader.Worker = Garnish.Base.extend(
+    {
+        loader: null,
+        active: false,
+
+        init: function(loader) {
+            this.loader = loader;
+        },
+
+        loadNext: function() {
+            var container = this.loader.queue.shift();
+            if (typeof container === 'undefined') {
+                this.active = false;
+                return;
+            }
+
+            this.active = true;
+            var $container = $(container);
+            if ($container.find('img').length) {
+                this.loadNext();
+            }
+            var $img = $('<img/>', {
+                sizes: $container.attr('data-sizes'),
+                srcset: $container.attr('data-srcset'),
+                alt: ''
+            });
+            this.addListener($img, 'load', 'loadNext');
+            $img.appendTo($container);
+            picturefill({
+                elements: [$img[0]]
+            });
+        }
+    }
+);
 
 /** global: Craft */
 /** global: Garnish */

@@ -18,7 +18,7 @@
                         <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
                             <td class="thin">
                                 <div class="plugin-icon">
-                                    <img :src="craftData.craftLogo" width="32" height="32" />
+                                    <img :src="craftLogo" width="32" height="32" />
                                 </div>
                             </td>
                             <td>Craft {{ item.lineItem.purchasable.name }}</td>
@@ -101,20 +101,21 @@
 </template>
 
 <script>
-    import {mapGetters, mapActions} from 'vuex'
+    import {mapState, mapGetters, mapActions} from 'vuex'
 
     export default {
 
         computed: {
 
+            ...mapState({
+                cart: state => state.cart.cart,
+                craftLogo: state => state.craft.craftLogo,
+                craftId: state => state.craft.craftId,
+            }),
+
             ...mapGetters({
-                isInTrial: 'isInTrial',
                 activeTrialPlugins: 'activeTrialPlugins',
-                cartTotal: 'cartTotal',
-                cart: 'cart',
                 cartItems: 'cartItems',
-                craftData: 'craftData',
-                craftIdAccount: 'craftIdAccount',
             }),
 
             pendingActiveTrials() {
@@ -165,7 +166,7 @@
             },
 
             payment() {
-                if (this.craftIdAccount) {
+                if (this.craftId) {
                     this.$root.openGlobalModal('payment')
                 } else {
                     this.$root.openGlobalModal('identity')

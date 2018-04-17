@@ -73,6 +73,24 @@ class Application extends \yii\console\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setTimeZone($value)
+    {
+        parent::setTimeZone($value);
+
+        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+            // Make sure that ICU supports this timezone
+            try {
+                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
+            } catch (\IntlException $e) {
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                parent::setTimeZone('UTC');
+            }
+        }
+    }
+
+    /**
      * Returns the configuration of the built-in commands.
      *
      * @return array The configuration of the built-in commands.

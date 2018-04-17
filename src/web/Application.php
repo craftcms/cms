@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\base\Plugin;
+use craft\db\Query;
 use craft\debug\DeprecatedPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
@@ -20,6 +21,7 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\db\Exception as DbException;
 use yii\debug\Module as DebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -111,6 +113,24 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function setTimeZone($value)
+    {
+        parent::setTimeZone($value);
+
+        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+            // Make sure that ICU supports this timezone
+            try {
+                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
+            } catch (\IntlException $e) {
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                parent::setTimeZone('UTC');
+            }
+        }
+    }
+
+    /**
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
@@ -123,6 +143,9 @@ class Application extends \yii\web\Application
      */
     public function handleRequest($request): Response
     {
+        // Process resource requests before anything else
+        $this->_processResourceRequest($request);
+
         $headers = $this->getResponse()->getHeaders();
 
         if ($request->getIsCpRequest()) {
@@ -383,6 +406,46 @@ class Application extends \yii\web\Application
             $this->getView()->off(View::EVENT_END_BODY,
                 [$debug, 'renderToolbar']);
         }
+    }
+
+    /**
+     * Processes resource requests.
+     *
+     * @param Request $request
+     */
+    private function _processResourceRequest(Request $request)
+    {
+        // Does this look like a resource request?
+        $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
+        $pathInfo = $request->getPathInfo();
+        if (strpos('/'.$pathInfo, $resourceBaseUri.'/') !== 0) {
+            return;
+        }
+
+        $resourceUri = substr($pathInfo, strlen($resourceBaseUri));
+        $slash = strpos($resourceUri, '/');
+        $hash = substr($resourceUri, 0, $slash);
+
+        try {
+            $sourcePath = (new Query())
+                ->select(['path'])
+                ->from('{{%resourcepaths}}')
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException $e) {
+            // Craft is either not installed or not updated to 3.0.3+ yet
+        }
+
+        if (empty($sourcePath)) {
+            return;
+        }
+
+        // Publish the directory
+        $filePath = substr($resourceUri, strlen($hash)+1);
+        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true).DIRECTORY_SEPARATOR.$filePath;
+        $this->getResponse()
+            ->sendFile($publishedPath, null, ['inline' => true]);
+        $this->end();
     }
 
     /**

@@ -11,7 +11,6 @@
   "dependencies": {
     "axios": "^0.17.1",
     "lodash": "^4.17.4",
-    "qs": "^6.5.1",
     "vue": "^2.4.4",
     "vue-cleave": "^1.2.2",
     "vue-lodash": "^1.0.3",
@@ -19,6 +18,7 @@
     "vuex": "^2.3.1"
   },
   "devDependencies": {
+    "accounting": "^0.4.1",
     "autoprefixer": "^7.1.4",
     "bootstrap": "3.3.* || 3.2.* || 3.1.*",
     "craftcms-sass": "^1.0.0",

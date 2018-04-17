@@ -15,7 +15,6 @@ use craft\records\CraftIdToken as OauthTokenRecord;
 use DateInterval;
 use DateTime;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 
 /**

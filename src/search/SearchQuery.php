@@ -105,12 +105,8 @@ class SearchQuery
                 }
             }
 
-            $term = new SearchQueryTerm();
-
-            // Set the default options
-            foreach ($this->_termOptions as $option => $value) {
-                $term->$option = $value;
-            }
+            // Instantiate the term w/ default options
+            $term = new SearchQueryTerm($this->_termOptions);
 
             // Is this an exclude term?
             if (StringHelper::first($token, 1) === '-') {

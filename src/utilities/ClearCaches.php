@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;
@@ -71,6 +72,7 @@ class ClearCaches extends Utility
             ];
         }
 
+        ArrayHelper::multisort($options, 'label');
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(ClearCachesAsset::class);
@@ -109,6 +111,11 @@ class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
                 'action' => $pathService->getCompiledTemplatesPath(),
+            ],
+            [
+                'key' => 'cp-resources',
+                'label' => Craft::t('app', 'Control Panel resources'),
+                'action' => Craft::$app->getAssetManager()->basePath,
             ],
             [
                 'key' => 'temp-files',

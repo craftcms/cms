@@ -17,9 +17,9 @@ use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
+use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
-use craft\elements\actions\PreviewAsset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetTransformException;
@@ -1212,6 +1212,12 @@ class Asset extends Element
     {
         // If this is just an element being propagated, there's absolutely no need for re-saving this.
         if (!$this->propagating) {
+            if (AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                null !== $this->tempFilePath) {
+                Image::cleanImageByPath($this->tempFilePath);
+            }
+
             // Relocate the file?
             if ($this->newLocation !== null || $this->tempFilePath !== null) {
                 $this->_relocateFile();

@@ -1,14 +1,16 @@
-import api from '../../api'
+import api from '../../api/cart'
 import * as types from '../mutation-types'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+/**
+ * State
+ */
 const state = {
     checkoutStatus: null,
     cart: null,
-    cartForm: null,
     stripePublicKey: null,
     identityMode: 'craftid',
 }
@@ -18,16 +20,6 @@ const state = {
  */
 const getters = {
 
-    identityMode(state) {
-        return state.identityMode
-    },
-
-    isInTrial(state, rootState) {
-        return plugin => {
-            return rootState.activeTrialPlugins.find(p => p.id == plugin.id)
-        }
-    },
-
     isInCart(state) {
         return plugin => {
             return state.cart.lineItems.find(lineItem => lineItem.purchasable.pluginId == plugin.id)
@@ -36,47 +28,19 @@ const getters = {
 
     isCmsEditionInCart(state) {
         return cmsEdition => {
-            if (state.cart) {
-                return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
-            }
+            return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
         }
     },
 
-    cartTotal(state) {
-        if (state.cart) {
-            return state.cart.totalPrice
-        }
-
-        return 0
-    },
-
-    activeTrialPlugins(state, rootState) {
-        if (!rootState.craftData.installedPlugins) {
-            return []
-        }
-
-        let plugins = rootState.craftData.installedPlugins.map(installedPlugin => {
-            if (rootState.pluginStoreData.plugins) {
-                return rootState.pluginStoreData.plugins.find(p => p.handle === installedPlugin.handle && !installedPlugin.hasLicenseKey)
-            }
-        })
-
-        return plugins.filter(p => {
-            if (p) {
-                return p.editions[0].price > 0
+    activeTrialPlugins(state, getters, rootState) {
+        return rootState.pluginStore.plugins.filter(plugin => {
+            if (plugin.editions[0].price > 0 && !getters.pluginHasLicenseKey(plugin.handle)) {
+                return getters.installedPlugins.find(installedPlugin => plugin.handle === installedPlugin.handle)
             }
         })
     },
 
-    cart(state) {
-        return state.cart
-    },
-
-    cartItems(state, rootState) {
-        if (!state.cart || !rootState.pluginStoreData.plugins) {
-            return []
-        }
-
+    cartItems(state, getters, rootState) {
         const lineItems = state.cart.lineItems
 
         let cartItems = []
@@ -87,7 +51,7 @@ const getters = {
             cartItem.lineItem = lineItem
 
             if (lineItem.purchasable.type === 'plugin-edition') {
-                cartItem.plugin = rootState.pluginStoreData.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
+                cartItem.plugin = rootState.pluginStore.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
             }
 
             cartItems.push(cartItem)
@@ -96,20 +60,12 @@ const getters = {
         return cartItems
     },
 
-    stripePublicKey(state) {
-        return state.stripePublicKey
-    }
-
 }
 
 /**
  * Actions
  */
 const actions = {
-
-    setIdentityMode({commit}, mode) {
-        commit(types.CHANGE_IDENTITY_MODE, {mode})
-    },
 
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
@@ -161,7 +117,6 @@ const actions = {
         return new Promise((resolve, reject) => {
             api.checkout(data)
                 .then(response => {
-                    commit(types.CHECKOUT, {response})
                     resolve(response)
                 })
                 .catch(response => {
@@ -183,8 +138,8 @@ const actions = {
                                 // Couldn’t get cart for this order number? Try to create a new one.
                                 const data = {}
 
-                                if (!rootState.craft.craftData.craftId) {
-                                    data.email = rootState.craft.craftData.currentUser.email
+                                if (!rootState.craft.craftId) {
+                                    data.email = rootState.craft.currentUser.email
                                 }
 
                                 api.createCart(data, response2 => {
@@ -202,8 +157,8 @@ const actions = {
                         // No order number yet? Create a new cart.
                         const data = {}
 
-                        if (!rootState.craft.craftData.craftId) {
-                            data.email = rootState.craft.craftData.currentUser.email
+                        if (!rootState.craft.craftId) {
+                            data.email = rootState.craft.currentUser.email
                         }
 
                         api.createCart(data, response => {
@@ -278,7 +233,7 @@ const actions = {
 
             cart.lineItems.forEach(lineItem => {
                 if (lineItem.purchasable.type === 'plugin-edition') {
-                    if (rootState.craft.craftData.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
+                    if (rootState.craft.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
                         pluginLicenseKeys.push({
                             handle: lineItem.purchasable.plugin.handle,
                             key: lineItem.options.licenseKey.substr(4)
@@ -315,10 +270,6 @@ const mutations = {
 
     [types.RESET_CART](state) {
         state.cart = null
-    },
-
-    [types.CHECKOUT](state, {response}) {
-
     },
 
     [types.CHANGE_IDENTITY_MODE](state, mode) {

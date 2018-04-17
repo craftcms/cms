@@ -134,13 +134,7 @@ class Schema extends \yii\db\pgsql\Schema
             $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
         }
 
-        if (Platform::isWindows()) {
-            $envCommand = 'set PGPASSWORD="{password}" && ';
-        } else {
-            $envCommand = 'PGPASSWORD="{password}" ';
-        }
-
-        return $envCommand.
+        return $this->_pgpasswordCommand().
             'pg_dump'.
             ' --dbname={database}'.
             ' --host={server}'.
@@ -160,7 +154,8 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'psql'.
+        return $this->_pgpasswordCommand().
+            'psql'.
             ' --dbname={database}'.
             ' --host={server}'.
             ' --port={port}'.
@@ -222,6 +217,9 @@ class Schema extends \yii\db\pgsql\Schema
 
         return null;
     }
+
+    // Protected Methods
+    // =========================================================================
 
     /**
      * Collects extra foreign key information details for the given table.
@@ -337,5 +335,18 @@ ORDER BY i.relname, k';
             ':schemaName' => $table->schemaName,
             ':tableName' => $table->name,
         ])->queryAll();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the PGPASSWORD command for backup/restore actions.
+     *
+     * @return string
+     */
+    private function _pgpasswordCommand(): string
+    {
+        return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
     }
 }

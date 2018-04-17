@@ -576,6 +576,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
+            // Kill the old view class
+            if (this.view) {
+                this.view.destroy();
+                delete this.view;
+            }
+
+            this.$elements.html('');
+
             var params = this.getViewParams();
 
             Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
@@ -1418,12 +1426,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Cleanup
             // -------------------------------------------------------------
 
-            // Kill the old view class
-            if (this.view) {
-                this.view.destroy();
-                delete this.view;
-            }
-
             // Get rid of the old action triggers regardless of whether the new batch has actions or not
             if (this.actions) {
                 this.hideActionTriggers();
@@ -1490,7 +1492,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$elements.html(response.html);
             Craft.appendHeadHtml(response.headHtml);
             Craft.appendFootHtml(response.footHtml);
-            picturefill();
 
             // Create the view
             // -------------------------------------------------------------

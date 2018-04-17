@@ -62,12 +62,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $draft->setFieldValuesFromRequest($fieldsLocation);
-
-        $entryType = $draft->getType();
-
-        if (!$entryType->hasTitleField) {
-            $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
-        }
+        $draft->updateTitle();
 
         // Manually validate 'title' since the Elements service will just give it a title automatically.
         if (!$draft->id && $draft->validate(['title'])) {
@@ -210,11 +205,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Populate the field content
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $draft->setFieldValuesFromRequest($fieldsLocation);
-
-        $entryType = $entry->getType();
-        if (!$entryType->hasTitleField) {
-            $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
-        }
+        $draft->updateTitle();
 
         // Publish the draft (finally!)
         if (!Craft::$app->getEntryRevisions()->publishDraft($draft)) {

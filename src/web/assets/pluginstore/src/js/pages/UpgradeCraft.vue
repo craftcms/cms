@@ -1,40 +1,40 @@
 <template>
-    <div ref="upgradecraft" v-if="craftData && cart" id="upgrade-craft">
+    <div ref="upgradecraft" v-if="cart" id="upgrade-craft">
         <div id="upgrade-craft-compare" class="body">
             <table class="data fullwidth">
                 <thead>
                 <tr class="logos">
                     <th>
-                        <img :src="craftData.craftLogo" width="70" height="70" />
+                        <img :src="craftLogo" width="70" height="70" />
                     </th>
                     <th scope="col">
                         <h1 class="logo">Solo</h1>
-                        <p>{{ "For personal projects."|t('app') }}</p>
+                        <p>{{ "For when you’re building a website for yourself or a friend."|t('app') }}</p>
                     </th>
                     <th scope="col">
                         <h1 class="logo">Pro</h1>
-                        <p>{{ "For everything else."|t('app') }}</p>
+                        <p>{{ "For when you’re building something professionally for a client or team."|t('app') }}</p>
                     </th>
                 </tr>
                 <tr class="license-statuses">
                     <td></td>
-                    <td><status-badge :edition="craftData.CraftSolo" /></td>
-                    <td><status-badge :edition="craftData.CraftPro" /></td>
+                    <td><status-badge :edition="CraftSolo" /></td>
+                    <td><status-badge :edition="CraftPro" /></td>
                 </tr>
                 <tr class="price">
                     <th scope="row" class="feature"></th>
                     <td>{{ "Free"|t('app') }}</td>
-                    <td v-if="craftData.editions">
+                    <td v-if="editions">
                         {{ "{price} plus {renewalPrice}/year for updates"|t('app', {
-                            price: $options.filters.currency(craftData.editions.pro.price),
-                            renewalPrice: $options.filters.currency(craftData.editions.pro.renewalPrice)
+                            price: $options.filters.currency(editions.pro.price),
+                            renewalPrice: $options.filters.currency(editions.pro.renewalPrice)
                         }) }}
                     </td>
                 </tr>
                 <tr class="buybtns">
                     <td></td>
-                    <td><buy-btn :edition="craftData.CraftSolo" edition-handle="solo" /></td>
-                    <td><buy-btn :edition="craftData.CraftPro" edition-handle="pro" /></td>
+                    <td><buy-btn :edition="CraftSolo" edition-handle="solo" /></td>
+                    <td><buy-btn :edition="CraftPro" edition-handle="pro" /></td>
                 </tr>
                 </thead>
                 <tbody>
@@ -91,7 +91,7 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState} from 'vuex'
 
     export default {
 
@@ -101,10 +101,15 @@
         },
 
         computed: {
-            ...mapGetters({
-                craftData: 'craftData',
-                cart: 'cart'
+
+            ...mapState({
+                cart: state => state.cart.cart,
+                craftLogo: state => state.craft.craftLogo,
+                CraftPro: state => state.craft.CraftPro,
+                CraftSolo: state => state.craft.CraftSolo,
+                editions: state => state.craft.editions,
             }),
+
         },
 
         created() {

@@ -3,10 +3,10 @@
 		<p><label><input type="radio" value="craftid" v-model="identityMode" /> {{ "Use your Craft ID"|t('app') }}</label></p>
 
 		<template v-if="identityMode === 'craftid'">
-			<template v-if="craftIdAccount">
+			<template v-if="craftId">
 				<ul>
-					<li>{{ craftIdAccount.name }}</li>
-					<li>{{ craftIdAccount.email }}</li>
+					<li>{{ craftId.name }}</li>
+					<li>{{ craftId.email }}</li>
 				</ul>
 				<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
 			</template>
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState} from 'vuex'
 
     export default {
 
@@ -44,9 +44,9 @@
 
         computed: {
 
-            ...mapGetters({
-                craftIdAccount: 'craftIdAccount',
-                cart: 'cart',
+            ...mapState({
+                cart: state => state.cart.cart,
+                craftId: state => state.craft.craftId,
             }),
 
             identityMode: {
@@ -60,7 +60,7 @@
             },
 
             validates() {
-                if (this.identityMode === 'craftid' && !this.craftIdAccount) {
+                if (this.identityMode === 'craftid' && !this.craftId) {
                     return false
                 }
 
@@ -118,7 +118,7 @@
 
         mounted() {
             this.$root.$on('craftIdUpdated', function() {
-                if (this.craftIdAccount) {
+                if (this.craftId) {
                     this.$root.openGlobalModal('payment')
                 }
             }.bind(this))

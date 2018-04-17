@@ -12,14 +12,11 @@ use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\MigrationException;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
-use craft\models\UpgradeInfo;
-use craft\models\UpgradePurchase;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
@@ -326,7 +323,7 @@ class AppController extends Controller
         $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
         $result = [];
         if (!empty($licenseInfo['pluginLicenses'])) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg');
             foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];

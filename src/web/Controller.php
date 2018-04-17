@@ -9,7 +9,9 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use GuzzleHttp\Exception\ClientException;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -75,8 +77,21 @@ abstract class Controller extends \yii\web\Controller
         } catch (\Throwable $e) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
-                $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
-                return $this->asErrorJson($e->getMessage())
+                $message = $e->getMessage();
+                if ($e instanceof ClientException) {
+                    $statusCode = $e->getCode();
+                    if (($response = $e->getResponse()) !== null) {
+                        $body = Json::decodeIfJson((string)$response->getBody());
+                        if (isset($body['message'])) {
+                            $message = $body['message'];
+                        }
+                    }
+                } else if ($e instanceof HttpException) {
+                    $statusCode = $e->statusCode;
+                } else {
+                    $statusCode = 500;
+                }
+                return $this->asErrorJson($message)
                     ->setStatusCode($statusCode);
             }
             throw $e;

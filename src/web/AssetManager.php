@@ -9,8 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
-use yii\base\ErrorException;
+use yii\db\Exception as DbException;
 
 /**
  * @inheritdoc
@@ -83,9 +82,24 @@ class AssetManager extends \yii\web\AssetManager
             return call_user_func($this->hashCallback, $path);
         }
 
-        // don't include the file modified time in the path in case this is a load-balanced environment
-        $path = realpath($path);
-        return sprintf('%x', crc32($path.'|'.$this->linkAssets));
+        $dir = is_file($path) ? dirname($path) : $path;
+        $alias = Craft::alias($dir);
+        $hash = sprintf('%x', crc32($alias.'|'.FileHelper::lastModifiedTime($path).'|'.$this->linkAssets));
+
+        // Store the hash for later
+        try {
+            Craft::$app->getDb()->createCommand()
+                ->upsert('{{%resourcepaths}}', [
+                    'hash' => $hash,
+                ], [
+                    'path' => $alias,
+                ], [], false)
+                ->execute();
+        } catch (DbException $e) {
+            // Craft is either not installed or not updated to 3.0.3+ yet
+        }
+
+        return $hash;
     }
 
     /**
@@ -93,23 +107,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishDirectory($src, $options): array
     {
-        // Make sure forceCopy is set (accurately) so we know whether we should update CSS files later
-        if ($this->linkAssets) {
-            $options['forceCopy'] = false;
-        } else if (!isset($options['forceCopy']) && ($options['forceCopy'] = $this->forceCopy) == false) {
-            // see if any of the files have been updated
-            $dir = $this->hash($src);
-            $dstDir = $this->basePath.DIRECTORY_SEPARATOR.$dir;
-            if (!is_dir($dstDir) || FileHelper::hasAnythingChanged($src, $dstDir) === true) {
-                $options['forceCopy'] = true;
-            }
-        }
-
         list($dir, $url) = parent::publishDirectory($src, $options);
-
-        if ($options['forceCopy']) {
-            $this->_addTimestampsToCssUrls($dir);
-        }
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);
@@ -132,34 +130,5 @@ class AssetManager extends \yii\web\AssetManager
         }
 
         return [$file, $url];
-    }
-
-    /**
-     * Finds CSS files within the published directory and adds timestamps to any url()'s within them.
-     *
-     * @param string $dir
-     */
-    private function _addTimestampsToCssUrls(string $dir)
-    {
-        $timestamp = time();
-
-        $cssFiles = FileHelper::findFiles($dir, [
-            'only' => ['*.css'],
-            'recursive' => true,
-        ]);
-
-        foreach ($cssFiles as $path) {
-            $content = file_get_contents($path);
-            $content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', function($match) use ($timestamp) {
-                $url = $match[3];
-                // Ignore root-relative, absolute, and data: URLs
-                if (preg_match('/^(\/|https?:\/\/|data:)/', $url)) {
-                    return $match[0];
-                }
-                $url = UrlHelper::urlWithParams($url, ['v' => $timestamp]);
-                return $match[1].$url.$match[4];
-            }, $content);
-            file_put_contents($path, $content);
-        }
     }
 }

@@ -3,7 +3,7 @@ import {currency} from './filters/currency'
 import {escapeHtml, formatNumber, t} from './filters/craft'
 import router from './router'
 import store from './store'
-import {mapGetters} from 'vuex'
+import {mapState} from 'vuex'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
@@ -36,16 +36,15 @@ Garnish.$doc.ready(function() {
                 craftIdDataLoaded: false,
                 cartDataLoaded: false,
                 showModal: false,
-                lastOrder: null,
                 statusMessage: null,
             }
         },
 
         computed: {
 
-            ...mapGetters({
-                cart: 'cart',
-                craftIdAccount: 'craftIdAccount',
+            ...mapState({
+                cart: state => state.cart.cart,
+                craftId: state => state.craft.craftId,
             }),
 
         },
@@ -97,15 +96,15 @@ Garnish.$doc.ready(function() {
                 this.$pageTitle.html(pageTitle)
             },
 
-            craftIdAccount() {
-                if (this.craftIdAccount) {
-                    $('.label', this.$craftIdAccount).html(this.craftIdAccount.username)
+            craftId() {
+                if (this.craftId) {
+                    $('.label', this.$craftId).html(this.craftId.username)
 
-                    this.$craftIdAccount.removeClass('hidden')
+                    this.$craftId.removeClass('hidden')
                     this.$craftIdConnectForm.addClass('hidden')
                     this.$craftIdDisconnectForm.removeClass('hidden')
                 } else {
-                    this.$craftIdAccount.addClass('hidden')
+                    this.$craftId.addClass('hidden')
                     this.$craftIdConnectForm.removeClass('hidden')
                     this.$craftIdDisconnectForm.addClass('hidden')
                 }
@@ -162,7 +161,7 @@ Garnish.$doc.ready(function() {
             this.$pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
 
             // Craft ID account
-            this.$craftIdAccount = $('#craftid-account')
+            this.$craftId = $('#craftid-account')
 
             // Connect form
             this.$craftIdConnectForm = $('#craftid-connect-form')
@@ -186,7 +185,7 @@ Garnish.$doc.ready(function() {
 
             // Load Plugin Store data
             this.$store.dispatch('getPluginStoreData')
-                .then(data => {
+                .then(response => {
                     this.pluginStoreDataLoaded = true
                     this.$emit('dataLoaded')
                 })

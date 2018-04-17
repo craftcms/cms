@@ -3,11 +3,11 @@
 		<form @submit.prevent="checkout()" class="payment">
 			<div class="blocks">
 				<div class="block">
-					<div v-if="cartTotal > 0">
+					<div v-if="staticCartTotal > 0">
 						<h2>{{ "Payment Method"|t('app') }}</h2>
 
-						<template v-if="craftIdAccount">
-							<p v-if="craftIdAccount && craftIdAccount.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
+						<template v-if="craftId">
+							<p v-if="craftId && craftId.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftId.card.brand }} •••• •••• •••• {{ craftId.card.last4 }} — {{ craftId.card.exp_month }}/{{ craftId.card.exp_year }}</span></label></p>
 							<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
 
 							<template v-if="paymentMode === 'newCard'">
@@ -88,7 +88,7 @@
 				<div v-if="loading" class="spinner"></div>
 
 				<p>
-					<img :src="craftData.poweredByStripe" height="18" />
+					<img :src="poweredByStripe" height="18" />
 				</p>
 			</div>
 		</form>
@@ -96,7 +96,7 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState, mapGetters} from 'vuex'
 
     export default {
         components: {
@@ -149,13 +149,12 @@
 
         computed: {
 
-            ...mapGetters({
-                cartTotal: 'cartTotal',
-                craftIdAccount: 'craftIdAccount',
-                countries: 'countries',
-                states: 'states',
-                cart: 'cart',
-                craftData: 'craftData',
+            ...mapState({
+                cart: state => state.cart.cart,
+                poweredByStripe: state => state.craft.poweredByStripe,
+                craftId: state => state.craft.craftId,
+                countries: state => state.craft.countries,
+                states: state => state.craft.states,
             }),
 
             countryOptions() {
@@ -191,8 +190,8 @@
         methods: {
 
             savePaymentMethod(cb, cbError) {
-                if (this.cartTotal > 0) {
-                    if (this.craftIdAccount) {
+                if (this.cart.totalPrice > 0) {
+                    if (this.craftId) {
                         if (this.paymentMode === 'newCard') {
                             // Save new card
                             if (!this.cardToken) {
@@ -255,14 +254,14 @@
                         // Ready to pay
                         let cardToken = null
 
-                        if (this.cartTotal > 0) {
-                            if (this.craftIdAccount) {
+                        if (this.cart.totalPrice > 0) {
+                            if (this.craftId) {
                                 switch (this.paymentMode) {
                                     case 'newCard':
                                         cardToken = this.cardToken.id
                                         break
                                     default:
-                                        cardToken = this.craftIdAccount.cardToken
+                                        cardToken = this.craftId.cardToken
                                 }
                             } else {
                                 cardToken = this.guestCardToken.id
@@ -291,9 +290,9 @@
                                             })
                                     })
                             })
-                            .catch(response => {
+                            .catch(error => {
                                 this.loading = false
-                                this.error = response.statusText
+                                this.error = error.response.data.error || error.response.statusText;
                             })
                     }, (response) => {
                         if (response.errors) {
@@ -354,12 +353,12 @@
                         .then(response => {
                             this.couponCodeSuccess = true
                             this.couponCodeError = false
-                            this.staticCartTotal = this.cartTotal
+                            this.staticCartTotal = this.cart.totalPrice
                             this.couponCodeLoading = false
                         })
                         .catch(response => {
                             this.couponCodeError = true
-                            this.staticCartTotal = this.cartTotal
+                            this.staticCartTotal = this.cart.totalPrice
                             this.couponCodeLoading = false
                         })
                 }.bind(this), 500)
@@ -368,20 +367,20 @@
         },
 
         mounted() {
-            this.staticCartTotal = this.cartTotal
+            this.staticCartTotal = this.cart.totalPrice
             this.couponCode = this.cart.couponCode
 
-            if (this.craftIdAccount && this.craftIdAccount.billingAddress) {
-                if (this.craftIdAccount.card) {
+            if (this.craftId && this.craftId.billingAddress) {
+                if (this.craftId.card) {
                     this.paymentMode = 'existingCard'
                 }
 
-                if (this.craftIdAccount.billingAddress.country) {
-                    this.onCountryChange(this.craftIdAccount.billingAddress.country)
+                if (this.craftId.billingAddress.country) {
+                    this.onCountryChange(this.craftId.billingAddress.country)
                 }
 
                 this.$nextTick(() => {
-                    this.billingInfo = this.craftIdAccount.billingAddress
+                    this.billingInfo = JSON.parse(JSON.stringify(this.craftId.billingAddress))
                 })
             }
         }

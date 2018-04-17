@@ -1,5 +1,40 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.3 - 2018-04-17
+
+### Added
+- Added `craft\elements\Entry::updateTitle()`.
+- Added `Yii::alias()`.
+
+### Changed
+- New sites’ Base URLs now default to `@web/`.
+- Textual custom fields now ensure that they don’t contain 4+ byte characters. ([#2725](https://github.com/craftcms/cms/issues/2725))
+- It is no longer expected that all of the `defaultSearchTermOptions` config setting options will be set if any of the default option values need to be overridden. ([#2737](https://github.com/craftcms/cms/issues/2737))
+- Control Panel panes now have at least 48 pixels of bottom padding. ([#2744](https://github.com/craftcms/cms/issues/2744))
+- Craft now intercepts 404-ing resource requests, and publishes the resources on the fly.
+- The Clear Caches utility now has a “Control Panel resources” option.
+- The Clear Caches utility now sorts the cache options alphabetically.
+- When enabling new sites for a section, the new sites’ content is now based on the primary site’s content, if the section was and still is enabled for the primary site. ([#2748](https://github.com/craftcms/cms/issues/2748))
+- Improved the responsiveness of element indexes.
+- `Craft.BaseElementIndexView` now has a `loadMoreElementsAction` setting. ([#2762](https://github.com/craftcms/cms/pull/2762))
+
+### Fixed
+- Fixed a bug where the Clear Caches utility was not deleting template caches. ([#2720](https://github.com/craftcms/cms/issues/2720))
+- Fixed a bug where the Plugin Store was not displaying payment errors on checkout.
+- Fixed a bug where Control Panel-defined routes that contained special regular expression characters weren’t working. ([#2721](https://github.com/craftcms/cms/issues/2721))
+- Fixed a bug where it was not possible to save system messages in some cases.
+- Fixed a bug where static translations within dynamic entry title formats were getting translated using the current site’s language, rather than the entry’s language. ([#2722](https://github.com/craftcms/cms/issues/2722))
+- Fixed a bug where deprecation errors for some date formatting methods were not escaping backslashes.
+- Fixed a bug where plugins’ “Last update” timestamps in the Plugin Store weren’t getting formatted correctly in Safari. ([#2733](https://github.com/craftcms/cms/issues/2733))
+- Fixed references to a nonexistent `Craft.eot` file in the Control Panel CSS. ([#2740](https://github.com/craftcms/cms/issues/2740))
+- Fixed a bug where the default PostgreSQL database restore command wasn’t setting the `PGPASSWORD` environment variable. ([#2741](https://github.com/craftcms/cms/pull/2741))
+- Fixed an error that could occur if the system time zone was not supported by the ICU library, on environments with the Intl extension loaded.
+- Fixed a bug where several administrative fields had translatable icons. ([#2742](https://github.com/craftcms/cms/issues/2742))
+- Fixed a bug where `craft\controllers\PluginStoreController::actionSavePluginLicenseKeys()` was trying to set a plugin license key for plugins which were not installed.
+
+### Security
+- Fixed a bug assets were not getting cleansed on upload. ([#2709](https://github.com/craftcms/cms/issues/2709))
+
 ## 3.0.2 - 2018-04-10
 
 ### Added

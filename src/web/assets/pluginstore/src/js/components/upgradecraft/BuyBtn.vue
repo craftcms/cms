@@ -1,7 +1,7 @@
 <template>
     <div class="btngroup">
         <!-- Show the "Buy" button if this edition is greater than the licensed edition -->
-        <template v-if="edition > craftData.licensedEdition">
+        <template v-if="edition > licensedEdition">
             <template v-if="!isCmsEditionInCart(editionHandle)">
                 <div @click="buyCraft(editionHandle)" class="btn submit">{{ "Buy now"|t('app') }}</div>
             </template>
@@ -11,12 +11,12 @@
         </template>
 
         <!-- Show the "Try" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition -->
-        <template v-if="craftData.canTestEditions && edition != craftData.CraftEdition && edition > craftData.licensedEdition">
+        <template v-if="canTestEditions && edition != CraftEdition && edition > licensedEdition">
             <div @click="installCraft(editionHandle)" class="btn">{{ "Try for free"|t('app') }}</div>
         </template>
 
         <!-- Show the "Reactivate" button if they’re licensed to use this edition but not currently on it -->
-        <template v-if="edition == craftData.licensedEdition && edition != craftData.CraftEdition">
+        <template v-if="edition == licensedEdition && edition != CraftEdition">
             <div @click="installCraft(editionHandle)" class="btn">{{ "Reactivate"|t('app') }}</div>
         </template>
 
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-    import {mapGetters, mapActions} from 'vuex'
+    import {mapState, mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -35,6 +35,21 @@
             return {
                 loading: false,
             }
+        },
+
+        computed: {
+
+            ...mapState({
+                cart: state => state.cart.cart,
+                licensedEdition: state => state.craft.licensedEdition,
+                canTestEditions: state => state.craft.canTestEditions,
+                CraftEdition: state => state.craft.CraftEdition,
+            }),
+
+            ...mapGetters({
+                isCmsEditionInCart: 'isCmsEditionInCart',
+            })
+
         },
 
         methods: {
@@ -83,15 +98,6 @@
 
         },
 
-        computed: {
-
-            ...mapGetters({
-                craftData: 'craftData',
-                cart: 'cart',
-                isCmsEditionInCart: 'isCmsEditionInCart',
-            })
-
-        },
-
     }
 </script>
+

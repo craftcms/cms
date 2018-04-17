@@ -428,15 +428,15 @@ class TemplateCaches extends Component
             return false;
         }
 
-        $this->_deletedCachesByElementType[$elementType] = true;
-
         $cacheIds = (new Query())
             ->select(['cacheId'])
             ->from([self::$_templateCacheQueriesTable])
             ->where(['type' => $elementType])
             ->column();
 
-        return $this->deleteCacheById($cacheIds);
+        $success = $this->deleteCacheById($cacheIds);
+        $this->_deletedCachesByElementType[$elementType] = true;
+        return $success;
     }
 
     /**
@@ -586,15 +586,15 @@ class TemplateCaches extends Component
             return false;
         }
 
-        $this->_deletedExpiredCaches = true;
-
         $cacheIds = (new Query())
             ->select(['id'])
             ->from([self::$_templateCachesTable])
             ->where(['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
             ->column();
 
-        return $this->deleteCacheById($cacheIds);
+        $success = $this->deleteCacheById($cacheIds);
+        $this->_deletedExpiredCaches = true;
+        return $success;
     }
 
     /**
@@ -634,14 +634,14 @@ class TemplateCaches extends Component
             return false;
         }
 
-        $this->_deletedAllCaches = true;
-
         $cacheIds = (new Query())
             ->select(['id'])
             ->from([self::$_templateCachesTable])
             ->column();
 
-        return $this->deleteCacheById($cacheIds);
+        $success = $this->deleteCacheById($cacheIds);
+        $this->_deletedAllCaches = true;
+        return $success;
     }
 
     // Private Methods

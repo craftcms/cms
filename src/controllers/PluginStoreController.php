@@ -12,7 +12,6 @@ use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\services\Api;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
@@ -91,7 +90,7 @@ class PluginStoreController extends Controller
             'redirectUri' => $callbackUrl,
         ]);
 
-        if(!$redirectUrl) {
+        if (!$redirectUrl) {
             $redirect = Craft::$app->getRequest()->getPathInfo();
             $redirectUrl = UrlHelper::url($redirect);
         }
@@ -269,8 +268,8 @@ class PluginStoreController extends Controller
         $data['CraftPro'] = Craft::Pro;
 
         // Logos
-        $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
-        $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/powered_by_stripe.svg');
+        $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', false, 'images/craft.svg');
+        $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', false, 'images/powered_by_stripe.svg');
 
         return $this->asJson($data);
     }
@@ -399,10 +398,10 @@ class PluginStoreController extends Controller
         try {
             $data = Craft::$app->getApi()->getCart($orderNumber);
             return $this->asJson($data);
-        } catch(RequestException $e) {
+        } catch (RequestException $e) {
             $data = Json::decode($e->getResponse()->getBody()->getContents());
             $errorMsg = $e->getMessage();
-            if(isset($data['message'])) {
+            if (isset($data['message'])) {
                 $errorMsg = $data['message'];
             }
 
@@ -424,7 +423,7 @@ class PluginStoreController extends Controller
 
         try {
             $data = Craft::$app->getApi()->updateCart($orderNumber, $cartData);
-        } catch(RequestException $e) {
+        } catch (RequestException $e) {
             $data = Json::decode($e->getResponse()->getBody()->getContents());
         }
 
@@ -442,9 +441,12 @@ class PluginStoreController extends Controller
     {
         $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
         $pluginLicenseKeys = (isset($payload['pluginLicenseKeys']) ? $payload['pluginLicenseKeys'] : []);
+        $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
-        foreach($pluginLicenseKeys as $pluginLicenseKey) {
-            Craft::$app->getPlugins()->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+        foreach ($pluginLicenseKeys as $pluginLicenseKey) {
+            if (isset($plugins[$pluginLicenseKey['handle']])) {
+                Craft::$app->getPlugins()->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+            }
         }
 
         return $this->asJson(['success' => true]);

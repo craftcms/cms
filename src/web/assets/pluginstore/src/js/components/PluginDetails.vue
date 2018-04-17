@@ -16,7 +16,7 @@
             </div>
 
             <div v-if="cart" class="buttons">
-                <template v-if="pluginSnippet.editions[0].price != '0.00' && pluginSnippet.editions[0].price != null">
+                <template v-if="pluginSnippet.editions[0].price != null && pluginSnippet.editions[0].price !== '0.00'">
 
                     <template v-if="isInstalled(pluginSnippet)">
                         <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
@@ -60,12 +60,12 @@
                 </div>
             </div>
             <div>
-                <div v-if="loading" class="spinner"></div>
+                <div v-if="actionsLoading" class="spinner"></div>
             </div>
         </div>
 
         <div class="plugin-details-body">
-            <template v-if="plugin">
+            <template v-if="!loading">
                 <div class="plugin-description">
                     <div v-html="longDescription" class="readable"></div>
 
@@ -81,11 +81,11 @@
                             <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
                             <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls | formatNumber }}</strong></li>
                             <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
-                            <li v-if="categories.length > 0">
+                            <li v-if="pluginCategories.length > 0">
                                 <span>{{ "Categories"|t('app') }}</span>
                                 <strong>
-                                    <template v-for="category, key in categories">
-                                        <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (categories.length - 1)">, </template>
+                                    <template v-for="category, key in pluginCategories">
+                                        <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (pluginCategories.length - 1)">, </template>
                                     </template>
                                 </strong>
                             </li>
@@ -111,7 +111,8 @@
 </template>
 
 <script>
-    import {mapGetters, mapActions} from 'vuex'
+    import * as types from '../store/mutation-types'
+    import {mapState, mapGetters, mapActions} from 'vuex'
 
     export default {
 
@@ -119,22 +120,26 @@
 
         data() {
             return {
-                plugin: null,
-                pluginSnippet: null,
+                actionsLoading: false,
                 loading: false,
+                pluginSnippet: null,
             }
         },
 
         computed: {
 
+            ...mapState({
+                categories: state => state.pluginStore.categories,
+                plugin: state => state.pluginStore.plugin,
+                plugins: state => state.pluginStore.plugins,
+                cart: state => state.cart.cart,
+            }),
+
             ...mapGetters({
-                plugins: 'allPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
-                isInTrial: 'isInTrial',
                 isInCart: 'isInCart',
                 isInstalled: 'isInstalled',
                 pluginHasLicenseKey: 'pluginHasLicenseKey',
-                cart: 'cart',
             }),
 
             longDescription() {
@@ -147,8 +152,8 @@
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId)
             },
 
-            categories() {
-                return this.$store.getters.getAllCategories().filter(c => {
+            pluginCategories() {
+                return this.categories.filter(c => {
                     return this.plugin.categoryIds.find(pc => pc == c.id)
                 })
             },
@@ -164,7 +169,8 @@
             },
 
             lastUpdate() {
-                return Craft.formatDate(this.plugin.lastUpdate)
+                const date = new Date(this.plugin.lastUpdate.replace(/\s/, 'T'))
+                return Craft.formatDate(date)
             },
 
             csrfTokenName() {
@@ -197,7 +203,7 @@
             ]),
 
             buyPlugin(plugin) {
-                this.loading = true
+                this.actionsLoading = true
 
                 const item = {
                     type: 'plugin-edition',
@@ -209,7 +215,7 @@
 
                 this.$store.dispatch('addToCart', [item])
                     .then(() => {
-                        this.loading = false
+                        this.actionsLoading = false
                         this.$root.openGlobalModal('cart')
                     })
             },
@@ -227,15 +233,15 @@
             },
 
             loadPlugin(pluginId) {
-                this.plugin = null
+                this.loading = true
                 this.pluginSnippet = this.$store.getters.getPluginById(pluginId)
-
+                this.$store.commit(types.UPDATE_PLUGIN_DETAILS, null)
                 this.$store.dispatch('getPluginDetails', pluginId)
-                    .then(plugin => {
-                        this.plugin = plugin
+                    .then(response => {
+                        this.loading = false
                     })
                     .catch(response => {
-                        console.log('error', response)
+                        this.loading = false
                     })
             }
 

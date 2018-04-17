@@ -9,7 +9,6 @@ namespace craft\behaviors;
 
 use Craft;
 use craft\base\FieldInterface;
-use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;

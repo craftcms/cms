@@ -921,7 +921,7 @@ class AssetsController extends Controller
                     $imageUrl = $asset->getUrl();
                 } else {
                     $source = $asset->getTransformSource();
-                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
+                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source);
                 }
 
                 $width = $asset->getWidth();
