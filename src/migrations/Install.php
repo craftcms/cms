@@ -261,6 +261,11 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable('{{%resourcepaths}}', [
+            'hash' => $this->string()->notNull(),
+            'path' => $this->string()->notNull(),
+            'PRIMARY KEY([[hash]])',
+        ]);
         $this->createTable('{{%systemmessages}}', [
             'id' => $this->primaryKey(),
             'language' => $this->string()->notNull(),
