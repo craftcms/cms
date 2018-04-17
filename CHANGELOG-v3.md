@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.3 - 2018-04-17
 
 ### Added
 - Added `craft\elements\Entry::updateTitle()`.
