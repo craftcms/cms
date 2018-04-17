@@ -111,6 +111,11 @@ class ClearCaches extends Utility
                 'action' => $pathService->getCompiledTemplatesPath(),
             ],
             [
+                'key' => 'cp-resources',
+                'label' => Craft::t('app', 'Control Panel resources'),
+                'action' => Craft::$app->getAssetManager()->basePath,
+            ],
+            [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
                 'action' => $pathService->getTempPath(),
