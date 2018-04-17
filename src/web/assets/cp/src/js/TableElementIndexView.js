@@ -240,7 +240,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     var params = $.extend(true, {}, this.settings.params);
                     params.criteria.descendantOf = id;
 
-                    Craft.postActionRequest('element-indexes/get-more-elements', params, $.proxy(function(response, textStatus) {
+                    Craft.postActionRequest(this.settings.loadMoreAction, params, $.proxy(function(response, textStatus) {
                         // Do we even care about this anymore?
                         if (!$spinnerRow.parent().length) {
                             return;
