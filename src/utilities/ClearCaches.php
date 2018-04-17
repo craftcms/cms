@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;
@@ -71,6 +72,7 @@ class ClearCaches extends Utility
             ];
         }
 
+        ArrayHelper::multisort($options, 'label');
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(ClearCachesAsset::class);
