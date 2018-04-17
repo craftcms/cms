@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\elements\Entry::updateTitle()`.
+- Added `Yii::alias()`.
 
 ### Changed
 - New sites’ Base URLs now default to `@web/`.

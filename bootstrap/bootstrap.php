@@ -196,7 +196,7 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 $cmsPath = $vendorPath.'/craftcms/cms';
 $libPath = $cmsPath.'/lib';
 $srcPath = $cmsPath.'/src';
-require $vendorPath.'/yiisoft/yii2/Yii.php';
+require $srcPath.'/Yii.php';
 require $srcPath.'/Craft.php';
 
 // Move Yii's autoloader to the end (Composer's is faster when optimized)
