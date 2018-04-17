@@ -274,7 +274,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             var data = this.getLoadMoreParams();
 
-            Craft.postActionRequest('element-indexes/get-more-elements', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
                 this.loadingMore = false;
                 this.$loadingMoreSpinner.addClass('hidden');
 
@@ -370,6 +370,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             selectable: false,
             multiSelect: false,
             checkboxMode: false,
+            loadMoreElementsAction: 'element-indexes/get-more-elements',
             onAppendElements: $.noop,
             onSelectionChange: $.noop
         }
