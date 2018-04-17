@@ -11,6 +11,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         $scroller: null,
 
         elementIndex: null,
+        thumbLoader: null,
         elementSelect: null,
 
         loadingMore: false,
@@ -38,6 +39,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             this.setTotalVisible($elements.length);
             this.setMorePending(this.settings.batchSize && $elements.length == this.settings.batchSize);
+
+            // Instantiate the thumb loader
+            this.thumbLoader = new Craft.ElementIndexThumbLoader();
+            this.thumbLoader.load($elements.find('.elementthumb'));
 
             if (this.settings.selectable) {
                 this.elementSelect = new Garnish.Select(
@@ -279,7 +284,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     this.appendElements($newElements);
                     Craft.appendHeadHtml(response.headHtml);
                     Craft.appendFootHtml(response.footHtml);
-                    picturefill();
 
                     if (this.elementSelect) {
                         this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
@@ -306,6 +310,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         appendElements: function($newElements) {
             $newElements.appendTo(this.$elementContainer);
+            this.thumbLoader.load($newElements.find('.elementthumb'));
             this.onAppendElements($newElements);
         },
 
@@ -340,6 +345,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         destroy: function() {
             // Remove the "loading-more" spinner, since we added that outside of the view container
             this.$loadingMoreSpinner.remove();
+
+            // Kill the thumb loader
+            this.thumbLoader.destroy();
+            delete this.thumbLoader;
 
             // Delete the element select
             if (this.elementSelect) {

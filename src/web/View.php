@@ -1498,12 +1498,10 @@ JS;
                 $srcsets[] = $srcset.' '.$size.'w';
             }
 
-            $imgHtml = '<div class="elementthumb">'.
-                '<img '.
-                'sizes="'.($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
-                'srcset="'.implode(', ', $srcsets).'" '.
-                'alt="">'.
-                '</div> ';
+            $imgHtml = '<div class="elementthumb"'.
+                ' data-sizes="'.($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px"'.
+                ' data-srcset="'.implode(', ', $srcsets).'"'.
+                '></div> ';
         } else {
             $imgHtml = '';
         }
