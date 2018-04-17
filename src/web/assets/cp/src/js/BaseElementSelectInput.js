@@ -5,6 +5,7 @@
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
     {
+        thumbLoader: null,
         elementSelect: null,
         elementSort: null,
         modal: null,
@@ -65,6 +66,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     .css('top', 0)
                     .css(Craft.left, 0);
             }
+
+            this.thumbLoader = new Craft.ElementThumbLoader();
 
             this.initElementSelect();
             this.initElementSort();
@@ -189,6 +192,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         addElements: function($elements) {
+            this.thumbLoader.load($elements);
+
             if (this.settings.selectable) {
                 this.elementSelect.addItems($elements);
             }

@@ -41,8 +41,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             this.setMorePending(this.settings.batchSize && $elements.length == this.settings.batchSize);
 
             // Instantiate the thumb loader
-            this.thumbLoader = new Craft.ElementIndexThumbLoader();
-            this.thumbLoader.load($elements.find('.elementthumb'));
+            this.thumbLoader = new Craft.ElementThumbLoader();
+            this.thumbLoader.load($elements);
 
             if (this.settings.selectable) {
                 this.elementSelect = new Garnish.Select(
@@ -310,7 +310,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         appendElements: function($newElements) {
             $newElements.appendTo(this.$elementContainer);
-            this.thumbLoader.load($newElements.find('.elementthumb'));
+            this.thumbLoader.load($newElements);
             this.onAppendElements($newElements);
         },
 
