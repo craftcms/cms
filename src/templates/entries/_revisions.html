@@ -71,7 +71,7 @@
                     {% for version in versions %}
                         <li><a{% if className(entry) == 'craft\\models\\EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
                             {{ "Version {num}"|t('app', { num: version.num }) }}
-                            <span class="light">{{ version.dateCreated|timestamp('short') }}, {{ version.creator }}</span>
+                            <span class="light">{{ version.dateCreated|timestamp('short') }}, {{ version.getCreator() }}</span>
                         </a></li>
                     {% endfor %}
                 </ul>

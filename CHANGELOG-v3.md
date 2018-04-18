@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.3.1 - 2018-04-18
+
+### Fixed
+- Fixed an error that occurred when editing an entry if any of the entry’s revisions were created with an entry type that no longer exists.
+- Fixed an error that could occur when saving an asset. ([#2764](https://github.com/craftcms/cms/issues/2764))
+- Fixed a bug where Craft assumed an asset was missing if there was an error when indexing it. ([#2763](https://github.com/craftcms/cms/issues/2763))
+
 ## 3.0.3 - 2018-04-17
 
 ### Added
