@@ -253,6 +253,7 @@ class UserQuery extends ElementQuery
             'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
+            'users.hasDashboard',
         ]);
 
         // TODO: remove after next breakpoint

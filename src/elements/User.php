@@ -457,6 +457,11 @@ class User extends Element implements IdentityInterface
     public $lockoutDate;
 
     /**
+     * @var bool Whether the user has a dashboard
+     */
+    public $hasDashboard = false;
+
+    /**
      * @var bool Password reset required
      */
     public $passwordResetRequired = false;

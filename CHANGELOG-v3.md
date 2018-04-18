@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\User::hasDashboard`.
+
 ### Changed
 - Sections and category groups now ignore posted Template settings for sites that don’t have URI Formats.
+
+### Fixed
+- Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))
 
 ## 3.0.3.1 - 2018-04-18
 
