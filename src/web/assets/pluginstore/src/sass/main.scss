@@ -104,18 +104,21 @@ $minLargeScreenWidth: 1824px;
 
 /* Graphic & Status */
 
+
+#graphic {
+  &.error {
+    background-image: url(../images/error.png);
+  }
+
+  &.success {
+    background-image: url(../images/success.png);
+  }
+}
+
 #content {
   #graphic {
     display: block;
     margin: 200px auto 0;
-
-    &.success {
-      background-image: url(../images/success.png);
-    }
-
-    &.error {
-      background-image: url(../images/error.png);
-    }
   }
 
   #status {
@@ -124,22 +127,6 @@ $minLargeScreenWidth: 1824px;
     font-size: 16px;
     line-height: 20px;
     color: #666;
-  }
-}
-
-#graphic {
-  display: inline-block;
-  width: 48px;
-  height: 48px;
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-
-  &.error {
-    background-image: url(../images/error.png);
-  }
-
-  &.success {
-    background-image: url(../images/success.png);
   }
 }
 

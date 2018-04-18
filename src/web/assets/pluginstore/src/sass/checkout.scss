@@ -78,8 +78,16 @@
   margin-top: -75px;
   margin-left: -160px;
   text-align: center;
-}
 
-#thank-you h2 {
-  margin-top: 24px;
+  h2 {
+    margin-top: 24px;
+  }
+
+  #graphic {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+  }
 }
