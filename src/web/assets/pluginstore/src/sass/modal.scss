@@ -1,3 +1,4 @@
+
 /* Plugin Store Modal */
 
 #pluginstore-modal {
@@ -203,11 +204,10 @@
   /* Thank You */
 
   &.step-thank-you {
+    background: #fafafa;
+
     &.pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main .pluginstore-modal-content {
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     h2 {
@@ -216,7 +216,13 @@
 
     #thank-you-message {
       text-align: center;
-      padding: 48px 24px;
+      border-bottom: 1px solid #eee;
+      padding: 72px 24px;
+      background: #fff;
+    }
+
+    #thank-you-renewals {
+      padding: 24px;
     }
 
     #graphic {
