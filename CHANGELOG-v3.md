@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that occurred when editing an entry if any of the entry’s revisions were created with an entry type that no longer exists.
+- Fixed an error that could occur when saving an asset. ([#2764](https://github.com/craftcms/cms/issues/2764))
 
 ## 3.0.3 - 2018-04-17
 
