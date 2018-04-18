@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when editing an entry if any of the entry’s revisions were created with an entry type that no longer exists.
+
 ## 3.0.3 - 2018-04-17
 
 ### Added
