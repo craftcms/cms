@@ -363,17 +363,17 @@ class Dashboard extends Component
         // Recent Entries widget
         $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
 
-        // Get Help widget
+        // Craft Support widget
         if ($user->admin) {
             $this->saveWidget($this->createWidget(CraftSupportWidget::class));
         }
 
         // Updates widget
-        if ($user->can('performupdates')) {
+        if ($user->can('performUpdates')) {
             $this->saveWidget($this->createWidget(UpdatesWidget::class));
         }
 
-        // Blog & Tonic feed widget
+        // Craft News feed widget
         $this->saveWidget($this->createWidget([
             'type' => FeedWidget::class,
             'url' => 'https://craftcms.com/news.rss',
