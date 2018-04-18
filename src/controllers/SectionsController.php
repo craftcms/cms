@@ -169,17 +169,12 @@ class SectionsController extends Controller
                 $siteSettings->uriFormat = $postedSettings['singleUri'] ?: '__home__';
                 $siteSettings->template = $postedSettings['template'];
             } else {
-                $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
+                $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
 
-                if ($siteSettings->hasUrls) {
+                if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
                     $siteSettings->uriFormat = $postedSettings['uriFormat'];
                     $siteSettings->template = $postedSettings['template'];
-                } else {
-                    $siteSettings->uriFormat = null;
-                    $siteSettings->template = null;
                 }
-
-                $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
             }
 
             $allSiteSettings[$site->id] = $siteSettings;

@@ -478,9 +478,14 @@ class Sections extends Component
                 }
 
                 $siteSettingsRecord->enabledByDefault = $siteSettings->enabledByDefault;
-                $siteSettingsRecord->hasUrls = $siteSettings->hasUrls;
-                $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
-                $siteSettingsRecord->template = $siteSettings->template;
+
+                if ($siteSettingsRecord->hasUrls = $siteSettings->hasUrls) {
+                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
+                    $siteSettingsRecord->template = $siteSettings->template;
+                } else {
+                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat = null;
+                    $siteSettingsRecord->template = $siteSettings->template = null;
+                }
 
                 $siteSettingsRecord->save(false);
 

@@ -159,14 +159,10 @@ class CategoriesController extends Controller
 
             $siteSettings = new CategoryGroup_SiteSettings();
             $siteSettings->siteId = $site->id;
-            $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
 
-            if ($siteSettings->hasUrls) {
+            if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
                 $siteSettings->uriFormat = $postedSettings['uriFormat'];
                 $siteSettings->template = $postedSettings['template'];
-            } else {
-                $siteSettings->uriFormat = null;
-                $siteSettings->template = null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;

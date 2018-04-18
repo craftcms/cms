@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Sections and category groups now ignore posted Template settings for sites that don’t have URI Formats.
+
 ## 3.0.3.1 - 2018-04-18
 
 ### Fixed
