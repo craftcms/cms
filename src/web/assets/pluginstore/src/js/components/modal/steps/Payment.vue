@@ -1,98 +1,104 @@
 <template>
-	<div>
-		<form @submit.prevent="checkout()" class="payment">
-			<div class="blocks">
-				<div class="block">
-					<div v-if="staticCartTotal > 0">
-						<h2>{{ "Payment Method"|t('app') }}</h2>
+	<step>
+		<template slot="header">
+			<div class="btn-left"><a @click="$emit('back')">← Back</a></div>
+			<h1>Payment</h1>
+		</template>
+		<template slot="main">
+			<form @submit.prevent="checkout()" class="payment">
+				<div class="blocks">
+					<div class="block">
+						<div v-if="staticCartTotal > 0">
+							<h2>{{ "Payment Method"|t('app') }}</h2>
 
-						<template v-if="craftId">
-							<p v-if="craftId && craftId.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftId.card.brand }} •••• •••• •••• {{ craftId.card.last4 }} — {{ craftId.card.exp_month }}/{{ craftId.card.exp_year }}</span></label></p>
-							<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
+							<template v-if="craftId">
+								<p v-if="craftId && craftId.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span>{{ craftId.card.brand }} •••• •••• •••• {{ craftId.card.last4 }} — {{ craftId.card.exp_month }}/{{ craftId.card.exp_year }}</span></label></p>
+								<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Use a new credit card</label></p>
 
-							<template v-if="paymentMode === 'newCard'">
-								<credit-card v-if="!cardToken" ref="newCard"></credit-card>
-								<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
-								<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
+								<template v-if="paymentMode === 'newCard'">
+									<credit-card v-if="!cardToken" ref="newCard"></credit-card>
+									<p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
+									<checkbox-field id="replaceCard" v-model="replaceCard" label="Save as my new credit card" />
+								</template>
 							</template>
-						</template>
 
-						<template v-else>
-							<credit-card ref="guestCard"></credit-card>
-						</template>
+							<template v-else>
+								<credit-card ref="guestCard"></credit-card>
+							</template>
+						</div>
+
+						<h2>{{ "Coupon Code"|t('app') }}</h2>
+						<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError" />
+						<div v-if="couponCodeLoading" class="spinner"></div>
 					</div>
 
-					<h2>{{ "Coupon Code"|t('app') }}</h2>
-					<text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError" />
-					<div v-if="couponCodeLoading" class="spinner"></div>
+					<div class="block">
+						<h2>{{ "Billing"|t('app') }}</h2>
+
+						<div class="field">
+							<div class="input">
+								<div class="multitext">
+									<div class="multitextrow">
+										<text-input placeholder="First Name" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
+									</div>
+									<div class="multitextrow">
+										<text-input placeholder="Last Name" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="field">
+							<div class="input">
+								<div class="multitext">
+									<div class="multitextrow">
+										<text-input placeholder="Business Name" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
+									</div>
+									<div class="multitextrow">
+										<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="field">
+							<div class="input">
+								<div class="multitext">
+									<div class="multitextrow">
+										<text-input placeholder="Address Line 1" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']" />
+									</div>
+									<div class="multitextrow">
+										<text-input placeholder="Address Line 2" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
+									</div>
+									<div class="multitextrow">
+										<input type="text" class="text" :class="{ error: errors['billingAddress.city'] }" placeholder="City" id="city" v-model="billingInfo.city" />
+										<input type="text" class="text" :class="{ error: errors['billingAddress.zipCode'] }" placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" />
+									</div>
+									<div class="multiselectrow">
+										<select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
+										<select-input v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 
-				<div class="block">
-					<h2>{{ "Billing"|t('app') }}</h2>
+				<hr>
 
-					<div class="field">
-						<div class="input">
-							<div class="multitext">
-								<div class="multitextrow">
-									<text-input placeholder="First Name" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
-								</div>
-								<div class="multitextrow">
-									<text-input placeholder="Last Name" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
-								</div>
-							</div>
-						</div>
-					</div>
+				<div class="centeralign">
+					<p v-if="error" class="error">{{ error }}</p>
 
-					<div class="field">
-						<div class="input">
-							<div class="multitext">
-								<div class="multitextrow">
-									<text-input placeholder="Business Name" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
-								</div>
-								<div class="multitextrow">
-									<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
-								</div>
-							</div>
-						</div>
-					</div>
+					<input type="submit" class="btn submit" :value="$options.filters.t('Pay', 'app')+ ' ' + $options.filters.currency(staticCartTotal)" />
+					<div v-if="loading" class="spinner"></div>
 
-					<div class="field">
-						<div class="input">
-							<div class="multitext">
-								<div class="multitextrow">
-									<text-input placeholder="Address Line 1" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']" />
-								</div>
-								<div class="multitextrow">
-									<text-input placeholder="Address Line 2" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
-								</div>
-								<div class="multitextrow">
-									<input type="text" class="text" :class="{ error: errors['billingAddress.city'] }" placeholder="City" id="city" v-model="billingInfo.city" />
-									<input type="text" class="text" :class="{ error: errors['billingAddress.zipCode'] }" placeholder="Zip Code" id="zip-code" v-model="billingInfo.zipCode" />
-								</div>
-								<div class="multiselectrow">
-									<select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
-									<select-input v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
-								</div>
-							</div>
-						</div>
-					</div>
+					<p>
+						<img :src="poweredByStripe" height="18" />
+					</p>
 				</div>
-			</div>
-
-			<hr>
-
-			<div class="centeralign">
-				<p v-if="error" class="error">{{ error }}</p>
-
-				<input type="submit" class="btn submit" :value="$options.filters.t('Pay', 'app')+ ' ' + $options.filters.currency(staticCartTotal)" />
-				<div v-if="loading" class="spinner"></div>
-
-				<p>
-					<img :src="poweredByStripe" height="18" />
-				</p>
-			</div>
-		</form>
-	</div>
+			</form>
+		</template>
+	</step>
 </template>
 
 <script>
@@ -100,12 +106,13 @@
 
     export default {
         components: {
-            CheckboxField: require('../fields/CheckboxField'),
-            TextareaField: require('../fields/TextareaField'),
-            TextField: require('../fields/TextField'),
-            TextInput: require('../inputs/TextInput'),
-            CreditCard: require('../CreditCard'),
-            SelectInput: require('../inputs/SelectInput'),
+            Step: require('../Step'),
+            CreditCard: require('../../CreditCard'),
+            CheckboxField: require('../../fields/CheckboxField'),
+            TextareaField: require('../../fields/TextareaField'),
+            TextField: require('../../fields/TextField'),
+            SelectInput: require('../../inputs/SelectInput'),
+            TextInput: require('../../inputs/TextInput'),
         },
 
         data() {
@@ -285,7 +292,7 @@
                                                     .then(() => {
                                                         this.loading = false
                                                         this.error = false
-                                                        this.$root.modalStep = 'thankYou'
+                                                        this.$root.modalStep = 'thank-you'
                                                     })
                                             })
                                     })
