@@ -19,7 +19,7 @@ class SingleOptionFieldData extends OptionData
     // =========================================================================
 
     /**
-     * @var array
+     * @var OptionData[]
      */
     private $_options = [];
 
@@ -29,7 +29,7 @@ class SingleOptionFieldData extends OptionData
     /**
      * Returns the options.
      *
-     * @return array
+     * @return OptionData[]
      */
     public function getOptions(): array
     {
@@ -39,7 +39,7 @@ class SingleOptionFieldData extends OptionData
     /**
      * Sets the options.
      *
-     * @param array $options
+     * @param OptionData[] $options
      */
     public function setOptions(array $options)
     {
