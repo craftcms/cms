@@ -1213,10 +1213,8 @@ class Asset extends Element
         // If this is just an element being propagated, there's absolutely no need for re-saving this.
         if (!$this->propagating) {
             if (
-                $this->tempFilePath !== null &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                null !== $this->tempFilePath
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
             }
