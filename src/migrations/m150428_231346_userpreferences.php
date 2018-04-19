@@ -7,6 +7,7 @@ use craft\db\Query;
 use craft\helpers\Json;
 use craft\helpers\Localization;
 use craft\helpers\MigrationHelper;
+use yii\base\InvalidArgumentException;
 
 /**
  * m150428_231346_userpreferences migration.
@@ -118,7 +119,12 @@ class m150428_231346_userpreferences extends Migration
                 $prefs = [];
 
                 if (!empty($user['preferredLocale'])) {
-                    $prefs['language'] = Localization::normalizeLanguage($user['preferredLocale']);
+                    try {
+                        $prefs['language'] = Localization::normalizeLanguage($user['preferredLocale']);
+                    } catch (InvalidArgumentException $e) {
+                        // Do nothing.
+                    }
+
                 }
 
                 if ($user['weekStartDay'] != 0) {

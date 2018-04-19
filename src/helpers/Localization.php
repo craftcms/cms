@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\i18n\Locale;
+use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;
 
 /**
@@ -35,14 +36,21 @@ class Localization
      *
      * @param string $language
      * @return string
+     * @throws InvalidArgumentException if $language is invalid.
      */
     public static function normalizeLanguage(string $language): string
     {
         $language = strtolower(str_replace('_', '-', $language));
-        if (($pos = strpos($language, '-')) !== false) {
-            $language = substr($language, 0, $pos).'-'.strtoupper(substr($language, $pos + 1));
+
+        $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
+        $lcLanguages = array_map('strtolower', $allLanguages);
+        $allLanguages = array_combine($lcLanguages, $allLanguages);
+
+        if (!isset($allLanguages[$language])) {
+            throw new InvalidArgumentException('Invalid language: '.$language);
         }
-        return $language;
+
+        return $allLanguages[$language];
     }
 
     /**

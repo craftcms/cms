@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))
+- Fixed a bug where you would get a “not a valid language” error message when creating a new site using certain languages.
 
 ## 3.0.3.1 - 2018-04-18
 
