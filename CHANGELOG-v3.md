@@ -10,10 +10,12 @@
 - Control Panel resources are once again eager-published. ([#2763](https://github.com/craftcms/cms/issues/2763))
 - Most `craft\services\Path` methods now have a `$create` argument, which can be set to `false` to prevent the directory from being created if it doesn’t exist yet.
 - Craft no longer creates directories when it just needed to clear it. ([#2771](https://github.com/craftcms/cms/issues/2771))
+- `craft\services\Config::setDotEnvVar()` now sets the environment variable for the current request, in addition to updating the `.env` file.
 
 ### Fixed
 - Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))
 - Fixed a bug where you would get a “not a valid language” error message when creating a new site using certain languages.
+- Fixed a bug where database connection settings that were set by the `setup` command weren’t always taking effect in time for the CLI installer. ([#2774](https://github.com/craftcms/cms/issues/2774))
 
 ## 3.0.3.1 - 2018-04-18
 
