@@ -8,6 +8,7 @@
 ### Changed
 - Sections and category groups now ignore posted Template settings for sites that don’t have URI Formats.
 - Control Panel resources are once again eager-published. ([#2763](https://github.com/craftcms/cms/issues/2763))
+- Most `craft\services\Path` methods now have a `$create` argument, which can be set to `false` to prevent the directory from being created if it doesn’t exist yet.
 
 ### Fixed
 - Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))
