@@ -17,6 +17,7 @@ use craft\models\Updates as UpdatesModel;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * Updates service.
@@ -228,7 +229,9 @@ class Updates extends Component
 
         // Delete all compiled templates
         try {
-            FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath());
+            FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
+        } catch (InvalidArgumentException $e) {
+            // the directory doesn't exist
         } catch (ErrorException $e) {
             Craft::error('Could not delete compiled templates: '.$e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
