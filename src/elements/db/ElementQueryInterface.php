@@ -195,6 +195,14 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function level($value = null);
 
     /**
+     * Sets the [[hasDescendants]] property.
+     *
+     * @param bool $value The property value
+     * @return static self reference
+     */
+    public function hasDescendants(bool $value = true);
+
+    /**
      * Sets the [[ancestorOf]] property.
      *
      * @param int|ElementInterface|null $value The property value

@@ -216,6 +216,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $level;
 
     /**
+     * @var bool|null Whether the resulting elements must have descendants.
+     */
+    public $hasDescendants;
+
+    /**
      * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
      */
     public $ancestorOf;
@@ -740,6 +745,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function level($value = null)
     {
         $this->level = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasDescendants(bool $value = true)
+    {
+        $this->hasDescendants = $value;
         return $this;
     }
 
@@ -1551,6 +1565,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
                 $this->subQuery
                     ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]');
+            }
+
+            if ($this->hasDescendants !== null) {
+                if ($this->hasDescendants) {
+                    $this->subQuery->andWhere('[[structureelements.rgt]] > [[structureelements.lft]] + 1');
+                } else {
+                    $this->subQuery->andWhere('[[structureelements.rgt]] = [[structureelements.lft]] + 1');
+                }
             }
 
             if ($this->ancestorOf) {
