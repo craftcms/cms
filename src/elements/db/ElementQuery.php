@@ -1684,7 +1684,17 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
             }
         } else {
-            $structureParams = ['ancestorOf', 'descendantOf', 'siblingOf', 'prevSiblingOf', 'nextSiblingOf', 'positionedBefore', 'positionedAfter', 'level'];
+            $structureParams = [
+                'hasDescendants',
+                'ancestorOf',
+                'descendantOf',
+                'siblingOf',
+                'prevSiblingOf',
+                'nextSiblingOf',
+                'positionedBefore',
+                'positionedAfter',
+                'level',
+            ];
 
             foreach ($structureParams as $param) {
                 if ($this->$param !== null) {
