@@ -139,7 +139,7 @@ class PlainText extends Field implements PreviewableFieldInterface
             $value = LitEmoji::shortcodeToUnicode($value);
         }
 
-        return preg_replace('/\R/u', "\n", $value);
+        return trim(preg_replace('/\R/u', "\n", $value)) ?: null;
     }
 
     /**

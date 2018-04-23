@@ -16,6 +16,7 @@
 - Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))
 - Fixed a bug where you would get a “not a valid language” error message when creating a new site using certain languages.
 - Fixed a bug where database connection settings that were set by the `setup` command weren’t always taking effect in time for the CLI installer. ([#2774](https://github.com/craftcms/cms/issues/2774))
+- Fixed a bug where empty Plain Text fields were getting empty string values rather than `null`.
 
 ## 3.0.3.1 - 2018-04-18
 
