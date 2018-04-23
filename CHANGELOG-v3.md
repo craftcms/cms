@@ -9,6 +9,7 @@
 ### Changed
 - Sections and category groups now ignore posted Template settings for sites that don’t have URI Formats.
 - Control Panel resources are once again eager-published. ([#2763](https://github.com/craftcms/cms/issues/2763))
+- `entries/save-entries` and `categories/save-category` actions now include the `slug` for responses that accept JSON. ([#2792](https://github.com/craftcms/cms/issues/2792))
 - Most `craft\services\Path` methods now have a `$create` argument, which can be set to `false` to prevent the directory from being created if it doesn’t exist yet.
 - Craft no longer creates directories when it just needed to clear it. ([#2771](https://github.com/craftcms/cms/issues/2771))
 - `craft\services\Config::setDotEnvVar()` now sets the environment variable for the current request, in addition to updating the `.env` file.

@@ -503,6 +503,7 @@ class CategoriesController extends Controller
                 'success' => true,
                 'id' => $category->id,
                 'title' => $category->title,
+                'slug' => $category->slug,
                 'status' => $category->getStatus(),
                 'url' => $category->getUrl(),
                 'cpEditUrl' => $category->getCpEditUrl()
