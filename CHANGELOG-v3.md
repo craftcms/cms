@@ -25,6 +25,7 @@
 - Fixed a bug where elements within relational fields could have two thumbnails. ([#2785](https://github.com/craftcms/cms/issues/2785))
 - Fixed a bug where it was not possible to pass a `--table-prefix` argument to the `setup/db-creds` command. ([#2791](https://github.com/craftcms/cms/pull/2791))
 - Fixed an error that occurred for users without permission to perform updates, if available update info wasn’t cached.
+- Fixed an error that occurred when `craft\elements\Asset::sources()` was called in a console request. ([#2798](https://github.com/craftcms/cms/issues/2798))
 
 ## 3.0.3.1 - 2018-04-18
 

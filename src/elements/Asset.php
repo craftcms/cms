@@ -184,7 +184,7 @@ class Asset extends Element
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
 
         // Add the customized temporary upload source
-        if ($context !== 'settings') {
+        if ($context !== 'settings' && !Craft::$app->getRequest()->getIsConsoleRequest()) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
