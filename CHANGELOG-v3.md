@@ -14,6 +14,7 @@
 - Craft no longer creates directories when it just needed to clear it. ([#2771](https://github.com/craftcms/cms/issues/2771))
 - `craft\services\Config::setDotEnvVar()` now sets the environment variable for the current request, in addition to updating the `.env` file.
 - Removed `craft\controllers\AssetsController::actionDownloadTempAsset()`.
+- User now must be logged in to use the Asset Preview File functionality.
 
 ### Fixed
 - Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))

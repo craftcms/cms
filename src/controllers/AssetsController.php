@@ -875,6 +875,7 @@ class AssetsController extends Controller
      */
     public function actionPreviewFile(): Response
     {
+        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
