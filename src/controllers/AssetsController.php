@@ -868,28 +868,6 @@ class AssetsController extends Controller
     }
 
     /**
-     * Downloads a temporary asset.
-     *
-     * @param string $path
-     * @return Response
-     * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
-     * @throws NotFoundHttpException if $path doesn't exist
-     */
-    public function actionDownloadTempAsset(string $path): Response
-    {
-        $path = ltrim($path, "/\\");
-        if (PathHelper::ensurePathIsContained($path) === false) {
-            throw new ForbiddenHttpException('Invalid path: '.$path);
-        }
-        $fullPath = Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$path;
-        if (!file_exists($fullPath)) {
-            throw new NotFoundHttpException('File not found: '.$path);
-        }
-        return Craft::$app->getResponse()
-            ->sendFile($fullPath, null, ['inline' => true]);
-    }
-
-    /**
      * Return the file preview for an Asset.
      *
      * @return Response
