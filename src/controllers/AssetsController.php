@@ -38,8 +38,8 @@ use yii\web\Response;
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
- * Note that all actions in the controller except [[actionGenerateTransform()]] require an authenticated Craft session
- * via [[allowAnonymous]].
+ * Note that all actions in the controller except for [[actionGenerateTransform()]] and [[actionGenerateThumb()]]
+ * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -52,7 +52,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-thumb', 'generate-transform', 'download-temp-asset'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     // Public Methods
     // =========================================================================
@@ -868,28 +868,6 @@ class AssetsController extends Controller
     }
 
     /**
-     * Downloads a temporary asset.
-     *
-     * @param string $path
-     * @return Response
-     * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
-     * @throws NotFoundHttpException if $path doesn't exist
-     */
-    public function actionDownloadTempAsset(string $path): Response
-    {
-        $path = ltrim($path, "/\\");
-        if (PathHelper::ensurePathIsContained($path) === false) {
-            throw new ForbiddenHttpException('Invalid path: '.$path);
-        }
-        $fullPath = Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$path;
-        if (!file_exists($fullPath)) {
-            throw new NotFoundHttpException('File not found: '.$path);
-        }
-        return Craft::$app->getResponse()
-            ->sendFile($fullPath, null, ['inline' => true]);
-    }
-
-    /**
      * Return the file preview for an Asset.
      *
      * @return Response
@@ -897,6 +875,7 @@ class AssetsController extends Controller
      */
     public function actionPreviewFile(): Response
     {
+        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -921,7 +900,7 @@ class AssetsController extends Controller
                     $imageUrl = $asset->getUrl();
                 } else {
                     $source = $asset->getTransformSource();
-                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source);
+                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
                 }
 
                 $width = $asset->getWidth();

@@ -13,10 +13,12 @@ use craft\elements\Category;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
+use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\db\TagQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
@@ -165,7 +167,6 @@ class CraftVariable extends ServiceLocator
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
             Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
-
             return $this->get($name);
         }
 
@@ -208,7 +209,6 @@ class CraftVariable extends ServiceLocator
     public function locale(): string
     {
         Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
-
         return Craft::$app->language;
     }
 
@@ -221,7 +221,6 @@ class CraftVariable extends ServiceLocator
     public function isLocalized(): bool
     {
         Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
-
         return Craft::$app->getIsMultiSite();
     }
 
@@ -231,96 +230,91 @@ class CraftVariable extends ServiceLocator
     /**
      * Returns a new AssetQuery instance.
      *
-     * @param mixed $criteria
+     * @param array $criteria
      * @return AssetQuery
      */
-    public function assets($criteria = null): AssetQuery
+    public function assets(array $criteria = []): AssetQuery
     {
         $query = Asset::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
      * Returns a new CategoryQuery instance.
      *
-     * @param mixed $criteria
+     * @param array $criteria
      * @return CategoryQuery
      */
-    public function categories($criteria = null): CategoryQuery
+    public function categories(array $criteria = []): CategoryQuery
     {
         $query = Category::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
      * Returns a new EntryQuery instance.
      *
-     * @param mixed $criteria
+     * @param array $criteria
      * @return EntryQuery
      */
-    public function entries($criteria = null): EntryQuery
+    public function entries(array $criteria = []): EntryQuery
     {
         $query = Entry::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
+        Craft::configure($query, $criteria);
+        return $query;
+    }
 
+    /**
+     * Returns a new GlobalSetQuery instance.
+     *
+     * @param array $criteria
+     * @return GlobalSetQuery
+     */
+    public function globalSets(array $criteria = []): GlobalSetQuery
+    {
+        $query = GlobalSet::find();
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
      * Returns a new MatrixBlockQuery instance.
      *
-     * @param mixed $criteria
+     * @param array $criteria
      * @return MatrixBlockQuery
      */
-    public function matrixBlocks($criteria = null): MatrixBlockQuery
+    public function matrixBlocks(array $criteria = []): MatrixBlockQuery
     {
         $query = MatrixBlock::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
      * Returns a new TagQuery instance.
      *
-     * @param mixed $criteria
+     * @param array $criteria
      * @return TagQuery
      */
-    public function tags($criteria = null): TagQuery
+    public function tags(array $criteria = []): TagQuery
     {
         $query = Tag::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 
     /**
      * Returns a new UserQuery instance
      *
-     * @param mixed $criteria
+     * @param array $criteria
      * @return UserQuery
      */
-    public function users($criteria = null): UserQuery
+    public function users(array $criteria = []): UserQuery
     {
         $query = User::find();
-        if ($criteria) {
-            Craft::configure($query, $criteria);
-        }
-
+        Craft::configure($query, $criteria);
         return $query;
     }
 }

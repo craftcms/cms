@@ -18,6 +18,11 @@ use craft\helpers\UrlHelper;
  */
 class Temp extends Local
 {
+    /**
+     * @inheritdoc
+     */
+    public $hasUrls = false;
+
     // Static
     // =========================================================================
 
@@ -39,16 +44,10 @@ class Temp extends Local
     {
         parent::init();
 
-        $this->hasUrls = true;
-
         if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
             $this->path = Craft::$app->getPath()->getTempAssetUploadsPath();
-        }
-
-        if ($this->url === null) {
-            $this->url = UrlHelper::actionUrl('assets/download-temp-asset', ['path' => '']);
         }
 
         if ($this->name === null) {

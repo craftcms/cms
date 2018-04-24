@@ -1,4 +1,4 @@
-/*!   - 2018-04-17 */
+/*!   - 2018-04-23 */
 (function($){
 
 /** global: Craft */
@@ -13290,6 +13290,7 @@ Craft.ElementThumbLoader.Worker = Garnish.Base.extend(
             var $container = $(container);
             if ($container.find('img').length) {
                 this.loadNext();
+                return;
             }
             var $img = $('<img/>', {
                 sizes: $container.attr('data-sizes'),

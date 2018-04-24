@@ -20,6 +20,8 @@ use yii\console\Response;
 /**
  * Craft Console Application class
  *
+ * An instance of the Console Application class is globally accessible to console requests in Craft via [[\Craft::$app|<code>Craft::$app</code>]].
+ *
  * @property Request $request The request component
  * @property User $user The user component
  * @method Request getRequest()      Returns the request component.

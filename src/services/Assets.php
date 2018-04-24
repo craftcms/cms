@@ -632,7 +632,7 @@ class Assets extends Component
         // Publish the thumb directory (if necessary) and return the thumb's published URL
         $dir = dirname($path);
         $name = pathinfo($path, PATHINFO_BASENAME);
-        return Craft::$app->getAssetManager()->getPublishedUrl($dir, false, $name);
+        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true, $name);
     }
 
     /**

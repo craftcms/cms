@@ -14,6 +14,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
@@ -102,15 +103,24 @@ class ClearCaches extends Utility
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
                 'action' => function() use ($pathService) {
-                    FileHelper::clearDirectory($pathService->getAssetSourcesPath());
-                    FileHelper::clearDirectory($pathService->getAssetThumbsPath());
-                    FileHelper::clearDirectory($pathService->getAssetsIconsPath());
+                    $dirs = [
+                        $pathService->getAssetSourcesPath(false),
+                        $pathService->getAssetThumbsPath(false),
+                        $pathService->getAssetsIconsPath(false),
+                    ];
+                    foreach ($dirs as $dir) {
+                        try {
+                            FileHelper::clearDirectory($dir);
+                        } catch (InvalidArgumentException $e) {
+                            // the directory doesn't exist
+                        }
+                    }
                 }
             ],
             [
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
-                'action' => $pathService->getCompiledTemplatesPath(),
+                'action' => $pathService->getCompiledTemplatesPath(false),
             ],
             [
                 'key' => 'cp-resources',

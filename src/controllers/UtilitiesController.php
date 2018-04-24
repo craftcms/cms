@@ -24,6 +24,7 @@ use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -346,6 +347,8 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
+                } catch (InvalidArgumentException $e) {
+                    // the directory doesn't exist
                 } catch (\Throwable $e) {
                     Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
                 }

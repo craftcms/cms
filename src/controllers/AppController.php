@@ -323,7 +323,7 @@ class AppController extends Controller
         $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
         $result = [];
         if (!empty($licenseInfo['pluginLicenses'])) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg');
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
             foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
