@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.4 - 2018-04-24
 
 ### Added
 - Added the `craft.globalSets()` template function. ([#2790](https://github.com/craftcms/cms/issues/2790))
