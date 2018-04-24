@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated Garnish to 0.1.22.
+
 ### Fixed
 - Fixed an error that occurred when saving a Single entry over Ajax. ([#2687](https://github.com/craftcms/cms/issues/2687))
 - Fixed a bug where the `id` param was ignored when used on an eager-loaded elements’ criteria. ([#2717](https://github.com/craftcms/cms/issues/2717))
