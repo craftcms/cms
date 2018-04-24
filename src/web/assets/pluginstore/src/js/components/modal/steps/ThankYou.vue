@@ -14,7 +14,7 @@
 </template>
 
 <script>
-    import {mapState, mapGetters} from 'vuex'
+    import {mapState} from 'vuex'
 
     export default {
 
@@ -26,10 +26,6 @@
 
             ...mapState({
                 craftLogo: state => state.craft.craftLogo,
-            }),
-
-            ...mapGetters({
-                cartItems: 'cartItems',
             }),
 
             managePluginsUrl() {
