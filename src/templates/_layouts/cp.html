@@ -279,7 +279,7 @@
 {% endblock %}
 
 
-{% if not craft.app.updates.getIsUpdateInfoCached() %}
+{% if currentUser.can('performUpdates') and not craft.app.updates.getIsUpdateInfoCached() %}
     {% js %}
         Craft.cp.checkForUpdates();
     {% endjs %}
