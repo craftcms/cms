@@ -41,14 +41,8 @@
                                 </td>
                             </template>
 
-                            <td>
-                                <select-input v-model="itemUpdates[itemKey]" :options="itemUpdateOptions[itemKey]" />
-                            </td>
-
-                            <td class="rightalign">
-                                <strong>{{ item.lineItem.total|currency }}</strong>
-                            </td>
-
+                            <td><select-input v-model="itemUpdates[itemKey]" :options="itemUpdateOptions[itemKey]" /></td>
+                            <td class="rightalign"><strong>{{ item.lineItem.total|currency }}</strong></td>
                             <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                         </tr>
                         <tr>
@@ -68,7 +62,6 @@
             </template>
 
             <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
-
                 <hr />
 
                 <div v-if="pendingActiveTrials.length > 1" class="right">
@@ -93,15 +86,9 @@
                                     <div class="default-icon" v-else></div>
                                 </div>
                             </td>
-                            <td>
-                                {{ plugin.name }}
-                            </td>
-                            <td>
-                                <strong>{{ plugin.editions[0].price|currency }}</strong>
-                            </td>
-                            <td class="thin">
-                                <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>
-                            </td>
+                            <td>{{ plugin.name }}</td>
+                            <td><strong>{{ plugin.editions[0].price|currency }}</strong></td>
+                            <td class="thin"><a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a></td>
                         </template>
                     </tr>
                     </tbody>
