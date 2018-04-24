@@ -14,6 +14,7 @@
                         <tr>
                             <th></th>
                             <th>Item</th>
+                            <th>Updates</th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -40,6 +41,10 @@
                                 </td>
                             </template>
 
+                            <td>
+                                <select-input v-model="itemUpdates[itemKey]" :options="itemUpdateOptions[itemKey]" />
+                            </td>
+
                             <td class="rightalign">
                                 <strong>{{ item.lineItem.total|currency }}</strong>
                             </td>
@@ -47,7 +52,7 @@
                             <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                         </tr>
                         <tr>
-                            <th class="rightalign" colspan="2">Total Price</th>
+                            <th class="rightalign" colspan="3">Total Price</th>
                             <td class="rightalign"><strong>{{ cart.totalPrice|currency }}</strong></td>
                             <td class="thin"></td>
                         </tr>
@@ -111,8 +116,15 @@
 
     export default {
 
+        data() {
+            return {
+                itemUpdates: {}
+            }
+        },
+
         components: {
             Step: require('../Step'),
+            SelectInput: require('../../inputs/SelectInput'),
         },
 
         computed: {
@@ -138,6 +150,47 @@
                 })
             },
 
+            itemUpdateOptions() {
+                let options = []
+
+                if (this.cartItems) {
+                    this.cartItems.forEach(function(item, itemKey) {
+                        const renewalPrice = item.lineItem.purchasable.renewalPrice
+                        const years = 5
+                        options[itemKey] = []
+
+                        for (let i = 1; i <= years; i++) {
+                            const currentDate = new Date()
+                            const year = currentDate.getFullYear()
+                            const month = currentDate.getMonth()
+                            const day = currentDate.getDay()
+                            const date = new Date(year + i, month, day)
+                            const formattedDate = Craft.formatDate(date)
+                            const price = this.$options.filters.currency(renewalPrice * (i - 1))
+
+                            let label = this.$options.filters.t("{year} year - Until {date} - Free", 'app', {
+                                year: i,
+                                date: formattedDate,
+                            })
+
+                            if (i > 1) {
+                                label = this.$options.filters.t("{year} years - Until {date} - {price}", 'app', {
+                                    year: i,
+                                    date: formattedDate,
+                                    price: price,
+                                })
+                            }
+
+                            options[itemKey].push({
+                                label: label,
+                                value: i,
+                            })
+                        }
+                    }.bind(this))
+                }
+
+                return options
+            }
         },
 
         methods: {
@@ -184,6 +237,14 @@
             }
 
         },
+
+        mounted() {
+            this.itemUpdates = {}
+
+            this.cartItems.forEach(function(item, itemKey) {
+                this.itemUpdates[itemKey] = 1
+            }.bind(this))
+        }
 
     }
 </script>
