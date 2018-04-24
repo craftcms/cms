@@ -38,8 +38,8 @@ use yii\web\Response;
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
- * Note that all actions in the controller except [[actionGenerateTransform()]] require an authenticated Craft session
- * via [[allowAnonymous]].
+ * Note that all actions in the controller except for [[actionGenerateTransform()]] and [[actionGenerateThumb()]]
+ * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
