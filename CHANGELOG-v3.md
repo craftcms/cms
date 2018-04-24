@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `craft.globalSets()` template function. ([#2790](https://github.com/craftcms/cms/issues/2790))
 - Added the `hasDescendants` element query param. ([#2786](https://github.com/craftcms/cms/issues/2786))
 - Added `craft\elements\User::hasDashboard`.
 

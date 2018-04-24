@@ -13,10 +13,12 @@ use craft\elements\Category;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
+use craft\elements\db\GlobalSetQuery;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\db\TagQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
@@ -260,6 +262,19 @@ class CraftVariable extends ServiceLocator
     public function entries(array $criteria = []): EntryQuery
     {
         $query = Entry::find();
+        Craft::configure($query, $criteria);
+        return $query;
+    }
+
+    /**
+     * Returns a new GlobalSetQuery instance.
+     *
+     * @param array $criteria
+     * @return GlobalSetQuery
+     */
+    public function globalSets(array $criteria = []): GlobalSetQuery
+    {
+        $query = GlobalSet::find();
         Craft::configure($query, $criteria);
         return $query;
     }
