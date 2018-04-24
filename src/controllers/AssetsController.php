@@ -52,7 +52,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-thumb', 'generate-transform', 'download-temp-asset'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     // Public Methods
     // =========================================================================
