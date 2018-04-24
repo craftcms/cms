@@ -400,7 +400,7 @@ class MatrixBlock extends Element
      */
     public function afterDelete()
     {
-        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest() and !Craft::$app->getRequest()->getIsSiteRequest()) {
             // Tell the browser to forget about this block
             $session = Craft::$app->getSession();
             $session->addAssetBundleFlash(MatrixAsset::class);
