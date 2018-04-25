@@ -658,21 +658,21 @@ class Assets extends BaseRelationField
     {
         /** @var Element $element */
         if ($this->useSingleFolder) {
-            $uploadSource = $this->singleUploadLocationSource;
+            $uploadVolume = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
         } else {
-            $uploadSource = $this->defaultUploadLocationSource;
+            $uploadVolume = $this->defaultUploadLocationSource;
             $subpath = $this->defaultUploadLocationSubpath;
         }
 
-        if (!$uploadSource) {
+        if (!$uploadVolume) {
             throw new InvalidVolumeException(Craft::t('app', 'This field’s Volume configuration is invalid.'));
         }
 
         $assets = Craft::$app->getAssets();
 
         try {
-            $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
+            $folderId = $this->_resolveVolumePathToFolderId($uploadVolume, $subpath, $element, $createDynamicFolders);
         } catch (InvalidVolumeException $exception) {
             if ($this->useSingleFolder) {
                 $message = Craft::t('app', 'This field’s single upload location Volume is missing');
