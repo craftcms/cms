@@ -54,6 +54,13 @@
         errors: field.getErrors('instructions'),
     }) }}
 
+    {{ forms.checkboxField({
+        label: "Use this field’s values as search keywords?"|t('app'),
+        id: 'searchable',
+        name: 'searchable',
+        checked: field.searchable
+    }) }}
+
     {{ forms.selectField({
         label: "Field Type"|t('app'),
         instructions: "What type of field is this?"|t('app'),
