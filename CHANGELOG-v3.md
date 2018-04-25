@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved the error messages displayed when an Assets field has an invalid Upload Location setting. ([#2803](https://github.com/craftcms/cms/issues/2803))
+
 ### Fixed
 - Fixed an error that would occur on servers without the Phar PHP extension enabled.
 
