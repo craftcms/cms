@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that would occur on servers without the Phar PHP extension enabled.
+
 ## 3.0.4 - 2018-04-24
 
 ### Added
