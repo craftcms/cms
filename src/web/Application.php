@@ -93,9 +93,11 @@ class Application extends \yii\web\Application
      */
     public function init()
     {
-        parent::init();
-
+        $this->state = self::STATE_INIT;
+        // Important that we call $this->_init() before parent::init(), so that it's run before bootstrap()
+        // in case bootstrap() ends up loading a module that loads Twig, configuring Twig with the wrong timezone
         $this->_init();
+        parent::init();
         $this->ensureResourcePathExists();
         $this->debugBootstrap();
     }

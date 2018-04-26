@@ -10,6 +10,7 @@
 ### Fixed
 - Fixed an error that would occur on servers without the Phar PHP extension enabled.
 - Fixed an error that could occur if a Matrix block was deleted by a queue job. ([#2813](https://github.com/craftcms/cms/issues/2813))
+- Fixed a bug where Twig could be configured to output times in UTC rather than the system timezone, if a bootstrapped module was loading Twig. ([#2761](https://github.com/craftcms/cms/issues/2761))
 
 ## 3.0.4 - 2018-04-24
 
