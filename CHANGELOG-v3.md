@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed an error that would occur on servers without the Phar PHP extension enabled.
+- Fixed an error that could occur if a Matrix block was deleted by a queue job. ([#2813](https://github.com/craftcms/cms/issues/2813))
 
 ## 3.0.4 - 2018-04-24
 
