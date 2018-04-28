@@ -14,10 +14,11 @@ class m171130_214407_craftidtokens_table extends Migration
      */
     public function safeUp()
     {
-        // Drop the old tables
+        // In case this (or previous incarnation) was run in a previous update attempt
         $this->dropTableIfExists('{{%pluginstoretokens}}');
         $this->dropTableIfExists('{{%oauth_tokens}}');
         $this->dropTableIfExists('{{%oauthtokens}}');
+        $this->dropTableIfExists('{{%craftidtokens}}');
 
         // Create the new one
         $this->createTable('{{%craftidtokens}}', [

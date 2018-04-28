@@ -31,13 +31,8 @@ class m150428_231346_userpreferences extends Migration
         $this->_usersTable = $this->db->getSchema()->getRawTableName('{{%users}}');
         $this->_prefsTable = $this->db->getSchema()->getRawTableName('{{%userpreferences}}');
 
-        if ($this->db->tableExists($this->_prefsTable)) {
-            $this->truncateTable($this->_prefsTable);
-            $this->dropForeignKey($this->db->getForeignKeyName($this->_prefsTable, ['userId']), $this->_prefsTable);
-            $this->_createUserPrefsIndexAndForeignKey();
-
-            return;
-        }
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists($this->_prefsTable);
 
         $this->_createUserPrefsTable();
         $this->_createUserPrefsIndexAndForeignKey();
