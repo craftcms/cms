@@ -846,32 +846,25 @@ class Request extends \yii\web\Request
      */
     protected function csrfTokenValidForCurrentUser(string $token): bool
     {
-        $currentUser = false;
-
-        if (Craft::$app->getIsInstalled() && Craft::$app->get('user', false)) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
+        if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
+            return true;
         }
 
-        if ($currentUser) {
-            $splitToken = explode('|', $token, 2);
+        $splitToken = explode('|', $token, 2);
 
-            if (count($splitToken) !== 2) {
-                return false;
-            }
-
-            list($nonce,) = $splitToken;
-
-            // Check that this token is for the current user
-            $passwordHash = $currentUser->password;
-            $userId = $currentUser->id;
-            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
-            $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
-
-            return Craft::$app->getSecurity()->compareString($expectedToken, $token);
+        if (count($splitToken) !== 2) {
+            return false;
         }
 
-        // If they're logged out, any token is fine
-        return true;
+        list($nonce,) = $splitToken;
+
+        // Check that this token is for the current user
+        $passwordHash = $currentUser->password;
+        $userId = $currentUser->id;
+        $hashable = implode('|', [$nonce, $userId, $passwordHash]);
+        $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
+
+        return Craft::$app->getSecurity()->compareString($expectedToken, $token);
     }
 
     // Private Methods
