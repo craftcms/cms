@@ -408,6 +408,7 @@ body.rtl .flex > *:not(:last-child) { margin-left: 7px !important; }
 .btn.active { cursor: default; }
 .btn:hover { text-decoration: none; }
 .btn:active { outline: none; }
+.btn div.checkbox { margin-top: 4px; }
 
 .disabled { opacity: 0.25; }
 
@@ -713,9 +714,10 @@ body.rtl .element.loading:after { left: 3px; }
 .elements .tableview tr.sel td:not(.checkbox-cell) { background: #d5d8dd; }
 .elements .tableview th, .elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
-.elements .tableview td.checkbox-cell { width: 12px !important; }
+.elements .tableview td.checkbox-cell { width: 12px !important; position: relative; }
 body.ltr .elements .tableview td.checkbox-cell { padding-right: 7px; }
 body.rtl .elements .tableview td.checkbox-cell { padding-left: 7px; }
+.elements .tableview td.checkbox-cell input.checkbox + label, .elements .tableview td.checkbox-cell div.checkbox { position: absolute; top: calc(50% - 6px); }
 body.ltr .elements .tableview td.checkbox-cell + td, body.ltr .elements .tableview td.checkbox-cell + th { padding-left: 7px; }
 body.rtl .elements .tableview td.checkbox-cell + td, body.rtl .elements .tableview td.checkbox-cell + th { padding-right: 7px; }
 .elements .tableview .move { display: block; position: absolute; top: calc(50% - 9px); font-size: 11px; text-decoration: none; }
@@ -1228,7 +1230,7 @@ body.rtl .field > .warning:before { margin: -2px 0 0 2px ; }
 /* checkbox */
 input.checkbox { opacity: 0; position: absolute; width: 12px; height: 12px; }
 
-input.checkbox + label, div.checkbox { display: inline; clear: none; position: relative; cursor: pointer; }
+input.checkbox + label, div.checkbox { display: inline-block; clear: none; position: relative; cursor: pointer; }
 body.ltr input.checkbox + label, body.ltr div.checkbox { padding-left: 20px; }
 body.rtl input.checkbox + label, body.rtl div.checkbox { padding-right: 20px; }
 
@@ -1240,9 +1242,11 @@ body.rtl input.checkbox + label:empty, body.rtl div.checkbox:empty { padding-rig
 input.checkbox + label:empty:after, div.checkbox:empty:after { content: '.'; font-size: 0; }
 
 /* fixes a RTL bug */
-input.checkbox + label:before, div.checkbox:before { display: block; position: absolute; top: 2px; width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 1px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.2); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.2); }
+input.checkbox + label:before, div.checkbox:before { display: block; position: absolute; width: 12px !important; height: 12px; content: '.'; font-size: 0; border-radius: 1px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.2); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.2); }
 body.ltr input.checkbox + label:before, body.ltr div.checkbox:before { left: 0; }
 body.rtl input.checkbox + label:before, body.rtl div.checkbox:before { right: 0; }
+
+input.checkbox + label:before { top: 3px; }
 
 input.checkbox:disabled + label, div.checkbox.disabled:before, div.checkbox.disabled + label { opacity: 0.25; }
 

@@ -15,6 +15,7 @@
 - Fixed a SQL error that could occur when upgrading from Craft 2 to Craft 3 with an active user session.
 - Fixed various SQL errors that could occur when upgrading from Craft 2 to Craft 3, if there were any lingering Craft 3 database tables from a previous upgrade attempt.
 - Fixed a bug where the Clear Caches tool was deleting the `.gitignore` file inside `web/cpresources/`. ([#2823](https://github.com/craftcms/cms/issues/2823))
+- Fixed the vertical positioning of checkboxes in the Control Panel. ([#2825](https://github.com/craftcms/cms/issues/2825))
 
 ## 3.0.4 - 2018-04-24
 

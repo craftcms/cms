@@ -895,6 +895,10 @@ ul.icons li a:hover {
   &:active {
     outline: none;
   }
+
+  div.checkbox {
+    margin-top: 4px;
+  }
 }
 
 .disabled {
@@ -1747,6 +1751,13 @@ $checkboxPadding: 20px;
       &.checkbox-cell {
         @include padding-right(7px);
         width: 12px !important;
+        position: relative;
+
+        input.checkbox + label,
+        div.checkbox {
+          position: absolute;
+          top: calc(50% - 6px);
+        }
 
         & + td,
         & + th {
@@ -3389,7 +3400,7 @@ input.checkbox {
 
 input.checkbox + label,
 div.checkbox {
-  display: inline;
+  display: inline-block;
   clear: none;
   position: relative;
   @include padding-left(20px);
@@ -3417,7 +3428,6 @@ input.checkbox + label:before,
 div.checkbox:before {
   display: block;
   position: absolute;
-  top: 2px;
   @include left(0);
   width: 12px !important;
   height: 12px;
@@ -3426,6 +3436,10 @@ div.checkbox:before {
   border-radius: 1px;
   background: #fff;
   box-shadow: 0 0 0 1px $mediumHairlineColorAlpha;
+}
+
+input.checkbox + label:before {
+  top: 3px;
 }
 
 input.checkbox:disabled + label,
