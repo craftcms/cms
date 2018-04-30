@@ -19,7 +19,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $context Context
  * @property string $instructions Instructions
- * @property bool $translatable Translatable
  * @property string $translationMethod Translation method
  * @property string $translationKeyFormat Translation key format
  * @property string $type Type

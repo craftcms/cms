@@ -222,15 +222,18 @@ class Config extends Component
 
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
-        $value = addslashes($value);
-        $qValue = str_replace('$', '\\$', $value);
+        $slashedValue = addslashes($value);
+        $qValue = str_replace('$', '\\$', $slashedValue);
         $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$qValue}\"", $contents, -1, $count);
 
         if ($count === 0) {
             $contents = rtrim($contents);
-            $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$value}\"".PHP_EOL;
+            $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$slashedValue}\"".PHP_EOL;
         }
 
         FileHelper::writeToFile($path, $contents);
+
+        // Now actually set the environment variable
+        putenv("{$name}={$value}");
     }
 }

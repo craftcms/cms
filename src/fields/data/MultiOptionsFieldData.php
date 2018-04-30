@@ -22,7 +22,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
     // =========================================================================
 
     /**
-     * @var array
+     * @var OptionData[]
      */
     private $_options = [];
 
@@ -32,7 +32,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
     /**
      * Returns the options.
      *
-     * @return array
+     * @return OptionData[]
      */
     public function getOptions(): array
     {
@@ -42,7 +42,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
     /**
      * Sets the options.
      *
-     * @param array $options
+     * @param OptionData[] $options
      */
     public function setOptions(array $options)
     {

@@ -459,59 +459,64 @@ class AssetIndexer extends Component
 
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
-        // All sorts of fun stuff for images.
-        if ($asset->kind === Asset::KIND_IMAGE) {
-            $dimensions = null;
-            $tempPath = null;
+        try {
+            // All sorts of fun stuff for images.
+            if ($asset->kind === Asset::KIND_IMAGE) {
+                $dimensions = null;
+                $tempPath = null;
 
-            // For local images it's easy - the image is right there, nothing to cache and the Asset id means nothing.
-            if ($volume instanceof LocalVolumeInterface) {
-                $transformSourcePath = $asset->getImageTransformSourcePath();
-                $dimensions = Image::imageSize($transformSourcePath);
-            } else {
-                // If we don't have to cache, then we don't really care if the Asset id is there.
-                if (!$cacheImages) {
-                    try {
-                        // Get the stream
-                        $stream = $asset->getStream();
+                // For local images it's easy - the image is right there, nothing to cache and the Asset id means nothing.
+                if ($volume instanceof LocalVolumeInterface) {
+                    $transformSourcePath = $asset->getImageTransformSourcePath();
+                    $dimensions = Image::imageSize($transformSourcePath);
+                } else {
+                    // If we don't have to cache, then we don't really care if the Asset id is there.
+                    if (!$cacheImages) {
+                        try {
+                            // Get the stream
+                            $stream = $asset->getStream();
 
-                        // And, well, try to read as little data as we can.
-                        if (is_resource($stream)) {
-                            $dimensions = Image::imageSizeByStream($stream);
-                            fclose($stream);
+                            // And, well, try to read as little data as we can.
+                            if (is_resource($stream)) {
+                                $dimensions = Image::imageSizeByStream($stream);
+                                fclose($stream);
+                            }
+                        } catch (AssetException $e) {
+                            Craft::info($e->getMessage());
                         }
-                    } catch (AssetException $e) {
-                        Craft::info($e->getMessage());
+                    }
+
+                    // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
+                    if (!is_array($dimensions)) {
+                        $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
+                        $volume->saveFileLocally($indexEntryModel->uri, $tempPath);
+                        $dimensions = Image::imageSize($tempPath);
                     }
                 }
 
-                // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
-                if (!is_array($dimensions)) {
-                    $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                    $volume->saveFileLocally($indexEntryModel->uri, $tempPath);
-                    $dimensions = Image::imageSize($tempPath);
+                list ($w, $h) = $dimensions;
+                $asset->setWidth($w);
+                $asset->setHeight($h);
+                $asset->dateModified = $timeModified;
+
+                Craft::$app->getElements()->saveElement($asset);
+
+                // Now we definitely have an Asset id, so let's cover one last base.
+                if (!$volume instanceof LocalVolumeInterface && $cacheImages && $tempPath) {
+                    $targetPath = $asset->getImageTransformSourcePath();
+                    $assetTransforms = Craft::$app->getAssetTransforms();
+                    $assetTransforms->storeLocalSource($tempPath, $targetPath);
+                    $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+                    FileHelper::unlink($tempPath);
                 }
+            } else {
+                // For images, the Asset has been saved already to ensure an ID was in place.
+                $asset->dateModified = $timeModified;
+                Craft::$app->getElements()->saveElement($asset);
             }
-
-            list ($w, $h) = $dimensions;
-            $asset->setWidth($w);
-            $asset->setHeight($h);
-            $asset->dateModified = $timeModified;
-
-            Craft::$app->getElements()->saveElement($asset);
-
-            // Now we definitely have an Asset id, so let's cover one last base.
-            if (!$volume instanceof LocalVolumeInterface && $cacheImages && $tempPath) {
-                $targetPath = $asset->getImageTransformSourcePath();
-                $assetTransforms = Craft::$app->getAssetTransforms();
-                $assetTransforms->storeLocalSource($tempPath, $targetPath);
-                $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
-                FileHelper::unlink($tempPath);
-            }
-        } else {
-            // For images, the Asset has been saved already to ensure an ID was in place.
-            $asset->dateModified = $timeModified;
-            Craft::$app->getElements()->saveElement($asset);
+        } catch (\Throwable $exception) {
+            // Log an exception and pretend we're cool
+            Craft::warning($exception->getMessage());
         }
 
         return $asset;

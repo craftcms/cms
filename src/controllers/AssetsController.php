@@ -38,8 +38,8 @@ use yii\web\Response;
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
- * Note that all actions in the controller except [[actionGenerateTransform()]] require an authenticated Craft session
- * via [[allowAnonymous]].
+ * Note that all actions in the controller except for [[actionGenerateTransform()]] and [[actionGenerateThumb()]]
+ * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -52,7 +52,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-thumb', 'generate-transform', 'download-temp-asset'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     // Public Methods
     // =========================================================================
@@ -142,8 +142,10 @@ class AssetsController extends Controller
                 'filename' => $asset->filename,
                 'assetId' => $asset->id
             ]);
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (\Throwable $e) {
+            Craft::error('An error occurred when saving an asset: '.$e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asErrorJson($e->getMessage());
         }
     }
 
@@ -229,8 +231,10 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (\Throwable $e) {
+            Craft::error('An error occurred when replacing an asset: '.$e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asErrorJson($e->getMessage());
         }
 
         return $this->asJson(['success' => true, 'assetId' => $assetId]);
@@ -868,28 +872,6 @@ class AssetsController extends Controller
     }
 
     /**
-     * Downloads a temporary asset.
-     *
-     * @param string $path
-     * @return Response
-     * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
-     * @throws NotFoundHttpException if $path doesn't exist
-     */
-    public function actionDownloadTempAsset(string $path): Response
-    {
-        $path = ltrim($path, "/\\");
-        if (PathHelper::ensurePathIsContained($path) === false) {
-            throw new ForbiddenHttpException('Invalid path: '.$path);
-        }
-        $fullPath = Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$path;
-        if (!file_exists($fullPath)) {
-            throw new NotFoundHttpException('File not found: '.$path);
-        }
-        return Craft::$app->getResponse()
-            ->sendFile($fullPath, null, ['inline' => true]);
-    }
-
-    /**
      * Return the file preview for an Asset.
      *
      * @return Response
@@ -897,6 +879,7 @@ class AssetsController extends Controller
      */
     public function actionPreviewFile(): Response
     {
+        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -921,7 +904,7 @@ class AssetsController extends Controller
                     $imageUrl = $asset->getUrl();
                 } else {
                     $source = $asset->getTransformSource();
-                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source);
+                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
                 }
 
                 $width = $asset->getWidth();
@@ -1027,7 +1010,7 @@ class AssetsController extends Controller
         try {
             $tempPath = $uploadedFile->saveAsTempFile();
         } catch (ErrorException $e) {
-            throw new UploadFailedException(0);
+            throw new UploadFailedException(0, null, $e);
         }
 
         if ($tempPath === false) {

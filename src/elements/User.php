@@ -457,6 +457,11 @@ class User extends Element implements IdentityInterface
     public $lockoutDate;
 
     /**
+     * @var bool Whether the user has a dashboard
+     */
+    public $hasDashboard = false;
+
+    /**
      * @var bool Password reset required
      */
     public $passwordResetRequired = false;
@@ -976,7 +981,7 @@ class User extends Element implements IdentityInterface
             return Craft::$app->getAssets()->getThumbUrl($photo, $size, $size, false);
         }
 
-        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', false, 'images/user.svg');
+        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
     }
 
     /**

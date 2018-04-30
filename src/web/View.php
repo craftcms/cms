@@ -1498,10 +1498,9 @@ JS;
                 $srcsets[] = $srcset.' '.$size.'w';
             }
 
-            $imgHtml = '<div class="elementthumb"'.
-                ' data-sizes="'.($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px"'.
-                ' data-srcset="'.implode(', ', $srcsets).'"'.
-                '></div> ';
+            $sizesHtml = ($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px';
+            $srcsetHtml = implode(', ', $srcsets);
+            $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
         } else {
             $imgHtml = '';
         }

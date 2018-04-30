@@ -253,11 +253,17 @@ class UserQuery extends ElementQuery
             'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
+            // TODO: uncomment after next breakpoint
+            //'users.hasDashboard',
         ]);
 
         // TODO: remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '>=')) {
+        $version = Craft::$app->getInfo()->version;
+        if (version_compare($version, '3.0.0-alpha.2910', '>=')) {
             $this->query->addSelect(['users.photoId']);
+        }
+        if (version_compare($version, '3.0.4', '>=')) {
+            $this->query->addSelect(['users.hasDashboard']);
         }
 
         if ($this->admin) {

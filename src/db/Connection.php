@@ -23,6 +23,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
@@ -543,7 +544,11 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
+        try {
+            FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath(false));
+        } catch (InvalidArgumentException $e) {
+            // the directory doesn't exist
+        }
 
         // PostgreSQL specific cleanup.
         if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_PGSQL) {

@@ -47,7 +47,7 @@ class UpdaterController extends BaseUpdaterController
 
         if ($action->id !== 'index') {
             // Only users with performUpdates permission can install new versions
-            if (!empty($data['install'])) {
+            if (!empty($this->data['install'])) {
                 $this->requirePermission('performUpdates');
             }
         }

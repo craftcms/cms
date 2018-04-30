@@ -3,7 +3,7 @@
 /**
  * Base Element Index View
  */
-Craft.ElementIndexThumbLoader = Garnish.Base.extend(
+Craft.ElementThumbLoader = Garnish.Base.extend(
     {
         queue: null,
         workers: [],
@@ -12,12 +12,12 @@ Craft.ElementIndexThumbLoader = Garnish.Base.extend(
             this.queue = [];
 
             for (var i = 0; i < 3; i++) {
-                this.workers.push(new Craft.ElementIndexThumbLoader.Worker(this));
+                this.workers.push(new Craft.ElementThumbLoader.Worker(this));
             }
         },
 
-        load: function($thumbs) {
-            this.queue = this.queue.concat($thumbs.toArray());
+        load: function($elements) {
+            this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
 
             if (this.queue.length) {
                 // See if there are any inactive workers
@@ -39,7 +39,7 @@ Craft.ElementIndexThumbLoader = Garnish.Base.extend(
     }
 );
 
-Craft.ElementIndexThumbLoader.Worker = Garnish.Base.extend(
+Craft.ElementThumbLoader.Worker = Garnish.Base.extend(
     {
         loader: null,
         active: false,
@@ -57,6 +57,10 @@ Craft.ElementIndexThumbLoader.Worker = Garnish.Base.extend(
 
             this.active = true;
             var $container = $(container);
+            if ($container.find('img').length) {
+                this.loadNext();
+                return;
+            }
             var $img = $('<img/>', {
                 sizes: $container.attr('data-sizes'),
                 srcset: $container.attr('data-srcset'),

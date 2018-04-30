@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\Localization;
+use yii\base\InvalidArgumentException;
 use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
 
@@ -61,7 +62,12 @@ class LanguageValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         $original = $model->$attribute;
-        $value = Localization::normalizeLanguage($original);
+        try {
+            $value = Localization::normalizeLanguage($original);
+        } catch (InvalidArgumentException $e) {
+            $this->addError($model, $attribute, $this->notAllowed);
+            return;
+        }
 
         $result = $this->validateValue($value);
         if (!empty($result)) {
