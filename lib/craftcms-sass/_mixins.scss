@@ -16,7 +16,7 @@ $black: #32475E;
 // BG colors
 $subnavBgColor: hsl($hue, 20%, 30%);
 $bgColor: #f1f5f8;
-$lightBgColor: #fafafa;
+$lightBgColor: lighten($bgColor, 3%);
 
 // text colors
 $textColor: hsl($hue, 20%, 20%);
