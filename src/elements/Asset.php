@@ -184,7 +184,7 @@ class Asset extends Element
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
 
         // Add the customized temporary upload source
-        if ($context !== 'settings') {
+        if ($context !== 'settings' && !Craft::$app->getRequest()->getIsConsoleRequest()) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
@@ -1212,9 +1212,10 @@ class Asset extends Element
     {
         // If this is just an element being propagated, there's absolutely no need for re-saving this.
         if (!$this->propagating) {
-            if (AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+            if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                null !== $this->tempFilePath) {
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
+            ) {
                 Image::cleanImageByPath($this->tempFilePath);
             }
 

@@ -1,4 +1,4 @@
-/*!   - 2018-04-17 */
+/*!   - 2018-04-23 */
 (function($){
 
 /** global: Craft */
@@ -3523,8 +3523,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             this.setMorePending(this.settings.batchSize && $elements.length == this.settings.batchSize);
 
             // Instantiate the thumb loader
-            this.thumbLoader = new Craft.ElementIndexThumbLoader();
-            this.thumbLoader.load($elements.find('.elementthumb'));
+            this.thumbLoader = new Craft.ElementThumbLoader();
+            this.thumbLoader.load($elements);
 
             if (this.settings.selectable) {
                 this.elementSelect = new Garnish.Select(
@@ -3756,7 +3756,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             var data = this.getLoadMoreParams();
 
-            Craft.postActionRequest('element-indexes/get-more-elements', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
                 this.loadingMore = false;
                 this.$loadingMoreSpinner.addClass('hidden');
 
@@ -3792,7 +3792,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         appendElements: function($newElements) {
             $newElements.appendTo(this.$elementContainer);
-            this.thumbLoader.load($newElements.find('.elementthumb'));
+            this.thumbLoader.load($newElements);
             this.onAppendElements($newElements);
         },
 
@@ -3852,6 +3852,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             selectable: false,
             multiSelect: false,
             checkboxMode: false,
+            loadMoreElementsAction: 'element-indexes/get-more-elements',
             onAppendElements: $.noop,
             onSelectionChange: $.noop
         }
@@ -3864,6 +3865,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
     {
+        thumbLoader: null,
         elementSelect: null,
         elementSort: null,
         modal: null,
@@ -3924,6 +3926,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     .css('top', 0)
                     .css(Craft.left, 0);
             }
+
+            this.thumbLoader = new Craft.ElementThumbLoader();
 
             this.initElementSelect();
             this.initElementSort();
@@ -4048,6 +4052,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         addElements: function($elements) {
+            this.thumbLoader.load($elements);
+
             if (this.settings.selectable) {
                 this.elementSelect.addItems($elements);
             }
@@ -4437,8 +4443,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
             for (var i = 0; i < $selectedElements.length; i++) {
                 var $element = $($selectedElements[i]);
+                var elementInfo = Craft.getElementInfo($element);
 
-                info.push(Craft.getElementInfo($element));
+                info.push(elementInfo);
             }
 
             return info;
@@ -13227,7 +13234,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 /**
  * Base Element Index View
  */
-Craft.ElementIndexThumbLoader = Garnish.Base.extend(
+Craft.ElementThumbLoader = Garnish.Base.extend(
     {
         queue: null,
         workers: [],
@@ -13236,12 +13243,12 @@ Craft.ElementIndexThumbLoader = Garnish.Base.extend(
             this.queue = [];
 
             for (var i = 0; i < 3; i++) {
-                this.workers.push(new Craft.ElementIndexThumbLoader.Worker(this));
+                this.workers.push(new Craft.ElementThumbLoader.Worker(this));
             }
         },
 
-        load: function($thumbs) {
-            this.queue = this.queue.concat($thumbs.toArray());
+        load: function($elements) {
+            this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
 
             if (this.queue.length) {
                 // See if there are any inactive workers
@@ -13263,7 +13270,7 @@ Craft.ElementIndexThumbLoader = Garnish.Base.extend(
     }
 );
 
-Craft.ElementIndexThumbLoader.Worker = Garnish.Base.extend(
+Craft.ElementThumbLoader.Worker = Garnish.Base.extend(
     {
         loader: null,
         active: false,
@@ -13281,6 +13288,10 @@ Craft.ElementIndexThumbLoader.Worker = Garnish.Base.extend(
 
             this.active = true;
             var $container = $(container);
+            if ($container.find('img').length) {
+                this.loadNext();
+                return;
+            }
             var $img = $('<img/>', {
                 sizes: $container.attr('data-sizes'),
                 srcset: $container.attr('data-srcset'),

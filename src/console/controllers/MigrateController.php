@@ -15,6 +15,7 @@ use craft\errors\MigrationException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
@@ -287,7 +288,9 @@ class MigrateController extends BaseMigrateController
 
             // Delete all compiled templates
             try {
-                FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath());
+                FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
+            } catch (InvalidArgumentException $e) {
+                // the directory doesn't exist
             } catch (ErrorException $e) {
                 Craft::error('Could not delete compiled templates: '.$e->getMessage());
                 Craft::$app->getErrorHandler()->logException($e);

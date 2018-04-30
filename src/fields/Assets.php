@@ -650,7 +650,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface|null $element
      * @param bool $createDynamicFolders whether missing folders should be created in the process
-     * @return int if the folder subpath is not valid
+     * @return int
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @throws InvalidVolumeException if there's a problem with the field's volume configuration
      */
@@ -658,40 +658,41 @@ class Assets extends BaseRelationField
     {
         /** @var Element $element */
         if ($this->useSingleFolder) {
-            $uploadSource = $this->singleUploadLocationSource;
+            $uploadVolume = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
+            $settingName = Craft::t('app', 'Upload Location');
         } else {
-            $uploadSource = $this->defaultUploadLocationSource;
+            $uploadVolume = $this->defaultUploadLocationSource;
             $subpath = $this->defaultUploadLocationSubpath;
-        }
-
-        if (!$uploadSource) {
-            throw new InvalidVolumeException(Craft::t('app', 'This field’s Volume configuration is invalid.'));
+            $settingName = Craft::t('app', 'Default Upload Location');
         }
 
         $assets = Craft::$app->getAssets();
 
         try {
-            $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
-        } catch (InvalidVolumeException $exception) {
-            if ($this->useSingleFolder) {
-                $message = Craft::t('app', 'This field’s single upload location Volume is missing');
-            } else {
-                $message = Craft::t('app', 'This field’s default upload location Volume is missing');
+            if (!$uploadVolume) {
+                throw new InvalidVolumeException();
             }
-            throw new InvalidVolumeException($message);
-        } catch (InvalidSubpathException $exception) {
+            $folderId = $this->_resolveVolumePathToFolderId($uploadVolume, $subpath, $element, $createDynamicFolders);
+        } catch (InvalidVolumeException $e) {
+            throw new InvalidVolumeException(Craft::t('app', 'The {field} field’s {setting} setting is set to an invalid volume.', [
+                'field' => $this->name,
+                'setting' => $settingName,
+            ]), 0, $e);
+        } catch (InvalidSubpathException $e) {
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
             if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
                 $userModel = Craft::$app->getUser()->getIdentity();
-
                 $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
-
                 $folderId = $userFolder->id;
             } else {
                 // Existing element, so this is just a bad subpath
-                throw $exception;
+                throw new InvalidSubpathException($e->subpath, Craft::t('app', 'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).', [
+                    'field' => $this->name,
+                    'setting' => $settingName,
+                    'subpath' => $e->subpath,
+                ]), 0, $e);
             }
         }
 

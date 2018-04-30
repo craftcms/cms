@@ -385,9 +385,13 @@ class Categories extends Component
                     $siteSettingsRecord->siteId = $siteId;
                 }
 
-                $siteSettingsRecord->hasUrls = $siteSettings->hasUrls;
-                $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
-                $siteSettingsRecord->template = $siteSettings->template;
+                if ($siteSettingsRecord->hasUrls = $siteSettings->hasUrls) {
+                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
+                    $siteSettingsRecord->template = $siteSettings->template;
+                } else {
+                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat = null;
+                    $siteSettingsRecord->template = $siteSettings->template = null;
+                }
 
                 if (!$siteSettingsRecord->getIsNewRecord()) {
                     // Did it used to have URLs, but not anymore?

@@ -681,6 +681,7 @@ class Install extends Migration
             'invalidLoginCount' => $this->tinyInteger()->unsigned(),
             'lastInvalidLoginDate' => $this->dateTime(),
             'lockoutDate' => $this->dateTime(),
+            'hasDashboard' => $this->boolean()->notNull()->defaultValue(false),
             'verificationCode' => $this->string(),
             'verificationCodeIssuedDate' => $this->dateTime(),
             'unverifiedEmail' => $this->string(),

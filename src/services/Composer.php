@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Composer\Config\JsonConfigSource;
-use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
@@ -17,6 +16,7 @@ use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
 use Composer\Util\Platform;
 use Craft;
+use craft\composer\Factory;
 use craft\helpers\FileHelper;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;

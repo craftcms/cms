@@ -83,6 +83,7 @@ class SetupController extends Controller
             $options[] = 'password';
             $options[] = 'database';
             $options[] = 'schema';
+            $options[] = 'tablePrefix';
         }
 
         return $options;

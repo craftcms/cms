@@ -30,6 +30,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $invalidLoginCount Invalid login count
  * @property \DateTime $lastInvalidLoginDate Last invalid login date
  * @property \DateTime $lockoutDate Lockout date
+ * @property bool $hasDashboard Whether the user has a dashboard
  * @property string $verificationCode Verification code
  * @property \DateTime $verificationCodeIssuedDate Verification code issued date
  * @property string $unverifiedEmail Unverified email

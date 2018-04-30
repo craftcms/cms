@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+### Changed
+- Fields’ translation icons now reveal the chosen Translation Method in their tooltip. ([#2808](https://github.com/craftcms/cms/issues/2808))
+- Improved the error messages displayed when an Assets field has an invalid Upload Location setting. ([#2803](https://github.com/craftcms/cms/issues/2803))
+- Craft now logs errors that occur when saving and replacing assets. ([#2814](https://github.com/craftcms/cms/issues/2814))
+
+### Fixed
+- Fixed an error that would occur on servers without the Phar PHP extension enabled.
+- Fixed an error that could occur if a Matrix block was deleted by a queue job. ([#2813](https://github.com/craftcms/cms/issues/2813))
+- Fixed a bug where Twig could be configured to output times in UTC rather than the system timezone, if a bootstrapped module was loading Twig. ([#2761](https://github.com/craftcms/cms/issues/2761))
+- Fixed a SQL error that could occur when upgrading from Craft 2 to Craft 3 with an active user session.
+- Fixed various SQL errors that could occur when upgrading from Craft 2 to Craft 3, if there were any lingering Craft 3 database tables from a previous upgrade attempt.
+- Fixed a bug where the Clear Caches tool was deleting the `.gitignore` file inside `web/cpresources/`. ([#2823](https://github.com/craftcms/cms/issues/2823))
+
+## 3.0.4 - 2018-04-24
+
+### Added
+- Added the `craft.globalSets()` template function. ([#2790](https://github.com/craftcms/cms/issues/2790))
+- Added the `hasDescendants` element query param. ([#2786](https://github.com/craftcms/cms/issues/2786))
+- Added `craft\elements\User::hasDashboard`.
+
+### Changed
+- Sections and category groups now ignore posted Template settings for sites that don’t have URI Formats.
+- Control Panel resources are once again eager-published. ([#2763](https://github.com/craftcms/cms/issues/2763))
+- `entries/save-entries` and `categories/save-category` actions now include the `slug` for responses that accept JSON. ([#2792](https://github.com/craftcms/cms/issues/2792))
+- Most `craft\services\Path` methods now have a `$create` argument, which can be set to `false` to prevent the directory from being created if it doesn’t exist yet.
+- Craft no longer creates directories when it just needed to clear it. ([#2771](https://github.com/craftcms/cms/issues/2771))
+- `craft\services\Config::setDotEnvVar()` now sets the environment variable for the current request, in addition to updating the `.env` file.
+- Removed `craft\controllers\AssetsController::actionDownloadTempAsset()`.
+- User now must be logged in to use the Asset Preview File functionality.
+
+### Fixed
+- Fixed a bug where users would regain all default Dashboard widgets if all widgets were removed. ([#2769](https://github.com/craftcms/cms/issues/2769))
+- Fixed a bug where you would get a “not a valid language” error message when creating a new site using certain languages.
+- Fixed a bug where database connection settings that were set by the `setup` command weren’t always taking effect in time for the CLI installer. ([#2774](https://github.com/craftcms/cms/issues/2774))
+- Fixed a bug where empty Plain Text fields were getting empty string values rather than `null`.
+- Fixed a bug where elements within relational fields could have two thumbnails. ([#2785](https://github.com/craftcms/cms/issues/2785))
+- Fixed a bug where it was not possible to pass a `--table-prefix` argument to the `setup/db-creds` command. ([#2791](https://github.com/craftcms/cms/pull/2791))
+- Fixed an error that occurred for users without permission to perform updates, if available update info wasn’t cached.
+- Fixed an error that occurred when `craft\elements\Asset::sources()` was called in a console request. ([#2798](https://github.com/craftcms/cms/issues/2798))
+- Fixed JavaScript errors that could occur on the front-end after deleting Matrix blocks. ([#2799](https://github.com/craftcms/cms/pull/2799))
+
+## 3.0.3.1 - 2018-04-18
+
+### Fixed
+- Fixed an error that occurred when editing an entry if any of the entry’s revisions were created with an entry type that no longer exists.
+- Fixed an error that could occur when saving an asset. ([#2764](https://github.com/craftcms/cms/issues/2764))
+- Fixed a bug where Craft assumed an asset was missing if there was an error when indexing it. ([#2763](https://github.com/craftcms/cms/issues/2763))
+
+## 3.0.3 - 2018-04-17
+
 ### Added
 - Added `craft\elements\Entry::updateTitle()`.
 - Added `Yii::alias()`.
@@ -16,6 +66,7 @@
 - The Clear Caches utility now sorts the cache options alphabetically.
 - When enabling new sites for a section, the new sites’ content is now based on the primary site’s content, if the section was and still is enabled for the primary site. ([#2748](https://github.com/craftcms/cms/issues/2748))
 - Improved the responsiveness of element indexes.
+- `Craft.BaseElementIndexView` now has a `loadMoreElementsAction` setting. ([#2762](https://github.com/craftcms/cms/pull/2762))
 
 ### Fixed
 - Fixed a bug where the Clear Caches utility was not deleting template caches. ([#2720](https://github.com/craftcms/cms/issues/2720))

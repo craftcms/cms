@@ -12,6 +12,7 @@ use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
@@ -747,7 +748,12 @@ class GeneralConfig extends BaseObject
 
         // Normalize the default CP language
         if ($this->defaultCpLanguage !== null) {
-            $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
+            try {
+                $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidConfigException($e->getMessage(), 0, $e);
+            }
+
             if (!in_array($this->defaultCpLanguage, Craft::$app->getI18n()->getAppLocaleIds())) {
                 throw new InvalidConfigException('Unsupported language: '.$this->defaultCpLanguage);
             }

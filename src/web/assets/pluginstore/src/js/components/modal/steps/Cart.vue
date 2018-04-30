@@ -53,7 +53,7 @@
                         </tbody>
                     </table>
 
-                    <p><a @click="payment()" class="btn submit">{{ "Process My Order"|t('app') }}</a></p>
+                    <p><a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a></p>
                 </template>
 
                 <div v-else>

@@ -104,7 +104,7 @@ class Rebrand
             $path = $this->_getImagePath($type);
 
             if ($path !== false) {
-                $url = Craft::$app->getAssetManager()->getPublishedUrl($path);
+                $url = Craft::$app->getAssetManager()->getPublishedUrl($path, true);
                 $this->_imageVariables[$type] = new Image($path, $url);
             } else {
                 $this->_imageVariables[$type] = false;
