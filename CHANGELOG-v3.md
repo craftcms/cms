@@ -6,6 +6,7 @@
 - Fields’ translation icons now reveal the chosen Translation Method in their tooltip. ([#2808](https://github.com/craftcms/cms/issues/2808))
 - Improved the error messages displayed when an Assets field has an invalid Upload Location setting. ([#2803](https://github.com/craftcms/cms/issues/2803))
 - Craft now logs errors that occur when saving and replacing assets. ([#2814](https://github.com/craftcms/cms/issues/2814))
+- Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
 - The Control Panel background color was lightened up a bit.
 
 ### Fixed
