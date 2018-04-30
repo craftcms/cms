@@ -7,7 +7,7 @@
 .cs-screen:not(:first-child) { display: none; opacity: 0; }
 
 .cs-screen .cs-opt-icon svg { display: block; margin: 0 auto 14px; width: 50px; height: 50px; }
-.cs-screen .cs-opt-icon svg rect, .cs-screen .cs-opt-icon svg circle, .cs-screen .cs-opt-icon svg ellipse, .cs-screen .cs-opt-icon svg line, .cs-screen .cs-opt-icon svg polyline, .cs-screen .cs-opt-icon svg polygon, .cs-screen .cs-opt-icon svg path, .cs-screen .cs-opt-icon svg text { fill: #ebedef; stroke-width: 0; }
+.cs-screen .cs-opt-icon svg rect, .cs-screen .cs-opt-icon svg circle, .cs-screen .cs-opt-icon svg ellipse, .cs-screen .cs-opt-icon svg line, .cs-screen .cs-opt-icon svg polyline, .cs-screen .cs-opt-icon svg polygon, .cs-screen .cs-opt-icon svg path, .cs-screen .cs-opt-icon svg text { fill: #f1f5f8; stroke-width: 0; }
 
 .cs-screen-home .cs-opt { display: block; padding: 24px; text-align: center; cursor: pointer; }
 
