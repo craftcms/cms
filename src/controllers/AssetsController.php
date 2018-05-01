@@ -142,8 +142,10 @@ class AssetsController extends Controller
                 'filename' => $asset->filename,
                 'assetId' => $asset->id
             ]);
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (\Throwable $e) {
+            Craft::error('An error occurred when saving an asset: '.$e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asErrorJson($e->getMessage());
         }
     }
 
@@ -229,8 +231,10 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (\Throwable $e) {
+            Craft::error('An error occurred when replacing an asset: '.$e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asErrorJson($e->getMessage());
         }
 
         return $this->asJson(['success' => true, 'assetId' => $assetId]);
@@ -1006,7 +1010,7 @@ class AssetsController extends Controller
         try {
             $tempPath = $uploadedFile->saveAsTempFile();
         } catch (ErrorException $e) {
-            throw new UploadFailedException(0);
+            throw new UploadFailedException(0, null, $e);
         }
 
         if ($tempPath === false) {

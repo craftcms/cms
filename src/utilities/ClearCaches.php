@@ -125,7 +125,11 @@ class ClearCaches extends Utility
             [
                 'key' => 'cp-resources',
                 'label' => Craft::t('app', 'Control Panel resources'),
-                'action' => Craft::$app->getAssetManager()->basePath,
+                'action' => function() {
+                    FileHelper::clearDirectory(Craft::$app->getAssetManager()->basePath, [
+                        'except' => ['/.gitignore']
+                    ]);
+                },
             ],
             [
                 'key' => 'temp-files',

@@ -1,6 +1,6 @@
 html, body { height: 100%; }
 
-body { overflow: hidden; background: #ebedef url(images/install-bg-1920.png) no-repeat 50% 50%; background-size: cover; }
+body { overflow: hidden; background: #f1f5f8 url(images/install-bg-1920.png) no-repeat 50% 50%; background-size: cover; }
 
 .beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
 
@@ -10,7 +10,7 @@ body { overflow: hidden; background: #ebedef url(images/install-bg-1920.png) no-
 #install-modal #screens, #install-modal #screens .screen { width: 100%; height: 100%; }
 #install-modal #screens .screen { padding: 35px; -webkit-box-sizing: border-box; box-sizing: border-box; }
 #install-modal #screens .screen .icon svg { position: absolute; bottom: -50px; left: -100px; width: 500px; height: 500px; }
-#install-modal #screens .screen .icon svg rect, #install-modal #screens .screen .icon svg circle, #install-modal #screens .screen .icon svg ellipse, #install-modal #screens .screen .icon svg line, #install-modal #screens .screen .icon svg polyline, #install-modal #screens .screen .icon svg polygon, #install-modal #screens .screen .icon svg path, #install-modal #screens .screen .icon svg text { fill: #ebedef; stroke-width: 0; }
+#install-modal #screens .screen .icon svg rect, #install-modal #screens .screen .icon svg circle, #install-modal #screens .screen .icon svg ellipse, #install-modal #screens .screen .icon svg line, #install-modal #screens .screen .icon svg polyline, #install-modal #screens .screen .icon svg polygon, #install-modal #screens .screen .icon svg path, #install-modal #screens .screen .icon svg text { fill: #f1f5f8; stroke-width: 0; }
 #install-modal #screens .screen h1 { margin-bottom: 35px; text-align: center; position: relative; }
 #install-modal #screens .screen form { width: 50%; float: right; }
 #install-modal #screens .screen form .select, #install-modal #screens .screen form .select select { width: 100%; }

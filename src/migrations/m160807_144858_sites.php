@@ -58,6 +58,10 @@ class m160807_144858_sites extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->execute($this->db->getQueryBuilder()->checkIntegrity(false, '', '{{%sites}}'));
+        $this->dropTableIfExists('{{%sites}}');
+
         // Create the sites table
         // ---------------------------------------------------------------------
 
