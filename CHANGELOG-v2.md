@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
 - Updated Garnish to 0.1.22.
 
 ### Fixed
