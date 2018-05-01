@@ -136,7 +136,7 @@ $minLargeScreenWidth: 1824px;
       text-decoration: underline;
     }
   }
-  
+
   #craftid-connect-form {
     .ssl-status {
       display: inline-block;
@@ -569,7 +569,7 @@ ul.categories {
   .plugin-icon {
     margin-right: 14px;
   }
-  
+
   .installed {
     position: absolute;
     top: 14px;
@@ -641,7 +641,7 @@ ul.categories {
     }
 
     .buttons {
-      margin-top: 0;
+      @include margin(0, 0, 0, 24px);
       white-space: nowrap;
 
       a {
@@ -665,7 +665,7 @@ ul.categories {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);  
+      transform: translate(-50%, -50%);
     }
 
     .plugin-description {
@@ -770,10 +770,10 @@ ul.categories {
 
   ul.links {
     margin-top: 36px;
-    
+
     li {
       margin-bottom: 1em;
-      
+
       a {
         display: block;
       }
