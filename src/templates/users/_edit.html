@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
+    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
         <input type="hidden" name="action" value="users/save-user">
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
