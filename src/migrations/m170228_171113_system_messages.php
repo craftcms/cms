@@ -15,6 +15,9 @@ class m170228_171113_system_messages extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists('{{%systemmessages}}');
+
         MigrationHelper::renameTable('{{%emailmessages}}', '{{%systemmessages}}');
 
         return true;
