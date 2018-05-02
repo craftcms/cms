@@ -2,18 +2,11 @@
 
 ## Unreleased
 
-### Added
-- Added a `/plugin-store/buy/{pluginHandle}` route to make it possible to add a plugin to the Plugin Store’s cart from a link.
-- Added `LightswitchInput` Plugin Store component.
-- Added `StatusMessage` Plugin Store component.
-
 ### Changed
 - Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
-- Refactored Plugin Store’s modal.
-- Refactored Plugin Store’s state management.
 
 ### Fixed
-- Fixed a bug where the Plugin Store’s cart items getter could throw an error if the cart was not loaded in the state manager yet.
+- Fixed an error that could occur in the Plugin Store.
 
 ## 3.0.5 - 2018-05-01
 
