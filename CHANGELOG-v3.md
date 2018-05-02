@@ -2,10 +2,17 @@
 
 ## Unreleased
 
+### Added
+- Added a `/plugin-store/buy/{pluginHandle}` route to make it possible to add a plugin to the Plugin Store’s cart from a link.
+- Added `LightswitchInput` Plugin Store component.
+- Added `StatusMessage` Plugin Store component.
+
 ### Changed
 - Fields’ translation icons now reveal the chosen Translation Method in their tooltip. ([#2808](https://github.com/craftcms/cms/issues/2808))
 - Improved the error messages displayed when an Assets field has an invalid Upload Location setting. ([#2803](https://github.com/craftcms/cms/issues/2803))
 - Craft now logs errors that occur when saving and replacing assets. ([#2814](https://github.com/craftcms/cms/issues/2814))
+- Refactored Plugin Store’s modal.
+- Refactored Plugin Store’s state management.
 
 ### Fixed
 - Fixed an error that would occur on servers without the Phar PHP extension enabled.
@@ -14,7 +21,7 @@
 - Fixed a SQL error that could occur when upgrading from Craft 2 to Craft 3 with an active user session.
 - Fixed various SQL errors that could occur when upgrading from Craft 2 to Craft 3, if there were any lingering Craft 3 database tables from a previous upgrade attempt.
 - Fixed a bug where the Clear Caches tool was deleting the `.gitignore` file inside `web/cpresources/`. ([#2823](https://github.com/craftcms/cms/issues/2823))
-
+- Fixed a bug where the Plugin Store’s cart items getter could throw an error if the cart was not loaded in the state manager yet.
 ## 3.0.4 - 2018-04-24
 
 ### Added
