@@ -28,7 +28,7 @@
                                     <div class="license-status installed" data-icon="check">{{ "Installed as a trial"|t('app') }}</div>
 
                                     <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].price) }) }}</a>
+                                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
                                 </template>
                             </template>
 
@@ -43,7 +43,7 @@
                                 </form>
 
                                 <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                                <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].price) }) }}</a>
+                                <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
                             </template>
                         </template>
                         <div v-else>
@@ -154,6 +154,12 @@
                 if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return this.plugin.longDescription
                 }
+            },
+
+            buyBtnTitle() {
+                return this.$root.$options.filters.t('Buy now for {price}', 'app', {
+                    price: this.$root.$options.filters.currency(this.pluginSnippet.editions[0].price)
+                });
             },
 
             developerUrl() {

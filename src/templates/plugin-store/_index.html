@@ -11,7 +11,7 @@
 	"Billing",
 	"Buy later",
 	"Buy now",
-	"Buy {price}",
+	"Buy now for {price}",
 	"Cart",
 	"Categories",
 	"Changelog",
@@ -121,10 +121,9 @@
 	</template>
 
 	<template v-else>
-		<div id="graphic" class="spinner big" :class="{ error: pluginStoreDataError }"></div>
-		<div id="status">{{ '{{ statusMessage }}' }}</div>
+		<status-message :error="pluginStoreDataError" :message="statusMessage" />
 	</template>
 
-	<modal :show.sync="showModal" :plugin-id="pluginId"></global>
+	<modal :show.sync="showModal" :plugin-id="pluginId" />
 
 {% endset %}

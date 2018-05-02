@@ -19,7 +19,8 @@ Garnish.$doc.ready(function() {
         store,
 
         components: {
-            modal: require('./components/modal/Modal')
+            modal: require('./components/modal/Modal'),
+            statusMessage: require('./components/StatusMessage'),
         },
 
         data() {

@@ -1176,11 +1176,12 @@ class Sections extends Component
             }
         }
 
-        // Update the remaining entry type's name, if this isn't a new section
+        // Update the remaining entry type's name and handle, if this isn't a new section
         // ---------------------------------------------------------------------
 
         if (!$isNewSection) {
             $entryTypes[$entry->typeId]->name = $section->name;
+            $entryTypes[$entry->typeId]->handle = $section->handle;
             $this->saveEntryType($entryTypes[$entry->typeId]);
         }
     }

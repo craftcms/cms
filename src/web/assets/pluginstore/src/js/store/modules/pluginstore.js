@@ -63,6 +63,12 @@ const getters = {
         }
     },
 
+    getPluginByHandle(state) {
+        return handle => {
+            return state.plugins.find(plugin => plugin.handle === handle)
+        }
+    },
+
 }
 
 /**
