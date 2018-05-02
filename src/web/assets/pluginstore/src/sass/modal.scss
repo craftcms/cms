@@ -36,8 +36,6 @@
     }
   }
 
-
-
   /* Plugin details */
 
   &.step-plugin-details {
@@ -72,7 +70,7 @@
         }
 
         .buttons {
-          margin-top: 0;
+          @include margin(0, 0, 0, 24px);
           white-space: nowrap;
 
           a {
@@ -170,7 +168,6 @@
     }
   }
 
-
   /* Payment */
 
   &.step-payment {
@@ -198,7 +195,6 @@
       }
     }
   }
-
 
   /* Thank You */
 

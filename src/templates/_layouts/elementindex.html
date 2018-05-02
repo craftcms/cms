@@ -49,7 +49,7 @@
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
         context:        '{{ context }}',
-        storageKey:     'elementindex.{{ elementType }}',
+        storageKey:     'elementindex.{{ elementType|e("js") }}',
         criteria:       Craft.defaultIndexCriteria
     });
 {% endblock %}

@@ -3,7 +3,6 @@
 @import "modal";
 @import "./upgrade-craft";
 
-
 /* General */
 
 $sidebarWidth: 225px;
@@ -27,7 +26,6 @@ $minLargeScreenWidth: 1824px;
 .input.errors .select:not(.selectize) select {
   box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
 }
-
 
 /* Lightswitch */
 
@@ -91,7 +89,6 @@ $minLargeScreenWidth: 1824px;
     border-radius: 50%;
   }
 }
-
 
 /* Plugin Store actions */
 
@@ -157,14 +154,13 @@ $minLargeScreenWidth: 1824px;
       text-decoration: underline;
     }
   }
-  
+
   #craftid-connect-form {
     .ssl-status {
       display: inline-block;
     }
   }
 }
-
 
 /* Graphic & Status */
 
@@ -209,7 +205,6 @@ only screen and (min-resolution: 1.5dppx) {
     }
   }
 }
-
 
 /* Grids */
 
@@ -284,7 +279,6 @@ only screen and (min-resolution: 1.5dppx) {
   }
 }
 
-
 /* Categories */
 
 ul.categories {
@@ -332,11 +326,10 @@ ul.categories {
     }
   }
 
-  li:hover+li:before {
+  li:hover + li:before {
     border-color: transparent;
   }
 }
-
 
 /* Category Selector */
 
@@ -375,7 +368,7 @@ ul.categories {
   background: #fff;
   z-index: 1000;
   width: 100vw;
-  height:100vh;
+  height: 100vh;
   box-sizing: border-box;
 
   .category-selector-header {
@@ -439,7 +432,6 @@ ul.categories {
   }
 }
 
-
 /* Plugin card */
 
 .plugin-card {
@@ -458,7 +450,7 @@ ul.categories {
   .plugin-icon {
     margin-right: 14px;
   }
-  
+
   .installed {
     position: absolute;
     top: 14px;
@@ -472,7 +464,6 @@ ul.categories {
     height: 100%;
   }
 }
-
 
 /* Plugin icon */
 
@@ -499,13 +490,11 @@ ul.categories {
   border-radius: 4px;
 }
 
-
 /* Plugin search */
 
 #container {
   position: static !important; /* #container hack required for modal overlays */
 }
-
 
 /* License status */
 
@@ -536,11 +525,10 @@ ul.categories {
   }
 }
 
-
 /* Developer card */
 
 .developer-card {
-  text-align:center;
+  text-align: center;
 
   .spinner {
     margin-top: 48px;
@@ -563,10 +551,10 @@ ul.categories {
 
   ul.links {
     margin-top: 36px;
-    
+
     li {
       margin-bottom: 1em;
-      
+
       a {
         display: block;
       }

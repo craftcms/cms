@@ -8,11 +8,21 @@
 - Added `StatusMessage` Plugin Store component.
 
 ### Changed
+- Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
+- Refactored Plugin Store’s modal.
+- Refactored Plugin Store’s state management.
+
+### Fixed
+- Fixed a bug where the Plugin Store’s cart items getter could throw an error if the cart was not loaded in the state manager yet.
+
+## 3.0.5 - 2018-05-01
+
+### Changed
 - Fields’ translation icons now reveal the chosen Translation Method in their tooltip. ([#2808](https://github.com/craftcms/cms/issues/2808))
 - Improved the error messages displayed when an Assets field has an invalid Upload Location setting. ([#2803](https://github.com/craftcms/cms/issues/2803))
 - Craft now logs errors that occur when saving and replacing assets. ([#2814](https://github.com/craftcms/cms/issues/2814))
-- Refactored Plugin Store’s modal.
-- Refactored Plugin Store’s state management.
+- Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
+- The Control Panel background color was lightened up a bit.
 
 ### Fixed
 - Fixed an error that would occur on servers without the Phar PHP extension enabled.
@@ -21,7 +31,9 @@
 - Fixed a SQL error that could occur when upgrading from Craft 2 to Craft 3 with an active user session.
 - Fixed various SQL errors that could occur when upgrading from Craft 2 to Craft 3, if there were any lingering Craft 3 database tables from a previous upgrade attempt.
 - Fixed a bug where the Clear Caches tool was deleting the `.gitignore` file inside `web/cpresources/`. ([#2823](https://github.com/craftcms/cms/issues/2823))
-- Fixed a bug where the Plugin Store’s cart items getter could throw an error if the cart was not loaded in the state manager yet.
+- Fixed the vertical positioning of checkboxes in the Control Panel. ([#2825](https://github.com/craftcms/cms/issues/2825))
+- Fixed a JavaScript error that could occur if an element type’s class name contained `\u`. ([#2826](https://github.com/craftcms/cms/issues/2826))
+
 ## 3.0.4 - 2018-04-24
 
 ### Added
