@@ -806,14 +806,19 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
      *
-     * @param string $svg The SVG file path or contents
+     * @param string|resource $svg The SVG file path or contents
      * @param bool $sanitize Whether the file should be sanitized first
      * @return \Twig_Markup|string
      */
-    public function svgFunction(string $svg, bool $sanitize = true)
+    public function svgFunction($svg, bool $sanitize = true)
     {
+        // If it's a resource, read it until the end.
+        if (is_resource($svg))
+        {
+            $svg = stream_get_contents($svg);
+        }
         // If we can't find an <svg> tag, it's probably a file path
-        if (stripos($svg, '<svg') === false) {
+        elseif (stripos($svg, '<svg') === false) {
             $svg = Craft::getAlias($svg);
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
                 return '';
