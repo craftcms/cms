@@ -119,10 +119,9 @@
 	</template>
 
 	<template v-else>
-		<div id="graphic" class="spinner big" :class="{ error: pluginStoreDataError }"></div>
-		<div id="status">{{ '{{ statusMessage }}' }}</div>
+		<status-message :error="pluginStoreDataError" :message="statusMessage" />
 	</template>
 
-	<global-modal :show.sync="showModal" :plugin-id="pluginId"></global-modal>
+	<modal :show.sync="showModal" :plugin-id="pluginId" />
 
 {% endset %}

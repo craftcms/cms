@@ -5,6 +5,7 @@ import Category from '../pages/Category'
 import UpgradeCraft from '../pages/UpgradeCraft'
 import Developer from '../pages/Developer'
 import FeaturedPlugins from '../pages/FeaturedPlugins'
+import Buy from '../pages/Buy'
 import Tests from '../pages/Tests'
 import NotFound from '../pages/NotFound'
 
@@ -38,6 +39,11 @@ export default new VueRouter({
             path: '/featured/:id',
             name: 'FeaturedPlugins',
             component: FeaturedPlugins,
+        },
+        {
+            path: '/buy/:pluginHandle',
+            name: 'Buy',
+            component: Buy,
         },
         {
             path: '/tests',
