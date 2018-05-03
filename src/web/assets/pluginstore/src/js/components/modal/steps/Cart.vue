@@ -153,20 +153,21 @@
                             const day = currentDate.getDay()
                             const date = new Date(year + i, month, day)
                             const formattedDate = Craft.formatDate(date)
-                            const price = this.$options.filters.currency(renewalPrice * (i - 1))
+                            const price = renewalPrice * (i - 1);
 
-                            let label = this.$options.filters.t("{year} year - Until {date} - Free", 'app', {
+                            let formattedPrice
+
+                            if(price > 0) {
+                                formattedPrice = '+' + this.$options.filters.currency(renewalPrice * (i - 1))
+                            } else {
+                                formattedPrice = this.$options.filters.t("Free", 'app')
+                            }
+
+                            const label = this.$options.filters.t("Updates Until {date} ({price})", 'app', {
                                 year: i,
                                 date: formattedDate,
+                                price: formattedPrice,
                             })
-
-                            if (i > 1) {
-                                label = this.$options.filters.t("{year} years - Until {date} - {price}", 'app', {
-                                    year: i,
-                                    date: formattedDate,
-                                    price: price,
-                                })
-                            }
 
                             options[itemKey].push({
                                 label: label,
