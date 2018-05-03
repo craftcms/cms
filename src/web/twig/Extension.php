@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
+use craft\elements\Asset;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -806,16 +807,25 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
      *
-     * @param string $svg The SVG file path or contents
+     * @param string|Asset $svg An SVG asset, a file path, or XML data
      * @param bool $sanitize Whether the file should be sanitized first
      * @return \Twig_Markup|string
      */
-    public function svgFunction(string $svg, bool $sanitize = true)
+    public function svgFunction($svg, bool $sanitize = true)
     {
-        // If we can't find an <svg> tag, it's probably a file path
-        if (stripos($svg, '<svg') === false) {
+        if ($svg instanceof Asset) {
+            try {
+                $svg = $svg->getContents();
+            } catch (\Throwable $e) {
+                Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return '';
+            }
+        } else if (stripos($svg, '<svg') === false) {
+            // No <svg> tag, so it's probably a file path
             $svg = Craft::getAlias($svg);
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                Craft::warning("Could not get the contents of {$svg}: The file doesn't exist", __METHOD__);
                 return '';
             }
             $svg = file_get_contents($svg);

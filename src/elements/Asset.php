@@ -22,6 +22,7 @@ use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\AssetException;
 use craft\errors\AssetTransformException;
 use craft\errors\FileException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -893,13 +894,27 @@ class Asset extends Element
     }
 
     /**
-     * Get a stream of the actual file.
+     * Returns a stream of the actual file.
      *
      * @return resource
+     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws AssetException if a stream could not be created
      */
     public function getStream()
     {
         return $this->getVolume()->getFileStream($this->getPath());
+    }
+
+    /**
+     * Returns the file’s contents.
+     *
+     * @return string
+     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws AssetException if a stream could not be created
+     */
+    public function getContents(): string
+    {
+        return stream_get_contents($this->getStream());
     }
 
     /**
