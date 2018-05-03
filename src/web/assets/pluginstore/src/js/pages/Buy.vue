@@ -29,20 +29,25 @@
                     return;
                 }
 
-                const item = {
-                    type: 'plugin-edition',
-                    plugin: plugin.handle,
-                    edition: plugin.editions[0].handle,
-                    autoRenew: false,
-                    cmsLicenseKey: window.cmsLicenseKey,
-                }
+                if(this.isInCart(plugin)) {
+                    this.$router.push({path: '/'})
+                    this.$root.openModal('cart')
+                } else {
+                    const item = {
+                        type: 'plugin-edition',
+                        plugin: plugin.handle,
+                        edition: plugin.editions[0].handle,
+                        autoRenew: false,
+                        cmsLicenseKey: window.cmsLicenseKey,
+                    }
 
-                this.$store.dispatch('addToCart', [item])
-                    .then(() => {
-                        this.loading = false
-                        this.$router.push({path: '/'})
-                        this.$root.openModal('cart')
-                    })
+                    this.$store.dispatch('addToCart', [item])
+                        .then(() => {
+                            this.loading = false
+                            this.$router.push({path: '/'})
+                            this.$root.openModal('cart')
+                        })
+                }
             },
 
             isPluginBuyable(plugin) {
@@ -52,9 +57,7 @@
                             return true
                         }
                     } else {
-                        if(!this.isInCart(plugin)) {
-                            return true
-                        }
+                        return true
                     }
                 }
 

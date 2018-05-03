@@ -280,7 +280,8 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isSvg(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        return self::getMimeType($file, $magicFile, $checkExtension) === 'image/svg+xml';
+        $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
+        return strpos($mimeType, 'image/svg') === 0;
     }
 
     /**
