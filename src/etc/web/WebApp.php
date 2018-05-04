@@ -838,26 +838,41 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns whether this is a special case request (something dealing with user sessions or updating)
+	 * where system status / CP permissions shouldn't be taken into effect.
+	 *
 	 * @return bool
 	 */
 	private function _isSpecialCaseActionRequest()
 	{
-		$segments = $this->request->getActionSegments();
+		$actionSegs = $this->request->getActionSegments();
 
-		if (
-			$segments == array('users', 'login') ||
-			$segments == array('users', 'logout') ||
-			$segments == array('users', 'setpassword') ||
-			$segments == array('users', 'forgotpassword') ||
-			$segments == array('users', 'sendPasswordResetEmail') ||
-			$segments == array('users', 'saveUser') ||
-			$segments == array('users', 'getAuthTimeout')
-		)
+		if (empty($actionSegs))
 		{
-			return true;
+			return false;
 		}
 
-		return false;
+		return (
+			$actionSegs === array('users', 'login') ||
+			$actionSegs === array('users', 'forgotPassword') ||
+			$actionSegs === array('users', 'sendPasswordResetEmail') ||
+			$actionSegs === array('users', 'getAuthTimeout') ||
+			(
+				$this->request->isSingleActionRequest() &&
+				(
+					$actionSegs === array('users', 'logout') ||
+					$actionSegs === array('users', 'setPassword') ||
+					$actionSegs === array('users', 'verifyEmail')
+				)
+			) ||
+			(
+				$this->request->isCpRequest() &&
+				(
+					$actionSegs[0] === 'update' ||
+					$actionSegs[0] === 'manualupdate'
+				)
+			)
+		);
 	}
 
 	/**
@@ -1005,55 +1020,12 @@ class WebApp extends \CWebApplication
 	 */
 	private function _checkSystemStatusPermissions()
 	{
-		if ($this->isSystemOn())
+		if ($this->isSystemOn() || $this->_isSpecialCaseActionRequest())
 		{
 			return true;
 		}
 
-		if ($this->request->isCpRequest() ||
-
-			// Special case because we hide the cpTrigger in emails.
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword' ||
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyemail' ||
-			// Special case because this might be a request with a user that has "Access the site when the system is off"
-			// permissions and is in the process of logging in while the system is off.
-			$this->request->getActionSegments() == array('users', 'login')
-		)
-		{
-			if ($this->userSession->checkPermission('accessCpWhenSystemIsOff'))
-			{
-				return true;
-			}
-
-			if ($this->request->getSegment(1) == 'manualupdate')
-			{
-				return true;
-			}
-
-			$actionSegs = $this->request->getActionSegments();
-			$singleAction = $this->request->isSingleActionRequest();
-
-			if ($actionSegs && (
-				($actionSegs == array('users', 'login')) ||
-				($actionSegs == array('users', 'logout') && $singleAction) ||
-				($actionSegs == array('users', 'verifyemail') && $singleAction) ||
-				($actionSegs == array('users', 'setpassword') && $singleAction) ||
-				$actionSegs == array('users', 'forgotpassword') ||
-				$actionSegs == array('users', 'sendPasswordResetEmail') ||
-				$actionSegs[0] == 'update'
-			))
-			{
-				return true;
-			}
-		}
-		else
-		{
-			if ($this->userSession->checkPermission('accessSiteWhenSystemIsOff'))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		$permission = $this->request->isCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
+		return $this->userSession->checkPermission($permission);
 	}
 }
