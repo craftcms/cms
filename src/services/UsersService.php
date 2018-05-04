@@ -512,7 +512,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function getEmailVerifyUrl(UserModel $user)
 	{
-		return $this->_getUserUrl($user, 'verifyemail');
+		return $this->_getUserUrl($user, 'verifyEmail');
 	}
 
 	/**
@@ -524,7 +524,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function getPasswordResetUrl(UserModel $user)
 	{
-		return $this->_getUserUrl($user, 'setpassword');
+		return $this->_getUserUrl($user, 'setPassword');
 	}
 
 	/**
