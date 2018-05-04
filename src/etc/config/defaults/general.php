@@ -555,7 +555,7 @@ return array(
 	'sendPoweredByHeader' => true,
 
 	/**
-	 * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+	 * The password-reset template path. Note that this only affects front-end site requests.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
 	 * basis.

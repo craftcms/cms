@@ -1562,20 +1562,16 @@ class HttpRequestService extends \CHttpRequest
 				{
 					$loginPath       = craft()->config->getCpLoginPath();
 					$logoutPath      = craft()->config->getCpLogoutPath();
-					$setPasswordPath = craft()->config->getCpSetPasswordPath();
 				}
 				else
 				{
 					$loginPath       = trim(craft()->config->getLocalized('loginPath'), '/');
 					$logoutPath      = trim(craft()->config->getLocalized('logoutPath'), '/');
-					$setPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
 				}
-
-				$verifyEmailPath = 'verifyemail';
 
 				$hasTriggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1);
 				$hasActionParam = ($actionParam = $this->getParam('action')) !== null;
-				$hasSpecialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath));
+				$hasSpecialPath = in_array($this->_path, array($loginPath, $logoutPath));
 
 				if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath)
 				{
@@ -1605,17 +1601,9 @@ class HttpRequestService extends \CHttpRequest
 						{
 							$this->_actionSegments = array('users', 'login');
 						}
-						else if ($this->_path == $logoutPath)
-						{
-							$this->_actionSegments = array('users', 'logout');
-						}
-						else if ($this->_path == $verifyEmailPath)
-						{
-							$this->_actionSegments = array('users', 'verifyemail');
-						}
 						else
 						{
-							$this->_actionSegments = array('users', 'setpassword');
+							$this->_actionSegments = array('users', 'logout');
 						}
 					}
 				}
