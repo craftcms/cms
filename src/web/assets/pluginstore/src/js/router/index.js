@@ -21,6 +21,11 @@ export default new VueRouter({
             component: Index,
         },
         {
+            path: '/plugin/:pluginHandle',
+            name: 'Plugin',
+            component: Index
+        },
+        {
             path: '/categories/:id',
             name: 'Category',
             component: Category,

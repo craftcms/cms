@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Error messages about missing plugin-supplied field and volume types now show an Install button when possible.
+- Added `craft\base\MissingComponentTrait::getPlaceholderHtml()`.
 - Added `craft\elements\Asset::getContents()`.
 
 ### Changed
