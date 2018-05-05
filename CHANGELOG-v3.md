@@ -11,6 +11,7 @@
 - `craft\helpers\FileHelper::isSvg()` now returns `true` for files with an `image/svg` MIME type (missing the `+xml`). ([#2837](https://github.com/craftcms/cms/pull/2837))
 - The `svg()` Twig function now accepts assets to be passed directly into it. ([#2838](https://github.com/craftcms/cms/pull/2838))
 - The “Save and add another” save menu option on Edit Entry and Edit Categories pages now maintain the currently-selected site. ([#2844](https://github.com/craftcms/cms/issues/2844))
+- PHP date patterns that are *only* a month name or week day name character will now format the date using the stand-alone month/week day name value. (For example, `'F'` will format a date as “Maggio” instead of “maggio”.)
 
 ### Fixed
 - Fixed an error that could occur in the Plugin Store.

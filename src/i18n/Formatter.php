@@ -14,7 +14,6 @@ use DateTimeZone;
 use NumberFormatter;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\helpers\FormatConverter;
 
 /**
  * @inheritdoc
@@ -87,6 +86,10 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['date'];
         }
 
+        if (strncmp($format, 'php:', 4) === 0) {
+            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
+        }
+
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asDate($value, $format);
         }
@@ -112,6 +115,10 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['time'];
         }
 
+        if (strncmp($format, 'php:', 4) === 0) {
+            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
+        }
+
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asTime($value, $format);
         }
@@ -135,6 +142,10 @@ class Formatter extends \yii\i18n\Formatter
 
         if (isset($this->dateTimeFormats[$format]['datetime'])) {
             $format = $this->dateTimeFormats[$format]['datetime'];
+        }
+
+        if (strncmp($format, 'php:', 4) === 0) {
+            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -295,11 +306,6 @@ class Formatter extends \yii\i18n\Formatter
 
         if ($timestamp === null) {
             return $this->nullDisplay;
-        }
-
-        if (strpos($format, 'php:') === 0) {
-            $format = substr($format, 4);
-            $format = FormatConverter::convertDatePhpToIcu($format);
         }
 
         if ($timeZone != null) {
