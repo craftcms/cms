@@ -197,6 +197,10 @@ class RichTextFieldType extends BaseFieldType
 
 			if ($this->getSettings()->cleanupHtml)
 			{
+				// Replace &nbsp;'s with spaces
+				$value =  str_replace('&nbsp;', ' ', $value);
+				$value = preg_replace('/  +/', ' ', $value);
+
 				// Remove <span> and <font> tags
 				$value = preg_replace('/<(?:span|font)\b[^>]*>/', '', $value);
 				$value = preg_replace('/<\/(?:span|font)>/', '', $value);
