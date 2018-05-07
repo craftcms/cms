@@ -16,6 +16,7 @@
 - PHP date patterns that are *only* a month name or week day name character will now format the date using the stand-alone month/week day name value. (For example, `'F'` will format a date as “Maggio” instead of “maggio”.)
 - Servers without the Intl extension will now use location-agnostic locale data as a fallback if locale data for the specific locale isn’t available.
 - The `|date` Twig filter always goes through `craft\i18n\Formatter::asDate()` now, unless formatting a `DateInterval` object.
+- The Settings → Plugins page now shows “Buy now” buttons for any commercial plugins that don’t have a license key yet.
 
 ### Deprecated
 - Deprecated `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` should be used instead.

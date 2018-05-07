@@ -67,7 +67,7 @@
                                             .append(
                                                 $('<div/>', {'class': 'flex license-key'})
                                                     .append(
-                                                        $('<div/>')
+                                                        $('<div />', {'class': 'pane'})
                                                             .append(
                                                                 $('<input/>', {
                                                                     'class': 'text code',
@@ -196,6 +196,7 @@
             $keyContainer: null,
             $keyInput: null,
             $spinner: null,
+            $buyBtn: null,
             handle: null,
             updateTimeout: null,
 
@@ -203,6 +204,7 @@
                 this.$row = $row;
                 this.$keyContainer = $row.find('.license-key')
                 this.$keyInput = this.$keyContainer.find('input.text').removeAttr('readonly');
+                this.$buyBtn = this.$keyContainer.find('.btn');
                 this.$spinner = $row.find('.spinner');
                 this.handle = this.$row.data('handle');
                 this.addListener(this.$keyInput, 'focus', 'onKeyFocus')
@@ -276,6 +278,18 @@
                 if (showLicenseKey && info.licenseStatusMessage) {
                     $('<p/>', {'class': 'error', html: info.licenseStatusMessage})
                         .insertAfter(this.$row.find('.license-key'));
+                }
+
+                // show/hide the Buy button
+                if (showLicenseKey && !info.licenseKey) {
+                    this.$buyBtn.removeClass('hidden');
+                    if (info.hasIssues) {
+                        this.$buyBtn.addClass('submit');
+                    } else {
+                        this.$buyBtn.removeClass('submit');
+                    }
+                } else {
+                    this.$buyBtn.addClass('hidden');
                 }
             }
         }
