@@ -272,16 +272,10 @@
                 }
 
                 // add the error message
-                var $oldError = this.$row.find('p.error');
+                this.$row.find('p.error').remove();
                 if (showLicenseKey && info.licenseStatusMessage) {
-                    var $newError = $('<p/>', {'class': 'error', html: info.licenseStatusMessage});
-                    if ($oldError.length) {
-                        $oldError.replaceWith($newError);
-                    } else {
-                        $newError.insertAfter(this.$row.find('.license-key'));
-                    }
-                } else {
-                    $oldError.remove();
+                    $('<p/>', {'class': 'error', html: info.licenseStatusMessage})
+                        .insertAfter(this.$row.find('.license-key'));
                 }
             }
         }
