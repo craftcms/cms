@@ -154,7 +154,7 @@ Here’s how you can resolve this:
 
 Craft 3 uses Twig 2, which has its own breaking changes for templates:
 
-#### Macros
+### Macros
 
 Twig 2 requires that you explicitly import macros in each template where you are using them. They are no longer automatically available if a parent template is including them, or even if they were defined in the same template file.
 
@@ -169,7 +169,7 @@ New:
 {{ macros.foo() }}
 ```
 
-#### Undefined Blocks
+### Undefined Blocks
 
 Twig 1 let you call `block()` even for blocks that didn’t exist:
 
