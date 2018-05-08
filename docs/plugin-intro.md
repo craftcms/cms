@@ -209,7 +209,7 @@ If you’re ready to publicly release your plugin, register it as a new Composer
 
 Plugins can provide an icon, which will be visible on the Settings → Plugins page.
 
-<img src="assets/plugin-index.png" width="1159" alt="The Settings → Plugins page in Craft’s Control Panel.">
+![The Settings → Plugins page in Craft’s Control Panel.](./images/plugin-index.png)
 
 Plugin icons must be square SVG files, saved as `icon.svg` at the root of your plugin’s source directory (e.g `src/`).
 

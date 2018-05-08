@@ -94,7 +94,7 @@ Both Channel and Structure sections let you define multiple types of entries usi
 
 You can manage your sections’ Entry Types by clicking the “Edit Entry Types” link beside the section’s name in Settings → Sections. That’ll take you to the section’s entry type index. Clicking on an entry type’s name takes you to its settings page:
 
-![Entry Type Edit Settings](images/sections-and-entries-entry-types.png)
+![Entry Type Edit Settings](./images/sections-and-entries-entry-types.png)
 
 Entry types have the following settings:
 

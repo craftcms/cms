@@ -2,7 +2,7 @@
 
 You can search for elements anywhere you see this bar:
 
-![Search Bar](images/searching-search-bar.png)
+![Search Bar](./images/searching-search-bar.png)
 
 ## Supported syntaxes
 

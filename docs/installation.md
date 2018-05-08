@@ -18,7 +18,7 @@ To create a new Craft project, run this command (substituting `<PATH>` with the 
 
 Composer will take a couple minutes to load everything. Once it’s done you will be shown a success message:
 
-![The success message shown after loading Craft with Composer](images/installation-command-line.png)
+![The success message shown after loading Craft with Composer](./images/installation-command-line.png)
 
 ### Downloading an Archive File Manually
 
@@ -145,11 +145,11 @@ The command will ask you a few questions to learn how to connect to your databas
 
 In your web browser, go to `http://<HOSTNAME>/index.php?p=admin` (substituting `<HOSTNAME>` with your web server’s host name). If you’ve done everything right so far, you should be greeted by Craft’s Setup Wizard.
 
-![Craft Installation Screen](images/installation-step-0.png)
+![Craft Installation Screen](./images/installation-step-0.png)
 
 The first step of the installer is to accept the [license agreement](https://craftcms.com/license). Scroll down through the agreement (reading it all, of course) and click the “Got it” button to accept.
 
-![Craft Installation License Agreement](images/installation-step-1.png)
+![Craft Installation License Agreement](./images/installation-step-1.png)
 
 The second step is to enter your database connection information.
 
@@ -157,21 +157,21 @@ The second step is to enter your database connection information.
 If the Setup Wizard skips this step, it’s because Craft is already able to connect to your database. 
 :::
 
-![Craft Installation Database Connection Information](images/installation-step-2.png)
+![Craft Installation Database Connection Information](./images/installation-step-2.png)
 
 The third step of the installer is to create an admin account. Don’t be one of _those people_ and be sure to pick a strong password.
 
-![Craft Installation Create User Account](images/installation-step-3.png)
+![Craft Installation Create User Account](./images/installation-step-3.png)
 
 The final step is to define your System Name, Base URL, and Language.
 
-![Craft Installation System Settings](images/installation-step-4.png)
+![Craft Installation System Settings](./images/installation-step-4.png)
 
 Click “Finish up” to complete the setup process. A few seconds later, you should have a working Craft install!
 
 If it was successful, Craft will redirect your browser to the Control Panel.
 
-![Craft Installation Complete](images/installation-step-5.png)
+![Craft Installation Complete](./images/installation-step-5.png)
 
 Congratulations, you’ve just installed Craft!
 

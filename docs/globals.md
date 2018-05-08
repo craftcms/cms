@@ -30,4 +30,4 @@ If you run multiple sites with Craft, Global Sets are available in all sites. Ho
 
 To toggle between sites while viewing Global Sets, use the drop-down menu at the top left of the Global Sets page in the Control Panel.
 
-![Toggling between sites in Globals](images/globals-multisite-nav.png)
+![Toggling between sites in Globals](./images/globals-multisite-nav.png)

@@ -11,7 +11,7 @@ All fields share a few common settings:
 * Handle
 * Instruction text
 
-![Field Settings](images/fields-field-settings.png)
+![Field Settings](./images/fields-field-settings.png)
 
 ## Translatable Fields
 

@@ -46,7 +46,7 @@ In some cases you want a URL to load a template, but you don’t want the URI to
 
 A good example of this is a yearly archive page, where you want the year to be one of the segments in the URL (e.g. `news/archive/2017`). It would be silly to create a new template for every year. Instead, you should set up a new Dynamic Route.
 
-![Creating a New Route](images/routing-creating-new-route.png)
+![Creating a New Route](./images/routing-creating-new-route.png)
 
 ### Creating Routes
 
