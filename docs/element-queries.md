@@ -30,7 +30,12 @@ The available parameters varies by element type. Here are the lists of parameter
 
 The parameters should be set with chained method calls, like so:
 
-#### PHP
+::: code
+```twig
+{% set query = craft.entries()
+    .section('news')
+    .limit(10) %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -39,20 +44,19 @@ $query = Entry::find()
     ->section('news')
     ->limit(10);
 ```
-
-#### Twig
-
-```twig
-{% set query = craft.entries()
-    .section('news')
-    .limit(10) %}
-```
+:::
 
 ### Batch-Setting Parameters
 
 You can also batch-set parameters like so:
 
-#### PHP
+::: code
+```twig
+{% set query = craft.entries({
+    section: 'news',
+    limit: 10
+}) %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -63,15 +67,7 @@ $query = Entry::find();
     'limit' => 10
 ]);
 ```
-
-#### Twig
-
-```twig
-{% set query = craft.entries({
-    section: 'news',
-    limit: 10
-}) %}
-```
+:::
 
 ### Param Value Syntax
 
@@ -101,7 +97,7 @@ In addition to the core parameters, most custom fields support their own paramet
     .section('news')
     .myCustomFieldHandle('param-value')
     .all() %}
-``
+```
 
 ## Executing Element Queries
 
@@ -111,7 +107,13 @@ Once you’ve defined your parameters on the query, there are multiple methods a
 
 Returns whether any elements match the query.
 
-#### PHP
+::: code
+```twig
+{% set exists = craft.entries()
+    .section('news')
+    .slug('hello-world')
+    .exists() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -121,21 +123,20 @@ $exists = Entry::find()
     ->slug('hello-world')
     ->exists();
 ```
+:::
 
 #### Twig
-
-```twig
-{% set exists = craft.entries()
-    .section('news')
-    .slug('hello-world')
-    .exists() %}
-```
 
 ### `count()`
 
 Returns the total number of elements that are matched by the query.
 
-#### PHP
+::: code
+```twig
+{% set count = craft.entries()
+    .section('news')
+    .count() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -144,20 +145,20 @@ $count = Entry::find()
     ->section('news')
     ->count();
 ```
-
-#### Twig
-
-```twig
-{% set count = craft.entries()
-    .section('news')
-    .count() %}
-```
+:::
 
 ### `all()`
 
 Returns all of the elements in an array.
 
-#### PHP
+::: code
+```twig
+{% set entries = craft.entries()
+    .section('news')
+    .limit(10)
+    .all() %}
+```
+
 
 ```php
 use craft\elements\Entry;
@@ -167,21 +168,19 @@ $entries = Entry::find()
     ->limit(10)
     ->all();
 ```
-
-#### Twig
-
-```twig
-{% set entries = craft.entries()
-    .section('news')
-    .limit(10)
-    .all() %}
-```
+:::
 
 ### `one()`
 
 Returns the first matching element, or `null` if there isn’t one.
 
-#### PHP
+::: code
+```twig
+{% set entry = craft.entries()
+    .section('news')
+    .slug('hello-world')
+    .one() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -191,21 +190,19 @@ $entry = Entry::find()
     ->slug('hello-world')
     ->one();
 ```
-
-#### Twig
-
-```twig
-{% set entry = craft.entries()
-    .section('news')
-    .slug('hello-world')
-    .one() %}
-```
+:::
 
 ### `nth()`
 
 Returns the `n`th matching element, or `null` if there isn’t one. Note that `n` is 0-indexed, so `nth(0)` will give you the first element, `nth(1)` will give you the second, etc.
 
-#### PHP
+::: code
+
+```twig
+{% set entry = craft.entries()
+    .section('news')
+    .nth(4) %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -214,20 +211,19 @@ $entry = Entry::find()
     ->section('news')
     ->nth(4);
 ```
-
-#### Twig
-
-```twig
-{% set entry = craft.entries()
-    .section('news')
-    .nth(4) %}
-```
+:::
 
 ### `ids()`
 
 Returns an array of the IDs of the matching elements.
 
-#### PHP
+::: code
+
+```twig
+{% set entryIds = craft.entries()
+    .section('news')
+    .ids() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -236,20 +232,20 @@ $entryIds = Entry::find()
     ->section('news')
     ->ids();
 ```
-
-#### Twig
-
-```twig
-{% set entryIds = craft.entries()
-    .section('news')
-    .ids() %}
-```
+:::
 
 ### `column()`
 
 Returns an array of all the first column’s values. By default that will be the elements’ IDs, but you can customize that with the `select()` param.
 
-#### PHP
+::: code
+
+```twig
+{% set uris = craft.entries()
+    .section('news')
+    .select('uri')
+    .column() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -259,21 +255,20 @@ $uris = Entry::find()
     ->select('uri')
     ->column();
 ```
-
-#### Twig
-
-```twig
-{% set uris = craft.entries()
-    .section('news')
-    .select('uri')
-    .column() %}
-```
+:::
 
 ### `scalar()`
 
 Returns the first column’s value of the first matching element. By default that will be the element’s ID, but you can customize that with the `select()` param.
 
-#### PHP
+::: code
+```twig
+{% set uri = craft.entries()
+    .section('news')
+    .slug('hello-world')
+    .select('uri')
+    .scalar() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -284,16 +279,7 @@ $uri = Entry::find()
     ->select('uri')
     ->scalar();
 ```
-
-#### Twig
-
-```twig
-{% set uri = craft.entries()
-    .section('news')
-    .slug('hello-world')
-    .select('uri')
-    .scalar() %}
-```
+:::
 
 ### Aggregate Methods
 
@@ -306,7 +292,14 @@ The following methods will run an aggregate method on the first column of matchi
 
 By default the first column will be the elements’ IDs, but you can customize that with the `select()` param.
 
-#### PHP
+::: code
+
+```twig
+{% set sum = craft.entries()
+    .section('news')
+    .select('field_someNumberField')
+    .sum() %}
+```
 
 ```php
 use craft\elements\Entry;
@@ -316,12 +309,4 @@ $sum = Entry::find()
     ->select('field_someNumberField')
     ->sum();
 ```
-
-#### Twig
-
-```twig
-{% set sum = craft.entries()
-    .section('news')
-    .select('field_someNumberField')
-    .sum() %}
-```
+:::
