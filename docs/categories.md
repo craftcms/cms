@@ -39,7 +39,9 @@ When you create a category, you have the following options:
 * Edit the slug (it's automatically populated based on the title).
 * Choose a Parent category. The new category will have a hierarchical relationship with its parent. This is helpful for creating taxonomies with multiple levels. You also have the option of creating a new category while assigning the Parent.
 
-> {tip} You can only nest categories up to the level specified in the Max Level field Category Group settings. If no level is specified then the nesting level is unlimited.
+::: tip
+You can only nest categories up to the level specified in the Max Level field Category Group settings. If no level is specified then the nesting level is unlimited.
+:::
 
 ## Assigning Categories
 

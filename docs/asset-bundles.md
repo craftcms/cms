@@ -63,7 +63,9 @@ class MyPluginAsset extends AssetBundle
 }
 ```
 
-> {note} `@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.  
+::: tip
+`@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.  
+:::
 
 ### Registering the Asset Bundle
 
@@ -106,6 +108,8 @@ For example, if you had a bunch of icon SVG files in an `icons/` folder within y
 $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/icons', true, 'shaker.svg');
 ```
 
-> {note} `@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.
+::: tip
+`@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.
+:::
 
 [Yii alias]: http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html

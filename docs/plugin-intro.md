@@ -16,7 +16,9 @@ The main benefits of Craft Plugins over Yii Modules are:
 
 ## Getting Started
 
-> {tip} Use [pluginfactory.io](https://pluginfactory.io/) to create your plugin’s scaffolding with just a few clicks.
+::: tip
+Use [pluginfactory.io](https://pluginfactory.io/) to create your plugin’s scaffolding with just a few clicks.
+:::
 
 ### Preparation
 
@@ -42,7 +44,9 @@ To create a plugin, create a new directory for it somewhere on your computer. A 
       Plugin.php
 ```
 
-> {note} The name of your plugin directory doesn’t matter. Just choose something that is easy to identify.
+::: tip
+The name of your plugin directory doesn’t matter. Just choose something that is easy to identify.
+:::
 
 ### composer.json
 
@@ -107,9 +111,13 @@ Here’s a full list of the properties that can go in that `extra` object:
 - `hasCpSection` – Whether the plugin has its own section in the Control Panel (should be `true` or `false`).
 - `components` – Object defining any [component configs] that should be present on the plugin.
 
-> {note} Don’t include `composer/installers` as a Composer dependency.
+::: tip
+Don’t include `composer/installers` as a Composer dependency.
+:::
 
-> {tip} While not strictly required by Composer, we recommend you explicitly set the `version` in your `composer.json` because it makes a couple things easier on your when developing the plugin. Don’t forget to keep it updated though!
+::: tip
+While not strictly required by Composer, we recommend you explicitly set the `version` in your `composer.json` because it makes a couple things easier on your when developing the plugin. Don’t forget to keep it updated though!
+:::
 
 ### Primary Plugin Class
 
@@ -161,7 +169,9 @@ To set it up, open your Craft project’s `composer.json` file and make the foll
 }
 ```
 
-> {note} Set the `url` value to the absolute or relative path to your plugin’s source directory. (The `../my-plugin` example value assumes that the plugin lives in a folder alongside the project’s folder.)
+::: tip
+Set the `url` value to the absolute or relative path to your plugin’s source directory. (The `../my-plugin` example value assumes that the plugin lives in a folder alongside the project’s folder.)
+:::
 
 In your terminal, go to your Craft project and tell Composer to require your plugin. (Use the same package name you gave your plugin in its `composer.json` file.)
 
@@ -176,13 +186,15 @@ Composer’s installation log should indicate that the package was installed via
   - Installing package/name (X.Y.Z): Symlinking from ../my-plugin
 ```
 
-> {note} One caveat of `path` Composer repositories is that Composer will ignore `path`-based dependencies when you run `composer update`. So any time you change anything in `composer.json`, such as your plugin’s dependency requirements or its plugin information, you will need to completely remove and re-require your plugin in your project for those changes to take effect.
->
-> ```
-> > cd ~/dev/my/craft-project
-> > composer remove package/name
-> > composer require package/name
-> ```
+::: warning
+One caveat of `path` Composer repositories is that Composer will ignore `path`-based dependencies when you run `composer update`. So any time you change anything in `composer.json`, such as your plugin’s dependency requirements or its plugin information, you will need to completely remove and re-require your plugin in your project for those changes to take effect.
+
+```
+> cd ~/dev/my/craft-project
+> composer remove package/name
+> composer require package/name
+```
+:::
 
 #### Packagist
 

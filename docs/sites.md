@@ -77,7 +77,9 @@ Sites can all share the same domain name, such as `https://craftcms.com` and `ht
 
 If you want to create a site that will live at a different domain name, just make sure that its DNS record is pointing to your server, and make sure the web server is configured to point traffic for that domain to your `web/` directory.
 
-> {tip} Craft doesn’t require you to create additional `web/` directories for new sites, though it’s fine if you need to.
+::: tip
+Craft doesn’t require you to create additional `web/` directories for new sites, though it’s fine if you need to.
+:::
 
 
 ## Propagating Entries Across All Enabled Sites

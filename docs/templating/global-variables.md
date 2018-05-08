@@ -10,7 +10,9 @@ A [craft\web\twig\variables\CraftVariable](https://docs.craftcms.com/api/v3/craf
 
 A reference to the main [craft\web\Application](https://docs.craftcms.com/api/v3/craft-web-application.html) instance (the thing you get when you type `Craft::$app` in PHP code) is also available to templates via `craft.app`.
 
-> {note} Accessing things via `craft.app` is considered highly advanced. There are more security implications than other Twig-specific variables and functions, and your templates will be more susceptible to breaking changes during major Craft version bumps.
+::: danger
+Accessing things via `craft.app` is considered highly advanced. There are more security implications than other Twig-specific variables and functions, and your templates will be more susceptible to breaking changes during major Craft version bumps.
+:::
 
 ```twig
 {% if craft.app.config.general.devMode %}

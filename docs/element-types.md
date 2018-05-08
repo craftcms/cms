@@ -78,7 +78,9 @@ if (!$this->db->tableExists('{{%products}}')) {
 }
 ```
 
-> {note} If you’re adding this as an update to an existing plugin, you will need to create a new normal migration as well, and copy the same code into it.
+::: tip
+If you’re adding this as an update to an existing plugin, you will need to create a new normal migration as well, and copy the same code into it.
+:::
 
 Install the plugin now, so your database table will be created.
 
@@ -476,7 +478,9 @@ protected static function defineTableAttributes(): array
 }
 ```
 
-> {note} The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will be the element string representations (whatever their `__toString()` methods return).
+::: tip
+The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will be the element string representations (whatever their `__toString()` methods return).
+:::
 
 If it’s a big list, you can also limit which columns should be visible by default for new [sources](#sources) by adding a protected `defineDefaultTableAttributes()` method to your element class:
 

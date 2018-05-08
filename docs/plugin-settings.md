@@ -100,7 +100,9 @@ return [
 ];
 ```
 
-> {note} The config file cannot contain any keys that are not defined in the plugin’s settings model. 
+::: warning
+The config file cannot contain any keys that are not defined in the plugin’s settings model. 
+:::
 
 ## Settings Pages
 

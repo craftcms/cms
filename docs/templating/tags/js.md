@@ -12,12 +12,14 @@ The `{% js %}` tag can be used to register a `<script>` tag on the page.
 {% endjs %}
 ```
 
-> {note} The tag calls [yii\web\View::registerJs()](http://www.yiiframework.com/doc-2.0/yii-web-view.html#registerJs()-detail) under the hood, which can also be accessed via the global `view` variable.
-> 
-> ```twig
-> {% set script = '_gaq.push(["_trackEvent", "Search", "'~searchTerm|e('js')~'"' %}
-> {% do view.registerJs(styles) %}
-> ``` 
+::: tip
+The tag calls [yii\web\View::registerJs()](http://www.yiiframework.com/doc-2.0/yii-web-view.html#registerJs()-detail) under the hood, which can also be accessed via the global `view` variable.
+
+```twig
+{% set script = '_gaq.push(["_trackEvent", "Search", "'~searchTerm|e('js')~'"' %}
+{% do view.registerJs(styles) %}
+```
+:::
 
 ## Parameters
 
@@ -41,4 +43,6 @@ You can specify where the `<script>` tag should be added to the page using one o
 
 By default, `at endBody` will be used.
 
-> {note} Setting the position to `on load` or `on ready` will cause Craft to load its internal copy of jQuery onto the page (even if the template is already including its own copy), so you should probably avoid using them in front-end templates.
+::: warning
+Setting the position to `on load` or `on ready` will cause Craft to load its internal copy of jQuery onto the page (even if the template is already including its own copy), so you should probably avoid using them in front-end templates.
+:::

@@ -10,7 +10,9 @@ The primary goals of the refactoring were:
 
 The end result is a faster, leaner, and much more elegant codebase for core development and plugin development alike. We hope you enjoy it.
 
-> {note} If you think something is missing, please [create an issue](https://github.com/craftcms/docs/issues/new).
+::: tip
+If you think something is missing, please [create an issue](https://github.com/craftcms/docs/issues/new).
+:::
 
 [[toc]]
 
@@ -321,7 +323,9 @@ public function getResourcePath($path)
 }
 ```
 
-> {note} There is no direct Craft 3 equivalent for this hook, which allowed plugins to handle resource requests, because the concept of resource requests has been removed in Craft 3. See [Asset Bundels](asset-bundles.md) to learn how plugins can serve resources in Craft 3.  
+::: warning NOTE
+There is no direct Craft 3 equivalent for this hook, which allowed plugins to handle resource requests, because the concept of resource requests has been removed in Craft 3. See [Asset Bundels](asset-bundles.md) to learn how plugins can serve resources in Craft 3.  
+:::
 
 #### `modifyCpNav`
 
@@ -401,7 +405,9 @@ Event::on(SystemMessages::class, SystemMessages::EVENT_REGISTER_MESSAGES, functi
 });
 ```
 
-> {tip} Rather than defining the full message heading/subject/body right within the `Craft::t()` call, you can pass placeholder strings (e.g. `'email_heading'`) and define the actual string in your plugin’s translation file.
+::: tip
+Rather than defining the full message heading/subject/body right within the `Craft::t()` call, you can pass placeholder strings (e.g. `'email_heading'`) and define the actual string in your plugin’s translation file.
+:::
 
 #### `registerUserPermissions`
 
@@ -708,7 +714,9 @@ public function getTableAttributesForSource($elementType, $sourceKey)
 }
 ```
 
-> {note} There is no direct Craft 3 equivalent for this hook, which allowed plugins to completely change the table attributes for an element type right before the element index view was rendered. The closest thing in Craft 3 is the `craft\base\Element::EVENT_REGISTER_TABLE_ATTRIBUTES` event, which can be used to change the available table attributes for an element type when an admin is customizing the element index sources.
+::: warning NOTE
+There is no direct Craft 3 equivalent for this hook, which allowed plugins to completely change the table attributes for an element type right before the element index view was rendered. The closest thing in Craft 3 is the `craft\base\Element::EVENT_REGISTER_TABLE_ATTRIBUTES` event, which can be used to change the available table attributes for an element type when an admin is customizing the element index sources.
+:::
 
 ## Template Variables
 

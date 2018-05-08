@@ -8,7 +8,9 @@ To create a Global Set, go to Settings → Globals.
 
 If you have at least one Global Set, Craft will add a new “Globals” item added to the Control Panel primary navigation. Clicking on this will take you to a page that lists all of your Global Sets in a sidebar, as well as all of the fields associated with the selected Global Set in the main content area.
 
-> {tip} Unlike [entries](sections-and-entries.md#entries), Global Sets don’t have the Live Preview feature, since they aren’t associated with any one particular URL.
+::: tip
+Unlike [entries](sections-and-entries.md#entries), Global Sets don’t have the Live Preview feature, since they aren’t associated with any one particular URL.
+:::
 
 ## Global Sets in Templates
 

@@ -22,7 +22,9 @@ If you want to use a relative file system path, note that it should be relative 
 
 Note that Craft/PHP must be able to write to the directory you created.
 
-> {tip} You can override the Volume settings using the `config/volumes.php` configuration file. This file is not in the default Craft installation so you may have to create it. Learn more about what need to go in the `volumes.php` file in the [Overriding Volume Settings](configuration.md#overriding-volume-settings) section in the Configuration documentation.
+::: tip
+You can override the Volume settings using the `config/volumes.php` configuration file. This file is not in the default Craft installation so you may have to create it. Learn more about what need to go in the `volumes.php` file in the [Overriding Volume Settings](configuration.md#overriding-volume-settings) section in the Configuration documentation.
+:::
 
 ## Asset Meta Fields
 

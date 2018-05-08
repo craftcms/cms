@@ -59,7 +59,9 @@ Do your best to follow these guidelines when writing code for Craft and Craft pl
 - Use shortcut regex patterns (`\d`, `\D`, `\w`, `\W`, etc.) whenever possible.
 - Use the `DIRECTORY_SEPARATOR` constant rather than `'/'` when defining file paths.
 
-> {tip} The [Php Inspections (EA Extended)](https://plugins.jetbrains.com/idea/plugin/7622-php-inspections-ea-extended-) PhpStorm plugin can help you locate and fix these sorts of best practice issues.
+::: tip
+The [Php Inspections (EA Extended)](https://plugins.jetbrains.com/idea/plugin/7622-php-inspections-ea-extended-) PhpStorm plugin can help you locate and fix these sorts of best practice issues.
+:::
 
 ## Namespaces & Class Names
 
@@ -103,7 +105,9 @@ If an argument accepts two types and one of them is `null`, the argument should 
 public function foo(string $bar = null)
 ```
 
-> {note} Do this even if there are required arguments following the argument that accepts `null`. This is the only way to enforce an argument type while also allowing `null` in PHP.
+::: tip
+Do this even if there are required arguments following the argument that accepts `null`. This is the only way to enforce an argument type while also allowing `null` in PHP.
+:::
 
 ### Return Types
 

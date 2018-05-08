@@ -14,9 +14,13 @@ Then run the following command to generate a new migration file for your plugin 
 
     ./craft migrate/create <migration_name> --plugin=<plugin-handle>
 
-> {tip} If your Craft install is running from a Vagrant box, you will need to SSH into the box to run this command.
+::: tip
+If your Craft install is running from a Vagrant box, you will need to SSH into the box to run this command.
+:::
 
-> {note} Migration names must be valid PHP class names, though we recommend sticking with `snake_case` rather than `StudlyCase` as a convention.
+::: tip
+Migration names must be valid PHP class names, though we recommend sticking with `snake_case` rather than `StudlyCase` as a convention.
+:::
 
 Enter `yes` at the prompt, and a new migration file will be created in a `migrations/` subfolder within your plugin’s source directory.
 
@@ -32,7 +36,9 @@ echo "    > some note\n";
 
 If the migration is being run from a console request, this will ensure the message is seen by whoever is executing the migration, as the message will be output into the terminal. If it’s a web request, Craft will capture it and log it to `storage/logs/` just as if you had used `Craft::info()`.
 
-> {tip} Your migration’s base classes, `craft\db\Migration` and `yii\db\Migration`, provide lots of handy methods for making changes to the database schema. Use these whenever possible, rather than calling `Craft::$app->db->createCommand()`, as they will automatically echo out a message about the command, and how long it took to execute.
+::: tip
+Your migration’s base classes, `craft\db\Migration` and `yii\db\Migration`, provide lots of handy methods for making changes to the database schema. Use these whenever possible, rather than calling `Craft::$app->db->createCommand()`, as they will automatically echo out a message about the command, and how long it took to execute.
+:::
 
 ## Executing Migrations
 
@@ -83,4 +89,6 @@ You can give your plugin an install migration with the `migrate/create` command 
 
 When a plugin has an Install migration, its `safeUp()` method will be called when the plugin is installed, and its `safeDown()` method will be called when the plugin is uninstalled (invoked by `craft\base\Plugin::install()` and `uninstall()`).
 
-> {note} It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.
+::: tip
+It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.
+:::

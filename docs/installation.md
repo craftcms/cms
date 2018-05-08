@@ -8,7 +8,9 @@ Craft can be downloaded with [Composer](#downloading-with-composer) or by [manua
 
 ### Downloading with Composer
 
-> {note} You should be running Composer 1.3.0 or later. You can find out your installed version of Composer by running `composer -V` from your terminal. If that outputs something lower than 1.3.0, run `composer self-update` to update your Composer installation.
+::: tip
+You should be running Composer 1.3.0 or later. You can find out your installed version of Composer by running `composer -V` from your terminal. If that outputs something lower than 1.3.0, run `composer self-update` to update your Composer installation.
+:::
 
 To create a new Craft project, run this command (substituting `<PATH>` with the path where Composer should create the project):
 
@@ -27,7 +29,9 @@ Download the archive format you prefer to work with:
 
 Extract the archive wherever you want your new Craft project to live.
 
-> {note} If you’re on macOS, be careful not to lose the hidden files in there (`.env`, `.env.example`, `.gitignore`, and `web/.htaccess`). Press `CMD + SHIFT + .` (command + shift + period) to see them before moving them to another folder.
+::: tip
+If you’re on macOS, be careful not to lose the hidden files in there (`.env`, `.env.example`, `.gitignore`, and `web/.htaccess`). You can toggle hidden file visibility in Finder by pressing Command + Shift + `.` (period).
+:::
 
 ### Directory Structure
 
@@ -52,7 +56,9 @@ See [Directory Structure](directory-structure.md) for information on these direc
 
 ## Step 2: Set the File Permissions
 
-> {tip} If you used Composer to download Craft, you can probably safely skip this step. 
+::: tip
+If you used Composer to download Craft, you can probably safely skip this step. 
+:::
 
 For Craft to run properly, PHP needs to be able to write to the following places:
 
@@ -69,11 +75,15 @@ The exact permissions you should be setting depends on the relationship between 
 - If they’re in the same group, then use `774`.
 - If you’re not sure and like to live life on the edge, use `777`.
 
-> {note} **IIS fans:** Make sure your site’s AppPool account has write permissions to these folders/files as well.
+::: warning HEY IIS FANS
+Make sure your site’s AppPool account has write permissions to these folders/files as well.
+:::
 
 ## Step 3: Set a Security Key
 
-> {tip} If you used Composer to download Craft, you can probably safely skip this step. 
+::: tip
+If you used Composer to download Craft, you can probably safely skip this step. 
+:::
 
 Each Craft project should have a unique security key, which is shared between each of the environments that the project in installed on.
 
@@ -143,7 +153,9 @@ The first step of the installer is to accept the [license agreement](https://cra
 
 The second step is to enter your database connection information.
 
-> {note} If the Setup Wizard skips this step, it’s because Craft is already able to connect to your database. 
+::: tip
+If the Setup Wizard skips this step, it’s because Craft is already able to connect to your database. 
+:::
 
 ![Craft Installation Database Connection Information](images/installation-step-2.png)
 

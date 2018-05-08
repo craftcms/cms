@@ -19,7 +19,9 @@ Copyright © <YOUR_NAME>
 
 To register your plugin, first make sure it’s published to a public GitHub repository. Then create a Craft ID account at [id.craftcms.com](https://id.craftcms.com), and connect it to your GitHub account.
 
-> {note} If your plugins are published to a GitHub organization account, make sure that the organization is checked when authenticating your GitHub account.
+::: warning
+If your plugins are published to a GitHub organization account, make sure that the organization is checked when authenticating your GitHub account.
+:::
 
 From your Craft ID account, go to Plugins → “Add a plugin”, and click the “Select” button next to your plugin’s repository. You will then be able to edit its description, screenshots, and other details.
 
@@ -36,13 +38,17 @@ If you wish to sell your plugin, choose a price point that makes sense. Here are
 
 You will also be required to pick a Renewal Price, which is the annual fee the Plugin Store will charge customers who wish to continue installing new updates, after the first year. Pick a Renewal Price that is around 20-50% of the initial Price. For example, if you are charging $99 for your plugin, your Renewal Price should be between $19-$49.
 
-> {note} If you initially submit your plugin as free, you will not be able to change it to a commercial plugin later; you will need to submit the commercial version as a completely separate plugin. Eventually the Plugin Store will support plugin Editions, which will provide a path for free plugins to offer commercial upgrades.
+::: warning
+If you initially submit your plugin as free, you will not be able to change it to a commercial plugin later; you will need to submit the commercial version as a completely separate plugin. Eventually the Plugin Store will support plugin Editions, which will provide a path for free plugins to offer commercial upgrades.
+:::
 
 ### Submit for Approval
 
 Once you’re ready to submit the plugin, click the “Submit for approval” button. Once your plugin is approved, it will become visible on [plugins.craftcms.com](http://plugins.craftcms.com). It won’t necessarily be available in the in-app Plugin Store yet, though, unless your plugin already has at least one [release](#plugin-releases).
 
-> {tip} You might want to register your plugin with [Packagist](https://packagist.org/) in addition to the Plugin Store, so that people can install and update your plugin from the command line. But Packagist isn’t a requirement for the Plugin Store.
+::: tip
+You might want to register your plugin with [Packagist](https://packagist.org/) in addition to the Plugin Store, so that people can install and update your plugin from the command line. But Packagist isn’t a requirement for the Plugin Store.
+:::
 
 ## Plugin Releases
 

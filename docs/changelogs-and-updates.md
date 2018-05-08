@@ -70,7 +70,9 @@ If you have any reference-style links in your release notes, you will need to de
 
 Once your plugin’s changelog is available publicly somewhere (like GitHub), you can configure your plugin with its URL by setting its `$changelogUrl` property.
 
-> {note} The URL must begin with `https://`.
+::: tip
+The URL must begin with `https://`.
+:::
 
 While you’re at it, you may want to set a public download URL as well, for anyone who didn’t install your plugin via Composer. That can be done with the `$downloadUrl` property.
 

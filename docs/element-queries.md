@@ -157,8 +157,6 @@ $count = Entry::find()
 
 Returns all of the elements in an array.
 
-> {note} If the `asArray` param was set to `true`, then the elements will be represented as raw arrays, rather than element objects.
-
 #### PHP
 
 ```php
@@ -183,8 +181,6 @@ $entries = Entry::find()
 
 Returns the first matching element, or `null` if there isn’t one.
 
-> {note} If the `asArray` param was set to `true`, then the element will be represented as a raw array, rather than an element object.
-
 #### PHP
 
 ```php
@@ -208,8 +204,6 @@ $entry = Entry::find()
 ### `nth()`
 
 Returns the `n`th matching element, or `null` if there isn’t one. Note that `n` is 0-indexed, so `nth(0)` will give you the first element, `nth(1)` will give you the second, etc.
-
-> {note} If the `asArray` param was set to `true`, then the element will be represented as a raw array, rather than an element object.
 
 #### PHP
 
@@ -253,9 +247,7 @@ $entryIds = Entry::find()
 
 ### `column()`
 
-Returns an array of all the first column’s values.
-
-> {note} By default the first column will be the elements’ IDs, but you can customize that with the `select()` param.
+Returns an array of all the first column’s values. By default that will be the elements’ IDs, but you can customize that with the `select()` param.
 
 #### PHP
 
@@ -279,9 +271,7 @@ $uris = Entry::find()
 
 ### `scalar()`
 
-Returns the first column’s value of the first matching element.
-
-> {note} By default the first column will be the element’s ID, but you can customize that with the `select()` param.
+Returns the first column’s value of the first matching element. By default that will be the element’s ID, but you can customize that with the `select()` param.
 
 #### PHP
 
@@ -314,7 +304,7 @@ The following methods will run an aggregate method on the first column of matchi
 - `min()` – Returns the minimum number of all the values in the first column
 - `max()` – Returns the maximum number of all the values in the first column
 
-> {note} By default the first column will be the elements’ IDs, but you can customize that with the `select()` param.
+By default the first column will be the elements’ IDs, but you can customize that with the `select()` param.
 
 #### PHP
 
