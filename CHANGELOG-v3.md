@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.6 - 2018-05-08
 
 ### Added
 - Error messages about missing plugin-supplied field and volume types now show an Install button when possible.
