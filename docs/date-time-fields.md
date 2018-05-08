@@ -1,5 +1,4 @@
-Date/Time Fields
-================
+# Date/Time Fields
 
 Date fields give you a date picker, and optionally a time picker as well.
 

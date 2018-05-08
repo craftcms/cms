@@ -1,5 +1,4 @@
-Templates
-=========
+# Templates
 
 In Craft, you define your site’s HTML output with templates.
 

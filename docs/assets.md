@@ -1,5 +1,4 @@
-Assets
-======
+# Assets
 
 Assets are files managed by Craft. They live in Asset Volumes, which represent physical directories. 
 

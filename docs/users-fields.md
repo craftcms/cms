@@ -1,5 +1,4 @@
-Users Fields
-============
+# Users Fields
 
 Users fields type allow you relate [users](users.md) to the parent element.
 

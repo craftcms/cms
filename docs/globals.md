@@ -1,5 +1,4 @@
-Globals
-=======
+# Globals
 
 Globals store content that is available globally throughout your templates. They're a convenient way to make non-Entry content easily editable via the Control Panel. 
 

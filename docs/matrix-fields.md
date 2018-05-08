@@ -1,5 +1,4 @@
-Matrix Fields
-=============
+# Matrix Fields
 
 Matrix fields allow you to create multiple blocks of content within a single field.
 

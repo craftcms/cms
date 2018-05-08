@@ -1,5 +1,4 @@
-Twig Primer
-===========
+# Twig Primer
 
 Here’s a rundown of the core concepts in Twig, the templating engine used by Craft. 
 

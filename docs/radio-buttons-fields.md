@@ -1,5 +1,4 @@
-Radio Buttons Fields
-====================
+# Radio Buttons Fields
 
 Radio Buttons fields give you a group of radio buttons.
 

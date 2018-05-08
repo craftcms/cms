@@ -1,5 +1,4 @@
-Relations
-=========
+# Relations
 
 Craft has a powerful engine for relating elements to one another. You create those relationships using relational field types. 
 

@@ -1,5 +1,4 @@
-Dropdown Fields
-===============
+# Dropdown Fields
 
 Dropdown fields give you a dropdown input.
 

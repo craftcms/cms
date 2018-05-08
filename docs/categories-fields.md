@@ -1,5 +1,4 @@
-Categories Fields
-=================
+# Categories Fields
 
 Categories fields allow you to relate [categories](categories.md) to the parent element.
 

@@ -1,5 +1,4 @@
-Routing
-=======
+# Routing
 
 Routing helps Craft smartly handle requests to your site. When a request comes in to Craft, it checks to determine where to route the request.
 

@@ -1,5 +1,4 @@
-Template Examples
-=================
+# Template Examples
 
 Some common usage examples in Craft:
 

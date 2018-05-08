@@ -1,5 +1,4 @@
-Number Fields
-=============
+# Number Fields
 
 Number fields give you a text input that accepts a numeric value.
 

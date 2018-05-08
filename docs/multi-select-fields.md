@@ -1,5 +1,4 @@
-Multi-select Fields
-===================
+# Multi-select Fields
 
 Multi-select fields give you a multi-select input.
 

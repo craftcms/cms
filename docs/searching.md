@@ -1,5 +1,4 @@
-Searching
-=========
+# Searching
 
 You can search for elements anywhere you see this bar:
 

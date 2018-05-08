@@ -1,5 +1,4 @@
-Categories
-==========
+# Categories
 
 You can create taxonomies for your [entries](sections-and-entries.md), [users](users.md), and [assets](assets.md) using Categories.
 

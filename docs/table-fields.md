@@ -1,5 +1,4 @@
-Table Fields
-============
+# Table Fields
 
 Table fields give you a customizable table, where you can create multiple rows of content.
 

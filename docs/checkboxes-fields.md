@@ -1,5 +1,4 @@
-Checkboxes Fields
-=================
+# Checkboxes Fields
 
 Checkboxes fields give you a group of checkboxes.
 

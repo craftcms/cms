@@ -1,5 +1,4 @@
-Assets Fields
-=============
+# Assets Fields
 
 Assets fields allow you to select related [assets](assets.md).
 

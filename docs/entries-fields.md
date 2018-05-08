@@ -1,5 +1,4 @@
-Entries Fields
-==============
+# Entries Fields
 
 Entries fields allow you to relate [entries](sections-and-entries.md) to the parent element.
 

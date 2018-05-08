@@ -1,5 +1,4 @@
-Image Transforms
-================
+# Image Transforms
 
 Rather than requiring that everyone upload images at a certain size, Craft lets you define “image transforms”, which set those rules on Craft’s end instead. Transforms are _non-destructive_, meaning that they have no effect on the original image that was uploaded.
 

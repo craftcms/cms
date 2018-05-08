@@ -1,5 +1,4 @@
-Planning Your Craft Site
-========================
+# Planning Your Craft Site
 
 * Some tips on how to think about Craft when you plan your site
 * Some general advice on apporoaches to developing a site with Craft

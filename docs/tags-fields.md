@@ -1,5 +1,4 @@
-Tags Fields
-===========
+# Tags Fields
 
 Tags fields allow you create [tags](tags.md) and relate them to the parent element.
 

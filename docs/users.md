@@ -1,5 +1,4 @@
-Users
-=====
+# Users
 
 Craft calls all member accounts of the system “users”.
 
