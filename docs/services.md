@@ -1,11 +1,6 @@
 # Services
 
-- [What are Services](#what-are-services)
-- [Creating a Service](#creating-a-service)
-- [Calling Service Methods](#calling-service-methods)
-- [Model Operation Methods](#model-operation-methods)
-  - [Class-Oriented Methods](#class-oriented-methods)
-  - [Interface-Oriented Methods](#interface-oriented-methods)
+[[toc]]
 
 ## What are Services?
 

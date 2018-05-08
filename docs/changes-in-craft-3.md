@@ -1,35 +1,6 @@
 # Changes in Craft 3
 
-- [Rich Text Fields](#rich-text-fields)
-  - [Redactor Configs](#redactor-configs)
-- [Remote Volumes](#remote-volumes)
-- [Configuration](#configuration)
-  - [Config Settings](#config-settings)
-  - [`omitScriptNameInUrls` and `usePathInfo`](#omitscriptnameinurls-and-usepathinfo)
-- [URL Rules](#url-rules)
-- [PHP Constants](#php-constants)
-- [Static Translation Files](#static-translation-files)
-- [User Photos](#user-photos)
-- [Twig 2](#twig-2)
-- [Template Tags](#template-tags)
-- [Template Functions](#template-functions)
-- [Date Formatting](#date-formatting)
-- [Currency Formatting](#currency-formatting)
-- [Element Queries](#element-queries)
-  - [Query Params](#query-params)
-  - [Query Methods](#query-methods)
-  - [Treating Queries as Arrays](#treating-queries-as-arrays)
-  - [`last()`](#last)
-- [Elements](#elements)
-- [Models](#models)
-- [Locales](#locales)
-- [Request Params](#request-params)
-  - [`action` Params](#action-params)
-  - [`redirect` Params](#redirect-params)
-  - [CSRF Token Params](#csrf-token-params)
-- [Memcache](#memcache)
-- [DbCache](#dbcache)
-- [Plugins](#plugins)
+[[toc]]
 
 ## Rich Text Fields
 

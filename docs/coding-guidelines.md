@@ -2,26 +2,7 @@
 
 Do your best to follow these guidelines when writing code for Craft and Craft plugins.
 
-- [Code Style](#code-style)
-- [Best Practices](#best-practices)
-- [Namespaces & Class Names](#namespaces--class-names)
-- [Method Names](#method-names)
-- [Type Declarations](#type-declarations)
-  - [Argument Types](#argument-types)
-  - [Return Types](#return-types)
-- [Docblocks](#docblocks)
-  - [Interfaces vs. Implementation Classes](#interfaces-vs-implementation-classes)
-- [Control Flow](#control-flow)
-  - [Happy Paths](#happy-paths)
-  - [`if`…`return`…`else`](#ifreturnelse)
-- [Controllers](#controllers)
-  - [Return Types](#return-types)
-  - [JSON Actions](#json-actions)
-- [Exceptions](#exceptions)
-- [DB Queries](#db-queries)
-  - [Conditions](#conditions)
-- [Getters & Setters](#getters--setters)
-  - [App Component Getters](#app-component-getters)
+[[toc]]
 
 ## Code Style
 

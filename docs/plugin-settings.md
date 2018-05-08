@@ -1,10 +1,6 @@
 # Plugin Settings
 
-- [Settings Model](#settings-model)
-- [Accessing Settings](#accessing-settings)
-- [Overriding Setting Values](#overriding-setting-values)
-- [Settings Pages](#settings-pages)
-  - [Advanced Settings Pages](#advanced-settings-pages)
+[[toc]]
 
 ## Settings Model
 

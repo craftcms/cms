@@ -16,30 +16,7 @@ You can refer to these classes for examples. They are located in `vendor/craftcm
 
 If your plugin needs to provide a new content type, architecting it as an element type is usually the best way to go.
 
-- [Getting Started](#getting-started)
-  - [Element Class](#element-class)
-  - [Database Table](#database-table)
-  - [Element Query Class](#element-query-class)
-  - [Template Function](#template-function)
-- [Element Content](#element-content)
-  - [Titles](#titles)
-  - [Custom Fields](#custom-fields)
-  - [Localization](#localization)
-- [Statuses](#statuses)
-- [Index Page](#index-page)
-  - [Index Page Actions](#index-page-actions)
-  - [Sort Options](#sort-options)
-  - [Table Attributes](#table-attributes)
-  - [Thumb View](#thumb-view)
-- [Searchable Attributes](#searchable-attributes)
-- [Element URLs](#element-urls)
-- [Editing Elements](#editing-elements)
-  - [Editor HUDs](#editor-huds)
-  - [Edit Page](#edit-page)
-- [Relations](#relations)
-  - [Relation Field](#relation-field)
-  - [Reference Tags](#reference-tags)
-- [Eager-Loading](#eager-loading)
+[[toc]]
 
 ## Getting Started
 

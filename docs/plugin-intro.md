@@ -1,13 +1,6 @@
 # Intro to Plugin Dev
 
-- [What are Plugins?](#what-are-plugins)
-- [Getting Started](#getting-started)
-  - [Preparation](#preparation)
-  - [Setting up the basic file structure](#setting-up-the-basic-file-structure)
-  - [composer.json](#composerjson)
-  - [Primary Plugin Class](#primary-plugin-class)
-  - [Loading your plugin into a Craft project](#loading-your-plugin-into-a-craft-project)
-- [Plugin Icons](#plugin-icons)
+[[toc]]
 
 ## What are Plugins?
 

@@ -1,17 +1,6 @@
 # Installation Instructions
 
-- [Step 1: Download Craft](#step-1-download-craft)
-  - [Downloading with Composer](#downloading-with-composer)
-  - [Downloading an Archive File Manually](#downloading-an-archive-file-manually)
-- [Step 2: Set the File Permissions](#step-2-set-the-file-permissions)
-- [Step 3: Set a Security Key](#step-3-set-a-security-key)
-  - [Set the Key Manually](#set-the-key-manually)
-  - [Set the Key from Your Terminal](#set-the-key-from-your-terminal)
-- [Step 4: Create a Database](#step-4-create-a-database)
-- [Step 5: Set up the Web Server](#step-5-set-up-the-web-server)
-- [Step 6: Run the Setup Wizard](#step-6-run-the-setup-wizard)
-  - [Terminal Setup](#terminal-setup)
-  - [Web Browser Setup](#web-browser-setup)
+[[toc]]
 
 ## Step 1: Download Craft
 

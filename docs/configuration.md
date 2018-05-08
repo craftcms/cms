@@ -1,15 +1,6 @@
 # Configuration
 
-- [PHP Constants](#php-constants)
-- [General Config](#general-config)
-- [Database Config](#database-config)
-- [Data Caching Config](#data-caching-config)
-- [Guzzle Config](#guzzle-config)
-- [Aliases](#aliases)
-- [Overriding Volume Settings](#overriding-volume-settings)
-- [URL Rules](#url-rules)
-- [Application Config](#application-config)
-  - [Mailer Component](#mailer-component)
+[[toc]]
 
 ## PHP Constants
 

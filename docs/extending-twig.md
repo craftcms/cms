@@ -2,8 +2,7 @@
 
 Craft provides two ways for plugins to extend its Twig templating environment.
 
-- [Extend the Global `craft` Variable](#extend-the-craft-global-variable)
-- [Register a Twig Extension](#register-a-twig-extension)
+[[toc]]
 
 ## Extend the Global `craft` Variable
 

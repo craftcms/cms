@@ -12,38 +12,7 @@ The end result is a faster, leaner, and much more elegant codebase for core deve
 
 > {note} If you think something is missing, please [create an issue](https://github.com/craftcms/docs/issues/new).
 
-- [High Level Notes](#high-level-notes)
-- [Changelogs](#changelogs)
-- [Yii 2](#yii-2)
-- [Service Names](#service-names)
-- [Components](#components)
-- [Translations](#translations)
-- [DB Queries](#db-queries)
-  - [Table Names](#table-names)
-  - [Select Queries](#select-queries)
-  - [Operational Queries](#operational-queries)
-- [Element Queries](#element-queries)
-- [Craft Config Settings](#craft-config-settings)
-- [Files](#files)
-- [Events](#events)
-- [Plugin Hooks](#plugin-hooks)
-  - [General Hooks](#general-hooks)
-  - [Routing Hooks](#routing-hooks)
-  - [Element Hooks](#element-hooks)
-- [Template Variables](#template-variables)
-- [Rendering Templates](#rendering-templates)
-  - [Controller Action Templates](#controller-action-templates)
-  - [Rendering Plugin Templates on Front End Requests](#rendering-plugin-templates-on-front-end-requests)
-- [Control Panel Templates](#control-panel-templates)
-  - [`extraPageHeaderHtml`](#extrapageheaderhtml)
-  - [Full-Page Grids](#full-page-grids)
-  - [Control Panel Template Hooks](#control-panel-template-hooks)
-- [Resource Requests](#resource-requests)
-- [Registering Arbitrary HTML](#registering-arbitrary-html)
-- [Background Tasks](#background-tasks)
-- [Writing an Upgrade Migration](#writing-an-upgrade-migration)
-  - [Component Class Names](#component-class-names)
-  - [Locale FKs](#locale-fks)
+[[toc]]
 
 ## High Level Notes
 
