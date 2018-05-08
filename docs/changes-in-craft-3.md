@@ -230,11 +230,11 @@ The following template functions have been deprecated in Craft 3, and will be co
 
 | Old                                                     | New
 | ------------------------------------------------------- | ---------------------------------------------
-| `round(num)`                                            | `num\|round`
+| `round(num)`                                            | `num|round`
 | `getCsrfInput()`                                        | `csrfInput()`
 | `getHeadHtml()`                                         | `head()`
 | `getFootHtml()`                                         | `endBody()`
-| `getTranslations()`                                     | `view.getTranslations()\|json_encode\|raw`
+| `getTranslations()`                                     | `view.getTranslations()|json_encode|raw`
 | `craft.categoryGroups.getAllGroupIds()`                 | `craft.app.categoryGroups.allGroupIds`
 | `craft.categoryGroups.getEditableGroupIds()`            | `craft.app.categories.editableGroupIds`
 | `craft.categoryGroups.getAllGroups()`                   | `craft.app.categoryGroups.allGroups`
@@ -298,8 +298,8 @@ The following template functions have been deprecated in Craft 3, and will be co
 | `craft.request.getUrl()`                                | `url(craft.app.request.pathInfo)`
 | `craft.request.getSegments()`                           | `craft.app.request.segments`
 | `craft.request.getSegment(num)`                         | `craft.app.request.getSegment(num)`
-| `craft.request.getFirstSegment()`                       | `craft.app.request.segments\|first`
-| `craft.request.getLastSegment()`                        | `craft.app.request.segments\|last`
+| `craft.request.getFirstSegment()`                       | `craft.app.request.segments|first`
+| `craft.request.getLastSegment()`                        | `craft.app.request.segments|last`
 | `craft.request.getParam(name)`                          | `craft.app.request.getParam(name)`
 | `craft.request.getQuery(name)`                          | `craft.app.request.getQueryParam(name)`
 | `craft.request.getPost(name)`                           | `craft.app.request.getBodyParam(name)`
@@ -352,27 +352,27 @@ Craft’s extended DateTime class has been removed in Craft 3. Here’s a list o
 
 | Old                               | New
 | --------------------------------- | ----------------------------------
-| `{{ d }}` *(treated as a string)* | `{{ d\|date('Y-m-d') }}`
-| `{{ d.atom() }}`                  | `{{ d\|atom }}`
-| `{{ d.cookie() }}`                | `{{ d\|date('l, d-M-y H:i:s T')}}`
-| `{{ d.day() }}`                   | `{{ d\|date('j') }}`
-| `{{ d.iso8601() }}`               | `{{ d\|date('c') }}`
-| `{{ d.localeDate() }}`            | `{{ d\|date('short') }}`
-| `{{ d.localeTime() }}`            | `{{ d\|time('short') }}`
-| `{{ d.month() }}`                 | `{{ d\|date('n') }}`
-| `{{ d.mySqlDateTime() }}`         | `{{ d\|date('Y-m-d H:i:s') }}`
-| `{{ d.nice() }}`                  | `{{ d\|datetime('short') }}`
-| `{{ d.rfc1036() }}`               | `{{ d\|date('D, d M y H:i:s O') }}`
-| `{{ d.rfc1123() }}`               | `{{ d\|date('r') }}`
-| `{{ d.rfc2822() }}`               | `{{ d\|date('r') }}`
-| `{{ d.rfc3339() }}`               | `{{ d\|date('Y-m-d\\TH:i:sP') }}`
-| `{{ d.rfc822() }}`                | `{{ d\|date('D, d M y H:i:s O') }}`
-| `{{ d.rfc850() }}`                | `{{ d\|date('l, d-M-y H:i:s T') }}`
-| `{{ d.rss() }}`                   | `{{ d\|rss }}`
-| `{{ d.uiTimestamp() }}`           | `{{ d\|timestamp('short') }}`
-| `{{ d.w3c() }}`                   | `{{ d\|date('Y-m-d\\TH:i:sP') }}`
-| `{{ d.w3cDate() }}`               | `{{ d\|date('Y-m-d') }}`
-| `{{ d.year() }}`                  | `{{ d\|date('Y') }}`
+| `{{ d }}` *(treated as a string)* | `{{ d|date('Y-m-d') }}`
+| `{{ d.atom() }}`                  | `{{ d|atom }}`
+| `{{ d.cookie() }}`                | `{{ d|date('l, d-M-y H:i:s T')}}`
+| `{{ d.day() }}`                   | `{{ d|date('j') }}`
+| `{{ d.iso8601() }}`               | `{{ d|date('c') }}`
+| `{{ d.localeDate() }}`            | `{{ d|date('short') }}`
+| `{{ d.localeTime() }}`            | `{{ d|time('short') }}`
+| `{{ d.month() }}`                 | `{{ d|date('n') }}`
+| `{{ d.mySqlDateTime() }}`         | `{{ d|date('Y-m-d H:i:s') }}`
+| `{{ d.nice() }}`                  | `{{ d|datetime('short') }}`
+| `{{ d.rfc1036() }}`               | `{{ d|date('D, d M y H:i:s O') }}`
+| `{{ d.rfc1123() }}`               | `{{ d|date('r') }}`
+| `{{ d.rfc2822() }}`               | `{{ d|date('r') }}`
+| `{{ d.rfc3339() }}`               | `{{ d|date('Y-m-d\\TH:i:sP') }}`
+| `{{ d.rfc822() }}`                | `{{ d|date('D, d M y H:i:s O') }}`
+| `{{ d.rfc850() }}`                | `{{ d|date('l, d-M-y H:i:s T') }}`
+| `{{ d.rss() }}`                   | `{{ d|rss }}`
+| `{{ d.uiTimestamp() }}`           | `{{ d|timestamp('short') }}`
+| `{{ d.w3c() }}`                   | `{{ d|date('Y-m-d\\TH:i:sP') }}`
+| `{{ d.w3cDate() }}`               | `{{ d|date('Y-m-d') }}`
+| `{{ d.year() }}`                  | `{{ d|date('Y') }}`
 
 :::
 
