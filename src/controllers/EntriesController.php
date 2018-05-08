@@ -347,13 +347,17 @@ class EntriesController extends BaseEntriesController
         // Set the base CP edit URL
 
         // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
-        $variables['baseCpEditUrl'] = 'entries/'.$section->handle.'/{id}-{slug}';
+        $variables['baseCpEditUrl'] = "entries/{$section->handle}/{id}-{slug}";
 
         // Set the "Continue Editing" URL
         /** @noinspection PhpUnhandledExceptionInspection */
+        $siteSegment = (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? "/{$site->handle}" : '');
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
             (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
-            (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? '/'.$site->handle : '');
+            $siteSegment;
+
+        // Set the "Save and add another" URL
+        $variables['nextEntryUrl'] = "entries/{$section->handle}/new{$siteSegment}";
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (

@@ -134,7 +134,7 @@
                     {% endif %}
 
                     {% if not isSingle %}
-                        <li><a class="formsubmit" data-redirect="{{ ('entries/'~sectionHandle~'/new'~(nextEntryParams ? '?'~nextEntryParams|join('&'))~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                        <li><a class="formsubmit" data-redirect="{{ (nextEntryUrl~(nextEntryParams ? '?'~nextEntryParams|join('&'))~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                     {% endif %}
 
                     <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}#')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>

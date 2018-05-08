@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
+use craft\elements\Asset;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -452,24 +453,25 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param bool $translate Whether the formatted date string should be translated
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
+    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
     {
-        // Should we be using the app's formatter?
-        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true))) {
-            $date = \twig_date_converter($env, $date, $timezone);
-            $value = Craft::$app->getFormatter()->asDate($date, $format);
-        } else {
-            $value = \twig_date_format_filter($env, $date, $format, $timezone);
+        if ($date instanceof \DateInterval) {
+            return \twig_date_format_filter($env, $date, $format, $timezone);
         }
 
-        if ($translate) {
-            $value = DateTimeHelper::translateDate($value);
+        // Is this a custom PHP date format?
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
+            if (strpos($format, 'icu:') === 0) {
+                $format = substr($format, 4);
+            } else {
+                $format = StringHelper::ensureLeft($format, 'php:');
+            }
         }
 
-        return $value;
+        $date = \twig_date_converter($env, $date, $timezone);
+        return Craft::$app->getFormatter()->asDate($date, $format);
     }
 
     /**
@@ -505,24 +507,21 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param bool $translate Whether the formatted date string should be translated
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
+    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            $format = StringHelper::ensureLeft($format, 'php:');
+            if (strpos($format, 'icu:') === 0) {
+                $format = substr($format, 4);
+            } else {
+                $format = StringHelper::ensureLeft($format, 'php:');
+            }
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $value = Craft::$app->getFormatter()->asTime($date, $format);
-
-        if ($translate) {
-            $value = DateTimeHelper::translateDate($value);
-        }
-
-        return $value;
+        return Craft::$app->getFormatter()->asTime($date, $format);
     }
 
     /**
@@ -532,24 +531,21 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param bool $translate Whether the formatted date string should be translated
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
+    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            $format = StringHelper::ensureLeft($format, 'php:');
+            if (strpos($format, 'icu:') === 0) {
+                $format = substr($format, 4);
+            } else {
+                $format = StringHelper::ensureLeft($format, 'php:');
+            }
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $value = Craft::$app->getFormatter()->asDatetime($date, $format);
-
-        if ($translate) {
-            $value = DateTimeHelper::translateDate($value);
-        }
-
-        return $value;
+        return Craft::$app->getFormatter()->asDatetime($date, $format);
     }
 
     /**
@@ -806,16 +802,25 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
      *
-     * @param string $svg The SVG file path or contents
+     * @param string|Asset $svg An SVG asset, a file path, or XML data
      * @param bool $sanitize Whether the file should be sanitized first
      * @return \Twig_Markup|string
      */
-    public function svgFunction(string $svg, bool $sanitize = true)
+    public function svgFunction($svg, bool $sanitize = true)
     {
-        // If we can't find an <svg> tag, it's probably a file path
-        if (stripos($svg, '<svg') === false) {
+        if ($svg instanceof Asset) {
+            try {
+                $svg = $svg->getContents();
+            } catch (\Throwable $e) {
+                Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return '';
+            }
+        } else if (stripos($svg, '<svg') === false) {
+            // No <svg> tag, so it's probably a file path
             $svg = Craft::getAlias($svg);
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                Craft::warning("Could not get the contents of {$svg}: The file doesn't exist", __METHOD__);
                 return '';
             }
             $svg = file_get_contents($svg);

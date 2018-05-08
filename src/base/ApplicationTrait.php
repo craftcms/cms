@@ -1108,9 +1108,9 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
-     * Initializes the application component
+     * Initializes things that should happen before the main Application::init()
      */
-    private function _init()
+    private function _preInit()
     {
         $this->getLog();
 
@@ -1119,7 +1119,13 @@ trait ApplicationTrait
 
         // Set the language
         $this->updateTargetLanguage();
+    }
 
+    /**
+     * Initializes things that should happen after the main Application::init()
+     */
+    private function _postInit()
+    {
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 

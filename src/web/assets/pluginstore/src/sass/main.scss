@@ -1,5 +1,9 @@
 @charset "UTF-8";
 @import "../../../../../../lib/craftcms-sass/mixins";
+@import "modal";
+@import "./upgrade-craft";
+
+/* General */
 
 $sidebarWidth: 225px;
 $detailsWidth: 350px;
@@ -11,57 +15,8 @@ $minLargeScreenWidth: 1824px;
   position: relative;
 }
 
-.stripe-card-form {
-  margin-bottom: 24px;
-}
-
-.stripe-card {
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 6px;
-  max-width: 390px;
-
-  &.error {
-    border-color: #da5a47;
-  }
-}
-
 #main-content #content {
   position: relative;
-}
-
-.main-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.license-status {
-  &:before {
-    border: 1px solid;
-    border-radius: 9px;
-    width: 17px;
-    height: 17px;
-    line-height: 17px;
-    margin-right: 5px;
-  }
-
-  &.installed {
-    color: $successColor;
-
-    &:before {
-      border-color: $successColor;
-    }
-  }
-
-  &.licensed {
-    color: $noticeColor;
-
-    &:before {
-      border-color: $noticeColor;
-    }
-  }
 }
 
 .input.success input {
@@ -70,6 +25,69 @@ $minLargeScreenWidth: 1824px;
 
 .input.errors .select:not(.selectize) select {
   box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Lightswitch */
+
+.pluginstore-lightswitch {
+  position: relative;
+  display: block;
+  user-select: none;
+  width: 34px;
+  height: 22px;
+
+  input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .slider {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    cursor: pointer;
+    background-color: #9da5af;
+    -webkit-transition: .4s;
+    transition: .4s;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+
+  .slider:before {
+    position: absolute;
+    background-color: #fff;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 1px;
+    bottom: 1px;
+    -webkit-transition: .1s;
+    transition: .1s;
+  }
+
+  input:checked + .slider {
+    background-color: #00b007;
+  }
+
+  input:focus + .slider,
+  input:active + .slider {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(51, 170, 255, 0.5), 0 0 2px #33aaff;
+  }
+
+  input:checked + .slider:before {
+    -webkit-transform: translateX(12px);
+    -ms-transform: translateX(12px);
+    transform: translateX(12px);
+  }
+
+  .slider.round {
+    border-radius: 34px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
+  }
 }
 
 /* Plugin Store actions */
@@ -144,21 +162,22 @@ $minLargeScreenWidth: 1824px;
   }
 }
 
-
 /* Graphic & Status */
+
+#graphic {
+  &.error {
+    background-image: url(../images/error.png);
+  }
+
+  &.success {
+    background-image: url(../images/success.png);
+  }
+}
 
 #content {
   #graphic {
     display: block;
     margin: 200px auto 0;
-
-    &.success {
-      background-image: url(../images/success.png);
-    }
-
-    &.error {
-      background-image: url(../images/error.png);
-    }
   }
 
   #status {
@@ -167,6 +186,23 @@ $minLargeScreenWidth: 1824px;
     font-size: 16px;
     line-height: 20px;
     color: #666;
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+  #graphic {
+    &.error {
+      background-image: url(../images/error_2x.png);
+      background-size: 48px;
+    }
+    &.success {
+      background-image: url(../images/success_2x.png);
+      background-size: 48px;
+    }
   }
 }
 
@@ -243,64 +279,6 @@ $minLargeScreenWidth: 1824px;
   }
 }
 
-
-/* Install */
-
-#thank-you {
-  width: 320px;
-  height: 150px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -75px;
-  margin-left: -160px;
-  text-align: center;
-}
-
-#thank-you h2 {
-  margin-top: 24px;
-}
-
-#install {
-  text-align: center;
-  padding: 48px;
-}
-
-#graphic {
-  display: inline-block;
-  width: 48px;
-  height: 48px;
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-
-  &.error {
-    background-image: url(../images/error.png);
-  }
-
-  &.success {
-    background-image: url(../images/success.png);
-  }
-
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  #graphic {
-    &.error {
-      background-image: url(../images/error_2x.png);
-      background-size: 48px;
-    }
-    &.success {
-      background-image: url(../images/success_2x.png);
-      background-size: 48px;
-    }
-  }
-}
-
-
 /* Categories */
 
 ul.categories {
@@ -348,7 +326,7 @@ ul.categories {
     }
   }
 
-  li:hover+li:before {
+  li:hover + li:before {
     border-color: transparent;
   }
 }
@@ -390,7 +368,7 @@ ul.categories {
   background: #fff;
   z-index: 1000;
   width: 100vw;
-  height:100vh;
+  height: 100vh;
   box-sizing: border-box;
 
   .category-selector-header {
@@ -454,104 +432,7 @@ ul.categories {
   }
 }
 
-
-/* Cart */
-
-.cart-review {
-  padding: 24px;
-  border: 1px solid #eee;
-  margin-top: 24px;
-
-  table {
-    th,
-    td {
-      padding: 3px 0;
-      font-size: 1.2em;
-    }
-
-    th {
-      width: 100px;
-    }
-  }
-}
-
-
-/* CreditCard */
-
-.credit-card {
-  margin: 24px 0;
-}
-
-
-/* GlobalModal */
-
-.globalmodal {
-  max-width: 850px;
-  max-height: 650px;
-
-  .globalmodalcontent {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-
-    header {
-      .btn-left {
-        position: absolute;
-        top: 28px;
-        left: 24px;
-      }
-
-      h1 {
-        text-align: center;
-      }
-    }
-
-    .body {
-      position: relative;
-      display: flex;
-      flex-grow: 1;
-
-      .content {
-        margin: -24px;
-        padding: 24px;
-        overflow: auto;
-        flex-grow: 1;
-      }
-    }
-  }
-}
-
-/* Payment */
-
-.payment {
-  .blocks {
-    display: flex;
-    margin: 0 -20px;
-
-    .block {
-      flex-grow: 1;
-      padding: 0 20px;
-      width: 50%;
-    }
-  }
-
-  .multiselectrow {
-    display: flex;
-    .input {
-      width: 50%;
-      .select {
-        width: 100%;
-        select {
-          width: 100%;
-        }
-      }
-    }
-  }
-}
-
-
-/* PluginCard */
+/* Plugin card */
 
 .plugin-card {
   display: flex;
@@ -584,6 +465,8 @@ ul.categories {
   }
 }
 
+/* Plugin icon */
+
 .plugin-icon,
 .plugin-icon img {
   width: 32px;
@@ -607,147 +490,45 @@ ul.categories {
   border-radius: 4px;
 }
 
-
-/* PluginDetails */
-
-.plugin-details {
-  position: relative;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-
-  .plugin-details-header {
-    flex-shrink: 0;
-    display: flex;
-    border-bottom: 1px solid #eee;
-    padding: 24px;
-
-    .plugin-icon-large {
-      margin-right: 14px;
-    }
-
-    .description {
-      flex-grow: 1;
-      margin-left: 14px;
-    }
-
-    .description h2 {
-      margin-bottom: 10px;
-    }
-
-    .description p {
-      margin: 0.4em 0;
-    }
-
-    .buttons {
-      @include margin(0, 0, 0, 24px);
-      white-space: nowrap;
-
-      a {
-        margin-left: 7px;
-      }
-
-      .license-status {
-        margin-top: 6px;
-        margin-right: 14px;
-      }
-    }
-  }
-
-  .plugin-details-body {
-    flex-grow: 1;
-    display: flex;
-    position: relative;
-    min-height: 0;
-
-    .plugin-details-loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .plugin-description {
-      flex-grow: 1;
-      min-width: 0;
-      padding: 24px;
-      overflow: auto;
-
-      img {
-        max-width: 100%;
-      }
-
-      pre {
-        background: #eee;
-        padding: 24px;
-        overflow: auto;
-      }
-    }
-
-    .plugin-sidebar {
-      flex: 0 0 260px;
-      width: 260px;
-      background: #fafafa;
-      border-left: 1px solid #eee;
-      overflow: auto;
-
-      .plugin-meta {
-        /*border: 1px solid #eee;*/
-        border-radius: 4px;
-        padding: 24px;
-
-        ul.plugin-meta-data {
-          border-bottom: 1px solid #eee;
-          margin-bottom: 14px;
-
-          li {
-            display: flex;
-            border-bottom: 1px solid #eee;
-            padding: 7px 0;
-
-            &:last-child {
-              border-bottom: 0;
-            }
-
-            & span,
-            & strong {
-              flex-grow: 1;
-            }
-
-            & strong {
-              text-align: right;
-            }
-          }
-        }
-
-        ul.plugin-meta-links li {
-          padding: 7px 0;
-        }
-      }
-    }
-
-    .screenshots {
-      margin-top: 24px;
-
-      img {
-        width: 100%;
-        margin-bottom: 24px;
-      }
-    }
-  }
-}
-
-/* PluginSearch */
+/* Plugin search */
 
 #container {
   position: static !important; /* #container hack required for modal overlays */
 }
 
-/* Developer */
+/* License status */
+
+.license-status {
+  &:before {
+    border: 1px solid;
+    border-radius: 9px;
+    width: 17px;
+    height: 17px;
+    line-height: 17px;
+    margin-right: 5px;
+  }
+
+  &.installed {
+    color: $successColor;
+
+    &:before {
+      border-color: $successColor;
+    }
+  }
+
+  &.licensed {
+    color: $noticeColor;
+
+    &:before {
+      border-color: $noticeColor;
+    }
+  }
+}
+
+/* Developer card */
 
 .developer-card {
-  text-align:center;
+  text-align: center;
 
   .spinner {
     margin-top: 48px;
@@ -777,131 +558,6 @@ ul.categories {
       a {
         display: block;
       }
-    }
-  }
-}
-
-/* upgrade modal */
-#upgrade-craft {
-  .logo {
-    margin: 0 auto 24px !important;
-    font-weight: 500;
-    font-size: 18px;
-    color: $submitColor;
-    letter-spacing: 3.3px;
-    line-height: 14px;
-    border: 1px solid $submitColor;
-    border-radius: 3px;
-    padding: 10px 6.7px 9px 10px;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-}
-
-#upgrade-craft-compare table {
-  table-layout: fixed;
-
-  th,
-  td {
-    width: 33.33%;
-  }
-
-  th.feature {
-    font-weight: normal;
-    color: $mediumTextColor;
-  }
-
-  thead {
-    th {
-      font-size: 13px;
-      line-height: 18px;
-      font-weight: normal;
-    }
-
-    tr {
-      &.logos th {
-        padding-bottom: 14px;
-
-        .logo {
-          margin-bottom: 0;
-        }
-
-        p {
-          white-space: normal;
-          max-width: 250px;
-        }
-      }
-
-      &.license-statuses td {
-        padding-top: 0;
-        padding-bottom: 14px;
-      }
-    }
-
-    tr.price {
-      th,
-      td {
-        position: relative;
-        padding-top: 14px;
-      }
-
-      td {
-        &:before {
-          position: absolute;
-          top: 0;
-          display: block;
-          width: 24px;
-          height: 1px;
-          content: '.';
-          font-size: 0;
-          background: $hairlineColor;
-        }
-
-        .listedprice {
-          @include margin-right(5px);
-          text-decoration: line-through;
-          color: $lightTextColor;
-        }
-      }
-
-      th:before {
-        @include left(0);
-      }
-
-      td:before {
-        @include left(14px);
-      }
-    }
-  }
-
-  tbody {
-    th,
-    td {
-      width: 33.33%;
-    }
-
-    tr:first-child {
-      th,
-      td {
-        border-top: none;
-      }
-    }
-
-    th.group {
-      padding-top: 30px;
-      border-bottom-style: solid;
-      color: $mediumTextColor;
-
-      &:before {
-        margin-top: -2px;
-        width: 24px;
-        font-size: 17px;
-      }
-    }
-
-    tr.buybtns td {
-      padding-top: 14px;
-      border-bottom: none;
     }
   }
 }

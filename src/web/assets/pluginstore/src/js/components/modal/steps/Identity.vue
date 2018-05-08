@@ -1,28 +1,36 @@
 <template>
-	<form @submit.prevent="save()">
-		<p><label><input type="radio" value="craftid" v-model="identityMode" /> {{ "Use your Craft ID"|t('app') }}</label></p>
-
-		<template v-if="identityMode === 'craftid'">
-			<template v-if="craftId">
-				<ul>
-					<li>{{ craftId.name }}</li>
-					<li>{{ craftId.email }}</li>
-				</ul>
-				<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
-			</template>
-
-			<p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
+	<step>
+		<template slot="header">
+			<div class="btn-left"><a @click="$emit('back')">← Back</a></div>
+			<h1>Identity</h1>
 		</template>
+		<template slot="main">
+			<form @submit.prevent="save()">
+				<p><label><input type="radio" value="craftid" v-model="identityMode" /> {{ "Use your Craft ID"|t('app') }}</label></p>
 
-		<p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
+				<template v-if="identityMode === 'craftid'">
+					<template v-if="craftId">
+						<ul>
+							<li>{{ craftId.name }}</li>
+							<li>{{ craftId.email }}</li>
+						</ul>
+						<input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+					</template>
 
-		<template v-if="identityMode === 'guest'">
-			<text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
-			<input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+					<p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
+				</template>
+
+				<p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
+
+				<template v-if="identityMode === 'guest'">
+					<text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
+					<input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+				</template>
+
+				<div v-if="loading" class="spinner"></div>
+			</form>
 		</template>
-
-		<div v-if="loading" class="spinner"></div>
-	</form>
+	</step>
 </template>
 
 <script>
@@ -31,7 +39,8 @@
     export default {
 
         components: {
-            TextField: require('../fields/TextField'),
+            TextField: require('../../fields/TextField'),
+            Step: require('../Step'),
         },
 
         data() {
@@ -102,7 +111,7 @@
                     this.$store.dispatch('saveCart', data)
                         .then(() => {
                             this.loading = false
-                            this.$root.openGlobalModal('payment')
+                            this.$root.openModal('payment')
                         })
                         .catch(() => {
                             this.loading = false
@@ -110,7 +119,7 @@
                         })
                 } else {
                     this.loading = false
-                    this.$root.openGlobalModal('payment')
+                    this.$root.openModal('payment')
                 }
             }
 
@@ -119,7 +128,7 @@
         mounted() {
             this.$root.$on('craftIdUpdated', function() {
                 if (this.craftId) {
-                    this.$root.openGlobalModal('payment')
+                    this.$root.openModal('payment')
                 }
             }.bind(this))
 

@@ -931,11 +931,23 @@ body.rtl .elementselect .progress-shade { right: 0; }
 
 .elementselect.uploading .progress-shade { display: block; z-index: 2; }
 
+.missing-component { padding: 7px 10px !important; max-width: 400px; background: #fbfcfd !important; }
+.missing-component .error { margin: 0; }
+.missing-component .install-plugin { margin: 7px 0 -7px; border-top: 1px solid #e3e5e8; position: relative; }
+body.ltr .missing-component .install-plugin { padding: 10px 0 10px 40px; }
+body.rtl .missing-component .install-plugin { padding: 10px 40px 10px 0; }
+.missing-component .install-plugin .icon { width: 32px; height: 32px; position: absolute; top: calc(50% - 16px); }
+body.ltr .missing-component .install-plugin .icon { left: 0; }
+body.rtl .missing-component .install-plugin .icon { right: 0; }
+.missing-component .install-plugin .icon img, .missing-component .install-plugin .icon svg { width: 100%; height: 100%; }
+.missing-component .install-plugin h3 { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; margin: 8px 0 !important; }
+.missing-component .install-plugin .btn { margin: 0; }
+
 /* ----------------------------------------
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
 .pane { background: #fff; -webkit-box-shadow: 0 0 0 1px #e3e5e8; box-shadow: 0 0 0 1px #e3e5e8; position: relative; margin: 14px 0; padding: 24px; border-radius: 5px; word-wrap: break-word; -webkit-box-sizing: border-box; box-sizing: border-box; }
-.pane .pane { -webkit-box-shadow: none; box-shadow: none; background: #fbfcfd; }
+.pane .pane { background: #fbfcfd; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }

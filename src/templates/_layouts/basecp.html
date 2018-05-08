@@ -14,6 +14,9 @@
 {% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
+    <form id="x" method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+    </form>
     <noscript>
         <div class="message-container no-access">
             <div class="pane notice">

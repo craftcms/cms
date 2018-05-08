@@ -44,6 +44,6 @@ class MissingField extends Field implements MissingComponentInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        return '<p class="error">'.$this->errorMessage.'</p>';
+        return $this->getPlaceholderHtml();
     }
 }
