@@ -116,7 +116,11 @@ To keep front-end Twig code looking clean, the `|t` and `|translate` filters don
 
 ### Table Names
 
+::: v-pre
+
 Craft no longer auto-prepends the DB table prefix to table names, so you must write table names in Yii’s `{{%tablename}}` syntax.
+
+:::
 
 ### Select Queries
 

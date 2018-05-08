@@ -243,10 +243,14 @@ $this->requireAcceptsJson();
 
 ## DB Queries
 
+::: v-pre
+
 - Always wrap table names with `{{%` and `}}` (e.g. `{{%entries}}`) so it gets properly quoted and the table prefix gets inserted.
 - Use the `['col1', 'col2']` syntax with `select()` and `groupBy()` instead of `'col1, col2'`,  even if only referencing a single column
 - Use the `['{{%tablename}}']` syntax with `from()` instead of `'{{%tablename}}'`.
 - Use the `['col1' => SORT_ASC, 'col2' => SORT_DESC]` syntax with `orderBy()` instead of `'col1, col2 desc'`.
+
+:::
 
 ### Conditions
 - Always use Yii’s [declarative condition syntax](http://www.yiiframework.com/doc-2.0/yii-db-queryinterface.html#where()-detail) when possible, as it will automatically quote table/column names and values for you.

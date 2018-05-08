@@ -348,6 +348,8 @@ The following template functions have been deprecated in Craft 3, and will be co
 
 Craft’s extended DateTime class has been removed in Craft 3. Here’s a list of things you used to be able to do in your templates, and what the Craft 3 equivalent is. (The DateTime object is represented by the `d` variable. In reality it could be `entry.postDate`, `now`, etc.)
 
+::: v-pre
+
 | Old                               | New
 | --------------------------------- | ----------------------------------
 | `{{ d }}` *(treated as a string)* | `{{ d\|date('Y-m-d') }}`
@@ -371,6 +373,8 @@ Craft’s extended DateTime class has been removed in Craft 3. Here’s a list o
 | `{{ d.w3c() }}`                   | `{{ d\|date('Y-m-d\\TH:i:sP') }}`
 | `{{ d.w3cDate() }}`               | `{{ d\|date('Y-m-d') }}`
 | `{{ d.year() }}`                  | `{{ d\|date('Y') }}`
+
+:::
 
 ## Currency Formatting
 
