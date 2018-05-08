@@ -5,6 +5,10 @@ module.exports = {
     base: '/v3/',
     dest: './web/',
     themeConfig: {
+        docsRepo: 'craftcms/docs',
+        docsDir: 'docs',
+        docsBranch: 'v3',
+        editLinks: true,
         nav: [
             {
                 text: 'Craft CMS',
