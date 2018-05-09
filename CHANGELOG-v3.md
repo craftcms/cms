@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft no longer logs warnings about missing translation files when Dev Mode isn’t enabled. ([#1531](https://github.com/craftcms/cms/issues/1531))
+
 ### Fixed
 - Fixed a bug where it was impossible to add new assets as data strings. ([#2855](https://github.com/craftcms/cms/issues/2855))
 - Fixed a bug where it was not possible to upload new assets to an entry and keep the existing assets at the same time.
