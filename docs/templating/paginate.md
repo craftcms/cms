@@ -45,7 +45,7 @@ The actual variable name(s) are up to you, however if you only specify one varia
 
 Here’s what they get set to:
 
-- `pageInfo` gets set to a [PaginateVariable](https://docs.craftcms.com/api/v2/variables/PaginateVariable.html) object, which provides info about the current page, and some helper methods for creating links to other pages ( [more details](#the-pageInfo-variable) below).
+- `pageInfo` gets set to a [PaginateVariable](https://docs.craftcms.com/api/v2/variables/PaginateVariable.html) object, which provides info about the current page, and some helper methods for creating links to other pages ([more details](#the-pageInfo-variable) below).
 - `pageEntries` gets set to an array of the elements that belong to the current page.
 
 ## Showing the elements

@@ -1,4 +1,4 @@
-# Introduction
+# About Craft CMS
 
 Craft is a content management system (CMS) that’s laser-focused on doing one thing really, really well: *managing content*. And since content comes in all shapes and sizes, we’ve built Craft to be as flexible as possible, without compromising on the ease of use for content authors.
 

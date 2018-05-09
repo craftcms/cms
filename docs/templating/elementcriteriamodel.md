@@ -189,11 +189,10 @@ This function will find the total number of matching elements, without actually 
 
 > {tip} The `offset` and `limit` parameters (which are shared among all element types) will be ignored when you call `total()`, so you don’t need to worry about overriding the default values.
 
-<!-- -->
+::: tip
+If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [`|length`](http://twig.sensiolabs.org/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.
 
-> {tip} If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [`|length`](http://twig.sensiolabs.org/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.
->
-> ```twig
+```twig
 {% if entry.myAssetsField|length %}
     <h3>Image Gallery</h3>
     <ul>
@@ -203,3 +202,4 @@ This function will find the total number of matching elements, without actually 
     </ul>
 {% endif %}
 ```
+:::
