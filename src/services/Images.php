@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
@@ -295,6 +296,10 @@ class Images extends Component
             }
 
             file_put_contents($filePath, $svgContents);
+            return;
+        }
+
+        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
             return;
         }
 

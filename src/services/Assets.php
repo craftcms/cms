@@ -596,6 +596,11 @@ class Assets extends Component
      */
     public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false, bool $fallbackToIcon = true): string
     {
+
+        if (StringHelper::toLowerCase(pathinfo($asset->filename, PATHINFO_EXTENSION)) === 'gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return AssetsHelper::generateUrl($asset->getVolume(), $asset);
+        }
+
         if ($height === null) {
             $height = $width;
         }
