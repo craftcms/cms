@@ -16,7 +16,7 @@ Once you've completed everything listed above you can continue with the upgrade 
 
 ## Upgrading Craft 
 
-There are two ways you can go about updating Craft, depending on whether you want to [keep your current directory structure](#if-you-want-to-keep-your-current-directory-structure), or [switch things up](#if-you-want-your-directory-structure-to-resemble-a-new-craft-3-project) to be more like a new Craft 3 installation.
+There are two ways you can go about updating Craft, depending on whether you want to [keep your current directory structure](#if-you-want-to-keep-your-current-directory-structure…), or [switch things up](#if-you-want-your-directory-structure-to-resemble-a-new-craft-3-project…) to be more like a new Craft 3 installation.
 
 Moving to the new structure is generally recommended, for a couple reasons:
 
