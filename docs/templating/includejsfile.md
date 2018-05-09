@@ -1,6 +1,6 @@
 # `{% includeJsFile %}`
 
-{intro} This tag will queue up a Javascript file for inclusion on the page.
+This tag will queue up a Javascript file for inclusion on the page.
 
 ```twig
 {% includeJsFile "/vendor/redactor/redactor.js" %}

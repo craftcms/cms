@@ -1,6 +1,6 @@
 # `{% nav %}`
 
-{intro} This tag helps create a hierarchical navigation menu for entries in a [Structure section](../sections-and-entries.md#section-types) or a [Category Group](../categories.md).
+This tag helps create a hierarchical navigation menu for entries in a [Structure section](../sections-and-entries.md#section-types) or a [Category Group](../categories.md).
 
 ```twig
 {% set entries = craft.entries.section('pages') %}

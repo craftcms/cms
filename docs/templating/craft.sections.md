@@ -1,6 +1,6 @@
 # `craft.sections`
 
-{intro} You can get info about your site’s sections using `craft.sections`.
+You can get info about your site’s sections using `craft.sections`.
 
 ## Methods
 

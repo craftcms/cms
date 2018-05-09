@@ -1,6 +1,6 @@
 # `{% includeJs %}`
 
-{intro} This tag will queue up a Javascript snippet for inclusion on the page.
+This tag will queue up a Javascript snippet for inclusion on the page.
 
 ```twig
 {% set myJs %}

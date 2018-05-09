@@ -1,6 +1,6 @@
 # Hooks and Events
 
-{intro} There are two ways for plugins to be invoked at different points in the core code, or in another plugin’s code: *hooks* and *events*.
+There are two ways for plugins to be invoked at different points in the core code, or in another plugin’s code: *hooks* and *events*.
 
 ## What’s the difference?
 

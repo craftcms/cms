@@ -1,6 +1,6 @@
 # Users Fields
 
-{intro} Users fields type allow you relate [users](users.md) to the parent element.
+Users fields type allow you relate [users](users.md) to the parent element.
 
 ## Settings
 

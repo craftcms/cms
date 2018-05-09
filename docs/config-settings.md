@@ -1,6 +1,6 @@
 # General Config Settings
 
-{intro} Craft comes with a bunch of config settings that give you control over various aspects of its behavior.
+Craft comes with a bunch of config settings that give you control over various aspects of its behavior.
 
 All config settings should be placed within the `array()` in your craft/config/general.php file.
 

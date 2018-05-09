@@ -1,6 +1,6 @@
 # `{% paginate %}`
 
-{intro} This tag makes it easy to paginate a set of elements across multiple pages.
+This tag makes it easy to paginate a set of elements across multiple pages.
 
 ```twig
 {% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}

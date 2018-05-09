@@ -1,6 +1,6 @@
 # Checkboxes Fields
 
-{intro} Checkboxes fields give you a group of checkboxes.
+Checkboxes fields give you a group of checkboxes.
 
 ## Settings
 

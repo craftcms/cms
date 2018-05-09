@@ -1,6 +1,6 @@
 # Field Types
 
-{intro} Whenever someone creates a new [field](../fields.md) in Craft, they must specify what type of field it is. The system comes with a handful of field types baked in, and we’ve made it extremely easy for plugins to add new ones.
+Whenever someone creates a new [field](../fields.md) in Craft, they must specify what type of field it is. The system comes with a handful of field types baked in, and we’ve made it extremely easy for plugins to add new ones.
 
 First, create a new subfolder within your plugin’s folder, called fieldtypes/. Create a new file in that folder, named with this format:
 

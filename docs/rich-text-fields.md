@@ -1,6 +1,6 @@
 # Rich Text Fields
 
-{intro} Rich Text fields give you a Redactor-powered WYSIWYG editor, which stores HTML.
+Rich Text fields give you a Redactor-powered WYSIWYG editor, which stores HTML.
 
 ## Settings
 

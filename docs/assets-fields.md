@@ -1,6 +1,6 @@
 # Assets Fields
 
-{intro} Assets fields allow you to select related [assets](assets.md).
+Assets fields allow you to select related [assets](assets.md).
 
 ## Settings
 

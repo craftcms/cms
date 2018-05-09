@@ -1,6 +1,6 @@
 # Plain Text Fields
 
-{intro} Plain Text fields give you either a normal text input or a multi-line textarea, where plain text can be entered.
+Plain Text fields give you either a normal text input or a multi-line textarea, where plain text can be entered.
 
 ## Settings
 

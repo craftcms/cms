@@ -1,6 +1,6 @@
 # `craft.globals`
 
-{intro} You can get info about your site’s globals via `craft.globals`.
+You can get info about your site’s globals via `craft.globals`.
 
 ## Methods
 

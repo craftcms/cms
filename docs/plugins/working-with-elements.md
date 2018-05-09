@@ -1,6 +1,6 @@
 # Working with Elements
 
-{intro} Assets, categories, entries, global sets, Matrix blocks, tags, and users are all considered “elements” in Craft, and working with them is generally pretty consistent, thanks to shared element-focused APIs.
+Assets, categories, entries, global sets, Matrix blocks, tags, and users are all considered “elements” in Craft, and working with them is generally pretty consistent, thanks to shared element-focused APIs.
 
 ## Fetching Elements
 

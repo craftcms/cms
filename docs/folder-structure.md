@@ -1,6 +1,6 @@
 # Craft’s Folder Structure
 
-{intro} There’s a lot going on in your craft/ folder, so let’s makes some sense of it.
+There’s a lot going on in your craft/ folder, so let’s makes some sense of it.
 
 Your craft/ folder has the following subfolders:
 

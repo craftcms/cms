@@ -1,6 +1,6 @@
 # Introduction
 
-{intro} Craft comes with a powerful plugin framework coupled with a robust set of APIs that paves the way for a wide variety of plugins.
+Craft comes with a powerful plugin framework coupled with a robust set of APIs that paves the way for a wide variety of plugins.
 
 ## Assumed Knowledge
 

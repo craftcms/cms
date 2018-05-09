@@ -1,6 +1,6 @@
 # Position Select Fields
 
-{intro} Position Select fields give you a button group with various positioning options, which can be used to define how elements should be positioned in your templates.
+Position Select fields give you a button group with various positioning options, which can be used to define how elements should be positioned in your templates.
 
 ## Settings
 

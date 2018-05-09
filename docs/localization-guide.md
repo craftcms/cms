@@ -1,6 +1,6 @@
 # Setting Up a Localized Site
 
-{intro} This guide will walk you through all of the steps that are typically involved in setting up a localized site, using Craft’s deep localization features.
+This guide will walk you through all of the steps that are typically involved in setting up a localized site, using Craft’s deep localization features.
 
 > {tip} This guide requires Craft Pro. You can try Craft Pro before buying it by [running Craft from any non-public domain](https://craftcms.com/support/try-craft-client-pro).
 

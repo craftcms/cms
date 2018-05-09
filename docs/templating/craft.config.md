@@ -1,6 +1,6 @@
 # `craft.config`
 
-{intro} You can access your config settings from your templates with `craft.config`.
+You can access your config settings from your templates with `craft.config`.
 
 ## Properties
 

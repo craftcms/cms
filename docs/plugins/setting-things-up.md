@@ -1,6 +1,6 @@
 # Setting Things Up
 
-{intro} There are a few simple steps that you must go through each time you create a new plugin.
+There are a few simple steps that you must go through each time you create a new plugin.
 
 ## Pick a Name and Handle
 

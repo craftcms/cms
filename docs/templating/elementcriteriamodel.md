@@ -1,6 +1,6 @@
 # ElementCriteriaModel
 
-{intro} ElementCriteriaModel objects are at the center of how Craft fetches elements from the database.
+ElementCriteriaModel objects are at the center of how Craft fetches elements from the database.
 
 ## How it Works
 

@@ -1,6 +1,6 @@
 # `{% includeCssFile %}`
 
-{intro} This tag will queue up a CSS file for inclusion on the page.
+This tag will queue up a CSS file for inclusion on the page.
 
 ```twig
 {% includeCssFile "/assets/css/layouts/" ~ entry.layout ~ ".css" %}

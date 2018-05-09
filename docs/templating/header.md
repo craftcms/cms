@@ -1,6 +1,6 @@
 # `{% header %}`
 
-{intro} This tag will set a new HTTP header on the response.
+This tag will set a new HTTP header on the response.
 
 ```twig
 {# Tell the browser to cache this page for 30 days #}

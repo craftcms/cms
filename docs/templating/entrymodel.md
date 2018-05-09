@@ -1,6 +1,6 @@
 # EntryModel
 
-{intro} Whenever you’re dealing with an [entry](../sections-and-entries.md) in your template, you’re actually working with an EntryModel object.
+Whenever you’re dealing with an [entry](../sections-and-entries.md) in your template, you’re actually working with an EntryModel object.
 
 ## Simple Output
 

@@ -1,6 +1,6 @@
 # UserModel
 
-{intro} Whenever you’re dealing with a [user](../users.md) in your template, you’re actually working with a UserModel object.
+Whenever you’re dealing with a [user](../users.md) in your template, you’re actually working with a UserModel object.
 
 ## Simple Output
 

@@ -1,6 +1,6 @@
 # Radio Buttons Fields
 
-{intro} Radio Buttons fields give you a group of radio buttons.
+Radio Buttons fields give you a group of radio buttons.
 
 ## Settings
 

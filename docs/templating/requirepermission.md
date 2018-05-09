@@ -1,6 +1,6 @@
 # `{% requirePermission %}`
 
-{intro} This tag will ensure that the current user is logged in with an account that has a given permission.
+This tag will ensure that the current user is logged in with an account that has a given permission.
 
 ```twig
 {% requirePermission "spendTheNight" %}

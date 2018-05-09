@@ -1,6 +1,6 @@
 # `craft.users`
 
-{intro} If you have Craft Pro, you can access your site’s [users](../users.md) from your templates via `craft.users`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
+If you have Craft Pro, you can access your site’s [users](../users.md) from your templates via `craft.users`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
 
 ```twig
 {% for author in craft.users.group('authors') %}

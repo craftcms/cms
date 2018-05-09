@@ -1,6 +1,6 @@
 # EntryTypeModel
 
-{intro} Whenever you’re dealing with an entry type in your template, you’re actually working with an EntryTypeModel object.
+Whenever you’re dealing with an entry type in your template, you’re actually working with an EntryTypeModel object.
 
 ## Simple Output
 

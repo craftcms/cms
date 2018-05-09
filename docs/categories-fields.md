@@ -1,6 +1,6 @@
 # Categories Fields
 
-{intro} Categories fields allow you to relate [categories](categories.md) to the parent element.
+Categories fields allow you to relate [categories](categories.md) to the parent element.
 
 ## Settings
 

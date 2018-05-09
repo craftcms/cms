@@ -1,6 +1,6 @@
 # `craft.fields`
 
-{intro} You can access your site’s fields with `craft.fields`.
+You can access your site’s fields with `craft.fields`.
 
 ## Methods
 

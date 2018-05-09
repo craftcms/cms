@@ -1,6 +1,6 @@
 # `craft.request`
 
-{intro} You can get all sorts of info about the current request from `craft.request`.
+You can get all sorts of info about the current request from `craft.request`.
 
 ## Properties
 

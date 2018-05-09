@@ -1,6 +1,6 @@
 # TagModel
 
-{intro} Whenever you’re dealing with a [tag](../tags.md) in your template, you’re actually working with a TagModel object.
+Whenever you’re dealing with a [tag](../tags.md) in your template, you’re actually working with a TagModel object.
 
 ## Simple Output
 

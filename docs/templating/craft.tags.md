@@ -1,6 +1,6 @@
 # `craft.tags`
 
-{intro} You can access your site’s [tags](../tags.md) from your templates via `craft.tags`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
+You can access your site’s [tags](../tags.md) from your templates via `craft.tags`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
 
 ```twig
 {% for tag in craft.tags.group('blogTags') %}

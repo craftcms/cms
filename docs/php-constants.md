@@ -1,6 +1,6 @@
 # PHP Constants
 
-{intro} There are a few optional PHP constants that you can define which affect Craft at a lower level than the [config settings](config-settings.md).
+There are a few optional PHP constants that you can define which affect Craft at a lower level than the [config settings](config-settings.md).
 
 If you wish to define any of these constants for your site, you should put them in the index.php file in your site’s web root, after setting `$craftPath`:
 

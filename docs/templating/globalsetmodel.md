@@ -1,6 +1,6 @@
 # GlobalSetModel
 
-{intro} Your templates come preloaded with GlobalSetModel objects to represent each of your site’s [global sets](../globals.md). You can access them via their handles.
+Your templates come preloaded with GlobalSetModel objects to represent each of your site’s [global sets](../globals.md). You can access them via their handles.
 
 ## Simple Output
 

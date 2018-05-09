@@ -1,6 +1,6 @@
 # MatrixBlockModel
 
-{intro} Whenever you’re dealing with a [Matrix](../matrix-fields.md) block in your template, you’re actually working with a MatrixBlockModel object.
+Whenever you’re dealing with a [Matrix](../matrix-fields.md) block in your template, you’re actually working with a MatrixBlockModel object.
 
 ## Properties
 

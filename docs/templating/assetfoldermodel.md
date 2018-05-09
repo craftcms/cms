@@ -1,6 +1,6 @@
 # AssetFolderModel
 
-{intro} AssetFolderModel objects represent the folders that [assets](../assets.md) live in.
+AssetFolderModel objects represent the folders that [assets](../assets.md) live in.
 
 ## Simple Output
 

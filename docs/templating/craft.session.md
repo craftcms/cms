@@ -1,6 +1,6 @@
 # `craft.session`
 
-{intro} You can get info about the active HTTP session with `craft.session`.
+You can get info about the active HTTP session with `craft.session`.
 
 ## Properties
 

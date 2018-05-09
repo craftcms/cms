@@ -1,6 +1,6 @@
 # AssetSourceModel
 
-{intro} AssetSourceModel objects represent your asset sources.
+AssetSourceModel objects represent your asset sources.
 
 ## Simple Output
 

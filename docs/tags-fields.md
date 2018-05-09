@@ -1,6 +1,6 @@
 # Tags Fields
 
-{intro} Tags fields allow you create [tags](tags.md) and relate them to the parent element.
+Tags fields allow you create [tags](tags.md) and relate them to the parent element.
 
 ## Settings
 

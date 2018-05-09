@@ -1,6 +1,6 @@
 # `craft.entries`
 
-{intro} You can access your site’s [entries](../sections-and-entries.md) from your templates via `craft.entries`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
+You can access your site’s [entries](../sections-and-entries.md) from your templates via `craft.entries`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
 
 ```twig
 {% for entry in craft.entries.section('news').limit(10) %}

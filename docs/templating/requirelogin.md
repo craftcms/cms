@@ -1,6 +1,6 @@
 # `{% requireLogin %}`
 
-{intro} This tag will ensure that the user is logged in. If they aren’t, they will be redirected to the Login page, and returned to the original page after successfully logging in.
+This tag will ensure that the user is logged in. If they aren’t, they will be redirected to the Login page, and returned to the original page after successfully logging in.
 
 ```twig
 {% requireLogin %}

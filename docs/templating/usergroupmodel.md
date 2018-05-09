@@ -1,6 +1,6 @@
 # UserGroupModel
 
-{intro} Whenever you’re dealing with a user group in your template, you’re actually working with a UserGroupModel object.
+Whenever you’re dealing with a user group in your template, you’re actually working with a UserGroupModel object.
 
 ## Simple Output
 

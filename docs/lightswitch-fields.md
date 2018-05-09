@@ -1,6 +1,6 @@
 # Lightswitch Fields
 
-{intro} Lightswitch fields give you a simple toggle input for times when all you need is a “Yes” or “No” answer.
+Lightswitch fields give you a simple toggle input for times when all you need is a “Yes” or “No” answer.
 
 ## The Field
 

@@ -1,6 +1,6 @@
 # Hooks Reference
 
-{intro} Craft provides several hooks that give plugins the opportunity to get involved in various areas of the system.
+Craft provides several hooks that give plugins the opportunity to get involved in various areas of the system.
 
 > {tip} See [hooks-and-events](hooks-and-events.md) for an explanation of how hooks work in Craft, and how they differ from events.
 

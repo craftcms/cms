@@ -1,6 +1,6 @@
 # `craft.categories`
 
-{intro} You can access your site’s [categories](../categories.md) from your templates via `craft.categories`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
+You can access your site’s [categories](../categories.md) from your templates via `craft.categories`. It returns an [ElementCriteriaModel](elementcriteriamodel.md) object.
 
 ```twig
 <ul>

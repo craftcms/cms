@@ -1,6 +1,6 @@
 # Events Reference
 
-{intro} Craft provides several events that alert plugins when things are happening.
+Craft provides several events that alert plugins when things are happening.
 
 > {tip} See [Hooks and Events](/v2/plugins/hooks-and-events.html) for an explanation of how events work in Craft, and how they differ from hooks.
 

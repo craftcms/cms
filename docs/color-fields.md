@@ -1,6 +1,6 @@
 # Color Fields
 
-{intro} Color fields give you a color picker, and save a hexadecimal value of the selected color.
+Color fields give you a color picker, and save a hexadecimal value of the selected color.
 
 ## The Field
 

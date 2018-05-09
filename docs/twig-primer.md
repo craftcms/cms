@@ -1,6 +1,6 @@
 # Twig Primer
 
-{intro} Here’s a rundown of the core concepts in Twig, the templating engine used by Craft.
+Here’s a rundown of the core concepts in Twig, the templating engine used by Craft.
 
 ## Logic Tags
 

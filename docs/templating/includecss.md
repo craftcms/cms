@@ -1,6 +1,6 @@
 # `{% includeCss %}`
 
-{intro} This tag will queue up a CSS snippet for inclusion on the page.
+This tag will queue up a CSS snippet for inclusion on the page.
 
 ```twig
 {% set myCss %}

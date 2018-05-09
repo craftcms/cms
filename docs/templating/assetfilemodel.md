@@ -1,6 +1,6 @@
 # AssetFileModel
 
-{intro} Whenever you’re dealing with an [asset](../assets.md) in your template, you’re actually working with an AssetFileModel object.
+Whenever you’re dealing with an [asset](../assets.md) in your template, you’re actually working with an AssetFileModel object.
 
 ## Simple Output
 

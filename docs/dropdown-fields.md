@@ -1,6 +1,6 @@
 # Dropdown Fields
 
-{intro} Dropdown fields give you a dropdown input.
+Dropdown fields give you a dropdown input.
 
 ## Settings
 

@@ -1,6 +1,6 @@
 # Number Fields
 
-{intro} Number fields give you a text input that accepts a numeric value.
+Number fields give you a text input that accepts a numeric value.
 
 ## Settings
 

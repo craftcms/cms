@@ -1,6 +1,6 @@
 # CategoryModel
 
-{intro} Whenever you’re dealing with a [category](../categories.md) in your template, you’re actually working with a CategoryModel object.
+Whenever you’re dealing with a [category](../categories.md) in your template, you’re actually working with a CategoryModel object.
 
 ## Simple Output
 

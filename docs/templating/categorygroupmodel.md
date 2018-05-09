@@ -1,6 +1,6 @@
 # CategoryGroupModel
 
-{intro} Whenever you’re dealing with a [category group](../categories.md#category-groups) in your template, you’re actually working with a CategoryGroupModel object.
+Whenever you’re dealing with a [category group](../categories.md#category-groups) in your template, you’re actually working with a CategoryGroupModel object.
 
 ## Simple Output
 

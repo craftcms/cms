@@ -1,6 +1,6 @@
 # Table Fields
 
-{intro} Table fields give you a customizable table, where you can create multiple rows of content.
+Table fields give you a customizable table, where you can create multiple rows of content.
 
 ## Settings
 

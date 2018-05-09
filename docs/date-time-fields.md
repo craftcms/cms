@@ -1,6 +1,6 @@
 # Date/Time Fields
 
-{intro} Date fields give you a date picker, and optionally a time picker as well.
+Date fields give you a date picker, and optionally a time picker as well.
 
 ## Settings
 

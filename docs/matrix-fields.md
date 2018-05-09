@@ -1,6 +1,6 @@
 # Matrix Fields
 
-{intro} Matrix fields allow you to create multiple blocks of content within a single field.
+Matrix fields allow you to create multiple blocks of content within a single field.
 
 ## Settings
 

@@ -1,6 +1,6 @@
 # `{% switch %}`
 
-{intro} This tag provides switch statement functionality to your templates.
+This tag provides switch statement functionality to your templates.
 
 “Switch statements” offer a clean way to compare a variable against multiple possible values, instead of using several repetitive `{% if %}` conditionals.
 

@@ -1,6 +1,6 @@
 # `craft.feeds`
 
-{intro} You can capture RSS and Atom feeds using `craft.feeds`.
+You can capture RSS and Atom feeds using `craft.feeds`.
 
 ## Methods
 

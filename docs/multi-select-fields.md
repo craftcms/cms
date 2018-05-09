@@ -1,6 +1,6 @@
 # Multi-select Fields
 
-{intro} Multi-select fields give you a multi-select input.
+Multi-select fields give you a multi-select input.
 
 ## Settings
 
