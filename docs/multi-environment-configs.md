@@ -115,10 +115,10 @@ A popular use case for the environmentVariables config setting is the File Syste
 
 First we need to identify the areas of these settings that will differ depending on the environment. Let’s say we only have a single Assets Source, and its settings are as follows:
 
-* **File System Path (Local):** `/users/brandon/Sites/example.test/public/assets/images/`
-* **File System Path (Prod.):** `/storage/av12345/www/public_html/assets/images/`
-* **URL (Local):** `http://example.test/assets/images/`
-* **URL (Prod.):** `http://example.com/assets/images/`
+* **File System Path (Local)**: `/users/brandon/Sites/example.test/public/assets/images/`
+* **File System Path (Prod.)**: `/storage/av12345/www/public_html/assets/images/`
+* **URL (Local)**: `http://example.test/assets/images/`
+* **URL (Prod.)**: `http://example.com/assets/images/`
 
 In each case, everything before `assets/images/` could be different between the environments. To address this, we should create two custom environment variables. Their names are completely up to us – we’ll go with “`basePath`” and “`baseUrl`”.
 

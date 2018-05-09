@@ -90,7 +90,7 @@ Each of your localized Site URLs should point to folders on your server with the
 
 Here are some examples of what that might look like. Note that your actual webroot will not necessarily be called `public_html` – contact your web host if you are unsure what it is.
 
-* **Example 1:** `en/` and `de/` subfolders on the same domain:
+* **Example 1**: `en/` and `de/` subfolders on the same domain:
 
         craft/
         public_html/
@@ -101,7 +101,7 @@ Here are some examples of what that might look like. Note that your actual webro
                 .htaccess
                 index.php
 
-* **Example 2:** English at the top level; German from a `de/` subfolder:
+* **Example 2**: English at the top level; German from a `de/` subfolder:
 
         craft/
         public_html/            --> example.com/
@@ -111,7 +111,7 @@ Here are some examples of what that might look like. Note that your actual webro
                 .htaccess
                 index.php
 
-* **Example 3:** English and German each get their own domain:
+* **Example 3**: English and German each get their own domain:
 
         craft/
         public_html/            --> example.com/

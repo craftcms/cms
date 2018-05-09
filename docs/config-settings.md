@@ -19,14 +19,11 @@ Here is the definitive list of config settings you can add:
 
 ### `appId`
 
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The application ID, which is used for things like storing data caches and user sessions. If it’s not set, Craft will automatically generate one based on the server path. Setting it will help avoid the loss of data caches and user sessions when Craft is deployed using a deployment script that will store Craft in an inconsistent location, such as Capistrano.  If you are using a load-balanced environment, make sure you use the same appId value for every server in the cluster.
 
@@ -36,14 +33,11 @@ The application ID, which is used for things like storing data caches and user s
 
 ### `cacheDuration`
 
-Accepts
-: A string set to any valid PHP interval specification, or '0' if you wish to cache data indefinitely.
+**Accepts**: A string set to any valid PHP interval specification, or '0' if you wish to cache data indefinitely.
 
-Default
-: `'P1D'` (one day)
+**Default**: `'P1D'` (one day)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The length of time Craft will store data caches. Also used by the `{% cache %}` template tag if no expiration time is specified as a parameter.
 
@@ -53,14 +47,11 @@ The length of time Craft will store data caches. Also used by the `{% cache %}` 
 
 ### `cacheMethod`
 
-Accepts
-: `'apc'`, `'db'`, `'eaccelerator'`, `'file'`, `'memcache'`, `'redis'`, `'wincache'`, `'xcache'`, or `'zenddata'`
+**Accepts**: `'apc'`, `'db'`, `'eaccelerator'`, `'file'`, `'memcache'`, `'redis'`, `'wincache'`, `'xcache'`, or `'zenddata'`
 
-Default
-: `'file'`
+**Default**: `'file'`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 The method Craft will use to store data caches.
 
@@ -78,14 +69,11 @@ The DB, file, Memcache(d), and Redis cache methods each have their own additiona
 
 ### `customAsciiCharMappings`
 
-Accepts
-: An array of key/value pairs mapping character codes to lower ASCII strings
+**Accepts**: An array of key/value pairs mapping character codes to lower ASCII strings
 
-Default
-: `array()` (an empty array)
+**Default**: `array()` (an empty array)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Any custom ASCII character mappings.
 
@@ -105,14 +93,11 @@ For example, the code for `Æ` is `198`. See sites like [Website Builders](https
 
 ### `defaultCookieDomain`
 
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `''`
+**Default**: `''`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The default domain name Craft will use when sending cookies to the browser. If it is left blank, Craft will leave it up to the browser to decide – which will be whatever the current request’s domain name is.
 
@@ -122,14 +107,11 @@ The default domain name Craft will use when sending cookies to the browser. If i
 
 ### `defaultSearchTermOptions`
 
-Accepts
-: An array of key/value pairs
+**Accepts**: An array of key/value pairs
 
-Default
-: `array('attribute' => null, 'exact' => false, 'exclude' => false, 'subLeft' => false, 'subRight' => false)`
+**Default**: `array('attribute' => null, 'exact' => false, 'exclude' => false, 'subLeft' => false, 'subRight' => false)`
 
-Since
-: Craft 2.5
+**Since**: Craft 2.5
 
 The default options Craft will apply to all search terms when [searching for elements](searching.md).
 
@@ -150,14 +132,11 @@ The array can contain the following keys;
 
 ### `devMode`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Determines whether the system is in Dev Mode or not. (See [What Dev Mode Does](https://craftcms.com/support/dev-mode) for more info.)
 
@@ -171,27 +150,21 @@ Dev Mode should never be enabled in production environments.
 
 ### `defaultWeekStartDay`
 
-Accepts
-: A number from `0` to `6` (where `0` represents Sunday and `6` represents Saturday)
+**Accepts**: A number from `0` to `6` (where `0` represents Sunday and `6` represents Saturday)
 
-Default
-: `0` (Sunday)
+**Default**: `0` (Sunday)
 
-Since
-: Craft 2.5
+**Since**: Craft 2.5
 
 The number representing the default Week Start Day preference value for new users.
 
 ### `environmentVariables`
 
-Accepts
-: An array of key/value string pairs
+**Accepts**: An array of key/value string pairs
 
-Default
-: `array()` (an empty array)
+**Default**: `array()` (an empty array)
 
-Since
-: Craft 1.1
+**Since**: Craft 1.1
 
 An array of environment-specific variables which can be accessed as tags within URL and Path settings. (See [multi-environment-configs](multi-environment-configs.md) for more info.)
 
@@ -204,14 +177,11 @@ An array of environment-specific variables which can be accessed as tags within 
 
 ### `isSystemOn`
 
-Accepts
-: `true`, `false`, or `null`
+**Accepts**: `true`, `false`, or `null`
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 Overrides the “System Status” setting in Settings → General if set to `true` or `false`.
 
@@ -221,14 +191,11 @@ Overrides the “System Status” setting in Settings → General if set to `tru
 
 ### `logDumpMethod`
 
-Accepts
-: A valid method name, callable, or function.
+**Accepts**: A valid method name, callable, or function.
 
-Default
-: 'var_export'
+**Default**: 'var_export'
 
-Since
-: Craft 2.3
+**Since**: Craft 2.3
 
 A callable or function which will be used to dump context information. This setting will get passed directly to [CLogFilter::$dumper](http://www.yiiframework.com/doc/api/1.1/CLogFilter#dumper-detail).
 
@@ -238,14 +205,11 @@ A callable or function which will be used to dump context information. This sett
 
 ### `overridePhpSessionLocation`
 
-Accepts
-: `true`, `false`, `'auto'`, or the path to a custom session save path
+**Accepts**: `true`, `false`, `'auto'`, or the path to a custom session save path
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Determines whether Craft should override PHP’s session storage location to your `craft/storage/` folder, or save session files in a custom location.
 
@@ -267,14 +231,11 @@ ini_set('session.save_handler', 'memcached');
 
 ### `phpMaxMemoryLimit`
 
-Accepts
-: An integer setting the number of bytes, or a string set to a valid [PHP shorthand byte value](http://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes)
+**Accepts**: An integer setting the number of bytes, or a string set to a valid [PHP shorthand byte value](http://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes)
 
-Default
-: `'256M'` (256 MB)
+**Default**: `'256M'` (256 MB)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping, unzipping and updating.
 
@@ -284,14 +245,11 @@ The maximum amount of memory Craft will try to reserve during memory intensive o
 
 ### `phpSessionName`
 
-Accepts
-: A string of alphanumeric characters
+**Accepts**: A string of alphanumeric characters
 
-Default
-: `'CraftSessionId'`
+**Default**: `'CraftSessionId'`
 
-Since
-: Craft 2.4
+**Since**: Craft 2.4
 
 The name of the PHP session cookie Craft will use. (This value will get passed to [session_name()](http://php.net/manual/en/function.session-name.php)).
 
@@ -301,14 +259,11 @@ The name of the PHP session cookie Craft will use. (This value will get passed t
 
 ### `runTasksAutomatically`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.3.2632
+**Since**: Craft 2.3.2632
 
 Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something like a Cron job to call `index.php/actions/tasks/runPendingTasks` at a regular interval.
 
@@ -322,27 +277,21 @@ If disabled, an alternate task running trigger *must* be set up separately. For 
 
 ### `sanitizeSvgUploads`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.6.2984
+**Since**: Craft 2.6.2984
 
 Whether Craft should sanitize uploaded SVG files and strip out potentially malicious looking content. Should definitely be enabled if you are accepting SVG uploads from untrusted sources.
 
 ### `sendPoweredByHeader`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.4
+**Since**: Craft 2.4
 
 Whether the `X-Powered-By: Craft CMS` header should be sent along with each request.
 
@@ -352,14 +301,11 @@ Whether the `X-Powered-By: Craft CMS` header should be sent along with each requ
 
 ### `siteName`
 
-Accepts
-: A string, or an array that maps locale IDs to locale-specific strings.
+**Accepts**: A string, or an array that maps locale IDs to locale-specific strings.
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.3
+**Since**: Craft 2.3
 
 Your site’s name. If this is set, it will take precedence over the Site Name setting in Settings → General.
 
@@ -372,14 +318,11 @@ Your site’s name. If this is set, it will take precedence over the Site Name s
 
 ### `siteUrl`
 
-Accepts
-: A string set to any valid URL, or an array that maps locale IDs to locale-specific URLs
+**Accepts**: A string set to any valid URL, or an array that maps locale IDs to locale-specific URLs
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 Your site’s URL. If this is set, it will take precedence over the Site URL setting in Settings → General, as well as the [`CRAFT_SITE_URL` constant](php-constants.md#craft-site-url), if set.
 
@@ -394,14 +337,11 @@ This is the recommended way to set the site URL on multi-lingual sites, as it gi
 
 ### `timezone`
 
-Accepts
-: A string set to a [valid PHP timezone](http://php.net/manual/en/timezones.php).
+**Accepts**: A string set to a [valid PHP timezone](http://php.net/manual/en/timezones.php).
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.3
+**Since**: Craft 2.3
 
 The system timezone. If this is set, it will take precedence over the Timezone setting in Settings → General.
 
@@ -411,14 +351,11 @@ The system timezone. If this is set, it will take precedence over the Timezone s
 
 ### `translationDebugOutput`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Tells Craft whether to surround all strings that are ran through `Craft::t()` or the `|translate` filter with “@” symbols, to help find any strings that are not being translated.
 
@@ -428,14 +365,11 @@ Tells Craft whether to surround all strings that are ran through `Craft::t()` or
 
 ### `useCompressedJs`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Tells Craft whether to use compressed Javascript files whenever possible, to cut down on page load times.
 
@@ -445,14 +379,11 @@ Tells Craft whether to use compressed Javascript files whenever possible, to cut
 
 ### `useWriteFileLock`
 
-Accepts
-: `true` or `false`, or `'auto'`
+**Accepts**: `true` or `false`, or `'auto'`
 
-Default
-: `'auto'`
+**Default**: `'auto'`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 Whether to grab an exclusive lock on a file when writing to it by using the LOCK_EX flag.
 
@@ -466,14 +397,11 @@ When set to `'auto'`, Craft will automatically try to detect if the underlying f
 
 ### `useXSendFile`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should use XSendFile to serve files when possible.
 
@@ -484,14 +412,11 @@ Whether Craft should use XSendFile to serve files when possible.
 ## Security
 
 ### `csrfTokenName`
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `'CRAFT_CSRF_TOKEN'`
+**Default**: `'CRAFT_CSRF_TOKEN'`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The name that Craft should give CSRF cookies, and which [`getCsrfInput()`](templating/functions.md#getCsrfInput) will give to the input it returns, if [CSRF Protection](https://craftcms.com/support/csrf-protection) is enabled.
 
@@ -501,14 +426,11 @@ The name that Craft should give CSRF cookies, and which [`getCsrfInput()`](templ
 
 ### `defaultFilePermissions`
 
-Accepts
-: A valid [PHP file permission mode](http://www.php.net/manual/en/function.chmod.php)
+**Accepts**: A valid [PHP file permission mode](http://www.php.net/manual/en/function.chmod.php)
 
-Default
-: `0664`
+**Default**: `0664`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The permissions Craft will use when creating a new file on the file system.
 
@@ -518,14 +440,11 @@ The permissions Craft will use when creating a new file on the file system.
 
 ### `defaultFolderPermissions`
 
-Accepts
-: A valid [PHP file permission mode](http://www.php.net/manual/en/function.chmod.php)
+**Accepts**: A valid [PHP file permission mode](http://www.php.net/manual/en/function.chmod.php)
 
-Default
-: `0775`
+**Default**: `0775`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The default permissions Craft will use when creating a new folder on the file system.
 
@@ -535,14 +454,11 @@ The default permissions Craft will use when creating a new folder on the file sy
 
 ### `defaultTokenDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'P1D'` (one day)
+**Default**: `'P1D'` (one day)
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 The default duration that system tokens should last for.
 
@@ -552,14 +468,11 @@ The default duration that system tokens should last for.
 
 ### `enableCsrfProtection`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 Whether [CSRF Protection](https://craftcms.com/support/csrf-protection) should be enabled for the site.
 
@@ -573,14 +486,11 @@ This setting is set to `true` by default in Craft 3.0.
 
 ### `preventUserEnumeration`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.6.2848
+**Since**: Craft 2.6.2848
 
 Prevents “Forgot Password” forms from revealing whether a valid email address was entered, so even if the email was invalid, a “Password reset email sent” message will be displayed.
 
@@ -590,14 +500,11 @@ Prevents “Forgot Password” forms from revealing whether a valid email addres
 
 ### `tokenParam`
 
-Accepts
-: A string set to any valid query string parameter name
+**Accepts**: A string set to any valid query string parameter name
 
-Default
-: `'token'`
+**Default**: `'token'`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 The query string parameter name that Craft should use for system tokens.
 
@@ -607,14 +514,11 @@ The query string parameter name that Craft should use for system tokens.
 
 ### `useSslOnTokenizedUrls`
 
-Accepts
-: `true`, `false`, or `'auto'`
+**Accepts**: `true`, `false`, or `'auto'`
 
-Default
-: `'auto'`
+**Default**: `'auto'`
 
-Since
-: Craft 2.6.2793
+**Since**: Craft 2.6.2793
 
 Whether tokenized URLs (email verification links, entry draft sharing links, etc.) should begin with https or not. When set to `'auto'`, https will be used if either the base site URL or the current URL have https.
 
@@ -624,14 +528,11 @@ Whether tokenized URLs (email verification links, entry draft sharing links, etc
 
 ### `useSecureCookies`
 
-Accepts
-: `true`, `false`, or `'auto'`
+**Accepts**: `true`, `false`, or `'auto'`
 
-Default
-: `'auto'`
+**Default**: `'auto'`
 
-Since
-: Craft 2.3.2639
+**Since**: Craft 2.3.2639
 
 Whether Craft should set the secure flag on its cookies, limiting them to only be sent on secure (SSL) requests.
 
@@ -639,14 +540,11 @@ If this is set to `'auto'`, it will resolve to `true` or `false` depending on wh
 
 ### `validateUnsafeRequestParams`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.6.2945
+**Since**: Craft 2.6.2945
 
 If set to `true`, the following request parameters will need to be hashed to ensure they weren’t tampered with:
 
@@ -667,14 +565,11 @@ Enabling this will prevent certain Denial of Service (DoS) attack vectors. As an
 
 ### `validationKey`
 
-Accepts
-: String
+**Accepts**: String
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.5
+**Since**: Craft 2.5
 
 Overrides the auto-generated secure validation key used to verify that hashed values have not been tampered with.
 
@@ -692,14 +587,11 @@ I know what you’re thinking… “I’ll just copy the key they used in their 
 
 ### `allowAutoUpdates`
 
-Accepts
-: `true`, `'minor-only'`, `'build-only'`, or `false`
+**Accepts**: `true`, `'minor-only'`, `'build-only'`, or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 If set to `true`, all Craft updates will be auto-updatable.
 
@@ -715,14 +607,11 @@ If set to `false`, no updates will be auto-updatable.
 
 ### `backupDbOnUpdate`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should backup the database when updating. This applies to both auto and manual updates.
 
@@ -732,14 +621,11 @@ Whether Craft should backup the database when updating. This applies to both aut
 
 ### `restoreDbOnUpdateFailure`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should attempt to restore the just-created DB backup in the event that there was an error making the database schema changes mandated by the update.
 
@@ -749,14 +635,11 @@ Whether Craft should attempt to restore the just-created DB backup in the event 
 
 ### `showBetaUpdates`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.4.2688
+**Since**: Craft 2.4.2688
 
 Whether Craft should show Beta updates on the Updates page, when available.
 
@@ -768,14 +651,11 @@ Whether Craft should show Beta updates on the Updates page, when available.
 
 ### `actionTrigger`
 
-Accepts
-: A string set to any valid URI segment
+**Accepts**: A string set to any valid URI segment
 
-Default
-: `'actions'`
+**Default**: `'actions'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The URI segment Craft should look for when determining if the current request should first be routed to a controller action.
 
@@ -785,14 +665,11 @@ The URI segment Craft should look for when determining if the current request sh
 
 ### `addTrailingSlashesToUrls`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 Whether dynamically-generated URLs should include a trailing slash.
 
@@ -802,14 +679,11 @@ Whether dynamically-generated URLs should include a trailing slash.
 
 ### `allowUppercaseInSlug`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 Whether uppercase letters should be allowed in entry and category slugs. Note that this will not affect whether auto-generated slugs have uppercase letters (they won’t).
 
@@ -819,14 +693,11 @@ Whether uppercase letters should be allowed in entry and category slugs. Note th
 
 ### `baseCpUrl`
 
-Accepts
-: A string or `null`
+**Accepts**: A string or `null`
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 Explicitly sets the base URL to the control panel, which may be used if the dynamically-determined URL is not desired for some reason.
 
@@ -836,14 +707,11 @@ Explicitly sets the base URL to the control panel, which may be used if the dyna
 
 ### `cpTrigger`
 
-Accepts
-: A string set to any valid URI segment
+**Accepts**: A string set to any valid URI segment
 
-Default
-: 'admin'
+**Default**: 'admin'
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The URI segment Craft should look for when determining if the current request should route to the CP rather than the front-end website.
 
@@ -853,14 +721,11 @@ The URI segment Craft should look for when determining if the current request sh
 
 ### `limitAutoSlugsToAscii`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 Limits automatically-generated slugs to ASCII characters. When there is an obvious ASCII version of a character (e.g. `ñ` → `n`), it will be used. Other characters will be removed.
 
@@ -870,14 +735,11 @@ Limits automatically-generated slugs to ASCII characters. When there is an obvio
 
 ### `maxSlugIncrement`
 
-Accepts
-: A positive integer
+**Accepts**: A positive integer
 
-Default
-: 100
+**Default**: 100
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The maximum number of increments Craft will apply to a slug while searching for one that will result in an element having a unique URL, before giving up and throwing an error.
 
@@ -887,14 +749,11 @@ The maximum number of increments Craft will apply to a slug while searching for 
 
 ### `omitScriptNameInUrls`
 
-Accepts
-: `true`, `false`, or `'auto'`
+**Accepts**: `true`, `false`, or `'auto'`
 
-Default
-: `'auto'`
+**Default**: `'auto'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should omit the script filename currently being used to access Craft (e.g. `index.php`) when generating URLs.
 
@@ -906,14 +765,11 @@ When set to `'auto'`, Craft will do its best to determine whether the server is 
 
 ### `pageTrigger`
 
-Accepts
-: A URI-safe string, or a query string parameter name
+**Accepts**: A URI-safe string, or a query string parameter name
 
-Default
-: `'p'`
+**Default**: `'p'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The string preceding a number which Craft will look for when determining if the current request is for a particular page in a paginated list of pages.
 
@@ -931,14 +787,11 @@ Note that `?p` cannot be used here, as Craft already uses a `p` query string par
 
 ### `resourceTrigger`
 
-Accepts
-: A string set to any valid URI segment
+**Accepts**: A string set to any valid URI segment
 
-Default
-: `'cpresources'`
+**Default**: `'cpresources'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The URI segment Craft should look for when determining if the current request should route to a resource file, either in `craft/app/resources/` or a plugin’s `resources/` folder.
 
@@ -952,14 +805,11 @@ The default resourceTrigger value changed in Craft 2.0. In Craft 1.x it was 'res
 
 ### `slugWordSeparator`
 
-Accepts
-: A URI-safe string
+**Accepts**: A URI-safe string
 
-Default
-: `'-'` (a dash)
+**Default**: `'-'` (a dash)
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 The string Craft should use to separate words when generating entry/category slugs.
 
@@ -969,14 +819,11 @@ The string Craft should use to separate words when generating entry/category slu
 
 ### `usePathInfo`
 
-Accepts
-: `true`, `false`, or `'auto'`
+**Accepts**: `true`, `false`, or `'auto'`
 
-Default
-: `'auto'`
+**Default**: `'auto'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should specify the path using PATH_INFO or as a query string parameter when generating URLs that include `index.php`. (See [Enabling PATH_INFO](https://craftcms.com/support/enable-path-info) for more info.)
 
@@ -988,14 +835,11 @@ Whether Craft should specify the path using PATH_INFO or as a query string param
 
 ### `cacheElementQueries`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 Whether element queries should be recorded when the [`{% cache %}`](templating/cache.md) tag is doing its thing. If this is set to `false`, it will be up to you to clear caches manually when making changes that would result in an element showing up within a `{% cache %}` tag where it would not have before (such as creating new entries).
 
@@ -1007,14 +851,11 @@ This will also prevent the “Deleting stale template caches” background task 
 
 ### `defaultTemplateExtensions`
 
-Accepts
-: An array of strings identifying the file extensions
+**Accepts**: An array of strings identifying the file extensions
 
-Default
-: `array('html', 'twig')`
+**Default**: `array('html', 'twig')`
 
-Since
-: Craft 1.1
+**Since**: Craft 1.1
 
 The template file extensions Craft will look for when matching a template path to a file on the front end. (Also see [`indexTemplateFilenames`](#indexTemplateFilenames).)
 
@@ -1024,14 +865,11 @@ The template file extensions Craft will look for when matching a template path t
 
 ### `enableTemplateCaching`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.4
+**Since**: Craft 2.4
 
 Whether template caching via the [`{% cache %}` tag](templating/cache.md) should be enabled.
 
@@ -1041,14 +879,11 @@ Whether template caching via the [`{% cache %}` tag](templating/cache.md) should
 
 ### `errorTemplatePrefix`
 
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `''`
+**Default**: `''`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 The path prefix to HTTP error code templates, like 404.html.
 
@@ -1058,14 +893,11 @@ The path prefix to HTTP error code templates, like 404.html.
 
 ### `indexTemplateFilenames`
 
-Accepts
-: An array of strings identifying the filenames (sans extensions)
+**Accepts**: An array of strings identifying the filenames (sans extensions)
 
-Default
-: `array('index')`
+**Default**: `array('index')`
 
-Since
-: Craft 1.1
+**Since**: Craft 1.1
 
 The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end. (Also see [`defaultTemplateExtensions`](#defaultTemplateExtensions).)
 
@@ -1075,14 +907,11 @@ The template filenames Craft will look for within a directory to represent the d
 
 ### `privateTemplateTrigger`
 
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `'_'`
+**Default**: `'_'`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 The prefix that can be placed before a template folder/file name to forbid direct HTTP traffic to it.
 
@@ -1092,14 +921,11 @@ The prefix that can be placed before a template folder/file name to forbid direc
 
 ### `suppressTemplateErrors`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.5
+**Since**: Craft 2.5
 
 Controls whether or not to show or hide any Twig template runtime errors that occur on the site in the browser. If it is set to `true`, the errors will still be logged to Craft’s log files.
 
@@ -1111,14 +937,11 @@ Controls whether or not to show or hide any Twig template runtime errors that oc
 
 ### `activateAccountFailurePath`
 
-Accepts
-: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
+**Accepts**: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 1.2
+**Since**: Craft 1.2
 
 The URI Craft should redirect to when user front-end account activation fails.  Note that this only affects front-end site requests.
 
@@ -1128,14 +951,11 @@ The URI Craft should redirect to when user front-end account activation fails.  
 
 ### `activateAccountSuccessPath`
 
-Accepts
-: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
+**Accepts**: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.3
+**Since**: Craft 2.3
 
 The URI Craft should redirect to when a user is activated. Note that this only affects front-end site requests.
 
@@ -1145,14 +965,11 @@ The URI Craft should redirect to when a user is activated. Note that this only a
 
 ### `autoLoginAfterAccountActivation`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 Configures Craft to automatically log users in immediately after they’ve activated their accounts.
 
@@ -1166,14 +983,11 @@ If your site allows public registration and users aren’t required to verify th
 
 ### `blowfishHashCost`
 
-Accepts
-: An integer
+**Accepts**: An integer
 
-Default
-: `13`
+**Default**: `13`
 
-Since
-: Craft 1.2
+**Since**: Craft 1.2
 
 The higher the cost value, the longer it takes to generate a password hash and to verify against it. Therefore, higher cost slows down a brute-force attack.
 
@@ -1187,14 +1001,11 @@ The time taken to compute the hash doubles for every increment by one for this v
 
 ### `cooldownDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'PT5M'` (five minutes)
+**Default**: `'PT5M'` (five minutes)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The amount of time a user must wait before re-attempting to log in after their account is locked due to too many failed login attempts.
 
@@ -1206,14 +1017,11 @@ Set to `false` to keep the account locked indefinitely, requiring an admin to ma
 
 ### `defaultCpLanguage`
 
-Accepts
-: A string of a locale ID, or `null`
+**Accepts**: A string of a locale ID, or `null`
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.4
+**Since**: Craft 2.4
 
 The default language that the Control Panel should be rendered in, for users that haven’t specified their Preferred Locale.
 
@@ -1223,14 +1031,11 @@ The default language that the Control Panel should be rendered in, for users tha
 
 ### `deferPublicRegistrationPassword`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.6.2949
+**Since**: Craft 2.6.2949
 
 When set to `true`, public user registration forms will no longer need to include a `password` input. Users will have the opportunity to set their password after verifying their email address, if “Verify email addresses?” is enabled in Settings → Users → Settings.
 
@@ -1240,14 +1045,11 @@ When set to `true`, public user registration forms will no longer need to includ
 
 ### `elevatedSessionDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php) or `false`
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php) or `false`
 
-Default
-: `'PT5M'` (Five minutes)
+**Default**: `'PT5M'` (Five minutes)
 
-Since
-: Craft 2.6.2784
+**Since**: Craft 2.6.2784
 
 The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
 
@@ -1255,14 +1057,11 @@ Elevated Sessions functionality can be disabled entirely by setting this to `fal
 
 ### `invalidLoginWindowDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'PT1H'` (one hour)
+**Default**: `'PT1H'` (one hour)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
 
@@ -1272,14 +1071,11 @@ The amount of time to track invalid login attempts for a user, for determining i
 
 ### `invalidUserTokenPath`
 
-Accepts
-: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
+**Accepts**: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
 
-Default
-: `''` (an empty string)
+**Default**: `''` (an empty string)
 
-Since
-: Craft 2.3
+**Since**: Craft 2.3
 
 The URI Craft should redirect to when user token validation fails.
 
@@ -1289,14 +1085,11 @@ The URI Craft should redirect to when user token validation fails.
 
 ### `loginPath`
 
-Accepts
-: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
+**Accepts**: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
 
-Default
-: `'login'`
+**Default**: `'login'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The URI Craft should use for user login on the front-end.
 
@@ -1306,14 +1099,11 @@ The URI Craft should use for user login on the front-end.
 
 ### `logoutPath`
 
-Accepts
-: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
+**Accepts**: A string set to any valid URI, or an array that maps locale IDs to locale-specific URIs
 
-Default
-: `'logout'`
+**Default**: `'logout'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The URI Craft should use to log out users on the front-end of the site.
 
@@ -1323,14 +1113,11 @@ The URI Craft should use to log out users on the front-end of the site.
 
 ### `maxInvalidLogins`
 
-Accepts
-: Any integer, or `false`
+**Accepts**: Any integer, or `false`
 
-Default
-: `5`
+**Default**: `5`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The number of invalid login attempts Craft will allow within the specified duration before the account gets locked. If it is set to `0` or `false`, Craft will not enforce any maximum (not recommended on production).
 
@@ -1340,14 +1127,11 @@ The number of invalid login attempts Craft will allow within the specified durat
 
 ### `postCpLoginRedirect`
 
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `'dashboard'`
+**Default**: `'dashboard'`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The path that users should be redirected to after logging in from the Control Panel.
 
@@ -1359,14 +1143,11 @@ This setting will also come into effect if the user visits the CP’s Login page
 
 ### `postLoginRedirect`
 
-Accepts
-: A string
+**Accepts**: A string
 
-Default
-: `''` (An empty string, which will give you the site homepage)
+**Default**: `''` (An empty string, which will give you the site homepage)
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The URL or path that users should be redirected to after logging in from the front-end site.
 
@@ -1378,14 +1159,11 @@ This setting will also come into effect if the user visits the site’s Login pa
 
 ### `purgePendingUsersDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php), or `false` to disable the feature
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php), or `false` to disable the feature
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 The amount of time to wait before Craft purges pending users from the system that have not activated. Set to `false` to disable this feature. Note that if you set this to a time interval, then any content assigned to a pending user will be deleted as well when the given time interval passes.
 
@@ -1395,14 +1173,11 @@ The amount of time to wait before Craft purges pending users from the system tha
 
 ### `rememberUsernameDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'P1Y'` (1 year)
+**Default**: `'P1Y'` (1 year)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The amount of time Craft will remember a username and pre-populate it on the CP login page.
 
@@ -1414,14 +1189,11 @@ Set to `false` to disable this feature altogether.
 
 ### `rememberedUserSessionDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'P2W'` (two weeks)
+**Default**: `'P2W'` (two weeks)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The amount of time a user stays logged in if “Remember Me” is checked on the login page.
 
@@ -1433,14 +1205,11 @@ Set to `false` to disable the “Remember Me” feature altogether.
 
 ### `requireMatchingUserAgentForSession`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should require a matching user agent string when restoring a user session from a cookie.
 
@@ -1450,14 +1219,11 @@ Whether Craft should require a matching user agent string when restoring a user 
 
 ### `requireUserAgentAndIpForSession`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Whether Craft should require the existence of a user agent string and IP address when creating a new user session.
 
@@ -1467,14 +1233,11 @@ Whether Craft should require the existence of a user agent string and IP address
 
 ### `setPasswordPath`
 
-Accepts
-: A string set to any valid template, or an array that maps locale IDs to locale-specific templates
+**Accepts**: A string set to any valid template, or an array that maps locale IDs to locale-specific templates
 
-Default
-: `'setpassword'`
+**Default**: `'setpassword'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The URI and template path that Craft should use for user password resetting. Note that this only affects front-end site requests, and Password Reset emails will only use this setting for users that don’t have access to the Control Panel.
 
@@ -1487,14 +1250,11 @@ The URI and template path that Craft should use for user password resetting. Not
 
 ### `setPasswordSuccessPath`
 
-Accepts
-: A string set to any valid template, or an array that maps locale IDs to locale-specific templates
+**Accepts**: A string set to any valid template, or an array that maps locale IDs to locale-specific templates
 
-Default
-: `''`
+**Default**: `''`
 
-Since
-: Craft 1.1
+**Since**: Craft 1.1
 
 The URI and template path that Craft should use upon successfully setting a users’s password. Note that this only affects front-end site requests.
 
@@ -1507,14 +1267,11 @@ The URI and template path that Craft should use upon successfully setting a user
 
 ### `testToEmailAddress`
 
-Accepts
-: A string set to a valid email address, or an array of email addresses.
+**Accepts**: A string set to a valid email address, or an array of email addresses.
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 Configures Craft to send all system emails to a single email address (or multiple email addresses), for testing purposes.
 
@@ -1524,14 +1281,11 @@ Configures Craft to send all system emails to a single email address (or multipl
 
 ### `useEmailAsUsername`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 Removes “Username” fields in the control panel, and automatically saves users’ usernames based on their email addresses.
 
@@ -1541,14 +1295,11 @@ Removes “Username” fields in the control panel, and automatically saves user
 
 ### `userSessionDuration`
 
-Accepts
-: `false` or a string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: `false` or a string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'PT1H'` (one hour)
+**Default**: `'PT1H'` (one hour)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The amount of time a user stays logged in.
 
@@ -1556,14 +1307,11 @@ Set to `false` if you want users to stay logged in as long as their browser is o
 
 ### `verificationCodeDuration`
 
-Accepts
-: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
 
-Default
-: `'P1D'` (one day)
+**Default**: `'P1D'` (one day)
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 The amount of time a user verification code can be used before expiring.
 
@@ -1575,14 +1323,11 @@ The amount of time a user verification code can be used before expiring.
 
 ### `allowedFileExtensions`
 
-Accepts
-: A string of a comma-separated list of file extensions.
+**Accepts**: A string of a comma-separated list of file extensions.
 
-Default
-: `'7z, aiff, asf, avi, bmp, csv, doc, docx, fla, flv, gif, gz, gzip, htm, html, jp2, jpeg, jpg, jpx, js, mid, mov, mp3, mp4, m4a, m4v, mpc, mpeg, mpg, ods, odt, ogg, ogv, pdf, png, potx, pps, ppsm, ppsx, ppt, pptm, pptx, ppz, pxd, qt, ram, rar, rm, rmi, rmvb, rtf, sdc, sitd, svg, swf, sxc, sxw, tar, tgz, tif, tiff, txt, vob, vsd, wav, webm, wma, wmv, xls, xlsx, zip'`
+**Default**: `'7z, aiff, asf, avi, bmp, csv, doc, docx, fla, flv, gif, gz, gzip, htm, html, jp2, jpeg, jpg, jpx, js, mid, mov, mp3, mp4, m4a, m4v, mpc, mpeg, mpg, ods, odt, ogg, ogv, pdf, png, potx, pps, ppsm, ppsx, ppt, pptm, pptx, ppz, pxd, qt, ram, rar, rm, rmi, rmvb, rtf, sdc, sitd, svg, swf, sxc, sxw, tar, tgz, tif, tiff, txt, vob, vsd, wav, webm, wma, wmv, xls, xlsx, zip'`
 
-Since
-: Craft 1.0
+**Since**: Craft 1.0
 
 A list of file extensions that Craft will allow when a user is uploading files. Note that if you only want to add additional file extensions, without overriding the default extensions, you can use [`extraAllowedFileExtensions`](#extraAllowedFileExtensions) instead.
 
@@ -1592,14 +1337,11 @@ A list of file extensions that Craft will allow when a user is uploading files. 
 
 ### `convertFilenamesToAscii`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.4
+**Since**: Craft 2.4
 
 Whether Craft should convert any non-ASCII characters in uploaded file names to ASCII.
 
@@ -1609,14 +1351,11 @@ Whether Craft should convert any non-ASCII characters in uploaded file names to 
 
 ### `defaultImageQuality`
 
-Accepts
-: A numeric value between 0 and 100, 0 being the lowest quality and smallest file size, and 100 being the highest quality and largest file size
+**Accepts**: A numeric value between 0 and 100, 0 being the lowest quality and smallest file size, and 100 being the highest quality and largest file size
 
-Default
-: `75`
+**Default**: `75`
 
-Since
-: Craft 1.1
+**Since**: Craft 1.1
 
 The default quality Craft will use when creating [image transforms](image-transforms.md). Note that this can be overridden on a per-transform basis.
 
@@ -1626,14 +1365,11 @@ The default quality Craft will use when creating [image transforms](image-transf
 
 ### `extraAllowedFileExtensions`
 
-Accepts
-: A string of a comma-separated list of file extensions.
+**Accepts**: A string of a comma-separated list of file extensions.
 
-Default
-: `''`
+**Default**: `''`
 
-Since
-: Craft 2.0
+**Since**: Craft 2.0
 
 A list of additional file extensions that Craft will allow when a user is uploading files, which will get appended to the list specified by [`allowedFileExtensions`](#allowedFileExtensions).
 
@@ -1643,14 +1379,11 @@ A list of additional file extensions that Craft will allow when a user is upload
 
 ### `filenameWordSeparator`
 
-Accepts
-: A string or `null`
+**Accepts**: A string or `null`
 
-Default
-: `'-'` (a dash)
+**Default**: `'-'` (a dash)
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 The string that should replace spaces in filenames after a file has been uploaded. If it is set to `null`, spaces will be left alone.
 
@@ -1660,14 +1393,11 @@ The string that should replace spaces in filenames after a file has been uploade
 
 ### `generateTransformsBeforePageLoad`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 Configures Craft to generate new image transforms right when [`getUrl()`](templating/assetfilemodel.md#getUrl) is called, rather than when the browser first requests the image.
 
@@ -1677,14 +1407,11 @@ Configures Craft to generate new image transforms right when [`getUrl()`](templa
 
 ### `imageDriver`
 
-Accepts
-: `'gd'`, `'imagick'`, or `null`
+**Accepts**: `'gd'`, `'imagick'`, or `null`
 
-Default
-: `null`
+**Default**: `null`
 
-Since
-: Craft 2.2
+**Since**: Craft 2.2
 
 Forces Craft to use a specific image manipulation library.
 
@@ -1694,14 +1421,11 @@ Forces Craft to use a specific image manipulation library.
 
 ### `maxCachedCloudImageSize`
 
-Accepts
-: An integer
+**Accepts**: An integer
 
-Default
-: `2000`
+**Default**: `2000`
 
-Since
-: Craft 1.2
+**Since**: Craft 1.2
 
 The maximum size in pixels (length or width) Craft should use when caching images from external sources, which it uses to speed up transform generation. Set to `0` if you don’t want Craft to cache them at all.
 
@@ -1711,14 +1435,11 @@ The maximum size in pixels (length or width) Craft should use when caching image
 
 ### `maxUploadFileSize`
 
-Accepts
-: A integer
+**Accepts**: A integer
 
-Default
-: `16777216` (16MB)
+**Default**: `16777216` (16MB)
 
-Since
-: Craft 2.1
+**Since**: Craft 2.1
 
 The maximum file size (in bytes) Craft should allow users to upload.
 
@@ -1728,27 +1449,21 @@ The maximum file size (in bytes) Craft should allow users to upload.
 
 ### `preserveExifData`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.6.2993
+**Since**: Craft 2.6.2993
 
 Whether the EXIF data should be preserved when manipulating images. Setting this to `false` will reduce the image size a little bit, but all EXIF data will be cleared. This setting is only taken into account if Imagick is in use.
 
 ### `preserveImageColorProfiles`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.5
+**Since**: Craft 2.5
 
 Whether the embedded color profiles should be preserved when uploading an image.
 
@@ -1758,14 +1473,11 @@ Whether the embedded color profiles should be preserved when uploading an image.
 
 ### `rotateImagesOnUploadByExifData`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `true`
+**Default**: `true`
 
-Since
-: Craft 2.3
+**Since**: Craft 2.3
 
 Whether Craft should rotate images according to their EXIF data on upload.
 
@@ -1779,14 +1491,11 @@ This setting takes effect when images are uploaded with an “Orientation” ent
 
 ### `allowSimilarTags`
 
-Accepts
-: `true` or `false`
+**Accepts**: `true` or `false`
 
-Default
-: `false`
+**Default**: `false`
 
-Since
-: Craft 2.6.2791
+**Since**: Craft 2.6.2791
 
 Whether Craft should allow multiple tags to exist with names that would be identical if converted down to ASCII (e.g. Protéines, Proteines).
 

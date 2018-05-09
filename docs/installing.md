@@ -75,7 +75,7 @@ Here are some recommended permissions depending on that relationship:
 * If they’re neither the same user nor in the same group, or if you just prefer to live life on the edge, you can use 777, just please do not do that in a production environment.
 
 ::: tip
-**IIS fans:** Make sure the account your site’s AppPool is running as has write permissions to this folder.
+**IIS fans**: Make sure the account your site’s AppPool is running as has write permissions to this folder.
 :::
 
 ### Step 3: Create your database
