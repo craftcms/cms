@@ -58,11 +58,13 @@ A [DateTime](datetime.md) object of the entry’s Expiration Date, if any.
 
 Whether the entry has any descendants.
 
-> {tip} `hasDescendants` will return `true` even if all of the descendants are disabled. If you want to determine if the entry has any enabled descendants, you can do this instead:
->
-> ```twig
-> {% set hasDescendants = entry.getDescendants().total() != 0 %}
-> ```
+::: tip
+`hasDescendants` will return `true` even if all of the descendants are disabled. If you want to determine if the entry has any enabled descendants, you can do this instead:
+
+```twig
+{% set hasDescendants = entry.getDescendants().total() != 0 %}
+```
+:::
 
 ### `id`
 
@@ -157,7 +159,9 @@ Returns a [UserModel](usermodel.md) object representing the entry’s author, if
 
 Returns an [ElementCriteriaModel](elementcriteriamodel.md) prepped to return the entry’s children (if it lives in a Structure section). (This is an alias for `getDescendants(1)`)
 
-> {warning} If `getChildren()` is called for an entry in a Channel section, it will return any entries that are related by the entry. This behavior is deprecated, though, and removed in Craft 3.
+::: tip
+If `getChildren()` is called for an entry in a Channel section, it will return any entries that are related by the entry. This behavior is deprecated, though, and removed in Craft 3.
+:::
 
 ### `getCpEditUrl()`
 
@@ -179,21 +183,25 @@ Returns the next entry that should show up in a list based on the parameters ent
 
 Returns a Structured entry’s next sibling, if there is one.
 
-> {tip} `getNextSibling()` will return the next sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
->
-> ```twig
-> {% set nextSibling = craft.entries.positionedAfter(entry).order('lft asc').first() %}
-> ```
+::: tip
+`getNextSibling()` will return the next sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
+
+```twig
+{% set nextSibling = craft.entries.positionedAfter(entry).order('lft asc').first() %}
+```
+:::
 
 ### `getParent()`
 
 Returns a Structured entry’s parent, if it’s not a top-level entry.
 
-> {tip} `getParent()` will return the parent whether or not it’s enabled. If you want to get the closest enabled ancestor, you can do this instead:
->
-> ```twig
-> {% set parent = craft.entries.ancestorOf(entry).order('lft desc').first() %}
-> ```
+::: tip
+`getParent()` will return the parent whether or not it’s enabled. If you want to get the closest enabled ancestor, you can do this instead:
+
+```twig
+{% set parent = craft.entries.ancestorOf(entry).order('lft desc').first() %}
+```
+:::
 
 ### `getPrev( params )`
 
@@ -203,11 +211,13 @@ Returns the previous entry that would have shown up in a list based on the param
 
 Returns a Structured entry’s previous sibling, if there is one.
 
-> {tip} `getPrevSibling()` will return the previous sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
->
-> ```twig
-> {% set prevSibling = craft.entries.positionedBefore(entry).order('lft desc').first() %}
-> ```
+::: tip
+`getPrevSibling()` will return the previous sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
+
+```twig
+{% set prevSibling = craft.entries.positionedBefore(entry).order('lft desc').first() %}
+```
+:::
 
 ### `getSection()`
 

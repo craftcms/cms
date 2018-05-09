@@ -39,7 +39,9 @@ Those aren’t the only ways you’ll interact with ElementCriteriaModel objects
 
 The main point of ElementCriteriaModel objects is to define the parameters Craft should factor in when it’s searching for elements.
 
-> {tip} The parameters that are available to your ElementCriteriaModel object, and their default values, will vary depending on what type element you are fetching.
+::: tip
+The parameters that are available to your ElementCriteriaModel object, and their default values, will vary depending on what type element you are fetching.
+:::
 
 There are two ways you can add parameters to your ElementCriteriaModel object:
 
@@ -142,7 +144,9 @@ This function will return the first matching element, if it can find one.
 {% endif %}
 ```
 
-> {warning} Since there’s a chance that `first()` won’t return anything if there are no matching elements, you should **always** make sure it actually returned something before you start working with the element it supposedly returned. (The same applies to [`last()`](#last) and [`nth()`](#nth).)
+::: tip
+Since there’s a chance that `first()` won’t return anything if there are no matching elements, you should **always** make sure it actually returned something before you start working with the element it supposedly returned. (The same applies to [`last()`](#last) and [`nth()`](#nth).)
+:::
 
 ### `last()`
 
@@ -187,7 +191,9 @@ This function will find the total number of matching elements, without actually 
 {% set totalBlogPosts = craft.entries.section('blog').total() %}
 ```
 
-> {tip} The `offset` and `limit` parameters (which are shared among all element types) will be ignored when you call `total()`, so you don’t need to worry about overriding the default values.
+::: tip
+The `offset` and `limit` parameters (which are shared among all element types) will be ignored when you call `total()`, so you don’t need to worry about overriding the default values.
+:::
 
 ::: tip
 If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [`|length`](http://twig.sensiolabs.org/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.

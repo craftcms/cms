@@ -208,4 +208,6 @@ class CocktailRecipes_IngredientRecord extends BaseRecord
 
 BaseRecord is an instance of Yii’s [CActiveRecord](http://www.yiiframework.com/doc/api/1.1/CActiveRecord) class, so everything CActiveRecord can do, BaseRecord can do as well.
 
-> {warning} Records’ ability to modify the database means that they should never be used to transport data throughout the system. Their instances should be contained to [services](services.md) only, so that services remain the one and only place where system state changes ever occur.
+::: tip
+Records’ ability to modify the database means that they should never be used to transport data throughout the system. Their instances should be contained to [services](services.md) only, so that services remain the one and only place where system state changes ever occur.
+:::

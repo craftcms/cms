@@ -58,7 +58,9 @@ The first setting can contain “tokens”, which represent a range of possible 
 
 So if you want to match URIs that look like “blog/archive/2013”, you would type “blog/archive/” into the URI field, and then click on the “year” token.
 
-> {warning} Your URI should **not** begin with a slash (/).
+::: tip
+Your URI should **not** begin with a slash (/).
+:::
 
 After defining your URI pattern and entering a template path, click the ‘Save’ button. The modal will close, revealing your new route on the page. Now when you point your browser to <http://example.com/blog/archive/2013>, it will match your new route, and the specified template will get loaded. The value of the ‘year’ token will also be available to the template as a variable called “year”.
 

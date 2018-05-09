@@ -60,4 +60,6 @@ If you’re using the `{% switch %}` tag inside of a `{% for %}` loop, you won�
 {% endfor %}
 ```
 
-> {tip} This tag is a bit simpler than other languages’ `switch` implementations you may have seen: matching `cases` are automatically broken out of, so there’s no need for `break` statements.
+::: tip
+This tag is a bit simpler than other languages’ `switch` implementations you may have seen: matching `cases` are automatically broken out of, so there’s no need for `break` statements.
+:::

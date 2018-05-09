@@ -31,7 +31,9 @@ The first thing to follow “`{% nav`” is the variable name you’d like to us
 
 Next you need to type the word “`in`”, followed by the array of entries the tag should loop through. This can be an actual array, or an [ElementCriteriaModel](elementcriteriamodel.md) object.
 
-> {warning} The `{% nav %}` tag requires elements to be queried in a specific (hierarchical) order, so make sure you don’t override the `order` criteria parameter in conjunction with this tag.
+::: tip
+The `{% nav %}` tag requires elements to be queried in a specific (hierarchical) order, so make sure you don’t override the `order` criteria parameter in conjunction with this tag.
+:::
 
 ## Showing children
 
@@ -39,4 +41,6 @@ To show the children of the current element in the loop, use the `{% children %}
 
 If you want to show some additional HTML surrounding the children, but only in the event that the element actually has children, wrap your `{% children %}` tag with `{% ifchildren %}` and `{% endifchildren %}` tags.
 
-> {tip} The `{% nav %}` tag should _only_ be used in times when you want to show elements in a hierarchy, and you want the DOM to express that hierarchy. If you want to loop through elements linearly, use Twig’s [`{% for %}`](http://twig.sensiolabs.org/doc/tags/for.html) tag instead.
+::: tip
+The `{% nav %}` tag should _only_ be used in times when you want to show elements in a hierarchy, and you want the DOM to express that hierarchy. If you want to loop through elements linearly, use Twig’s [`{% for %}`](http://twig.sensiolabs.org/doc/tags/for.html) tag instead.
+:::

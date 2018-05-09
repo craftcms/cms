@@ -2,7 +2,9 @@
 
 This guide will walk you through all of the steps that are typically involved in setting up a localized site, using Craft’s deep localization features.
 
-> {tip} This guide requires Craft Pro. You can try Craft Pro before buying it by [running Craft from any non-public domain](https://craftcms.com/support/try-craft-client-pro).
+::: tip
+This guide requires Craft Pro. You can try Craft Pro before buying it by [running Craft from any non-public domain](https://craftcms.com/support/try-craft-client-pro).
+:::
 
 ## Step 1: Define your locales
 
@@ -22,7 +24,9 @@ You will also be able to choose whether entries in the section should be enabled
 
 If your section is set to give its entries their own URLs, you will also need to give your new locale its own Entry URL Format. Generally this is just a matter of copy/pasting the original locale’s Entry URL Format into the new one, but if you want them to be different for some reason (e.g. it needs to be translated), this is your chance.
 
-> {warning} Do not give your localized Entry URL Formats a locale prefix (e.g. `de/`). That’s a job for your Site URL.
+::: warning
+Do not give your localized Entry URL Formats a locale prefix (e.g. `de/`). That’s a job for your Site URL.
+:::
 
 ## Step 3: Define your translatable fields
 
@@ -32,11 +36,13 @@ If you have any fields whose values you’d like to store on a per-locale basis,
 
 <img src="assets/field-translatable-setting.2x.png" width="606" alt="Field Translatable Setting 2x.">
 
-> {tip} When you mark a relational field (Entries, Assets, Users, Categories, or Tags) as translatable, the actual elements you select will be chosen on a per-locale basis. So a translatable Entries field, for example, could have two sets of related entries – one for English, and one for German.
+::: tip
+When you mark a relational field (Entries, Assets, Users, Categories, or Tags) as translatable, the actual elements you select will be chosen on a per-locale basis. So a translatable Entries field, for example, could have two sets of related entries – one for English, and one for German.
+:::
 
-<!-- -->
-
-> {tip} When you mark a Matrix field as translatable, all of the blocks will be defined on a per-locale basis. When a Matrix field _isn’t_ translatable, you can set its individual block type fields as translatable instead, so the _contents_ of the blocks can be translatable.
+::: tip
+When you mark a Matrix field as translatable, all of the blocks will be defined on a per-locale basis. When a Matrix field _isn’t_ translatable, you can set its individual block type fields as translatable instead, so the _contents_ of the blocks can be translatable.
+:::
 
 ## Step 4: Define your site URLs
 
@@ -140,7 +146,9 @@ If you have any local asset sources, you will need to make sure those assets are
 * The **File System Path** settings should be absolute (`/full/path/to/example.com/images/`).
 * The **URL** settings should be absolute (`http://example.com/images/`) or protocol-relative (`//example.com/images/`). If each of your locales’ sites are going to exist on the same domain (and subdomain), root-relative will work, too (`/images/`).
 
-> {tip} If these settings are going to need to change between environments, you can use [environment variables](multi-environment-configs.md#environment-specific-variables) to define the parts that will change on a per-environment basis.
+::: tip
+If these settings are going to need to change between environments, you can use [environment variables](multi-environment-configs.md#environment-specific-variables) to define the parts that will change on a per-environment basis.
+:::
 
 ## Step 7: Update your templates
 

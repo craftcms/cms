@@ -10,7 +10,9 @@ This tag will cache a portion of your template, which can improve performance fo
 {% endcache %}
 ```
 
-> {warning} If you’re suffering from abnormal page load times, you may be experiencing a suboptimal hosting environment. Please consult a specialist before trying `{% cache %}`. `{% cache %}` is not a substitute for fast database connections, efficient templates, or moderate query counts. Possible side effects include stale content, excessively long-running background tasks, stuck tasks, and in rare cases, death. Ask your hosting provider if `{% cache %}` is right for you.
+::: tip
+If you’re suffering from abnormal page load times, you may be experiencing a suboptimal hosting environment. Please consult a specialist before trying `{% cache %}`. `{% cache %}` is not a substitute for fast database connections, efficient templates, or moderate query counts. Possible side effects include stale content, excessively long-running background tasks, stuck tasks, and in rare cases, death. Ask your hosting provider if `{% cache %}` is right for you.
+:::
 
 ## Parameters
 
@@ -32,15 +34,17 @@ Specifies the name of the key the cache should use. If this is not provided, a r
 {% cache using key "page-header" %}
 ```
 
-> {tip} You can combine this parameter with [`globally`](#globally) to cache templates on a per-page basis, without letting any query string variables get included in the path:
->
-> ```twig
-> {% cache globally using key craft.request.path %}
-> ```
+::: tip
+You can combine this parameter with [`globally`](#globally) to cache templates on a per-page basis, without letting any query string variables get included in the path:
 
-<!-- -->
+```twig
+{% cache globally using key craft.request.path %}
+```
+:::
 
-> {warning} If you change the template code within a `{% cache %}` that uses a custom key, any existing template caches will not automatically be purged. You will either need to assign the tag a new key, or clear your existing template caches manually using the Clear Caches tool in Settings.
+::: tip
+If you change the template code within a `{% cache %}` that uses a custom key, any existing template caches will not automatically be purged. You will either need to assign the tag a new key, or clear your existing template caches manually using the Clear Caches tool in Settings.
+:::
 
 ### `for`
 
@@ -64,7 +68,9 @@ The accepted duration units are:
 - `year`(`s`)
 - `week`(`s`)
 
-> {tip} If this parameter is omitted, your [cacheDuration](../config-settings.md#cacheDuration) config setting will be used to define the default duration.
+::: tip
+If this parameter is omitted, your [cacheDuration](../config-settings.md#cacheDuration) config setting will be used to define the default duration.
+:::
 
 ### `until`
 
@@ -74,7 +80,9 @@ A [DateTime](datetime.md) object defining when the cache should expire.
 {% cache until entry.eventDate %}
 ```
 
-> {tip} You can only use [`for`](#for) **_or_** [`until`](#until) in a single `{% cache %}` tag.
+::: tip
+You can only use [`for`](#for) **_or_** [`until`](#until) in a single `{% cache %}` tag.
+:::
 
 ### `if`
 
@@ -94,7 +102,9 @@ Prevents the `{% cache %}` tag from activating if a certain condition is met.
 {% cache unless currentUser %}
 ```
 
-> {tip} You can only use [`if`](#if) **_or_** [`unless`](#unless) in a single `{% cache %}` tag.
+::: tip
+You can only use [`if`](#if) **_or_** [`unless`](#unless) in a single `{% cache %}` tag.
+:::
 
 ## Cache clearing
 
@@ -140,4 +150,6 @@ There are also some cases where it’s _not_ a good idea to use them:
 {% endblock %}
 ```
 
-> {tip} The `{% cache %}` tag will detect if there are any ungenerated [image transform](../image-transforms.md) URLs within it. If there are, it will hold off on caching the template until the next request, so those temporary image URLs won’t get cached.
+::: tip
+The `{% cache %}` tag will detect if there are any ungenerated [image transform](../image-transforms.md) URLs within it. If there are, it will hold off on caching the template until the next request, so those temporary image URLs won’t get cached.
+:::

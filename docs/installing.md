@@ -1,6 +1,8 @@
 # Installing
 
-> {tip} [Skip to the bottom](#additional-resources) for additional resources and alternative installation options.
+::: tip
+[Skip to the bottom](#additional-resources) for additional resources and alternative installation options.
+:::
 
 ## Pre-flight check
 
@@ -42,11 +44,13 @@ The other files in public/ are all optional. Here’s what they do:
 * **web.config** – This is our IIS equivelant of the .htaccess file, for those of you that are into that sort of thing.
 * **robots.txt** – If you couldn’t upload the craft/ folder above your web root, you can use this file to prevent Google from indexing it.
 
-> {warning} The public/ folder should not be uploaded into your web root; it _represents_ your web root. You just need to upload certain files within it.
+::: tip
+The `public/` folder should not be uploaded into your web root; it _represents_ your web root. You just need to upload certain files within it.
+:::
 
-<!-- -->
-
-> {warning} If you’re using Apache, don’t forget to rename ‘htaccess’ to ‘**.**htaccess’.
+::: warning
+If you’re using Apache, don’t forget to rename `htaccess` to `.htaccess`.
+:::
 
 ### Step 2: Set the permissions
 
@@ -68,7 +72,9 @@ Here are some recommended permissions depending on that relationship:
 * If they're in the same group, then use 774.
 * If they’re neither the same user nor in the same group, or if you just prefer to live life on the edge, you can use 777, just please do not do that in a production environment.
 
+::: tip
 **IIS fans:** Make sure the account your site’s AppPool is running as has write permissions to this folder.
+:::
 
 ### Step 3: Create your database
 

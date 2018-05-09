@@ -145,11 +145,13 @@ Returns the query string, except for the `p=` param (which was probably added by
 
 Returns the full URL for the current request.
 
-> {warning} By the time the request makes it to Craft, the _actual_ URL will be whatever your .htaccess file has redirected the request to behind the scenes, e.g. http://example.com/index.php?p=some/path. So rather than returning the actual URL, `getUrl()` returns what the URL probably looks like to the browser. It’s really just a shortcut for calling [`url()`](functions.md#url) and passing in [`craft.request.path`](#path).
->
-> ```twig
-> {{ url(craft.request.path) }}
-> ```
+::: tip
+By the time the request makes it to Craft, the _actual_ URL will be whatever your .htaccess file has redirected the request to behind the scenes, e.g. http://example.com/index.php?p=some/path. So rather than returning the actual URL, `getUrl()` returns what the URL probably looks like to the browser. It’s really just a shortcut for calling [`url()`](functions.md#url) and passing in [`craft.request.path`](#path).
+
+```twig
+{{ url(craft.request.path) }}
+```
+:::
 
 ### `getUrlReferrer()`
 

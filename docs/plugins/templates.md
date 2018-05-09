@@ -23,17 +23,19 @@ So, if you were to call `craft()->templates->render('cocktailrecipes/settings')`
 
 As you can see, the “templates/” folder segment is assumed, so there’s no need to include it when calling `render()`.
 
-> {tip} Craft will only automatically look for templates within the plugin folders for CP requests. If you are going to be calling TemplatesService::render() from a front end site request, you will need to manually tell Craft where to find your template using [PathService::setTemplatesPath()](https://docs.craftcms.com/api/v2/services/PathService.html#setTemplatesPath-detail) first:
->
-> ```php
-> $oldPath = craft()->path->getTemplatesPath();
-> $newPath = craft()->path->getPluginsPath().'pluginHandle/templates';
-> craft()->path->setTemplatesPath($newPath);
-> $html = craft()->templates->render('path/to/template');
-> craft()->path->setTemplatesPath($oldPath);
-> ```
->
-> If you do this, you won’t be needing to begin the template path with your plugin handle.
+::: tip
+Craft will only automatically look for templates within the plugin folders for CP requests. If you are going to be calling TemplatesService::render() from a front end site request, you will need to manually tell Craft where to find your template using [PathService::setTemplatesPath()](https://docs.craftcms.com/api/v2/services/PathService.html#setTemplatesPath-detail) first:
+
+```php
+$oldPath = craft()->path->getTemplatesPath();
+$newPath = craft()->path->getPluginsPath().'pluginHandle/templates';
+craft()->path->setTemplatesPath($newPath);
+$html = craft()->templates->render('path/to/template');
+craft()->path->setTemplatesPath($oldPath);
+```
+
+If you do this, you won’t be needing to begin the template path with your plugin handle.
+:::
 
 ## Giving your Plugin its own CP Section
 

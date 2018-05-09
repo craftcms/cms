@@ -2,7 +2,9 @@
 
 DateTime objects provide information about a given date/time.
 
-> {tip} For a full list of all of the available date and time formatting symbols, see the [PHP date](http://php.net/manual/en/function.date.php) reference.
+::: tip
+For a full list of all of the available date and time formatting symbols, see the [PHP date](http://php.net/manual/en/function.date.php) reference.
+:::
 
 ## Methods
 

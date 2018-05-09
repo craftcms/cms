@@ -33,7 +33,9 @@ return array(
 
 Whatever is listed in the `'*'` array will be applied to all environments.
 
-> {warning} The `'*'` array is required to enable Craft’s multi-environment config support, even if you don’t need it. Craft specifically checks for it when deciding whether to enable multi-environment config support or not.
+::: tip
+The `'*'` array is required to enable Craft’s multi-environment config support, even if you don’t need it. Craft specifically checks for it when deciding whether to enable multi-environment config support or not.
+:::
 
 Next up, add a new nested array for each environment-specific config you need:
 
@@ -55,7 +57,9 @@ return array(
 
 Craft will compare the additional array keys (`'example.test'` and `'example.com'`) with the `$_SERVER['SERVER_NAME']` server environment variable. If your server is configured properly, that should be your site’s domain name (without the ‘http://’).
 
-> {tip} You can change the string Craft uses to determine the current environment by defining the [`CRAFT_ENVIRONMENT`](php-constants.md#craft-environment) constant in your index.php file.
+::: tip
+You can change the string Craft uses to determine the current environment by defining the [`CRAFT_ENVIRONMENT`](php-constants.md#craft-environment) constant in your index.php file.
+:::
 
 When Craft is comparing your config keys with `$_SERVER['SERVER_NAME']`, it’s only looking for a *partial match*. So the environment key `'example.com'` will also work if you’re accessing your site via www.example.com or any other subdomain. You could even just use the TLD if you’re feeling adventurous:
 
@@ -159,4 +163,6 @@ There are only three settings within Craft that support environment variables. T
 * URL (in asset source settings)
 * Site URL (in Settings → General)
 
-> {tip} It’s generally better to use the [siteUrl](config-settings.md#siteUrl) config setting for setting your site URL, rather than placing an environment variable within the Site URL setting in Settings → General. (See [this answer](http://craftcms.stackexchange.com/a/921/9) on Craft’s Stack Exchange site for an explanation.)
+::: tip
+It’s generally better to use the [siteUrl](config-settings.md#siteUrl) config setting for setting your site URL, rather than placing an environment variable within the Site URL setting in Settings → General. (See [this answer](http://craftcms.stackexchange.com/a/921/9) on Craft’s Stack Exchange site for an explanation.)
+:::

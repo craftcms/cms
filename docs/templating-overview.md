@@ -6,7 +6,9 @@ Templates are files that live within your craft/templates folder. The structure 
 
 Craft uses [Twig](http://twig.sensiolabs.org/) to parse your templates. Twig is elegant, powerful, and blazing fast. If you’re new to Twig, be sure to read through our [twig-primer](twig-primer.md) to familiarize yourself with its syntax.
 
-> {tip} PHP code isn’t allowed in your templates. If you have a need to do something that is not possible out-of-the-box with Craft or Twig, you can create a [plugin](plugins/introduction.md) that provides a new [template variable](plugins/variables.md).
+::: tip
+PHP code isn’t allowed in your templates. If you have a need to do something that is not possible out-of-the-box with Craft or Twig, you can create a [plugin](plugins/introduction.md) that provides a new [template variable](plugins/variables.md).
+:::
 
 ## Template Paths
 
@@ -33,7 +35,9 @@ For example, if you have a template located at craft/templates/foo/bar/index.htm
 * foo/bar/index
 * foo/bar/index.html
 
-> {tip} If you have templates located at both craft/templates/foo/bar.html *and* craft/templates/foo/bar/index.html, the template path “foo/bar” will match bar.html.
+::: tip
+If you have templates located at both craft/templates/foo/bar.html *and* craft/templates/foo/bar/index.html, the template path “foo/bar” will match bar.html.
+:::
 
 ## Template Localization
 

@@ -9,9 +9,13 @@ Craft requires the following:
 * A minimum of 20MB of free disk space
 * A minimum of 1MB of database space
 
-> {tip} If you’re using MySQL 5.7.5+, give [this a read](https://craftcms.stackexchange.com/questions/12084/getting-this-sql-error-group-by-incompatible-with-sql-mode-only-full-group-by/12106) and save yourself a headache.
+::: tip
+If you’re using MySQL 5.7.5+, give [this a read](https://craftcms.stackexchange.com/questions/12084/getting-this-sql-error-group-by-incompatible-with-sql-mode-only-full-group-by/12106) and save yourself a headache.
+:::
 
-> {note} Craft 2 does not support PHP 7.2 or later. If you want to run PHP 7.2 or later, you will need to install [Craft 3](https://github.com/craftcms/craft).
+::: warning
+Craft 2 doesn’t support PHP 7.2+ yet, due to dependency incompatibilities. If you want to run PHP 7.2 or later, use [Craft 3](https://docs.craftcms.com/v3/installation.html) instead.
+:::
 
 ## Required PHP Extensions
 
@@ -37,7 +41,9 @@ Craft requires the following PHP extensions to be enabled:
 * **[ImageMagick Extension](http://php.net/manual/en/book.imagick.php)** – Adds animated GIF support to Craft, and preserves 8-bit and 24-bit PNGs when creating image transforms, rather than converting them to 32-bit.
 * **[SimpleXML](https://secure.php.net/manual/en/book.simplexml.php)** - Required if you will be using S3.
 
-> {tip} If you’re unsure about whether your server meets the minimum requirements, just try installing Craft anyway. If there’s an issue, the installer will let you know!
+::: tip
+If you’re unsure about whether your server meets the minimum requirements, just try installing Craft anyway. If there’s an issue, the installer will let you know!
+:::
 
 ## Required MySQL User Privileges
 
@@ -70,4 +76,6 @@ Craft’s control panel requires a modern browser:
 * iOS: Safari 9.1 or later
 * Android: Chrome 4.4 or later
 
-> {tip} Craft’s CP browser requirements have nothing to do with your actual website. If you’re a glutton for punishment and want your website to look flawless on IE 6, that’s your choice.
+::: tip
+Craft’s CP browser requirements have nothing to do with your actual website. If you’re a glutton for punishment and want your website to look flawless on IE 6, that’s your choice.
+:::

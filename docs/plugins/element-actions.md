@@ -18,7 +18,9 @@ On a technical level, Element Action classes must meet the following requirement
 * Their files must have the `Craft` namespace.
 * They must implement the [IElementAction](https://docs.craftcms.com/api/v2/elementactions/IElementAction.html) interface.
 
-> {tip} To keep your Element Action class lean and mean, it can inherit from [BaseElementAction](https://docs.craftcms.com/api/v2/elementactions/BaseElementAction.html) instead of implementing the whole IElementAction interface on its own.
+::: tip
+To keep your Element Action class lean and mean, it can inherit from [BaseElementAction](https://docs.craftcms.com/api/v2/elementactions/BaseElementAction.html) instead of implementing the whole IElementAction interface on its own.
+:::
 
 ## UI Modes
 
@@ -105,7 +107,9 @@ And here’s what that ‘cocktailRecipes/\_addIngredientsTrigger’ template lo
 </div>
 ```
 
-> {tip} To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+::: tip
+To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+:::
 
 ### Breaking it Down
 
@@ -188,7 +192,9 @@ public function getTriggerHtml()
 }
 ```
 
-> {tip} You might find it easier to write the JavaScript using PHP’s [Heredoc string syntax](http://php.net/manual/en/language.types.string.php#language.types.string.syntax.heredoc). Alternatively you could write it in a resource file and include it using [TemplatesService::includeJsFile()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#includeJsFile-detail).
+::: tip
+You might find it easier to write the JavaScript using PHP’s [Heredoc string syntax](http://php.net/manual/en/language.types.string.php#language.types.string.syntax.heredoc). Alternatively you could write it in a resource file and include it using [TemplatesService::includeJsFile()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#includeJsFile-detail).
+:::
 
 Craft.ElementActionTrigger supports the following settings:
 
@@ -197,7 +203,9 @@ Craft.ElementActionTrigger supports the following settings:
 * **validateSelection** – Can be set to a function which determines whether or not the trigger should be enabled for the currently-selected elements. The function should return `true` or `false` depending on whether the selection is valid or not. (This setting is optional.)
 * **activate** – Can be set to a function which will completely override what happens when the trigger is activated. (This setting is optional.)
 
-> {tip} You can bind JavaScript to your Element Action trigger regardless of whether it has a custom button in the toolbar or it lives within the action menu.
+::: tip
+You can bind JavaScript to your Element Action trigger regardless of whether it has a custom button in the toolbar or it lives within the action menu.
+:::
 
 ## Adding Actions to Index Pages
 

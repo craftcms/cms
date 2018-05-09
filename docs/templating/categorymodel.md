@@ -51,11 +51,13 @@ Alias of [getGroup()](#getGroup).
 
 Whether the category has any descendants.
 
-> {tip} `hasDescendants` will return `true` even if all of the descendants are disabled. If you want to determine if the category has any enabled descendants, you can do this instead:
->
-> ```twig
-> {% set hasDescendants = category.getDescendants().total() != 0 %}
-> ```
+::: tip
+`hasDescendants` will return `true` even if all of the descendants are disabled. If you want to determine if the category has any enabled descendants, you can do this instead:
+
+```twig
+{% set hasDescendants = category.getDescendants().total() != 0 %}
+```
+:::
 
 ### `id`
 
@@ -146,21 +148,25 @@ Returns the next category that should show up in a list based on the parameters 
 
 Returns the category’s next sibling, if there is one.
 
-> {tip} `getNextSibling()` will return the next sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
->
-> ```twig
-> {% set nextSibling = craft.categories.positionedAfter(category).order('lft asc').first() %}
-> ```
+::: tip
+`getNextSibling()` will return the next sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
+
+```twig
+{% set nextSibling = craft.categories.positionedAfter(category).order('lft asc').first() %}
+```
+:::
 
 ### `getParent()`
 
 Returns the category’s parent, if it’s not a top-level category.
 
-> {tip} `getParent()` will return the parent whether or not it’s enabled. If you want to get the closest enabled ancestor, you can do this instead:
->
-> ```twig
-> {% set parent = craft.categories.ancestorOf(category).order('lft desc').first() %}
-> ```
+::: tip
+`getParent()` will return the parent whether or not it’s enabled. If you want to get the closest enabled ancestor, you can do this instead:
+
+```twig
+{% set parent = craft.categories.ancestorOf(category).order('lft desc').first() %}
+```
+:::
 
 ### `getPrev( params )`
 
@@ -170,11 +176,13 @@ Returns the previous category that would have shown up in a list based on the pa
 
 Returns a category’s previous sibling, if there is one.
 
-> {tip} `getPrevSibling()` will return the previous sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
->
-> ```twig
-> {% set prevSibling = craft.categories.positionedBefore(category).order('lft desc').first() %}`
-> ```
+::: tip
+`getPrevSibling()` will return the previous sibling whether or not it’s enabled. If you want to get the closest enabled sibling, you can do this instead:
+
+```twig
+{% set prevSibling = craft.categories.positionedBefore(category).order('lft desc').first() %}`
+```
+:::
 
 ### `getSiblings()`
 

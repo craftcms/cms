@@ -68,11 +68,13 @@ The method Craft will use to store data caches.
 'cacheMethod' => 'memcache',
 ```
 
-> {tip} Note that this config setting has no effect on the [{% cache %}](templating/cache.md) template tag, which always stores its data in the database.
+::: tip
+Note that this config setting has no effect on the [{% cache %}](templating/cache.md) template tag, which always stores its data in the database.
+:::
 
-<!-- -->
-
-> {tip} The DB, file, Memcache(d), and Redis cache methods each have their own additional config settings, which must be set in separate config files in the craft/config/ folder (dbcache.php, filecache.php, memcache.php and rediscache.php, respectively). You can find their default values in craft/app/etc/config/defaults/.
+::: tip
+The DB, file, Memcache(d), and Redis cache methods each have their own additional config settings, which must be set in separate config files in the craft/config/ folder (dbcache.php, filecache.php, memcache.php and rediscache.php, respectively). You can find their default values in craft/app/etc/config/defaults/.
+:::
 
 ### `customAsciiCharMappings`
 
@@ -163,7 +165,9 @@ Determines whether the system is in Dev Mode or not. (See [What Dev Mode Does](h
 'devMode' => true,
 ```
 
-> {warning} Dev Mode should never be enabled in production environments.
+::: warning
+Dev Mode should never be enabled in production environments.
+:::
 
 ### `defaultWeekStartDay`
 
@@ -253,11 +257,13 @@ When set to `'auto'`, Craft will check the default session location to see if it
 'overridePhpSessionLocation' => 'tcp://127.0.0.1:1234',
 ```
 
-> {tip} If you are saving PHP session files to a custom location using memcache (or something similar), you still need to [tell PHP about it](https://secure.php.net/manual/en/session.configuration.php#ini.session.save-handler) from Craft’s `index.php` in your public HTML folder.
->
-> ```php
-> ini_set('session.save_handler', 'memcached');
-> ```
+::: tip
+If you are saving PHP session files to a custom location using memcache (or something similar), you still need to [tell PHP about it](https://secure.php.net/manual/en/session.configuration.php#ini.session.save-handler) from Craft’s `index.php` in your public HTML folder.
+
+```php
+ini_set('session.save_handler', 'memcached');
+```
+:::
 
 ### `phpMaxMemoryLimit`
 
@@ -561,7 +567,9 @@ Whether [CSRF Protection](https://craftcms.com/support/csrf-protection) should b
 'enableCsrfProtection' => true,
 ```
 
-> {warning} This setting will be set to `true` by default in Craft 3.0.
+::: tip
+This setting is set to `true` by default in Craft 3.0.
+:::
 
 ### `preventUserEnumeration`
 
@@ -676,7 +684,9 @@ This should be set on load-balanced environments, or servers where the craft/sto
 'validationKey' => '6#AYD6jW6nUJ3GMfreeXcPTGmBu.V*3Fi?f',
 ```
 
-> {warning} I know what you’re thinking... “I’ll just copy the key they used in their example and use it as my own.”  Don’t do that. Use something like [https://www.grc.com/passwords.htm](https://www.grc.com/passwords.htm) to generate a cryptographically secure key just for yourself!
+::: warning
+I know what you’re thinking… “I’ll just copy the key they used in their example and use it as my own.”  Don’t do that. Use a tool like <https://www.grc.com/passwords.htm> to generate a cryptographically secure key just for yourself!
+:::
 
 ## Updates
 
@@ -936,7 +946,9 @@ The URI segment Craft should look for when determining if the current request sh
 'resourceTrigger' => 'assets',
 ```
 
-> {tip} The default resourceTrigger value changed in Craft 2.0. In Craft 1.x it was 'resources'.
+::: tip
+The default resourceTrigger value changed in Craft 2.0. In Craft 1.x it was 'resources'.
+:::
 
 ### `slugWordSeparator`
 
@@ -1148,7 +1160,9 @@ Configures Craft to automatically log users in immediately after they’ve activ
 'autoLoginAfterAccountActivation' => true,
 ```
 
-> {tip} If your site allows public registration and users aren’t required to verify their email addresses, this setting will take effect immediately after new users register their accounts.
+::: tip
+If your site allows public registration and users aren’t required to verify their email addresses, this setting will take effect immediately after new users register their accounts.
+:::
 
 ### `blowfishHashCost`
 

@@ -30,7 +30,9 @@ body::\"salty dog\" | where the ‘body’ field is set to “salty dog” and n
 body:* | where the ‘body’ field contains any value.
 -body:* | where the ‘body’ field is empty.
 
-> {tip} You can alter the default behavior of search terms with the [defaultSearchTermOptions](config-settings.md#defaultSearchTermOptions) config setting. See _[Enabling Fuzzy Search by Default](https://craftcms.com/support/enabling-fuzzy-search-by-default)_ for more info.
+::: tip
+You can alter the default behavior of search terms with the [defaultSearchTermOptions](config-settings.md#defaultSearchTermOptions) config setting. See _[Enabling Fuzzy Search by Default](https://craftcms.com/support/enabling-fuzzy-search-by-default)_ for more info.
+:::
 
 ## Searching for specific element attributes
 
@@ -104,7 +106,9 @@ You can also set the ‘order’ parameter to `'score'` if you want results orde
 
 When you do this, each of the elements returned will have a `searchScore` attribute set, which reveals what their search score was.
 
-> {tip} See our [Search Form](templating/search-form.md) tutorial for a complete example of listing dynamic search results.
+::: tip
+See our [Search Form](templating/search-form.md) tutorial for a complete example of listing dynamic search results.
+:::
 
 ## Rebuilding your Search Indexes
 

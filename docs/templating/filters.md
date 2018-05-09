@@ -119,7 +119,9 @@ Returns an array containing only the values that are also in a passed-in array.
 
 Returns a string formatted in “kebab-case”.
 
-> {tip} That’s a reference to [shish kebabs](http://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
+::: tip
+That’s a reference to [shish kebabs](http://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
+:::
 
 ```twig
 {{ "foo bar?"|kebab }}
@@ -212,7 +214,9 @@ You can also use a regular expression to search for matches by starting and endi
 {{ tag.name|lower|replace('/[^\\w]+/', '-') }}
 ```
 
-> {warning} Any backslashes in the regular expression will need to be double-escaped '`\\`' for them to work properly.
+::: tip
+Any backslashes in the regular expression will need to be double-escaped '`\\`' for them to work properly.
+:::
 
 ## `snake`
 

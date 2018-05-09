@@ -2,7 +2,9 @@
 
 Craft provides several hooks that give plugins the opportunity to get involved in various areas of the system.
 
-> {tip} See [hooks-and-events](hooks-and-events.md) for an explanation of how hooks work in Craft, and how they differ from events.
+::: tip
+See [hooks-and-events](hooks-and-events.md) for an explanation of how hooks work in Craft, and how they differ from events.
+:::
 
 ## General Hooks
 
@@ -264,7 +266,9 @@ public function registerSiteRoutes()
 }
 ```
 
-> {tip} It’s a good practice to make any URL segments in your site routes configurable by the site administrator, so you’re not forcing a particular URL scheme on sites using your plugin.
+::: tip
+It’s a good practice to make any URL segments in your site routes configurable by the site administrator, so you’re not forcing a particular URL scheme on sites using your plugin.
+:::
 
 ### `getElementRoute`
 

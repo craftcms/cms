@@ -29,20 +29,19 @@ Their syntax always begins with “`{{`” and ends with “`}}`”. You can put
 <p>The current time is {{ now|date("g:i a") }}.</p>
 ```
 
-> {warning} **Note:** You never place tags within other tags in Twig.
->
-> These are wrong:
-> ```twig
-> {% set entry = craft.entries.section( {{ sectionId }} ).first() %}
-> {% set entry = craft.entries.section( {% if filterBySection %} sectionId {% endif %} ) %}
-> ```
->
-> These are correct:
->
-> ```twig
-> {% set entry = craft.entries.section( sectionId ).first() %}
-> {% set entry = craft.entries.section( filterBySection ? sectionId : null ) %}
-> ```
+::: tip
+You never place tags within other tags in Twig.
+
+```twig
+{# wrong #}
+{% set entry = craft.entries.section( {{ sectionId }} ).first() %}
+{% set entry = craft.entries.section( {% if filterBySection %} sectionId {% endif %} ) %}
+
+{# right #}
+{% set entry = craft.entries.section( sectionId ).first() %}
+{% set entry = craft.entries.section( filterBySection ? sectionId : null ) %}
+```
+:::
 
 Resources:
 

@@ -38,7 +38,9 @@ That `getName()` method should look familiar – your primary plugin class has t
 
 `getBodyHtml()` does just what it says: it returns your widget’s body HTML. We recommend that you store the actual HTML in a template, and load it via `craft()->templates->render()`.
 
-> {tip} To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+::: tip
+To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+:::
 
 
 ## Getting your Widget to Span Multiple Columns
@@ -114,7 +116,9 @@ class CocktailRecipes_RecentCocktailsWidget extends BaseWidget
 }
 ```
 
-> {tip} To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+::: tip
+To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+:::
 
 If you need to do any processing on your settings’ post data before they’re saved to the database, you can do it with the `prepSettings()` method:
 

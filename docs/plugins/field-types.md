@@ -45,7 +45,9 @@ Here’s an example input template for a textarea fieldtype:
 <textarea name="{{ name }}">{{ value }}</textarea>
 ```
 
-> {tip} To make sense of that “cocktailrecipes/ingredientlist/input” template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+::: tip
+To make sense of that “cocktailrecipes/ingredientlist/input” template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+:::
 
 ## Binding Javascript
 
@@ -124,7 +126,9 @@ class CocktailRecipes_IngredientListFieldType extends BaseFieldType
 }
 ```
 
-> {tip} To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+::: tip
+To make sense of that template path, see [Plugin Template Paths, Explained](templates.md#plugin-template-paths-explained).
+:::
 
 If you need to do any processing on your settings’ post data before they’re saved to the database’s `content` table, you can do it with the `prepSettings()` method:
 

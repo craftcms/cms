@@ -14,7 +14,9 @@ Admin accounts are special accounts that can do absolutely everything within Cra
 
 The user account you create during installation is an admin by default.
 
-> {warning} Considering the amount of damage an admin can do, it’s strongly recommended that you be conservative with creating new admin accounts. Only do it if you trust that they know what they’re doing.
+::: tip
+Considering the amount of damage an admin can do, it’s strongly recommended that you be conservative with creating new admin accounts. Only do it if you trust that they know what they’re doing.
+:::
 
 ## User Groups
 

@@ -2,7 +2,9 @@
 
 Craft provides several events that alert plugins when things are happening.
 
-> {tip} See [Hooks and Events](/v2/plugins/hooks-and-events.html) for an explanation of how events work in Craft, and how they differ from hooks.
+::: tip
+See [Hooks and Events](/v2/plugins/hooks-and-events.html) for an explanation of how events work in Craft, and how they differ from hooks.
+:::
 
 ## General Events
 
@@ -41,7 +43,9 @@ Raised right before an email is sent.
 - `emailModel` – The [EmailModel](https://docs.craftcms.com/api/v2/models/EmailModel.html) defining the email to be sent.
 - `variables` – Any variables that are going to be available to the email template.
 
-> {tip} Event handlers can prevent the email from getting sent by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the email from getting sent by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### email.onSendEmail
 
@@ -93,7 +97,9 @@ Raised right before a locale is deleted.
 - `localeId` – The ID of the locale that’s about to be deleted.
 - `transferContentTo` – The ID of the locale that the deleted locale’s content should be transferred to, if any.
 
-> {tip} Event handlers can prevent the locale from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the locale from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### localization.onDeleteLocale
 
@@ -163,7 +169,9 @@ Raised before Craft builds out an elements query, enabling plugins to modify the
 - `justIds` – `true` or `false` depending on whether the query should only be returning the IDs of the matched elements.
 - `query` – The [DbCommand](https://docs.craftcms.com/api/v2/etc/db/DbCommand.html) object that is being built out.
 
-> {tip} Event handlers can prevent the element query from being executed by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the element query from being executed by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### elements.onBuildElementsQuery
 
@@ -213,7 +221,9 @@ Raised right before an element is moved within a structure.
 - `structureId` – The ID of the structure that the element is being moved within.
 - `element` – A [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) object representing the element that is about to be moved.
 
-> {tip} Event handlers can prevent the element from getting moved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the element from getting moved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### structures.onMoveElement
 
@@ -239,7 +249,9 @@ Raised before a batch element action gets triggered.
 - `action` – The element action class that is going to be performing the action.
 - `criteria` – The [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) object that defines which element(s.html) the user has chosen to perform the action on.
 
-> {tip} Event handlers can prevent the element action from being triggered by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the element action from being triggered by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### elements.onPerformAction
 
@@ -289,7 +301,9 @@ Raised right before an element is saved.
 - `element` – A [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) object representing the element that is about to be saved.
 - `isNewElement` – A boolean indicating whether this is a brand new element.
 
-> {tip} Event handlers can prevent the element from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the element from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### elements.onSaveElement
 
@@ -328,7 +342,9 @@ Raised right before an entry is saved.
 - `entry` – An [EntryModel](https://docs.craftcms.com/api/v2/models/EntryModel.html) object representing the entry that is about to be saved.
 - `isNewEntry` – A boolean indicating whether this is a brand new entry.
 
-> {tip} Event handlers can prevent the entry from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the entry from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### entries.onSaveEntry
 
@@ -353,7 +369,9 @@ Raised right before an entry is deleted.
 
 - `entry` – An [EntryModel](https://docs.craftcms.com/api/v2/models/EntryModel.html) object representing the entry that is about to be deleted.
 
-> {tip} Event handlers can prevent the entry from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the entry from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### entries.onDeleteEntry
 
@@ -400,7 +418,9 @@ Raised right before a draft is deleted.
 
 - `draft` – An [EntryDraftModel](https://docs.craftcms.com/api/v2/models/EntryDraftModel.html) object representing the draft that is able to be deleted.
 
-> {tip} Event handlers can prevent the draft from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the draft from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### entryRevisions.onDeleteDraft
 
@@ -424,7 +444,9 @@ Raised right before a section is deleted.
 
 - `sectionId` – The ID of the section that is about to be deleted.
 
-> {tip} Event handlers can prevent the section from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the section from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### sections.onDeleteSection
 
@@ -449,7 +471,9 @@ Raised right before an entry type is saved.
 - `entryType` – An [EntryTypeModel](https://docs.craftcms.com/api/v2/models/EntryTypeModel.html) object representing the entry type that is about to be saved.
 - `isNewEntryType` – A boolean indicating whether this is a brand new entry type.
 
-> {tip} Event handlers can prevent the entry type from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the entry type from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### sections.onSaveEntryType
 
@@ -475,7 +499,9 @@ Raised right before a section is saved.
 - `section` – An [SectionModel](https://docs.craftcms.com/api/v2/models/SectionModel.html) object representing the section that is about to be saved.
 - `isNewSection` – A boolean indicating whether this is a brand new section.
 
-> {tip} Event handlers can prevent the section from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the section from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### sections.onSaveSection
 
@@ -503,7 +529,9 @@ Raised before any category is saved.
 - `category` – A [CategoryModel](https://docs.craftcms.com/api/v2/models/CategoryModel.html) object representing the category about to be saved.
 - `isNewCategory` – A boolean indicating whether this is a new category.
 
-> {tip} Event handlers can prevent the category from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the category from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### categories.onSaveCategory
 
@@ -550,7 +578,9 @@ Raised before a category group is deleted.
 
 - `groupId` – The ID of the category group that’s about to be deleted.
 
-> {tip} Event handlers can prevent the category group from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the category group from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### categories.onDeleteGroup
 
@@ -577,7 +607,9 @@ Raised when a tag is able to be saved.
 - `tag` – A [TagModel](https://docs.craftcms.com/api/v2/models/TagModel.html) object representing the tag that is about to be saved.
 - `isNewTag` – A boolean indicating whether this is a brand new tag.
 
-> {tip} Event handlers can prevent the tag from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the tag from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### tags.onSaveTag
 
@@ -626,7 +658,9 @@ Raised right before an asset’s file is replaced.
 
 - `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset whose file is about to be replaced.
 
-> {tip} Event handlers can prevent the file from getting replaced by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the file from getting replaced by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### assets.onReplaceFile
 
@@ -651,7 +685,9 @@ Raised right before an asset is saved.
 - `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset about to be saved.
 - `isNewAsset` – A boolean indicating whether this is a new asset.
 
-> {tip} Event handlers can prevent the asset from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the asset from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### assets.onSaveAsset
 
@@ -678,7 +714,9 @@ Raised right before an asset is uploaded to its source.
 - `folder` – An [AssetFolderModel](https://docs.craftcms.com/api/v2/models/AssetFolderModel.html) object representing the asset folder that the file is going to be saved to.
 - `filename` – The filename of the file.
 
-> {tip} Event handlers can prevent the asset from getting uploaded by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the asset from getting uploaded by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ## Global Set API Events
 
@@ -693,7 +731,9 @@ Raised right before a Global Set’s content is saved.
 
 - `globalSet` – A [GlobalSetModel](https://docs.craftcms.com/api/v2/models/GlobalSetModel.html) object representing the Global Set whose content is about to be saved.
 
-> {tip} Event handlers can prevent the global set from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the global set from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### globals.onSaveGlobalContent
 
@@ -719,7 +759,9 @@ Raised right before a user is logged in.
 
 - `username` – A string of the username that is about to log in.
 
-> {tip} Event handlers can prevent the user from getting logged in by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting logged in by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### userSession.onLogin
 
@@ -743,7 +785,9 @@ Raised right before a user is logged out.
 
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that is getting logged out.
 
-> {tip} Event handlers can prevent the user from getting logged out by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting logged out by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### userSession.onLogout
 
@@ -763,7 +807,9 @@ Raised right before a user is activated.
 
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be activated.
 
-> {tip} Event handlers can prevent the user from getting activated by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting activated by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onActivateUser
 
@@ -788,7 +834,9 @@ Raised right before a user’s group assignments are updated. Note that this cou
 - `userId` – The ID of the user whose group assignments are about to be updated.
 - `groupIds` – The user’s new group IDs (if any).
 
-> {tip} Event handlers can prevent the user’s new group assignments from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user’s new group assignments from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### userGroups.onAssignUserToGroups
 
@@ -814,7 +862,9 @@ Raised right before a user is deleted.
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be deleted.
 - `transferContentTo` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that the deleted user’s content should be transferred to, if any.
 
-> {tip} Event handlers can prevent the user from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onDeleteUser
 
@@ -840,7 +890,9 @@ Raised right before a user is saved.
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be saved.
 - `isNewUser` – A boolean indicating whether this is a brand new user account.
 
-> {tip} Event handlers can prevent the user from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onSaveUser
 
@@ -866,7 +918,9 @@ Raised right before a user’s password is changed.
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user whose password is about to be changed.
 - **password** – The user’s new password.
 
-> {tip} Event handlers can prevent the user’s password from getting changed by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user’s password from getting changed by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onSetPassword
 
@@ -890,7 +944,9 @@ Raised right before a user is suspended.
 
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be suspended.
 
-> {tip} Event handlers can prevent the user from getting suspended by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting suspended by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onSuspendUser
 
@@ -925,7 +981,9 @@ Raised right before a user is unlocked.
 
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be unlocked.
 
-> {tip} Event handlers can prevent the user from getting unlocked by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting unlocked by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onUnlockUser
 
@@ -949,7 +1007,9 @@ Raised right before a user is unsuspended.
 
 - `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be unsuspended.
 
-> {tip} Event handlers can prevent the user from getting unsuspended by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+::: tip
+Event handlers can prevent the user from getting unsuspended by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+:::
 
 ### users.onUnsuspendUser
 

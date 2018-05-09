@@ -16,7 +16,9 @@ There are several different classes your plugin can have, which handle different
 
 Your [primary plugin class](setting-things-up.md#your-primary-plugin-class) tells Craft some basic information about the plugin, such as its name and version number. It also handles a few oddball things like installation/uninstallation and hooks.
 
-> {tip} This is the only required plugin class. For some plugins, it may even be the only file that’s needed.
+::: tip
+This is the only required plugin class. For some plugins, it may even be the only file that’s needed.
+:::
 
 ### Controllers
 

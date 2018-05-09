@@ -18,11 +18,13 @@ This tag makes it easy to paginate a set of elements across multiple pages.
 
 Paginated URLs will be identical to the first page’s URL, except that “/p_X_” will be appended to the end (where _X_ is the page number), e.g. `http://example.com/news/p2`.
 
-> {tip} You can use the [pageTrigger](../config-settings.md#pageTrigger) config setting to customize what comes before the actual page number in your URLs. For example you could set it to `'page/'`, and your paginated URLs would start looking like `http://example.com/news/page/2`.
+::: tip
+You can use the [pageTrigger](../config-settings.md#pageTrigger) config setting to customize what comes before the actual page number in your URLs. For example you could set it to `'page/'`, and your paginated URLs would start looking like `http://example.com/news/page/2`.
+:::
 
-<!-- -->
-
-> {warning} Only a single `{% paginate %}` tag should be used per request.
+::: tip
+Only a single `{% paginate %}` tag should be used per request.
+:::
 
 ## Parameters
 
@@ -32,7 +34,9 @@ The `{% paginate %}` tag has the following parameters:
 
 The first thing you pass into the `{% paginate %}` tag is an [ElementCriteriaModel](elementcriteriamodel.md) object, which defines all of the elements that should be paginated. Use the `limit` parameter to define how many elements should show up per page.
 
-> {warning} This parameter needs to be an actual ElementCriteriaModel object; not an array of elements. So don’t call `find()` on the object.
+::: tip
+This parameter needs to be an actual ElementCriteriaModel object; not an array of elements. So don’t call `find()` on the object.
+:::
 
 ### `as`
 

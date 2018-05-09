@@ -143,7 +143,9 @@ And then there’s `Craft.getActionUrl()` for Javascript:
 var url = Craft.getActionUrl('cocktailRecipes/ingredients/saveIngredient', { id: 10 });
 ```
 
-> {warning} You’ll notice that action URLs begin with “actions/”. Don’t be tempted to skip these action URL functions and just type “actions/” yourself though, as that trigger segment is configurable.
+::: tip
+You’ll notice that action URLs begin with “actions/”. Don’t be tempted to skip these action URL functions and just type “actions/” yourself though, as that trigger segment is configurable.
+:::
 
 ## Allowing Anonymous Access to Actions
 
