@@ -1,10 +1,10 @@
 # Code of Conduct
 
-Like the technical community as a whole, the Craft team and community is made up of a mixture of professionals and volunteers from all over the world, working on every aspect of the mission - including mentorship, teaching, and connecting people.
+Like the technical community as a whole, the Craft team and community is made up of a mixture of professionals and volunteers from all over the world, working on every aspect of the mission – including mentorship, teaching, and connecting people.
 
 Diversity is one of our strengths. With that, challenges will arise that can lead to communication issues and unhappiness. To that end, we have a few ground rules that we ask people to adhere to. This code applies equally to founders, mentors and those seeking help and guidance.
 
-This isn’t an exhaustive list of things that you can’t do. Rather, take it in the spirit in which it’s intended - a guide to make it easier to enrich all of us and the technical communities in which we participate.
+This isn’t an exhaustive list of things that you can’t do. Rather, take it in the spirit in which it’s intended – a guide to make it easier to enrich all of us and the technical communities in which we participate.
 
 This code of conduct applies to all spaces used by the Craft community for communication. This includes Craft Slack, Craft CMS Stack Exchange, GitHub, Twitter, Facebook, meetups, conferences, and any other relevant forums. Violations of this code outside of any spaces managed by the Craft team will still affect a person’s ability to participate within them.
 

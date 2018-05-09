@@ -17,7 +17,14 @@ Before installing Craft, make sure that you’ve got everything you need:
 
 ### Step 1: Upload the files
 
-Extract your Craft zip somewhere on your computer. You’ll notice that it contains two folders:
+Download the archive format you prefer to work with:
+
+- **zip**: <https://craftcms.com/latest-v2.zip>
+- **tar.gz**: <https://craftcms.com/latest-v2.tar.gz>
+
+Extract the archive wherever you want your new Craft project to live.
+
+You’ll notice that it contains two folders:
 
 * `craft/`
 * `public/`
@@ -70,9 +77,9 @@ The exact permissions you should be setting depends on the relationship between 
 
 Here are some recommended permissions depending on that relationship:
 
-* If they are the same user, use 744.
-* If they're in the same group, then use 774.
-* If they’re neither the same user nor in the same group, or if you just prefer to live life on the edge, you can use 777, just please do not do that in a production environment.
+* If they are the same user, use `744`.
+* If they're in the same group, then use `774`.
+* If they’re neither the same user nor in the same group, or if you just prefer to live life on the edge, you can use `777`, just please do not do that in a production environment.
 
 ::: tip
 **IIS fans**: Make sure the account your site’s AppPool is running as has write permissions to this folder.
@@ -88,11 +95,11 @@ If your host limits you to a single database, and you’re already using it for 
 
 Open up your `craft/config/db.php` file on your server. This file holds some settings that tell Craft how it can connect to your database.
 
-* Set `'server'` to the name of your database server.  If your database and web server are on the same box, then this will likely be either `"localhost"` or `"127.0.0.1"`.
-* Set `'user'` to the name of the MySQL user Craft should use to connect to the database.
-* Set `'password'` to the password for the MySQL user Craft should use to connect to the database.
-* Set `'database'` to the name of the database Craft should be connecting to.
-* Set `'tablePrefix'` to the prefix you want each of Craft’s tables to use. Note that this must be five characters or less, and it does *not* need to end with “_”. If Craft won’t be sharing its database with any other apps, you’re also free to leave this one blank.
+* Set `server` to the name of your database server.  If your database and web server are on the same box, then this will likely be either `localhost` or `127.0.0.1`.
+* Set `user` to the name of the MySQL user Craft should use to connect to the database.
+* Set `password` to the password for the MySQL user Craft should use to connect to the database.
+* Set `database` to the name of the database Craft should be connecting to.
+* Set `tablePrefix` to the prefix you want each of Craft’s tables to use. Note that this must be five characters or less, and it does *not* need to end with “_”. If Craft won’t be sharing its database with any other apps, you’re also free to leave this one blank.
 
 If you need to check with your web host to get the correct values for these settings, that’s OK; we can wait.
 
@@ -100,13 +107,13 @@ Once you’ve finished setting your DB config settings, save the file and close 
 
 ### Step 5: Run the installer!
 
-Now that everything’s set up, point your browser to <http://example.com/admin>. If you see a monkey in your browser, you’ve done everything right!
+Now that everything’s set up, point your browser to `http://example.com/admin`. If you see a monkey in your browser, you’ve done everything right!
 
 ![Install Screen 1](./images/install1.png)
 
 No monkey? Here’s a couple tips:
 
-* If you’re getting a 404, your server might not be configured to redirect would-be 404’s to `index.php` correctly. Try going to <http://example.com/index.php/admin> or <http://example.com/index.php?p=admin> instead.
+* If you’re getting a 404, your server might not be configured to redirect would-be 404’s to `index.php` correctly. Try going to `http://example.com/index.php/admin` or `http://example.com/index.php?p=admin` instead.
 * If you’re getting an error about how Craft can’t connect to your DB, you’ll need to revisit Step 4.
 
 The first step of the installer is to create a user account. Don’t be one of *those* people and be sure to pick a strong password.

@@ -22,8 +22,8 @@ Craft has a standard template path format that applies to each of these cases: a
 
 If you have a template located at craft/templates/foo/bar.html, the following template paths would point to it:
 
-* foo/bar
-* foo/bar.html
+* `foo/bar`
+* `foo/bar.html`
 
 ### Index Templates
 
@@ -31,9 +31,9 @@ If you name your template “index.html”, you don’t need to specify it in th
 
 For example, if you have a template located at craft/templates/foo/bar/index.html, the following template paths would point to it:
 
-* foo/bar
-* foo/bar/index
-* foo/bar/index.html
+* `foo/bar`
+* `foo/bar/index`
+* `foo/bar/index.html`
 
 ::: tip
 If you have templates located at both craft/templates/foo/bar.html *and* craft/templates/foo/bar/index.html, the template path “foo/bar” will match bar.html.
