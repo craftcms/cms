@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where it was impossible to add new assets as data strings. ([#2855](https://github.com/craftcms/cms/issues/2855))
 - Fixed a bug where it was not possible to upload new assets to an entry and keep the existing assets at the same time.
+- Fixed a bug where SVG files that were using single quotes instead of double quotes would not be recognized as such.
 
 ## 3.0.6 - 2018-05-08
 

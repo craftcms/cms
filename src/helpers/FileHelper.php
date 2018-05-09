@@ -259,7 +259,7 @@ class FileHelper extends \yii\helpers\FileHelper
         $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && in_array($mimeType, ['text/plain', 'text/html'])) {
+        if ($checkExtension && in_array($mimeType, ['text/plain', 'text/html', 'application/xml'])) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
