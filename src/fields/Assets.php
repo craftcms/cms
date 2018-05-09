@@ -101,6 +101,9 @@ class Assets extends BaseRelationField
      */
     public $allowedKinds;
 
+    /**
+     * @var array|null References for files uploaded as data strings for this field.
+     */
     private $_uploadedDataFiles;
 
     // Public Methods
