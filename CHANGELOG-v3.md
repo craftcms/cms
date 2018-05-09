@@ -8,6 +8,7 @@
 - Fixed a bug where SVG files that were using single quotes instead of double quotes would not be recognized as such.
 - Fixed a bug where translated versions of the “It looks like someone is currently performing a system update.” message contained an HTML-encoded `<br/>` tag.
 - Fixed a bug where changing an entry’s type could skip adding the new entry type’s tabs, if the previous entry type didn’t have any tabs. ([#2859](https://github.com/craftcms/cms/issues/2859))
+- Fixed warnings about missing SVG files that were logged by Control Panel requests.
 
 ## 3.0.6 - 2018-05-08
 
