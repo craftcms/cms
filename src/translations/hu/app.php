@@ -539,7 +539,7 @@ return [
     'Invalid username or password.' => 'Hibás felhasználónév vagy jelszó.',
     'Invalid verification code. Please [login or reset your password]({loginUrl}).' => 'Érvénytelen megerősítő kód. Kérjük [lépj be vagy állíts be új jelszót]({loginUrl}).',
     'Is this the primary site?' => 'Ez az elsődleges webhely?',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Úgy tűnik, valaki épp rendszerfrissítést végez.<br/>Csak akkor folytassa, ha biztos benne, hogy nem ez a helyzet.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Úgy tűnik, valaki épp rendszerfrissítést végez.\nCsak akkor folytassa, ha biztos benne, hogy nem ez a helyzet.',
     'It looks like these settings are being overridden by {paths}.' => 'Úgy tűnik, ezeket a beállításokat felülírja {paths}.',
     'Item' => 'Elem',
     'Items in your cart' => 'Bevásárlókosarad tartalma',
