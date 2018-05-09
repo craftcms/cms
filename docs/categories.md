@@ -18,11 +18,11 @@ To create a new category group, go to Settings → Categories and click the “N
 
 If you have at least one category group, there will be a “Categories” tab in the primary CP nav. Clicking on it will take you to the category index. From there you can choose a category group from the sidebar, and add/reorder/delete categories within it:
 
-<img src="assets/categories-index.2x.jpg" width="1033" alt="Categories Index 2x.">
+![Categories Index](./images/categories-index.jpg)
 
 Double-clicking on a category will bring up a modal that lets you edit its name, slug, and any fields you’ve assigned to the group:
 
-<img src="assets/category-editor.2x.jpg" width="470" alt="Category Editor 2x.">
+![Category Editor](./images/category-editor.jpg)
 
 ## Assigning Categories
 

@@ -66,6 +66,6 @@ View _[Asset Source Name]_ | `viewAssetSource:[SourceID]`
 
 Craft Pro has the option of allowing public user registration. It is not enabled by default, though. To enable it, you must go to Settings → Users → Settings, and check the “Allow public registration?” setting. With that checked, you will also be given the ability to choose a default user group that publicly-registered users are assigned to.
 
-<img src="assets/users-settings-publicregistration.2x.jpg" width="432" alt="Users Settings Public Registration 2x.">
+![Users Settings Public Registration](./images/users-settings-publicregistration.jpg)
 
 Once your site is set up to allow public user registration, the last step is to create a [user registration form](templating/user-registration-form.md) on your site’s front end.

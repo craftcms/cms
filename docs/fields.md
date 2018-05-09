@@ -11,13 +11,13 @@ All fields share a few common settings:
 * Its template-facing handle
 * Instruction text
 
-<img src="assets/field-settings.2x.jpg" width="676" alt="Field Settings 2x.">
+![Field Settings](./images/field-settings.jpg)
 
 ## Translatable Fields
 
 If you’re running Craft Pro and you have more than one site locale, you will also have the option to mark the field as translatable.
 
-<img src="assets/field-translatable.2x.jpg" width="191" alt="Field Translatable 2x.">
+![Field Translatable](./images/field-translatable.jpg)
 
 If that setting is checked, the field’s values will be stored on a per-locale basis. Otherwise, the values will always be copied across all locales.
 
@@ -25,7 +25,7 @@ If that setting is checked, the field’s values will be stored on a per-locale 
 
 The final setting that all fields have is the “Field Type” setting. This determines what type of field it is – what its input UI is going to look like, what type of data it can store, and how you’ll be able to interact with that data from your templates.
 
-<img src="assets/field-type.2x.jpg" width="158" alt="Field Type 2x.">
+![Field Type](./images/field-type.jpg)
 
 Craft comes with these built-in field types:
 

@@ -10,7 +10,7 @@ This guide requires Craft Pro. You can try Craft Pro before buying it by [runnin
 
 The first step to running a localized site is to establish which locales your site will be targeting. You do that from Settings → Locales.
 
-<img src="assets/locales.2x.png" width="606" alt="Locales 2x.">
+![Locales](./images/locales.png)
 
 When you add a new locale, you may notice that a little progress bar shows up in the Control Panel’s header. That’s because Craft has to go through and re-save all of your site’s existing content, accounting for the new locale. Don’t delete any locales while that is running – it may result in unintended data loss.
 
@@ -20,7 +20,7 @@ Each [section](sections-and-entries.md) can be enabled/disabled for each locale.
 
 You will also be able to choose whether entries in the section should be enabled by default for each locale.
 
-<img src="assets/section-locales.2x.png" width="606" alt="Section Locales 2x.">
+![Section Locales](./images/section-locales.png)
 
 If your section is set to give its entries their own URLs, you will also need to give your new locale its own Entry URL Format. Generally this is just a matter of copy/pasting the original locale’s Entry URL Format into the new one, but if you want them to be different for some reason (e.g. it needs to be translated), this is your chance.
 
@@ -34,7 +34,7 @@ By default, your custom fields will **not** store values on a per-locale basis. 
 
 If you have any fields whose values you’d like to store on a per-locale basis, you need to go into their settings and check their “This field is translatable” checkboxes.
 
-<img src="assets/field-translatable-setting.2x.png" width="606" alt="Field Translatable Setting 2x.">
+![Field Translatable Setting](./images/field-translatable-setting.png)
 
 ::: tip
 When you mark a relational field (Entries, Assets, Users, Categories, or Tags) as translatable, the actual elements you select will be chosen on a per-locale basis. So a translatable Entries field, for example, could have two sets of related entries – one for English, and one for German.
@@ -181,4 +181,4 @@ As soon as you add a second locale to your site, Craft will start checking for l
 
 When you edit a user group or a user account, you will find a new “Locales” permissions section, which lists all of your site’s locales. Assign them where appropriate.
 
-<img src="assets/locale-permissions.2x.png" width="609" alt="Locale Permissions 2x.">
+![Locale Permissions](./images/locale-permissions.png)

@@ -102,7 +102,7 @@ Once you’ve finished setting your DB config settings, save the file and close 
 
 Now that everything’s set up, point your browser to <http://example.com/admin>. If you see a monkey in your browser, you’ve done everything right!
 
-<img src="assets/install1.png" width="509" alt="Install Image 1.">
+![Install Screen 1](./images/install1.png)
 
 No monkey? Here’s a couple tips:
 
@@ -111,19 +111,19 @@ No monkey? Here’s a couple tips:
 
 The first step of the installer is to create a user account. Don’t be one of *those* people and be sure to pick a strong password.
 
-<img src="assets/install2.png" width="509" alt="Install Image 2.">
+![Install Screen 2](./images/install2.png)
 
 The next screen will have you define the basic info about your site.
 
-<img src="assets/install3.png" width="509" alt="Install Image 3.">
+![Install Screen 3](./images/install3.png)
 
 Click the “Finish up” button and let the installer do its thing. A few seconds later, you should have a working Craft install!
 
-<img src="assets/install4.png" width="509" alt="Install Image 4.">
+![Install Screen 4](./images/install4.png)
 
 Click “Go to Craft” and you’ll get taken straight to the dashboard.
 
-<img src="assets/install5.png" width="502" alt="Install Image 5.">
+![Install Screen 5](./images/install5.png)
 
 Congratulations, you’ve just installed Craft!
 

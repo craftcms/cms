@@ -47,7 +47,7 @@ A good example of this is dynamic URLs, such as a yearly archive template, where
 
 To create a new Route, go to Settings → Routes and click the “New Route” button. A modal window will appear where you can define the route settings:
 
-<img src="assets/routes.2x.jpg" width="528" alt="Routes 2x.">
+![Routes](./images/routes.jpg)
 
 The modal has the following settings:
 

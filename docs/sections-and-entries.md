@@ -53,7 +53,7 @@ Both Channel and Structure sections let you define multiple types of entries to 
 
 You can manage your sections’ entry types by clicking the “Edit Entry Types” link beside the section’s name in Settings → Sections. That’ll take you to the section’s entry type index. Clicking on an entry type’s name takes you to its settings page:
 
-<img src="assets/entrytype-settings.2x.jpg" width="579" alt="Entry Type Settings 2x.">
+![Entry Type Settings](./images/entrytype-settings.jpg)
 
 Entry types have the following settings:
 
@@ -66,7 +66,7 @@ Entry types have the following settings:
 
 If you want your entries to have auto-generated titles rather than requiring authors to enter them, you can uncheck the “Show the Title field?” checkbox. When you do, a new “Title Format” setting will appear, where you can define what the auto-generated titles should look like.
 
-<img src="assets/entrytype-settings-titleformat.2x.jpg" width="534" alt="Entry Type Settings Title Format 2x.">
+![Entry Type Settings Title Format](./images/entrytype-settings-titleformat.jpg)
 
 The Title Format is a full-blown Twig template, and it will get parsed whenever your entries are saved.
 
