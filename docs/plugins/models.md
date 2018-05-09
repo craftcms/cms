@@ -2,13 +2,13 @@
 
 Models are containers for data. Just about every time information is passed between [services](services.md), [controllers](controllers.md), and templates in Craft, it’s passed via a model.
 
-To create a model, first create a new models/ subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
+To create a model, first create a new `models/` subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
 
 ```
 [PluginHandle]_[ModelName]Model.php
 ```
 
-If your plugin name is “Cocktail Recipes”, and your model name is “Ingredient”, the file would be named “CocktailRecipes_IngredientModel.php”.
+If your plugin name is “Cocktail Recipes”, and your model name is `Ingredient`, the file would be named `CocktailRecipes_IngredientModel.php`.
 
 Create a new class in that file, with the same name as the filename:
 

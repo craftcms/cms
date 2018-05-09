@@ -75,7 +75,7 @@ You can manipulate variables with filters. The syntax is the variable name follo
 {{ siteName|upper }}
 ```
 
-Some filters accept parameters::
+Some filters accept parameters:
 
 ```twig
 {{ now|date("M d, Y") }}

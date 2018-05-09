@@ -25,10 +25,10 @@ When Craft.zip has finished downloading, you can manually update your Craft inst
 
 If you’re manually updating a live site, we recommend you follow these instructions to minimize the time your site is down:
 
-1. Rename the craft/app/ folder in the release to “app-new”.
-2. Upload craft/app-new to the craft folder on your server, alongside the old craft/app folder.
-3. Once app-new is done uploading, your FTP client may have uploaded the app-new folder with different permissions that what your craft/app folder currently has. If so, make sure app-new matches what craft/app currently has.
-4. Rename the old craft/app folder to craft/app-old.
-5. Rename app-new to “app”.
-6. Point your browser to your Craft control panel. If the update needs to run any new database migrations, you will be prompted to proceed with a database update. Click “Finish up” and let the database updates run.
-7. Delete the app-old folder.
+1. Rename the `craft/app/` folder in the release to `app-new/`.
+2. Upload `craft/app-new/` to the craft folder on your server, alongside the old `craft/app/` folder.
+3. Once `app-new/` is done uploading, your FTP client may have uploaded the `app-new/` folder with different permissions that what your `craft/app/` folder currently has. If so, make sure app-new matches what `craft/app/` currently has.
+4. Rename the old `craft/app/` folder to `craft/app-old/`.
+5. Rename `app-new/` to `app/`.
+6. Point your browser to your Craft Control Panel. If the update needs to run any new database migrations, you will be prompted to proceed with a database update. Click “Finish up” and let the database updates run.
+7. Delete the `app-old/` folder.

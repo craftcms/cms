@@ -55,7 +55,7 @@ Craft provides a custom Redactor plugin that makes it possible to split your con
 
 To enable it, first visit your Rich Text field’s settings and check your field’s “Config” setting value. If it’s set to “Default” you will need to choose a different option and save the field.
 
-Now open up the config’s JSON file, located in craft/config/redactor/, and add in the `pagebreak` plugin to it:
+Now open up the config’s JSON file, located in `craft/config/redactor/`, and add in the `pagebreak` plugin to it:
 
 ```javascript
 {

@@ -6,17 +6,17 @@ Here is an outline of what that entails:
 
 0. **Should Craft handle this request in the first place?**
 
-   It’s important to keep in mind that Craft doesn’t actually get involved for *every* request that touches your server – only requests that go to your index.php file.
+   It’s important to keep in mind that Craft doesn’t actually get involved for *every* request that touches your server – only requests that go to your `index.php` file.
 
-   The .htaccess file that [comes with Craft](https://craftcms.com/support/remove-index.php) will redirect all would-be 404 requests over to index.php behind the scenes, which is why Craft is able to respond to URLs that don’t point to any actual folder/file in your web root. But if you point your browser directly at a file that *does* exist (such as a front-end image URL), Apache is going to serve that file directly. Craft won’t be summoned for that.
+   The .htaccess file that [comes with Craft](https://craftcms.com/support/remove-index.php) will redirect all would-be 404 requests over to `index.php` behind the scenes, which is why Craft is able to respond to URLs that don’t point to any actual folder/file in your web root. But if you point your browser directly at a file that *does* exist (such as a front-end image URL), Apache is going to serve that file directly. Craft won’t be summoned for that.
 
 1. **Is it a resource request?**
 
-   Resource request URIs begin with “cpresources/” (or whatever your [resourceTrigger](config-settings.md#resourceTrigger) config setting is set to). They are used to serve CP resources, user photos, etc..
+   Resource request URIs begin with `cpresources/` (or whatever your [resourceTrigger](config-settings.md#resourceTrigger) config setting is set to). They are used to serve CP resources, user photos, etc..
 
 2. **Is it an action request?**
 
-   Action requests either have a URL which begins with “actions/” (or whatever your [actionTrigger](config-settings.md#actionTrigger) config setting is set to), or an “action” param in POST or the query string. Action requests get routed to a controller action, which are used to perform… *actions*. Controller actions are built into the system for core actions, but plugins may also have Controllers that define their own custom actions.
+   Action requests either have a URL which begins with `actions/` (or whatever your [actionTrigger](config-settings.md#actionTrigger) config setting is set to), or an “action” param in POST or the query string. Action requests get routed to a controller action, which are used to perform… *actions*. Controller actions are built into the system for core actions, but plugins may also have Controllers that define their own custom actions.
 
   The request doesn’t necessarily end after a controller has been called. The controller may allow it to keep going.
 
@@ -32,11 +32,11 @@ Here is an outline of what that entails:
 
 5. **Does the URI match a template?**
 
-   Finally, Craft will see if the URI is a valid [template path](templating-overview.md#template-paths). If it is, it will return the matched template. Note that if any of the URI segments begin with an underscore (‘\_’), Craft will return a 404, since template path segments that begin with an underscore are considered “hidden” from direct access.
+   Finally, Craft will see if the URI is a valid [template path](templating-overview.md#template-paths). If it is, it will return the matched template. Note that if any of the URI segments begin with an underscore (`_`), Craft will return a 404, since template path segments that begin with an underscore are considered “hidden” from direct access.
 
 6. **404**
 
-   If none of those checks are successful, Craft will return a 404. You can customize your site’s 404 page by placing a “404.html” template at the root of your craft/templates/ folder.
+   If none of those checks are successful, Craft will return a 404. You can customize your site’s 404 page by placing a “404.html” template at the root of your `craft/templates/` folder.
 
 
 ## Dynamic Routes
@@ -56,7 +56,7 @@ The modal has the following settings:
 
 The first setting can contain “tokens”, which represent a range of possible matches, rather than a specific string. (The “year” token, for example, represents four consecutive digits.) When you click on a token, it will get inserted into the URI setting wherever the cursor is.
 
-So if you want to match URIs that look like “blog/archive/2013”, you would type “blog/archive/” into the URI field, and then click on the “year” token.
+So if you want to match URIs that look like `blog/archive/2013`, you would type `blog/archive/` into the URI field, and then click on the “year” token.
 
 ::: tip
 Your URI should **not** begin with a slash (/).
@@ -111,7 +111,7 @@ If your route contains any subpatterns, a ‘matches’ array will be passed to 
 'news/(\d{4})/(\d{2})' => 'news/_archive',
 ```
 
-…if you access http://example.com/news/2014/04, your news/\_archive.html template will get loaded with a ‘matches’ variable set to this:
+…if you access `http://example.com/news/2014/04`, your `news/_archive.html` template will get loaded with a `matches` variable set to this:
 
 ```php
 array(
@@ -127,7 +127,7 @@ If you specify any named subpatterns, then those matches will also get their own
 'news/(?P<year>\d{4})/(?P<month>\d{2})' => 'news/_archive',
 ```
 
-…if you access http://example.com/news/2014/04, your news/\_archive.html template will get loaded with ‘year’ and ‘month’ variables set to “2014” and “04”.
+…if you access `http://example.com/news/2014/04`, your `news/_archive.html` template will get loaded with `year` and `month` variables set to `2014` and `04`.
 
 ### Routing to Controller Actions
 

@@ -6,17 +6,19 @@ Active record models (or “records”) are like [models](models.md), except wit
 - Represent rows in the database
 - Find, alter, and delete rows
 
-**Note:** Records’ ability to modify the database means that they should never be used to transport data throughout the system. Their instances should be contained to [services](services.md) only, so that services remain the one and only place where system state changes ever occur.
+::: tip
+Records’ ability to modify the database means that they should never be used to transport data throughout the system. Their instances should be contained to [services](services.md) only, so that services remain the one and only place where system state changes ever occur.
+:::
 
 When a plugin is installed, Craft will look for any records provided by the plugin, and automatically create the database tables for them.
 
-To create a record, first create a new records/ subfolder within your plugin’s folder. Then create a new file in that folder, named with this format::
+To create a record, first create a new `records/` subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
 
 ```
 [PluginHandle]_[RecordName]Record.php
 ```
 
-If your plugin name is “Cocktail Recipes”, and your record name is “Ingredient”, the file would be named “CocktailRecipes_IngredientRecord.php”.
+If your plugin name is “Cocktail Recipes”, and your record name is `Ingredient`, the file would be named `CocktailRecipes_IngredientRecord.php`.
 
 Create a new class in that file, with the same name as the filename:
 

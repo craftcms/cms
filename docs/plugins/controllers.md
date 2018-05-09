@@ -6,13 +6,13 @@ A common pattern used throughout Craft involves a controller action gathering po
 
 Action methods begin with the prefix “action”, followed by a description of what the method does (for example, `actionSaveIngredient()`).
 
-To create a controller, first create a new controllers/ subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
+To create a controller, first create a new `controllers/` subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
 
 ```
 [PluginHandle]_[ControllerName]Controller.php
 ```
 
-If your plugin name is “Cocktail Recipes”, and you’re writing a controller to handle ingredient actions, the file would be named “CocktailRecipes_IngredientsController.php”.
+If your plugin name is “Cocktail Recipes”, and you’re writing a controller to handle ingredient actions, the file would be named `CocktailRecipes_IngredientsController.php`.
 
 Create a new class in that file, with the same name as the filename:
 
@@ -36,15 +36,15 @@ class CocktailRecipes_IngredientsController extends BaseController
 
 ## How Controller Actions fit into Routing
 
-When a request comes in, the first thing Craft does after determining that it’s not a resource request is check if it’s a controller action request. **Action requests** will either have a URI which starts with “actions/” (a word that is customizable via the “actionTrigger” config setting in craft/config/general.php), or an “action” param in POST or the query string.
+When a request comes in, the first thing Craft does after determining that it’s not a resource request is check if it’s a controller action request. **Action requests** will either have a URI which starts with `actions/` (a word that is customizable via the `actionTrigger` config setting in `craft/config/general.php`), or an `action` param in POST or the query string.
 
-If it is an action request, the next thing Craft will do is attempt to match the **action path** (whatever comes after “actions/” in the URL, or whatever the “action” param is set to) to an actual controller action. In the context of plugins, action paths look like this::
+If it is an action request, the next thing Craft will do is attempt to match the **action path** (whatever comes after `actions/` in the URL, or whatever the `action` param is set to) to an actual controller action. In the context of plugins, action paths look like this:
 
 ```
 [PluginHandle]/[ControllerName]/[ActionName]
 ```
 
-If your plugin class is “CocktailRecipesPlugin”, your controller class name is “CocktailRecipes_IngredientsController”, and your action method name is “actionSaveIngredient”, the action path would be “cocktailRecipes/ingredients/saveIngredient”.
+If your plugin class is `CocktailRecipesPlugin`, your controller class name is `CocktailRecipes_IngredientsController`, and your action method name is `actionSaveIngredient`, the action path would be `cocktailRecipes/ingredients/saveIngredient`.
 
 If Craft is able to match the action path to a controller action, that action method will be called. (If not, Craft responds with a 404.) From there, it’s up to the controller how to respond to the request. (See below for a couple examples of response functions.) However if the controller doesn’t call a response function, Craft will continue on with its request routing, as if nothing had just happened.
 
@@ -144,7 +144,7 @@ var url = Craft.getActionUrl('cocktailRecipes/ingredients/saveIngredient', { id:
 ```
 
 ::: tip
-You’ll notice that action URLs begin with “actions/”. Don’t be tempted to skip these action URL functions and just type “actions/” yourself though, as that trigger segment is configurable.
+You’ll notice that action URLs begin with `actions/`. Don’t be tempted to skip these action URL functions and just type `actions/` yourself though, as that trigger segment is configurable.
 :::
 
 ## Allowing Anonymous Access to Actions

@@ -2,13 +2,13 @@
 
 Craft allows plugins to provide their own template variables, accessible from the `{{ craft }}` global variable (e.g. `{{ craft.pluginName }}`).
 
-To give your plugin a template variable, first create a new variables/ subfolder within your plugin’s folder. Then create a new file in that folder, named with this format::
+To give your plugin a template variable, first create a new `variables/` subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
 
 ```
 [PluginHandle]Variable.php
 ```
 
-If your plugin name is “Cocktail Recipes”, the variable file would be named “CocktailRecipesVariable.php”.
+If your plugin name is “Cocktail Recipes”, the variable file would be named `CocktailRecipesVariable.php`.
 
 Create a new class in that file, with the same name as the filename:
 

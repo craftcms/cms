@@ -2,7 +2,7 @@
 
 If you want to share the same Craft config files across two or more environments (e.g. Dev, Staging, and Production), you’re in luck! Craft makes it extremely easy to do so.
 
-Normally, your craft/config/db.php and craft/config/general.php files would return a one-dimensional array of whatever [configuration settings](config-settings.md) you want to override for the given site:
+Normally, your `craft/config/db.php` and `craft/config/general.php` files would return a one-dimensional array of whatever [configuration settings](config-settings.md) you want to override for the given site:
 
 ```php
 return array(
@@ -58,7 +58,7 @@ return array(
 Craft will compare the additional array keys (`'example.test'` and `'example.com'`) with the `$_SERVER['SERVER_NAME']` server environment variable. If your server is configured properly, that should be your site’s domain name (without the ‘http://’).
 
 ::: tip
-You can change the string Craft uses to determine the current environment by defining the [`CRAFT_ENVIRONMENT`](php-constants.md#craft-environment) constant in your index.php file.
+You can change the string Craft uses to determine the current environment by defining the [`CRAFT_ENVIRONMENT`](php-constants.md#craft-environment) constant in your `index.php` file.
 :::
 
 When Craft is comparing your config keys with `$_SERVER['SERVER_NAME']`, it’s only looking for a *partial match*. So the environment key `'example.com'` will also work if you’re accessing your site via www.example.com or any other subdomain. You could even just use the TLD if you’re feeling adventurous:
@@ -79,7 +79,7 @@ return array(
 );
 ```
 
-### Adding Multi-Environment Configs to db.php
+### Adding Multi-Environment Configs to `db.php`
 
 All of the examples above are for craft/config/general.php, but all of the principles hold true for craft/config/db.php as well:
 
@@ -103,7 +103,7 @@ return array(
 );
 ```
 
-Just as with general.php, that `'*'` key is required to trigger multi-environment config support, even if you end up not needing it.
+Just as with `general.php`, that `'*'` key is required to trigger multi-environment config support, even if you end up not needing it.
 
 ## Environment-Specific Variables
 
@@ -115,12 +115,12 @@ A popular use case for the environmentVariables config setting is the File Syste
 
 First we need to identify the areas of these settings that will differ depending on the environment. Let’s say we only have a single Assets Source, and its settings are as follows:
 
-* **File System Path (Local):** /users/brandon/Sites/example.test/public/assets/images/
-* **File System Path (Prod.):** /storage/av12345/www/public_html/assets/images/
-* **URL (Local):** http://example.test/assets/images/
-* **URL (Prod.):** http://example.com/assets/images/
+* **File System Path (Local):** `/users/brandon/Sites/example.test/public/assets/images/`
+* **File System Path (Prod.):** `/storage/av12345/www/public_html/assets/images/`
+* **URL (Local):** `http://example.test/assets/images/`
+* **URL (Prod.):** `http://example.com/assets/images/`
 
-In each case, everything before “assets/images/” could be different between the environments. To address this, we should create two custom environment variables. Their names are completely up to us – we’ll go with “`basePath`” and “`baseUrl`”.
+In each case, everything before `assets/images/` could be different between the environments. To address this, we should create two custom environment variables. Their names are completely up to us – we’ll go with “`basePath`” and “`baseUrl`”.
 
 ```php
 return array(

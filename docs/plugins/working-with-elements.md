@@ -74,8 +74,8 @@ If you need to make changes to an element, or create a new one, generally the be
 
 If you’re writing a plugin that has a need to provide its own Element Type to the system, at a minimum you will need two classes:
 
-* A class that extends BaseElementType in an elementtypes/ subfolder
-* A class that extends BaseElementModel in a models/ subfolder
+* A class that extends `BaseElementType` in an `elementtypes/` subfolder
+* A class that extends `BaseElementModel` in a `models/` subfolder
 
 We are still documenting all of the different features these classes have at their disposal, along with several other aspects of creating custom element types.
 

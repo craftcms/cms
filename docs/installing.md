@@ -19,30 +19,32 @@ Before installing Craft, make sure that you’ve got everything you need:
 
 Extract your Craft zip somewhere on your computer. You’ll notice that it contains two folders:
 
-* craft/
-* public/
+* `craft/`
+* `public/`
 
-The **craft/** folder contains [all kinds of stuff](folder-structure.md), from the actual application files to configuration files to your templates. This folder should be uploaded in its entirety to your server.
+The `craft/` folder contains [all kinds of stuff](folder-structure.md), from the actual application files to configuration files to your templates. This folder should be uploaded in its entirety to your server.
 
 We recommend that you upload the folder *above* your web root if possible, which will ensure that no one can access any of its files directly. (Your web root is the folder that your domain name points to.) That’s not a requirement, but do it if you can. For the children.
 
-The **public/** folder contains a few files that can go inside your web root. The only file that’s actually required here is **index.php**, which is the web’s official entry point into your Craft site.
+The `public/` folder contains a few files that can go inside your web root. The only file that’s actually required here is `index.php`, which is the web’s official entry point into your Craft site.
 
-By default the index.php file assumes that you uploaded the craft/ folder one level above it. For example, on your server it might look like this:
+By default the `index.php` file assumes that you uploaded the `craft/` folder one level above it. For example, on your server it might look like this:
 
     craft/
     public_html/
         index.php
 
-If that’s not the case, you will need to open up your index.php file and change the `$craftPath` variable to point to the actual location of your craft/ folder. If the craft/ folder lives right next to your index.php file, you would change that line to this:
+If that’s not the case, you will need to open up your `index.php` file and change the `$craftPath` variable to point to the actual location of your `craft/` folder. If the `craft/` folder lives right next to your `index.php` file, you would change that line to this:
 
-    $craftPath = './craft';
+```php
+$craftPath = './craft';
+```
 
-The other files in public/ are all optional. Here’s what they do:
+The other files in `public/` are all optional. Here’s what they do:
 
-* **htaccess** – This file configures Apache servers to direct all traffic hitting your site to that index.php file, without actually needing to include “index.php” in the URLs. Note that it must be renamed to **.**htaccess for it to actually work. (See “[Removing “index.php” from URLs](https://craftcms.com/support/remove-index.php)” for more info.)
-* **web.config** – This is our IIS equivelant of the .htaccess file, for those of you that are into that sort of thing.
-* **robots.txt** – If you couldn’t upload the craft/ folder above your web root, you can use this file to prevent Google from indexing it.
+* `htaccess` – This file configures Apache servers to direct all traffic hitting your site to that `index.php` file, without actually needing to include `index.php` in the URLs. Note that it must be renamed to `.htaccess` (with the dot) for it to actually work. (See “[Removing “index.php” from URLs](https://craftcms.com/support/remove-index.php)” for more info.)
+* `web.config` – This is our IIS equivelant of the `.htaccess` file, for those of you that are into that sort of thing.
+* `robots.txt` – If you couldn’t upload the `craft/` folder above your web root, you can use this file to prevent Google from indexing it.
 
 ::: tip
 The `public/` folder should not be uploaded into your web root; it _represents_ your web root. You just need to upload certain files within it.
@@ -56,9 +58,9 @@ If you’re using Apache, don’t forget to rename `htaccess` to `.htaccess`.
 
 At a minimum, Craft needs to be able to write to 3 folders on your server:
 
-* craft/app/
-* craft/config/
-* craft/storage/
+* `craft/app/`
+* `craft/config/`
+* `craft/storage/`
 
 Additionally, if you define any [Local Asset sources](assets.md) in your public HTML folder, Craft will need to be able to write to them as well.
 
@@ -78,19 +80,19 @@ Here are some recommended permissions depending on that relationship:
 
 ### Step 3: Create your database
 
-Next up, you’ll need to create a database for Craft. If you’re given a choice, we recommend that you set the default charset to “utf8” and the default collation to “utf8\_unicode\_ci”, but the actual charset and collation should be determined by your project’s requirements.
+Next up, you’ll need to create a database for Craft. If you’re given a choice, we recommend that you set the default charset to `utf8` and the default collation to `utf8_unicode_ci`, but the actual charset and collation should be determined by your project’s requirements.
 
-If your host limits you to a single database, and you’re already using it for another app, that should be fine. Craft is perfectly capable of sharing a database with other apps, although we can’t speak for the other apps. All of Craft’s tables will get prefixed with “craft\_” by default, so it’s easy to identify them.
+If your host limits you to a single database, and you’re already using it for another app, that should be fine. Craft is perfectly capable of sharing a database with other apps, although we can’t speak for the other apps. All of Craft’s tables will get prefixed with “craft_” by default, so it’s easy to identify them.
 
 ### Step 4: Tell Craft how to connect to your database
 
-Open up your craft/config/db.php file on your server. This file holds some settings that tell Craft how it can connect to your database.
+Open up your `craft/config/db.php` file on your server. This file holds some settings that tell Craft how it can connect to your database.
 
 * Set `'server'` to the name of your database server.  If your database and web server are on the same box, then this will likely be either `"localhost"` or `"127.0.0.1"`.
 * Set `'user'` to the name of the MySQL user Craft should use to connect to the database.
 * Set `'password'` to the password for the MySQL user Craft should use to connect to the database.
 * Set `'database'` to the name of the database Craft should be connecting to.
-* Set `'tablePrefix'` to the prefix you want each of Craft’s tables to use. Note that this must be five characters or less, and it does *not* need to end with “\_”. If Craft won’t be sharing its database with any other apps, you’re also free to leave this one blank.
+* Set `'tablePrefix'` to the prefix you want each of Craft’s tables to use. Note that this must be five characters or less, and it does *not* need to end with “_”. If Craft won’t be sharing its database with any other apps, you’re also free to leave this one blank.
 
 If you need to check with your web host to get the correct values for these settings, that’s OK; we can wait.
 
@@ -104,7 +106,7 @@ Now that everything’s set up, point your browser to <http://example.com/admin>
 
 No monkey? Here’s a couple tips:
 
-* If you’re getting a 404, your server might not be configured to redirect would-be 404’s to index.php correctly. Try going to <http://example.com/index.php/admin> or <http://example.com/index.php?p=admin> instead.
+* If you’re getting a 404, your server might not be configured to redirect would-be 404’s to `index.php` correctly. Try going to <http://example.com/index.php/admin> or <http://example.com/index.php?p=admin> instead.
 * If you’re getting an error about how Craft can’t connect to your DB, you’ll need to revisit Step 4.
 
 The first step of the installer is to create a user account. Don’t be one of *those* people and be sure to pick a strong password.

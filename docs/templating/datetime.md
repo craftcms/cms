@@ -32,11 +32,11 @@ Returns the date formatted as a Unix timestamp.
 
 ### `localeDate()`
 
-Returns the date formatted in the current locale’s preferred date format (`n/j/y` for en_us, `d/m/y` for en\_gb, etc.).
+Returns the date formatted in the current locale’s preferred date format (`n/j/y` for `en_us`, `d/m/y` for `en_gb`, etc.).
 
 ### `localeTime()`
 
-Returns the time formatted in the current locale’s preferred time format (`g:i A` for en_us, `H:i` for en\_gb, etc.).
+Returns the time formatted in the current locale’s preferred time format (`g:i A` for `en_us`, `H:i` for `en_gb`, etc.).
 
 ### `month()`
 

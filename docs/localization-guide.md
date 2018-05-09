@@ -46,7 +46,7 @@ When you mark a Matrix field as translatable, all of the blocks will be defined 
 
 ## Step 4: Define your site URLs
 
-You can set Craft’s Site URL setting on a per-locale basis via the [siteUrl](config-settings.md#siteUrl) config setting. So open up craft/config/general.php and add that setting to the array:
+You can set Craft’s Site URL setting on a per-locale basis via the [siteUrl](config-settings.md#siteUrl) config setting. So open up `craft/config/general.php` and add that setting to the array:
 
 ```php
 return array(
@@ -58,7 +58,7 @@ return array(
 );
 ```
 
-If you have a [multi-environment config](multi-environment-configs.md) you can define a separate ‘siteUrl’ setting for each environment:
+If you have a [multi-environment config](multi-environment-configs.md) you can define a separate `siteUrl` setting for each environment:
 
 ```php
 return array(
@@ -86,9 +86,9 @@ You can choose whatever URL format you want here. If you’d prefer that each lo
 
 ## Step 5: Set up the files
 
-Each of your localized Site URLs should point to folders on your server with their own index.php and .htaccess files (copied from the public/ folder in Craft’s zip).
+Each of your localized Site URLs should point to folders on your server with their own index.php and .htaccess files (copied from the `public/` folder in Craft’s zip).
 
-Here are some examples of what that might look like. Note that your actual webroot will not necessarily be called “public\_html” – contact your web host if you are unsure what it is.
+Here are some examples of what that might look like. Note that your actual webroot will not necessarily be called `public_html` – contact your web host if you are unsure what it is.
 
 * **Example 1:** `en/` and `de/` subfolders on the same domain:
 
@@ -121,9 +121,9 @@ Here are some examples of what that might look like. Note that your actual webro
             .htaccess
             index.php
 
-Finally, you will need to open up each of those index.php files and make the following changes to them:
+Finally, you will need to open up each of those `index.php` files and make the following changes to them:
 
-1. Make sure that the `$craftPath` variable is set correctly. (By default it’s set to `'../craft'`, which assumes that index.php is only one level away from the craft/ folder. This may not be the case anymore.)
+1. Make sure that the `$craftPath` variable is set correctly. (By default it’s set to `'../craft'`, which assumes that `index.php` is only one level away from the `craft/` folder. This may not be the case anymore.)
 2. Set the [`CRAFT_LOCALE`](php-constants.md#craft-locale) PHP constant, which tells Craft which locale’s content it should serve from this location.
 
 Here’s what your file might look like:
@@ -152,9 +152,9 @@ If these settings are going to need to change between environments, you can use 
 
 ## Step 7: Update your templates
 
-If you have any templates that you only want to serve from a specific locale, you can create a new subfolder in your craft/templates/ folder, named after your locale’s handle, and place locale override templates in there.
+If you have any templates that you only want to serve from a specific locale, you can create a new subfolder in your `craft/templates/` folder, named after your locale’s handle, and place locale override templates in there.
 
-For example, if you wanted to give your German site its own homepage template, you might set your craft/templates/ folder up like this:
+For example, if you wanted to give your German site its own homepage template, you might set your `craft/templates/` folder up like this:
 
     templates/
         index.html      --> default homepage template

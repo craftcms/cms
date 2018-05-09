@@ -121,13 +121,13 @@ While Yii expects your database schema to already be established by the time the
 
 ### Creating a Record
 
-To create a record, first create a new records/ subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
+To create a record, first create a new `records/` subfolder within your plugin’s folder. Then create a new file in that folder, named with this format:
 
 ```
 [PluginHandle]_[RecordName]Record.php
 ```
 
-If your plugin name is “Cocktail Recipes”, and your record name is “Ingredient”, the file would be named “CocktailRecipes_IngredientRecord.php”.
+If your plugin name is “Cocktail Recipes”, and your record name is `Ingredient`, the file would be named `CocktailRecipes_IngredientRecord.php`.
 
 Create a new class in that file, with the same name as the filename:
 

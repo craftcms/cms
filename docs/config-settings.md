@@ -2,7 +2,7 @@
 
 Craft comes with a bunch of config settings that give you control over various aspects of its behavior.
 
-All config settings should be placed within the `array()` in your craft/config/general.php file.
+All config settings should be placed within the `array()` in your `craft/config/general.php` file.
 
 For example, if you want to enable Dev Mode and set Craft to use uncompressed Javascript files, your array would look like this:
 
@@ -73,7 +73,7 @@ Note that this config setting has no effect on the [{% cache %}](templating/cach
 :::
 
 ::: tip
-The DB, file, Memcache(d), and Redis cache methods each have their own additional config settings, which must be set in separate config files in the craft/config/ folder (dbcache.php, filecache.php, memcache.php and rediscache.php, respectively). You can find their default values in craft/app/etc/config/defaults/.
+The DB, file, Memcache(d), and Redis cache methods each have their own additional config settings, which must be set in separate config files in the `craft/config/` folder (`dbcache.php`, `filecache.php`, `memcache.php` and `rediscache.php`, respectively). You can find their default values in craft/app/etc/config/defaults/.
 :::
 
 ### `customAsciiCharMappings`
@@ -247,7 +247,7 @@ Default
 Since
 : Craft 1.0
 
-Determines whether Craft should override PHP’s session storage location to your craft/storage/ folder, or save session files in a custom location.
+Determines whether Craft should override PHP’s session storage location to your `craft/storage/` folder, or save session files in a custom location.
 
 When set to `true`, Craft will override the location; `false` will tell Craft to leave the location alone and let PHP store the session where it was configured to.
 
@@ -310,7 +310,7 @@ Default
 Since
 : Craft 2.3.2632
 
-Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something like a Cron job to call `index.php/actions/tasks/runPendingTasks` at a regular interval.
 
 This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed, where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
 
@@ -896,7 +896,7 @@ Default
 Since
 : Craft 1.0
 
-Whether Craft should omit the script filename currently being used to access Craft (e.g. index.php) when generating URLs.
+Whether Craft should omit the script filename currently being used to access Craft (e.g. `index.php`) when generating URLs.
 
 When set to `'auto'`, Craft will do its best to determine whether the server is set up to support [index.php redirects](https://craftcms.com/support/remove-index.php), and cache the test’s results for 24 hours.
 
@@ -940,7 +940,7 @@ Default
 Since
 : Craft 1.0
 
-The URI segment Craft should look for when determining if the current request should route to a resource file, either in craft/app/resources/ or a plugin’s resources/ folder.
+The URI segment Craft should look for when determining if the current request should route to a resource file, either in `craft/app/resources/` or a plugin’s `resources/` folder.
 
 ```php
 'resourceTrigger' => 'assets',
@@ -978,7 +978,7 @@ Default
 Since
 : Craft 1.0
 
-Whether Craft should specify the path using PATH_INFO or as a query string parameter when generating URLs that include “index.php”. (See [Enabling PATH_INFO](https://craftcms.com/support/enable-path-info) for more info.)
+Whether Craft should specify the path using PATH_INFO or as a query string parameter when generating URLs that include `index.php`. (See [Enabling PATH_INFO](https://craftcms.com/support/enable-path-info) for more info.)
 
 ```php
 'usePathInfo' => true,

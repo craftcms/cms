@@ -2,13 +2,13 @@
 
 Whenever someone creates a new [field](../fields.md) in Craft, they must specify what type of field it is. The system comes with a handful of field types baked in, and we’ve made it extremely easy for plugins to add new ones.
 
-First, create a new subfolder within your plugin’s folder, called fieldtypes/. Create a new file in that folder, named with this format:
+First, create a new subfolder within your plugin’s folder, called `fieldtypes/`. Create a new file in that folder, named with this format:
 
 ```
 [PluginHandle]_[FieldTypeName]FieldType.php
 ```
 
-If your plugin name is “Cocktail Recipes”, and your fieldtype name is “Ingredient List”, the file would be named CocktailRecipes_IngredientListFieldType.php.
+If your plugin name is “Cocktail Recipes”, and your fieldtype name is “Ingredient List”, the file would be named `CocktailRecipes_IngredientListFieldType.php`.
 
 Create a new class in that file, with the same name as the filename:
 

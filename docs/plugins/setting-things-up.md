@@ -19,7 +19,7 @@ Here are some examples of plugin names and handles:
 
 ## Create Your Plugin’s Folder
 
-All of a plugin’s files are contained within a single folder, including its front-end resources. That folder lives in craft/plugins/.
+All of a plugin’s files are contained within a single folder, including its front-end resources. That folder lives in `craft/plugins/`.
 
 Name your folder after your plugin’s handle, except it should be **completely lowercase**.
 
@@ -27,7 +27,7 @@ Name your folder after your plugin’s handle, except it should be **completely 
 
 There’s only one mandatory file that each plugin needs, and that file defines your plugin’s **primary class**. This class tells Craft some basic information about your plugin: its name, version number, its developer’s name and URL, etc.
 
-Create the file at the root of your plugin directory. It should be named with your plugin’s handle, plus “Plugin.php”, e.g. “CocktailRecipesPlugin.php”.
+Create the file at the root of your plugin directory. It should be named with your plugin’s handle, plus `Plugin.php`, e.g. `CocktailRecipesPlugin.php`.
 
 Here’s a sample primary plugin file:
 

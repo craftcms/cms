@@ -7,14 +7,14 @@ You can set up your asset sources from Settings → Assets. Local sources have t
 * The URL to the folder containing the files
 * The file system path to the folder containing the files
 
-If you want to use a relative file system path, note that it should be relative from the directory that holds your index.php file. So if your files are set up like this:
+If you want to use a relative file system path, note that it should be relative from the directory that holds your `index.php` file. So if your files are set up like this:
 
     craft/
-	public_html/
-		index.php
-		images/
+    public_html/
+        index.php
+        images/
 
-…then the correct relative path to images/ would be “images/”.
+…then the correct relative path to `images/` would be `images/`.
 
 Note that Craft/PHP must be able to write to the the folder you created. See [the installation guide](installing.md#step-2-set-the-permissions) for recommended permissions.
 

@@ -10,7 +10,7 @@ If your plugin has a custom Element Type that needs custom actions, or you want 
 
 On a technical level, Element Action classes must meet the following requirements:
 
-* They must live within an elementactions/ subfolder in your plugin’s folder.
+* They must live within an `elementactions/` subfolder in your plugin’s folder.
 * Their filenames and class names must have this format:
   ```
   [PluginHandle]_[ActionHandle]ElementAction.php
@@ -94,7 +94,7 @@ class CocktailRecipes_AddIngredientElementAction extends BaseElementAction
 }
 ```
 
-And here’s what that ‘cocktailRecipes/\_addIngredientsTrigger’ template looks like:
+And here’s what that `cocktailRecipes/_addIngredientsTrigger` template looks like:
 
 ```twig
 <div class="btn menubtn" role="button">{{ "Add Ingredient"|t }}</div>
@@ -115,12 +115,12 @@ To make sense of that template path, see [Plugin Template Paths, Explained](temp
 
 Here’s what’s going on in this example:
 
-1. Our [getTriggerHtml()](https://docs.craftcms.com/api/v2/elementactions/IElementAction.html#getTriggerHtml-detail) method fetches all the ingredients from our plugin’s imaginary [service](services.md), passes them to a ‘cocktailRecipes/\_addIngredientsTrigger’ template, and returns the template’s rendered HTML.
-2. Our ‘cocktailRecipes/\_addIngredientsTrigger’ template defines a menu button labeled “Add Ingredient”. When clicked, the button will open a menu that lists all of the ingredients we fetched. (We get this UI functionality for free in Craft thanks to those `menubtn` and `menu` classes.)
+1. Our [getTriggerHtml()](https://docs.craftcms.com/api/v2/elementactions/IElementAction.html#getTriggerHtml-detail) method fetches all the ingredients from our plugin’s imaginary [service](services.md), passes them to a `cocktailRecipes/_addIngredientsTrigger` template, and returns the template’s rendered HTML.
+2. Our `cocktailRecipes/_addIngredientsTrigger` template defines a menu button labeled “Add Ingredient”. When clicked, the button will open a menu that lists all of the ingredients we fetched. (We get this UI functionality for free in Craft thanks to those `menubtn` and `menu` classes.)
 3. When one of the menu options are clicked on, a form that contains our trigger will automatically get submitted thanks to that `formsubmit` class. Additionally, a new hidden input will added to the form with the name “ingredient” and its value will be whatever the ingredient’s ID is, thanks to those `data-param` and `data-value` attributes.
-4. On the back end, when an action request comes in, Craft will instantiate a new CocktailRecipes_AddIngredientElementAction object. Craft knows that it’s expecting an “ingredients” parameter because [defineParams()](https://docs.craftcms.com/api/v2/elementactions/BaseElementAction.html#defineParams-detail) has defined it, so Craft will check the POST data for it.
+4. On the back end, when an action request comes in, Craft will instantiate a new `CocktailRecipes_AddIngredientElementAction` object. Craft knows that it’s expecting an `ingredients` parameter because [defineParams()](https://docs.craftcms.com/api/v2/elementactions/BaseElementAction.html#defineParams-detail) has defined it, so Craft will check the POST data for it.
 5. Once any parameters have been assigned, Craft will call the [performAction()](https://docs.craftcms.com/api/v2/elementactions/IElementAction.html#performAction-detail) method, passing an [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) to it that represents all of the selected elements.
-6. performAction() then loops through all of the selected elements, adding the selected ingredient to them, with the help of one of its service methods. It responds with either `true` or `false` depending on whether it was successful.
+6. `performAction()` then loops through all of the selected elements, adding the selected ingredient to them, with the help of one of its service methods. It responds with either `true` or `false` depending on whether it was successful.
 7. The index page is notified of the action’s result, the elements are refreshed, and the message set by [setMessage()](https://docs.craftcms.com/api/v2/elementactions/BaseElementAction.html#setMessage-detail) is displayed to the user.
 
 

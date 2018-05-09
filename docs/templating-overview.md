@@ -41,6 +41,6 @@ If you have templates located at both craft/templates/foo/bar.html *and* craft/t
 
 ## Template Localization
 
-If you’re running a localized website with Craft Pro, you can create locale-specific subfolders in your craft/templates/ folder, which contain templates that will only be available to a specific locale. For example, if you want to create a special template welcoming your German customers, but there’s no need for it on your English site, then you could save it in craft/templates**/de/**welcome.html. That template would be available from http://example.de/welcome.
+If you’re running a localized website with Craft Pro, you can create locale-specific subfolders in your `craft/templates/` folder, which contain templates that will only be available to a specific locale. For example, if you want to create a special template welcoming your German customers, but there’s no need for it on your English site, then you could save it in `craft/templates/de/welcome.html`. That template would be available from `http://example.de/welcome`.
 
 Craft will look for localized templates _before_ it looks for templates in the normal location, so they can also be used to override non-localized templates. See our [Localization Guide](localization-guide.md) for more details.

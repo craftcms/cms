@@ -1,6 +1,6 @@
 # Plugin Settings
 
-There are two ways to give your plugin its own settings: via a config file that users can optionally save in craft/config/, or via a new settings page within the Control Panel.
+There are two ways to give your plugin its own settings: via a config file that users can optionally save in `craft/config/`, or via a new settings page within the Control Panel.
 
 Both ways have their advantages:
 
@@ -20,7 +20,7 @@ These are not mutually exclusive options – your plugin can implement both conf
 
 ## Config File
 
-To give your plugin support for its own config file, first you must define what the default config values should be. You do that by creating a new “config.php” file at the root of your plugin’s folder, which returns an array of the default values:
+To give your plugin support for its own config file, first you must define what the default config values should be. You do that by creating a new `config.php` file at the root of your plugin’s folder, which returns an array of the default values:
 
 ```php
 <?php
@@ -37,7 +37,7 @@ You can then grab the config value throughout your plugin code using [ConfigServ
 $configSettingValue = craft()->config->get('foo', 'cocktailrecipes');
 ```
 
-Users will then be able to create a new file in their craft/config/ folder, called `yourpluginhandle.php` (lowercased), which returns an array that overrides whichever settings they want:
+Users will then be able to create a new file in their `craft/config/` folder, called `yourpluginhandle.php` (lowercased), which returns an array that overrides whichever settings they want:
 
 ```php
 <?php
