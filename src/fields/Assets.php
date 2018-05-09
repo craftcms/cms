@@ -327,6 +327,8 @@ class Assets extends BaseRelationField
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
 
+            $query = $element->getFieldValue($this->handle);
+            
             if (!empty($uploadedFiles)) {
                 $targetFolderId = $this->_determineUploadFolderId($element);
 
@@ -355,12 +357,14 @@ class Assets extends BaseRelationField
                     $assetIds[] = $asset->id;
                 }
 
-                // Override the field value with newly-uploaded assets' IDs
-                $query = $this->normalizeValue($assetIds, $element);
+                // Add the with newly uploaded IDs to the mix.
+                if (\is_array($query->id)) {
+                    $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                } else {
+                    $query = $this->normalizeValue($assetIds, $element);    
+                }
+                
                 $element->setFieldValue($this->handle, $query);
-            } else {
-                // Just get the pre-normalized asset query
-                $query = $element->getFieldValue($this->handle);
             }
 
             // Are there any related assets?
