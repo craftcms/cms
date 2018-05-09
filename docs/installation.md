@@ -24,8 +24,8 @@ Composer will take a couple minutes to load everything. Once it’s done you wil
 
 Download the archive format you prefer to work with:
 
-- **zip:** <https://craftcms.com/latest-v3.zip>
-- **tar.gz:** <https://craftcms.com/latest-v3.tar.gz>
+- **zip**: <https://craftcms.com/latest-v3.zip>
+- **tar.gz**: <https://craftcms.com/latest-v3.tar.gz>
 
 Extract the archive wherever you want your new Craft project to live.
 
@@ -124,8 +124,8 @@ Create a new web server to host your Craft project. Its document root should poi
 
 If you’re not using [MAMP](https://mamp.info) or another localhosting tool, you will probably need to update your `hosts` file, so your computer knows to route requests to your chosen host name to the local computer.
 
-- **macOS/Linux/Unix:** `/etc/hosts`
-- **Windows:** `\Windows\System32\drivers\etc\hosts`
+- **macOS/Linux/Unix**: `/etc/hosts`
+- **Windows**: `\Windows\System32\drivers\etc\hosts`
 
 You can test whether you set everything up correctly by pointing your web browser to `http://<HOSTNAME>/index.php?p=admin` (substituting `<HOSTNAME>` with your web server’s host name). If Craft’s Setup Wizard is shown, the host name is correctly resolving to your Craft installation.
 
