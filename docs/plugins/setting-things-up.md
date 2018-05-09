@@ -10,11 +10,11 @@ Once you have a name, you need to decide on your plugin’s **handle**. This wil
 
 Here are some examples of plugin names and handles:
 
-User-facing name  | Handle
------------------ | ------------------
-Cocktail Recipes  | CocktailRecipes
-P&T Field Pack    | PtFieldPack
-ACME Tennis Balls | AcmeTennisBalls
+| User-Facing Name  | Handle
+| ----------------- | -----------------
+| Cocktail Recipes  | `CocktailRecipes`
+| P&T Field Pack    | `PtFieldPack`
+| ACME Tennis Balls | `AcmeTennisBalls`
 
 
 ## Create Your Plugin’s Folder
