@@ -305,8 +305,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
-        return strpos($mimeType, 'image/gif') === 0;
+        return self::getMimeType($file, $magicFile, $checkExtension) === 'image/gif';
     }
 
     /**
