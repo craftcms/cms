@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `transformGifs` settings that defaults to `true`. Changing it to `false` prevents GIF files from being transformed or cleansed on upload.
+- Added `craft\helpers\FileHelper::isGif()`.
 
 ### Fixed
 - Fixed a bug where it was impossible to add new assets as data strings. ([#2855](https://github.com/craftcms/cms/issues/2855))

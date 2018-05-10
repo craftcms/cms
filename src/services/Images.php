@@ -299,7 +299,7 @@ class Images extends Component
             return;
         }
 
-        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
             return;
         }
 

@@ -705,7 +705,7 @@ class Asset extends Element
             return null;
         }
 
-        if (StringHelper::toLowerCase(pathinfo($this->filename, PATHINFO_EXTENSION)) === 'gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if (FileHelper::isGif($this->filename) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
             return AssetsHelper::generateUrl($volume, $this);
         }
 
