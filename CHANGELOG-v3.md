@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added the `transformGifs` settings that defaults to `true`. Changing it to `false` prevents GIF files from being transformed or cleansed on upload.
+- Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
 - Added `craft\helpers\FileHelper::isGif()`.
 
 ### Changed
@@ -12,9 +12,9 @@
 - `craft\services\Deprecator::log()` no longer returns anything.
 
 ### Fixed
-- Fixed a bug where it was impossible to add new assets as data strings. ([#2855](https://github.com/craftcms/cms/issues/2855))
-- Fixed a bug where it was not possible to upload new assets to an entry and keep the existing assets at the same time.
-- Fixed a bug where SVG files that were using single quotes instead of double quotes would not be recognized as such.
+- Fixed a bug where it was impossible to upload new assets to Assets fields using base64-encoded strings. ([#2855](https://github.com/craftcms/cms/issues/2855))
+- Fixed a bug where Assets fields would ignore all submitted asset IDs if any new assets were uploaded as well.
+- Fixed a bug where SVG files that were using single quotes instead of double quotes would not be recognized as SVGs.
 - Fixed a bug where translated versions of the “It looks like someone is currently performing a system update.” message contained an HTML-encoded `<br/>` tag.
 - Fixed a bug where changing an entry’s type could skip adding the new entry type’s tabs, if the previous entry type didn’t have any tabs. ([#2859](https://github.com/craftcms/cms/issues/2859))
 - Fixed warnings about missing SVG files that were logged by Control Panel requests.
