@@ -256,10 +256,17 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true)
     {
-        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        try {
+            $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        } catch (\Throwable $e) {
+            if (!$checkExtension) {
+                throw $e;
+            }
+            $mimeType = null;
+        }
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && in_array($mimeType, ['text/plain', 'text/html'])) {
+        if ($checkExtension && in_array($mimeType, [null, 'text/plain', 'text/html', 'application/xml'], true)) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
@@ -282,6 +289,23 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
         return strpos($mimeType, 'image/svg') === 0;
+    }
+
+    /**
+     * Returns whether the given file path is an GIF image.
+     *
+     * @param string $file the file name.
+     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
+     * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
+     * and this is null, it will use the file specified by [[mimeMagicFile]].
+     * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
+     * `finfo_open()` cannot determine it.
+     * @return bool
+     */
+    public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
+    {
+        return self::getMimeType($file, $magicFile, $checkExtension) === 'image/gif';
     }
 
     /**

@@ -101,6 +101,11 @@ class Assets extends BaseRelationField
      */
     public $allowedKinds;
 
+    /**
+     * @var array|null References for files uploaded as data strings for this field.
+     */
+    private $_uploadedDataFiles;
+
     // Public Methods
     // =========================================================================
 
@@ -265,6 +270,9 @@ class Assets extends BaseRelationField
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
+            $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
+            unset($value['data'], $value['filename']);
+
             /** @var Asset $class */
             $class = static::elementType();
             /** @var ElementQuery $query */
@@ -322,6 +330,8 @@ class Assets extends BaseRelationField
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
 
+            $query = $element->getFieldValue($this->handle);
+            
             if (!empty($uploadedFiles)) {
                 $targetFolderId = $this->_determineUploadFolderId($element);
 
@@ -350,12 +360,17 @@ class Assets extends BaseRelationField
                     $assetIds[] = $asset->id;
                 }
 
-                // Override the field value with newly-uploaded assets' IDs
-                $query = $this->normalizeValue($assetIds, $element);
+                // Add the with newly uploaded IDs to the mix.
+                if (\is_array($query->id)) {
+                    $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                } else {
+                    $query = $this->normalizeValue($assetIds, $element);    
+                }
+                
                 $element->setFieldValue($this->handle, $query);
-            } else {
-                // Just get the pre-normalized asset query
-                $query = $element->getFieldValue($this->handle);
+
+                // Make sure that all traces of processed files are removed.
+                $this->_uploadedDataFiles = null;
             }
 
             // Are there any related assets?
@@ -488,14 +503,10 @@ class Assets extends BaseRelationField
         /** @var Element $element */
         $uploadedFiles = [];
 
-        /** @var AssetQuery $query */
-        $query = $element->getFieldValue($this->handle);
-        $value = !empty($query->id) ? $query->id : [];
-
         // Grab data strings
-        if (isset($value['data']) && is_array($value['data'])) {
-            foreach ($value['data'] as $index => $dataString) {
-                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9]+);base64,(?<data>.+)/i',
+        if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
+            foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {
+                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+]+);base64,(?<data>.+)/i',
                     $dataString, $matches)) {
                     $type = $matches['type'];
                     $data = base64_decode($matches['data']);
@@ -504,8 +515,8 @@ class Assets extends BaseRelationField
                         continue;
                     }
 
-                    if (!empty($value['filenames'][$index])) {
-                        $filename = $value['filenames'][$index];
+                    if (!empty($this->_uploadedDataFiles['filenames'][$index])) {
+                        $filename = $this->_uploadedDataFiles['filenames'][$index];
                     } else {
                         $extensions = FileHelper::getExtensionsByMimeType($type);
 
@@ -524,9 +535,6 @@ class Assets extends BaseRelationField
                 }
             }
         }
-
-        // Remove these so they don't interfere.
-        unset($value['data'], $value['filenames']);
 
         // See if we have uploaded file(s).
         $paramName = $this->requestParamName($element);

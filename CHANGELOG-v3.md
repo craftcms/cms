@@ -1,5 +1,26 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.7 - 2018-05-10
+
+### Added
+- Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
+- Added `craft\helpers\FileHelper::isGif()`.
+
+### Changed
+- Craft no longer logs warnings about missing translation files when Dev Mode isn’t enabled. ([#1531](https://github.com/craftcms/cms/issues/1531))
+- Added `craft\services\Deprecator::$logTarget`. ([#2870](https://github.com/craftcms/cms/issues/2870))
+- `craft\services\Deprecator::log()` no longer returns anything.
+
+### Fixed
+- Fixed a bug where it was impossible to upload new assets to Assets fields using base64-encoded strings. ([#2855](https://github.com/craftcms/cms/issues/2855))
+- Fixed a bug where Assets fields would ignore all submitted asset IDs if any new assets were uploaded as well.
+- Fixed a bug where SVG files that were using single quotes instead of double quotes would not be recognized as SVGs.
+- Fixed a bug where translated versions of the “It looks like someone is currently performing a system update.” message contained an HTML-encoded `<br/>` tag.
+- Fixed a bug where changing an entry’s type could skip adding the new entry type’s tabs, if the previous entry type didn’t have any tabs. ([#2859](https://github.com/craftcms/cms/issues/2859))
+- Fixed warnings about missing SVG files that were logged by Control Panel requests.
+- Fixed a bug where the `|date` filter would ignore date formatting characters that don’t have ICU counterparts. ([#2867](https://github.com/craftcms/cms/issues/2867))
+- Fixed a bug where the global `currentUser` Twig variable could be set to `null` and global sets and could be missing some custom field values when a user was logged-in, if a plugin was loading Twig during or immediately after plugin instantiation. ([#2866](https://github.com/craftcms/cms/issues/2866))
+
 ## 3.0.6 - 2018-05-08
 
 ### Added

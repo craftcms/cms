@@ -118,7 +118,9 @@
                             <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
                                 <span class="icon icon-mask">
                                     {%- if item.icon is defined -%}
-                                        {{ (svg(item.icon) ?: "<span data-icon='#{item.icon}'></span>")|raw }}
+                                        {{ svg(item.icon) }}
+                                    {%- elseif item.fontIcon is defined -%}
+                                        <span data-icon="{{ item.fontIcon }}"></span>
                                     {%- else -%}
                                         {% include "_includes/defaulticon.svg" with { label: item.label } %}
                                     {%- endif -%}

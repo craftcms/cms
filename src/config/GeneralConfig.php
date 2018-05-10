@@ -569,6 +569,10 @@ class GeneralConfig extends BaseObject
      */
     public $timezone;
     /**
+     * @var bool Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
+     */
+    public $transformGifs = true;
+    /**
      * @var bool Tells Craft whether to surround all translatable strings with “@” symbols, to help find any strings that are not
      * being run through Craft::t() or the |translate filter.
      */
