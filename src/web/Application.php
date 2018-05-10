@@ -96,12 +96,9 @@ class Application extends \yii\web\Application
         $this->state = self::STATE_INIT;
         $this->_preInit();
         parent::init();
-
-        // Initialize web application-specific stuff
         $this->ensureResourcePathExists();
-        $this->debugBootstrap();
-
         $this->_postInit();
+        $this->debugBootstrap();
     }
 
     /**

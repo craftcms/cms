@@ -19,6 +19,7 @@
 - Fixed a bug where changing an entry’s type could skip adding the new entry type’s tabs, if the previous entry type didn’t have any tabs. ([#2859](https://github.com/craftcms/cms/issues/2859))
 - Fixed warnings about missing SVG files that were logged by Control Panel requests.
 - Fixed a bug where the `|date` filter would ignore date formatting characters that don’t have ICU counterparts. ([#2867](https://github.com/craftcms/cms/issues/2867))
+- Fixed a bug where global sets could be missing some costom field values when a user was logged-in, if a plugin was loading Twig during or immediatetely after plugin instantiation. ([#2866](https://github.com/craftcms/cms/issues/2866))
 
 ## 3.0.6 - 2018-05-08
 
