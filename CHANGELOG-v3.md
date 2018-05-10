@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft no longer logs warnings about missing translation files when Dev Mode isn’t enabled. ([#1531](https://github.com/craftcms/cms/issues/1531))
+- `craft\services\Deprecator::log()` no longer returns anything.
 
 ### Fixed
 - Fixed a bug where it was impossible to add new assets as data strings. ([#2855](https://github.com/craftcms/cms/issues/2855))

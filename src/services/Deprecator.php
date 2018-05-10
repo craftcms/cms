@@ -53,14 +53,12 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
-     * @return bool
      */
-    public function log(string $key, string $message): bool
+    public function log(string $key, string $message)
     {
         if (!Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecation-error');
-
-            return false;
+            return;
         }
 
         // Get the debug backtrace
@@ -71,7 +69,7 @@ class Deprecator extends Component
 
         // Don't log the same key/fingerprint twice in the same request
         if (isset($this->_requestLogs[$index])) {
-            return true;
+            return;
         }
 
         $log = $this->_requestLogs[$index] = new DeprecationError([
@@ -102,8 +100,6 @@ class Deprecator extends Component
             ->execute();
 
         $log->id = $db->getLastInsertID();
-
-        return true;
     }
 
     /**
