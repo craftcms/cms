@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft no longer logs warnings about missing translation files when Dev Mode isn’t enabled. ([#1531](https://github.com/craftcms/cms/issues/1531))
+- Added `craft\services\Deprecator::$logTarget`. ([#2870](https://github.com/craftcms/cms/issues/2870))
 - `craft\services\Deprecator::log()` no longer returns anything.
 
 ### Fixed

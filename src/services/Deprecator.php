@@ -31,6 +31,15 @@ class Deprecator extends Component
     // =========================================================================
 
     /**
+     * @var string|false Whether deprecation errors should be logged in the database ('db'),
+     * error logs ('logs'), or not at all (false).
+     *
+     * Changing this will prevent deprecation errors from showing up in the "Deprecation Errors" utility
+     * or in the "Deprecated" panel in the Debug Toolbar.
+     */
+    public $logTarget = 'db';
+
+    /**
      * @var string
      */
     private static $_tableName = '{{%deprecationerrors}}';
@@ -56,7 +65,11 @@ class Deprecator extends Component
      */
     public function log(string $key, string $message)
     {
-        if (!Craft::$app->getIsInstalled()) {
+        if ($this->logTarget === false) {
+            return;
+        }
+
+        if ($this->logTarget === 'logs' ||  !Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecation-error');
             return;
         }
