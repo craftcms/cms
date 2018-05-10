@@ -31,6 +31,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
@@ -702,6 +703,10 @@ class Asset extends Element
 
         if (!$volume->hasUrls) {
             return null;
+        }
+
+        if (FileHelper::isGif($this->filename) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return AssetsHelper::generateUrl($volume, $this);
         }
 
         // Normalize empty transform values

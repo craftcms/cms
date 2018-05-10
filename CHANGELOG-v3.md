@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the `transformGifs` settings that defaults to `true`. Changing it to `false` prevents GIF files from being transformed or cleansed on upload.
+- Added `craft\helpers\FileHelper::isGif()`.
+
 ### Changed
 - Craft no longer logs warnings about missing translation files when Dev Mode isn’t enabled. ([#1531](https://github.com/craftcms/cms/issues/1531))
 - Added `craft\services\Deprecator::$logTarget`. ([#2870](https://github.com/craftcms/cms/issues/2870))
