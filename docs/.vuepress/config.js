@@ -184,10 +184,10 @@ module.exports = {
             twig: 'Twig',
             php: 'PHP',
         },
-        // algolia: {
-        //     apiKey: '1014b55e7f916b20c5d6834bf7666dc3',
-        //     indexName: 'craftcms'
-        // }
+        algolia: {
+            apiKey: '1014b55e7f916b20c5d6834bf7666dc3',
+            indexName: 'craftcms'
+        }
     },
     markdown: {
         anchor: {
