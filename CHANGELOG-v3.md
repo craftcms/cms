@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting if you had it set. ([#2794](https://github.com/craftcms/cms/issues/2794))
 - Fixed a bug where some SVG files still were not recognized as SVG files.
+- Fixed a bug where Table fields could add the wrong number of default rows if the Min Rows setting was set, and the Default Values setting had something other than one row. ([#2864](https://github.com/craftcms/cms/issues/2864))
 
 ## 3.0.7 - 2018-05-10
 
@@ -29,7 +30,6 @@
 - Fixed warnings about missing SVG files that were logged by Control Panel requests.
 - Fixed a bug where the `|date` filter would ignore date formatting characters that don’t have ICU counterparts. ([#2867](https://github.com/craftcms/cms/issues/2867))
 - Fixed a bug where the global `currentUser` Twig variable could be set to `null` and global sets and could be missing some custom field values when a user was logged-in, if a plugin was loading Twig during or immediately after plugin instantiation. ([#2866](https://github.com/craftcms/cms/issues/2866))
-- Fixed a bug where Table fields could add the wrong number of default rows if the Min Rows setting was set, and the Default Values setting had something other than one row. ([#2864](https://github.com/craftcms/cms/issues/2864))
 
 ## 3.0.6 - 2018-05-08
 

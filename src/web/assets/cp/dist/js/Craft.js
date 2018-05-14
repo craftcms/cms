@@ -1,4 +1,4 @@
-/*!   - 2018-05-10 */
+/*!   - 2018-05-14 */
 (function($){
 
 /** global: Craft */
@@ -12747,7 +12747,7 @@ Craft.EditableTable = Garnish.Base.extend(
             }
         },
         updateAddRowButton: function() {
-            if (this.settings.maxRows && this.rowCount >= this.settings.maxRows) {
+            if (!this.canAddRow()) {
                 this.$addRowBtn.css('opacity', '0.2');
                 this.$addRowBtn.css('pointer-events', 'none');
             } else {
