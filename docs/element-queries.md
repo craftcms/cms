@@ -125,8 +125,6 @@ $exists = Entry::find()
 ```
 :::
 
-#### Twig
-
 ### `count()`
 
 Returns the total number of elements that are matched by the query.
