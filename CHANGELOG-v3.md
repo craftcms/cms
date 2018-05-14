@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting if you had it set. ([#2794](https://github.com/craftcms/cms/issues/2794))
+- Fixed a bug where some SVG files still were not recognized as SVG files.
 
 ## 3.0.7 - 2018-05-10
 
