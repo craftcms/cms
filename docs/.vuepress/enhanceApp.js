@@ -1,7 +1,9 @@
+import Vue from 'vue'
 import VueAnalytics from 'vue-analytics'
 
-export default ({ Vue }) => {
-    Vue.use(VueAnalytics, {
-        id: 'UA-39036834-7'
-    })
-}
+Vue.use(VueAnalytics, {
+    id: 'UA-39036834-7',
+    checkDuplicatedScript: true
+})
+
+export default ({ Vue, options, router, siteData }) => {}
