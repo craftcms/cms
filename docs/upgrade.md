@@ -64,7 +64,9 @@ Note that at the end of this, your “project root” (as referenced in other ar
 
 5. Delete your old `craft/app/` directory. It’s no longer needed; Craft 3 is located in `vendor/craftcms/cms/` now.
 
-> Note: If your `craft/` directory lives in a public directory on your server (e.g. within `public_html/`), you will need to make sure the new `craft/vendor/` directory is protected from web traffic. If your server is running Apache, you can do this by creating a `.htaccess` file within it, with the contents `Deny from all`.
+::: tip
+If your `craft/` directory lives in a public directory on your server (e.g. within `public_html/`), you will need to make sure the new `craft/vendor/` directory is protected from web traffic. If your server is running Apache, you can do this by creating a `.htaccess` file within it, with the contents `Deny from all`.
+:::
 
 ### If you want your directory structure to resemble a new Craft 3 project…
 
