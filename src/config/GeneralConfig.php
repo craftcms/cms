@@ -396,6 +396,12 @@ class GeneralConfig extends BaseObject
      */
     public $postLogoutRedirect = '';
     /**
+     * @var bool Whether CMYK should be preserved as the colorspace when when manipulating images.
+     * Setting this to true will prevent Craft from transforming CMYK images to sRGB, but on some Imagick versions can cause color
+     * distortion in the image. This will only have effect if Imagick is in use.
+     */
+    public $preserveCmykColorspace = false;
+    /**
      * @var bool Whether the EXIF data should be preserved when manipulating images.
      * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared.
      * This will only have effect if Imagick is in use.
