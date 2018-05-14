@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `preserveCmykColorspace` config setting which can be set to `true` to prevent the colorspace to be transformed to sRGB when using Imagick.
+
 ### Changed
 - Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
 - Rich Text fields with the “Clean up HTML?” setting enabled now convert non-breaking spaces to normal spaces.

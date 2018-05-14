@@ -449,6 +449,13 @@ return array(
 	 */
 	'postLoginRedirect' => '',
 
+    /**
+     * Whether images with CMYK colorspace should retain it. If false, images will be converted to sRGB colorspace.
+     *
+     * Setting this to true will leave CMYK colorspace with images that have it. This will only have effect if Imagick is in use.
+     */
+	'preserveCmykColorspace' => false,
+
 	/**
 	 * Whether the EXIF data should be preserved when manipulating images.
 	 *
