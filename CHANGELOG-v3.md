@@ -7,7 +7,7 @@
 
 ## 3.0.7 - 2018-05-10
 
-### Added
+### Added
 - Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
 - Added `craft\helpers\FileHelper::isGif()`.
 
