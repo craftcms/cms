@@ -75,7 +75,11 @@ Each site has a Base URL, which Craft uses as the starting point when generating
 
 Sites can all share the same domain name, such as `https://craftcms.com` and `https//craftcms.com/beta`, or they can have different domains, like `https://www.craftcms.com` and `https://beta.craftcms.com` .
 
-If you want to create a site that will live at a different domain name, just make sure that its DNS record is pointing to your server, and make sure the web server is configured to point traffic for that domain to your `web/` directory.
+If you want to create a site that will live at a completely different domain name, just make sure that its DNS record is pointing to your server, and make sure the web server is configured to point traffic for that domain to your `web/` directory.
+
+::: tip
+If you have mulitple sites using different root domains like `https://site-a.com` and `https://site-b.com`, with the way Craft’s [license enforcements works](https://craftcms.com/support/license-enforcement), you’ll want to pick one of the domains to access the Craft Control Panel from for _all_ of the sites.
+:::
 
 ::: tip
 Craft doesn’t require you to create additional `web/` directories for new sites, though it’s fine if you need to.
