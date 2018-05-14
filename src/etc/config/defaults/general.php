@@ -704,6 +704,11 @@ return array(
 	 */
 	'useXSendFile' => false,
 
+    /**
+     * @var bool Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
+     */
+    'transformGifs' => true,
+
 	/**
 	 * If set to `true`, the following request parameters will need to be hashed to ensure they weren’t tampered with:
 	 *

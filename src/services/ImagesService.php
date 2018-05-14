@@ -182,7 +182,7 @@ class ImagesService extends BaseApplicationComponent
 		$cleanedByStripping = false;
 
 		// Special case for SVG files.
-		if (IOHelper::getExtension($filePath) === 'svg')
+		if (StringHelper::toLowerCase(IOHelper::getExtension($filePath)) === 'svg')
 		{
 			if (craft()->config->get('sanitizeSvgUploads'))
 			{
@@ -205,6 +205,11 @@ class ImagesService extends BaseApplicationComponent
 
 			return true;
 		}
+
+		if (StringHelper::toLowerCase(IOHelper::getExtension($filePath)) === 'gif' && !craft()->config->get('transformGifs'))
+        {
+            return true;
+        }
 
 		try
 		{

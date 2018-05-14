@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `preserveCmykColorspace` config setting which can be set to `true` to prevent the colorspace to be transformed to sRGB when using Imagick.
+- Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
 
 ### Changed
 - Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))

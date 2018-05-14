@@ -1005,6 +1005,12 @@ class AssetsService extends BaseApplicationComponent
 			return AssetsHelper::generateUrl($sourceType, $file);
 		}
 
+        if (StringHelper::toLowerCase(IOHelper::getExtension($file->filename)) === 'gif' && !craft()->config->get('transformGifs'))
+        {
+            $sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+            return AssetsHelper::generateUrl($sourceType, $file);
+        }
+
 		// Get the transform index model
 		$index = craft()->assetTransforms->getTransformIndex($file, $transform);
 
