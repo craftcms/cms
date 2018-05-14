@@ -76,7 +76,9 @@ To set your site up with the same directory structure (including the [PHP dotenv
 
 2. Configure your `.env` file with your database connection settings. You can either edit the file manually, or run the `./craft setup` command from your new root project directory in your terminal. 
 
-  > {note} Note that the default table prefix is now blank, whereas it used to be `craft`. Set `DB_TABLE_PREFIX="craft"` if that’s what your tables are currently prefixed with.
+   ::: tip
+   Note that the default table prefix is now blank, whereas it used to be `craft`. Set `DB_TABLE_PREFIX="craft"` if that’s what your tables are currently prefixed with.
+   :::
 
 3. Copy any settings from your old `craft/config/general.php` file into your new project’s `config/general.php` file.
 
