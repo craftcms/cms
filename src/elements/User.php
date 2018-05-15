@@ -741,67 +741,24 @@ class User extends Element implements IdentityInterface
         $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
         if ($event->performAuthentication) {
-            switch ($this->getStatus()) {
-                case self::STATUS_ARCHIVED:
+            // Validate the password
+            try {
+                $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+            } catch (InvalidArgumentException $e) {
+                $passwordValid = false;
+            }
+
+            if ($passwordValid) {
+                $this->authError = $this->_getAuthError();
+            } else {
+                Craft::$app->getUsers()->handleInvalidLogin($this);
+                // Was that one bad password too many?
+                if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+                    // Will set the authError to either AccountCooldown or AccountLocked
+                    $this->authError = $this->_getAuthError();
+                } else {
                     $this->authError = self::AUTH_INVALID_CREDENTIALS;
-                    break;
-                case self::STATUS_PENDING:
-                    $this->authError = self::AUTH_PENDING_VERIFICATION;
-                    break;
-                case self::STATUS_SUSPENDED:
-                    $this->authError = self::AUTH_ACCOUNT_SUSPENDED;
-                    break;
-                case self::STATUS_LOCKED:
-                    // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
-                        $this->authError = self::AUTH_ACCOUNT_COOLDOWN;
-                    } else {
-                        $this->authError = self::AUTH_ACCOUNT_LOCKED;
-                    }
-                    break;
-                case self::STATUS_ACTIVE:
-                    // Validate the password
-                    try {
-                        $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-                    } catch (InvalidArgumentException $e) {
-                        $valid = false;
-                    }
-                    if (!$valid) {
-                        Craft::$app->getUsers()->handleInvalidLogin($this);
-                        // Was that one bad password too many?
-                        if ($this->locked) {
-                            // Will set the authError to either AccountCooldown or AccountLocked
-                            return $this->authenticate($password);
-                        }
-                        $this->authError = self::AUTH_INVALID_CREDENTIALS;
-                        break;
-                    }
-                    // Is a password reset required?
-                    if ($this->passwordResetRequired) {
-                        $this->authError = self::AUTH_PASSWORD_RESET_REQUIRED;
-                        break;
-                    }
-                    $request = Craft::$app->getRequest();
-                    if (!$request->getIsConsoleRequest()) {
-                        if ($request->getIsCpRequest()) {
-                            if (!$this->can('accessCp') && $this->authError === null) {
-                                $this->authError = self::AUTH_NO_CP_ACCESS;
-                            }
-                            if (
-                                Craft::$app->getIsSystemOn() === false &&
-                                $this->can('accessCpWhenSystemIsOff') === false &&
-                                $this->authError === null
-                            ) {
-                                $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
-                            }
-                        } else if (
-                            Craft::$app->getIsSystemOn() === false &&
-                            $this->can('accessSiteWhenSystemIsOff') === false &&
-                            $this->authError === null
-                        ) {
-                            $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
-                        }
-                    }
+                }
             }
         }
 
@@ -1441,5 +1398,54 @@ class User extends Element implements IdentityInterface
         }
 
         return true;
+    }
+
+    /**
+     * Returns the [[authError]] value for [[authenticate()]]
+     *
+     * @return null|string
+     */
+    private function _getAuthError()
+    {
+        switch ($this->getStatus()) {
+            case self::STATUS_ARCHIVED:
+                return self::AUTH_INVALID_CREDENTIALS;
+            case self::STATUS_PENDING:
+                return self::AUTH_PENDING_VERIFICATION;
+            case self::STATUS_SUSPENDED:
+                return self::AUTH_ACCOUNT_SUSPENDED;
+            case self::STATUS_LOCKED:
+                // Let them know how much time they have to wait (if any) before their account is unlocked.
+                if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
+                    return self::AUTH_ACCOUNT_COOLDOWN;
+                }
+                return self::AUTH_ACCOUNT_LOCKED;
+            case self::STATUS_ACTIVE:
+                // Is a password reset required?
+                if ($this->passwordResetRequired) {
+                    return self::AUTH_PASSWORD_RESET_REQUIRED;
+                }
+                $request = Craft::$app->getRequest();
+                if (!$request->getIsConsoleRequest()) {
+                    if ($request->getIsCpRequest()) {
+                        if (!$this->can('accessCp')) {
+                            return self::AUTH_NO_CP_ACCESS;
+                        }
+                        if (
+                            Craft::$app->getIsSystemOn() === false &&
+                            $this->can('accessCpWhenSystemIsOff') === false
+                        ) {
+                            return self::AUTH_NO_CP_OFFLINE_ACCESS;
+                        }
+                    } else if (
+                        Craft::$app->getIsSystemOn() === false &&
+                        $this->can('accessSiteWhenSystemIsOff') === false
+                    ) {
+                        return self::AUTH_NO_SITE_OFFLINE_ACCESS;
+                    }
+                }
+        }
+
+        return null;
     }
 }

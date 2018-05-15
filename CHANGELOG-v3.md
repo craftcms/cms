@@ -20,6 +20,9 @@
 - Fixed a bug where entry versions could be displayed in the wrong order if multiple versions had the same creation date. ([#2889](https://github.com/craftcms/cms/issues/2889))
 - Fixed an error that occurred when installing Craft on a domain with an active user session.
 
+### Security
+- Login errors for locked users now factor in whether the `preventUserEnumeration` config setting is enabled.
+
 ## 3.0.7 - 2018-05-10
 
 ### Added
