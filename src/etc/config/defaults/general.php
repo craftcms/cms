@@ -449,11 +449,11 @@ return array(
 	 */
 	'postLoginRedirect' => '',
 
-    /**
-     * Whether images with CMYK colorspace should retain it. If false, images will be converted to sRGB colorspace.
-     *
-     * Setting this to true will leave CMYK colorspace with images that have it. This will only have effect if Imagick is in use.
-     */
+	/**
+	 * Whether images with CMYK colorspace should retain it. If false, images will be converted to sRGB colorspace.
+	 *
+	 * Setting this to true will leave CMYK colorspace with images that have it. This will only have effect if Imagick is in use.
+	 */
 	'preserveCmykColorspace' => false,
 
 	/**
@@ -704,10 +704,10 @@ return array(
 	 */
 	'useXSendFile' => false,
 
-    /**
-     * @var bool Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
-     */
-    'transformGifs' => true,
+	/**
+	 * @var bool Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
+	 */
+	'transformGifs' => true,
 
 	/**
 	 * If set to `true`, the following request parameters will need to be hashed to ensure they weren’t tampered with:
