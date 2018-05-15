@@ -73,7 +73,7 @@ class Number extends Field implements PreviewableFieldInterface
         parent::init();
 
         // Normalize $defaultValue
-        if ($this->defaultValue !== null && empty($this->defaultValue)) {
+        if ($this->defaultValue === '') {
             $this->defaultValue = null;
         }
 
