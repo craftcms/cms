@@ -214,8 +214,8 @@ td.right { float: none; @include alignright; }
 
 .icon.delete { display: inline-block; }
 .icon.delete:before { content: 'remove'; color: rgba(0,0,0,0.2); }
-.icon.delete:not(.disabled):hover:before { color: $errorcolor; }
-.icon.delete:not(.disabled):active:before { color: #8c3b2e; }
+.icon.delete:not(.disabled):hover:before { color: $red; }
+.icon.delete:not(.disabled):active:before { color: darken($red, 10%); }
 
 .hidden { display: none !important; }
 
@@ -889,25 +889,25 @@ ul.tree,
 .status.on,
 .status.live,
 .status.active,
-.status.enabled { background-color: #27AE60; } /* green */
+.status.enabled { background-color: $green; } /* green */
 
 .status.orange,
 .status.locked,
-.status.pending { background-color: #F2842D; } /* orange */
+.status.pending { background-color: $orange; } /* orange */
 
 .status.red,
 .status.off,
 .status.suspended,
-.status.expired { background-color: #D0021B; } /* red */
+.status.expired { background-color: $red; } /* red */
 
-.status.yellow { background-color: #F1C40E; }
-.status.pink { background-color: #FF50F2; }
-.status.purple { background-color: #9B59B6; }
-.status.blue { background-color: #0D99F2; }
-.status.turquoise { background-color: #2CE0BD; }
-.status.light { background-color: #CCD1D6; }
-.status.grey { background-color: #98A3AE; }
-.status.black { background-color: #32475E; }
+.status.yellow { background-color: $yellow; }
+.status.pink { background-color: $pink; }
+.status.purple { background-color: $purple; }
+.status.blue { background-color: $blue; }
+.status.turquoise { background-color: $turquoise; }
+.status.light { background-color: $light; }
+.status.grey { background-color: $grey; }
+.status.black { background-color: $black; }
 
 .status.disabled { opacity: 1; }
 
@@ -1012,7 +1012,7 @@ ul.tree,
 .meta > .field > .input > .datewrapper > .text,
 .meta > .field > .input > .timewrapper > .text,
 .meta > .field > .input > .datetimewrapper > .datewrapper > .text,
-.meta > .field > .input > .datetimewrapper > .timewrapper > .text, { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
+.meta > .field > .input > .datetimewrapper > .timewrapper > .text { display: block; margin: -8px 0; padding: 14px 0; border-radius: 0; @include box-shadow(none); border: none !important; background: transparent; }
 
 .meta > .field > .input > .datewrapper:before,
 .meta > .field > .input > .timewrapper:before,

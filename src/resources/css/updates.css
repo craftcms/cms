@@ -9,7 +9,7 @@
 
 #main #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
 
-#main .critical { border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
+#main .critical { border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #D0021B; }
 body.ltr #main .critical { margin-left: 5px; }
 body.rtl #main .critical { margin-right: 5px; }
 
@@ -43,7 +43,7 @@ body.rtl #main .update .release .release-notes ul li:before { float: right; }
 body.ltr #main .update .release .release-notes ul li:before { margin: 1px 0 1px -24px ; }
 body.rtl #main .update .release .release-notes ul li:before { margin: 1px -24px 1px 0 ; }
 
-#main .update .release .release-notes ul li.added:before { content: 'wand'; color: #5286d9; }
+#main .update .release .release-notes ul li.added:before { content: 'wand'; color: #0D99F2; }
 
 #main .update .release .release-notes ul li.improved:before { content: 'brush'; }
 

@@ -4,7 +4,7 @@
 /* RTL stuff */
 html, body { overflow-x: hidden; }
 
-#alerts { background: #da5a47; padding: 9px 0; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.05); color: #fff; }
+#alerts { background: #F2842D; padding: 9px 0; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.05); color: #fff; }
 
 #alerts li { padding: 4px 24px; }
 
@@ -68,7 +68,7 @@ body.rtl #global-sidebar .topbar a.site-name .photo-container { margin-left: 14p
 
 #global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
 
-#global-sidebar .topbar a.updates { position: relative; color: #5286d9; }
+#global-sidebar .topbar a.updates { position: relative; color: #0D99F2; }
 
 #global-sidebar .topbar a.updates.critical { color: #da5a47; }
 
@@ -242,7 +242,7 @@ body.rtl #notifications-wrapper { right: 0; }
 
 #notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 600; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
 
-#notifications .notification.notice { background: #5286d9; }
+#notifications .notification.notice { background: #0D99F2; }
 
 #notifications .notification.error { background: #da5a47; }
 
@@ -416,13 +416,13 @@ body.rtl #footer #upgradepromo a .go:after { padding-right: 5px; }
 
 #upgrademodal-compare table thead tr.license-statuses td .license-status:before { border: 1px solid; border-radius: 9px; width: 17px; height: 17px; line-height: 17px; margin-right: 5px; }
 
-#upgrademodal-compare table thead tr.license-statuses td .installed { color: #00b007; }
+#upgrademodal-compare table thead tr.license-statuses td .installed { color: #27AE60; }
 
-#upgrademodal-compare table thead tr.license-statuses td .licensed { color: #5286d9; }
+#upgrademodal-compare table thead tr.license-statuses td .licensed { color: #0D99F2; }
 
-#upgrademodal-compare table thead tr.license-statuses td .installed:before { border-color: #00b007; }
+#upgrademodal-compare table thead tr.license-statuses td .installed:before { border-color: #27AE60; }
 
-#upgrademodal-compare table thead tr.license-statuses td .licensed:before { border-color: #5286d9; }
+#upgrademodal-compare table thead tr.license-statuses td .licensed:before { border-color: #0D99F2; }
 
 #upgrademodal-compare table thead tr.price th, #upgrademodal-compare table thead tr.price td { position: relative; padding-top: 14px; }
 

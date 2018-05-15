@@ -8,7 +8,7 @@
 #main #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
 
 
-#main .critical { @include margin-left(5px); border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
+#main .critical { @include margin-left(5px); border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: $red; }
 
 #main .release { direction: ltr; }
 
