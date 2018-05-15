@@ -19,7 +19,6 @@
 
                     <div v-if="cart" class="buttons">
                         <template v-if="pluginSnippet.editions[0].price != null && pluginSnippet.editions[0].price !== '0.00'">
-
                             <template v-if="isInstalled(pluginSnippet)">
                                 <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
                                     <div class="license-status installed" data-icon="check">{{ "Installed"|t('app') }}</div>
@@ -33,17 +32,19 @@
                             </template>
 
                             <template v-else>
-                                <form method="post">
-                                    <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
-                                    <input type="hidden" name="action" value="pluginstore/install">
-                                    <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
-                                    <input type="hidden" name="handle" :value="pluginSnippet.handle">
-                                    <input type="hidden" name="version" :value="pluginSnippet.version">
-                                    <input type="submit" class="btn" :value="'Try'|t('app')">
-                                </form>
+                                <template v-if="allowUpdates">
+                                    <form method="post">
+                                        <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
+                                        <input type="hidden" name="action" value="pluginstore/install">
+                                        <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
+                                        <input type="hidden" name="handle" :value="pluginSnippet.handle">
+                                        <input type="hidden" name="version" :value="pluginSnippet.version">
+                                        <input type="submit" class="btn" :value="'Try'|t('app')">
+                                    </form>
 
-                                <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                                <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
+                                    <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
+                                </template>
                             </template>
                         </template>
                         <div v-else>
