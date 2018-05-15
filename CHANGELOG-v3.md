@@ -7,6 +7,7 @@
 
 ### Changed
 - Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Detail panes now have a lighter, more saturated background color.
 
 ### Fixed
 - Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting if you had it set. ([#2794](https://github.com/craftcms/cms/issues/2794))

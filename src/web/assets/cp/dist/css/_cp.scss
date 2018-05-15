@@ -713,7 +713,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       #details {
         flex: 0 0 $detailsWidth;
         width: $detailsWidth;
-        background: hsl($hue, 10%, 85%);
+        background: darken($bgColor, 3%);
         padding-bottom: 32px;
 
         body.ltr & {
@@ -728,7 +728,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           padding: 16px 24px;
 
           &.read-only {
-            background: rgba(0, 0, 0, 0.05);
+            background: darken($bgColor, 6%);
           }
 
           & > .field,
@@ -746,6 +746,10 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
             padding: 0 24px;
           }
 
+          & > .field + .field {
+            border-top-color: darken($bgColor, 15%);
+          }
+
           .text::placeholder,
           .datewrapper .text:placeholder-shown + div[data-icon],
           .timewrapper .text:placeholder-shown + div[data-icon] {
@@ -759,7 +763,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
         hr {
           margin: 0;
-          border-top-color: $mediumHairlineColorAlpha;
+          border-top-color: darken($bgColor, 15%);
         }
 
         .spinner {
