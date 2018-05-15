@@ -1447,6 +1447,18 @@ The maximum file size (in bytes) Craft should allow users to upload.
 'maxUploadFileSize' => 33554432,
 ```
 
+### `preserveCmykColorspace`
+
+**Accepts**: `true` or `false`
+
+**Default**: `false`
+
+**Since**: Craft 2.6.3016
+
+Whether images with CMYK colorspace should retain it. If false, images will be converted to sRGB colorspace.
+
+Setting this to true will leave CMYK colorspace with images that have it. This will only have effect if Imagick is in use.
+
 ### `preserveExifData`
 
 **Accepts**: `true` or `false`
@@ -1482,6 +1494,20 @@ Whether the embedded color profiles should be preserved when uploading an image.
 Whether Craft should rotate images according to their EXIF data on upload.
 
 This setting takes effect when images are uploaded with an “Orientation” entry in their EXIF data, which informs Craft that the image was taken by a camera while it was held sideways. When the setting is enabled, Craft will look for that EXIF entry on images as they’re uploaded, and if present, automatically rotate the image accordingly and strip out that Orientation entry.
+
+```php
+'rotateImagesOnUploadByExifData' => true,
+```
+
+### `transformGifs`
+
+**Accepts**: `true` or `false`
+
+**Default**: `true`
+
+**Since**: Craft 2.6.3016
+
+Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
 
 ```php
 'rotateImagesOnUploadByExifData' => true,
