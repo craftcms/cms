@@ -1,8 +1,32 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.8 - 2018-05-15
+
+### Added
+- Number fields now have a “Default Value” setting. ([#927](https://github.com/craftcms/cms/issues/927))
+- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ colorspaces from getting converted to sRGB on environments running ImageMagick.
+
+### Changed
+- Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Detail panes now have a lighter, more saturated background color.
+
+### Fixed
+- Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting. ([#2794](https://github.com/craftcms/cms/issues/2794))
+- Fixed a bug where some SVG files were not recognized as SVG files.
+- Fixed a bug where Table fields could add the wrong number of default rows if the Min Rows setting was set, and the Default Values setting had something other than one row. ([#2864](https://github.com/craftcms/cms/issues/2864))
+- Fixed an error that could occur when parsing asset reference tags. ([craftcms/redactor#47](https://github.com/craftcms/redactor/issues/47))
+- Fixed a bug where “Try” and “Buy” buttons in the Plugin Store were visible when the `allowUpdates` config setting was disabled. ([#2781](https://github.com/craftcms/cms/issues/2781))
+- Fixed a bug where Number fields would forget their Min/Max Value settings if they were set to 0.
+- Fixed a bug where entry versions could be displayed in the wrong order if multiple versions had the same creation date. ([#2889](https://github.com/craftcms/cms/issues/2889))
+- Fixed an error that occurred when installing Craft on a domain with an active user session.
+- Fixed a bug where email verification links weren’t working for publicly-registered users if the registration form contained a Password field and the default user group granted permission to access the Control Panel.
+
+### Security
+- Login errors for locked users now factor in whether the `preventUserEnumeration` config setting is enabled.
+
 ## 3.0.7 - 2018-05-10
 
-### Added
+### Added
 - Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
 - Added `craft\helpers\FileHelper::isGif()`.
 

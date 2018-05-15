@@ -177,6 +177,7 @@ class Raster extends Image
 
         // For Imagick, convert CMYK to RGB, save and re-open.
         if (!Craft::$app->getImages()->getIsGd()
+            && !Craft::$app->getConfig()->getGeneral()->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')

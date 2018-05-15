@@ -55,7 +55,7 @@ Craft.EditableTable = Garnish.Base.extend(
             }
 
             if (this.settings.minRows && this.rowCount < this.settings.minRows) {
-                for (var i = 1; i < this.settings.minRows; i++) {
+                for (var i = this.rowCount; i < this.settings.minRows; i++) {
                     this.addRow()
                 }
             }
@@ -93,10 +93,7 @@ Craft.EditableTable = Garnish.Base.extend(
             }
         },
         updateAddRowButton: function() {
-            if (
-                (this.settings.maxRows && this.rowCount >= this.settings.maxRows) ||
-                (this.settings.minRows && this.rowCount < this.settings.minRows)
-            ) {
+            if (!this.canAddRow()) {
                 this.$addRowBtn.css('opacity', '0.2');
                 this.$addRowBtn.css('pointer-events', 'none');
             } else {
@@ -108,31 +105,29 @@ Craft.EditableTable = Garnish.Base.extend(
             return (this.rowCount > this.settings.minRows);
         },
         deleteRow: function(row) {
-            if (this.settings.maxRows && this.settings.minRows) {
-                if (!this.canDeleteRow()) {
-                    return;
-                }
+            if (!this.canDeleteRow()) {
+                return;
             }
 
             this.sorter.removeItems(row.$tr);
             row.$tr.remove();
 
-            if (this.settings.minRows && this.settings.maxRows) {
-                this.rowCount--;
-            }
+            this.rowCount--;
 
             this.updateAddRowButton();
             // onDeleteRow callback
             this.settings.onDeleteRow(row.$tr);
         },
         canAddRow: function() {
-            return (this.rowCount < this.settings.maxRows);
+            if (this.settings.maxRows) {
+                return (this.rowCount < this.settings.maxRows);
+            }
+
+            return true;
         },
         addRow: function() {
-            if (this.settings.minRows && this.settings.maxRows) {
-                if (!this.canAddRow()) {
-                    return;
-                }
+            if (!this.canAddRow()) {
+                return;
             }
 
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),

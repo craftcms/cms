@@ -1,6 +1,15 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
+    label: "Default Value"|t('app'),
+    id: 'defaultValue',
+    name: 'defaultValue',
+    value: field.defaultValue,
+    size: 5,
+    errors: field.getErrors('defaultValue')
+}) }}
+
+{{ forms.textField({
     label: "Min Value"|t('app'),
     id: 'min',
     name: 'min',
