@@ -140,7 +140,11 @@ class Image extends BaseImage
 		}
 
 		// If we're using Imagick _and_ one that supports it, convert CMYK to RGB, save and re-open.
-		if (!craft()->images->isGd() && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK && method_exists($this->_image->getImagick(), 'transformimagecolorspace'))
+		if (!craft()->images->isGd()
+            && !craft()->config->get('preserveCmykColorspace')
+            && method_exists($this->_image->getImagick(), 'getImageColorspace')
+            && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK
+            && method_exists($this->_image->getImagick(), 'transformimagecolorspace'))
 		{
 			$this->_image->getImagick()->transformimagecolorspace(\Imagick::COLORSPACE_SRGB);
 			$this->_image->save();

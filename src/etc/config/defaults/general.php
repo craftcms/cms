@@ -449,6 +449,13 @@ return array(
 	 */
 	'postLoginRedirect' => '',
 
+    /**
+     * Whether images with CMYK colorspace should retain it. If false, images will be converted to sRGB colorspace.
+     *
+     * Setting this to true will leave CMYK colorspace with images that have it. This will only have effect if Imagick is in use.
+     */
+	'preserveCmykColorspace' => false,
+
 	/**
 	 * Whether the EXIF data should be preserved when manipulating images.
 	 *
@@ -555,7 +562,7 @@ return array(
 	'sendPoweredByHeader' => true,
 
 	/**
-	 * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+	 * The password-reset template path. Note that this only affects front-end site requests.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
 	 * basis.
@@ -696,6 +703,11 @@ return array(
 	 * Whether Craft should use XSendFile to serve files when possible.
 	 */
 	'useXSendFile' => false,
+
+    /**
+     * @var bool Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
+     */
+    'transformGifs' => true,
 
 	/**
 	 * If set to `true`, the following request parameters will need to be hashed to ensure they weren’t tampered with:

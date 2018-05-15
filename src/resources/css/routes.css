@@ -55,7 +55,7 @@ body.rtl .route .template:before { margin: 0 0 0 5px ; }
 body.ltr .route-settings .url-tokens .token { margin: 5px 5px 0 0 ; }
 body.rtl .route-settings .url-tokens .token { margin: 5px 0 0 5px ; }
 
-.route-settings .delete { display: block; margin-top: 7px; color: #da5a47; }
+.route-settings .delete { display: block; margin-top: 7px; color: #D0021B; }
 body.ltr .route-settings .delete { float: left; }
 body.rtl .route-settings .delete { float: right; }
 

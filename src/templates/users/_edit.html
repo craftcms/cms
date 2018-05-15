@@ -33,7 +33,7 @@
 {% block main %}
 	<div class="grid" data-max-cols="3">
 		<div class="item" data-position="left" data-colspan="2">
-			<form id="userform" class="pane" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ account.isCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard') }}">
+			<form id="userform" class="pane" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ account.isCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard') }}" data-confirm-unload>
 				<input type="hidden" name="action" value="users/saveUser">
 				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
 				{{ hiddenInputs }}

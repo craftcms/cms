@@ -1,5 +1,18 @@
 $hue: 212;
 
+// status colors
+$green: #27AE60;
+$orange: #F2842D;
+$red: #D0021B;
+$yellow: #F1C40E;
+$pink: #FF50F2;
+$purple: #9B59B6;
+$blue: #0D99F2;
+$turquoise: #2CE0BD;
+$light: #CCD1D6;
+$grey: #98A3AE;
+$black: #32475E;
+
 $headerBgColor: hsl($hue, 20%, 25%);
 $subnavBgColor: hsl($hue, 20%, 30%);
 $bgcolor: hsl($hue, 10%, 93%);
@@ -29,10 +42,10 @@ $secondarySubmitColor: hsl($hue, 10%, 60%);
 $secondarySubmitHoverColor: hsl($hue, 10%, 50%);
 $secondarySubmitActiveColor: hsl($hue, 10%, 40%);
 
-$errorcolor: #da5a47;
-$warningcolor: #e78640;
-$successcolor: #00b007;
-$noticecolor: #5286d9;
+$errorcolor: $orange;
+$warningcolor: $orange;
+$successcolor: $green;
+$noticecolor: $blue;
 
 $btnBorderRadius: 3px;
 $paneBorderRadius: 4px;

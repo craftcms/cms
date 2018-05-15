@@ -1,5 +1,29 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+## 2.6.3016 - 2018-05-15
+
+### Added
+- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ colorspaces from getting converted to sRGB on environments running ImageMagick.
+- Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
+
+### Changed
+- Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
+- Rich Text fields with the “Clean up HTML?” setting enabled now convert non-breaking spaces to normal spaces.
+- Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Updated Garnish to 0.1.22.
+
+### Removed
+- Removed `ConfigService::getActivateAccountPath()`.
+- Removed `ConfigService::getSetPasswordPath()`.
+- Removed `ConfigService::getCpSetPasswordPath()`.
+
+### Fixed
+- Fixed an error that occurred when saving a Single entry over Ajax. ([#2687](https://github.com/craftcms/cms/issues/2687))
+- Fixed a bug where the `id` param was ignored when used on an eager-loaded elements’ criteria. ([#2717](https://github.com/craftcms/cms/issues/2717))
+- Fixed a bug where email verification links weren’t working for publicly-registered users if the registration form contained a Password field and the default user group granted permission to access the Control Panel.
+
 ## 2.6.3015 - 2018-04-06
 
 ### Changed

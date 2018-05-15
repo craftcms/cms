@@ -1716,8 +1716,7 @@ class UsersController extends BaseController
 
 		// Otherwise go with the CP's template
 		craft()->templates->setTemplateMode(TemplateMode::CP);
-		$templatePath = craft()->config->getCpSetPasswordPath();
-		$this->renderTemplate($templatePath, $variables);
+		$this->renderTemplate('setpassword', $variables);
 	}
 
 	/**

@@ -472,7 +472,11 @@ class EntriesController extends BaseEntriesController
 					$return['cpEditUrl'] = $entry->getCpEditUrl();
 				}
 
-				$return['authorUsername']      = $entry->getAuthor()->username;
+				if (($author = $entry->getAuthor()) !== null)
+				{
+					$return['authorUsername'] = $author->username;
+				}
+
 				$return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
 				$return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
 				$return['postDate']    = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);

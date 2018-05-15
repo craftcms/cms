@@ -31,7 +31,7 @@
 .route-settings .url-tokens h4 { margin-bottom: 5px; text-align: center; }
 .route-settings .url-tokens .token { @include margin(5px, 5px, 0, 0); cursor: pointer; }
 
-.route-settings .delete { display: block; @include floatleft; margin-top: 7px; color: $errorcolor; }
+.route-settings .delete { display: block; @include floatleft; margin-top: 7px; color: $red; }
 
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
