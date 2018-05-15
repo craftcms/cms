@@ -256,14 +256,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true)
     {
-        try {
-            $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
-        } catch (\Throwable $e) {
-            if (!$checkExtension) {
-                throw $e;
-            }
-            $mimeType = null;
-        }
+        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
         if ($checkExtension && in_array($mimeType, [null, 'text/plain', 'text/html', 'application/xml', 'text/xml'], true)) {
@@ -287,7 +280,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isSvg(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
+        $mimeType = file_exists($file) ? self::getMimeType($file, $magicFile, $checkExtension) : self::getMimeTypeByExtension($file, $magicFile);
         return strpos($mimeType, 'image/svg') === 0;
     }
 
@@ -305,7 +298,8 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        return self::getMimeType($file, $magicFile, $checkExtension) === 'image/gif';
+        $mimeType = file_exists($file) ? self::getMimeType($file, $magicFile, $checkExtension) : self::getMimeTypeByExtension($file, $magicFile);
+        return $mimeType === 'image/gif';
     }
 
     /**
