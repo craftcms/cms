@@ -10,11 +10,11 @@
 - Detail panes now have a lighter, more saturated background color.
 
 ### Fixed
-- Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting if you had it set. ([#2794](https://github.com/craftcms/cms/issues/2794))
-- Fixed a bug where some SVG files still were not recognized as SVG files.
+- Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting. ([#2794](https://github.com/craftcms/cms/issues/2794))
+- Fixed a bug where some SVG files were not recognized as SVG files.
 - Fixed a bug where Table fields could add the wrong number of default rows if the Min Rows setting was set, and the Default Values setting had something other than one row. ([#2864](https://github.com/craftcms/cms/issues/2864))
-- Fixed a bug where exception would be thrown when parsing an element reference for an Asset. ([craftcms/redactor#47](https://github.com/craftcms/redactor/issues/47))
-- Fixed a bug where Plugin Store’s Try and Buy buttons were visible when `allowUpdates` was disabled. ([#2781](https://github.com/craftcms/cms/issues/2781))
+- Fixed an error that could occur when parsing asset reference tags. ([craftcms/redactor#47](https://github.com/craftcms/redactor/issues/47))
+- Fixed a bug where “Try” and “Buy” buttons in the Plugin Store were visible when the `allowUpdates` config setting was disabled. ([#2781](https://github.com/craftcms/cms/issues/2781))
 
 ## 3.0.7 - 2018-05-10
 
