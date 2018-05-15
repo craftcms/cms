@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Number fields now have a “Default Value” setting. ([#927](https://github.com/craftcms/cms/issues/927))
 - Added the `preserveCmykColorspace` config setting which can be set to `true` to prevent the colorspace to be transformed to sRGB when using Imagick.
 
 ### Changed
