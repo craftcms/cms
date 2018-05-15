@@ -508,7 +508,7 @@ class GeneralConfig extends BaseObject
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var mixed The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+     * @var mixed The password-reset template path. Note that this only affects front-end site requests.
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getSetPasswordPath()
      */

@@ -4,7 +4,7 @@
 
 ### Added
 - Number fields now have a “Default Value” setting. ([#927](https://github.com/craftcms/cms/issues/927))
-- Added the `preserveCmykColorspace` config setting which can be set to `true` to prevent the colorspace to be transformed to sRGB when using Imagick.
+- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ colorspaces from getting converted to sRGB on environments running ImageMagick.
 
 ### Changed
 - Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
@@ -19,6 +19,7 @@
 - Fixed a bug where Number fields would forget their Min/Max Value settings if they were set to 0.
 - Fixed a bug where entry versions could be displayed in the wrong order if multiple versions had the same creation date. ([#2889](https://github.com/craftcms/cms/issues/2889))
 - Fixed an error that occurred when installing Craft on a domain with an active user session.
+- Fixed a bug where email verification links weren’t working for publicly-registered users if the registration form contained a Password field and the default user group granted permission to access the Control Panel.
 
 ### Security
 - Login errors for locked users now factor in whether the `preventUserEnumeration` config setting is enabled.
