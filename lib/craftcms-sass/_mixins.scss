@@ -46,10 +46,10 @@ $secondarySubmitHoverColor: hsl($hue, 10%, 50%);
 $secondarySubmitActiveColor: hsl($hue, 10%, 40%);
 
 // alert/notice colors
-$errorColor: #da5a47;
-$warningColor: #e78640;
-$successColor: #00b007;
-$noticeColor: #5286d9;
+$errorColor: $orange;
+$warningColor: $orange;
+$successColor: $green;
+$noticeColor: $blue;
 
 // UI element styles
 $btnBorderRadius: 2px;
@@ -422,26 +422,41 @@ $elementBorderRadius: 2px;
   font-size: 16px;
   line-height: 22px;
 
-  h1 {
+  h1, h2, h3, h4, h5, h6 {
     margin: 24px 0 16px;
+    font-weight: 600;
+  }
+
+  h1 {
     font-size: 32px;
     line-height: 40px;
-    font-weight: 600;
     color: #000;
   }
 
   h2 {
-    margin: 24px 0 16px;
     font-size: 24px;
     line-height: 30px;
-    font-weight: 600;
   }
 
   h3 {
-    margin: 24px 0 16px;
     font-size: 20px;
     line-height: 24px;
-    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  h5 {
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  h6 {
+    font-size: 13.6px;
+    line-height: 17px;
+    color: $mediumTextColor;
   }
 
   ul,

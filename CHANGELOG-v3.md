@@ -5,6 +5,9 @@
 ### Added
 - Added the `preserveCmykColorspace` config setting which can be set to `true` to prevent the colorspace to be transformed to sRGB when using Imagick.
 
+### Changed
+- Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
+
 ### Fixed
 - Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting if you had it set. ([#2794](https://github.com/craftcms/cms/issues/2794))
 - Fixed a bug where some SVG files still were not recognized as SVG files.
