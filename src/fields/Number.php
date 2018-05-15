@@ -38,6 +38,11 @@ class Number extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
+     * @var int|float|null The default value for new elements
+     */
+    public $defaultValue;
+
+    /**
      * @var int|float The minimum allowed number
      */
     public $min = 0;
@@ -66,6 +71,11 @@ class Number extends Field implements PreviewableFieldInterface
     public function init()
     {
         parent::init();
+
+        // Normalize $defaultValue
+        if ($this->defaultValue !== null && empty($this->defaultValue)) {
+            $this->defaultValue = null;
+        }
 
         // Normalize $max
         if ($this->max !== null && empty($this->max)) {
@@ -134,7 +144,7 @@ class Number extends Field implements PreviewableFieldInterface
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value;
+        return $this->isValueEmpty($value, $element) ? null : $value;
     }
 
     /**
@@ -142,12 +152,18 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $decimals = $this->decimals;
+        if ($this->isFresh($element) && $this->defaultValue !== null) {
+            $value = $this->defaultValue;
+        }
 
-        // If decimals is 0 (or null, empty for whatever reason), don't run this
-        if ($decimals) {
-            $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $value = number_format($value, $decimals, $decimalSeparator, '');
+        if ($value !== null) {
+            $decimals = $this->decimals;
+
+            // If decimals is 0 (or null, empty for whatever reason), don't run this
+            if ($decimals) {
+                $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+                $value = number_format($value, $decimals, $decimalSeparator, '');
+            }
         }
 
         return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">'.
