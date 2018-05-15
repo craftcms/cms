@@ -3,7 +3,6 @@ module.exports = {
     description: 'Craft 3 Documentation',
     theme: 'craftdocs',
     base: '/v3/',
-    dest: './web/v3/',
     themeConfig: {
         docsRepo: 'craftcms/docs',
         docsDir: 'docs',
