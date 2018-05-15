@@ -18,6 +18,7 @@
 - Fixed a bug where “Try” and “Buy” buttons in the Plugin Store were visible when the `allowUpdates` config setting was disabled. ([#2781](https://github.com/craftcms/cms/issues/2781))
 - Fixed a bug where Number fields would forget their Min/Max Value settings if they were set to 0.
 - Fixed a bug where entry versions could be displayed in the wrong order if multiple versions had the same creation date. ([#2889](https://github.com/craftcms/cms/issues/2889))
+- Fixed an error that occurred when installing Craft on a domain with an active user session.
 
 ## 3.0.7 - 2018-05-10
 

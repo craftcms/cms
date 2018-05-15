@@ -847,16 +847,18 @@ class Request extends \yii\web\Request
      */
     protected function csrfTokenValidForCurrentUser(string $token): bool
     {
-        if (Craft::$app->getIsInstalled()) {
-            try {
-                if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
-                    return true;
-                }
-            } catch (DbException $e) {
-                // Craft is probably not installed or updating
-                Craft::$app->getUser()->switchIdentity(null);
+        if (!Craft::$app->getIsInstalled()) {
+            return true;
+        }
+
+        try {
+            if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
                 return true;
             }
+        } catch (DbException $e) {
+            // Craft is probably not installed or updating
+            Craft::$app->getUser()->switchIdentity(null);
+            return true;
         }
 
         $splitToken = explode('|', $token, 2);
