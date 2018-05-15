@@ -3,7 +3,7 @@ module.exports = {
     description: 'Craft 2 Documentation',
     theme: 'craftdocs',
     base: '/v2/',
-    ga: 'UA-39036834-7',
+    ga: 'UA-39036834-8',
     themeConfig: {
         docsRepo: 'craftcms/docs',
         docsDir: 'docs',
