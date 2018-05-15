@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.8 - 2018-05-15
 
 ### Added
 - Number fields now have a “Default Value” setting. ([#927](https://github.com/craftcms/cms/issues/927))
