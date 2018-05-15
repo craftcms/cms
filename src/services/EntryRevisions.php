@@ -381,7 +381,7 @@ class EntryRevisions extends Component
 
         $results = $this->_getRevisionsQuery()
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->orderBy(['dateCreated' => SORT_DESC])
+            ->orderBy(['id' => SORT_DESC])
             ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
             ->all();
