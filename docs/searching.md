@@ -154,12 +154,12 @@ If you go the latter route, note that the `query` property is required. Beyond t
 
 ### Ordering results by score
 
-You can also set the `order` parameter to `'score'` if you want results ordered by best-match to worst-match:
+You can also set the `orderBy` parameter to `'score'` if you want results ordered by best-match to worst-match:
 
 ```twig
 {% set results = craft.entries({
     search: query,
-    order: 'score'
+    orderBy: 'score'
 }).all() %}
 ```
 
