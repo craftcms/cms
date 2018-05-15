@@ -16,6 +16,7 @@
 - Fixed a bug where Table fields could add the wrong number of default rows if the Min Rows setting was set, and the Default Values setting had something other than one row. ([#2864](https://github.com/craftcms/cms/issues/2864))
 - Fixed an error that could occur when parsing asset reference tags. ([craftcms/redactor#47](https://github.com/craftcms/redactor/issues/47))
 - Fixed a bug where “Try” and “Buy” buttons in the Plugin Store were visible when the `allowUpdates` config setting was disabled. ([#2781](https://github.com/craftcms/cms/issues/2781))
+- Fixed a bug where Number fields would forget their Min/Max Value settings if they were set to 0.
 
 ## 3.0.7 - 2018-05-10
 

@@ -78,17 +78,22 @@ class Number extends Field implements PreviewableFieldInterface
         }
 
         // Normalize $max
-        if ($this->max !== null && empty($this->max)) {
+        if ($this->max === '') {
             $this->max = null;
         }
 
         // Normalize $min
-        if ($this->min !== null && empty($this->min)) {
+        if ($this->min === '') {
             $this->min = null;
         }
 
+        // Normalize $decimals
+        if (!$this->decimals) {
+            $this->decimals = 0;
+        }
+
         // Normalize $size
-        if ($this->size !== null && empty($this->size)) {
+        if ($this->size !== null && !$this->size) {
             $this->size = null;
         }
     }
@@ -156,7 +161,6 @@ class Number extends Field implements PreviewableFieldInterface
             $value = $this->defaultValue;
         }
 
-        
         // If decimals is 0 (or null, empty for whatever reason), don't run this
         if ($value !== null && $this->decimals) {
             $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
