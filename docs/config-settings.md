@@ -1510,7 +1510,7 @@ This setting takes effect when images are uploaded with an “Orientation” ent
 Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
 
 ```php
-'rotateImagesOnUploadByExifData' => true,
+'transformGifs' => false,
 ```
 
 ## Tags
