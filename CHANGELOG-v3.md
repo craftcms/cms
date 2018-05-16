@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added default plugin icon to plugins without icon in the Plugin Store.
+
 ### Changed
 - `craft\helpers\FileHelper::isGif()` an `craft\helpers\FileHelper::isSvg()` now rely on extension to determine the file type.
 
