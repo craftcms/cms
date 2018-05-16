@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- `craft\helpers\FileHelper::isGif()` an `craft\helpers\FileHelper::isSvg()` now rely on extension to determine the file type.
+- Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
 
 ### Fixed
 - Fixed a bug where sorting of recently added plugins was wrong in the Plugin Store. ([pixelandtonic/craftnet#79](https://github.com/pixelandtonic/craftnet/issues/79)) ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))
