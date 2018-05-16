@@ -705,7 +705,7 @@ class Asset extends Element
             return null;
         }
 
-        if (FileHelper::isGif($this->filename) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if ($this->getMimeType() === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
             return AssetsHelper::generateUrl($volume, $this);
         }
 
