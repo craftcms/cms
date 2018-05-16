@@ -227,6 +227,10 @@ module.exports = {
         anchor: {
             level: [2, 3]
         },
-        config: require('vuepress-theme-craftdocs/markup')
+        config(md) {
+            require('vuepress-theme-craftdocs/markup')(md);
+            md
+                .use(require('markdown-it-deflist'));
+        }
     }
 }

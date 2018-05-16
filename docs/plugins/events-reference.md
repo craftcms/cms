@@ -10,7 +10,9 @@ See [Hooks and Events](/v2/plugins/hooks-and-events.html) for an explanation of 
 
 ### onEditionChange
 
-**Raised by**: [AppBehavior::setEdition()](https://docs.craftcms.com/api/v2/etc/behaviors/AppBehavior.html#setEdition-detail)
+Raised by
+
+:   [AppBehavior::setEdition()](https://docs.craftcms.com/api/v2/etc/behaviors/AppBehavior.html#setEdition-detail)
 
 Raised after Craft’s edition changes.
 
@@ -20,7 +22,9 @@ Raised after Craft’s edition changes.
 
 ### db.onBackup
 
-**Raised by**: [DbConnection::backup()](https://docs.craftcms.com/api/v2/etc/db/DbConnection.html#backup-detail)
+Raised by
+
+:   [DbConnection::backup()](https://docs.craftcms.com/api/v2/etc/db/DbConnection.html#backup-detail)
 
 Raised after a database backup has been created.
 
@@ -30,7 +34,9 @@ Raised after a database backup has been created.
 
 ### email.onBeforeSendEmail
 
-**Raised by**: [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
+Raised by
+
+:   [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
 
 Raised right before an email is sent.
 
@@ -46,7 +52,9 @@ Event handlers can prevent the email from getting sent by setting [`$event->perf
 
 ### email.onSendEmail
 
-**Raised by**: [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
+Raised by
+
+:   [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
 
 Raised when an email is sent.
 
@@ -58,7 +66,9 @@ Raised when an email is sent.
 
 ### email.onSendEmailError
 
-**Raised by**: [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
+Raised by
+
+:   [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
 
 Raised when an email fails to send.
 
@@ -71,7 +81,9 @@ Raised when an email fails to send.
 
 ### i18n.onAddLocale
 
-**Raised by**: [LocalizationService::addSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#addSiteLocale-detail)
+Raised by
+
+:   [LocalizationService::addSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#addSiteLocale-detail)
 
 Raised when a new locale is added to the site.
 
@@ -81,7 +93,9 @@ Raised when a new locale is added to the site.
 
 ### i18n.onBeforeDeleteLocale
 
-**Raised by**: [LocalizationService::deleteSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#deleteSiteLocale-detail)
+Raised by
+
+:   [LocalizationService::deleteSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#deleteSiteLocale-detail)
 
 Raised right before a locale is deleted.
 
@@ -96,7 +110,9 @@ Event handlers can prevent the locale from getting deleted by setting [`$event->
 
 ### localization.onDeleteLocale
 
-**Raised by**: [LocalizationService::deleteSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#deleteSiteLocale-detail)
+Raised by
+
+:   [LocalizationService::deleteSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#deleteSiteLocale-detail)
 
 Raised when a locale is deleted.
 
@@ -107,13 +123,17 @@ Raised when a locale is deleted.
 
 ### plugins.onLoadPlugins
 
-**Raised by**: [PluginsService::loadPlugins()](https://docs.craftcms.com/api/v2/services/PluginsService.html#loadPlugins-detail)
+Raised by
+
+:   [PluginsService::loadPlugins()](https://docs.craftcms.com/api/v2/services/PluginsService.html#loadPlugins-detail)
 
 Raised when Craft has finished loading all the plugins.
 
 ### updates.onBeginUpdate
 
-**Raised by**: [UpdatesService::prepareUpdate()](https://docs.craftcms.com/api/v2/services/UpdatesService.html#prepareUpdate-detail)
+Raised by
+
+:   [UpdatesService::prepareUpdate()](https://docs.craftcms.com/api/v2/services/UpdatesService.html#prepareUpdate-detail)
 
 Raised when an update is beginning.
 
@@ -123,7 +143,9 @@ Raised when an update is beginning.
 
 ### updates.onEndUpdate
 
-**Raised by**: [UpdatesService::updateCleanUp()](https://docs.craftcms.com/api/v2/services/UpdatesService.html#updateCleanUp-detail)
+Raised by
+
+:   [UpdatesService::updateCleanUp()](https://docs.craftcms.com/api/v2/services/UpdatesService.html#updateCleanUp-detail)
 
 Raised when an update has ended.
 
@@ -135,7 +157,9 @@ Raised when an update has ended.
 
 ### content.onSaveContent
 
-**Raised by**: [ContentService::saveContent()](https://docs.craftcms.com/api/v2/services/ContentService.html#saveContent-detail)
+Raised by
+
+:   [ContentService::saveContent()](https://docs.craftcms.com/api/v2/services/ContentService.html#saveContent-detail)
 
 Raised when any element’s content is saved.
 
@@ -146,7 +170,9 @@ Raised when any element’s content is saved.
 
 ### elements.onBeforeBuildElementsQuery
 
-**Raised by**: [ElementsService::buildElementsQuery()](https://docs.craftcms.com/api/v2/services/ElementsService.html#buildElementsQuery-detail)
+Raised by
+
+:   [ElementsService::buildElementsQuery()](https://docs.craftcms.com/api/v2/services/ElementsService.html#buildElementsQuery-detail)
 
 Raised before Craft builds out an elements query, enabling plugins to modify the query or prevent it from actually happening.
 
@@ -162,7 +188,9 @@ Event handlers can prevent the element query from being executed by setting [`$e
 
 ### elements.onBuildElementsQuery
 
-**Raised by**: [ElementsService::buildElementsQuery()](https://docs.craftcms.com/api/v2/services/ElementsService.html#buildElementsQuery-detail)
+Raised by
+
+:   [ElementsService::buildElementsQuery()](https://docs.craftcms.com/api/v2/services/ElementsService.html#buildElementsQuery-detail)
 
 Raised after Craft has built out an elements query, enabling plugins to modify the query.
 
@@ -174,7 +202,9 @@ Raised after Craft has built out an elements query, enabling plugins to modify t
 
 ### elements.onBeforeDeleteElements
 
-**Raised by**: [ElementsService::deleteElementById()](https://docs.craftcms.com/api/v2/services/ElementsService.html#deleteElementById-detail)
+Raised by
+
+:   [ElementsService::deleteElementById()](https://docs.craftcms.com/api/v2/services/ElementsService.html#deleteElementById-detail)
 
 Raised right before any elements are about to be deleted.
 
@@ -184,7 +214,9 @@ Raised right before any elements are about to be deleted.
 
 ### elements.onMergeElements
 
-**Raised by**: [ElementsService::mergeElementsByIds()](https://docs.craftcms.com/api/v2/services/ElementsService.html#mergeElementsByIds-detail)
+Raised by
+
+:   [ElementsService::mergeElementsByIds()](https://docs.craftcms.com/api/v2/services/ElementsService.html#mergeElementsByIds-detail)
 
 Raised when any element merged with another element.
 
@@ -195,7 +227,9 @@ Raised when any element merged with another element.
 
 ### structures.onBeforeMoveElement
 
-**Raised by**: [StructuresService::prepend()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prepend-detail), [StructuresService::append()](https://docs.craftcms.com/api/v2/services/StructuresService.html#append-detail), [StructuresService::prependToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prependToRoot-detail), [StructuresService::appendToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#appendToRoot-detail), [StructuresService::moveBefore()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveBefore-detail), [StructuresService::moveAfter()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveAfter-detail)
+Raised by
+
+:   [StructuresService::prepend()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prepend-detail), [StructuresService::append()](https://docs.craftcms.com/api/v2/services/StructuresService.html#append-detail), [StructuresService::prependToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prependToRoot-detail), [StructuresService::appendToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#appendToRoot-detail), [StructuresService::moveBefore()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveBefore-detail), [StructuresService::moveAfter()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveAfter-detail)
 
 Raised right before an element is moved within a structure.
 
@@ -210,7 +244,9 @@ Event handlers can prevent the element from getting moved by setting [`$event->p
 
 ### structures.onMoveElement
 
-**Raised by**: [StructuresService::prepend()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prepend-detail), [StructuresService::append()](https://docs.craftcms.com/api/v2/services/StructuresService.html#append-detail), [StructuresService::prependToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prependToRoot-detail), [StructuresService::appendToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#appendToRoot-detail), [StructuresService::moveBefore()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveBefore-detail), [StructuresService::moveAfter()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveAfter-detail)
+Raised by
+
+:   [StructuresService::prepend()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prepend-detail), [StructuresService::append()](https://docs.craftcms.com/api/v2/services/StructuresService.html#append-detail), [StructuresService::prependToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prependToRoot-detail), [StructuresService::appendToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#appendToRoot-detail), [StructuresService::moveBefore()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveBefore-detail), [StructuresService::moveAfter()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveAfter-detail)
 
 Raised when an element is moved within a structure.
 
@@ -221,7 +257,9 @@ Raised when an element is moved within a structure.
 
 ### elements.onBeforePerformAction
 
-**Raised by**: [ElementIndexController::actionPerformAction()](https://docs.craftcms.com/api/v2/controllers/ElementIndexController.html#actionPerformAction-detail)
+Raised by
+
+:   [ElementIndexController::actionPerformAction()](https://docs.craftcms.com/api/v2/controllers/ElementIndexController.html#actionPerformAction-detail)
 
 Raised before a batch element action gets triggered.
 
@@ -236,7 +274,9 @@ Event handlers can prevent the element action from being triggered by setting [`
 
 ### elements.onPerformAction
 
-**Raised by**: [ElementIndexController::actionPerformAction()](https://docs.craftcms.com/api/v2/controllers/ElementIndexController.html#actionPerformAction-detail)
+Raised by
+
+:   [ElementIndexController::actionPerformAction()](https://docs.craftcms.com/api/v2/controllers/ElementIndexController.html#actionPerformAction-detail)
 
 Raised after a batch element action has been performed.
 
@@ -247,7 +287,9 @@ Raised after a batch element action has been performed.
 
 ### elements.onPopulateElement
 
-**Raised by**: [ElementsService::findElements()](https://docs.craftcms.com/api/v2/services/ElementsService.html#findElements-detail)
+Raised by
+
+:   [ElementsService::findElements()](https://docs.craftcms.com/api/v2/services/ElementsService.html#findElements-detail)
 
 Raised when any element model is populated from its database result.
 
@@ -258,7 +300,9 @@ Raised when any element model is populated from its database result.
 
 ### elements.onPopulateElements
 
-**Raised by**: [ElementsService::populateElements()](https://docs.craftcms.com/api/v2/services/ElementsService.html#populateElements-detail)
+Raised by
+
+:   [ElementsService::populateElements()](https://docs.craftcms.com/api/v2/services/ElementsService.html#populateElements-detail)
 
 Raised when all of the element models have been populated from an element query.
 
@@ -269,7 +313,9 @@ Raised when all of the element models have been populated from an element query.
 
 ### elements.onBeforeSaveElement
 
-**Raised by**: [ElementsService::saveElement()](https://docs.craftcms.com/api/v2/services/ElementsService.html#saveElement-detail)
+Raised by
+
+:   [ElementsService::saveElement()](https://docs.craftcms.com/api/v2/services/ElementsService.html#saveElement-detail)
 
 Raised right before an element is saved.
 
@@ -284,7 +330,9 @@ Event handlers can prevent the element from getting saved by setting [`$event->p
 
 ### elements.onSaveElement
 
-**Raised by**: [ElementsService::saveElement()](https://docs.craftcms.com/api/v2/services/ElementsService.html#saveElement-detail)
+Raised by
+
+:   [ElementsService::saveElement()](https://docs.craftcms.com/api/v2/services/ElementsService.html#saveElement-detail)
 
 Raised when an element is saved.
 
@@ -295,7 +343,9 @@ Raised when an element is saved.
 
 ### fields.onSaveFieldLayout
 
-**Raised by**: [FieldsService::saveLayout()](https://docs.craftcms.com/api/v2/services/FieldsService.html#saveLayout-detail)
+Raised by
+
+:   [FieldsService::saveLayout()](https://docs.craftcms.com/api/v2/services/FieldsService.html#saveLayout-detail)
 
 Raised when a field layout is saved.
 
@@ -307,7 +357,9 @@ Raised when a field layout is saved.
 
 ### entries.onBeforeSaveEntry
 
-**Raised by**: [EntriesService::saveEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail)
+Raised by
+
+:   [EntriesService::saveEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail)
 
 Raised right before an entry is saved.
 
@@ -322,7 +374,9 @@ Event handlers can prevent the entry from getting saved by setting [`$event->per
 
 ### entries.onSaveEntry
 
-**Raised by**: [EntriesService::saveEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail)
+Raised by
+
+:   [EntriesService::saveEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail)
 
 Raised when an entry is saved.
 
@@ -333,7 +387,9 @@ Raised when an entry is saved.
 
 ### entries.onBeforeDeleteEntry
 
-**Raised by**: [EntriesService::deleteEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#deleteEntry-detail)
+Raised by
+
+:   [EntriesService::deleteEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#deleteEntry-detail)
 
 Raised right before an entry is deleted.
 
@@ -347,7 +403,9 @@ Event handlers can prevent the entry from being deleted by setting [`$event->per
 
 ### entries.onDeleteEntry
 
-**Raised by**: [EntriesService::deleteEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#deleteEntry-detail)
+Raised by
+
+:   [EntriesService::deleteEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#deleteEntry-detail)
 
 Raised when an entry is deleted.
 
@@ -357,7 +415,9 @@ Raised when an entry is deleted.
 
 ### entryRevisions.onSaveDraft
 
-**Raised by**: [EntryRevisionsService::saveDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#saveDraft-detail)
+Raised by
+
+:   [EntryRevisionsService::saveDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#saveDraft-detail)
 
 Raised right before a draft is saved.
 
@@ -368,7 +428,9 @@ Raised right before a draft is saved.
 
 ### entryRevisions.onPublishDraft
 
-**Raised by**: [EntryRevisionsService::publishDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#publishDraft-detail)
+Raised by
+
+:   [EntryRevisionsService::publishDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#publishDraft-detail)
 
 Raised when an draft is published.
 
@@ -378,7 +440,9 @@ Raised when an draft is published.
 
 ### entryRevisions.onBeforeDeleteDraft
 
-**Raised by**: [EntryRevisionsService::deleteDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#deleteDraft-detail)
+Raised by
+
+:   [EntryRevisionsService::deleteDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#deleteDraft-detail)
 
 Raised right before a draft is deleted.
 
@@ -392,7 +456,9 @@ Event handlers can prevent the draft from getting deleted by setting [`$event->p
 
 ### entryRevisions.onDeleteDraft
 
-**Raised by**: [EntryRevisionsService::deleteDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#deleteDraft-detail)
+Raised by
+
+:   [EntryRevisionsService::deleteDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#deleteDraft-detail)
 
 Raised right after a draft is deleted.
 
@@ -402,7 +468,9 @@ Raised right after a draft is deleted.
 
 ### sections.onBeforeDeleteSection
 
-**Raised by**: [SectionsService::deleteSectionById()](https://docs.craftcms.com/api/v2/services/SectionsService.html#deleteSectionById-detail)
+Raised by
+
+:   [SectionsService::deleteSectionById()](https://docs.craftcms.com/api/v2/services/SectionsService.html#deleteSectionById-detail)
 
 Raised right before a section is deleted.
 
@@ -416,7 +484,9 @@ Event handlers can prevent the section from being deleted by setting [`$event->p
 
 ### sections.onDeleteSection
 
-**Raised by**: [SectionsService::deleteSectionById()](https://docs.craftcms.com/api/v2/services/SectionsService.html#deleteSectionById-detail)
+Raised by
+
+:   [SectionsService::deleteSectionById()](https://docs.craftcms.com/api/v2/services/SectionsService.html#deleteSectionById-detail)
 
 Raised after a section is deleted.
 
@@ -426,7 +496,9 @@ Raised after a section is deleted.
 
 ### sections.onBeforeSaveEntryType
 
-**Raised by**: [SectionsService::saveEntryType()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveEntryType-detail)
+Raised by
+
+:   [SectionsService::saveEntryType()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveEntryType-detail)
 
 Raised right before an entry type is saved.
 
@@ -441,7 +513,9 @@ Event handlers can prevent the entry type from getting saved by setting [`$event
 
 ### sections.onSaveEntryType
 
-**Raised by**: [SectionsService::saveEntryType()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveEntryType-detail)
+Raised by
+
+:   [SectionsService::saveEntryType()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveEntryType-detail)
 
 Raised when an entry type is saved.
 
@@ -452,7 +526,9 @@ Raised when an entry type is saved.
 
 ### sections.onBeforeSaveSection
 
-**Raised by**: [SectionsService::saveSection()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveSection-detail)
+Raised by
+
+:   [SectionsService::saveSection()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveSection-detail)
 
 Raised right before a section is saved.
 
@@ -467,7 +543,9 @@ Event handlers can prevent the section from getting saved by setting [`$event->p
 
 ### sections.onSaveSection
 
-**Raised by**: [SectionsService::saveSection()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveSection-detail)
+Raised by
+
+:   [SectionsService::saveSection()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveSection-detail)
 
 Raised when a section is saved.
 
@@ -480,7 +558,9 @@ Raised when a section is saved.
 
 ### categories.onBeforeSaveCategory
 
-**Raised by**: [CategoriesService::saveCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#saveCategory-detail)
+Raised by
+
+:   [CategoriesService::saveCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#saveCategory-detail)
 
 Raised before any category is saved.
 
@@ -495,7 +575,9 @@ Event handlers can prevent the category from getting saved by setting [`$event->
 
 ### categories.onSaveCategory
 
-**Raised by**: [CategoriesService::saveCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#saveCategory-detail)
+Raised by
+
+:   [CategoriesService::saveCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#saveCategory-detail)
 
 Raised when any category is saved.
 
@@ -506,7 +588,9 @@ Raised when any category is saved.
 
 ### categories.onBeforeDeleteCategory
 
-**Raised by**: [CategoriesService::deleteCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteCategory-detail)
+Raised by
+
+:   [CategoriesService::deleteCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteCategory-detail)
 
 Raised before any category is deleted.
 
@@ -516,7 +600,9 @@ Raised before any category is deleted.
 
 ### categories.onDeleteCategory
 
-**Raised by**: [CategoriesService::deleteCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteCategory-detail)
+Raised by
+
+:   [CategoriesService::deleteCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteCategory-detail)
 
 Raised when any category is deleted.
 
@@ -526,7 +612,9 @@ Raised when any category is deleted.
 
 ### categories.onBeforeDeleteGroup
 
-**Raised by**: [CategoriesService::deleteGroupById()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteGroupById-detail)
+Raised by
+
+:   [CategoriesService::deleteGroupById()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteGroupById-detail)
 
 Raised before a category group is deleted.
 
@@ -540,7 +628,9 @@ Event handlers can prevent the category group from being deleted by setting [`$e
 
 ### categories.onDeleteGroup
 
-**Raised by**: [CategoriesService::deleteGroupById()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteGroupById-detail)
+Raised by
+
+:   [CategoriesService::deleteGroupById()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteGroupById-detail)
 
 Raised after a category group is deleted.
 
@@ -552,7 +642,9 @@ Raised after a category group is deleted.
 
 ### tags.onBeforeSaveTag
 
-**Raised by**: [TagsService::saveTag()](https://docs.craftcms.com/api/v2/services/TagsService.html#saveTag-detail)
+Raised by
+
+:   [TagsService::saveTag()](https://docs.craftcms.com/api/v2/services/TagsService.html#saveTag-detail)
 
 Raised when a tag is able to be saved.
 
@@ -567,7 +659,9 @@ Event handlers can prevent the tag from getting saved by setting [`$event->perfo
 
 ### tags.onSaveTag
 
-**Raised by**: [TagsService::saveTag()](https://docs.craftcms.com/api/v2/services/TagsService.html#saveTag-detail)
+Raised by
+
+:   [TagsService::saveTag()](https://docs.craftcms.com/api/v2/services/TagsService.html#saveTag-detail)
 
 Raised when a tag is saved.
 
@@ -580,7 +674,9 @@ Raised when a tag is saved.
 
 ### assets.onBeforeDeleteAsset
 
-**Raised by**: [AssetsService::deleteFiles()](https://docs.craftcms.com/api/v2/services/AssetsService.html#deleteFiles-detail)
+Raised by
+
+:   [AssetsService::deleteFiles()](https://docs.craftcms.com/api/v2/services/AssetsService.html#deleteFiles-detail)
 
 Raised right before an asset is deleted.
 
@@ -590,7 +686,9 @@ Raised right before an asset is deleted.
 
 ### assets.onDeleteAsset
 
-**Raised by**: [AssetsService::deleteFiles()](https://docs.craftcms.com/api/v2/services/AssetsService.html#deleteFiles-detail)
+Raised by
+
+:   [AssetsService::deleteFiles()](https://docs.craftcms.com/api/v2/services/AssetsService.html#deleteFiles-detail)
 
 Raised when an asset is deleted.
 
@@ -600,7 +698,9 @@ Raised when an asset is deleted.
 
 ### assets.onBeforeReplaceFile
 
-**Raised by**: [AssetsController::actionReplaceFile()](https://docs.craftcms.com/api/v2/controllers/AssetsController.html#actionReplaceFile-detail)
+Raised by
+
+:   [AssetsController::actionReplaceFile()](https://docs.craftcms.com/api/v2/controllers/AssetsController.html#actionReplaceFile-detail)
 
 Raised right before an asset’s file is replaced.
 
@@ -614,7 +714,9 @@ Event handlers can prevent the file from getting replaced by setting [`$event->p
 
 ### assets.onReplaceFile
 
-**Raised by**: [AssetsController::actionReplaceFile()](https://docs.craftcms.com/api/v2/controllers/AssetsController.html#actionReplaceFile-detail)
+Raised by
+
+:   [AssetsController::actionReplaceFile()](https://docs.craftcms.com/api/v2/controllers/AssetsController.html#actionReplaceFile-detail)
 
 Raised when any asset’s file is replaced.
 
@@ -624,7 +726,9 @@ Raised when any asset’s file is replaced.
 
 ### assets.onBeforeSaveAsset
 
-**Raised by**: [AssetsService::storeFile()](https://docs.craftcms.com/api/v2/services/AssetsService.html#storeFile-detail)
+Raised by
+
+:   [AssetsService::storeFile()](https://docs.craftcms.com/api/v2/services/AssetsService.html#storeFile-detail)
 
 Raised right before an asset is saved.
 
@@ -639,7 +743,9 @@ Event handlers can prevent the asset from getting saved by setting [`$event->per
 
 ### assets.onSaveAsset
 
-**Raised by**: [AssetsService::storeFile()](https://docs.craftcms.com/api/v2/services/AssetsService.html#storeFile-detail)
+Raised by
+
+:   [AssetsService::storeFile()](https://docs.craftcms.com/api/v2/services/AssetsService.html#storeFile-detail)
 
 Raised when any asset is saved.
 
@@ -650,7 +756,9 @@ Raised when any asset is saved.
 
 ### assets.onBeforeUploadAsset
 
-**Raised by**: [BaseAssetSourceType::insertFileByPath()](https://docs.craftcms.com/api/v2/assetsourcetypes/BaseAssetSourceType.html#insertFileByPath-detail)
+Raised by
+
+:   [BaseAssetSourceType::insertFileByPath()](https://docs.craftcms.com/api/v2/assetsourcetypes/BaseAssetSourceType.html#insertFileByPath-detail)
 
 Raised right before an asset is uploaded to its source.
 
@@ -668,7 +776,9 @@ Event handlers can prevent the asset from getting uploaded by setting [`$event->
 
 ### globals.onBeforeSaveGlobalContent
 
-**Raised by**: [GlobalsService::saveContent()](https://docs.craftcms.com/api/v2/services/GlobalsService.html#saveContent-detail)
+Raised by
+
+:   [GlobalsService::saveContent()](https://docs.craftcms.com/api/v2/services/GlobalsService.html#saveContent-detail)
 
 Raised right before a Global Set’s content is saved.
 
@@ -682,7 +792,9 @@ Event handlers can prevent the global set from getting saved by setting [`$event
 
 ### globals.onSaveGlobalContent
 
-**Raised by**: [GlobalsService::saveContent()](https://docs.craftcms.com/api/v2/services/GlobalsService.html#saveContent-detail)
+Raised by
+
+:   [GlobalsService::saveContent()](https://docs.craftcms.com/api/v2/services/GlobalsService.html#saveContent-detail)
 
 Raised when a Global Set’s content is saved.
 
@@ -694,7 +806,9 @@ Raised when a Global Set’s content is saved.
 
 ### userSession.onBeforeLogin
 
-**Raised by**: [UserSessionService::login()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#login-detail)
+Raised by
+
+:   [UserSessionService::login()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#login-detail)
 
 Raised right before a user is logged in.
 
@@ -708,7 +822,9 @@ Event handlers can prevent the user from getting logged in by setting [`$event->
 
 ### userSession.onLogin
 
-**Raised by**: [UserSessionService::login()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#login-detail)
+Raised by
+
+:   [UserSessionService::login()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#login-detail)
 
 Raised when a user has logged in.
 
@@ -718,7 +834,9 @@ Raised when a user has logged in.
 
 ### userSession.onBeforeLogout
 
-**Raised by**: [UserSessionService::beforeLogout()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#beforeLogout-detail)
+Raised by
+
+:   [UserSessionService::beforeLogout()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#beforeLogout-detail)
 
 Raised right before a user is logged out.
 
@@ -732,13 +850,17 @@ Event handlers can prevent the user from getting logged out by setting [`$event-
 
 ### userSession.onLogout
 
-**Raised by**: [UserSessionService::afterLogout()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#afterLogout-detail)
+Raised by
+
+:   [UserSessionService::afterLogout()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#afterLogout-detail)
 
 Raised when a user is logged out.
 
 ### users.onBeforeActivateUser
 
-**Raised by**: [UsersService::activateUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#activateUser-detail)
+Raised by
+
+:   [UsersService::activateUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#activateUser-detail)
 
 Raised right before a user is activated.
 
@@ -752,7 +874,9 @@ Event handlers can prevent the user from getting activated by setting [`$event->
 
 ### users.onActivateUser
 
-**Raised by**: [UsersService::activateUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#activateUser-detail)
+Raised by
+
+:   [UsersService::activateUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#activateUser-detail)
 
 Raised when a user is activated.
 
@@ -762,7 +886,9 @@ Raised when a user is activated.
 
 ### userGroups.onBeforeAssignUserToGroups
 
-**Raised by**: [UserGroupsService::assignUserToGroups](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToGroups-detail)
+Raised by
+
+:   [UserGroupsService::assignUserToGroups](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToGroups-detail)
 
 Raised right before a user’s group assignments are updated. Note that this could be called even if the group assignments haven’t changed.
 
@@ -777,7 +903,9 @@ Event handlers can prevent the user’s new group assignments from getting saved
 
 ### userGroups.onAssignUserToGroups
 
-**Raised by**: [UserGroupsService::assignUserToGroups](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToGroups-detail)
+Raised by
+
+:   [UserGroupsService::assignUserToGroups](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToGroups-detail)
 
 Raised right after a user’s group assignments are updated.
 
@@ -788,7 +916,9 @@ Raised right after a user’s group assignments are updated.
 
 ### users.onBeforeDeleteUser
 
-**Raised by**: [UsersService::deleteUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#deleteUser-detail)
+Raised by
+
+:   [UsersService::deleteUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#deleteUser-detail)
 
 Raised right before a user is deleted.
 
@@ -803,7 +933,9 @@ Event handlers can prevent the user from getting deleted by setting [`$event->pe
 
 ### users.onDeleteUser
 
-**Raised by**: [UsersService::deleteUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#deleteUser-detail)
+Raised by
+
+:   [UsersService::deleteUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#deleteUser-detail)
 
 Raised when a user is deleted.
 
@@ -814,7 +946,9 @@ Raised when a user is deleted.
 
 ### users.onBeforeSaveUser
 
-**Raised by**: [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail)
+Raised by
+
+:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail)
 
 Raised right before a user is saved.
 
@@ -829,7 +963,9 @@ Event handlers can prevent the user from getting saved by setting [`$event->perf
 
 ### users.onSaveUser
 
-**Raised by**: [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail)
+Raised by
+
+:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail)
 
 Raised when a user is saved.
 
@@ -840,7 +976,9 @@ Raised when a user is saved.
 
 ### users.onBeforeSetPassword
 
-**Raised by**: [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail), [UsersService::changePassword()](https://docs.craftcms.com/api/v2/services/UsersService.html#changePassword-detail)
+Raised by
+
+:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail), [UsersService::changePassword()](https://docs.craftcms.com/api/v2/services/UsersService.html#changePassword-detail)
 
 Raised right before a user’s password is changed.
 
@@ -855,7 +993,9 @@ Event handlers can prevent the user’s password from getting changed by setting
 
 ### users.onSetPassword
 
-**Raised by**: [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail), [UsersService::changePassword()](https://docs.craftcms.com/api/v2/services/UsersService.html#changePassword-detail)
+Raised by
+
+:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail), [UsersService::changePassword()](https://docs.craftcms.com/api/v2/services/UsersService.html#changePassword-detail)
 
 Raised when a user’s password is changed.
 
@@ -865,7 +1005,9 @@ Raised when a user’s password is changed.
 
 ### users.onBeforeSuspendUser
 
-**Raised by**: [UsersService::suspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#suspendUser-detail)
+Raised by
+
+:   [UsersService::suspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#suspendUser-detail)
 
 Raised right before a user is suspended.
 
@@ -879,7 +1021,9 @@ Event handlers can prevent the user from getting suspended by setting [`$event->
 
 ### users.onSuspendUser
 
-**Raised by**: [UsersService::suspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#suspendUser-detail)
+Raised by
+
+:   [UsersService::suspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#suspendUser-detail)
 
 Raised when a user is suspended.
 
@@ -889,7 +1033,9 @@ Raised when a user is suspended.
 
 ### users.onLockUser
 
-**Raised by**: [UsersService::lockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#lockUser-detail)
+Raised by
+
+:   [UsersService::lockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#lockUser-detail)
 
 Raised when a user is locked.
 
@@ -899,7 +1045,9 @@ Raised when a user is locked.
 
 ### users.onBeforeUnlockUser
 
-**Raised by**: [UsersService::unlockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unlockUser-detail)
+Raised by
+
+:   [UsersService::unlockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unlockUser-detail)
 
 Raised right before a user is unlocked.
 
@@ -913,7 +1061,9 @@ Event handlers can prevent the user from getting unlocked by setting [`$event->p
 
 ### users.onUnlockUser
 
-**Raised by**: [UsersService::unlockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unlockUser-detail)
+Raised by
+
+:   [UsersService::unlockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unlockUser-detail)
 
 Raised when a user is unlocked.
 
@@ -923,7 +1073,9 @@ Raised when a user is unlocked.
 
 ### users.onBeforeUnsuspendUser
 
-**Raised by**: [UsersService::unsuspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unsuspendUser-detail)
+Raised by
+
+:   [UsersService::unsuspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unsuspendUser-detail)
 
 Raised right before a user is unsuspended.
 
@@ -937,7 +1089,9 @@ Event handlers can prevent the user from getting unsuspended by setting [`$event
 
 ### users.onUnsuspendUser
 
-**Raised by**: [UsersService::unsuspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unsuspendUser-detail)
+Raised by
+
+:   [UsersService::unsuspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unsuspendUser-detail)
 
 Raised when a user is unsuspended.
 
@@ -947,7 +1101,9 @@ Raised when a user is unsuspended.
 
 ### users.onBeforeVerifyUser
 
-**Raised by**: [UsersController::actionSetPassword()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionSetPassword-detail), [UsersController::actionVerifyEmail()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionVerifyEmail-detail)
+Raised by
+
+:   [UsersController::actionSetPassword()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionSetPassword-detail), [UsersController::actionVerifyEmail()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionVerifyEmail-detail)
 
 Raised right before a user’s email is verified.
 
@@ -957,7 +1113,9 @@ Raised right before a user’s email is verified.
 
 ### users.onVerifyUser
 
-**Raised by**: [UsersController::actionSetPassword()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionSetPassword-detail), [UsersController::actionVerifyEmail()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionVerifyEmail-detail)
+Raised by
+
+:   [UsersController::actionSetPassword()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionSetPassword-detail), [UsersController::actionVerifyEmail()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionVerifyEmail-detail)
 
 Raised when a user’s email is verified.
 
@@ -967,7 +1125,9 @@ Raised when a user’s email is verified.
 
 ### userGroups.onBeforeAssignUserToDefaultGroup
 
-**Raised by**: [UserGroupsService::assignUserToDefaultGroup()](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToDefaultGroup-detail)
+Raised by
+
+:   [UserGroupsService::assignUserToDefaultGroup()](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToDefaultGroup-detail)
 
 Raised towards the end of a public user registration request before a user is assigned to a default user group.
 
@@ -978,7 +1138,9 @@ Raised towards the end of a public user registration request before a user is as
 
 ### userGroups.onAssignUserToDefaultGroup
 
-**Raised by**: [UserGroupsService::assignUserToDefaultGroup()](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToDefaultGroup-detail)
+Raised by
+
+:   [UserGroupsService::assignUserToDefaultGroup()](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToDefaultGroup-detail)
 
 Raised towards the end of a public user registration request after a user is assigned to a default user group.
 
