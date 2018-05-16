@@ -5,6 +5,9 @@
 ### Changed
 - `craft\helpers\FileHelper::isGif()` an `craft\helpers\FileHelper::isSvg()` now rely on extension to determine the file type.
 
+### Fixed
+- Fixed a bug where sorting of recently added plugins was wrong in the Plugin Store. ([pixelandtonic/craftnet#79](https://github.com/pixelandtonic/craftnet/issues/79)) ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))
+
 ## 3.0.8 - 2018-05-15
 
 ### Added
