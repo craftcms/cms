@@ -5,6 +5,7 @@
                 <div class="plugin-details-header">
                     <div class="plugin-icon-large">
                         <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" height="60" />
+                        <img v-else :src="defaultPluginSvg" height="60" />
                     </div>
 
                     <div class="description">
@@ -142,6 +143,7 @@
                 plugin: state => state.pluginStore.plugin,
                 plugins: state => state.pluginStore.plugins,
                 cart: state => state.cart.cart,
+                defaultPluginSvg: state => state.craft.defaultPluginSvg,
             }),
 
             ...mapGetters({
