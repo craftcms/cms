@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `craft\helpers\FileHelper::isGif()` an `craft\helpers\FileHelper::isSvg()` now rely on extension to determine the file type.
+
 ## 3.0.8 - 2018-05-15
 
 ### Added

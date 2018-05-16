@@ -280,7 +280,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isSvg(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        $mimeType = file_exists($file) ? self::getMimeType($file, $magicFile, $checkExtension) : self::getMimeTypeByExtension($file, $magicFile);
+        $mimeType = self::getMimeTypeByExtension($file, $magicFile);
         return strpos($mimeType, 'image/svg') === 0;
     }
 
@@ -298,7 +298,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        $mimeType = file_exists($file) ? self::getMimeType($file, $magicFile, $checkExtension) : self::getMimeTypeByExtension($file, $magicFile);
+        $mimeType = self::getMimeTypeByExtension($file, $magicFile);
         return $mimeType === 'image/gif';
     }
 
