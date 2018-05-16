@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where sorting of recently added plugins was wrong in the Plugin Store. ([pixelandtonic/craftnet#79](https://github.com/pixelandtonic/craftnet/issues/79)) ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))
+- Fixed a SQL error that occurred when programmatically saving a field layout, if the field’s `required` property wasn’t set.
 
 ## 3.0.8 - 2018-05-15
 
