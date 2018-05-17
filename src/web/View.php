@@ -503,7 +503,7 @@ class View extends \yii\web\View
         // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         $tokens = [];
         while (true) {
-            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1:[^\{]+?\}/', function(array $matches) use (&$tokens) {
+            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
                 $token = 'tok_'.StringHelper::randomString(10);
                 $tokens[$token] = $matches[0];
                 return $token;
