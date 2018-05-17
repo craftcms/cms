@@ -49,7 +49,7 @@
     "zendframework/zend-feed": "~2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "~2.3.3",
+    "codeception/codeception": "^2.4",
     "codeception/mockery-module": "~0.2.2",
     "codeception/specify": "~0.4.6",
     "codeception/verify": "~0.3.3"
