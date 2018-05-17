@@ -1200,10 +1200,7 @@
   .redactor-styles video,
   .redactor-styles embed,
   .redactor-styles object {
-    height: auto; }
-  .redactor-styles embed,
-  .redactor-styles object {
-    height: 100%; }
+    height: auto !important; }
   .redactor-styles img {
     vertical-align: middle;
     -ms-interpolation-mode: bicubic; }
