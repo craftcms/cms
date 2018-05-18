@@ -181,7 +181,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($groups as $group) {
                     $sources[] = [
-                        'key' => 'group:'.$group->id,
+                        'key' => 'group:'.$group->uid,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true
