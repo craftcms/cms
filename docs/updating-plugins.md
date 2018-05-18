@@ -540,7 +540,7 @@ public function getElementRoute(BaseElementModel $element)
 // New:
 use craft\base\Element;
 use craft\elements\Entry;
-use craft\elements\SetElementRouteEvent;
+use craft\events\SetElementRouteEvent;
 use yii\base\Event;
 
 Event::on(Entry::class, Element::EVENT_SET_ROUTE, function(SetElementRouteEvent $event) {
