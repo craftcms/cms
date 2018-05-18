@@ -4,6 +4,9 @@
 
 ### Added
 - Added default plugin icon to plugins without icon in the Plugin Store.
+- Added `craft\services\Assets::findFolderByUid().`
+- Added `craft\services\Sites::getSiteByUid().`
+- Added `craft\services\Tags::getTagGroupByUid().`
 
 ### Changed
 - Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
