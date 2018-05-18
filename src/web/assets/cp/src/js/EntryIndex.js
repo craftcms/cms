@@ -22,7 +22,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.id)) {
+                if (this.getSourceByKey('section:' + section.uid)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -213,7 +213,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + sectionId;
+                    var sectionSourceKey = 'section:' + section.uid;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);

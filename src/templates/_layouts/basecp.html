@@ -107,6 +107,7 @@
                                 name: "{{ section.name|t('site')|e('js') }}",
                                 handle: "{{ section.handle|e('js') }}",
                                 type: "{{ section.type }}",
+                                uid: "{{ section.uid }}",
                                 entryTypes: [
                                     {% for entryType in section.getEntryTypes() %}
                                         {
@@ -124,7 +125,7 @@
             editableCategoryGroups: [
                 {% if isInstalled %}
                     {% for group in craft.app.categories.getEditableGroups() %}
-                        {id: {{ group.id }}, name: "{{ group.name|t('site')|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+                        {id: {{ group.id }}, name: "{{ group.name|t('site')|e('js') }}", handle: "{{ group.handle|e('js') }}", uid: "{{ group.uid }}"}{% if not loop.last %},{% endif %}
                     {% endfor %}
                 {% endif %}
             ]

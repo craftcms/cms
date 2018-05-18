@@ -435,13 +435,13 @@ class Assets extends BaseRelationField
         Craft::$app->getSession()->authorize('saveAssetInVolume:'.$folderId);
 
         if ($this->useSingleFolder) {
-            $folderPath = 'folder:'.$folderId;
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            $folderPath = 'folder:'.$folder->uid;
 
             // Construct the path
             while ($folder->parentId && $folder->volumeId !== null) {
                 $parent = $folder->getParent();
-                $folderPath = 'folder:'.$parent->id.'/'.$folderPath;
+                $folderPath = 'folder:'.$parent->uid.'/'.$folderPath;
                 $folder = $parent;
             }
 
@@ -717,11 +717,11 @@ class Assets extends BaseRelationField
     {
         $parts = explode(':', $sourceKey, 2);
 
-        if (count($parts) !== 2 || !is_numeric($parts[1])) {
+        if (count($parts) !== 2) {
             return null;
         }
 
-        $folder = Craft::$app->getAssets()->getFolderById((int)$parts[1]);
+        $folder = Craft::$app->getAssets()->getFolderByUid($parts[1]);
 
         return $folder->volumeId ?? null;
     }

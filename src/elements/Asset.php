@@ -202,10 +202,10 @@ class Asset extends Element
     {
         $actions = [];
 
-        if (preg_match('/^folder:(\d+)/', $source, $matches)) {
+        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
             $folderId = $matches[1];
 
-            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
@@ -349,12 +349,13 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
     {
         $source = [
-            'key' => 'folder:'.$folder->id,
+            'key' => 'folder:'.$folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->volumeId),
+                'folder-id' => $folder->id
             ]
         ];
 

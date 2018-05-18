@@ -7,6 +7,7 @@
 
 ### Changed
 - Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
+- Start using UIDs instead of IDs in field settings.
 
 ### Fixed
 - Fixed a bug where the Plugin Store was listing featured plugins (e.g. “Recently Added”) in alphabetical order rather than the API-defined order. ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))

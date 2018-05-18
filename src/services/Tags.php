@@ -62,6 +62,11 @@ class Tags extends Component
     private $_tagGroupsById;
 
     /**
+     * @var
+     */
+    private $_tagGroupsByUid = [];
+
+    /**
      * @var bool
      */
     private $_fetchedAllTagGroups = false;
@@ -107,12 +112,15 @@ class Tags extends Component
                 ->all();
 
             foreach ($this->_tagGroupsById as $key => $value) {
-                $this->_tagGroupsById[$key] = new TagGroup($value->toArray([
+                $tagGroup = new TagGroup($value->toArray([
                     'id',
                     'name',
                     'handle',
                     'fieldLayoutId',
+                    'uid'
                 ]));
+                $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
+                $this->_tagGroupsByUid[$tagGroup->uid] = $tagGroup;
             }
 
             $this->_fetchedAllTagGroups = true;
@@ -153,6 +161,30 @@ class Tags extends Component
 
         return $this->_tagGroupsById[$groupId] = $result ? new TagGroup($result) : null;
     }
+
+    /**
+     * Returns a group by its UID.
+     *
+     * @param string $groupUid
+     * @return TagGroup|null
+     */
+    public function getTagGroupByUid(string $groupUid)
+    {
+        if ($this->_tagGroupsByUid !== null && array_key_exists($groupUid, $this->_tagGroupsByUid)) {
+            return $this->_tagGroupsByUid[$groupUid];
+        }
+
+        if ($this->_fetchedAllTagGroups) {
+            return null;
+        }
+
+        $result = $this->_createTagGroupsQuery()
+            ->where(['uid' => $groupUid])
+            ->one();
+
+        return $this->_tagGroupsByUid[$groupUid] = $result ? new TagGroup($result) : null;
+    }
+
 
     /**
      * Gets a group by its handle.
@@ -344,6 +376,7 @@ class Tags extends Component
                 'name',
                 'handle',
                 'fieldLayoutId',
+                'uid'
             ])
             ->from(['{{%taggroups}}']);
     }

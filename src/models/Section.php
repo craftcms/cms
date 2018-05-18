@@ -75,6 +75,11 @@ class Section extends Model
     public $propagateEntries = true;
 
     /**
+     * @var string|null Section's UID
+     */
+    public $uid;
+
+    /**
      * @var Section_SiteSettings[]|null
      */
     private $_siteSettings;
