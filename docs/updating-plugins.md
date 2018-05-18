@@ -902,7 +902,7 @@ class MyJob extends BaseJob
         $totalSteps = 5;
         for ($step = 0; $step < $steps; $step++)
         {
-            $this->>setProgress($queue, $step / $totalSteps); 
+            $this->setProgress($queue, $step / $totalSteps); 
             // do something...
         } 
     }
