@@ -1,4 +1,4 @@
-/*!   - 2018-05-14 */
+/*!   - 2018-05-18 */
 (function($){
 
 /** global: Craft */
@@ -8120,7 +8120,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (folderId && this.$source.attr('data-upload')) {
                 this.uploader.setParams({
-                    folderId: folderId
+                    folderId: this.$source.attr('data-folder-id')
                 });
                 this.$uploadButton.removeClass('disabled');
             } else {
@@ -8131,7 +8131,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _getFolderIdFromSourceKey: function(sourceKey) {
-            var m = sourceKey.match(/\bfolder:(\d+)$/);
+            var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
 
             return m ? m[1] : null;
         },
@@ -9718,7 +9718,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.editableCategoryGroups.length; i++) {
                 var group = Craft.editableCategoryGroups[i];
 
-                if (this.getSourceByKey('group:' + group.id)) {
+                if (this.getSourceByKey('group:' + group.uid)) {
                     this.editableGroups.push(group);
                 }
             }
@@ -9896,7 +9896,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right group is selected
-                    var groupSourceKey = 'group:' + groupId;
+                    var groupSourceKey = 'group:' + group.uid;
 
                     if (this.sourceKey !== groupSourceKey) {
                         this.selectSourceByKey(groupSourceKey);
@@ -13555,7 +13555,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.id)) {
+                if (this.getSourceByKey('section:' + section.uid)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -13746,7 +13746,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + sectionId;
+                    var sectionSourceKey = 'section:' + section.uid;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);

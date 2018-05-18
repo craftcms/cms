@@ -1070,6 +1070,7 @@ class Sections extends Component
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.propagateEntries',
+                'sections.uid',
                 'structures.maxLevels',
             ])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
