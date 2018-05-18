@@ -191,7 +191,7 @@ class Entry extends Element
                 foreach ($sectionsByType[$type] as $section) {
                     /** @var Section $section */
                     $source = [
-                        'key' => 'section:'.$section->id,
+                        'key' => 'section:'.$section->uid,
                         'label' => Craft::t('site', $section->name),
                         'sites' => $section->getSiteIds(),
                         'data' => [

@@ -712,7 +712,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (folderId && this.$source.attr('data-upload')) {
                 this.uploader.setParams({
-                    folderId: folderId
+                    folderId: this.$source.attr('data-folder-id')
                 });
                 this.$uploadButton.removeClass('disabled');
             } else {
@@ -723,7 +723,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _getFolderIdFromSourceKey: function(sourceKey) {
-            var m = sourceKey.match(/\bfolder:(\d+)$/);
+            var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
 
             return m ? m[1] : null;
         },

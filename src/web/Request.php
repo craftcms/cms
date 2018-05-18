@@ -16,6 +16,7 @@ use craft\models\Site;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
+use yii\db\Exception as DbException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -846,32 +847,35 @@ class Request extends \yii\web\Request
      */
     protected function csrfTokenValidForCurrentUser(string $token): bool
     {
-        $currentUser = false;
-
-        if (Craft::$app->getIsInstalled() && Craft::$app->get('user', false)) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!Craft::$app->getIsInstalled()) {
+            return true;
         }
 
-        if ($currentUser) {
-            $splitToken = explode('|', $token, 2);
-
-            if (count($splitToken) !== 2) {
-                return false;
+        try {
+            if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
+                return true;
             }
-
-            list($nonce,) = $splitToken;
-
-            // Check that this token is for the current user
-            $passwordHash = $currentUser->password;
-            $userId = $currentUser->id;
-            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
-            $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
-
-            return Craft::$app->getSecurity()->compareString($expectedToken, $token);
+        } catch (DbException $e) {
+            // Craft is probably not installed or updating
+            Craft::$app->getUser()->switchIdentity(null);
+            return true;
         }
 
-        // If they're logged out, any token is fine
-        return true;
+        $splitToken = explode('|', $token, 2);
+
+        if (count($splitToken) !== 2) {
+            return false;
+        }
+
+        list($nonce,) = $splitToken;
+
+        // Check that this token is for the current user
+        $passwordHash = $currentUser->password;
+        $userId = $currentUser->id;
+        $hashable = implode('|', [$nonce, $userId, $passwordHash]);
+        $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
+
+        return Craft::$app->getSecurity()->compareString($expectedToken, $token);
     }
 
     // Private Methods
@@ -1018,18 +1022,16 @@ class Request extends \yii\web\Request
             if ($this->_isCpRequest) {
                 $loginPath = 'login';
                 $logoutPath = 'logout';
-                $setPasswordPath = 'setpassword';
                 $updatePath = 'update';
             } else {
                 $loginPath = trim($generalConfig->getLoginPath(), '/');
                 $logoutPath = trim($generalConfig->getLogoutPath(), '/');
-                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
                 $updatePath = null;
             }
 
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
             $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
-            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true);
+            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $updatePath], true);
 
             if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
@@ -1052,9 +1054,6 @@ class Request extends \yii\web\Request
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
-                            break;
-                        case $setPasswordPath:
-                            $this->_actionSegments = ['users', 'set-password'];
                             break;
                         case $updatePath:
                             $this->_actionSegments = ['updater', 'index'];

@@ -20,6 +20,19 @@ use yii\db\ColumnSchemaBuilder;
  */
 abstract class Migration extends \yii\db\Migration
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the migration is executed
+     */
+    const EVENT_AFTER_UP = 'afterUp';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the migration is reverted
+     */
+    const EVENT_AFTER_DOWN = 'afterDown';
+
     // Public Methods
     // =========================================================================
 
@@ -53,6 +66,11 @@ abstract class Migration extends \yii\db\Migration
             return false;
         }
 
+        // Fire an 'afterUp' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_UP)) {
+            $this->trigger(self::EVENT_AFTER_UP);
+        }
+
         return null;
     }
 
@@ -82,6 +100,11 @@ abstract class Migration extends \yii\db\Migration
                 throw $e;
             }
             return false;
+        }
+
+        // Fire an 'afterDown' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DOWN)) {
+            $this->trigger(self::EVENT_AFTER_DOWN);
         }
 
         return null;

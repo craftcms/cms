@@ -22,6 +22,7 @@ use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\AssetException;
 use craft\errors\AssetTransformException;
 use craft\errors\FileException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -30,6 +31,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
@@ -200,10 +202,10 @@ class Asset extends Element
     {
         $actions = [];
 
-        if (preg_match('/^folder:(\d+)/', $source, $matches)) {
+        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
             $folderId = $matches[1];
 
-            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
@@ -347,12 +349,13 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
     {
         $source = [
-            'key' => 'folder:'.$folder->id,
+            'key' => 'folder:'.$folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->volumeId),
+                'folder-id' => $folder->id
             ]
         ];
 
@@ -703,6 +706,10 @@ class Asset extends Element
             return null;
         }
 
+        if ($this->getMimeType() === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return AssetsHelper::generateUrl($volume, $this);
+        }
+
         // Normalize empty transform values
         $transform = $transform ?: null;
 
@@ -893,13 +900,27 @@ class Asset extends Element
     }
 
     /**
-     * Get a stream of the actual file.
+     * Returns a stream of the actual file.
      *
      * @return resource
+     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws AssetException if a stream could not be created
      */
     public function getStream()
     {
         return $this->getVolume()->getFileStream($this->getPath());
+    }
+
+    /**
+     * Returns the file’s contents.
+     *
+     * @return string
+     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws AssetException if a stream could not be created
+     */
+    public function getContents(): string
+    {
+        return stream_get_contents($this->getStream());
     }
 
     /**

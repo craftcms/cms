@@ -44,6 +44,21 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
         return $messages;
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function loadMessagesFromFile($messageFile)
+    {
+        $messages = parent::loadMessagesFromFile($messageFile);
+
+        if ($messages === null && !YII_DEBUG) {
+            // avoid logs about missing translation files
+            $messages = [];
+        }
+
+        return $messages;
+    }
+
     // Private Methods
     // =========================================================================
 

@@ -57,9 +57,10 @@
                                     {% endif %}
                                     {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
                                     <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
-                                        <div>
+                                        <div class="pane">
                                             <input class="text code{% if config.hasIssues %} error{% endif %}" size="29" maxlength="29" value="{{ config.licenseKey|replace('/.{4}/', '$0-')|trim('-') }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
                                         </div>
+                                        <a class="btn{% if config.hasIssues %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle)}}">{{ "Buy now"|t('app') }}</a>
                                         <div class="spinner hidden"></div>
                                     </div>
                                     {% if showLicenseKey and config.licenseStatusMessage %}

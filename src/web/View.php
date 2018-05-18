@@ -446,8 +446,7 @@ class View extends \yii\web\View
             $cacheKey = md5($template);
             if (!isset($this->_objectTemplates[$cacheKey])) {
                 // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-                $template = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
-                $template = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $template);
+                $template = $this->normalizeObjectTemplate($template);
                 $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
             }
 
@@ -491,6 +490,38 @@ class View extends \yii\web\View
         }
 
         return $output;
+    }
+
+    /**
+     * Normalizes an object template for [[renderObjectTemplate()]].
+     *
+     * @param string $template
+     * @return string
+     */
+    public function normalizeObjectTemplate(string $template): string
+    {
+        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
+        $tokens = [];
+        while (true) {
+            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
+                $token = 'tok_'.StringHelper::randomString(10);
+                $tokens[$token] = $matches[0];
+                return $token;
+            }, $template, -1, $count);
+            if ($count === 0) {
+                break;
+            }
+        }
+
+        // Swap out the remaining {xyz} tags with {{object.xyz}}
+        $template = preg_replace('/(?<!\{)\{(\s*\w[^\{]*?)\}/', '{{object.$1|raw}}', $template);
+
+        // Bring the objects back
+        foreach (array_reverse($tokens) as $token => $value) {
+            $template = str_replace($token, $value, $template);
+        }
+
+        return $template;
     }
 
     /**

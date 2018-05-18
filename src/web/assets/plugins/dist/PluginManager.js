@@ -67,7 +67,7 @@
                                             .append(
                                                 $('<div/>', {'class': 'flex license-key'})
                                                     .append(
-                                                        $('<div/>')
+                                                        $('<div />', {'class': 'pane'})
                                                             .append(
                                                                 $('<input/>', {
                                                                     'class': 'text code',
@@ -196,6 +196,7 @@
             $keyContainer: null,
             $keyInput: null,
             $spinner: null,
+            $buyBtn: null,
             handle: null,
             updateTimeout: null,
 
@@ -203,6 +204,7 @@
                 this.$row = $row;
                 this.$keyContainer = $row.find('.license-key')
                 this.$keyInput = this.$keyContainer.find('input.text').removeAttr('readonly');
+                this.$buyBtn = this.$keyContainer.find('.btn');
                 this.$spinner = $row.find('.spinner');
                 this.handle = this.$row.data('handle');
                 this.addListener(this.$keyInput, 'focus', 'onKeyFocus')
@@ -272,16 +274,22 @@
                 }
 
                 // add the error message
-                var $oldError = this.$row.find('p.error');
+                this.$row.find('p.error').remove();
                 if (showLicenseKey && info.licenseStatusMessage) {
-                    var $newError = $('<p/>', {'class': 'error', html: info.licenseStatusMessage});
-                    if ($oldError.length) {
-                        $oldError.replaceWith($newError);
+                    $('<p/>', {'class': 'error', html: info.licenseStatusMessage})
+                        .insertAfter(this.$row.find('.license-key'));
+                }
+
+                // show/hide the Buy button
+                if (showLicenseKey && !info.licenseKey) {
+                    this.$buyBtn.removeClass('hidden');
+                    if (info.hasIssues) {
+                        this.$buyBtn.addClass('submit');
                     } else {
-                        $newError.insertAfter(this.$row.find('.license-key'));
+                        this.$buyBtn.removeClass('submit');
                     }
                 } else {
-                    $oldError.remove();
+                    this.$buyBtn.addClass('hidden');
                 }
             }
         }

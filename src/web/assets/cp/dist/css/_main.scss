@@ -559,11 +559,11 @@ td.right {
 }
 
 .icon.delete:not(.disabled):hover:before {
-  color: $errorColor;
+  color: $red;
 }
 
 .icon.delete:not(.disabled):active:before {
-  color: #8c3b2e;
+  color: darken($red, 10%);
 }
 
 .hidden {
@@ -894,6 +894,10 @@ ul.icons li a:hover {
 
   &:active {
     outline: none;
+  }
+
+  div.checkbox {
+    margin-top: 4px;
   }
 }
 
@@ -1747,6 +1751,13 @@ $checkboxPadding: 20px;
       &.checkbox-cell {
         @include padding-right(7px);
         width: 12px !important;
+        position: relative;
+
+        input.checkbox + label,
+        div.checkbox {
+          position: absolute;
+          top: calc(50% - 6px);
+        }
 
         & + td,
         & + th {
@@ -2395,6 +2406,47 @@ ul.tree,
   z-index: 2;
 }
 
+// Plugin installers
+
+.missing-component {
+  padding: 7px 10px !important;
+  max-width: 400px;
+  background: $lightBgColor !important;
+
+  .error {
+    margin: 0;
+  }
+
+  .install-plugin {
+    margin: 7px 0 -7px;
+    border-top: 1px solid $hairlineColor;
+    position: relative;
+    @include padding(10px, 0, 10px, 40px);
+
+    .icon {
+      width: 32px;
+      height: 32px;
+      position: absolute;
+      top: calc(50% - 16px);
+      @include left(0);
+
+      img, svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    h3 {
+      flex: 1;
+      margin: 8px 0 !important;
+    }
+
+    .btn {
+      margin: 0;
+    }
+  }
+}
+
 /* ----------------------------------------
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
@@ -2409,7 +2461,6 @@ ul.tree,
   box-sizing: border-box;
 
   .pane {
-    box-shadow: none;
     background: $lightBgColor;
   }
 }
@@ -3389,7 +3440,7 @@ input.checkbox {
 
 input.checkbox + label,
 div.checkbox {
-  display: inline;
+  display: inline-block;
   clear: none;
   position: relative;
   @include padding-left(20px);
@@ -3417,7 +3468,6 @@ input.checkbox + label:before,
 div.checkbox:before {
   display: block;
   position: absolute;
-  top: 2px;
   @include left(0);
   width: 12px !important;
   height: 12px;
@@ -3426,6 +3476,10 @@ div.checkbox:before {
   border-radius: 1px;
   background: #fff;
   box-shadow: 0 0 0 1px $mediumHairlineColorAlpha;
+}
+
+input.checkbox + label:before {
+  top: 3px;
 }
 
 input.checkbox:disabled + label,

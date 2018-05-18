@@ -11,10 +11,11 @@
 	"Billing",
 	"Buy later",
 	"Buy now",
-	"Buy {price}",
+	"Buy now for {price}",
 	"Cart",
 	"Categories",
 	"Changelog",
+	"Checkout",
 	"Cloud Storage Integration",
 	"Community Support (Slack, Stack Exchange)",
 	"Compatibility",
@@ -51,7 +52,6 @@
 	"Popularity",
 	"Price",
 	"Pro Rate Discount",
-	"Process My Order",
 	"Reactivate",
 	"Renewal price",
 	"Screenshots",
@@ -119,10 +119,9 @@
 	</template>
 
 	<template v-else>
-		<div id="graphic" class="spinner big" :class="{ error: pluginStoreDataError }"></div>
-		<div id="status">{{ '{{ statusMessage }}' }}</div>
+		<status-message :error="pluginStoreDataError" :message="statusMessage" />
 	</template>
 
-	<global-modal :show.sync="showModal" :plugin-id="pluginId"></global-modal>
+	<modal :show.sync="showModal" :plugin-id="pluginId" />
 
 {% endset %}

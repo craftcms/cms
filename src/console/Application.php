@@ -53,12 +53,10 @@ class Application extends \yii\console\Application
      */
     public function init()
     {
+        $this->state = self::STATE_INIT;
+        $this->_preInit();
         parent::init();
-
-        // Set default timezone to UTC
-        date_default_timezone_set('UTC');
-
-        $this->_init();
+        $this->_postInit();
     }
 
     /**

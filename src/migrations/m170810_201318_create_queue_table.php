@@ -19,6 +19,9 @@ class m170810_201318_create_queue_table extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists('{{%queue}}');
+
         $this->createTable('{{%queue}}', [
             'id' => $this->primaryKey(),
             'job' => $this->binary()->notNull(),
