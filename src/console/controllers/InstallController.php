@@ -179,31 +179,61 @@ class InstallController extends Controller
         $this->stdout("*** installed {$handle} successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
     }
 
+    /**
+     * @param string $value
+     * @param string|null $error
+     * @return bool
+     */
     public function validateUsername(string $value, string &$error = null): bool
     {
         return $this->_validateUserAttribute('username', $value, $error);
     }
 
+    /**
+     * @param string $value
+     * @param string|null $error
+     * @return bool
+     */
     public function validateEmail(string $value, string &$error = null): bool
     {
         return $this->_validateUserAttribute('email', $value, $error);
     }
 
+    /**
+     * @param string $value
+     * @param string|null $error
+     * @return bool
+     */
     public function validatePassword(string $value, string &$error = null): bool
     {
         return $this->_validateUserAttribute('newPassword', $value, $error);
     }
 
+    /**
+     * @param string $value
+     * @param string|null $error
+     * @return bool
+     */
     public function validateSiteName(string $value, string &$error = null): bool
     {
         return $this->_validateSiteAttribute('name', $value, $error);
     }
 
+    /**
+     * @param string $value
+     * @param string|null $error
+     * @return bool
+     */
     public function validateSiteUrl(string $value, string &$error = null): bool
     {
         return $this->_validateSiteAttribute('baseUrl', $value, $error);
     }
 
+    /**
+     * @param string $value
+     * @param string|null $error
+     * @return bool
+     */
     public function validateLanguage(string $value, string &$error = null): bool
     {
         return $this->_validateSiteAttribute('language', $value, $error);

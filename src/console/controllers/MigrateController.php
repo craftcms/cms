@@ -76,7 +76,16 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
-     * @inheritdoc
+     * Returns the names of valid options for the action (id)
+     * An option requires the existence of a public member variable whose
+     * name is the option name.
+     * Child classes may override this method to specify possible options.
+     *
+     * Note that the values setting via options are not available
+     * until [[beforeAction()]] is being called.
+     *
+     * @param string $actionID the action id of the current request
+     * @return string[] the names of the options valid for the action
      */
     public function options($actionID)
     {

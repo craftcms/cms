@@ -48,6 +48,9 @@ class AppController extends Controller
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action)
     {
         if ($action->id === 'migrate') {
