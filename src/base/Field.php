@@ -115,7 +115,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {

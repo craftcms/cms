@@ -551,7 +551,6 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
