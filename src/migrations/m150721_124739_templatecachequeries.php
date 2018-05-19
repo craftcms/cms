@@ -18,6 +18,9 @@ class m150721_124739_templatecachequeries extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists('{{%templatecachequeries}}');
+
         // Delete all existing template caches
         $this->delete('{{%templatecaches}}');
 

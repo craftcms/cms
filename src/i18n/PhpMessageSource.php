@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\i18n;
@@ -14,7 +14,7 @@ use yii\base\Exception;
  * Class PhpMessageSource
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PhpMessageSource extends \yii\i18n\PhpMessageSource
 {
@@ -44,6 +44,21 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
         return $messages;
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function loadMessagesFromFile($messageFile)
+    {
+        $messages = parent::loadMessagesFromFile($messageFile);
+
+        if ($messages === null && !YII_DEBUG) {
+            // avoid logs about missing translation files
+            $messages = [];
+        }
+
+        return $messages;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -52,7 +67,6 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
      *
      * @param string $category
      * @param string $language
-     *
      * @return array|null
      * @throws Exception
      */

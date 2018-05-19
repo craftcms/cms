@@ -1,22 +1,19 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\events;
 
 use craft\base\Image;
-use craft\elements\Asset;
-use craft\models\AssetTransformIndex;
-use yii\base\Event;
 
 /**
  * Asset generate transform event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GenerateTransformEvent extends AssetTransformImageEvent
 {

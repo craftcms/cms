@@ -129,8 +129,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
             for (var i = 0; i < $selectedElements.length; i++) {
                 var $element = $($selectedElements[i]);
+                var elementInfo = Craft.getElementInfo($element);
 
-                info.push(Craft.getElementInfo($element));
+                info.push(elementInfo);
             }
 
             return info;

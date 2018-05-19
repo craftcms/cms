@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -14,7 +14,7 @@ use yii\helpers\Inflector;
  * App helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class App
 {
@@ -36,33 +36,24 @@ class App
      */
     public static function editions(): array
     {
-        return [Craft::Personal, Craft::Client, Craft::Pro];
+        return [Craft::Solo, Craft::Pro];
     }
 
     /**
      * Returns the name of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
-     *
      * @return string The edition’s name.
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Client:
-                return 'Client';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                return 'Personal';
-        }
+        return ($edition == Craft::Pro) ? 'Pro' : 'Solo';
     }
 
     /**
      * Returns whether an edition is valid.
      *
      * @param mixed $edition An edition’s ID (or is it?)
-     *
      * @return bool Whether $edition is a valid edition ID.
      */
     public static function isValidEdition($edition): bool
@@ -88,7 +79,6 @@ class App
      * Returns a PHP extension version, without the distribution info.
      *
      * @param string $name The extension name
-     *
      * @return string
      */
     public static function extensionVersion(string $name): string
@@ -101,7 +91,6 @@ class App
      * Removes distribution info from a version
      *
      * @param string $version
-     *
      * @return string
      */
     public static function normalizeVersion(string $version): string
@@ -113,7 +102,6 @@ class App
      * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.
-     *
      * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
     public static function phpConfigValueAsBool(string $var): bool
@@ -146,7 +134,6 @@ class App
      * Returns a humanized class name.
      *
      * @param string $class
-     *
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -160,8 +147,6 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, and gives
      * the script an unlimited amount of time to execute.
-     *
-     * @return void
      */
     public static function maxPowerCaptain()
     {
@@ -176,5 +161,31 @@ class App
 
         // Try to disable the max execution time
         @set_time_limit(0);
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function licenseKey()
+    {
+        $path = Craft::$app->getPath()->getLicenseKeyPath();
+
+        // Check to see if the key exists and it's not a temp one.
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $contents = file_get_contents($path);
+        if (empty($contents) || $contents === 'temp') {
+            return null;
+        }
+
+        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $contents));
+
+        if (strlen($licenseKey) !== 250) {
+            return null;
+        }
+
+        return $licenseKey;
     }
 }

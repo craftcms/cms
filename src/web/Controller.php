@@ -1,16 +1,18 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use yii\base\InvalidParamException;
+use GuzzleHttp\Exception\ClientException;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -19,14 +21,12 @@ use yii\web\Response as YiiResponse;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
- *
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
  * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Controller extends \yii\web\Controller
 {
@@ -35,14 +35,10 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @var bool|string[] Whether this controller’s actions can be accessed anonymously
-     *
      * If set to false, you are required to be logged in to execute any of the given controller's actions.
-     *
      * If set to true, anonymous access is allowed for all of the given controller's actions.
-     *
      * If the value is an array of action IDs, then you must be logged in for any actions except for the ones in
      * the array list.
-     *
      * If you have a controller that where the majority of actions allow anonymous access, but you only want require
      * login on a few, you can set this to true and call [[requireLogin()]] in the individual methods.
      */
@@ -78,12 +74,24 @@ abstract class Controller extends \yii\web\Controller
     {
         try {
             return parent::runAction($id, $params);
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
-                $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
-                return $this->asErrorJson($e->getMessage())
+                $message = $e->getMessage();
+                if ($e instanceof ClientException) {
+                    $statusCode = $e->getCode();
+                    if (($response = $e->getResponse()) !== null) {
+                        $body = Json::decodeIfJson((string)$response->getBody());
+                        if (isset($body['message'])) {
+                            $message = $body['message'];
+                        }
+                    }
+                } else if ($e instanceof HttpException) {
+                    $statusCode = $e->statusCode;
+                } else {
+                    $statusCode = 500;
+                }
+                return $this->asErrorJson($message)
                     ->setStatusCode($statusCode);
             }
             throw $e;
@@ -93,11 +101,10 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Renders a template.
      *
-     * @param string $template  The name of the template to load
-     * @param array  $variables The variables that should be available to the template
-     *
+     * @param string $template The name of the template to load
+     * @param array $variables The variables that should be available to the template
      * @return YiiResponse
-     * @throws InvalidParamException if the view file does not exist.
+     * @throws InvalidArgumentException if the view file does not exist.
      */
     public function renderTemplate(string $template, array $variables = []): YiiResponse
     {
@@ -128,8 +135,6 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * Redirects the user to the login template if they're not logged in.
-     *
-     * @return void
      */
     public function requireLogin()
     {
@@ -144,7 +149,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @return void
      * @throws ForbiddenHttpException if the current user is not an admin
      */
     public function requireAdmin()
@@ -162,8 +166,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
      *
      * @param string $permissionName The name of the permission.
-     *
-     * @return void
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission(string $permissionName)
@@ -177,8 +179,6 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user can perform a given action, and ends the request with a 403 error if they don’t.
      *
      * @param string $action The name of the action to check.
-     *
-     * @return void
      * @throws ForbiddenHttpException if the current user is not authorized
      */
     public function requireAuthorization(string $action)
@@ -191,7 +191,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Requires that the user has an elevated session.
      *
-     * @return void
      * @throws ForbiddenHttpException if the current user does not have an elevated session
      */
     public function requireElevatedSession()
@@ -204,7 +203,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @return void
      * @throws BadRequestHttpException if the request is not a post request
      */
     public function requirePostRequest()
@@ -217,7 +215,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if the request doesn't accept JSON.
      *
-     * @return void
      * @throws BadRequestHttpException if the request doesn't accept JSON
      */
     public function requireAcceptsJson()
@@ -230,7 +227,6 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if the current request doesn’t have a valid token.
      *
-     * @return void
      * @throws BadRequestHttpException if the request does not have a valid token
      */
     public function requireToken()
@@ -243,10 +239,9 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed       $object  Object containing properties that should be parsed for in the URL.
+     * @param mixed $object Object containing properties that should be parsed for in the URL.
      * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
-     *                             null, then the current request’s path will be used.
-     *
+     * null, then the current request’s path will be used.
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
@@ -274,7 +269,6 @@ abstract class Controller extends \yii\web\Controller
      * Sets the response format of the given data as JSONP.
      *
      * @param mixed $data The data that should be formatted.
-     *
      * @return YiiResponse A response that is configured to send `$data` formatted as JSON.
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_JSONP
@@ -294,7 +288,6 @@ abstract class Controller extends \yii\web\Controller
      * Sets the response format of the given data as RAW.
      *
      * @param mixed $data The data that should *not* be formatted.
-     *
      * @return YiiResponse A response that is configured to send `$data` without formatting.
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_RAW
@@ -312,7 +305,6 @@ abstract class Controller extends \yii\web\Controller
      * Responds to the request with a JSON error message.
      *
      * @param string $error The error message.
-     *
      * @return YiiResponse
      */
     public function asErrorJson(string $error): YiiResponse
@@ -322,7 +314,6 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @inheritdoc
-     *
      * @return YiiResponse
      */
     public function redirect($url, $statusCode = 302): YiiResponse

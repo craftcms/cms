@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -11,7 +11,7 @@ namespace craft\base;
  * UtilityInterface defines the common interface to be implemented by utility classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 interface UtilityInterface extends ComponentInterface
 {
@@ -20,7 +20,6 @@ interface UtilityInterface extends ComponentInterface
 
     /**
      * Returns the utility’s unique identifier.
-     *
      * The ID should be in `kebab-case`, as it will be visible in the URL (`admin/utilities/the-handle`).
      *
      * @return string
@@ -36,7 +35,6 @@ interface UtilityInterface extends ComponentInterface
 
     /**
      * Returns the number that should be shown in the utility’s nav item badge.
-     *
      * If `0` is returned, no badge will be shown
      *
      * @return int

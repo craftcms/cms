@@ -1,4 +1,4 @@
-{% requireEdition CraftClient %}
+{% requireEdition CraftPro %}
 
 {% do view.registerTranslations('app', [
     "Select All",
@@ -21,8 +21,6 @@
                 {% if context.userOrGroup is not empty %}
                     {% if context.userOrGroup.hasErrors() %}
                         {% set checked = permissionName in craft.app.request.getBodyParam('permissions', []) %}
-                    {% elseif CraftEdition == CraftClient and not context.userOrGroup.id %}
-                        {% set checked = true %}
                     {% else %}
                         {% set checked = context.userOrGroup.can(permissionName) %}
                     {% endif %}

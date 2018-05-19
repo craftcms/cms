@@ -20,14 +20,24 @@ class m150403_185142_volumes extends Migration
     public function safeUp()
     {
         if ($this->db->tableExists('{{%assetfiles}}')) {
+            // In case this was run in a previous update attempt
+            $this->dropTableIfExists('{{%assets}}');
+
             MigrationHelper::renameTable('{{%assetfiles}}', '{{%assets}}', $this);
         }
 
         if ($this->db->tableExists('{{%assetsources}}')) {
+            // In case this was run in a previous update attempt
+            $this->execute($this->db->getQueryBuilder()->checkIntegrity(false, '', '{{%volumes}}'));
+            $this->dropTableIfExists('{{%volumes}}');
+
             MigrationHelper::renameTable('{{%assetsources}}', '{{%volumes}}', $this);
         }
 
         if ($this->db->tableExists('{{%assetfolders}}')) {
+            // In case this was run in a previous update attempt
+            $this->dropTableIfExists('{{%volumefolders}}');
+
             MigrationHelper::renameTable('{{%assetfolders}}', '{{%volumefolders}}', $this);
         }
 

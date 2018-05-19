@@ -73,7 +73,6 @@ class m171231_055546_environment_variables_to_aliases extends Migration
      * and if so, converts the tag to a Yii alias ("@someTag/subpath").
      *
      * @param string &$str The string to parse
-     *
      * @return bool Whether the string was converted
      */
     private function _parseEnvString(string &$str): bool

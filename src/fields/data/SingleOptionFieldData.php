@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields\data;
@@ -11,7 +11,7 @@ namespace craft\fields\data;
  * Single-select option field data class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SingleOptionFieldData extends OptionData
 {
@@ -19,7 +19,7 @@ class SingleOptionFieldData extends OptionData
     // =========================================================================
 
     /**
-     * @var array
+     * @var OptionData[]
      */
     private $_options = [];
 
@@ -29,7 +29,7 @@ class SingleOptionFieldData extends OptionData
     /**
      * Returns the options.
      *
-     * @return array
+     * @return OptionData[]
      */
     public function getOptions(): array
     {
@@ -39,9 +39,7 @@ class SingleOptionFieldData extends OptionData
     /**
      * Sets the options.
      *
-     * @param array $options
-     *
-     * @return void
+     * @param OptionData[] $options
      */
     public function setOptions(array $options)
     {

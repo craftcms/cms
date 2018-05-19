@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -15,7 +15,7 @@ use yii\validators\Validator;
  * Class HandleValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class HandleValidator extends Validator
 {
@@ -31,31 +31,32 @@ class HandleValidator extends Validator
      * @var array
      */
     public static $baseReservedWords = [
-        'id',
-        'dateCreated',
-        'dateUpdated',
-        'uid',
-        'this',
-        'true',
-        'false',
-        'y',
-        'n',
-        'yes',
-        'no',
-        'classHandle',
-        'handle',
-        'name',
+        'attribute',
+        'attributeLabels',
         'attributeNames',
         'attributes',
-        'attribute',
-        'rules',
-        'attributeLabels',
-        'fields',
+        'classHandle',
         'content',
+        'dateCreated',
+        'dateUpdated',
+        'false',
+        'fields',
+        'handle',
+        'id',
+        'n',
+        'name',
+        'no',
         'rawContent',
+        'rules',
+        'searchKeywords',
         'section',
+        'this',
+        'true',
         'type',
+        'uid',
         'value',
+        'y',
+        'yes',
     ];
 
     // Properties

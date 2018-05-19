@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -11,7 +11,11 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
-use craft\errors\ApiException;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -22,11 +26,10 @@ use yii\base\Exception;
 
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
- *
  * An instance of the API service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getApi()|<code>Craft::$app->api</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Api extends Component
 {
@@ -56,43 +59,120 @@ class Api extends Component
     }
 
     /**
+     * Returns info about the current Craft license.
+     *
+     * @param string[] $include
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getLicenseInfo(array $include = []): array
+    {
+        $response = $this->request('GET', 'cms-licenses', [
+            'query' => ['include' => implode(',', $include)],
+        ]);
+        $body = Json::decode((string)$response->getBody());
+        return $body['license'];
+    }
+
+    /**
      * Checks for Craft and plugin updates.
      *
      * @return array
-     * @throws ApiException if the API gave a non-2xx response
-     * @throws Exception if no one is logged in or there isn't a valid license key
+     * @throws RequestException if the API gave a non-2xx response
      */
     public function getUpdates(): array
     {
-        $request = Craft::$app->getRequest();
-        $user = Craft::$app->getUser()->getIdentity();
+        $response = $this->request('GET', 'updates');
+        return Json::decode((string)$response->getBody());
+    }
 
-        if (!$user) {
-            throw new Exception('A user must be logged in to check for updates.');
+    /**
+     * Returns all CMS editions
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getCmsEditions(): array
+    {
+        $response = $this->request('GET', 'cms-editions');
+        return Json::decode((string)$response->getBody())['editions'];
+    }
+
+    /**
+     * Returns all country data.
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getCountries(): array
+    {
+        $cacheKey = 'countries';
+        $cache = Craft::$app->getCache();
+
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
         }
 
-        $requestBody = [
-            'request' => [
-                'hostname' => $request->getHostName(),
-                'port' => $request->getPort(),
-            ],
-            'user' => [
-                'email' => $user->email,
-            ],
-            'platform' => $this->platformVersions(),
-            'cms' => $this->getCmsInfo(),
-        ];
+        $response = $this->request('GET', 'countries');
+        $countries = Json::decode((string)$response->getBody())['countries'];
+        $cache->set($cacheKey, $countries, 60 * 60 * 24 * 7);
 
-        if ($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-            $requestBody['request']['ip'] = $ip;
-        }
+        return $countries;
+    }
 
-        if (!empty($pluginInfo = $this->pluginInfo())) {
-            $requestBody['plugins'] = $pluginInfo;
-        }
+    /**
+     * Returns plugins data for the Plugin Store.
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginStoreData(): array
+    {
+        $response = $this->request('GET', 'plugin-store');
+        return Json::decode((string)$response->getBody());
+    }
 
-        $response = $this->request('POST', 'updates', [
-            RequestOptions::BODY => Json::encode($requestBody),
+    /**
+     * Returns the plugin details.
+     *
+     * @param int $pluginId
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginDetails(int $pluginId): array
+    {
+        $response = $this->request('GET', 'plugin/'.$pluginId);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns the developer details.
+     *
+     * @param int $developerId
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getDeveloper(int $developerId): array
+    {
+        $response = $this->request('GET', 'developer/'.$developerId);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Order checkout.
+     *
+     * @param array $data
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function checkout(array $data): array
+    {
+        $response = $this->request('POST', 'payments', [
+            'headers' => $this->getPluginStoreHeaders(),
+            RequestOptions::BODY => Json::encode($data),
         ]);
 
         return Json::decode((string)$response->getBody());
@@ -103,10 +183,9 @@ class Api extends Component
      * and the package requirements that should be installed.
      *
      * @param array $install Package name/version pairs to be installed
-     *
      * @return array
-     * @throws ApiException if the API gave a non-2xx response
-     * @throws Exception if no one is logged in or there isn't a valid license key
+     * @throws RequestException if the API gave a non-2xx response
+     * @throws Exception if composer.json can't be located
      */
     public function getOptimizedComposerRequirements(array $install): array
     {
@@ -183,60 +262,237 @@ class Api extends Component
     }
 
     /**
-     * Returns info about the CMS.
+     * Create a cart.
+     *
+     * @param array $data
      *
      * @return array
-     * @throws Exception if there isn't a valid license key
      */
-    public function getCmsInfo(): array
+    public function createCart(array $data)
     {
-        return [
-            'version' => Craft::$app->getVersion(),
-            'edition' => strtolower(Craft::$app->getEditionName()),
-            'licenseKey' => $this->cmsLicenseKey(),
-        ];
+        $response = $this->request('POST', 'carts', [
+            'headers' => $this->getPluginStoreHeaders(),
+            RequestOptions::BODY => Json::encode($data),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Get a cart by its order number.
+     *
+     * @param string $orderNumber
+     *
+     * @return array
+     */
+    public function getCart(string $orderNumber)
+    {
+        $response = $this->request('GET', 'carts/'.$orderNumber);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Update a cart.
+     *
+     * @param string $orderNumber
+     * @param array $data
+     *
+     * @return array
+     */
+    public function updateCart(string $orderNumber, array $data)
+    {
+        $response = $this->request('POST', 'carts/'.$orderNumber, [
+            'headers' => $this->getPluginStoreHeaders(),
+            RequestOptions::BODY => Json::encode($data),
+        ]);
+
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return ResponseInterface
+     * @throws RequestException
+     */
+    public function request(string $method, string $uri, array $options = []): ResponseInterface
+    {
+        $options = ArrayHelper::merge($options, [
+            'headers' => $this->headers(),
+        ]);
+
+        $e = null;
+
+        try {
+            $response = $this->client->request($method, $uri, $options);
+        } catch (RequestException $e) {
+            if (($response = $e->getResponse()) === null) {
+                throw $e;
+            }
+        }
+
+        // cache license info from the response
+        $cache = Craft::$app->getCache();
+        $duration = 86400;
+        if ($response->hasHeader('X-Craft-Allow-Trials')) {
+            $cache->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), (bool)$response->getHeaderLine('X-Craft-Allow-Trials'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Status')) {
+            $cache->set('licenseKeyStatus', $response->getHeaderLine('X-Craft-License-Status'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Domain')) {
+            $cache->set('licensedDomain', $response->getHeaderLine('X-Craft-License-Domain'), $duration);
+        }
+        if ($response->hasHeader('X-Craft-License-Edition')) {
+            $licensedEdition = $response->getHeaderLine('X-Craft-License-Edition');
+
+            switch ($licensedEdition) {
+                case 'solo':
+                    $licensedEdition = Craft::Solo;
+                    break;
+                case 'pro':
+                    $licensedEdition = Craft::Pro;
+                    break;
+                default:
+                    Craft::error('Invalid X-Craft-License-Edition header value: '.$licensedEdition, __METHOD__);
+            }
+
+            $cache->set('licensedEdition', $licensedEdition, $duration);
+        }
+
+        $pluginLicenseStatuses = [];
+        $pluginsService = Craft::$app->getPlugins();
+        foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
+            $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
+        }
+        if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
+            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
+            foreach ($pluginLicenseInfo as $info) {
+                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
+                $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
+            }
+        }
+        foreach ($pluginLicenseStatuses as $pluginHandle => $pluginLicenseStatus) {
+            try {
+                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+            } catch (InvalidPluginException $pluginException) {
+            }
+        }
+
+        // did we just get a new license key?
+        if ($response->hasHeader('X-Craft-License')) {
+            $license = $response->getHeaderLine('X-Craft-License');
+            $path = Craft::$app->getPath()->getLicenseKeyPath();
+
+            //  just in case there's some race condition where two licenses were requested simultaneously...
+            if (App::licenseKey() !== null) {
+                $i = 0;
+                do {
+                    $newPath = "{$path}.".++$i;
+                } while (file_exists($newPath));
+                $path = $newPath;
+                Craft::warning("A new license key was issued, but we already had one. Writing it to {$path} instead.", __METHOD__);
+            }
+
+            try {
+                FileHelper::writeToFile($path, chunk_split($license, 50));
+            } catch (\ErrorException $err) {
+                // log and keep going
+                Craft::error("Could not write new license key to {$path}: {$err->getMessage()}\nLicense key: {$license}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($err);
+            }
+        }
+
+        if ($e !== null) {
+            throw $e;
+        }
+
+        return $response;
     }
 
     // Protected Methods
     // =========================================================================
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array  $options
+     * Returns the headers that should be sent with API requests.
      *
-     * @return ResponseInterface
-     * @throws ApiException
+     * @return array
      */
-    protected function request(string $method, string $uri, array $options = []): ResponseInterface
+    protected function headers(): array
     {
-        try {
-            return $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
-            throw new ApiException($e->getMessage(), $e->getCode(), $e);
+        $headers = [
+            'Accept' => 'application/json',
+            'X-Craft-System' => 'craft:'.Craft::$app->getVersion().';'.strtolower(Craft::$app->getEditionName()),
+        ];
+
+        // platform
+        $platform = [];
+        foreach ($this->platformVersions() as $name => $version) {
+            $platform[] = "{$name}:{$version}";
         }
+        $headers['X-Craft-Platform'] = implode(',', $platform);
+
+        // request info
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest()) {
+            if (($host = $request->getHostInfo()) !== null) {
+                $headers['X-Craft-Host'] = $host;
+            }
+            if (($ip = $request->getUserIP(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) !== null) {
+                $headers['X-Craft-User-Ip'] = $ip;
+            }
+        }
+
+        // email
+        if (($user = Craft::$app->getUser()->getIdentity()) !== null) {
+            $headers['X-Craft-User-Email'] = $user->email;
+        }
+
+        // Craft license
+        $headers['X-Craft-License'] = App::licenseKey() ?? '🙏';
+
+        // plugin info
+        $pluginLicenses = [];
+        $pluginsService = Craft::$app->getPlugins();
+        /** @var Plugin[] $plugins */
+        $plugins = $pluginsService->getAllPlugins();
+        foreach ($plugins as $plugin) {
+            $handle = $plugin->getHandle();
+            $headers['X-Craft-System'] .= ",plugin-{$handle}:{$plugin->getVersion()}";
+            if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
+                $pluginLicenses[] = "{$handle}:{$licenseKey}";
+            }
+        }
+        if (!empty($pluginLicenses)) {
+            $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+        }
+
+        return $headers;
     }
 
     /**
      * Returns platform info.
      *
      * @param bool $useComposerOverrides Whether to factor in any `config.platform` overrides
-     *
      * @return array
      */
     protected function platformVersions(bool $useComposerOverrides = false): array
     {
-        $versions = [];
-
         // Let Composer's PlatformRepository do most of the work
+        $overrides = [];
         if ($useComposerOverrides) {
-            $jsonPath = Craft::$app->getComposer()->getJsonPath();
-            $config = Json::decode(file_get_contents($jsonPath));
-            $overrides = $config['config']['platform'] ?? [];
-        } else {
-            $overrides = [];
+            try {
+                $jsonPath = Craft::$app->getComposer()->getJsonPath();
+                $config = Json::decode(file_get_contents($jsonPath));
+                $overrides = $config['config']['platform'] ?? [];
+            } catch (Exception $e) {
+                // couldn't locate composer.json - NBD
+            }
         }
         $repo = new PlatformRepository([], $overrides);
+
+        $versions = [];
         foreach ($repo->getPackages() as $package) {
             $versions[$package->getName()] = $package->getPrettyVersion();
         }
@@ -248,45 +504,24 @@ class Api extends Component
         return $versions;
     }
 
-    /**
-     * @return string
-     * @throws Exception
-     */
-    protected function cmsLicenseKey(): string
-    {
-        $path = Craft::$app->getPath()->getLicenseKeyPath();
-
-        // Check to see if the key exists and it's not a temp one.
-        if (!is_file($path)) {
-            throw new Exception("No license key found at {$path}.");
-        }
-
-        $contents = file_get_contents($path);
-        if (empty($contents) || $contents === 'temp') {
-            throw new Exception("Invalid license key at {$path}.");
-        }
-
-        return trim(preg_replace('/[\r\n]+/', '', $contents));
-    }
+    // Private Methods
+    // =========================================================================
 
     /**
+     * Returns Plugin Store headers
+     *
      * @return array
      */
-    protected function pluginInfo(): array
+    private function getPluginStoreHeaders()
     {
-        $info = [];
-        $pluginsService = Craft::$app->getPlugins();
-        /** @var Plugin[] $plugins */
-        $plugins = $pluginsService->getAllPlugins();
+        $headers = [];
 
-        foreach ($plugins as $plugin) {
-            $handle = $plugin->getHandle();
-            $info[$handle] = [
-                'version' => $plugin->getVersion(),
-                'licenseKey' => $pluginsService->getPluginLicenseKey($handle),
-            ];
+        $craftIdToken = Craft::$app->getPluginStore()->getToken();
+
+        if ($craftIdToken) {
+            $headers['Authorization'] = 'Bearer '.$craftIdToken->accessToken;
         }
 
-        return $info;
+        return $headers;
     }
 }

@@ -7,6 +7,17 @@
 {% set translatable = field.getIsTranslatable(element) %}
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
 
+{% if translatable %}
+    {% switch field.translationMethod %}
+    {% case 'site' %}
+        {% set translationDescription = 'This field is translated for each site.'|t('app') %}
+    {% case 'siteGroup' %}
+        {% set translationDescription = 'This field is translated for each site group.'|t('app') %}
+    {% case 'language' %}
+        {% set translationDescription = 'This field is translated for each language.'|t('app') %}
+    {% endswitch %}
+{% endif %}
+
 {% if not static %}
     {% set input = field.getInputHtml(value, element) %}
 {% else %}
@@ -17,6 +28,7 @@
     {% embed "_includes/forms/field" with {
         label: field.name|t('site')|e,
         translatable: translatable,
+        translationDescription: translationDescription ?? null,
         siteId: siteId,
         required: (not static ? required : false),
         instructions: instructions|e,

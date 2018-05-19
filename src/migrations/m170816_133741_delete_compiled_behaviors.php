@@ -23,7 +23,7 @@ class m170816_133741_delete_compiled_behaviors extends Migration
             $path = $compiledClassesPath.DIRECTORY_SEPARATOR.$file.'.php';
             if (file_exists($path)) {
                 echo "    > removing $path ...";
-                FileHelper::removeFile($path);
+                FileHelper::unlink($path);
                 echo " done\n";
             }
         }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\tokenparsers;
@@ -13,7 +13,7 @@ use craft\web\twig\nodes\NavNode;
  * Recursively outputs a hierarchical navigation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class NavTokenParser extends \Twig_TokenParser
 {
@@ -85,7 +85,6 @@ class NavTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideNavFork(\Twig_Token $token): bool
@@ -95,7 +94,6 @@ class NavTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideChildrenFork(\Twig_Token $token): bool
@@ -105,7 +103,6 @@ class NavTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideChildrenEnd(\Twig_Token $token): bool
@@ -115,7 +112,6 @@ class NavTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideNavEnd(\Twig_Token $token): bool

@@ -20,7 +20,6 @@
                 errors: (volume is defined ? volume.getErrors('name') : null),
                 autofocus: true,
                 required: true,
-                translatable: true
             }) }}
 
             {{ forms.textField({
@@ -68,9 +67,10 @@
                 name: 'type',
                 options: volumeTypeOptions,
                 value: className(volume),
-                errors: volume.getErrors('type') ?? null,
                 toggle: true
             }) }}
+
+            {{ missingVolumePlaceholder|raw }}
 
             {% for volumeType in volumeTypes %}
                 {% set isCurrent = (volumeType == className(volume)) %}

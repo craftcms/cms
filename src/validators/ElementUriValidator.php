@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -17,7 +17,7 @@ use yii\base\InvalidConfigException;
  * Class ElementUriValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementUriValidator extends UriValidator
 {
@@ -36,7 +36,6 @@ class ElementUriValidator extends UriValidator
 
     /**
      * @inheritdoc
-     *
      * @throws InvalidConfigException if $attribute is not 'uri'
      */
     public function validateAttribute($model, $attribute)

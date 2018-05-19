@@ -14,6 +14,9 @@
 {% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
+    <form id="x" method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+    </form>
     <noscript>
         <div class="message-container no-access">
             <div class="pane notice">
@@ -39,14 +42,13 @@
             path:                  "{{ craft.app.request.getPathInfo()|e('js') }}",
             language:              "{{ craft.app.language|e('js') }}",
             timezone:              "{{ craft.app.getTimeZone()|e('js') }}",
-            siteId:                {{ craft.app.sites.currentSite.id ?? 'null' }},
+            siteId:                {{ craft.app.isInstalled and not craft.app.updates.isCraftDbMigrationNeeded ? craft.app.sites.currentSite.id : 'null' }},
             orientation:           "{{ orientation|e('js') }}",
             left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
             right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
             username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
             remainingSessionTime:  {{ craft.app.request.getSegment(1) not in ['updates', 'manualupdate'] ? craft.app.user.getRemainingSessionTime() : 0 }},
-            Personal:              {{ CraftPersonal }},
-            Client:                {{ CraftClient }},
+            Solo:                  {{ CraftSolo }},
             Pro:                   {{ CraftPro }},
             edition:               {{ CraftEdition }},
             isMultiSite:           {{ craft.app.getIsMultiSite() ? 'true' : 'false' }},

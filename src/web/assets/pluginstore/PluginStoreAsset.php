@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\pluginstore;
@@ -32,7 +32,7 @@ class PluginStoreAsset extends AssetBundle
             'css/main.css',
         ];
         $this->js = [
-            'js/main.min.js',
+            'js/main.js',
         ];
 
         parent::init();

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,18 +13,17 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class FieldLayoutField record.
  *
- * @property int            $id        ID
- * @property int            $layoutId  Layout ID
- * @property int            $tabId     Tab ID
- * @property int            $fieldId   Field ID
- * @property bool           $required  Required
- * @property int            $sortOrder Sort order
- * @property FieldLayout    $layout    Layout
- * @property FieldLayoutTab $tab       Tab
- * @property Field          $field     Field
- *
+ * @property int $id ID
+ * @property int $layoutId Layout ID
+ * @property int $tabId Tab ID
+ * @property int $fieldId Field ID
+ * @property bool $required Required
+ * @property int $sortOrder Sort order
+ * @property FieldLayout $layout Layout
+ * @property FieldLayoutTab $tab Tab
+ * @property Field $field Field
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldLayoutField extends ActiveRecord
 {
@@ -43,7 +42,6 @@ class FieldLayoutField extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

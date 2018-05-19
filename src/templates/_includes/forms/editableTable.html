@@ -3,10 +3,11 @@
 {%- set cols = cols ?? [] %}
 {%- set rows = rows ?? [] %}
 {%- set initJs = not static and (initJs ?? true) -%}
-
+{%- set minRows = minRows ?? 'null' %}
+{%- set maxRows = maxRows ?? 'null' %}
 
 <table id="{{ id }}" class="shadow-box editable"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+       {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>
         <tr>
             {% for col in cols %}
@@ -30,6 +31,8 @@
                     {% set value = cell.value is defined ? cell.value : cell %}
                     {% if col.type == 'heading' %}
                         <th scope="row" class="{{ cell.class ?? col.class ?? '' }}">{{ value|raw }}</th>
+                    {% elseif col.type == 'html' %}
+                        <td class="{{ cell.class ?? col.class ?? '' }}">{{ value|raw }}</td>
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
@@ -104,7 +107,9 @@
     {% set defaultValues = defaultValues ?? null %}
     {% js %}
         new Craft.EditableTable("{{ jsId }}", "{{ jsName }}", {{ jsCols|raw }}, {
-            defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }}
+            defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }},
+            minRows: {{ minRows ? minRows : 'null' }},
+            maxRows: {{ maxRows ? maxRows : 'null' }}
         });
     {% endjs %}
 {% endif %}

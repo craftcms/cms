@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\volumes;
@@ -16,7 +16,7 @@ use yii\base\NotSupportedException;
  * MissingVolume represents a volume with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MissingVolume extends Volume implements MissingComponentInterface
 {
@@ -125,7 +125,6 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     *
      * @inheritdoc
      */
     public function createDir(string $path)

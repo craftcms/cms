@@ -36,8 +36,8 @@
 
                             // Redirect to the Dashboard in half a second
                             setTimeout($.proxy(function() {
-                                if(typeof(this.settings.referrer) != 'undefined') {
-                                    window.location = this.settings.referrer;
+                                if(typeof(this.settings.redirectUrl) != 'undefined') {
+                                    window.location = this.settings.redirectUrl;
                                 } else {
                                     window.location = Craft.getCpUrl('myaccount');
                                 }

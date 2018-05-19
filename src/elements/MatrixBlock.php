@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -25,10 +25,10 @@ use yii\base\InvalidConfigException;
 /**
  * MatrixBlock represents a matrix block element.
  *
- * @property MatrixBlockType|null $type The block type
- *
+ * @property ElementInterface|null $owner the owner
+ * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MatrixBlock extends Element
 {
@@ -77,7 +77,6 @@ class MatrixBlock extends Element
 
     /**
      * @inheritdoc
-     *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -171,12 +170,12 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function extraFields()
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'owner';
-
-        return $attributes;
+        $names = parent::extraFields();
+        $names[] = 'owner';
+        $names[] = 'type';
+        return $names;
     }
 
     /**
@@ -230,10 +229,10 @@ class MatrixBlock extends Element
     /**
      * Returns the block type.
      *
-     * @return MatrixBlockType|null
+     * @return MatrixBlockType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType()
+    public function getType(): MatrixBlockType
     {
         if ($this->typeId === null) {
             throw new InvalidConfigException('Matrix block is missing its type ID');
@@ -401,7 +400,7 @@ class MatrixBlock extends Element
      */
     public function afterDelete()
     {
-        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Tell the browser to forget about this block
             $session = Craft::$app->getSession();
             $session->addAssetBundleFlash(MatrixAsset::class);

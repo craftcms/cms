@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -26,11 +26,10 @@ use yii\web\BadRequestHttpException;
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
  * schema and default content for a Craft installation.
- *
  * Note that all actions in the controller are open to do not require an authenticated Craft session in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class InstallController extends Controller
 {
@@ -47,7 +46,6 @@ class InstallController extends Controller
 
     /**
      * @inheritdoc
-     *
      * @throws BadRequestHttpException if Craft is already installed
      */
     public function init()
@@ -95,7 +93,7 @@ class InstallController extends Controller
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
         $defaultSystemName = implode(' ', array_map('ucfirst', $words));
-        $defaultSiteUrl = 'http://'.$server;
+        $defaultSiteUrl = '@web';
 
         $iconsPath = Craft::getAlias('@app/icons');
         $dbIcon = $showDbScreen ? file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'database.svg') : null;
@@ -355,7 +353,7 @@ class InstallController extends Controller
      * Populates a DbConfig object with post data.
      *
      * @param DbConfig $dbConfig The DbConfig object
-     * @param string   $prefix   The post param prefix to use
+     * @param string $prefix The post param prefix to use
      */
     private function _populateDbConfig(DbConfig $dbConfig, string $prefix = '')
     {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -13,11 +13,10 @@ use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\errors\DbConnectException;
+use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -28,82 +27,79 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
 use yii\base\InvalidConfigException;
-use yii\mutex\FileMutex;
+use yii\mutex\Mutex;
 use yii\queue\db\Queue;
-use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
 /**
  * ApplicationTrait
  *
- * @property \craft\services\Api             $api                The API service
- * @property AssetManager                    $assetManager       The asset manager component
- * @property \craft\services\Assets          $assets             The assets service
- * @property \craft\services\AssetIndexer    $assetIndexing      The asset indexer service
- * @property \craft\services\AssetTransforms $assetTransforms    The asset transforms service
- * @property bool                            $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
- * @property bool                            $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
- * @property \craft\services\Categories      $categories         The categories service
- * @property \craft\services\Composer        $composer           The Composer service
- * @property \craft\services\Config          $config             The config service
- * @property \craft\services\Content         $content            The content service
- * @property \craft\db\MigrationManager      $contentMigrator    The content migration manager
- * @property \craft\services\Dashboard       $dashboard          The dashboard service
- * @property Connection                      $db                 The database connection component
- * @property \craft\services\Deprecator      $deprecator         The deprecator service
- * @property \craft\services\ElementIndexes  $elementIndexes     The element indexes service
- * @property \craft\services\Elements        $elements           The elements service
- * @property \craft\services\Entries         $entries            The entries service
- * @property \craft\services\EntryRevisions  $entryRevisions     The entry revisions service
- * @property \craft\services\Et              $et                 The E.T. service
- * @property \craft\feeds\Feeds              $feeds              The feeds service
- * @property \craft\services\Fields          $fields             The fields service
- * @property Formatter                       $formatter          The formatter component
- * @property \craft\services\Globals         $globals            The globals service
- * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
- * @property I18N                            $i18n               The internationalization (i18n) component
- * @property \craft\services\Images          $images             The images service
- * @property bool                            $sInMaintenanceMode Whether someone is currently performing a system update
- * @property bool                            $isInstalled        Whether Craft is installed
- * @property bool                            $sMultiSite         Whether this site has multiple sites
- * @property bool                            $isSystemOn         Whether the front end is accepting HTTP requests
- * @property \craft\i18n\Locale              $locale             The Locale object for the target language
- * @property \craft\mail\Mailer              $mailer             The mailer component
- * @property \craft\services\Matrix          $matrix             The matrix service
- * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
- * @property \craft\services\Path            $path               The path service
- * @property \craft\services\Plugins         $plugins            The plugins service
- * @property \craft\services\PluginStore     $pluginStore        The plugin store service
- * @property Queue|QueueInterface            $queue              The job queue
- * @property \craft\services\Relations       $relations          The relations service
- * @property \craft\services\Routes          $routes             The routes service
- * @property \craft\services\Search          $search             The search service
- * @property Security                        $security           The security component
- * @property \craft\services\Sections        $sections           The sections service
- * @property \craft\services\Sites           $sites              The sites service
- * @property \craft\services\Structures      $structures         The structures service
- * @property \craft\services\SystemMessages  $systemMessages     The system email messages service
- * @property \craft\services\SystemSettings  $systemSettings     The system settings service
- * @property \craft\services\Tags            $tags               The tags service
- * @property \craft\services\TemplateCaches  $templateCaches     The template caches service
- * @property \craft\services\Tokens          $tokens             The tokens service
- * @property \craft\services\Updates         $updates            The updates service
- * @property \craft\services\UserGroups      $userGroups         The user groups service
- * @property \craft\services\UserPermissions $userPermissions    The user permissions service
- * @property \craft\services\Users           $users              The users service
- * @property \craft\services\Utilities       $utilities          The utilities service
- * @property View                            $view               The view component
- * @property \craft\services\Volumes         $volumes            The volumes service
- *
+ * @property \craft\services\Api $api The API service
+ * @property AssetManager $assetManager The asset manager component
+ * @property \craft\services\Assets $assets The assets service
+ * @property \craft\services\AssetIndexer $assetIndexing The asset indexer service
+ * @property \craft\services\AssetTransforms $assetTransforms The asset transforms service
+ * @property bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
+ * @property bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
+ * @property \craft\services\Categories $categories The categories service
+ * @property \craft\services\Composer $composer The Composer service
+ * @property \craft\services\Config $config The config service
+ * @property \craft\services\Content $content The content service
+ * @property \craft\db\MigrationManager $contentMigrator The content migration manager
+ * @property \craft\services\Dashboard $dashboard The dashboard service
+ * @property Connection $db The database connection component
+ * @property \craft\services\Deprecator $deprecator The deprecator service
+ * @property \craft\services\ElementIndexes $elementIndexes The element indexes service
+ * @property \craft\services\Elements $elements The elements service
+ * @property \craft\services\Entries $entries The entries service
+ * @property \craft\services\EntryRevisions $entryRevisions The entry revisions service
+ * @property \craft\feeds\Feeds $feeds The feeds service
+ * @property \craft\services\Fields $fields The fields service
+ * @property Formatter $formatter The formatter component
+ * @property \craft\services\Globals $globals The globals service
+ * @property bool $hasWrongEdition Whether Craft is running with the wrong edition
+ * @property I18N $i18n The internationalization (i18n) component
+ * @property \craft\services\Images $images The images service
+ * @property bool $sInMaintenanceMode Whether someone is currently performing a system update
+ * @property bool $isInstalled Whether Craft is installed
+ * @property bool $sMultiSite Whether this site has multiple sites
+ * @property bool $isSystemOn Whether the front end is accepting HTTP requests
+ * @property \craft\i18n\Locale $locale The Locale object for the target language
+ * @property \craft\mail\Mailer $mailer The mailer component
+ * @property \craft\services\Matrix $matrix The matrix service
+ * @property \craft\db\MigrationManager $migrator The application’s migration manager
+ * @property \yii\mutex\Mutex $mutex The application’s mutex service
+ * @property \craft\services\Path $path The path service
+ * @property \craft\services\Plugins $plugins The plugins service
+ * @property \craft\services\PluginStore $pluginStore The plugin store service
+ * @property Queue|QueueInterface $queue The job queue
+ * @property \craft\services\Relations $relations The relations service
+ * @property \craft\services\Routes $routes The routes service
+ * @property \craft\services\Search $search The search service
+ * @property Security $security The security component
+ * @property \craft\services\Sections $sections The sections service
+ * @property \craft\services\Sites $sites The sites service
+ * @property \craft\services\Structures $structures The structures service
+ * @property \craft\services\SystemMessages $systemMessages The system email messages service
+ * @property \craft\services\SystemSettings $systemSettings The system settings service
+ * @property \craft\services\Tags $tags The tags service
+ * @property \craft\services\TemplateCaches $templateCaches The template caches service
+ * @property \craft\services\Tokens $tokens The tokens service
+ * @property \craft\services\Updates $updates The updates service
+ * @property \craft\services\UserGroups $userGroups The user groups service
+ * @property \craft\services\UserPermissions $userPermissions The user permissions service
+ * @property \craft\services\Users $users The users service
+ * @property \craft\services\Utilities $utilities The utilities service
+ * @property View $view The view component
+ * @property \craft\services\Volumes $volumes The volumes service
  * @method AssetManager getAssetManager() Returns the asset manager component.
- * @method Connection   getDb()           Returns the database connection component.
- * @method Formatter    getFormatter()    Returns the formatter component.
- * @method I18N         getI18n()         Returns the internationalization (i18n) component.
- * @method Security     getSecurity()     Returns the security component.
- * @method View         getView()         Returns the view component.
- *
+ * @method Connection getDb()           Returns the database connection component.
+ * @method Formatter getFormatter()    Returns the formatter component.
+ * @method I18N getI18n()         Returns the internationalization (i18n) component.
+ * @method Security getSecurity()     Returns the security component.
+ * @method View getView()         Returns the view component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 trait ApplicationTrait
 {
@@ -163,12 +159,12 @@ trait ApplicationTrait
      * Sets the target application language.
      *
      * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
-     *                                   If null, it will be based on whether it's a CP or console request.
+     * If null, it will be based on whether it's a CP or console request.
      */
     public function updateTargetLanguage(bool $useUserLanguage = null)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Defend against an infinite _setLanguage() loop
+        // Defend against an infinite updateTargetLanguage() loop
         if ($this->_gettingLanguage === true) {
             // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
             $fallbackLanguage = $this->_getFallbackLanguage();
@@ -185,81 +181,29 @@ trait ApplicationTrait
         }
 
         $this->language = $this->getTargetLanguage($useUserLanguage);
+        $this->_gettingLanguage = false;
     }
 
     /**
      * Returns the target app language.
      *
      * @param bool $useUserLanguage Whether the user's preferred language should be used.
-     *
-     * @return string|null
+     * @return string
      */
-    public function getTargetLanguage(bool $useUserLanguage = true)
+    public function getTargetLanguage(bool $useUserLanguage = true): string
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getIsInstalled()) {
-            $request = $this->getRequest();
-            $currentSite = $this->getSites()->currentSite;
-
-            // Will any site validation be necessary here?
-            if ($useUserLanguage || $currentSite) {
-                if ($useUserLanguage) {
-                    $language = 'auto';
-                } else {
-                    $language = $currentSite->language;
-                }
-
-                // Get the list of actual site languages
-                $siteLanguages = $this->getI18n()->getSiteLocaleIds();
-
-                // Is it set to "auto"?
-                if ($language === 'auto') {
-                    // If the user is logged in *and* has a primary language set, use that
-                    try {
-                        $user = $this->getUser()->getIdentity();
-                    } catch (\Exception $e) {
-                        $user = null;
-                    }
-
-                    if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
-                        return $preferredLanguage;
-                    }
-
-                    // Is there a default CP language?
-                    if ($defaultCpLanguage = Craft::$app->getConfig()->getGeneral()->defaultCpLanguage) {
-                        // Make sure it's one of the site languages
-                        $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
-
-                        if (in_array($defaultCpLanguage, $siteLanguages, true)) {
-                            return $defaultCpLanguage;
-                        }
-                    }
-
-                    // Otherwise check if the browser's preferred language matches any of the site languages
-                    if (!$request->getIsConsoleRequest()) {
-                        $browserLanguages = $request->getAcceptableLanguages();
-
-                        if ($browserLanguages) {
-                            foreach ($browserLanguages as $browserLanguage) {
-                                if (in_array($browserLanguage, $siteLanguages, true)) {
-                                    return $browserLanguage;
-                                }
-                            }
-                        }
-                    }
-                } // Is it set to a valid site language?
-                else if (in_array($language, $siteLanguages, true)) {
-                    return $language;
-                }
-            }
-
-            if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                // Use the primary site's language by default
-                return $this->getSites()->getPrimarySite()->language;
-            }
+        // Use the browser language if Craft isn't installed or is updating
+        if (!$this->getIsInstalled() || $this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return $this->_getFallbackLanguage();
         }
 
-        return $this->_getFallbackLanguage();
+        if ($useUserLanguage) {
+            return $this->_getUserLanguage();
+        }
+
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return $this->getSites()->getCurrentSite()->language;
     }
 
     /**
@@ -284,8 +228,6 @@ trait ApplicationTrait
      * Sets Craft's record of whether it's installed
      *
      * @param bool|null $value
-     *
-     * @return void
      */
     public function setIsInstalled($value = true)
     {
@@ -381,7 +323,6 @@ trait ApplicationTrait
      * Sets the Craft edition.
      *
      * @param int $edition The edition to set.
-     *
      * @return bool
      */
     public function setEdition(int $edition): bool
@@ -409,11 +350,9 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param int  $edition  The Craft edition to require.
+     * @param int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
-     *
-     * @return void
-     * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
+     * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
     public function requireEdition(int $edition, bool $orBetter = true)
     {
@@ -423,7 +362,7 @@ trait ApplicationTrait
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
                 $editionName = App::editionName($edition);
-                throw new BadRequestHttpException("Craft {$editionName} is required for this");
+                throw new WrongEditionException("Craft {$editionName} is required for this");
             }
         }
     }
@@ -436,8 +375,8 @@ trait ApplicationTrait
     public function getCanUpgradeEdition(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Only admin & client accounts can upgrade Craft
-        if ($this->getUser()->getIsAdmin() || Craft::$app->getEdition() === Craft::Client) {
+        // Only admin accounts can upgrade Craft
+        if ($this->getUser()->getIsAdmin()) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();
@@ -461,7 +400,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
 
-        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) === 1);
+        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName());
     }
 
     /**
@@ -586,7 +525,6 @@ trait ApplicationTrait
      * Updates the info row.
      *
      * @param Info $info
-     *
      * @return bool
      */
     public function saveInfo(Info $info): bool
@@ -848,17 +786,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the E.T. service.
-     *
-     * @return \craft\services\Et The E.T. service
-     */
-    public function getEt()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('et');
-    }
-
-    /**
      * Returns the feeds service.
      *
      * @return \craft\feeds\Feeds The feeds service
@@ -949,9 +876,9 @@ trait ApplicationTrait
     /**
      * Returns the application’s mutex service.
      *
-     * @return FileMutex The application’s mutex service
+     * @return Mutex The application’s mutex service
      */
-    public function getMutex(): FileMutex
+    public function getMutex(): Mutex
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('mutex');
@@ -1181,24 +1108,26 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
-     * Initializes the application component
+     * Initializes things that should happen before the main Application::init()
      */
-    private function _init()
+    private function _preInit()
     {
         $this->getLog();
-
-        // Set the edition components
-        $this->_setEditionComponents();
 
         // Set the timezone
         $this->_setTimeZone();
 
-        // Load the plugins
-        // (this has to happen before setting the language, so plugin class aliases are registered in time)
-        $this->getPlugins()->loadPlugins();
-
         // Set the language
         $this->updateTargetLanguage();
+    }
+
+    /**
+     * Initializes things that should happen after the main Application::init()
+     */
+    private function _postInit()
+    {
+        // Load the plugins
+        $this->getPlugins()->loadPlugins();
 
         // Fire an 'afterInit' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
@@ -1227,7 +1156,6 @@ trait ApplicationTrait
      * Enables or disables Maintenance Mode
      *
      * @param bool $value
-     *
      * @return bool
      */
     private function _setMaintenanceMode(bool $value): bool
@@ -1242,7 +1170,29 @@ trait ApplicationTrait
     }
 
     /**
-     * Tries to find a language match with the user's browser's preferred language(s).
+     * Tries to find a language match with the user's preferred language.
+     *
+     * @return string
+     */
+    private function _getUserLanguage(): string
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        // If the user is logged in *and* has a primary language set, use that
+        if ($this instanceof WebApplication) {
+            // Don't actually try to fetch the user, as plugins haven't been loaded yet.
+            $session = $this->getSession();
+            $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->getUser()->idParam) : null;
+            if ($id && ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null) {
+                return $language;
+            }
+        }
+
+        // Fall back on the default CP language, if there is one, otherwise the browser language
+        return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
+    }
+
+    /**
+     * Tries to find a language match with the browser's preferred language(s).
      * If not uses the app's sourceLanguage.
      *
      * @return string
@@ -1252,31 +1202,11 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         // See if we have the CP translated in one of the user's browsers preferred language(s)
         if ($this instanceof WebApplication) {
-            return $this->getTranslatedBrowserLanguage();
+            $languages = $this->getI18n()->getAppLocaleIds();
+            return $this->getRequest()->getPreferredLanguage($languages);
         }
 
         // Default to the source language.
         return $this->sourceLanguage;
-    }
-
-    /**
-     * Sets the edition components.
-     *
-     * @return void
-     */
-    private function _setEditionComponents()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        // Set the appropriate edition components
-        $edition = $this->getEdition();
-
-        if ($edition === Craft::Client || $edition === Craft::Pro) {
-            $basePath = $this->getBasePath().'/config/app';
-            $config = ArrayHelper::merge(
-                require $basePath.'/client.php',
-                $edition === Craft::Pro ? require $basePath.'/pro.php' : []
-            );
-            Craft::configure($this, $config);
-        }
     }
 }

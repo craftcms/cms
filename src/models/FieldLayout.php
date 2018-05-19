@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -16,7 +16,7 @@ use craft\base\Model;
  * FieldLayout model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldLayout extends Model
 {
@@ -114,7 +114,6 @@ class FieldLayout extends Model
      * Returns a field by its handle.
      *
      * @param string $handle The field handle.
-     *
      * @return Field|FieldInterface|null
      */
     public function getFieldByHandle(string $handle)
@@ -133,9 +132,7 @@ class FieldLayout extends Model
      * Sets the layout’s tabs.
      *
      * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
-     *                                     objects or arrays defining the tab’s attributes.
-     *
-     * @return void
+     * objects or arrays defining the tab’s attributes.
      */
     public function setTabs($tabs)
     {
@@ -154,11 +151,9 @@ class FieldLayout extends Model
     /**
      * Sets the layout']”s fields.
      *
-     * @param FieldInterface[] $fields         An array of the layout’s fields, which can either be
-     *                                         FieldLayoutFieldModel objects or arrays defining the tab’s
-     *                                         attributes.
-     *
-     * @return void
+     * @param FieldInterface[] $fields An array of the layout’s fields, which can either be
+     * FieldLayoutFieldModel objects or arrays defining the tab’s
+     * attributes.
      */
     public function setFields(array $fields)
     {

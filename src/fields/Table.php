@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -23,7 +23,7 @@ use yii\db\Schema;
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Table extends Field
 {
@@ -40,6 +40,21 @@ class Table extends Field
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var string|null Custom add row button label
+     */
+    public $addRowLabel;
+
+    /**
+     * @var int|null Maximum number of Rows allowed
+     */
+    public $maxRows;
+
+    /**
+     * @var int|null Minimum number of Rows allowed
+     */
+    public $minRows;
 
     /**
      * @var array|null The columns that should be shown in the table
@@ -66,6 +81,10 @@ class Table extends Field
     {
         parent::init();
 
+        if ($this->addRowLabel === null) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
+
         if ($this->defaults === '') {
             $this->defaults = [];
         }
@@ -80,6 +99,34 @@ class Table extends Field
                 }
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
+        $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
+        $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
+        return $rules;
+    }
+
+    /**
+     * @return bool whether minRows was set
+     */
+    public function hasMinRows(): bool
+    {
+        return $this->minRows;
+    }
+
+    /**
+     * @return bool whether maxRows was set
+     */
+    public function hasMaxRows(): bool
+    {
+        return $this->maxRows;
     }
 
     /**
@@ -303,9 +350,8 @@ class Table extends Field
     /**
      * Normalizes a cell’s value.
      *
-     * @param string $type  The cell type
-     * @param mixed  $value The cell value
-     *
+     * @param string $type The cell type
+     * @param mixed $value The cell value
      * @return mixed
      * @see normalizeValue()
      */
@@ -344,10 +390,9 @@ class Table extends Field
     /**
      * Validates a cell’s value.
      *
-     * @param string      $type   The cell type
-     * @param mixed       $value  The cell value
+     * @param string $type The cell type
+     * @param mixed $value The cell value
      * @param string|null &$error The error text to set on the element
-     *
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
@@ -367,10 +412,9 @@ class Table extends Field
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed                 $value
+     * @param mixed $value
      * @param ElementInterface|null $element
-     * @param bool                  $static
-     *
+     * @param bool $static
      * @return string|null
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static)
@@ -413,7 +457,10 @@ class Table extends Field
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,
-            'static' => $static
+            'minRows' => $this->minRows,
+            'maxRows' => $this->maxRows,
+            'static' => $static,
+            'addRowLabel' => Craft::t('site', $this->addRowLabel),
         ]);
     }
 }

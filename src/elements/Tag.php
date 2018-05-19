@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -19,8 +19,9 @@ use yii\base\InvalidConfigException;
 /**
  * Tag represents a tag element.
  *
+ * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Tag extends Element
 {
@@ -77,7 +78,6 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     *
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -117,6 +117,16 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'group';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -147,7 +157,7 @@ class Tag extends Element
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): TagGroup
     {
         if ($this->groupId === null) {
             throw new InvalidConfigException('Tag is missing its group ID');

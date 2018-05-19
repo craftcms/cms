@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -24,6 +24,7 @@ use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -63,7 +64,6 @@ class UtilitiesController extends Controller
      * Show a utility page.
      *
      * @param string $id
-     *
      * @return Response
      * @throws NotFoundHttpException if $id is invalid
      * @throws ForbiddenHttpException if the user doesn't have access to the requested utility
@@ -347,6 +347,8 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
+                } catch (InvalidArgumentException $e) {
+                    // the directory doesn't exist
                 } catch (\Throwable $e) {
                     Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
                 }
@@ -393,7 +395,7 @@ class UtilitiesController extends Controller
 
         if (is_file($zipPath)) {
             try {
-                FileHelper::removeFile($zipPath);
+                FileHelper::unlink($zipPath);
             } catch (ErrorException $e) {
                 Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage(), __METHOD__);
             }
@@ -590,7 +592,6 @@ class UtilitiesController extends Controller
      * Returns a utility type’s SVG icon.
      *
      * @param string $class
-     *
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -619,7 +620,6 @@ class UtilitiesController extends Controller
      * Returns the default icon SVG for a given utility type.
      *
      * @param string $class
-     *
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string

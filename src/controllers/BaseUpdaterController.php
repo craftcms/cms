@@ -1,14 +1,17 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
+use craft\base\Plugin;
+use craft\errors\MigrateException;
+use craft\errors\MigrationException;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
@@ -21,7 +24,7 @@ use yii\web\Response;
  * BaseUpdaterController provides the base class for Craft/plugin installation/updating/removal.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseUpdaterController extends Controller
 {
@@ -281,7 +284,6 @@ abstract class BaseUpdaterController extends Controller
      * Sends a state response.
      *
      * @param array $state
-     *
      * @return Response
      */
     protected function send(array $state = []): Response
@@ -296,8 +298,7 @@ abstract class BaseUpdaterController extends Controller
      * Sends a "next action" state response.
      *
      * @param string $nextAction The next action that should be run
-     * @param array  $state
-     *
+     * @param array $state
      * @return Response
      */
     protected function sendNextAction(string $nextAction, array $state = []): Response
@@ -310,7 +311,6 @@ abstract class BaseUpdaterController extends Controller
      * Sends a "finished" state response.
      *
      * @param array $state
-     *
      * @return Response
      */
     protected function sendFinished(array $state = []): Response
@@ -322,11 +322,10 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Sends an "error" state response for a Composer error
      *
-     * @param string     $error The status message to show
-     * @param \Throwable $e     The exception that was thrown
-     * @param BufferIO   $io    The IO object that Composer was instantiated with
-     * @param array      $state
-     *
+     * @param string $error The status message to show
+     * @param \Throwable $e The exception that was thrown
+     * @param BufferIO $io The IO object that Composer was instantiated with
+     * @param array $state
      * @return Response
      */
     protected function sendComposerError(string $error, \Throwable $e, BufferIO $io, array $state = []): Response
@@ -351,8 +350,7 @@ abstract class BaseUpdaterController extends Controller
      *
      * @param string $label
      * @param string $action
-     * @param array  $state
-     *
+     * @param array $state
      * @return array
      */
     protected function actionOption(string $label, string $action, array $state = []): array
@@ -365,8 +363,7 @@ abstract class BaseUpdaterController extends Controller
      * Sets the state info for the given next action.
      *
      * @param string $nextAction
-     * @param array  $state
-     *
+     * @param array $state
      * @return array
      */
     protected function actionState(string $nextAction, array $state = []): array
@@ -384,7 +381,6 @@ abstract class BaseUpdaterController extends Controller
      * Returns the status message for the given action.
      *
      * @param string $action
-     *
      * @return string
      * @throws Exception if $action isn't valid
      */
@@ -412,7 +408,6 @@ abstract class BaseUpdaterController extends Controller
      * Sets the state info for when the job is done.
      *
      * @param array $state
-     *
      * @return array
      */
     protected function finishedState(array $state = []): array
@@ -427,7 +422,77 @@ abstract class BaseUpdaterController extends Controller
         return $state;
     }
 
-    // Protected Methods
+    /**
+     * Runs the migrations for a given list of handles.
+     *
+     * @param string[] $handles
+     * @param string|null $restoreAction
+     * @return Response|null
+     */
+    protected function runMigrations(array $handles, string $restoreAction = null)
+    {
+        try {
+            Craft::$app->getUpdates()->runMigrations($handles);
+        } catch (MigrateException $e) {
+            $ownerName = $e->ownerName;
+            $ownerHandle = $e->ownerHandle;
+            /** @var \Throwable $e */
+            $e = $e->getPrevious();
+
+            if ($e instanceof MigrationException) {
+                /** @var \Throwable|null $previous */
+                $previous = $e->getPrevious();
+                $migration = $e->migration;
+                $output = $e->output;
+                $error = get_class($migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
+                $e = $previous ?? $e;
+            } else {
+                $migration = $output = null;
+                $error = 'Migration failed: '.$e->getMessage();
+            }
+
+            Craft::error($error, __METHOD__);
+
+            $options = [];
+
+            // Do we have a database backup to restore?
+            if ($restoreAction !== null && !empty($this->data['dbBackupPath'])) {
+                if (!empty($this->data['install'])) {
+                    $restoreLabel = Craft::t('app', 'Revert update');
+                } else {
+                    $restoreLabel = Craft::t('app', 'Restore database');
+                }
+                $options[] = $this->actionOption($restoreLabel, $restoreAction);
+            }
+
+            if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
+                /** @var Plugin $plugin */
+                $email = $plugin->developerEmail;
+            }
+            $email = $email ?? 'support@craftcms.com';
+
+            $options[] = [
+                'label' => Craft::t('app', 'Send for help'),
+                'submit' => true,
+                'email' => $email,
+                'subject' => $ownerName.' update failure',
+            ];
+
+            $eName = $e instanceof Exception ? $e->getName() : get_class($e);
+
+            return $this->send([
+                'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
+                'errorDetails' => $eName.': '.$e->getMessage().
+                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
+                    ($output ? "\n\nOutput:\n\n".$output : ''),
+                'options' => $options,
+            ]);
+        }
+
+        return null;
+    }
+
+    // Private Methods
     // =========================================================================
 
     /**
@@ -443,9 +508,8 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Throwable $e  The exception that was thrown
-     * @param BufferIO   $io The IO object that Composer was instantiated with
-     *
+     * @param \Throwable $e The exception that was thrown
+     * @param BufferIO $io The IO object that Composer was instantiated with
      * @return string
      */
     private function _composerErrorDetails(\Throwable $e, BufferIO $io): string

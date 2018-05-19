@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -19,11 +19,10 @@ use yii\web\Response;
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
  * deleting displaying both globals and global sets.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GlobalsController extends Controller
 {
@@ -51,7 +50,6 @@ class GlobalsController extends Controller
      * Saves a global set.
      *
      * @return Response|null
-     *
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveSet()
@@ -118,10 +116,9 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string         $globalSetHandle The global set’s handle.
-     * @param string|null    $siteHandle      The site handle, if specified.
-     * @param GlobalSet|null $globalSet       The global set being edited, if there were any validation errors.
-     *
+     * @param string $globalSetHandle The global set’s handle.
+     * @param string|null $siteHandle The site handle, if specified.
+     * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
@@ -150,14 +147,17 @@ class GlobalsController extends Controller
                 }
             } else {
                 // Are they allowed to edit the current site?
-                if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds, false)) {
-                    $site = Craft::$app->getSites()->currentSite;
+                /** @noinspection PhpUnhandledExceptionInspection */
+                $currentSite = Craft::$app->getSites()->getCurrentSite();
+                if (in_array($currentSite->id, $editableSiteIds, false)) {
+                    $site = $currentSite;
                 } else {
                     // Just use the first site they are allowed to edit
                     $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
                 }
             }
         } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();
         }
 

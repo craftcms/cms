@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -20,16 +20,24 @@ use yii\base\Component;
 
 /**
  * Deprecator service.
- *
  * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|<code>Craft::$app->deprecator</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Deprecator extends Component
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var string|false Whether deprecation errors should be logged in the database ('db'),
+     * error logs ('logs'), or not at all (false).
+     *
+     * Changing this will prevent deprecation errors from showing up in the "Deprecation Errors" utility
+     * or in the "Deprecated" panel in the Debug Toolbar.
+     */
+    public $logTarget = 'db';
 
     /**
      * @var string
@@ -54,15 +62,16 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
-     *
-     * @return bool
      */
-    public function log(string $key, string $message): bool
+    public function log(string $key, string $message)
     {
-        if (!Craft::$app->getIsInstalled()) {
-            Craft::warning($message, 'deprecation-error');
+        if ($this->logTarget === false) {
+            return;
+        }
 
-            return false;
+        if ($this->logTarget === 'logs' ||  !Craft::$app->getIsInstalled()) {
+            Craft::warning($message, 'deprecation-error');
+            return;
         }
 
         // Get the debug backtrace
@@ -73,7 +82,7 @@ class Deprecator extends Component
 
         // Don't log the same key/fingerprint twice in the same request
         if (isset($this->_requestLogs[$index])) {
-            return true;
+            return;
         }
 
         $log = $this->_requestLogs[$index] = new DeprecationError([
@@ -104,8 +113,6 @@ class Deprecator extends Component
             ->execute();
 
         $log->id = $db->getLastInsertID();
-
-        return true;
     }
 
     /**
@@ -134,7 +141,6 @@ class Deprecator extends Component
      * Get 'em all.
      *
      * @param int|null $limit
-     *
      * @return DeprecationError[]
      */
     public function getLogs(int $limit = null): array
@@ -161,7 +167,6 @@ class Deprecator extends Component
      * Returns a log by its ID.
      *
      * @param int $logId
-     *
      * @return DeprecationError|null
      */
     public function getLogById(int $logId)
@@ -177,7 +182,6 @@ class Deprecator extends Component
      * Deletes a log by its ID.
      *
      * @param int $id
-     *
      * @return bool
      */
     public function deleteLogById(int $id): bool
@@ -231,7 +235,6 @@ class Deprecator extends Component
      * Returns the file and line number that should be associated with the error.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
      * @return array [file, line]
      */
     private function _findOrigin(array $traces): array
@@ -286,8 +289,7 @@ class Deprecator extends Component
      * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     * @param int   $index  The trace index to check
-     *
+     * @param int $index The trace index to check
      * @return bool
      */
     private function _isTemplateAttributeCall(array $traces, int $index): bool
@@ -307,7 +309,6 @@ class Deprecator extends Component
      * Returns a simplified version of the stack trace.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
      * @return array
      */
     private function _cleanTraces(array $traces): array
@@ -332,8 +333,7 @@ class Deprecator extends Component
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
      * @param \Twig_Template $template
-     * @param int|null       $actualCodeLine
-     *
+     * @param int|null $actualCodeLine
      * @return int|null
      */
     private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
@@ -354,11 +354,9 @@ class Deprecator extends Component
 
     /**
      * Converts an array of method arguments to a string.
-     *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
      * @param array $args
-     *
      * @return string
      */
     private function _argsToString(array $args): string

@@ -20,6 +20,7 @@ Craft.CP = Garnish.Base.extend(
         $selectedTab: null,
         $sidebar: null,
         $contentContainer: null,
+        $edition: null,
 
         $collapsibleTables: null,
 
@@ -31,9 +32,6 @@ Craft.CP = Garnish.Base.extend(
         displayedJobInfoUnchanged: 1,
         trackJobProgressTimeout: null,
         jobProgressIcon: null,
-
-        $edition: null,
-        upgradeModal: null,
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
@@ -58,7 +56,6 @@ Craft.CP = Garnish.Base.extend(
             this.$details = $('#details');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
-
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
 
@@ -113,7 +110,9 @@ Craft.CP = Garnish.Base.extend(
             this.initTabs();
 
             if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', 'showUpgradeModal');
+                this.addListener(this.$edition, 'click', function() {
+                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+                });
             }
 
             if ($.isTouchCapable()) {
@@ -433,37 +432,6 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initAlerts: function() {
-            // Is there a domain mismatch?
-            var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-            if ($transferDomainLink.length) {
-                this.addListener($transferDomainLink, 'click', $.proxy(function(ev) {
-                    ev.preventDefault();
-
-                    if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?'))) {
-                        Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                if (response.success) {
-                                    $transferDomainLink.parent().remove();
-
-                                    // Was that the last one?
-                                    if (this.$alerts.children().length === 0) {
-                                        this.$alerts.remove();
-                                        this.$alerts = null;
-                                    }
-
-                                    this.displayNotice(Craft.t('app', 'License transferred.'));
-                                }
-                                else {
-                                    this.displayError(response.error);
-                                }
-                            }
-
-                        }, this));
-                    }
-                }, this));
-            }
-
             // Are there any shunnable alerts?
             var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
@@ -490,13 +458,6 @@ Craft.CP = Garnish.Base.extend(
                     }, this));
 
                 }, this));
-            }
-
-            // Is there an edition resolution link?
-            var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
-
-            if ($editionResolutionLink.length) {
-                this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
             }
         },
 
@@ -702,15 +663,6 @@ Craft.CP = Garnish.Base.extend(
                     this.jobProgressIcon.complete();
                     delete this.jobProgressIcon;
                 }
-            }
-        },
-
-        showUpgradeModal: function() {
-            if (!this.upgradeModal) {
-                this.upgradeModal = new Craft.UpgradeModal();
-            }
-            else {
-                this.upgradeModal.show();
             }
         }
     },

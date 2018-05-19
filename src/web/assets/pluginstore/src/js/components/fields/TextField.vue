@@ -3,21 +3,18 @@
         <div v-if="label" class="heading">
             <label :id="id+'-label'" :for="id">{{ label }}</label>
         </div>
-        <div class="input ltr" :class="{'errors': errors }">
-            <text-input :id="id" :placeholder="placeholder" :value="value" @input="$emit('input', $event)" />
-        </div>
+
+        <text-input :id="id" :placeholder="placeholder" :value="value" @input="$emit('input', $event)" :size="size" :errors="errors" :success="success" />
     </div>
 </template>
 
 <script>
-    import TextInput from '../inputs/TextInput';
-
     export default {
 
-        props: ['label', 'id', 'placeholder', 'value', 'errors'],
+        props: ['label', 'id', 'placeholder', 'value', 'size', 'errors', 'success'],
 
         components: {
-            TextInput,
+            TextInput: require('../inputs/TextInput'),
         },
 
     }

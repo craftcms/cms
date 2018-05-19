@@ -17,6 +17,10 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
+        rowCount: 0,
+        hasMaxRows: false,
+        hasMinRows: false,
+
         radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
@@ -28,6 +32,15 @@ Craft.EditableTable = Garnish.Base.extend(
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
+            this.rowCount = this.$tbody.find('tr').length;
+
+            // Is this already an editable table?
+            if (this.$table.data('editable-table')) {
+                Garnish.log('Double-instantiating an editable table on an element');
+                this.$table.data('editable-table').destroy();
+            }
+
+            this.$table.data('editable-table', this);
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
@@ -39,6 +52,12 @@ Craft.EditableTable = Garnish.Base.extend(
             } else {
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
+            }
+
+            if (this.settings.minRows && this.rowCount < this.settings.minRows) {
+                for (var i = this.rowCount; i < this.settings.minRows; i++) {
+                    this.addRow()
+                }
             }
         },
 
@@ -61,9 +80,9 @@ Craft.EditableTable = Garnish.Base.extend(
             }
 
             this.$addRowBtn = this.$table.next('.add');
+            this.updateAddRowButton();
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
-
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
 
@@ -73,8 +92,44 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
+        updateAddRowButton: function() {
+            if (!this.canAddRow()) {
+                this.$addRowBtn.css('opacity', '0.2');
+                this.$addRowBtn.css('pointer-events', 'none');
+            } else {
+                this.$addRowBtn.css('opacity', '1');
+                this.$addRowBtn.css('pointer-events', 'auto');
+            }
+        },
+        canDeleteRow: function() {
+            return (this.rowCount > this.settings.minRows);
+        },
+        deleteRow: function(row) {
+            if (!this.canDeleteRow()) {
+                return;
+            }
 
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+
+            this.rowCount--;
+
+            this.updateAddRowButton();
+            // onDeleteRow callback
+            this.settings.onDeleteRow(row.$tr);
+        },
+        canAddRow: function() {
+            if (this.settings.maxRows) {
+                return (this.rowCount < this.settings.maxRows);
+            }
+
+            return true;
+        },
         addRow: function() {
+            if (!this.canAddRow()) {
+                return;
+            }
+
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
@@ -84,6 +139,9 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
+
+            this.rowCount++;
+            this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -98,6 +156,8 @@ Craft.EditableTable = Garnish.Base.extend(
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
+            minRows: null,
+            maxRows: null,
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },
@@ -389,8 +449,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             this.$textareas.css('min-height', tallestTextareaHeight);
 
-            // If the <td> is still taller, go with that insted
-            var tdHeight = this.$textareas.first().parent().height();
+            // If the <td> is still taller, go with that instead
+            var tdHeight = this.$textareas.filter(':visible').first().parent().height();
 
             if (tdHeight > tallestTextareaHeight) {
                 this.$textareas.css('min-height', tdHeight);
@@ -398,11 +458,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         deleteRow: function() {
-            this.table.sorter.removeItems(this.$tr);
-            this.$tr.remove();
-
-            // onDeleteRow callback
-            this.table.settings.onDeleteRow(this.$tr);
+            this.table.deleteRow(this);
         }
     },
     {

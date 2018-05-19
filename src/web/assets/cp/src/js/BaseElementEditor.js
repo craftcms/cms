@@ -241,11 +241,6 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             }
                         }
 
-                        // Update Live Preview
-                        if (typeof Craft.livePreview !== 'undefined') {
-                            Craft.livePreview.updateIframe(true);
-                        }
-
                         this.closeHud();
                         this.onSaveElement(response);
                     }

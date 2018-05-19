@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
@@ -22,7 +22,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
- * @since  3.0
+ * @since 3.0
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
@@ -112,7 +112,6 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
     /**
      * @param string $id of a job message
-     *
      * @return bool
      */
     public function isFailed(string $id): bool
@@ -502,7 +501,8 @@ EOD;
     private function _createWaitingJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['fail' => false, 'timeUpdated' => null, 'delay' => 0]);
+            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()]);
     }
 
     /**
@@ -513,7 +513,8 @@ EOD;
     private function _createDelayedJobQuery(): Query
     {
         return $this->_createJobQuery()
-            ->where(['and', ['fail' => false, 'timeUpdated' => null], ['>', 'delay', 0]]);
+            ->where(['fail' => false, 'timeUpdated' => null])
+            ->andWhere('[[timePushed]] + [[delay]] > :time', ['time' => time()]);
     }
 
     /**
@@ -542,7 +543,6 @@ EOD;
      * Returns a job's status.
      *
      * @param array|false $payload
-     *
      * @return int
      */
     private function _status($payload): int

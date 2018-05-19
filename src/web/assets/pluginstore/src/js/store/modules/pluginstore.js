@@ -1,128 +1,141 @@
-import api from '../../api'
+import api from '../../api/pluginstore'
 import * as types from '../mutation-types'
 
+/**
+ * State
+ */
 const state = {
-    data: {},
+    categories: [],
+    developer: null,
+    featuredPlugins: [],
     plugin: null,
+    plugins: [],
 }
 
+/**
+ * Getters
+ */
 const getters = {
-
-    pluginStoreData: state => state.data,
-
-    enableCraftId(state) {
-        return window.enableCraftId;
-    },
-
-    pluginStoreGetAllCategories(state) {
-        return state.data.categories;
-    },
 
     getFeaturedPlugin(state) {
         return id => {
-            if(state.data.featuredPlugins) {
-                return state.data.featuredPlugins.find(g => g.id == id)
-            }
-        };
-    },
-
-    getAllCategories(state) {
-        return () => {
-            return state.data.categories;
+            return state.featuredPlugins.find(g => g.id == id)
         }
     },
 
     getCategoryById(state) {
         return id => {
-            if(state.data.categories) {
-                return state.data.categories.find(c => c.id == id)
-            }
-        };
+            return state.categories.find(c => c.id == id)
+        }
     },
 
     isInstalled(state, rootState) {
-        return  plugin => {
+        return plugin => {
             return rootState.installedPlugins.find(p => p.id == plugin.id)
         }
     },
 
-    allPlugins: (state, rootState) => {
-        return state.data.plugins;
-    },
-
     getPluginById(state, rootState) {
         return id => {
-            if(state.data.plugins) {
-                return state.data.plugins.find(p => p.id == id)
-            }
-
-            return false;
-        };
+                return state.plugins.find(p => p.id == id)
+        }
     },
 
     getPluginsByIds(state, rootState) {
         return ids => {
-            return state.data.plugins.filter(p => {
-                return ids.find(id => id == p.id)
+            let plugins = [];
+
+            ids.forEach(function(id) {
+                const plugin = state.plugins.find(p => p.id === id)
+                plugins.push(plugin)
             })
-        };
+
+            return plugins;
+        }
     },
 
     getPluginsByCategory(state, rootState) {
         return categoryId => {
-            return state.data.plugins.filter(p => {
-                return p.categoryIds.find(c =>  c == categoryId);
+            return state.plugins.filter(p => {
+                return p.categoryIds.find(c => c == categoryId)
             })
         }
     },
 
     getPluginsByDeveloperId(state, rootState) {
         return developerId => {
-            if(state.data.plugins) {
-                return state.data.plugins.filter(p => p.developerId == developerId)
-            }
+            return state.plugins.filter(p => p.developerId == developerId)
         }
     },
 
-};
+    getPluginByHandle(state) {
+        return handle => {
+            return state.plugins.find(plugin => plugin.handle === handle)
+        }
+    },
 
+}
+
+/**
+ * Actions
+ */
 const actions = {
 
-    getPluginStoreData ({ commit }) {
+    getDeveloper({commit}, developerId) {
         return new Promise((resolve, reject) => {
-            api.getPluginStoreData(data => {
-                commit(types.RECEIVE_PLUGIN_STORE_DATA, { data });
-                resolve(data);
+            api.getDeveloper(developerId, developer => {
+                commit(types.RECEIVE_DEVELOPER, {developer})
+                resolve(developer)
             }, response => {
-                reject(response);
+                reject(response)
             })
         })
     },
 
-    getPluginDetails({ commit }, pluginId) {
+    getPluginStoreData({commit}) {
         return new Promise((resolve, reject) => {
-            api.getPluginDetails(pluginId, data => {
-                commit(types.RECEIVE_PLUGIN_DETAILS, { data });
-                resolve(data);
+            api.getPluginStoreData(response => {
+                commit(types.RECEIVE_PLUGIN_STORE_DATA, {response})
+                resolve(response)
             }, response => {
-                reject(response);
+                reject(response)
             })
         })
     },
 
-};
+    getPluginDetails({commit}, pluginId) {
+        return new Promise((resolve, reject) => {
+            api.getPluginDetails(pluginId, response => {
+                commit(types.UPDATE_PLUGIN_DETAILS, response.data)
+                resolve(response)
+            }, response => {
+                reject(response)
+            })
+        })
+    },
 
+}
+
+/**
+ * Mutations
+ */
 const mutations = {
 
-    [types.RECEIVE_PLUGIN_STORE_DATA] (state, { data }) {
-        state.data = data
+    [types.RECEIVE_DEVELOPER](state, {developer}) {
+        state.developer = developer
     },
 
-    [types.RECEIVE_PLUGIN_DETAILS] (state, { data }) {
-        state.plugin = data
+    [types.RECEIVE_PLUGIN_STORE_DATA](state, {response}) {
+        state.categories = response.data.categories
+        state.featuredPlugins = response.data.featuredPlugins
+        state.plugins = response.data.plugins
     },
 
-};
+    [types.UPDATE_PLUGIN_DETAILS](state, pluginDetails) {
+        state.plugin = pluginDetails
+    },
+
+}
 
 export default {
     state,

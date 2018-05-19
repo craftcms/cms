@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -14,7 +14,7 @@ use craft\db\Migration;
  * Migration utility methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MigrationHelper
 {
@@ -24,9 +24,8 @@ class MigrationHelper
     /**
      * Returns whether a foreign key exists.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     *
      * @return bool
      */
     public static function doesForeignKeyExist(string $tableName, $columns): bool
@@ -62,11 +61,9 @@ class MigrationHelper
     /**
      * Drops a foreign key if it exists.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param Migration|null  $migration
-     *
-     * @return void
+     * @param Migration|null $migration
      */
     public static function dropForeignKeyIfExists(string $tableName, $columns, Migration $migration = null)
     {
@@ -78,11 +75,10 @@ class MigrationHelper
     /**
      * Returns whether an index exists.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param bool            $unique
-     * @param bool            $foreignKey
-     *
+     * @param bool $unique
+     * @param bool $foreignKey
      * @return bool
      */
     public static function doesIndexExist(string $tableName, $columns, bool $unique = false, bool $foreignKey = false): bool
@@ -106,12 +102,10 @@ class MigrationHelper
     /**
      * Drops an index if it exists.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param bool            $unique
-     * @param Migration|null  $migration
-     *
-     * @return void
+     * @param bool $unique
+     * @param Migration|null $migration
      */
     public static function dropIndexIfExists(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -123,11 +117,9 @@ class MigrationHelper
     /**
      * Renames a table, while also updating its sequence, index, and FK names, as well as any other FK names pointing to the table.
      *
-     * @param string         $oldName
-     * @param string         $newName
+     * @param string $oldName
+     * @param string $newName
      * @param Migration|null $migration
-     *
-     * @return void
      */
     public static function renameTable(string $oldName, string $newName, Migration $migration = null)
     {
@@ -282,12 +274,10 @@ class MigrationHelper
     /**
      * Renames a column, while also updating any index and FK names that use the column.
      *
-     * @param string         $tableName
-     * @param string         $oldName
-     * @param string         $newName
+     * @param string $tableName
+     * @param string $oldName
+     * @param string $newName
      * @param Migration|null $migration
-     *
-     * @return void
      */
     public static function renameColumn(string $tableName, string $oldName, string $newName, Migration $migration = null)
     {
@@ -456,8 +446,7 @@ class MigrationHelper
      * Returns a list of all the foreign keys that point to a given table/column.
      *
      * @param string $tableName The table the foreign keys should point to.
-     * @param string $column    The column the foreign keys should point to. Defaults to 'id'.
-     *
+     * @param string $column The column the foreign keys should point to. Defaults to 'id'.
      * @return array A list of the foreign keys pointing to that table/column.
      */
     public static function findForeignKeysTo(string $tableName, string $column = 'id'): array
@@ -487,7 +476,7 @@ class MigrationHelper
     /**
      * Drops a table, its own foreign keys, and any foreign keys referencing it.
      *
-     * @param string         $tableName
+     * @param string $tableName
      * @param Migration|null $migration
      */
     public static function dropTable(string $tableName, Migration $migration = null)
@@ -514,9 +503,8 @@ class MigrationHelper
     /**
      * Drops all the foreign keys on a table.
      *
-     * @param string         $tableName
+     * @param string $tableName
      * @param Migration|null $migration
-     *
      * @return array An array of the foreign keys that were just dropped.
      */
     public static function dropAllForeignKeysOnTable(string $tableName, Migration $migration = null): array
@@ -548,10 +536,8 @@ class MigrationHelper
     /**
      * Drops all the foreign keys that reference a table.
      *
-     * @param string         $tableName
+     * @param string $tableName
      * @param Migration|null $migration
-     *
-     * @return void
      */
     public static function dropAllForeignKeysToTable(string $tableName, Migration $migration = null)
     {
@@ -581,9 +567,9 @@ class MigrationHelper
     /**
      * Drops a foreign key.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param Migration|null  $migration
+     * @param Migration|null $migration
      */
     public static function dropForeignKey(string $tableName, $columns, Migration $migration = null)
     {
@@ -604,9 +590,8 @@ class MigrationHelper
     /**
      * Drops all the indexes on a table.
      *
-     * @param string         $tableName
+     * @param string $tableName
      * @param Migration|null $migration
-     *
      * @return array An array of the indexes that were just dropped.
      */
     public static function dropAllIndexesOnTable(string $tableName, Migration $migration = null): array
@@ -630,10 +615,8 @@ class MigrationHelper
     /**
      * Drops all the unique indexes on a table.
      *
-     * @param string         $tableName
+     * @param string $tableName
      * @param Migration|null $migration
-     *
-     * @return void
      */
     public static function dropAllUniqueIndexesOnTable(string $tableName, Migration $migration = null)
     {
@@ -652,10 +635,10 @@ class MigrationHelper
     /**
      * Drops an index.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param bool            $unique
-     * @param Migration|null  $migration
+     * @param bool $unique
+     * @param Migration|null $migration
      */
     public static function dropIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -681,10 +664,10 @@ class MigrationHelper
     /**
      * Restores an index.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param bool            $unique
-     * @param Migration|null  $migration
+     * @param bool $unique
+     * @param Migration|null $migration
      */
     public static function restoreIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -704,13 +687,13 @@ class MigrationHelper
     /**
      * Restores a foreign key.
      *
-     * @param string          $tableName
+     * @param string $tableName
      * @param string|string[] $columns
-     * @param string          $refTable
-     * @param array           $refColumns
-     * @param string          $onUpdate
-     * @param string          $onDelete
-     * @param Migration|null  $migration
+     * @param string $refTable
+     * @param array $refColumns
+     * @param string $onUpdate
+     * @param string $onDelete
+     * @param Migration|null $migration
      */
     public static function restoreForeignKey(string $tableName, $columns, string $refTable, $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {
@@ -732,8 +715,7 @@ class MigrationHelper
 
     /**
      * @param array $foreignKey
-     * @param bool  $useKey
-     *
+     * @param bool $useKey
      * @return array
      */
     private static function _getColumnsForFK(array $foreignKey, bool $useKey = false): array

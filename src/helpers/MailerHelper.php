@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -23,7 +23,7 @@ use yii\base\Event;
  * Class MailerHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MailerHelper
 {
@@ -62,9 +62,8 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @param string     $type
+     * @param string $type
      * @param array|null $settings
-     *
      * @return TransportAdapterInterface
      * @throws MissingComponentException if $type is missing
      */
@@ -83,7 +82,6 @@ class MailerHelper
      * Creates a mailer component based on the given mail settings.
      *
      * @param MailSettings $settings
-     *
      * @return Mailer
      */
     public static function createMailer(MailSettings $settings): Mailer

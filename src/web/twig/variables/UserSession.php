@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -13,8 +13,8 @@ use craft\elements\User;
 /**
  * User session functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class UserSession
@@ -78,7 +78,6 @@ class UserSession
      * Returns the URL the user was trying to access before getting sent to the login page.
      *
      * @param string|null $defaultUrl The default URL that should be returned if no return URL was stored.
-     *
      * @return string The return URL, or|null $defaultUrl.
      */
     public function getReturnUrl(string $defaultUrl = null): string
@@ -92,7 +91,6 @@ class UserSession
      * Returns all flash data for the user.
      *
      * @param bool $delete
-     *
      * @return array
      */
     public function getFlashes(bool $delete = true): array
@@ -106,9 +104,8 @@ class UserSession
      * Returns a flash message by a given key.
      *
      * @param string $key
-     * @param mixed  $defaultValue
-     * @param bool   $delete
-     *
+     * @param mixed $defaultValue
+     * @param bool $delete
      * @return mixed
      */
     public function getFlash(string $key, $defaultValue = null, bool $delete = true)
@@ -122,7 +119,6 @@ class UserSession
      * Returns whether a flash message exists by a given key.
      *
      * @param string $key
-     *
      * @return mixed
      */
     public function hasFlash(string $key)

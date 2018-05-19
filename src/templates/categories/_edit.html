@@ -48,7 +48,7 @@
                         {{ forms.optionShortcutLabel('S') }}
                         {{ "Save and continue editing"|t('app') }}
                     </a></li>
-                <li><a class="formsubmit" data-redirect="{{ ('categories/'~groupHandle~'/new?parentId={parent.id}#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                <li><a class="formsubmit" data-redirect="{{ (nextCategoryUrl~'?parentId={parent.id}#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
 
                 {% if not isNewCategory %}
                     <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ (continueEditingUrl~'#')|hash }}">{{ "Save as a new category"|t('app') }}</a></li>

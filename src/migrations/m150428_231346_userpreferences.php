@@ -5,7 +5,9 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
+use craft\helpers\Localization;
 use craft\helpers\MigrationHelper;
+use yii\base\InvalidArgumentException;
 
 /**
  * m150428_231346_userpreferences migration.
@@ -29,13 +31,8 @@ class m150428_231346_userpreferences extends Migration
         $this->_usersTable = $this->db->getSchema()->getRawTableName('{{%users}}');
         $this->_prefsTable = $this->db->getSchema()->getRawTableName('{{%userpreferences}}');
 
-        if ($this->db->tableExists($this->_prefsTable)) {
-            $this->truncateTable($this->_prefsTable);
-            $this->dropForeignKey($this->db->getForeignKeyName($this->_prefsTable, ['userId']), $this->_prefsTable);
-            $this->_createUserPrefsIndexAndForeignKey();
-
-            return;
-        }
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists($this->_prefsTable);
 
         $this->_createUserPrefsTable();
         $this->_createUserPrefsIndexAndForeignKey();
@@ -67,7 +64,7 @@ class m150428_231346_userpreferences extends Migration
         $this->createTable($this->_prefsTable, [
             'userId' => $this->integer()->notNull(),
             'preferences' => $this->text(),
-            'PRIMARY KEY(userId)',
+            'PRIMARY KEY([[userId]])',
         ]);
     }
 
@@ -117,7 +114,12 @@ class m150428_231346_userpreferences extends Migration
                 $prefs = [];
 
                 if (!empty($user['preferredLocale'])) {
-                    $prefs['language'] = $user['preferredLocale'];
+                    try {
+                        $prefs['language'] = Localization::normalizeLanguage($user['preferredLocale']);
+                    } catch (InvalidArgumentException $e) {
+                        // Do nothing.
+                    }
+
                 }
 
                 if ($user['weekStartDay'] != 0) {

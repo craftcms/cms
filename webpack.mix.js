@@ -12,9 +12,28 @@ mix.webpackConfig({
 const sourcePath = 'src/web/assets/pluginstore/src';
 const distPath = 'src/web/assets/pluginstore/dist';
 
+mix.setPublicPath(distPath);
+
+mix.options({
+    sourcemaps: 'source-map',
+    uglify: {
+        sourceMap: true,
+        uglifyOptions: {
+            sourceMap: true,
+            compress: {
+                warnings: false,
+                drop_console: true,
+            },
+            output: {
+                comments: false
+            }
+        }
+    }
+});
+
 mix
-    .js(sourcePath + '/js/main.js', distPath + '/js/main.min.js')
-    .sass(sourcePath + '/sass/main.scss', distPath + '/css/')
+    .js(sourcePath + '/js/main.js', 'js')
+    .sass(sourcePath + '/sass/main.scss', 'css')
         .options({
             processCssUrls: false
         })

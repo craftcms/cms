@@ -1,22 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Rebranding functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Rebrand
 {
@@ -60,7 +61,6 @@ class Rebrand
      * Return whether the specified type of image has been uploaded for the site.
      *
      * @param string $type 'logo' or 'icon'.
-     *
      * @return bool
      */
     public function isImageUploaded(string $type): bool
@@ -92,7 +92,6 @@ class Rebrand
      * Get the ImageVariable for type.
      *
      * @param string $type
-     *
      * @return Image|null
      */
     public function getImageVariable(string $type)
@@ -122,7 +121,6 @@ class Rebrand
      * Returns the path to a rebrand image by type or false if it hasn't ben uploaded.
      *
      * @param string $type logo or image.
-     *
      * @return string|false
      * @throws Exception in case of failure
      */
@@ -136,7 +134,6 @@ class Rebrand
 
         if (!is_dir($dir)) {
             $this->_paths[$type] = false;
-
             return false;
         }
 
@@ -149,7 +146,7 @@ class Rebrand
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$subDir;
-            if (is_dir($path)) {
+            if (is_dir($path) || !ImageHelper::canManipulateAsImage(pathinfo($path, PATHINFO_EXTENSION))) {
                 continue;
             }
 

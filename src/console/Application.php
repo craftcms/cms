@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console;
@@ -20,14 +20,14 @@ use yii\console\Response;
 /**
  * Craft Console Application class
  *
- * @property Request $request          The request component
- * @property User    $user             The user component
+ * An instance of the Console Application class is globally accessible to console requests in Craft via [[\Craft::$app|<code>Craft::$app</code>]].
  *
- * @method Request   getRequest()      Returns the request component.
- * @method Response  getResponse()     Returns the response component.
- *
+ * @property Request $request The request component
+ * @property User $user The user component
+ * @method Request getRequest()      Returns the request component.
+ * @method Response getResponse()     Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Application extends \yii\console\Application
 {
@@ -50,17 +50,44 @@ class Application extends \yii\console\Application
 
     /**
      * Initializes the console app by creating the command runner.
-     *
-     * @return void
      */
     public function init()
     {
+        $this->state = self::STATE_INIT;
+        $this->_preInit();
         parent::init();
+        $this->_postInit();
+    }
 
-        // Set default timezone to UTC
-        date_default_timezone_set('UTC');
+    /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        // Ensure that the request component has been instantiated
+        if (!$this->has('request', true)) {
+            $this->getRequest();
+        }
 
-        $this->_init();
+        parent::bootstrap();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setTimeZone($value)
+    {
+        parent::setTimeZone($value);
+
+        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+            // Make sure that ICU supports this timezone
+            try {
+                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
+            } catch (\IntlException $e) {
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                parent::setTimeZone('UTC');
+            }
+        }
     }
 
     /**

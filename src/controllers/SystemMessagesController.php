@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,16 +12,15 @@ use craft\models\SystemMessage;
 use craft\web\Controller;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The SystemMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemMessagesController extends Controller
 {
@@ -77,7 +76,7 @@ class SystemMessagesController extends Controller
         if (Craft::$app->getIsMultiSite()) {
             $language = Craft::$app->getRequest()->getBodyParam('language');
         } else {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {

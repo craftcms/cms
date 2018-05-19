@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
@@ -22,15 +23,13 @@ use yii\base\Exception;
 
 /**
  * Service for image operations.
- *
  * An instance of the Images service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImages()|<code>Craft::$app->images</code>]].
  *
- * @property bool  $isGd                  Whether image manipulations will be performed using GD or not
- * @property bool  $isImagick             Whether image manipulations will be performed using Imagick or not
+ * @property bool $isGd Whether image manipulations will be performed using GD or not
+ * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  * @property array $supportedImageFormats A list of all supported image formats
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Images extends Component
 {
@@ -63,8 +62,6 @@ class Images extends Component
 
     /**
      * Decide on the image driver being used.
-     *
-     * @return void
      */
     public function init()
     {
@@ -196,9 +193,8 @@ class Images extends Component
      * Loads an image from a file system path.
      *
      * @param string $path
-     * @param bool   $rasterize Whether the image should be rasterized if it's an SVG
-     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
-     *
+     * @param bool $rasterize Whether the image should be rasterized if it's an SVG
+     * @param int $svgSize The size SVG should be scaled up to, if rasterized
      * @return Image
      */
     public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
@@ -223,14 +219,12 @@ class Images extends Component
 
     /**
      * Determines if there is enough memory to process this image.
-     *
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
      * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
      *
      * @param string $filePath The path to the image file.
-     * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
-     *
+     * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
      * @return bool
      */
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
@@ -280,8 +274,6 @@ class Images extends Component
      * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
-     *
-     * @return void
      * @throws Exception if $filePath is a malformed SVG image
      */
     public function cleanImage(string $filePath)
@@ -307,6 +299,10 @@ class Images extends Component
             return;
         }
 
+        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return;
+        }
+
         try {
             if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
@@ -329,7 +325,6 @@ class Images extends Component
      * Rotate image according to it's EXIF data.
      *
      * @param string $filePath
-     *
      * @return bool
      */
     public function rotateImageByExifData(string $filePath): bool
@@ -375,7 +370,6 @@ class Images extends Component
      * Get EXIF metadata for a file by it's path.
      *
      * @param string $filePath
-     *
      * @return array|null
      */
     public function getExifData(string $filePath)
@@ -393,7 +387,6 @@ class Images extends Component
      * Strip orientation from EXIF data for an image at a path.
      *
      * @param string $filePath
-     *
      * @return bool
      */
     public function stripOrientationFromExifData(string $filePath): bool

@@ -1,4 +1,4 @@
-/*!   - 2018-02-01 */
+/*!   - 2018-05-18 */
 (function($){
 
 /** global: Craft */
@@ -186,7 +186,7 @@ $.extend(Craft,
             if(typeof format == 'undefined') {
                 format = ',.0f';
             }
-            
+
             var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
 
             return formatter(number);
@@ -281,7 +281,7 @@ $.extend(Craft,
             }
 
             // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path.substr(0, 2) === '//') {
+            if (path.search('://') !== -1 || path[0] === '/') {
                 return path;
             }
 
@@ -1748,11 +1748,6 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             }
                         }
 
-                        // Update Live Preview
-                        if (typeof Craft.livePreview !== 'undefined') {
-                            Craft.livePreview.updateIframe(true);
-                        }
-
                         this.closeHud();
                         this.onSaveElement(response);
                     }
@@ -2410,6 +2405,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
+            // Kill the old view class
+            if (this.view) {
+                this.view.destroy();
+                delete this.view;
+            }
+
+            this.$elements.html('');
+
             var params = this.getViewParams();
 
             Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
@@ -2590,9 +2593,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection('asc');
+                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
 
-                if (attr === 'score' || attr === 'structure') {
+                if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
                 }
                 else {
@@ -2940,17 +2943,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;
@@ -3259,12 +3255,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Cleanup
             // -------------------------------------------------------------
 
-            // Kill the old view class
-            if (this.view) {
-                this.view.destroy();
-                delete this.view;
-            }
-
             // Get rid of the old action triggers regardless of whether the new batch has actions or not
             if (this.actions) {
                 this.hideActionTriggers();
@@ -3331,7 +3321,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$elements.html(response.html);
             Craft.appendHeadHtml(response.headHtml);
             Craft.appendFootHtml(response.footHtml);
-            picturefill();
 
             // Create the view
             // -------------------------------------------------------------
@@ -3504,6 +3493,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         $scroller: null,
 
         elementIndex: null,
+        thumbLoader: null,
         elementSelect: null,
 
         loadingMore: false,
@@ -3531,6 +3521,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             this.setTotalVisible($elements.length);
             this.setMorePending(this.settings.batchSize && $elements.length == this.settings.batchSize);
+
+            // Instantiate the thumb loader
+            this.thumbLoader = new Craft.ElementThumbLoader();
+            this.thumbLoader.load($elements);
 
             if (this.settings.selectable) {
                 this.elementSelect = new Garnish.Select(
@@ -3762,7 +3756,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             var data = this.getLoadMoreParams();
 
-            Craft.postActionRequest('element-indexes/get-more-elements', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
                 this.loadingMore = false;
                 this.$loadingMoreSpinner.addClass('hidden');
 
@@ -3772,7 +3766,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     this.appendElements($newElements);
                     Craft.appendHeadHtml(response.headHtml);
                     Craft.appendFootHtml(response.footHtml);
-                    picturefill();
 
                     if (this.elementSelect) {
                         this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
@@ -3799,6 +3792,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         appendElements: function($newElements) {
             $newElements.appendTo(this.$elementContainer);
+            this.thumbLoader.load($newElements);
             this.onAppendElements($newElements);
         },
 
@@ -3834,6 +3828,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Remove the "loading-more" spinner, since we added that outside of the view container
             this.$loadingMoreSpinner.remove();
 
+            // Kill the thumb loader
+            this.thumbLoader.destroy();
+            delete this.thumbLoader;
+
             // Delete the element select
             if (this.elementSelect) {
                 this.elementIndex.off('enableElements', this._handleEnableElements);
@@ -3854,6 +3852,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             selectable: false,
             multiSelect: false,
             checkboxMode: false,
+            loadMoreElementsAction: 'element-indexes/get-more-elements',
             onAppendElements: $.noop,
             onSelectionChange: $.noop
         }
@@ -3866,6 +3865,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
     {
+        thumbLoader: null,
         elementSelect: null,
         elementSort: null,
         modal: null,
@@ -3926,6 +3926,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     .css('top', 0)
                     .css(Craft.left, 0);
             }
+
+            this.thumbLoader = new Craft.ElementThumbLoader();
 
             this.initElementSelect();
             this.initElementSort();
@@ -4050,6 +4052,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         addElements: function($elements) {
+            this.thumbLoader.load($elements);
+
             if (this.settings.selectable) {
                 this.elementSelect.addItems($elements);
             }
@@ -4439,8 +4443,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
             for (var i = 0; i < $selectedElements.length; i++) {
                 var $element = $($selectedElements[i]);
+                var elementInfo = Craft.getElementInfo($element);
 
-                info.push(Craft.getElementInfo($element));
+                info.push(elementInfo);
             }
 
             return info;
@@ -8081,7 +8086,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var options = {
                 url: Craft.getActionUrl('assets/save-asset'),
                 fileInput: this.$uploadInput,
-                dropZone: this.$main
+                dropZone: this.$container
             };
 
             options.events = {
@@ -8348,6 +8353,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
+        /**
+         * Do the after-update initializations
+         * @private
+         */
         _onUpdateElements: function(append, $newElements) {
             if (this.settings.context === 'index') {
                 if (!append) {
@@ -8370,6 +8379,58 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
 
             this.base(append, $newElements);
+
+            this.removeListener(this.$elements, 'keydown');
+            this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
+            this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+        },
+
+        /**
+         * Handle a keypress
+         * @private
+         */
+        _onKeyDown: function(ev) {
+            if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+                if (Craft.PreviewFileModal.openInstance) {
+                    Craft.PreviewFileModal.openInstance.selfDestruct();
+                } else {
+                    var $element = this.view.elementSelect.$focusedItem.find('.element');
+
+                    if ($element.length) {
+                        this._loadPreview($element);
+                    }
+                }
+
+                ev.stopPropagation();
+                return false;
+            }
+        },
+
+        /**
+         * Handle element being focused
+         * @private
+         */
+        _onElementFocus: function (ev) {
+            var $element = $(ev.item).find('.element');
+
+            if (Craft.PreviewFileModal.openInstance && $element.length) {
+                this._loadPreview($element);
+            }
+        },
+
+        /**
+         * Load the preview for an Asset element
+         * @private
+         */
+        _loadPreview: function($element) {
+            var settings = {};
+
+            if ($element.data('image-width')) {
+                settings.startingWidth = $element.data('image-width');
+                settings.startingHeight = $element.data('image-height');
+            }
+
+            new Craft.PreviewFileModal($element.data('id'), this.view.elementSelect, settings);
         },
 
         /**
@@ -8686,6 +8747,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _positionProgressBar: function() {
+            if (!this.progressBar) {
+                this.progressBar = new Craft.ProgressBar(this.$main, true);
+            }
+
             var $container = $(),
                 scrollTop = 0,
                 offset = 0;
@@ -8693,8 +8758,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             if (this.settings.context === 'index') {
                 $container = this.progressBar.$progressBar.closest('#content');
                 scrollTop = Garnish.$win.scrollTop();
-            }
-            else {
+            } else {
                 $container = this.progressBar.$progressBar.closest('.main');
                 scrollTop = this.$main.scrollTop();
             }
@@ -8705,8 +8769,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if ($container.height() > windowHeight) {
                 offset = (windowHeight / 2) - 6 + diff;
-            }
-            else {
+            } else {
                 offset = ($container.height() / 2) - 6;
             }
 
@@ -8777,8 +8840,63 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.base.apply(this, arguments);
             this._attachUploader();
+
+            this.addListener(this.$elementsContainer, 'keydown', this._onKeyDown.bind(this));
+            this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
         },
 
+        /**
+         * Handle a keypress
+         * @private
+         */
+        _onKeyDown: function(ev) {
+            if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+                if (Craft.PreviewFileModal.openInstance) {
+                    Craft.PreviewFileModal.openInstance.selfDestruct();
+                } else {
+                    var $element = this.elementSelect.$focusedItem;
+
+                    if ($element.length) {
+                        this._loadPreview($element);
+                    }
+                }
+
+                ev.stopPropagation();
+
+                return false;
+            }
+        },
+
+        /**
+         * Handle element being focused
+         * @private
+         */
+        _onElementFocus: function (ev) {
+            var $element = $(ev.item);
+
+            if (Craft.PreviewFileModal.openInstance && $element.length) {
+                this._loadPreview($element);
+            }
+        },
+
+        /**
+         * Load the preview for an Asset element
+         * @private
+         */
+        _loadPreview: function($element) {
+            var settings = {};
+
+            if ($element.data('image-width')) {
+                settings.startingWidth = $element.data('image-width');
+                settings.startingHeight = $element.data('image-height');
+            }
+
+            new Craft.PreviewFileModal($element.data('id'), this.elementSelect, settings);
+        },
+
+        /**
+         * Create the element editor
+         */
         createElementEditor: function($element) {
             return Craft.createElementEditor(this.settings.elementType, $element, {
                 params: {
@@ -10763,6 +10881,7 @@ Craft.CP = Garnish.Base.extend(
         $selectedTab: null,
         $sidebar: null,
         $contentContainer: null,
+        $edition: null,
 
         $collapsibleTables: null,
 
@@ -10774,9 +10893,6 @@ Craft.CP = Garnish.Base.extend(
         displayedJobInfoUnchanged: 1,
         trackJobProgressTimeout: null,
         jobProgressIcon: null,
-
-        $edition: null,
-        upgradeModal: null,
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
@@ -10801,7 +10917,6 @@ Craft.CP = Garnish.Base.extend(
             this.$details = $('#details');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
-
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
 
@@ -10856,7 +10971,9 @@ Craft.CP = Garnish.Base.extend(
             this.initTabs();
 
             if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', 'showUpgradeModal');
+                this.addListener(this.$edition, 'click', function() {
+                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+                });
             }
 
             if ($.isTouchCapable()) {
@@ -11176,37 +11293,6 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initAlerts: function() {
-            // Is there a domain mismatch?
-            var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-            if ($transferDomainLink.length) {
-                this.addListener($transferDomainLink, 'click', $.proxy(function(ev) {
-                    ev.preventDefault();
-
-                    if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?'))) {
-                        Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                if (response.success) {
-                                    $transferDomainLink.parent().remove();
-
-                                    // Was that the last one?
-                                    if (this.$alerts.children().length === 0) {
-                                        this.$alerts.remove();
-                                        this.$alerts = null;
-                                    }
-
-                                    this.displayNotice(Craft.t('app', 'License transferred.'));
-                                }
-                                else {
-                                    this.displayError(response.error);
-                                }
-                            }
-
-                        }, this));
-                    }
-                }, this));
-            }
-
             // Are there any shunnable alerts?
             var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
@@ -11233,13 +11319,6 @@ Craft.CP = Garnish.Base.extend(
                     }, this));
 
                 }, this));
-            }
-
-            // Is there an edition resolution link?
-            var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
-
-            if ($editionResolutionLink.length) {
-                this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
             }
         },
 
@@ -11445,15 +11524,6 @@ Craft.CP = Garnish.Base.extend(
                     this.jobProgressIcon.complete();
                     delete this.jobProgressIcon;
                 }
-            }
-        },
-
-        showUpgradeModal: function() {
-            if (!this.upgradeModal) {
-                this.upgradeModal = new Craft.UpgradeModal();
-            }
-            else {
-                this.upgradeModal.show();
             }
         }
     },
@@ -12603,6 +12673,10 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
+        rowCount: 0,
+        hasMaxRows: false,
+        hasMinRows: false,
+
         radioCheckboxes: null,
 
         init: function(id, baseName, columns, settings) {
@@ -12614,6 +12688,15 @@ Craft.EditableTable = Garnish.Base.extend(
 
             this.$table = $('#' + id);
             this.$tbody = this.$table.children('tbody');
+            this.rowCount = this.$tbody.find('tr').length;
+
+            // Is this already an editable table?
+            if (this.$table.data('editable-table')) {
+                Garnish.log('Double-instantiating an editable table on an element');
+                this.$table.data('editable-table').destroy();
+            }
+
+            this.$table.data('editable-table', this);
 
             this.sorter = new Craft.DataTableSorter(this.$table, {
                 helperClass: 'editabletablesorthelper',
@@ -12625,6 +12708,12 @@ Craft.EditableTable = Garnish.Base.extend(
             } else {
                 // Give everything a chance to initialize
                 setTimeout($.proxy(this, 'initializeIfVisible'), 500);
+            }
+
+            if (this.settings.minRows && this.rowCount < this.settings.minRows) {
+                for (var i = this.rowCount; i < this.settings.minRows; i++) {
+                    this.addRow()
+                }
             }
         },
 
@@ -12647,9 +12736,9 @@ Craft.EditableTable = Garnish.Base.extend(
             }
 
             this.$addRowBtn = this.$table.next('.add');
+            this.updateAddRowButton();
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
         },
-
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
 
@@ -12659,8 +12748,44 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
+        updateAddRowButton: function() {
+            if (!this.canAddRow()) {
+                this.$addRowBtn.css('opacity', '0.2');
+                this.$addRowBtn.css('pointer-events', 'none');
+            } else {
+                this.$addRowBtn.css('opacity', '1');
+                this.$addRowBtn.css('pointer-events', 'auto');
+            }
+        },
+        canDeleteRow: function() {
+            return (this.rowCount > this.settings.minRows);
+        },
+        deleteRow: function(row) {
+            if (!this.canDeleteRow()) {
+                return;
+            }
 
+            this.sorter.removeItems(row.$tr);
+            row.$tr.remove();
+
+            this.rowCount--;
+
+            this.updateAddRowButton();
+            // onDeleteRow callback
+            this.settings.onDeleteRow(row.$tr);
+        },
+        canAddRow: function() {
+            if (this.settings.maxRows) {
+                return (this.rowCount < this.settings.maxRows);
+            }
+
+            return true;
+        },
         addRow: function() {
+            if (!this.canAddRow()) {
+                return;
+            }
+
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
@@ -12670,6 +12795,9 @@ Craft.EditableTable = Garnish.Base.extend(
 
             // Focus the first input in the row
             $tr.find('input,textarea,select').first().trigger('focus');
+
+            this.rowCount++;
+            this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -12684,6 +12812,8 @@ Craft.EditableTable = Garnish.Base.extend(
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
+            minRows: null,
+            maxRows: null,
             onAddRow: $.noop,
             onDeleteRow: $.noop
         },
@@ -12975,8 +13105,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             this.$textareas.css('min-height', tallestTextareaHeight);
 
-            // If the <td> is still taller, go with that insted
-            var tdHeight = this.$textareas.first().parent().height();
+            // If the <td> is still taller, go with that instead
+            var tdHeight = this.$textareas.filter(':visible').first().parent().height();
 
             if (tdHeight > tallestTextareaHeight) {
                 this.$textareas.css('min-height', tdHeight);
@@ -12984,11 +13114,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         deleteRow: function() {
-            this.table.sorter.removeItems(this.$tr);
-            this.$tr.remove();
-
-            // onDeleteRow callback
-            this.table.settings.onDeleteRow(this.$tr);
+            this.table.deleteRow(this);
         }
     },
     {
@@ -13099,6 +13225,83 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
             activate: null
         }
     });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Base Element Index View
+ */
+Craft.ElementThumbLoader = Garnish.Base.extend(
+    {
+        queue: null,
+        workers: [],
+
+        init: function() {
+            this.queue = [];
+
+            for (var i = 0; i < 3; i++) {
+                this.workers.push(new Craft.ElementThumbLoader.Worker(this));
+            }
+        },
+
+        load: function($elements) {
+            this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
+
+            if (this.queue.length) {
+                // See if there are any inactive workers
+                for (var i = 0; i < this.workers.length; i++) {
+                    if (!this.workers[i].active) {
+                        this.workers[i].loadNext();
+                    }
+                }
+            }
+        },
+
+        destroy: function() {
+            for (var i = 0; i < this.workers.length; i++) {
+                this.workers[i].destroy();
+            }
+
+            this.base();
+        }
+    }
+);
+
+Craft.ElementThumbLoader.Worker = Garnish.Base.extend(
+    {
+        loader: null,
+        active: false,
+
+        init: function(loader) {
+            this.loader = loader;
+        },
+
+        loadNext: function() {
+            var container = this.loader.queue.shift();
+            if (typeof container === 'undefined') {
+                this.active = false;
+                return;
+            }
+
+            this.active = true;
+            var $container = $(container);
+            if ($container.find('img').length) {
+                this.loadNext();
+                return;
+            }
+            var $img = $('<img/>', {
+                sizes: $container.attr('data-sizes'),
+                srcset: $container.attr('data-srcset'),
+                alt: ''
+            });
+            this.addListener($img, 'load', 'loadNext');
+            $img.appendTo($container);
+            picturefill({
+                elements: [$img[0]]
+            });
+        }
+    }
+);
 
 /** global: Craft */
 /** global: Garnish */
@@ -14432,7 +14635,6 @@ Craft.Grid = Garnish.Base.extend(
             this.$items = $().add(this.$items.add(items));
             this.setItems();
             this.refreshCols(true, true);
-            $(items).velocity('finish');
         },
 
         removeItems: function(items) {
@@ -14459,7 +14661,7 @@ Craft.Grid = Garnish.Base.extend(
             delete this.setItems._;
         },
 
-        refreshCols: function(force, animate) {
+        refreshCols: function(force) {
             if (this._refreshingCols) {
                 this._refreshColsAfterRefresh = true;
                 if (force) {
@@ -14697,27 +14899,7 @@ Craft.Grid = Garnish.Base.extend(
                             width: this.getItemWidthCss(this.layout.colspans[this.refreshCols._.i])
                         };
                         this.refreshCols._.css[Craft.left] = this.getItemLeftPosCss(this.layout.positions[this.refreshCols._.i]);
-
-                        if (animate) {
-                            // Get the target CSS in pixels for Velocity
-                            this.refreshCols._.velocityCss = {
-                                width: this.getItemWidthInPx(this.layout.colspans[this.refreshCols._.i])
-                            };
-                            this.refreshCols._.velocityCss[Craft.left] = this.getItemLeftPosInPx(this.layout.positions[this.refreshCols._.i]);
-
-                            this.items[this.refreshCols._.i].velocity(this.refreshCols._.velocityCss, {
-                                queue: false,
-                                complete: (function(css) {
-                                    // Set to calc()-based width/position on complete
-                                    return function(elements) {
-                                        $(elements).css(css);
-                                    };
-                                })(this.refreshCols._.css)
-                            });
-                        }
-                        else {
-                            this.items[this.refreshCols._.i].velocity('finish').css(this.refreshCols._.css);
-                        }
+                        this.items[this.refreshCols._.i].css(this.refreshCols._.css);
                     }
 
                     // If every item is at position 0, then let them lay out au naturel
@@ -14730,7 +14912,7 @@ Craft.Grid = Garnish.Base.extend(
                         this.$items.css('position', 'absolute');
 
                         // Now position the items
-                        this.positionItems(animate);
+                        this.positionItems();
 
                         // Update the positions as the items' heigthts change
                         this.addListener(this.$items, 'resize', 'onItemResize');
@@ -14803,7 +14985,7 @@ Craft.Grid = Garnish.Base.extend(
             return true;
         },
 
-        positionItems: function(animate) {
+        positionItems: function() {
             this.positionItems._ = {};
 
             this.positionItems._.colHeights = [];
@@ -14825,14 +15007,7 @@ Craft.Grid = Garnish.Base.extend(
                     this.positionItems._.top += this.settings.gutter;
                 }
 
-                if (animate) {
-                    this.items[this.positionItems._.i].velocity({top: this.positionItems._.top}, {
-                        queue: false
-                    });
-                }
-                else {
-                    this.items[this.positionItems._.i].velocity('finish').css('top', this.positionItems._.top);
-                }
+                this.items[this.positionItems._.i].css('top', this.positionItems._.top);
 
                 // Now add the new heights to those columns
                 for (this.positionItems._.col = this.layout.positions[this.positionItems._.i]; this.positionItems._.col <= this.positionItems._.endingCol; this.positionItems._.col++) {
@@ -15043,6 +15218,7 @@ Craft.ImageUpload = Garnish.Base.extend(
             options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
             options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
             options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
+            options.events.fileuploadfail = $.proxy(this, '_onUploadError');
 
             this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -15109,6 +15285,18 @@ Craft.ImageUpload = Garnish.Base.extend(
             if (this.uploader.isLastUpload()) {
                 this.progressBar.hideProgressBar();
                 this.$container.removeClass('uploading');
+            }
+        },
+
+        /**
+         * On a file being uploaded.
+         */
+        _onUploadError: function(event, data) {
+            if (data.jqXHR.responseJSON.error) {
+                alert(data.jqXHR.responseJSON.error);
+                this.$container.removeClass('uploading');
+                this.progressBar.hideProgressBar();
+                this.progressBar.resetProgressBar();
             }
         }
     },
@@ -15228,8 +15416,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val(this.settings.value);
             this.$outerContainer.addClass('on');
             this.$outerContainer.attr('aria-checked', 'true');
-            this.on = true;
-            this.onChange();
+
+            if (this.on !== (this.on = true)) {
+                this.onChange();
+            }
         },
 
         turnOff: function() {
@@ -15242,8 +15432,10 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.$input.val('');
             this.$outerContainer.removeClass('on');
             this.$outerContainer.attr('aria-checked', 'false');
-            this.on = false;
-            this.onChange();
+
+            if (this.on !== (this.on = false)) {
+                this.onChange();
+            }
         },
 
         toggle: function(event) {
@@ -15398,6 +15590,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
         _handleSuccessProxy: null,
         _handleErrorProxy: null,
+        _forceUpdateIframeProxy: null,
 
         _scrollX: null,
         _scrollY: null,
@@ -15435,6 +15628,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
             this._handleErrorProxy = $.proxy(this, 'handleError');
+            this._forceUpdateIframeProxy = $.proxy(this, 'forceUpdateIframe');
 
             // Find the DOM elements
             this.$extraFields = $(this.settings.extraFields);
@@ -15564,6 +15758,8 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.slideIn();
             }
 
+            Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+
             this.inPreviewMode = true;
             this.trigger('enter');
         },
@@ -15631,6 +15827,8 @@ Craft.LivePreview = Garnish.Base.extend(
             this.$iframeContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
                 this.$iframeContainer.hide();
             }, this));
+
+            Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
 
             this.inPreviewMode = false;
             this.trigger('exit');
@@ -15704,6 +15902,10 @@ Craft.LivePreview = Garnish.Base.extend(
             else {
                 return false;
             }
+        },
+
+        forceUpdateIframe: function() {
+            return this.updateIframe(true);
         },
 
         handleSuccess: function(data) {
@@ -15928,6 +16130,253 @@ Craft.PasswordInput = Garnish.Base.extend(
             onToggleInput: $.noop
         }
     });
+
+/** global: Craft */
+/** global: Garnish */
+/**
+ * Preview File Modal
+ */
+Craft.PreviewFileModal = Garnish.Modal.extend(
+    {
+        assetId: null,
+        $spinner: null,
+        elementSelect: null,
+        type: null,
+        loaded: null,
+        requestId: 0,
+
+        /**
+         * Initialize the preview file modal.
+         * @returns {*|void}
+         */
+        init: function(assetId, elementSelect, settings) {
+            settings = $.extend(this.defaultSettings, settings);
+
+            settings.onHide = this._onHide.bind(this);
+
+            if (Craft.PreviewFileModal.openInstance) {
+                var instance = Craft.PreviewFileModal.openInstance;
+
+                if (instance.assetId !== assetId) {
+                    instance.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
+                    instance.elementSelect = elementSelect;
+                }
+
+                return this.destroy();
+            }
+
+            Craft.PreviewFileModal.openInstance = this;
+            this.elementSelect = elementSelect;
+
+            this.$container = $('<div id="previewmodal" class="modal loading"/>').appendTo(Garnish.$bod);
+
+            this.base(this.$container, $.extend({
+                resizable: true
+            }, settings));
+
+            // Cut the flicker, just show the nice person the preview.
+            if (this.$container) {
+                this.$container.velocity('stop');
+                this.$container.show().css('opacity', 1);
+
+                this.$shade.velocity('stop');
+                this.$shade.show().css('opacity', 1);
+            }
+
+            this.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
+        },
+
+        /**
+         * When hiding, remove all traces and focus last focused element.
+         * @private
+         */
+        _onHide: function () {
+            Craft.PreviewFileModal.openInstance = null;
+            this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+
+            this.$shade.remove();
+
+            return this.destroy();
+        },
+
+        /**
+         * Disappear immediately forever.
+         * @returns {boolean}
+         */
+        selfDestruct: function () {
+            var instance = Craft.PreviewFileModal.openInstance;
+
+            instance.hide();
+            instance.$shade.remove();
+            instance.destroy();
+
+            Craft.PreviewFileModal.openInstance = null;
+
+            return true;
+        },
+
+        /**
+         * Load an asset, using starting width and height, if applicable
+         * @param assetId
+         * @param startingWidth
+         * @param startingHeight
+         */
+        loadAsset: function (assetId, startingWidth, startingHeight) {
+            this.assetId = assetId;
+
+            this.$container.empty();
+            this.loaded = false;
+
+            this.desiredHeight = null;
+            this.desiredWidth = null;
+
+            var containerHeight = Garnish.$win.height() * 0.66;
+            var containerWidth = Math.min(containerHeight / 3 * 4, Garnish.$win.width() - this.settings.minGutter * 2);
+            containerHeight = containerWidth / 4 * 3;
+
+            if (startingWidth && startingHeight) {
+                var ratio = startingWidth / startingHeight;
+                containerWidth =  Math.min(startingWidth, Garnish.$win.width() - this.settings.minGutter * 2);
+                containerHeight = Math.min(containerWidth / ratio, Garnish.$win.height() - this.settings.minGutter * 2);
+                containerWidth = containerHeight * ratio;
+
+                // This might actually have put width over the viewport limits, so doublecheck
+                if (containerWidth > Math.min(startingWidth, Garnish.$win.width() - this.settings.minGutter * 2)) {
+                    containerWidth =  Math.min(startingWidth, Garnish.$win.width() - this.settings.minGutter * 2);
+                    containerHeight = containerWidth / ratio;
+                }
+            }
+
+            this._resizeContainer(containerWidth, containerHeight);
+
+            this.$spinner = $('<div class="spinner centeralign"></div>').appendTo(this.$container);
+            var top = (this.$container.height() / 2 - this.$spinner.height() / 2) + 'px',
+                left = (this.$container.width() / 2 - this.$spinner.width() / 2) + 'px';
+
+            this.$spinner.css({left: left, top: top, position: 'absolute'});
+            this.requestId++;
+
+            Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, function(response, textStatus) {
+                if (textStatus === 'success') {
+                    if (response.success) {
+                        if (response.requestId != this.requestId) {
+                            return;
+                        }
+
+                        this.$container.removeClass('loading');
+                        this.$spinner.remove();
+
+                        this.loaded = true;
+                        this.$container.append(response.modalHtml);
+
+                        var $highlight = this.$container.find('.highlight');
+
+                        if ($highlight.length && $highlight.hasClass('json')) {
+                            var $target = $highlight.find('code');
+                            $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
+                        }
+
+                        if ($highlight.length) {
+                            Prism.highlightElement($highlight.find('code').get(0));
+                        } else {
+                            this.$container.find('img').css({
+                                width: containerWidth,
+                                height: containerHeight
+                            });
+                        }
+
+                        this.updateSizeAndPosition();
+                    } else {
+                        alert(response.error);
+
+                        this.hide();
+                    }
+                }
+            }.bind(this));
+        },
+
+        /**
+         * Override default logic with some extra shenanigans
+         */
+        updateSizeAndPosition: function() {
+            if (!this.loaded) {
+                return;
+            }
+
+            var $img = this.$container.find('img');
+
+            if (this.loaded && $img.length) {
+                // Make sure we maintain the ratio
+
+                var maxWidth = $img.data('maxwidth'),
+                    maxHeight = $img.data('maxheight'),
+                    imageRatio = maxWidth / maxHeight,
+                    desiredWidth = this.desiredWidth ? this.desiredWidth : this.$container.width(),
+                    desiredHeight = this.desiredHeight ? this.desiredHeight : this.$container.height(),
+                    width = Math.min(desiredWidth, maxWidth),
+                    height = Math.round(Math.min(maxHeight, width / imageRatio));
+
+                width = Math.round(height * imageRatio);
+
+                $img.css({'width': width, 'height': height});
+                this._resizeContainer(width, height);
+
+                this.desiredWidth = width;
+                this.desiredHeight = height;
+
+            }
+
+            this.base();
+
+            if (this.loaded && $img.length) {
+                // Correct anomalities
+                var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), Garnish.$win.width() - (this.settings.minGutter * 2))),
+                    containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), Garnish.$win.height() - (this.settings.minGutter * 2)));
+                    containerWidth = Math.round(containerHeight * imageRatio);
+
+                // This might actually have put width over the viewport limits, so doublecheck that
+                if (containerWidth > Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2)) {
+                    containerWidth =  Math.min(containerWidth, Garnish.$win.width() - this.settings.minGutter * 2);
+                    containerHeight = containerWidth / imageRatio;
+                }
+
+                this._resizeContainer(containerWidth, containerHeight);
+
+                $img.css({'width': containerWidth, 'height': containerHeight});
+            } else if (this.loaded) {
+                this.$container.find('.highlight')
+                    .height(this.$container.height())
+                    .width(this.$container.width())
+                    .css({'overflow': 'auto'});
+            }
+        },
+
+        /**
+         * Resize the container to specified dimensions
+         * @param containerWidth
+         * @param containerHeight
+         * @private
+         */
+        _resizeContainer: function (containerWidth, containerHeight) {
+            this.$container.css({
+                'width': containerWidth,
+                'min-width': containerWidth,
+                'max-width': containerWidth,
+                'height': containerHeight,
+                'min-height': containerHeight,
+                'max-height': containerHeight,
+                'top': (Garnish.$win.height() - containerHeight) / 2,
+                'left': (Garnish.$win.width() - containerWidth) / 2
+            });
+        }
+    },
+    {
+        defaultSettings: {
+            startingWidth: null,
+            startingHeight: null
+        }
+    }
+);
 
 /** global: Craft */
 /** global: Garnish */
@@ -17259,6 +17708,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
+                        if (!response.success) {
+                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            this.tableView.elementIndex.updateElements();
+                            return;
+                        }
                         Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
                         this.onPositionChange();
 
@@ -18751,522 +19205,6 @@ Craft.ui =
             return (disabled ? 'disabled' : null);
         }
     };
-
-/** global: Craft */
-/** global: Garnish */
-/**
- * Craft Upgrade Modal
- */
-Craft.UpgradeModal = Garnish.Modal.extend(
-    {
-        $container: null,
-        $body: null,
-        $compareScreen: null,
-        $checkoutScreen: null,
-        $successScreen: null,
-
-        $checkoutForm: null,
-        $checkoutLogo: null,
-        $checkoutSubmitBtn: null,
-        $checkoutSpinner: null,
-        $checkoutFormError: null,
-        $checkoutSecure: null,
-        clearCheckoutFormTimeout: null,
-        $customerNameInput: null,
-        $customerEmailInput: null,
-        $ccField: null,
-        $ccNumInput: null,
-        $ccExpInput: null,
-        $ccCvcInput: null,
-        $businessFieldsToggle: null,
-        $businessNameInput: null,
-        $businessAddress1Input: null,
-        $businessAddress2Input: null,
-        $businessCityInput: null,
-        $businessStateInput: null,
-        $businessCountryInput: null,
-        $businessZipInput: null,
-        $businessTaxIdInput: null,
-        $purchaseNotesInput: null,
-        $couponInput: null,
-        $couponSpinner: null,
-        submittingPurchase: false,
-
-        stripePublicKey: null,
-        editions: null,
-        countries: null,
-        states: null,
-        edition: null,
-        initializedCheckoutForm: false,
-
-        applyingCouponCode: false,
-        applyNewCouponCodeAfterDoneLoading: false,
-        couponPrice: null,
-        formattedCouponPrice: null,
-
-        init: function(settings) {
-            this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod);
-
-            this.base(this.$container, $.extend({
-                resizable: true
-            }, settings));
-
-            Craft.postActionRequest('app/get-upgrade-modal', $.proxy(function(response, textStatus) {
-                this.$container.removeClass('loading');
-
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        this.stripePublicKey = response.stripePublicKey;
-                        this.editions = response.editions;
-                        this.countries = response.countries;
-                        this.states = response.states;
-
-                        this.$container.append(response.modalHtml);
-                        this.$container.append('<script type="text/javascript" src="' + Craft.jqueryPaymentUrl + '"></script>');
-
-                        this.$compareScreen = this.$container.children('#upgrademodal-compare');
-                        this.$checkoutScreen = this.$container.children('#upgrademodal-checkout');
-                        this.$successScreen = this.$container.children('#upgrademodal-success');
-
-                        this.$checkoutLogo = this.$checkoutScreen.find('.logo:first');
-                        this.$checkoutForm = this.$checkoutScreen.find('form:first');
-                        this.$checkoutSubmitBtn = this.$checkoutForm.find('#pay-button');
-                        this.$checkoutSpinner = this.$checkoutForm.find('#pay-spinner');
-                        this.$customerNameInput = this.$checkoutForm.find('#customer-name');
-                        this.$customerEmailInput = this.$checkoutForm.find('#customer-email');
-                        this.$ccField = this.$checkoutForm.find('#cc-inputs');
-                        this.$ccNumInput = this.$ccField.find('#cc-num');
-                        this.$ccExpInput = this.$ccField.find('#cc-exp');
-                        this.$ccCvcInput = this.$ccField.find('#cc-cvc');
-                        this.$businessFieldsToggle = this.$checkoutForm.find('.fieldtoggle');
-                        this.$businessNameInput = this.$checkoutForm.find('#business-name');
-                        this.$businessAddress1Input = this.$checkoutForm.find('#business-address1');
-                        this.$businessAddress2Input = this.$checkoutForm.find('#business-address2');
-                        this.$businessCityInput = this.$checkoutForm.find('#business-city');
-                        this.$businessStateInput = this.$checkoutForm.find('#business-state');
-                        this.$businessCountryInput = this.$checkoutForm.find('#business-country');
-                        this.$businessZipInput = this.$checkoutForm.find('#business-zip');
-                        this.$businessTaxIdInput = this.$checkoutForm.find('#business-taxid');
-                        this.$purchaseNotesInput = this.$checkoutForm.find('#purchase-notes');
-                        this.$checkoutSecure = this.$checkoutScreen.find('.secure:first');
-                        this.$couponInput = this.$checkoutForm.find('#coupon-input');
-                        this.$couponSpinner = this.$checkoutForm.find('#coupon-spinner');
-
-                        var $buyBtns = this.$compareScreen.find('.buybtn');
-                        this.addListener($buyBtns, 'click', 'onBuyBtnClick');
-
-                        var $testBtns = this.$compareScreen.find('.btn.test');
-                        this.addListener($testBtns, 'click', 'onTestBtnClick');
-
-                        var $cancelCheckoutBtn = this.$checkoutScreen.find('#upgrademodal-cancelcheckout');
-                        this.addListener($cancelCheckoutBtn, 'click', 'cancelCheckout');
-                    }
-                    else {
-                        var error;
-
-                        if (response.error) {
-                            error = response.error;
-                        }
-                        else {
-                            error = Craft.t('app', 'An unknown error occurred.');
-                        }
-
-                        this.$container.append('<div class="body">' + error + '</div>');
-                    }
-
-                    // Include Stripe.js
-                    $('<script type="text/javascript" src="https://js.stripe.com/v1/"></script>').appendTo(Garnish.$bod);
-                }
-            }, this));
-        },
-
-        initializeCheckoutForm: function() {
-            this.$ccNumInput.payment('formatCardNumber');
-            this.$ccExpInput.payment('formatCardExpiry');
-            this.$ccCvcInput.payment('formatCardCVC');
-
-            this.$businessFieldsToggle.fieldtoggle();
-
-            this.$businessCountryInput.selectize({valueField: 'iso', labelField: 'name', searchField: ['name', 'iso'], dropdownParent: 'body', inputClass: 'selectize-input text'});
-            this.$businessCountryInput[0].selectize.addOption(this.countries);
-            this.$businessCountryInput[0].selectize.refreshOptions(false);
-
-            this.$businessStateInput.selectize({valueField: 'abbr', labelField: 'name', searchField: ['name', 'abbr'], dropdownParent: 'body', inputClass: 'selectize-input text', create: true});
-            this.$businessStateInput[0].selectize.addOption(this.states);
-            this.$businessStateInput[0].selectize.refreshOptions(false);
-
-            this.addListener(this.$couponInput, 'textchange', {delay: 500}, 'applyCoupon');
-            this.addListener(this.$checkoutForm, 'submit', 'submitPurchase');
-        },
-
-        applyCoupon: function() {
-            if (this.applyingCouponCode) {
-                this.applyNewCouponCodeAfterDoneLoading = true;
-                return;
-            }
-
-            var couponCode = this.$couponInput.val();
-
-            if (couponCode) {
-                var data = {
-                    edition: this.edition,
-                    couponCode: couponCode
-                };
-
-                this.applyingCouponCode = true;
-                this.$couponSpinner.removeClass('hidden');
-
-                Craft.postActionRequest('app/get-coupon-price', data, $.proxy(function(response, textStatus) {
-                    this.applyingCouponCode = false;
-
-                    // Are we just waiting to apply a new code?
-                    if (this.applyNewCouponCodeAfterDoneLoading) {
-                        this.applyNewCouponCodeAfterDoneLoading = false;
-                        this.applyCoupon();
-                    }
-                    else {
-                        this.$couponSpinner.addClass('hidden');
-
-                        if (textStatus === 'success' && response.success) {
-                            this.couponPrice = response.couponPrice;
-                            this.formattedCouponPrice = response.formattedCouponPrice;
-                            this.updateCheckoutUi();
-                        }
-                    }
-                }, this));
-            }
-            else {
-                // Clear out the coupon price
-                this.couponPrice = null;
-                this.updateCheckoutUi();
-            }
-        },
-
-        onHide: function() {
-            if (this.initializedCheckoutForm) {
-                this.$businessCountryInput[0].selectize.blur();
-                this.$businessStateInput[0].selectize.blur();
-            }
-
-            this.clearCheckoutFormInABit();
-            this.base();
-        },
-
-        onBuyBtnClick: function(ev) {
-            var $btn = $(ev.currentTarget);
-            this.edition = $btn.data('edition');
-            this.couponPrice = null;
-            this.formattedCouponPrice = null;
-
-            switch (this.edition) {
-                case 1: {
-                    this.$checkoutLogo.attr('class', 'logo craftclient').text('Client');
-                    break;
-                }
-                case 2: {
-                    this.$checkoutLogo.attr('class', 'logo craftpro').text('Pro');
-                    break;
-                }
-            }
-
-            this.updateCheckoutUi();
-
-            if (this.clearCheckoutFormTimeout) {
-                clearTimeout(this.clearCheckoutFormTimeout);
-            }
-
-            // Slide it in
-
-            var width = this.getWidth();
-
-            this.$compareScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function() {
-                this.$compareScreen.addClass('hidden');
-
-                if (!this.initializedCheckoutForm) {
-                    this.initializeCheckoutForm();
-                    this.initializedCheckoutForm = true;
-                }
-            }, this));
-
-            this.$checkoutScreen.velocity('stop').css(Craft.left, width).removeClass('hidden').animateLeft(0, 'fast');
-        },
-
-        updateCheckoutUi: function() {
-            // Only show the CC fields if there is a price
-            if (this.getPrice() == 0) {
-                this.$ccField.hide();
-            }
-            else {
-                this.$ccField.show();
-            }
-
-            // Update the Pay button
-            this.$checkoutSubmitBtn.val(Craft.t('app', 'Pay {price}', {
-                price: this.getFormattedPrice()
-            }));
-        },
-
-        getPrice: function() {
-            if (this.couponPrice !== null) {
-                return this.couponPrice;
-            }
-
-            if (this.editions[this.edition].salePrice) {
-                return this.editions[this.edition].salePrice;
-            }
-
-            return this.editions[this.edition].price;
-        },
-
-        getFormattedPrice: function() {
-            if (this.couponPrice !== null) {
-                return this.formattedCouponPrice;
-            }
-
-            if (this.editions[this.edition].salePrice) {
-                return this.editions[this.edition].formattedSalePrice;
-            }
-
-            return this.editions[this.edition].formattedPrice;
-        },
-
-        onTestBtnClick: function(ev) {
-            var data = {
-                edition: $(ev.currentTarget).data('edition')
-            };
-
-            Craft.postActionRequest('app/test-upgrade', data, $.proxy(function(response, textStatus) {
-                if (textStatus === 'success') {
-                    var width = this.getWidth();
-
-                    this.$compareScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function() {
-                        this.$compareScreen.addClass('hidden');
-                    }, this));
-
-                    this.onUpgrade();
-                }
-            }, this));
-        },
-
-        cancelCheckout: function() {
-            var width = this.getWidth();
-
-            this.$compareScreen.velocity('stop').removeClass('hidden').animateLeft(0, 'fast');
-            this.$checkoutScreen.velocity('stop').animateLeft(width, 'fast', $.proxy(function() {
-                this.$checkoutScreen.addClass('hidden');
-            }, this));
-
-            this.clearCheckoutFormInABit();
-        },
-
-        getExpiryValues: function() {
-            return this.$ccExpInput.payment('cardExpiryVal');
-        },
-
-        submitPurchase: function(ev) {
-            ev.preventDefault();
-
-            if (this.submittingPurchase) {
-                return;
-            }
-
-            this.cleanupCheckoutForm();
-
-            // Get the price
-            var price = this.getPrice();
-
-            // Get the CC data
-            var expVal = this.getExpiryValues();
-            var ccData = {
-                name: this.$customerNameInput.val(),
-                number: this.$ccNumInput.val(),
-                exp_month: expVal.month,
-                exp_year: expVal.year,
-                cvc: this.$ccCvcInput.val()
-            };
-
-            // Validate it
-            var validates = true;
-
-            if (!ccData.name) {
-                validates = false;
-                this.$customerNameInput.addClass('error');
-            }
-
-            if (price != 0) {
-                if (!Stripe.validateCardNumber(ccData.number)) {
-                    validates = false;
-                    this.$ccNumInput.addClass('error');
-                }
-
-                if (!Stripe.validateExpiry(ccData.exp_month, ccData.exp_year)) {
-                    validates = false;
-                    this.$ccExpInput.addClass('error');
-                }
-
-                if (!Stripe.validateCVC(ccData.cvc)) {
-                    validates = false;
-                    this.$ccCvcInput.addClass('error');
-                }
-            }
-
-            if (validates) {
-                this.submittingPurchase = true;
-
-                // Get a CC token from Stripe.js
-                this.$checkoutSubmitBtn.addClass('active');
-                this.$checkoutSpinner.removeClass('hidden');
-
-                if (price != 0) {
-                    Stripe.setPublishableKey(this.stripePublicKey);
-                    Stripe.createToken(ccData, $.proxy(function(status, response) {
-                        if (!response.error) {
-                            this.sendPurchaseRequest(price, response.id);
-                        }
-                        else {
-                            this.onPurchaseResponse();
-                            this.showError(response.error.message);
-                            Garnish.shake(this.$checkoutForm, 'left');
-                        }
-                    }, this));
-                }
-                else {
-                    this.sendPurchaseRequest(0, null);
-                }
-            }
-            else {
-                Garnish.shake(this.$checkoutForm, 'left');
-            }
-        },
-
-        sendPurchaseRequest: function(expectedPrice, ccTokenId) {
-            // Pass the token along to Elliott to charge the card
-            var expVal = expectedPrice != 0 ? this.getExpiryValues() : {month: null, year: null};
-
-            var data = {
-                ccTokenId: ccTokenId,
-                expMonth: expVal.month,
-                expYear: expVal.year,
-                edition: this.edition,
-                expectedPrice: expectedPrice,
-                name: this.$customerNameInput.val(),
-                email: this.$customerEmailInput.val(),
-                businessName: this.$businessNameInput.val(),
-                businessAddress1: this.$businessAddress1Input.val(),
-                businessAddress2: this.$businessAddress2Input.val(),
-                businessCity: this.$businessCityInput.val(),
-                businessState: this.$businessStateInput.val(),
-                businessCountry: this.$businessCountryInput.val(),
-                businessZip: this.$businessZipInput.val(),
-                businessTaxId: this.$businessTaxIdInput.val(),
-                purchaseNotes: this.$purchaseNotesInput.val(),
-                couponCode: this.$couponInput.val()
-            };
-
-            Craft.postActionRequest('app/purchase-upgrade', data, $.proxy(this, 'onPurchaseUpgrade'));
-        },
-
-        onPurchaseResponse: function() {
-            this.submittingPurchase = false;
-            this.$checkoutSubmitBtn.removeClass('active');
-            this.$checkoutSpinner.addClass('hidden');
-        },
-
-        onPurchaseUpgrade: function(response, textStatus) {
-            this.onPurchaseResponse();
-
-            if (textStatus === 'success') {
-                if (response.success) {
-                    var width = this.getWidth();
-
-                    this.$checkoutScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function() {
-                        this.$checkoutScreen.addClass('hidden');
-                    }, this));
-
-                    this.onUpgrade();
-                }
-                else {
-                    var errorText;
-
-                    if (response.errors) {
-                        errorText = '';
-
-                        for (var i in response.errors) {
-                            if (!response.errors.hasOwnProperty(i)) {
-                                continue;
-                            }
-
-                            if (errorText) {
-                                errorText += '<br>';
-                            }
-
-                            errorText += response.errors[i];
-                        }
-
-                        this.showError(errorText);
-                    }
-                    else {
-                        errorText = Craft.t('app', 'An unknown error occurred.');
-                    }
-
-                    Garnish.shake(this.$checkoutForm, 'left');
-                }
-            }
-        },
-
-        showError: function(error) {
-            this.$checkoutFormError = $('<p class="error centeralign">' + error + '</p>').insertBefore(this.$checkoutSecure);
-        },
-
-        onUpgrade: function() {
-            this.$successScreen.css(Craft.left, this.getWidth()).removeClass('hidden').animateLeft(0, 'fast');
-
-            var $refreshBtn = this.$successScreen.find('.btn:first');
-            this.addListener($refreshBtn, 'click', function() {
-                location.reload();
-            });
-
-            this.trigger('upgrade');
-        },
-
-        cleanupCheckoutForm: function() {
-            this.$checkoutForm.find('.error').removeClass('error');
-
-            if (this.$checkoutFormError) {
-                this.$checkoutFormError.remove();
-                this.$checkoutFormError = null;
-            }
-        },
-
-        clearCheckoutForm: function() {
-            this.$customerNameInput.val('');
-            this.$customerEmailInput.val('');
-            this.$ccNumInput.val('');
-            this.$ccExpInput.val('');
-            this.$ccCvcInput.val('');
-            this.$businessNameInput.val('');
-            this.$businessAddress1Input.val('');
-            this.$businessAddress2Input.val('');
-            this.$businessCityInput.val('');
-            this.$businessStateInput.val('');
-            this.$businessCountryInput.val('');
-            this.$businessZipInput.val('');
-            this.$businessTaxIdInput.val('');
-            this.$purchaseNotesInput.val('');
-            this.$couponInput.val('');
-        },
-
-        clearCheckoutFormInABit: function() {
-            // Clear the CC info after a period of inactivity
-            this.clearCheckoutFormTimeout = setTimeout(
-                $.proxy(this, 'clearCheckoutForm'),
-                Craft.UpgradeModal.clearCheckoutFormTimeoutDuration
-            );
-        }
-    },
-    {
-        clearCheckoutFormTimeoutDuration: 30000 // 1000 x 60 x 5
-    });
 
 /** global: Craft */
 /** global: Garnish */

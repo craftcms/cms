@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -20,7 +20,7 @@ use yii\db\Schema;
  * Color represents a Color field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Color extends Field implements PreviewableFieldInterface
 {
@@ -95,16 +95,7 @@ class Color extends Field implements PreviewableFieldInterface
             return null;
         }
 
-        $value = strtolower($value);
-
-        if ($value[0] !== '#') {
-            $value = '#'.$value;
-        }
-
-        if (strlen($value) === 4) {
-            $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
-        }
-
+        $value = ColorValidator::normalizeColor($value);
         return new ColorData($value);
     }
 
@@ -142,7 +133,7 @@ class Color extends Field implements PreviewableFieldInterface
         }
 
         return Html::encodeParams(
-            '<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
+            '<div class="color" style="cursor: default;"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
             [
                 'bgColor' => $value->getHex()
             ]);
@@ -155,10 +146,10 @@ class Color extends Field implements PreviewableFieldInterface
     {
         /** @var ColorData|null $value */
         if (!$value) {
-            return '<div class="color small static"><div class="colorpreview"></div></div>';
+            return '<div class="color small static"><div class="color-preview"></div></div>';
         }
 
-        return "<div class='color small static'><div class='colorpreview' style='background-color: {$value->getHex()};'></div></div>".
+        return "<div class='color small static'><div class='color-preview' style='background-color: {$value->getHex()};'></div></div>".
             "<div class='colorhex code'>{$value->getHex()}</div>";
     }
 }

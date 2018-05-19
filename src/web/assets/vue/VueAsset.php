@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\vue;
@@ -22,7 +22,7 @@ class VueAsset extends AssetBundle
         $this->sourcePath = '@lib';
 
         $this->js = [
-            'vue/vue.min.js',
+            'vue/vue'.$this->dotJs(),
             'vue-router/vue-router.js',
             'vuex/vuex.js',
             'axios/axios.js',

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
@@ -13,7 +13,7 @@ use yii\base\BaseObject;
  * Job is the base class for classes representing jobs in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseJob extends BaseObject implements JobInterface
 {
@@ -69,7 +69,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * Sets the job progress on the queue.
      *
      * @param \yii\queue\Queue|QueueInterface $queue
-     * @param float                           $progress A number between 0 and 1
+     * @param float $progress A number between 0 and 1
      */
     protected function setProgress($queue, float $progress)
     {

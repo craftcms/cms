@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\web\Response;
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within
  * a structure.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class StructuresController extends Controller
 {
@@ -45,7 +44,6 @@ class StructuresController extends Controller
     /**
      * Initializes the application component.
      *
-     * @return void
      * @throws ForbiddenHttpException if this is not a Control Panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */

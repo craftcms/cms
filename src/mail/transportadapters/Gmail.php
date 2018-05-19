@@ -1,19 +1,20 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\mail\transportadapters;
 
 use Craft;
+use craft\helpers\StringHelper;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Gmail extends BaseTransportAdapter
 {
@@ -48,6 +49,18 @@ class Gmail extends BaseTransportAdapter
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->password) {
+            $this->password = StringHelper::decdec($this->password);
+        }
+    }
 
     /**
      * @inheritdoc

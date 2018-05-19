@@ -1,9 +1,9 @@
 <?php
 /**
- * The base class for all asset Volumes.  All Volume types must extend this class.
+ * The base class for all asset Volumes. All Volume types must extend this class.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 
 namespace craft\base;
@@ -272,7 +272,14 @@ abstract class FlysystemVolume extends Volume
 
         // The files are moved, but the directories remain. Delete them.
         foreach ($directoryList as $dir) {
-            $this->deleteDir($dir);
+            try {
+                $this->deleteDir($dir);
+            } catch (\Throwable $e) {
+                // This really varies between volume types and whether folders are virtual or real
+                // So just in case, catch the exception, log it and then move on
+                Craft::warning($e->getMessage());
+                continue;
+            }
         }
     }
 
@@ -304,7 +311,6 @@ abstract class FlysystemVolume extends Volume
      * Returns Flysystem filesystem configured with the Flysystem adapter.
      *
      * @param array $config
-     *
      * @return Filesystem The Flysystem filesystem.
      */
     protected function filesystem(array $config = []): Filesystem
@@ -317,7 +323,6 @@ abstract class FlysystemVolume extends Volume
      * Adds file metadata to the config array.
      *
      * @param array $config
-     *
      * @return array
      */
     protected function addFileMetadataToConfig(array $config): array
@@ -333,7 +338,6 @@ abstract class FlysystemVolume extends Volume
      * Invalidate a CDN path on the Volume.
      *
      * @param string $path the path to invalidate
-     *
      * @return bool
      */
     protected function invalidateCdnPath(string $path): bool

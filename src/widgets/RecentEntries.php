@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -18,7 +18,7 @@ use craft\web\assets\recententries\RecentEntriesAsset;
  * RecentEntries represents a Recent Entries dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class RecentEntries extends Widget
 {
@@ -70,7 +70,7 @@ class RecentEntries extends Widget
         parent::init();
 
         if ($this->siteId === null) {
-            $this->siteId = Craft::$app->getSites()->currentSite->id;
+            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
     }
 
@@ -119,7 +119,7 @@ class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
+        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {

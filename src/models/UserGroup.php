@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -19,7 +19,7 @@ Craft::$app->requireEdition(Craft::Pro);
  * UserGroup model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UserGroup extends Model
 {
@@ -72,7 +72,6 @@ class UserGroup extends Model
      * Returns whether the group has permission to perform a given action.
      *
      * @param string $permission
-     *
      * @return bool
      */
     public function can(string $permission): bool

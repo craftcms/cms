@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -37,12 +38,11 @@ use yii\web\Response;
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
- *
- * Note that all actions in the controller except [[actionGenerateTransform()]] require an authenticated Craft session
- * via [[allowAnonymous]].
+ * Note that all actions in the controller except for [[actionGenerateTransform()]] and [[actionGenerateThumb()]]
+ * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetsController extends Controller
 {
@@ -52,7 +52,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-thumb', 'generate-transform', 'download-temp-asset'];
+    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     // Public Methods
     // =========================================================================
@@ -142,8 +142,10 @@ class AssetsController extends Controller
                 'filename' => $asset->filename,
                 'assetId' => $asset->id
             ]);
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (\Throwable $e) {
+            Craft::error('An error occurred when saving an asset: '.$e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asErrorJson($e->getMessage());
         }
     }
 
@@ -229,8 +231,10 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (\Throwable $e) {
+            Craft::error('An error occurred when replacing an asset: '.$e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return $this->asErrorJson($e->getMessage());
         }
 
         return $this->asJson(['success' => true, 'assetId' => $assetId]);
@@ -803,7 +807,7 @@ class AssetsController extends Controller
 
         $response = Craft::$app->getResponse()
             ->sendFile($localPath, $asset->filename);
-        FileHelper::removeFile($localPath);
+        FileHelper::unlink($localPath);
 
         return $response;
     }
@@ -811,10 +815,9 @@ class AssetsController extends Controller
     /**
      * Generates a thumbnail.
      *
-     * @param string $uid    The asset's UID
-     * @param int    $width  The thumbnail width
-     * @param int    $height The thumbnail height
-     *
+     * @param string $uid The asset's UID
+     * @param int $width The thumbnail width
+     * @param int $height The thumbnail height
      * @return Response
      */
     public function actionGenerateThumb(string $uid, int $width, int $height): Response
@@ -836,7 +839,6 @@ class AssetsController extends Controller
      * Generate a transform.
      *
      * @param int|null $transformId
-     *
      * @return Response
      * @throws NotFoundHttpException if the transform can't be found
      */
@@ -870,33 +872,64 @@ class AssetsController extends Controller
     }
 
     /**
-     * Downloads a temporary asset.
-     *
-     * @param string $path
+     * Return the file preview for an Asset.
      *
      * @return Response
-     * @throws ForbiddenHttpException if $path is not contained within the temp assets directory
-     * @throws NotFoundHttpException if $path doesn't exist
+     * @throws BadRequestHttpException if not a valid request
      */
-    public function actionDownloadTempAsset(string $path): Response
+    public function actionPreviewFile(): Response
     {
-        $path = ltrim($path, "/\\");
-        if (PathHelper::ensurePathIsContained($path) === false) {
-            throw new ForbiddenHttpException('Invalid path: '.$path);
+        $this->requireLogin();
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+        $requestId = Craft::$app->getRequest()->getRequiredParam('requestId');
+
+        $asset = Asset::find()->id($assetId)->one();
+
+        if (!$asset) {
+            return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
         }
-        $fullPath = Craft::$app->getPath()->getTempAssetUploadsPath().DIRECTORY_SEPARATOR.$path;
-        if (!file_exists($fullPath)) {
-            throw new NotFoundHttpException('File not found: '.$path);
+
+
+        if (!$asset->getSupportsPreview()) {
+            $modalHtml = '<p class="nopreview centeralign" style="top: calc(50% - 10px) !important; position: relative;">'.Craft::t('app', 'Preview not available.').'</p>';
+        } else {
+            if ($asset->kind === 'image') {
+                /** @var Volume $volume */
+                $volume = $asset->getVolume();
+
+                if ($volume->hasUrls) {
+                    $imageUrl = $asset->getUrl();
+                } else {
+                    $source = $asset->getTransformSource();
+                    $imageUrl = Craft::$app->getAssetManager()->getPublishedUrl($source, true);
+                }
+
+                $width = $asset->getWidth();
+                $height = $asset->getHeight();
+                $modalHtml = "<img src=\"$imageUrl\" width=\"{$width}\" height=\"{$height}\" data-maxWidth=\"{$width}\" data-maxHeight=\"{$height}\"/>";
+            } else {
+                $localCopy = $asset->getCopyOfFile();
+                $content = htmlspecialchars(file_get_contents($localCopy));
+                $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
+                $modalHtml = '<div class="highlight '.$asset->kind.'"><pre><code class="language-'.$language.'">'.$content.'</code></pre></div>';
+                unlink($localCopy);
+            }
         }
-        return Craft::$app->getResponse()
-            ->sendFile($fullPath, null, ['inline' => true]);
+
+        return $this->asJson([
+            'success' => true,
+            'modalHtml' => $modalHtml,
+            'requestId' => $requestId
+        ]);
     }
 
     /**
      * Handles an error when generating a thumb/transform.
      *
      * @param \Exception $e The exception that was thrown
-     *
      * @return Response
      */
     private function _handleImageException(\Exception $e): Response
@@ -915,9 +948,7 @@ class AssetsController extends Controller
      * Require an Assets permissions.
      *
      * @param string $permissionName Name of the permission to require.
-     * @param Asset  $asset          Asset on the Volume on which to require the permission.
-     *
-     * @return void
+     * @param Asset $asset Asset on the Volume on which to require the permission.
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
@@ -936,10 +967,8 @@ class AssetsController extends Controller
     /**
      * Require an Assets permissions.
      *
-     * @param string       $permissionName Name of the permission to require.
-     * @param VolumeFolder $folder         Folder on the Volume on which to require the permission.
-     *
-     * @return void
+     * @param string $permissionName Name of the permission to require.
+     * @param VolumeFolder $folder Folder on the Volume on which to require the permission.
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
@@ -959,9 +988,7 @@ class AssetsController extends Controller
      * Require an Assets permissions.
      *
      * @param string $permissionName Name of the permission to require.
-     * @param int    $volumeId       The Volume id on which to require the permission.
-     *
-     * @return void
+     * @param int $volumeId The Volume id on which to require the permission.
      */
     private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
     {
@@ -970,7 +997,6 @@ class AssetsController extends Controller
 
     /**
      * @param UploadedFile $uploadedFile
-     *
      * @return string
      * @throws UploadFailedException
      */
@@ -984,7 +1010,7 @@ class AssetsController extends Controller
         try {
             $tempPath = $uploadedFile->saveAsTempFile();
         } catch (ErrorException $e) {
-            throw new UploadFailedException(0);
+            throw new UploadFailedException(0, null, $e);
         }
 
         if ($tempPath === false) {

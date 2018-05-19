@@ -15,7 +15,6 @@ use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
-use yii\base\InvalidParamException;
 use yii\db\Expression;
 
 /**
@@ -59,6 +58,10 @@ class m160807_144858_sites extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->execute($this->db->getQueryBuilder()->checkIntegrity(false, '', '{{%sites}}'));
+        $this->dropTableIfExists('{{%sites}}');
+
         // Create the sites table
         // ---------------------------------------------------------------------
 
@@ -493,8 +496,6 @@ class m160807_144858_sites extends Migration
      * Updates the 'locale' setting in Recent Entries widgets
      *
      * @param array $siteIdsByLocale Mapping of site IDs to the locale IDs they used to be
-     *
-     * @return void
      */
     public function updateRecentEntriesWidgets(array $siteIdsByLocale)
     {
@@ -531,7 +532,7 @@ class m160807_144858_sites extends Migration
      *
      * @param string $table
      * @param string $column
-     * @param bool   $isNotNull
+     * @param bool $isNotNull
      * @param string $localeColumn
      */
     protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
@@ -559,7 +560,6 @@ class m160807_144858_sites extends Migration
      * Returns a site handle based on a given locale.
      *
      * @param string $locale
-     *
      * @return string
      */
     protected function locale2handle(string $locale): string
@@ -579,7 +579,6 @@ class m160807_144858_sites extends Migration
      * Returns a language code based on a given locale.
      *
      * @param string $locale
-     *
      * @return string
      */
     protected function locale2language(string $locale): string

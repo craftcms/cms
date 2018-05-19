@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -35,12 +35,11 @@ use yii\web\ServerErrorHttpException;
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
  * swapping between entry types, previewing, deleting and sharing entries.
- *
  * Note that all actions in the controller except [[actionViewSharedEntry]] require an authenticated Craft session
  * via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntriesController extends BaseEntriesController
 {
@@ -66,13 +65,12 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string      $sectionHandle The section’s handle
-     * @param int|null    $entryId       The entry’s ID, if editing an existing entry.
-     * @param int|null    $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param int|null    $versionId     The entry version’s ID, if editing an existing version.
-     * @param string|null $siteHandle    The site handle, if specified.
-     * @param Entry|null  $entry         The entry being edited, if there were any validation errors.
-     *
+     * @param string $sectionHandle The section’s handle
+     * @param int|null $entryId The entry’s ID, if editing an existing entry.
+     * @param int|null $draftId The entry draft’s ID, if editing an existing draft.
+     * @param int|null $versionId The entry version’s ID, if editing an existing version.
+     * @param string|null $siteHandle The site handle, if specified.
+     * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
@@ -349,12 +347,17 @@ class EntriesController extends BaseEntriesController
         // Set the base CP edit URL
 
         // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
-        $variables['baseCpEditUrl'] = 'entries/'.$section->handle.'/{id}-{slug}';
+        $variables['baseCpEditUrl'] = "entries/{$section->handle}/{id}-{slug}";
 
         // Set the "Continue Editing" URL
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $siteSegment = (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? "/{$site->handle}" : '');
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
             (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
-            (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id ? '/'.$site->handle : '');
+            $siteSegment;
+
+        // Set the "Save and add another" URL
+        $variables['nextEntryUrl'] = "entries/{$section->handle}/new{$siteSegment}";
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (
@@ -397,7 +400,7 @@ class EntriesController extends BaseEntriesController
         $this->_prepEditEntryVariables($variables);
 
         $view = $this->getView();
-        $tabsHtml = $view->renderTemplate('_includes/tabs', $variables);
+        $tabsHtml = !empty($variables['tabs']) ? $view->renderTemplate('_includes/tabs', $variables) : null;
         $fieldsHtml = $view->renderTemplate('entries/_fields', $variables);
         $headHtml = $view->getHeadHtml();
         $bodyHtml = $view->getBodyHtml();
@@ -565,12 +568,16 @@ class EntriesController extends BaseEntriesController
             $return['success'] = true;
             $return['id'] = $entry->id;
             $return['title'] = $entry->title;
+            $return['slug'] = $entry->slug;
 
             if ($request->getIsCpRequest()) {
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
-            $return['authorUsername'] = $entry->getAuthor()->username;
+            if (($author = $entry->getAuthor()) !== null) {
+                $return['authorUsername'] = $author->username;
+            }
+
             $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
             $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
             $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
@@ -640,7 +647,6 @@ class EntriesController extends BaseEntriesController
      * @param int|null $siteId
      * @param int|null $draftId
      * @param int|null $versionId
-     *
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
@@ -706,7 +712,6 @@ class EntriesController extends BaseEntriesController
      * @param int|null $siteId
      * @param int|null $draftId
      * @param int|null $versionId
-     *
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
@@ -736,8 +741,6 @@ class EntriesController extends BaseEntriesController
      * Preps entry edit variables.
      *
      * @param array &$variables
-     *
-     * @return void
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
@@ -765,6 +768,7 @@ class EntriesController extends BaseEntriesController
             $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
             $variables['siteIds'] = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
         } else {
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -773,7 +777,8 @@ class EntriesController extends BaseEntriesController
         }
 
         if (empty($variables['site'])) {
-            $variables['site'] = Craft::$app->getSites()->currentSite;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
@@ -865,6 +870,9 @@ class EntriesController extends BaseEntriesController
         $variables['entry']->typeId = $typeId;
         $variables['entryType'] = $variables['entry']->getType();
 
+        // Prevent the last entry type's field layout from being used
+        $variables['entry']->fieldLayoutId = null;
+
         // Define the content tabs
         // ---------------------------------------------------------------------
 
@@ -924,8 +932,6 @@ class EntriesController extends BaseEntriesController
      * Populates an Entry with post data.
      *
      * @param Entry $entry
-     *
-     * @return void
      */
     private function _populateEntryModel(Entry $entry)
     {
@@ -946,6 +952,9 @@ class EntriesController extends BaseEntriesController
             // Default to the section's first entry type
             $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
         }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
@@ -976,7 +985,6 @@ class EntriesController extends BaseEntriesController
      * Displays an entry.
      *
      * @param Entry $entry
-     *
      * @return Response
      * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
      */
