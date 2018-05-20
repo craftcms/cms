@@ -615,6 +615,16 @@ class Fields extends Component
     /**
      * Returns a field by its handle.
      *
+     * ---
+     *
+     * ```php
+     * $body = Craft::$app->fields->getFieldByHandle('body');
+     * ```
+     * ```twig
+     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {{ body.instructions }}
+     * ```
+     *
      * @param string $handle The field’s handle
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
