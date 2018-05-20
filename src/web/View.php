@@ -522,8 +522,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
-     * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
+     * [[\craft\config\GeneralConfig::defaultTemplateExtensions|defaultTemplateExtensions]] and
+     * [[\craft\config\GeneralConfig::indexTemplateFilenames|indexTemplateFilenames]] config settings.
      *
      * For example if you set the following in config/general.php:
      *
