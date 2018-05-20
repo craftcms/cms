@@ -5,6 +5,9 @@
 ### Added
 - Added default plugin icon to plugins without icon in the Plugin Store.
 
+### Fixed
+- Fixed a bug where the `craft setup` CLI command could give an error on some environments preventing installation.
+
 ### Changed
 - Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
 - `craft\base\Plugin` now sets the default `$controllerNamespace` value to the plugin class’ namespace + `\controllers` or `\console\controllers`, depending on whether it’s a web or console request.
