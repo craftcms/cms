@@ -55,6 +55,23 @@ class Elements extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering element types.
+     *
+     * Element types must implement [[ElementInterface]]. [[Element]] provides a base implementation.
+     *
+     * See [Element Types](https://docs.craftcms.com/v3/element-types.html) for documentation on creating element types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(Elements::class,
+     *     Elements::EVENT_REGISTER_ELEMENT_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyElementType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
 

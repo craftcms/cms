@@ -35,6 +35,23 @@ class Volumes extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
+     *
+     * Volume types must implement [[VolumeInterface]]. [[Volume]] provides a base implementation.
+     *
+     * See [Volume Types](https://docs.craftcms.com/v3/volume-types.html) for documentation on creating volume types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Volumes;
+     * use yii\base\Event;
+     *
+     * Event::on(Volumes::class,
+     *     Volumes::EVENT_REGISTER_VOLUME_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyVolumeType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
 

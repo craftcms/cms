@@ -32,6 +32,21 @@ class MailerHelper
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering mailer transport adapter types.
+     *
+     * Mailer transports must implement [[TransportAdapterInterface]]. [[BaseTransportAdapter]] provides a base implementation.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\helpers\MailerHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(MailerHelper::class,
+     *     MailerHelper::EVENT_REGISTER_MAILER_TRANSPORT_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyTransportType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
 

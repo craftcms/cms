@@ -67,6 +67,23 @@ class Fields extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
+     *
+     * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
+     *
+     * See [Field Types](https://docs.craftcms.com/v3/field-types.html) for documentation on creating field types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Fields;
+     * use yii\base\Event;
+     *
+     * Event::on(Fields::class,
+     *     Fields::EVENT_REGISTER_FIELD_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyFieldType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 

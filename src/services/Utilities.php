@@ -36,6 +36,23 @@ class Utilities extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
+     *
+     * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+     *
+     * See [Utility Types](https://docs.craftcms.com/v3/utility-types.html) for documentation on creating utility types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Utilities;
+     * use yii\base\Event;
+     *
+     * Event::on(Utilities::class,
+     *     Utilities::EVENT_REGISTER_UTILITY_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyUtilityType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
 
