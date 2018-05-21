@@ -198,7 +198,74 @@ module.exports = {
         },
         config(md) {
             md
+                .use(replaceApiLinks)
                 .use(require('vuepress-theme-craftdocs/markup'))
         }
     },
+}
+
+function replaceApiLinks(md) {
+    // code adapted from the markdown-it-replace-link plugin
+    md.core.ruler.after(
+        'inline',
+        'replace-link',
+        function (state) {
+            state.tokens.forEach(function (blockToken) {
+                if (blockToken.type === 'inline' && blockToken.children) {
+                    blockToken.children.forEach(function (token, tokenIndex) {
+                        if (token.type === 'link_open') {
+                            token.attrs.forEach(function (attr) {
+                                if (attr[0] === 'href') {
+                                    let replace = replaceApiLink(attr[1]);
+                                    if (replace) {
+                                        attr[1] = replace;
+                                        let next = blockToken.children[tokenIndex+1];
+                                        if (next.type === 'text' && next.content.match(/^api:/)) {
+                                            next.content = next.content.substr(4);
+                                        }
+                                    }
+                                }
+                                return false;
+                            });
+                        }
+                    });
+                }
+            });
+            return false;
+        }
+    );
+}
+
+function replaceApiLink(link) {
+    link = decodeURIComponent(link)
+    let m = link.match(/^(?:api:)?\\?([\w\\]+)(?:::\$?(\w+)(\(\))?)?$/)
+    if (m) {
+        let className = m[1]
+        let subject = m[2]
+        let isMethod = typeof m[3] !== 'undefined'
+
+        if (className.match(/^craft\\/) || className.match(/^Craft/)) {
+            let url = 'https://docs.craftcms.com/api/v3/'+className.replace(/\\/g, '-').toLowerCase()+'.html'
+            if (subject) {
+                url += (isMethod ? '#method-' : '#property-')+subject.toLowerCase()
+            }
+            return url;
+        }
+
+        if (className.match(/^yii\\/) || className.match(/^Yii/)) {
+            let url = 'https://www.yiiframework.com/doc/api/2.0/'+className.replace(/\\/g, '-').toLowerCase()
+            if (subject) {
+                url += '#'+subject+(isMethod ? '()' : '')+'-detail'
+            }
+            return url;
+        }
+
+        if (className.match(/^Twig/)) {
+            let url = 'https://twig.symfony.com/api/2.x/'+className.replace(/\\/g, '/')+'.html'
+            if (subject) {
+                url += '#method_'+subject
+            }
+            return url;
+        }
+    }
 }
