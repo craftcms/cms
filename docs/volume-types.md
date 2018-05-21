@@ -1,8 +1,8 @@
 # Volume Types
 
-Plugins can provide custom asset volume types by creating a class that implements `craft\base\VolumeInterface` and `craft\base\VolumeTrait`. The class will serve both as a way to communicate various things about your volume type (with static methods), and as a model that volumes of its type will be instantiated with.
+Plugins can provide custom asset volume types by creating a class that implements <api:craft\base\VolumeInterface> and <api:craft\base\VolumeTrait>. The class will serve both as a way to communicate various things about your volume type (with static methods), and as a model that volumes of its type will be instantiated with.
 
-As a convenience, you can extend `craft\base\Volume`, which provides a base volume type implementation, optimized for [Flysystem](https://flysystem.thephpleague.com/) adapters.
+As a convenience, you can extend <api:craft\base\Volume>, which provides a base volume type implementation, optimized for [Flysystem](https://flysystem.thephpleague.com/) adapters.
 
 You can refer to Craft’s own volume classes for examples. They are located in `vendor/craftcms/cms/src/volumes/`.
 

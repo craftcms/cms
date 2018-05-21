@@ -224,7 +224,7 @@ The following template functions have been removed:
 | `craft.tasks.haveTasksFailed()`             | *(n/a)*
 | `craft.tasks.isTaskRunning()`               | `craft.app.queue.getHasReservedJobs()`<sup>1</sup>
 
-*<sup>1</sup> Only available if the `queue` component implements `craft\queue\QueueInterface`.*
+*<sup>1</sup> Only available if the `queue` component implements <api:craft\queue\QueueInterface>.*
 
 The following template functions have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
@@ -374,7 +374,7 @@ Craft’s extended DateTime class has been removed in Craft 3. Here’s a list o
 
 ## Currency Formatting
 
-The `|currency` filter now maps to [`craft\i18n\Formatter::asCurrency()`](https://docs.craftcms.com/api/v3/craft-i18n-formatter.html#asCurrency()-detail). It still works the same, but the `stripZeroCents` argument has been renamed to `stripZeros`, and pushed back a couple notches, so you will need to update your templates if you were setting that argument.
+The `|currency` filter now maps to [<api:craft\i18n\Formatter::asCurrency()>](https://docs.craftcms.com/api/v3/craft-i18n-formatter.html#asCurrency()-detail). It still works the same, but the `stripZeroCents` argument has been renamed to `stripZeros`, and pushed back a couple notches, so you will need to update your templates if you were setting that argument.
 
 ```twig
 Old:
@@ -538,7 +538,7 @@ In most cases you can replace calls to `.last()` with `.inReverse().one()` and g
 There are two cases where `inReverse()` won’t work as expected, though:
 
 - when there is no `ORDER BY` clause in the SQL, therefore nothing to reverse
-- when the `orderBy` param contains a [`yii\db\Expression`](http://www.yiiframework.com/doc-2.0/yii-db-expression.html) object
+- when the `orderBy` param contains a [<api:yii\db\Expression>](http://www.yiiframework.com/doc-2.0/yii-db-expression.html) object
 
 In those cases, you can just replace the `.last()` call with what it’s already doing internally:
 

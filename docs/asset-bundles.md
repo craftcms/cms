@@ -92,7 +92,7 @@ public function actionFoo()
 
 ### Getting Published File URLs
 
-If you have a one-off file that you need to get the published URL for, but it doesn’t need to be registered as a CSS or JS file on the current page, you can use `craft\web\AssetManager::getPublishedUrl()`:
+If you have a one-off file that you need to get the published URL for, but it doesn’t need to be registered as a CSS or JS file on the current page, you can use <api:craft\web\AssetManager::getPublishedUrl()>:
 
 ```php
 $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/path/to/file.svg', true);

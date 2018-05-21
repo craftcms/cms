@@ -37,7 +37,7 @@ echo "    > some note\n";
 If the migration is being run from a console request, this will ensure the message is seen by whoever is executing the migration, as the message will be output into the terminal. If it’s a web request, Craft will capture it and log it to `storage/logs/` just as if you had used `Craft::info()`.
 
 ::: tip
-Your migration’s base classes, `craft\db\Migration` and `yii\db\Migration`, provide lots of handy methods for making changes to the database schema. Use these whenever possible, rather than calling `Craft::$app->db->createCommand()`, as they will automatically echo out a message about the command, and how long it took to execute.
+Your migration’s base classes, <api:craft\db\Migration> and <api:yii\db\Migration>, provide lots of handy methods for making changes to the database schema. Use these whenever possible, rather than calling `Craft::$app->db->createCommand()`, as they will automatically echo out a message about the command, and how long it took to execute.
 :::
 
 ## Executing Migrations
@@ -87,7 +87,7 @@ You can give your plugin an install migration with the `migrate/create` command 
 
     ./craft migrate/create install --plugin=<plugin-handle>
 
-When a plugin has an Install migration, its `safeUp()` method will be called when the plugin is installed, and its `safeDown()` method will be called when the plugin is uninstalled (invoked by `craft\base\Plugin::install()` and `uninstall()`).
+When a plugin has an Install migration, its `safeUp()` method will be called when the plugin is installed, and its `safeDown()` method will be called when the plugin is uninstalled (invoked by <api:craft\base\Plugin::install()> and `uninstall()`).
 
 ::: tip
 It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.

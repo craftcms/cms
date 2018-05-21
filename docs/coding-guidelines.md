@@ -242,8 +242,8 @@ $this->requireAcceptsJson();
 
 ## Exceptions
 
-- If an exception is likely to occur as a result of user error, use the `yii\base\UserException` class (or a subclass)
-- Only translate exception messages with `Craft::t()` if it’s a `yii\base\UserException`.
+- If an exception is likely to occur as a result of user error, use the <api:yii\base\UserException> class (or a subclass)
+- Only translate exception messages with <api:Craft::t()> if it’s a <api:yii\base\UserException>.
 
 ## DB Queries
 

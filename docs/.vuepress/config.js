@@ -247,7 +247,13 @@ function replaceApiLink(link) {
         if (className.match(/^craft\\/) || className.match(/^Craft/)) {
             let url = 'https://docs.craftcms.com/api/v3/'+className.replace(/\\/g, '-').toLowerCase()+'.html'
             if (subject) {
-                url += (isMethod ? '#method-' : '#property-')+subject.toLowerCase()
+                url += '#'
+                if (isMethod) {
+                    url += 'method-'
+                } else if (!subject.match(/^EVENT_/)) {
+                    url += 'property-'
+                }
+                url += subject.replace(/_/g, '-').toLowerCase()
             }
             return url;
         }

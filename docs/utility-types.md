@@ -1,8 +1,8 @@
 # Utility Types
 
-Plugins can provide custom utility types for the Utilities section by creating a class that implements `craft\base\UtilityInterface`.
+Plugins can provide custom utility types for the Utilities section by creating a class that implements <api:craft\base\UtilityInterface>.
 
-As a convenience, you can extend `craft\base\Utility`, which provides a base utility type implementation.
+As a convenience, you can extend <api:craft\base\Utility>, which provides a base utility type implementation.
 
 You can refer to Craft’s own utility classes for examples. They are located in `vendor/craftcms/cms/src/utilities/`.
 

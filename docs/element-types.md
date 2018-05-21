@@ -4,13 +4,13 @@ Element types define the different types of content that can be managed in Craft
 
 Craft comes with 7 built-in element types:
 
-- `craft\elements\Asset`
-- `craft\elements\Category`
-- `craft\elements\Entry`
-- `craft\elements\GlobalSet`
-- `craft\elements\MatrixBlock`
-- `craft\elements\Tag`
-- `craft\elements\User`
+- <api:craft\elements\Asset>
+- <api:craft\elements\Category>
+- <api:craft\elements\Entry>
+- <api:craft\elements\GlobalSet>
+- <api:craft\elements\MatrixBlock>
+- <api:craft\elements\Tag>
+- <api:craft\elements\User>
 
 You can refer to these classes for examples. They are located in `vendor/craftcms/cms/src/elements/`.
 
@@ -22,9 +22,9 @@ If your plugin needs to provide a new content type, architecting it as an elemen
 
 ### Element Class
 
-Element types are defined by classes which implement `craft\base\ElementInterface` and `craft\base\ElementTrait`. The class will serve both as a way to communicate various things about your element type (with static methods), and as a model that elements of its type will be instantiated with.
+Element types are defined by classes which implement <api:craft\base\ElementInterface> and <api:craft\base\ElementTrait>. The class will serve both as a way to communicate various things about your element type (with static methods), and as a model that elements of its type will be instantiated with.
 
-As a convenience, you can extend `craft\base\Element`, which provides a base element type implementation.
+As a convenience, you can extend <api:craft\base\Element>, which provides a base element type implementation.
 
 Create an `elements/` directory within your plugin’s source directory, and create a PHP class file within it, named after the class name you want to give your element type (e.g. `Product.php`).
 
@@ -114,7 +114,7 @@ public function afterSave(bool $isNew)
 
 All element types need a corresponding element query class. Element query classes are an extension of [query builders](http://www.yiiframework.com/doc-2.0/guide-db-query-builder.html), tuned for fetching elements.
 
-All element query classes should extend `craft\elements\db\ElementQuery`, which provides the base functionality.
+All element query classes should extend <api:craft\elements\db\ElementQuery>, which provides the base functionality.
 
 They have three responsibilities:
 
@@ -207,7 +207,7 @@ Product::find()
 
 #### `$this->query` vs. `$this->subQuery`
 
-Behind the scenes, `craft\elements\db\ElementQuery` creates two `craft\db\Query` instances: the main query (`$this->query`), and a subquery (`$this->subQuery`). Column selections should go in the main query, and conditions/joins should be applied to the subquery. Ultimately the subquery will become the `FROM` clause of the main query.
+Behind the scenes, <api:craft\elements\db\ElementQuery> creates two <api:craft\db\Query> instances: the main query (`$this->query`), and a subquery (`$this->subQuery`). Column selections should go in the main query, and conditions/joins should be applied to the subquery. Ultimately the subquery will become the `FROM` clause of the main query.
 
 The reason for this separation is performance. It allows MySQL/PostgreSQL to figure out exactly which element rows should be fetched before it has to worry about which columns to select, etc., avoiding the need to run expensive condition operations on temporary tables.
 
@@ -326,7 +326,7 @@ $product->fieldLayoutId = $productType->fieldLayoutId;
 \Craft::$app->elements->saveElement($product);
 ```
 
-If the `$fieldLayoutId`  property is set, `craft\services\Elements::saveElement()` will store it in the `elements.fieldLayoutId` column in the database, and your elements will be re-populated with the values when they are fetched down the road.
+If the `$fieldLayoutId`  property is set, <api:craft\services\Elements::saveElement()> will store it in the `elements.fieldLayoutId` column in the database, and your elements will be re-populated with the values when they are fetched down the road.
 
 Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferrable if your element type only has a single field layout (like user accounts).
 
@@ -561,7 +561,7 @@ protected static function defineSearchableAttributes(): array
 
 When an element is being saved, its `getUriFormat()` method will be called to find out whether the element should have its own URI in the system, and if so, what it should look like.
 
-So if you want your elements to get their own URLs, you must implement this method and have it return a string that can be parsed with `craft\web\View::renderObjectTemplate()` (e.g. `products/{slug}`). Usually this should be a user-defined string, rather than something hard-coded.
+So if you want your elements to get their own URLs, you must implement this method and have it return a string that can be parsed with <api:craft\web\View::renderObjectTemplate()> (e.g. `products/{slug}`). Usually this should be a user-defined string, rather than something hard-coded.
 
 ```php
 public function getUriFormat()
@@ -572,7 +572,7 @@ public function getUriFormat()
 
 Whenever an element’s URL is requested, Craft will instantiate the element and call its `getRoute()` method, giving the element a chance to decide how the request should be [routed](http://www.yiiframework.com/doc-2.0/guide-runtime-routing.html).
 
-Internally, `craft\base\Element::getRoute()` will call a protected `route()` method, which is what you should override in your element class:
+Internally, <api:craft\base\Element::getRoute()> will call a protected `route()` method, which is what you should override in your element class:
 
 ```php
 protected function route()
@@ -641,12 +641,12 @@ The Edit Category page offers a relatively straightforward example of how it cou
 
 - Controller actions:
 
-  - `craft\controllers\actionEditCategory` – renders the Edit Category page
-  - `craft\controllers\actionPreviewCategory` – renders a category’s front-end page for a Live Preview request
-  - `craft\controllers\actionSaveCategory` – saves a category
-  - `craft\controllers\actionDeleteCategory` – deletes a category
-  - `craft\controllers\actionShareCategory` – handles a Share Category request, creating a token for `categories/view-shared-category` and redirecting the user to it
-  - `craft\controllers\actionViewSharedCategory` – renders a category’s front-end page for a Share Category token
+  - <api:craft\controllers\actionEditCategory> – renders the Edit Category page
+  - <api:craft\controllers\actionPreviewCategory> – renders a category’s front-end page for a Live Preview request
+  - <api:craft\controllers\actionSaveCategory> – saves a category
+  - <api:craft\controllers\actionDeleteCategory> – deletes a category
+  - <api:craft\controllers\actionShareCategory> – handles a Share Category request, creating a token for `categories/view-shared-category` and redirecting the user to it
+  - <api:craft\controllers\actionViewSharedCategory> – renders a category’s front-end page for a Share Category token
 
 - Edit Category page template: `vendor/craftcms/cms/src/templates/categories/_edit.html`
 
@@ -663,7 +663,7 @@ public function getCpEditUrl()
 
 ### Relation Field
 
-You can give your element its own relation field by creating a new [field type](field-types.md) that extends `craft\fields\BaseRelationField`.
+You can give your element its own relation field by creating a new [field type](field-types.md) that extends <api:craft\fields\BaseRelationField>.
 
 That base class does most of the grunt work for you, so you can get your field up and running by implementing three simple methods:
 
