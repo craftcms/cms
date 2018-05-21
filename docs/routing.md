@@ -37,7 +37,7 @@ Here is how Craft handles each request:
 
 5. **404**
 
-   If none of the above checks are successful, Craft will return a 404. You can customize your site’s 404 page by placing a `404.html` template at the root of your `craft/templates/` directory.
+   If none of the above checks are successful, Craft will return a 404. You can customize your site’s 404 page by placing a `404.html` template at the root of your `templates/` directory.
 
 
 ## Dynamic Routes
