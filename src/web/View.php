@@ -414,9 +414,15 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a micro template for accessing properties of a single object.
-     * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
-     * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
+     * Renders an object template.
+     *
+     * The passed-in `$object` will be available to the template as an `object` variable.
+     *
+     * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
+     * full Twig output tags (e.g. `{{ object.foo|raw }}`.
+     *
+     * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
+     * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
      *
      * @param string $template the source template string
      * @param mixed $object the object that should be passed into the template
