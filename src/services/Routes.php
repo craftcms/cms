@@ -18,7 +18,7 @@ use yii\base\Component;
 
 /**
  * Routes service.
- * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|<code>Craft::$app->routes</code>]].
+ * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

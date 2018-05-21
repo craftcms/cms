@@ -43,7 +43,7 @@ use yii\base\Exception;
 
 /**
  * The Elements service provides APIs for managing elements.
- * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|<code>Craft::$app->elements</code>]].
+ * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

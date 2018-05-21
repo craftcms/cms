@@ -55,7 +55,7 @@ use yii\base\Exception;
 
 /**
  * Fields service.
- * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|<code>Craft::$app->fields</code>]].
+ * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

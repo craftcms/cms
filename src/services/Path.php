@@ -14,7 +14,7 @@ use yii\base\Exception;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
- * An instance of the Path service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPath()|<code>Craft::$app->path</code>]].
+ * An instance of the Path service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPath()|`Craft::$app->path`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

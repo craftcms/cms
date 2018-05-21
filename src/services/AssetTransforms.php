@@ -38,7 +38,7 @@ use yii\base\ErrorException;
 
 /**
  * Asset Transforms service.
- * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|<code>Craft::$app->assetTransforms</code>]].
+ * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|`Craft::$app->assetTransforms`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

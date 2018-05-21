@@ -44,7 +44,7 @@ use yii\base\NotSupportedException;
 
 /**
  * Assets service.
- * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|<code>Craft::$app->assets</code>]].
+ * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

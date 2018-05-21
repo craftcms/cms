@@ -19,7 +19,7 @@ use yii\base\Component;
 
 /**
  * Plugin Store service.
- * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|<code>Craft::$app->pluginStore</code>]].
+ * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|`Craft::$app->pluginStore`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

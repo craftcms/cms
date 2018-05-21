@@ -1210,7 +1210,7 @@ JS;
 
     /**
      * Invokes a template hook.
-     * This is called by [[HookNode|<code>{% hook %}</code> tags]].
+     * This is called by [[HookNode|`{% hook %}` tags]].
      *
      * @param string $hook The hook name.
      * @param array &$context The current template context.

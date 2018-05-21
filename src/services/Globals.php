@@ -19,7 +19,7 @@ use yii\base\Exception;
 
 /**
  * Globals service.
- * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|<code>Craft::$app->globals</code>]].
+ * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->globals`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

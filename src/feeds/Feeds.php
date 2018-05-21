@@ -17,7 +17,7 @@ use Zend\Feed\Reader\Reader;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
- * An instance of the Feeds service is globally accessible in Craft via [[\craft\web\Application::feeds|<code>Craft::$app->feeds</code>]].
+ * An instance of the Feeds service is globally accessible in Craft via [[\craft\web\Application::feeds|`Craft::$app->feeds`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
