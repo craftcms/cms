@@ -14,7 +14,7 @@ Returns whether an object is an instance of another object or class.
 
 ## `missing`
 
-Returns whether a given object is an instance of [MissingComponentInterface](https://docs.craftcms.com/api/v3/craft-base-missingcomponentinterface.html), an interface used to represent components whose types are missing.
+Returns whether a given object is an instance of <api:craft\base\MissingComponentInterface>, an interface used to represent components whose types are missing.
 
 ```twig
 {% if field is missing %}

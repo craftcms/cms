@@ -71,7 +71,7 @@ $query = Entry::find();
 
 ### Param Value Syntax
 
-Most parameter values will get processed through [craft\helpers\Db::parseParam()](https://docs.craftcms.com/api/v3/craft-helpers-db.html#parseParam()-detail) before being applied as a condition on the element query. That method makes things like the following possible:
+Most parameter values will get processed through <api:craft\helpers\Db::parseParam()> before being applied as a condition on the element query. That method makes things like the following possible:
 
 - `['and', 'value1', 'value2']`
 - `['or', 'value1', 'value2']`

@@ -21,7 +21,7 @@ Your `web/index.php` file can specify a few PHP constants, which Craft’s boots
 
 ## General Config
 
-Craft supports several [general configuration settings](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#properties). You can override their default values in your `config/general.php` file.
+Craft supports several [general configuration settings](craft\config\GeneralConfig#public-properties). You can override their default values in your `config/general.php` file.
 
 ```php
 return [
@@ -31,7 +31,7 @@ return [
 
 ## Database Config
 
-Craft supports several [database configuration settings](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#properties). You can override their default values in your `config/db.php` file.
+Craft supports several [database configuration settings](craft\config\DbConfig#public-properties). You can override their default values in your `config/db.php` file.
 
 ## Data Caching Config
 
@@ -134,7 +134,7 @@ Some settings and functions in Craft support [Yii aliases](http://www.yiiframewo
 - Sites’ Base URL settings
 - Volumes’ Base URL settings
 - Local volumes’ File System Path settings
-- The [resourceBasePath](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$resourceBasePath-detail) and [resourceBaseUrl](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$resourceBaseUrl-detail) config settings
+- The <config:resourceBasePath> and <config:resourceBaseUrl> config settings
 - The [svg()](templating/functions.md#svg-svg-sanitize-) Twig function
 
 The following aliases are available out of the box:
@@ -155,7 +155,7 @@ The following aliases are available out of the box:
 | `@web` | The URL to the folder that contains the `index.php` file that was loaded for the request
 | `@webroot` | The path to the folder that contains the `index.php` file that was loaded for the request
 
-You can define additional custom aliases using the [aliases](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$aliases-detail) config setting. For example, you may wish to create aliases that define the base URL and base path that your asset volumes will live in.
+You can define additional custom aliases using the <config:aliases> config setting. For example, you may wish to create aliases that define the base URL and base path that your asset volumes will live in.
 
 ```php
 'aliases' => [

@@ -62,7 +62,7 @@ The accepted duration units are:
 - `year`(`s`)
 - `week`(`s`)
 
-Tip: If this parameter is omitted, your [cacheDuration](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$cacheDuration-detail) config setting will be used to define the default duration.
+Tip: If this parameter is omitted, your <config:cacheDuration> config setting will be used to define the default duration.
 
 ### `until`
 

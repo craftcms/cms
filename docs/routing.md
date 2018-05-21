@@ -15,7 +15,7 @@ Here is how Craft handles each request:
 
 1. **Is it an action request?**
 
-   Action requests either have a URL that begins with `actions/` (or whatever your [actionTrigger](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$actionTrigger-detail) config setting is set to), or an `action` parameter in the POST request or the query string. 
+   Action requests either have a URL that begins with `actions/` (or whatever your <config:actionTrigger> config setting is set to), or an `action` parameter in the POST request or the query string. 
 
    Craft routes action requests to a controller action that perform actions. Craft has system Controller actions for core actions, but plugins may also have Controllers that define their own custom actions.
 

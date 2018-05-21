@@ -52,7 +52,7 @@ The currently-logged-in user, represented by a <api:craft\elements\User> object,
 
 ## `loginUrl`
 
-The URL to your site’s login page, based on the [loginPath](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$loginPath-detail) config setting.
+The URL to your site’s login page, based on the <config:loginPath> config setting.
 
 ```twig
 {% if not currentUser %}
@@ -62,7 +62,7 @@ The URL to your site’s login page, based on the [loginPath](https://docs.craft
 
 ## `logoutUrl`
 
-The URL Craft uses to log users out, based on the [logoutPath](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#$logoutPath-detail) config setting. Note that Craft will automatically redirect users to your homepage after going here; there’s no such thing as a “logout _page_”.
+The URL Craft uses to log users out, based on the <config:logoutPath> config setting. Note that Craft will automatically redirect users to your homepage after going here; there’s no such thing as a “logout _page_”.
 
 ```twig
 {% if currentUser %}
@@ -80,23 +80,23 @@ Today is {{ now|date('M j, Y') }}.
 
 ## `POS_BEGIN`
 
-Twig-facing copy of the [craft\web\View::POS_BEGIN](https://docs.craftcms.com/api/v3/craft-web-view.html#constants) constant.
+Twig-facing copy of the [craft\web\View::POS_BEGIN](api:craft\web\View#constants) constant.
 
 ## `POS_END`
 
-Twig-facing copy of the [craft\web\View::POS_END](https://docs.craftcms.com/api/v3/craft-web-view.html#constants) constant.
+Twig-facing copy of the [craft\web\View::POS_END](api:craft\web\View#constants) constant.
 
 ## `POS_HEAD`
 
-Twig-facing copy of the [craft\web\View::POS_HEAD](https://docs.craftcms.com/api/v3/craft-web-view.html#constants) constant.
+Twig-facing copy of the [craft\web\View::POS_HEAD](api:craft\web\View#constants) constant.
 
 ## `POS_LOAD`
 
-Twig-facing copy of the [craft\web\View::POS_LOAD](https://docs.craftcms.com/api/v3/craft-web-view.html#constants) constant.
+Twig-facing copy of the [craft\web\View::POS_LOAD](api:craft\web\View#constants) constant.
 
 ## `POS_READY`
 
-Twig-facing copy of the [craft\web\View::POS_READY](https://docs.craftcms.com/api/v3/craft-web-view.html#constants) constant.
+Twig-facing copy of the [craft\web\View::POS_READY](api:craft\web\View#constants) constant.
 
 ## `siteName`
 

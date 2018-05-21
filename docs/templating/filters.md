@@ -21,7 +21,7 @@ Returns a string formatted in “camelCase”.
 
 ## `column`
 
-Runs an array through [ArrayHelper::getColumn()](https://www.yiiframework.com/doc/api/2.0/yii-helpers-basearrayhelper#getColumn()-detail) and returns the result.
+Runs an array through [ArrayHelper::getColumn()](api:yii\helpers\BaseArrayHelper::getColumn()) and returns the result.
 
 ```twig
 {% set entryIds = entries|column('id') %}
@@ -47,9 +47,9 @@ Like Twig’s core [`date`](https://twig.symfony.com/doc/2.x/filters/date.html) 
 - `'long'`
 - `'full'`
 
-When one of those formats are used, the date will be formatted into a localized date format using [craft\i18n\Formatter::asDate()](https://docs.craftcms.com/api/v3/craft-i18n-formatter.html#asDate()-detail).
+When one of those formats are used, the date will be formatted into a localized date format using <craft\i18n\Formatter::asDate()>.
 
-A `translate` argument is also available. If `true` is passed, the formatted date will be run through [craft\helpers\DateTimeHelper::translateDate()](https://docs.craftcms.com/api/v3/craft-helpers-datetimehelper.html#translateDate()-detail) before being returned.
+A `translate` argument is also available. If `true` is passed, the formatted date will be run through <api:craft\helpers\DateTimeHelper::translateDate()> before being returned.
 
 ```twig
 {{ entry.postDate|date('short') }}
@@ -66,7 +66,7 @@ Like the [`date`](#date) filter, but the result will also include a timestamp.
 
 ## `duration`
 
-Runs a [`DateInterval`](http://php.net/manual/en/class.dateinterval.php) object through [craft\helpers\DateTimeHelper::humanDurationFromInterval()](https://docs.craftcms.com/api/v3/craft-helpers-datetimehelper.html#humanDurationFromInterval()-detail)
+Runs a [`DateInterval`](http://php.net/manual/en/class.dateinterval.php) object through <api:craft\helpers\DateTimeHelper::humanDurationFromInterval()>
 
 ## `encenc`
 
@@ -86,7 +86,7 @@ Removes any empty elements from an array and returns the modified array.
 
 ## `filterByValue`
 
-Runs an array through [craft\helpers\ArrayHelper::filterByValue()](https://docs.craftcms.com/api/v3/craft-helpers-arrayhelper.html#filterByValue()-detail).
+Runs an array through <api:craft\helpers\ArrayHelper::filterByValue()>.
 
 ## `group`
 
@@ -115,7 +115,7 @@ Prefixes the given string with a keyed-hash message authentication code (HMAC), 
 <input type="hidden" name="foo" value="{{ 'bar'|hash }}">
 ```
 
-PHP scripts can validate the value via [CSecurityManager::validateData](http://www.yiiframework.com/doc/api/1.1/CSecurityManager#validateData-detail):
+PHP scripts can validate the value via [Security::validateData()](api:yii\base\Security::validateData()):
 
 ```php
 $foo = craft()->request->getPost('foo');
@@ -128,7 +128,7 @@ if ($foo !== false) {
 
 ## `id`
 
-Formats a string into something that will work well as an HTML input `id`, via [craft\web\View::formatInputId()](https://docs.craftcms.com/api/v3/craft-web-view.html#formatInputId()-detail).
+Formats a string into something that will work well as an HTML input `id`, via <api:craft\web\View::formatInputId()>.
 
 ```twig
 {% set name = 'input[name]' %}
@@ -137,7 +137,7 @@ Formats a string into something that will work well as an HTML input `id`, via [
 
 ## `index`
 
-Runs an array through [ArrayHelper::index()](https://www.yiiframework.com/doc/api/2.0/yii-helpers-basearrayhelper#index()-detail).
+Runs an array through [ArrayHelper::index()](api:yii\helpers\BaseArrayHelper::index()).
 
 ```twig
 {% set entries = entries|index('id') %}
@@ -206,7 +206,7 @@ Lowercases the first character of a string.
 
 ## `literal`
 
-Runs a string through [craft\helpers\Db::escapeParam](https://docs.craftcms.com/api/v3/craft-helpers-db.html#escapeParam()-detail)
+Runs a string through <api:craft\helpers\Db::escapeParam>
 
 ## `markdown` or `md`
 
@@ -227,7 +227,7 @@ the [Apple Extended Keyboard II] [1].
 
 ## `multisort`
 
-Sorts an array with [ArrayHelper::multisort()](https://www.yiiframework.com/doc/api/2.0/yii-helpers-basearrayhelper#multisort()-detail).
+Sorts an array with [ArrayHelper::multisort()](api:yii\helpers\BaseArrayHelper::multisort()).
 
 ## `number`
 
@@ -321,11 +321,11 @@ Like the [`time`](#time) filter, but for times rather than dates.
 
 ## `timestamp`
 
-Formats a date as a human-readable timestamp, via [craft\i18n\Formatter::asTimestamp()](https://docs.craftcms.com/api/v3/craft-i18n-formatter.html#asTimestamp()-detail).
+Formats a date as a human-readable timestamp, via <craft\i18n\Formatter::asTimestamp()>.
 
 ## `translate` or `t`
 
-Translates a message with [Craft::t()](https://www.yiiframework.com/doc/api/2.0/yii-baseyii#t()-detail). If no category is specified, it will default to `site`.
+Translates a message with [Craft::t()](api:yii\BaseYii::t()). If no category is specified, it will default to `site`.
 
 ```twig
 {{ "Hello world"|t }}
