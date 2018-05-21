@@ -220,8 +220,8 @@ function replaceApiLinks(md) {
                                     if (replace) {
                                         attr[1] = replace;
                                         let next = blockToken.children[tokenIndex+1];
-                                        if (next.type === 'text' && next.content.match(/^api:/)) {
-                                            next.content = next.content.substr(4);
+                                        if (next.type === 'text') {
+                                            next.content = next.content.replace(/^(api|config):/, '');
                                         }
                                     }
                                 }
@@ -274,5 +274,10 @@ function replaceApiLink(link) {
             }
             return url + (hash ? `#${hash}` : '');
         }
+    }
+
+    m = link.match(/^config:(.+)/)
+    if (m) {
+        return replaceApiLink('craft\\config\\GeneralConfig::'+m[1])
     }
 }
