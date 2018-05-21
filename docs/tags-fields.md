@@ -95,5 +95,5 @@ If your Tags field is only meant to have a single tag selected, remember that ca
 
 * [Element Queries](element-queries.md)
 * [Tag Query Params](element-query-params/tag-query-params.md)
-* [craft\elements\Tag](https://docs.craftcms.com/api/v3/craft-elements-tag.html)
+* <api:craft\elements\Tag>
 * [Relations](relations.md)

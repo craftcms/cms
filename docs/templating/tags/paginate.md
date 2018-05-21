@@ -43,7 +43,7 @@ The actual variable name(s) are up to you, however if you only specify one varia
 
 Here’s what they get set to:
 
-* `pageInfo` gets set to a [craft\web\twig\variables\Paginate](https://docs.craftcms.com/api/v3/craft-web-twig-variables-paginate.html) object, which provides info about the current page, and some helper methods for creating links to other pages ([more details](#the-pageInfo-variable) below).
+* `pageInfo` gets set to a <api:craft\web\twig\variables\Paginate> object, which provides info about the current page, and some helper methods for creating links to other pages ([more details](#the-pageInfo-variable) below).
 * `pageEntries` gets set to an array of the elements that belong to the current page.
 
 

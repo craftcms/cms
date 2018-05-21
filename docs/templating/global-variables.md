@@ -4,11 +4,11 @@ Every single template is going to get loaded with the following variables:
 
 ## `craft`
 
-A [craft\web\twig\variables\CraftVariable](https://docs.craftcms.com/api/v3/craft-web-twig-variables-craftvariable.html) object, which provides access points to various helper functions and objects for templates.
+A <api:craft\web\twig\variables\CraftVariable> object, which provides access points to various helper functions and objects for templates.
 
 ### `craft.app`
 
-A reference to the main [craft\web\Application](https://docs.craftcms.com/api/v3/craft-web-application.html) instance (the thing you get when you type `Craft::$app` in PHP code) is also available to templates via `craft.app`.
+A reference to the main <api:craft\web\Application> instance (the thing you get when you type `Craft::$app` in PHP code) is also available to templates via `craft.app`.
 
 ::: danger
 Accessing things via `craft.app` is considered highly advanced. There are more security implications than other Twig-specific variables and functions, and your templates will be more susceptible to breaking changes during major Craft version bumps.
@@ -22,7 +22,7 @@ Accessing things via `craft.app` is considered highly advanced. There are more s
 
 ## `currentSite`
 
-The requested site, represented by a [craft\models\Site](https://docs.craftcms.com/api/v3/craft-models-site.html) object.
+The requested site, represented by a <api:craft\models\Site> object.
 
 ```twig
 {{ currentSite.name }}
@@ -42,7 +42,7 @@ You can access all of the sites in the same group as the current site via `curre
 
 ## `currentUser`
 
-The currently-logged-in user, represented by a [craft\elements\User](https://docs.craftcms.com/api/v3/craft-elements-user.html) object, or `null` if no one is logged in.
+The currently-logged-in user, represented by a <api:craft\elements\User> object, or `null` if no one is logged in.
 
 ```twig
 {% if currentUser %}
@@ -152,13 +152,13 @@ The System Name, as defined in Settings → General.
 
 ## `view`
 
-A reference to the [craft\web\View](https://docs.craftcms.com/api/v3/craft-web-view.html) instance that is driving the template.
+A reference to the <api:craft\web\View> instance that is driving the template.
 
 ## Global Set Variables
 
 Each of your site’s [global sets](../globals.md) will be available to your template as global variables, named after their handle.
 
-They will be represented as [craft\elements\GlobalSet](https://docs.craftcms.com/api/v3/craft-elements-globalset.html) objects.
+They will be represented as <api:craft\elements\GlobalSet> objects.
 
 ```twig
 <p>{{ companyInfo.companyName }} was established in {{ companyInfo.yearEstablished }}.</p>

@@ -4,7 +4,7 @@ Color fields give you a hexadecimal color input with a preview of the current co
 
 ## Templating
 
-Calling a Color field in your templates will return a [craft\fields\data\ColorData](https://docs.craftcms.com/api/v3/craft-fields-data-colordata.html) object, or `null` if no color was selected.
+Calling a Color field in your templates will return a <api:craft\fields\data\ColorData> object, or `null` if no color was selected.
 
 ```twig
 {% if entry.linkColor %}

@@ -79,10 +79,10 @@ In Craft 3, component types no longer act as separate, peripheral classes to the
 
 Here’s how it works:
 
-- Any required component methods such as `getInputHtml()` are defined by an interface (e.g. [craft\base\FieldInterface](https://docs.craftcms.com/api/v3/craft-base-fieldinterface.html)).
-- Common properties such as `$handle` are defined by a trait (e.g. [craft\base\FieldTrait](https://docs.craftcms.com/api/v3/craft-base-fieldtrait.html)).
-- A base implementation of the component type is provided by an abstract base class (e.g. [craft\base\Field](https://docs.craftcms.com/api/v3/craft-base-field.html)).
-- The base class is extended by the various component classes (e.g. [craft\fields\PlainText](https://docs.craftcms.com/api/v3/craft-fields-plaintext.html)).
+- Any required component methods such as `getInputHtml()` are defined by an interface (e.g. <api:craft\base\FieldInterface>).
+- Common properties such as `$handle` are defined by a trait (e.g. <api:craft\base\FieldTrait>).
+- A base implementation of the component type is provided by an abstract base class (e.g. <api:craft\base\Field>).
+- The base class is extended by the various component classes (e.g. <api:craft\fields\PlainText>).
 
 
 

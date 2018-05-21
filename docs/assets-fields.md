@@ -26,7 +26,7 @@ If the “Restrict allowed file types?” setting is checked, a list of file typ
 
 The “Default Upload Location” setting, and the “Upload Location” setting that replaces it if “Restrict uploads to a single folder?” is checked, support dynamic subfolder paths.
 
-After an element is saved, the subfolder path will be parsed for any tags representing properties of the source element. For example, if you intend to use the field with [entries](sections-and-entries.md), then you can use any properties listed in the [craft\elements\entries](https://docs.craftcms.com/api/v3/craft-elements-entry.html) documentation, such as `{id}`, `{slug}`, or even nested object properties like `{author.username}`.
+After an element is saved, the subfolder path will be parsed for any tags representing properties of the source element. For example, if you intend to use the field with [entries](sections-and-entries.md), then you can use any properties listed in the <api:craft\elements\entries> documentation, such as `{id}`, `{slug}`, or even nested object properties like `{author.username}`.
 
 Normal Twig tags are supported as well, in case you want to include `{% if %}` conditionals in your path, or access other objects besides the source element, such as `{{ now|date('Y-m-d') }}`  or `{{ currentUser.username }}`.
 
@@ -140,5 +140,5 @@ If you want your form to allow multiple files being uploaded at once, just add t
 
 * [Element Queries](element-queries.md)
 * [Asset Query Params](element-query-params/asset-query-params.md)
-* [craft\elements\Asset](https://docs.craftcms.com/api/v3/craft-elements-asset.html)
+* <api:craft\elements\Asset>
 * [Relations](relations.md)
