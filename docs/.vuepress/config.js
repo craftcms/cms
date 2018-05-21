@@ -196,11 +196,9 @@ module.exports = {
         anchor: {
             level: [2, 3]
         },
-        config: require('vuepress-theme-craftdocs/markup')
+        config(md) {
+            md
+                .use(require('vuepress-theme-craftdocs/markup'))
+        }
     },
-    // configureWebpack: {
-    //     optimization: {
-    //         minimize: false
-    //     }
-    // },
 }
