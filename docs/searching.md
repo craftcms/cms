@@ -128,7 +128,7 @@ Assets, categories, entries, users, and tags each support their own set of addit
 
 ## Templating
 
-[craft.assets](https://craftcms.com/docs/templating/craft.assets), [craft.entries](https://craftcms.com/docs/templating/craft.entries), [craft.tags](https://craftcms.com/docs/templating/craft.tags), and [craft.users](https://craftcms.com/docs/templating/craft.users) support a `search` parameter that you can use to filter their elements by a given search query.
+`craft.assets()`, `craft.entries()`, `craft.tags()`, and `craft.users()` support a `search` parameter that you can use to filter their elements by a given search query.
 
 You can specify the search query in two different ways:
 

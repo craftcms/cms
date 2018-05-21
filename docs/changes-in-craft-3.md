@@ -653,11 +653,11 @@ The `csrfInput()` function is provided as a shortcut.
 
 ## Memcache
 
-If you are using `memcache` for your [cacheMethod](https://craftcms.com/docs/config-settings#cacheMethod) config setting and you did not have `useMemcached` set to `true` in your `craft/config/memcache.php` config file, you'll need to install memcached on your server.  Craft 3 will only use it because there is not a PHP 7 compatible version of memcache available.
+If you are using `memcache` for your <config:cacheMethod> config setting and you did not have `useMemcached` set to `true` in your `craft/config/memcache.php` config file, you'll need to install memcached on your server.  Craft 3 will only use it because there is not a PHP 7 compatible version of memcache available.
 
 ## DbCache
 
-If you are using `db` for your [cacheMethod](https://craftcms.com/docs/config-settings#cacheMethod) config setting, you'll need to manually execute some SQL before attempting the Craft 3 update.
+If you are using `db` for your <config:cacheMethod> config setting, you'll need to manually execute some SQL before attempting the Craft 3 update.
 
 *MySQL:*
 
