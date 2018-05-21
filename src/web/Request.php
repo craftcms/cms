@@ -284,9 +284,21 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the segments of the requested path.
-     * Note that the segments will not include the [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger)
-     * if it’s a CP request, or the [page trigger](http://craftcms.com/docs/config-settings#pageTrigger) or page
+     *
+     * ::: tip
+     * Note that the segments will not include the [[\craft\config\GeneralConfig::cpTrigger|CP trigger]]
+     * if it’s a CP request, or the [[\craft\config\GeneralConfig::pageTrigger|page trigger]] or page
      * number if it’s a paginated request.
+     * :::
+     *
+     * ---
+     *
+     * ```php
+     * $segments = Craft::$app->request->segments;
+     * ```
+     * ```twig
+     * {% set segments = craft.app.request.segments %}
+     * ```
      *
      * @return array The Craft path’s segments.
      */
@@ -297,6 +309,15 @@ class Request extends \yii\web\Request
 
     /**
      * Returns a specific segment from the Craft path.
+     *
+     * ---
+     *
+     * ```php
+     * $firstSegment = Craft::$app->request->getSegment(1);
+     * ```
+     * ```twig
+     * {% set firstSegment = craft.app.request.getSegment(1) %}
+     * ```
      *
      * @param int $num Which segment to return (1-indexed).
      * @return string|null The matching segment, or `null` if there wasn’t one.
@@ -321,6 +342,15 @@ class Request extends \yii\web\Request
     /**
      * Returns the requested page number.
      *
+     * ---
+     *
+     * ```php
+     * $page = Craft::$app->request->pageNum;
+     * ```
+     * ```twig
+     * {% set page = craft.app.request.pageNum %}
+     * ```
+     *
      * @return int The requested page number.
      */
     public function getPageNum(): int
@@ -340,9 +370,9 @@ class Request extends \yii\web\Request
 
     /**
      * Returns whether the Control Panel was requested.
+     *
      * The result depends on whether the first segment in the URI matches the
-     * [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger).
-     * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
+     * [[\craft\config\GeneralConfig::cpTrigger|CP trigger]].
      *
      * @return bool Whether the current request should be routed to the Control Panel.
      */
@@ -366,7 +396,7 @@ class Request extends \yii\web\Request
      * Returns whether a specific controller action was requested.
      * There are several ways that this method could return `true`:
      * - If the first segment in the Craft path matches the
-     *   [action trigger](http://craftcms.com/docs/config-settings#actionTrigger)
+     *   [[\craft\config\GeneralConfig::actionTrigger|action trigger]]
      * - If there is an 'action' param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
@@ -402,6 +432,14 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is a Live Preview request.
      *
+     * ---
+     * ```php
+     * $isLivePreview = Craft::$app->request->isLivePreview;
+     * ```
+     * ```twig
+     * {% set isLivePreview = craft.app.request.isLivePreview %}
+     * ```
+     *
      * @return bool Whether this is a Live Preview request.
      */
     public function getIsLivePreview(): bool
@@ -415,7 +453,17 @@ class Request extends \yii\web\Request
 
     /**
      * Returns whether the request is coming from a mobile browser.
+     *
      * The detection script is provided by http://detectmobilebrowsers.com. It was last updated on 2014-11-24.
+     *
+     * ---
+     *
+     * ```php
+     * $isMobileBrowser = Craft::$app->request->isMobileBrowser();
+     * ```
+     * ```twig
+     * {% set isMobileBrowser = craft.app.request.isMobileBrowser() %}
+     * ```
      *
      * @param bool $detectTablets Whether tablets should be considered “mobile”.
      * @return bool Whether the request is coming from a mobile browser.
@@ -464,16 +512,24 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the named request body parameter value.
-     * If the parameter does not exist, the second parameter passed to this method will be returned.
+     *
+     * If the parameter does not exist, the second argument passed to this method will be returned.
+     *
+     * ---
      *
      * ```php
-     * $foo = Craft::$app->request->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
+     * // get $_POST['foo'], if it exists
+     * $foo = Craft::$app->request->getBodyParam('foo');
+     *
+     * // get $_POST['foo']['bar'], if it exists
+     * $bar = Craft::$app->request->getBodyParam('foo.bar');
      * ```
+     * ```twig
+     * {# get $_POST['foo'], if it exists #}
+     * {% set foo = craft.app.request.getBodyParam('foo') %}
      *
-     * You can also specify a nested parameter using a dot-delimited string.
-     *
-     * ```php
-     * $bar = Craft::$app->request->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
+     * {# get $_POST['foo']['bar'], if it exists #}
+     * {% set bar = craft.app.request.getBodyParam('foo.bar') %}
      * ```
      *
      * @param string $name The parameter name.
@@ -489,6 +545,23 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the named request body parameter value, or bails on the request with a 400 error if that parameter doesn’t exist.
+     *
+     * ---
+     *
+     * ```php
+     * // get required $_POST['foo']
+     * $foo = Craft::$app->request->getRequiredBodyParam('foo');
+     *
+     * // get required $_POST['foo']['bar']
+     * $bar = Craft::$app->request->getRequiredBodyParam('foo.bar');
+     * ```
+     * ```twig
+     * {# get required $_POST['foo'] #}
+     * {% set foo = craft.app.request.getRequiredBodyParam('foo') %}
+     *
+     * {# get required $_POST['foo']['bar'] #}
+     * {% set bar = craft.app.request.getRequiredBodyParam('foo.bar') %}
+     * ```
      *
      * @param string $name The parameter name.
      * @return mixed The parameter value
@@ -508,6 +581,23 @@ class Request extends \yii\web\Request
 
     /**
      * Validates and returns the named request body parameter value, or bails on the request with a 400 error if that parameter doesn’t pass validation.
+     *
+     * ---
+     *
+     * ```php
+     * // get validated $_POST['foo']
+     * $foo = Craft::$app->request->getValidatedBodyParam('foo');
+     *
+     * // get validated $_POST['foo']['bar']
+     * $bar = Craft::$app->request->getValidatedBodyParam('foo.bar');
+     * ```
+     * ```twig
+     * {# get validated $_POST['foo'] #}
+     * {% set foo = craft.app.request.getValidatedBodyParam('foo') %}
+     *
+     * {# get validated $_POST['foo']['bar'] #}
+     * {% set bar = craft.app.request.getValidatedBodyParam('foo.bar') %}
+     * ```
      *
      * @param string $name The parameter name.
      * @return mixed|null The parameter value
@@ -546,16 +636,24 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the named GET parameter value.
-     * If the GET parameter does not exist, the second parameter to this method will be returned.
+     *
+     * If the GET parameter does not exist, the second argument passed to this method will be returned.
+     *
+     * ---
      *
      * ```php
-     * $foo = Craft::$app->request->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
+     * // get $_GET['foo'], if it exists
+     * $foo = Craft::$app->request->getQueryParam('foo');
+     *
+     * // get $_GET['foo']['bar'], if it exists
+     * $bar = Craft::$app->request->getQueryParam('foo.bar');
      * ```
+     * ```twig
+     * {# get $_GET['foo'], if it exists #}
+     * {% set foo = craft.app.request.getQueryParam('foo') %}
      *
-     * You can also specify a nested parameter using a dot-delimited string.
-     *
-     * ```php
-     * $bar = Craft::$app->request->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
+     * {# get $_GET['foo']['bar'], if it exists #}
+     * {% set bar = craft.app.request.getQueryParam('foo.bar') %}
      * ```
      *
      * @param string $name The GET parameter name.
@@ -570,6 +668,23 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the named GET parameter value, or bails on the request with a 400 error if that parameter doesn’t exist.
+     *
+     * ---
+     *
+     * ```php
+     * // get required $_GET['foo']
+     * $foo = Craft::$app->request->getRequiredQueryParam('foo');
+     *
+     * // get required $_GET['foo']['bar']
+     * $bar = Craft::$app->request->getRequiredQueryParam('foo.bar');
+     * ```
+     * ```twig
+     * {# get required$_GET['foo'] #}
+     * {% set foo = craft.app.request.getRequiredQueryParam('foo') %}
+     *
+     * {# get required $_GET['foo']['bar'] #}
+     * {% set bar = craft.app.request.getRequiredQueryParam('foo.bar') %}
+     * ```
      *
      * @param string $name The GET parameter name.
      * @return mixed The GET parameter value.
@@ -634,6 +749,15 @@ class Request extends \yii\web\Request
     /**
      * Returns the request’s query string, without the path parameter.
      *
+     * ---
+     *
+     * ```php
+     * $queryString = Craft::$app->request->queryStringWithoutPath;
+     * ```
+     * ```twig
+     * {% set queryString = craft.app.request.queryStringWithoutPath %}
+     * ```
+     *
      * @return string The query string.
      */
     public function getQueryStringWithoutPath(): string
@@ -695,6 +819,15 @@ class Request extends \yii\web\Request
     /**
      * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
      * browser's UserAgent string.
+     *
+     * ---
+     *
+     * ```php
+     * $clientOs = Craft::$app->request->clientOs;
+     * ```
+     * ```twig
+     * {% set clientOs = craft.app.request.clientOs %}
+     * ```
      *
      * @return string The OS the client is running.
      */

@@ -82,8 +82,8 @@ abstract class Model extends \yii\base\Model
     /**
      * Adds errors from another model, with a given attribute name prefix.
      *
-     * @param \yii\base\Model
-     * @param string $attrPrefix
+     * @param \yii\base\Model $model The other model
+     * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
      */
     public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
     {

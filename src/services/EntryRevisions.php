@@ -27,7 +27,7 @@ use yii\base\InvalidConfigException;
 
 /**
  * Entry Revisions service.
- * An instance of the Entry Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntryRevisions()|<code>Craft::$app->entryRevisions</code>]].
+ * An instance of the Entry Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntryRevisions()|`Craft::$app->entryRevisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -34,7 +34,7 @@ use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
- * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|<code>Craft::$app->users</code>]].
+ * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -190,7 +190,7 @@ class Users extends Component
     /**
      * Returns whether a verification code is valid for the given user.
      * This method first checks if the code has expired past the
-     * [verificationCodeDuration](http://craftcms.com/docs/config-settings#verificationCodeDuration) config
+     * [[\craft\config\GeneralConfig::verificationCodeDuration|verificationCodeDuration]] config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
@@ -828,7 +828,7 @@ class Users extends Component
     /**
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
      * This method will check the
-     * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
+     * [[\craft\config\GeneralConfig::purgePendingUsersDuration|purgePendingUsersDuration]] config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
      */

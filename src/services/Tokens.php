@@ -19,7 +19,7 @@ use yii\db\Expression;
 
 /**
  * The Tokens service.
- * An instance of the Tokens service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTokens()|<code>Craft::$app->tokens</code>]].
+ * An instance of the Tokens service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTokens()|`Craft::$app->tokens`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

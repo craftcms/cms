@@ -43,7 +43,7 @@ use yii\base\Exception;
 
 /**
  * The Elements service provides APIs for managing elements.
- * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|<code>Craft::$app->elements</code>]].
+ * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -55,6 +55,23 @@ class Elements extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering element types.
+     *
+     * Element types must implement [[ElementInterface]]. [[Element]] provides a base implementation.
+     *
+     * See [Element Types](https://docs.craftcms.com/v3/element-types.html) for documentation on creating element types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(Elements::class,
+     *     Elements::EVENT_REGISTER_ELEMENT_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyElementType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
 

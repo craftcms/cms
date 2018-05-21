@@ -20,7 +20,7 @@ use yii\base\Exception;
 
 /**
  * Content service.
- * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|<code>Craft::$app->content</code>]].
+ * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -489,7 +489,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -971,7 +970,7 @@ class Asset extends Element
     /**
      * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
-     * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
+     * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null
      */
     public function getFocalPoint(bool $asCss = false)

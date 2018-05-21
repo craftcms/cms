@@ -28,7 +28,7 @@ use yii\web\HttpException;
 
 /**
  * The Plugins service provides APIs for managing plugins.
- * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|<code>Craft::$app->plugins</code>]].
+ * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|`Craft::$app->plugins`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
