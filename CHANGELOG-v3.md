@@ -2,8 +2,93 @@
 
 ## Unreleased
 
+### Added
+- Added default plugin icon to plugins without icon in the Plugin Store.
+- Added `craft\services\Assets::findFolderByUid().`
+- Added `craft\services\Sites::getSiteByUid().`
+- Added `craft\services\Tags::getTagGroupByUid().`
+
+### Changed
+- Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
+- Start using UIDs instead of IDs in field settings.
+
+### Fixed
+- Fixed a bug where the Plugin Store was listing featured plugins (e.g. “Recently Added”) in alphabetical order rather than the API-defined order. ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))
+- Fixed a SQL error that occurred when programmatically saving a field layout, if the field’s `required` property wasn’t set.
+
+## 3.0.8 - 2018-05-15
+
+### Added
+- Number fields now have a “Default Value” setting. ([#927](https://github.com/craftcms/cms/issues/927))
+- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ colorspaces from getting converted to sRGB on environments running ImageMagick.
+
+### Changed
+- Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Detail panes now have a lighter, more saturated background color.
+
+### Fixed
+- Fixed a bug where Craft’s default MySQL backup command would not respect the `unixSocket` database config setting. ([#2794](https://github.com/craftcms/cms/issues/2794))
+- Fixed a bug where some SVG files were not recognized as SVG files.
+- Fixed a bug where Table fields could add the wrong number of default rows if the Min Rows setting was set, and the Default Values setting had something other than one row. ([#2864](https://github.com/craftcms/cms/issues/2864))
+- Fixed an error that could occur when parsing asset reference tags. ([craftcms/redactor#47](https://github.com/craftcms/redactor/issues/47))
+- Fixed a bug where “Try” and “Buy” buttons in the Plugin Store were visible when the `allowUpdates` config setting was disabled. ([#2781](https://github.com/craftcms/cms/issues/2781))
+- Fixed a bug where Number fields would forget their Min/Max Value settings if they were set to 0.
+- Fixed a bug where entry versions could be displayed in the wrong order if multiple versions had the same creation date. ([#2889](https://github.com/craftcms/cms/issues/2889))
+- Fixed an error that occurred when installing Craft on a domain with an active user session.
+- Fixed a bug where email verification links weren’t working for publicly-registered users if the registration form contained a Password field and the default user group granted permission to access the Control Panel.
+
+### Security
+- Login errors for locked users now factor in whether the `preventUserEnumeration` config setting is enabled.
+
+## 3.0.7 - 2018-05-10
+
+### Added
+- Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
+- Added `craft\helpers\FileHelper::isGif()`.
+
+### Changed
+- Craft no longer logs warnings about missing translation files when Dev Mode isn’t enabled. ([#1531](https://github.com/craftcms/cms/issues/1531))
+- Added `craft\services\Deprecator::$logTarget`. ([#2870](https://github.com/craftcms/cms/issues/2870))
+- `craft\services\Deprecator::log()` no longer returns anything.
+
+### Fixed
+- Fixed a bug where it was impossible to upload new assets to Assets fields using base64-encoded strings. ([#2855](https://github.com/craftcms/cms/issues/2855))
+- Fixed a bug where Assets fields would ignore all submitted asset IDs if any new assets were uploaded as well.
+- Fixed a bug where SVG files that were using single quotes instead of double quotes would not be recognized as SVGs.
+- Fixed a bug where translated versions of the “It looks like someone is currently performing a system update.” message contained an HTML-encoded `<br/>` tag.
+- Fixed a bug where changing an entry’s type could skip adding the new entry type’s tabs, if the previous entry type didn’t have any tabs. ([#2859](https://github.com/craftcms/cms/issues/2859))
+- Fixed warnings about missing SVG files that were logged by Control Panel requests.
+- Fixed a bug where the `|date` filter would ignore date formatting characters that don’t have ICU counterparts. ([#2867](https://github.com/craftcms/cms/issues/2867))
+- Fixed a bug where the global `currentUser` Twig variable could be set to `null` and global sets and could be missing some custom field values when a user was logged-in, if a plugin was loading Twig during or immediately after plugin instantiation. ([#2866](https://github.com/craftcms/cms/issues/2866))
+
+## 3.0.6 - 2018-05-08
+
+### Added
+- Error messages about missing plugin-supplied field and volume types now show an Install button when possible.
+- Added `craft\base\MissingComponentTrait::getPlaceholderHtml()`.
+- Added `craft\db\Migration::EVENT_AFTER_UP` and `EVENT_AFTER_DOWN` events.
+- Added `craft\elements\Asset::getContents()`.
+
 ### Changed
 - Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
+- Modules are once again loaded before plugins, so they have a chance to register Twig initialization events before a plugin initializes Twig. ([#2831](https://github.com/craftcms/cms/issues/2831))
+- `craft\helpers\FileHelper::isSvg()` now returns `true` for files with an `image/svg` MIME type (missing the `+xml`). ([#2837](https://github.com/craftcms/cms/pull/2837))
+- The `svg()` Twig function now accepts assets to be passed directly into it. ([#2838](https://github.com/craftcms/cms/pull/2838))
+- The “Save and add another” save menu option on Edit Entry and Edit Categories pages now maintain the currently-selected site. ([#2844](https://github.com/craftcms/cms/issues/2844))
+- PHP date patterns that are *only* a month name or week day name character will now format the date using the stand-alone month/week day name value. (For example, `'F'` will format a date as “Maggio” instead of “maggio”.)
+- Servers without the Intl extension will now use location-agnostic locale data as a fallback if locale data for the specific locale isn’t available.
+- The `|date` Twig filter always goes through `craft\i18n\Formatter::asDate()` now, unless formatting a `DateInterval` object.
+- The Settings → Plugins page now shows “Buy now” buttons for any commercial plugins that don’t have a license key yet.
+
+### Deprecated
+- Deprecated `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` should be used instead.
+
+### Removed
+- Removed the `translate` argument from the `|date`, `|time`, and `|datetime` Twig filters; the resulting formatted dates will always be translated now. (Use `myDate.format()` to avoid translations.)
+
+### Fixed
+- Fixed an error that could occur in the Plugin Store.
+- Fixed a bug where `myDate|date('F')` was returning the short “May” translation rather than the full-length one. ([#2848](https://github.com/craftcms/cms/issues/2848))
 
 ## 3.0.5 - 2018-05-01
 

@@ -108,6 +108,24 @@
 
         mounted() {
             this.$root.crumbs = null
+
+            // show a plugin?
+            const pluginHandle = this.$route.params.pluginHandle
+            if (pluginHandle) {
+                this.$router.replace({path: '/'})
+                const plugin = this.$store.getters.getPluginByHandle(pluginHandle)
+
+                if (this.$root.pluginStoreDataLoaded) {
+                    // show plugin
+                    this.$root.showPlugin(plugin)
+                } else {
+                    // wait for the cart to be ready
+                    this.$root.$on('allDataLoaded', function() {
+                        // show plugin
+                        this.$root.showPlugin(plugin)
+                    }.bind(this))
+                }
+            }
         }
 
     }

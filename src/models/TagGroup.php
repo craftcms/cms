@@ -47,6 +47,11 @@ class TagGroup extends Model
      */
     public $fieldLayoutId;
 
+    /**
+     * @var int|null Field layout ID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

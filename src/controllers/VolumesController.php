@@ -71,6 +71,8 @@ class VolumesController extends Controller
 
         $volumes = Craft::$app->getVolumes();
 
+        $missingVolumePlaceholder = null;
+
         /** @var Volume $volume */
         if ($volume === null) {
             if ($volumeId !== null) {
@@ -81,12 +83,8 @@ class VolumesController extends Controller
                 }
 
                 if ($volume instanceof MissingVolume) {
-                    $expectedType = $volume->expectedType;
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    $missingVolumePlaceholder = $volume->getPlaceholderHtml();
                     $volume = $volume->createFallback(Local::class);
-                    $volume->addError('type', Craft::t('app', 'The volume type “{type}” could not be found.', [
-                        'type' => $expectedType
-                    ]));
                 }
             } else {
                 $volume = $volumes->createVolume(Local::class);
@@ -158,6 +156,7 @@ class VolumesController extends Controller
             'isNewVolume' => $isNewVolume,
             'volumeTypes' => $allVolumeTypes,
             'volumeTypeOptions' => $volumeTypeOptions,
+            'missingVolumePlaceholder' => $missingVolumePlaceholder,
             'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,

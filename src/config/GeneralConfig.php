@@ -396,6 +396,12 @@ class GeneralConfig extends BaseObject
      */
     public $postLogoutRedirect = '';
     /**
+     * @var bool Whether CMYK should be preserved as the colorspace when when manipulating images.
+     * Setting this to true will prevent Craft from transforming CMYK images to sRGB, but on some Imagick versions can cause color
+     * distortion in the image. This will only have effect if Imagick is in use.
+     */
+    public $preserveCmykColorspace = false;
+    /**
      * @var bool Whether the EXIF data should be preserved when manipulating images.
      * Setting this to false will reduce the image size a little bit, but all EXIF data will be cleared.
      * This will only have effect if Imagick is in use.
@@ -502,7 +508,7 @@ class GeneralConfig extends BaseObject
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var mixed The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+     * @var mixed The password-reset template path. Note that this only affects front-end site requests.
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      * @see getSetPasswordPath()
      */
@@ -568,6 +574,10 @@ class GeneralConfig extends BaseObject
      * This can be set to one of PHP’s supported timezones (http://php.net/manual/en/timezones.php).
      */
     public $timezone;
+    /**
+     * @var bool Tells Craft whether GIF files should be transformed or cleansed. Defaults to true.
+     */
+    public $transformGifs = true;
     /**
      * @var bool Tells Craft whether to surround all translatable strings with “@” symbols, to help find any strings that are not
      * being run through Craft::t() or the |translate filter.

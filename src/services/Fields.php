@@ -1207,7 +1207,7 @@ class Fields extends Component
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;
                 $fieldRecord->fieldId = $field->id;
-                $fieldRecord->required = $field->required;
+                $fieldRecord->required = (bool)$field->required;
                 $fieldRecord->sortOrder = $field->sortOrder;
                 $fieldRecord->save(false);
             }

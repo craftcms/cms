@@ -134,6 +134,12 @@ class Sites extends Component
 
     /**
      * @var Site[]
+     * @see getSiteByUid()
+     */
+    private $_sitesByUid;
+
+    /**
+     * @var Site[]
      * @see getSiteByHandle()
      */
     private $_sitesByHandle;
@@ -340,6 +346,21 @@ class Sites extends Component
     public function getAllSiteIds(): array
     {
         return array_keys($this->_sitesById);
+    }
+
+    /**
+     * Returns a site by it's UID.
+     *
+     * @return Site the site
+     * @throws SiteNotFoundException if no sites exist
+     */
+    public function getSiteByUid(string $uid): Site
+    {
+        if (!isset($this->_sitesByUid[$uid])) {
+            throw new SiteNotFoundException('Site with UID ”'.$uid.'“ not found!');
+        }
+
+        return $this->_sitesByUid[$uid];
     }
 
     /**
@@ -997,6 +1018,7 @@ class Sites extends Component
 
         $this->_sitesById = [];
         $this->_sitesByHandle = [];
+        $this->_sitesByUid = [];
 
         if (!Craft::$app->getIsInstalled()) {
             return;
@@ -1023,6 +1045,7 @@ class Sites extends Component
                 $site = new Site($result);
                 $this->_sitesById[$site->id] = $site;
                 $this->_sitesByHandle[$site->handle] = $site;
+                $this->_sitesByUid[$site->uid] = $site;
 
                 if ($site->primary) {
                     $this->_primarySite = $site;
@@ -1069,7 +1092,7 @@ class Sites extends Component
     private function _createSiteQuery(): Query
     {
         return (new Query())
-            ->select(['id', 'groupId', 'name', 'handle', 'language', 'primary', 'hasUrls', 'baseUrl', 'sortOrder'])
+            ->select(['id', 'groupId', 'name', 'handle', 'language', 'primary', 'hasUrls', 'baseUrl', 'sortOrder', 'uid'])
             ->from(['{{%sites}}'])
             ->orderBy(['name' => SORT_ASC]);
     }

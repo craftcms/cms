@@ -122,7 +122,7 @@
   display: block;
   @include floatleft;
   margin-top: 7px;
-  color: $errorColor;
+  color: $red;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),

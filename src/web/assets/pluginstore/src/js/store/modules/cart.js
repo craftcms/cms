@@ -41,21 +41,23 @@ const getters = {
     },
 
     cartItems(state, getters, rootState) {
-        const lineItems = state.cart.lineItems
-
         let cartItems = []
 
-        lineItems.forEach(lineItem => {
-            let cartItem = {}
+        if (state.cart) {
+            const lineItems = state.cart.lineItems
 
-            cartItem.lineItem = lineItem
+            lineItems.forEach(lineItem => {
+                let cartItem = {}
 
-            if (lineItem.purchasable.type === 'plugin-edition') {
-                cartItem.plugin = rootState.pluginStore.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
-            }
+                cartItem.lineItem = lineItem
 
-            cartItems.push(cartItem)
-        })
+                if (lineItem.purchasable.type === 'plugin-edition') {
+                    cartItem.plugin = rootState.pluginStore.plugins.find(p => p.handle === lineItem.purchasable.plugin.handle)
+                }
+
+                cartItems.push(cartItem)
+            })
+        }
 
         return cartItems
     },

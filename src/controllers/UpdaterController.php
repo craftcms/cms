@@ -282,7 +282,7 @@ class UpdaterController extends BaseUpdaterController
         if (!$force && Craft::$app->getIsInMaintenanceMode()) {
             // Bail if Craft is already in maintenance mode
             return [
-                'error' => str_replace('<br>', "\n\n", Craft::t('app', 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
+                'error' => str_replace(['<br>', '<br/>'], "\n\n", Craft::t('app', 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Continue'), self::ACTION_FORCE_UPDATE, ['submit' => true]),
                 ]

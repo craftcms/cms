@@ -847,16 +847,18 @@ class Request extends \yii\web\Request
      */
     protected function csrfTokenValidForCurrentUser(string $token): bool
     {
-        if (Craft::$app->getIsInstalled()) {
-            try {
-                if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
-                    return true;
-                }
-            } catch (DbException $e) {
-                // Craft is probably not installed or updating
-                Craft::$app->getUser()->switchIdentity(null);
+        if (!Craft::$app->getIsInstalled()) {
+            return true;
+        }
+
+        try {
+            if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
                 return true;
             }
+        } catch (DbException $e) {
+            // Craft is probably not installed or updating
+            Craft::$app->getUser()->switchIdentity(null);
+            return true;
         }
 
         $splitToken = explode('|', $token, 2);
@@ -1020,18 +1022,16 @@ class Request extends \yii\web\Request
             if ($this->_isCpRequest) {
                 $loginPath = 'login';
                 $logoutPath = 'logout';
-                $setPasswordPath = 'setpassword';
                 $updatePath = 'update';
             } else {
                 $loginPath = trim($generalConfig->getLoginPath(), '/');
                 $logoutPath = trim($generalConfig->getLogoutPath(), '/');
-                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
                 $updatePath = null;
             }
 
             $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1);
             $hasActionParam = ($actionParam = $this->getParam('action')) !== null;
-            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $updatePath], true);
+            $hasSpecialPath = in_array($this->_path, [$loginPath, $logoutPath, $updatePath], true);
 
             if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
@@ -1054,9 +1054,6 @@ class Request extends \yii\web\Request
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];
-                            break;
-                        case $setPasswordPath:
-                            $this->_actionSegments = ['users', 'set-password'];
                             break;
                         case $updatePath:
                             $this->_actionSegments = ['updater', 'index'];

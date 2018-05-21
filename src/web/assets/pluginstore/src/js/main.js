@@ -19,7 +19,8 @@ Garnish.$doc.ready(function() {
         store,
 
         components: {
-            GlobalModal: require('./components/GlobalModal')
+            modal: require('./components/modal/Modal'),
+            statusMessage: require('./components/StatusMessage'),
         },
 
         data() {
@@ -125,16 +126,16 @@ Garnish.$doc.ready(function() {
             showPlugin(plugin) {
                 this.plugin = plugin
                 this.pluginId = plugin.id
-                this.openGlobalModal('plugin-details')
+                this.openModal('plugin-details')
             },
 
-            openGlobalModal(modalStep) {
+            openModal(modalStep) {
                 this.modalStep = modalStep
 
                 this.showModal = true
             },
 
-            closeGlobalModal() {
+            closeModal() {
                 this.showModal = false
             },
 
@@ -223,7 +224,7 @@ Garnish.$doc.ready(function() {
 
             this.$cartButton.on('click', (e) => {
                 e.preventDefault()
-                $this.openGlobalModal('cart')
+                $this.openModal('cart')
             })
 
             this.$cartButton.keydown(e => {
@@ -231,7 +232,7 @@ Garnish.$doc.ready(function() {
                     case 13: // Enter
                     case 32: // Space
                         e.preventDefault()
-                        $this.openGlobalModal('cart')
+                        $this.openModal('cart')
                         break
 
                 }

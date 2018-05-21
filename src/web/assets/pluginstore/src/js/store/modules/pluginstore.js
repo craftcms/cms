@@ -43,9 +43,14 @@ const getters = {
 
     getPluginsByIds(state, rootState) {
         return ids => {
-            return state.plugins.filter(p => {
-                return ids.find(id => id == p.id)
+            let plugins = [];
+
+            ids.forEach(function(id) {
+                const plugin = state.plugins.find(p => p.id === id)
+                plugins.push(plugin)
             })
+
+            return plugins;
         }
     },
 
@@ -60,6 +65,12 @@ const getters = {
     getPluginsByDeveloperId(state, rootState) {
         return developerId => {
             return state.plugins.filter(p => p.developerId == developerId)
+        }
+    },
+
+    getPluginByHandle(state) {
+        return handle => {
+            return state.plugins.find(plugin => plugin.handle === handle)
         }
     },
 

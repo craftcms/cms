@@ -96,20 +96,22 @@
         .license-key {
           margin-top: 1em;
 
-          div {
+          .pane {
             margin: 0;
+            padding: 3px;
+            background: $lightBgColor;
+            border-radius: $btnBorderRadius;
 
             input.text {
               font-weight: bold;
               font-size: 11px !important;
-              border-radius: 3px;
               padding: 3px 7px 1px;
               width: 19em;
             }
           }
 
-          .spinner {
-            height: 26px;
+          .btn, .spinner {
+            margin: 0;
           }
         }
       }

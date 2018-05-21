@@ -2,7 +2,7 @@
     <div v-if="plugin" class="plugin-card" @click="$emit('click')">
         <div class="plugin-icon">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-            <div class="default-icon" v-else></div>
+            <img v-else :src="defaultPluginSvg" height="32" />
         </div>
 
         <div>
@@ -18,13 +18,17 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState, mapGetters} from 'vuex'
 
     export default {
 
         props: ['plugin'],
 
         computed: {
+
+            ...mapState({
+                defaultPluginSvg: state => state.craft.defaultPluginSvg,
+            }),
 
             ...mapGetters({
                 isInstalled: 'isInstalled',
