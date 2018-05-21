@@ -238,40 +238,41 @@ function replaceApiLinks(md) {
 
 function replaceApiLink(link) {
     link = decodeURIComponent(link)
-    let m = link.match(/^(?:api:)?\\?([\w\\]+)(?:::\$?(\w+)(\(\))?)?$/)
+    let m = link.match(/^(?:api:)?\\?([\w\\]+)(?:::\$?(\w+)(\(\))?)?(?:#([\w\-]+))?$/)
     if (m) {
         let className = m[1]
         let subject = m[2]
         let isMethod = typeof m[3] !== 'undefined'
+        let hash = m[4]
 
         if (className.match(/^craft\\/) || className.match(/^Craft/)) {
             let url = 'https://docs.craftcms.com/api/v3/'+className.replace(/\\/g, '-').toLowerCase()+'.html'
             if (subject) {
-                url += '#'
+                hash = ''
                 if (isMethod) {
-                    url += 'method-'
+                    hash = 'method-'
                 } else if (!subject.match(/^EVENT_/)) {
-                    url += 'property-'
+                    hash = 'property-'
                 }
-                url += subject.replace(/_/g, '-').toLowerCase()
+                hash += subject.replace(/_/g, '-').toLowerCase()
             }
-            return url;
+            return url + (hash ? `#${hash}` : '');
         }
 
         if (className.match(/^yii\\/) || className.match(/^Yii/)) {
             let url = 'https://www.yiiframework.com/doc/api/2.0/'+className.replace(/\\/g, '-').toLowerCase()
             if (subject) {
-                url += '#'+subject+(isMethod ? '()' : '')+'-detail'
+                hash = subject+(isMethod ? '()' : '')+'-detail'
             }
-            return url;
+            return url + (hash ? `#${hash}` : '');
         }
 
         if (className.match(/^Twig/)) {
             let url = 'https://twig.symfony.com/api/2.x/'+className.replace(/\\/g, '/')+'.html'
             if (subject) {
-                url += '#method_'+subject
+                hash = '#method_'+subject
             }
-            return url;
+            return url + (hash ? `#${hash}` : '');
         }
     }
 }
