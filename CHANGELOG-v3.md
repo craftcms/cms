@@ -3,7 +3,7 @@
 ## 3.0.9 - 2018-05-22
 
 ### Added
-- Added default plugin icon to plugins without icon in the Plugin Store.
+- Added a default plugin icon to plugins without an icon in the Plugin Store.
 - Added `craft\helpers\ArrayHelper::without()` and `withoutValue()`.
 - Added `craft\base\FieldInterface::modifyElementIndexQuery()`.
 - Added `craft\elements\db\ElementQueryInterface::andWith()`.
