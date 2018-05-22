@@ -937,6 +937,7 @@ class Assets extends Component
         $record->save();
 
         $folder->id = $record->id;
+        $folder->uid = $record->uid;
     }
 
     /**

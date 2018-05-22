@@ -278,6 +278,7 @@ class AssetsController extends Controller
             return $this->asJson([
                 'success' => true,
                 'folderName' => $folderModel->name,
+                'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id
             ]);
         } catch (AssetException $exception) {
@@ -561,10 +562,14 @@ class AssetsController extends Controller
             return $this->asErrorJson($exception->getMessage());
         }
 
+        $newFolderId = $folderIdChanges[$folderBeingMovedId] ?? null;
+        $newFolder = $assets->getFolderById($newFolderId);
+
         return $this->asJson([
             'success' => true,
             'transferList' => $fileTransferList,
-            'newFolderId' => $folderIdChanges[$folderBeingMovedId] ?? null
+            'newFolderUid' => $newFolder->uid,
+            'newFolderId' => $newFolderId
         ]);
     }
 
