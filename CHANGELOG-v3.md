@@ -11,6 +11,7 @@
 - `craft\base\Plugin` now sets the default `$controllerNamespace` value to the plugin class’ namespace + `\controllers` or `\console\controllers`, depending on whether it’s a web or console request.
 - Improved the contrast of success and error notices in the Control Panel to meet WCAG AA requirements. ([#2885](https://github.com/craftcms/cms/issues/2885))
 - `fieldValue` is now a protected field handle. ([#2893](https://github.com/craftcms/cms/issues/2893))
+- Craft will no longer discard any preloaded elements when setting the `with` param on an element query, fixing a bug where disabled Matrix blocks could show up in Live Preview if any nested fields were getting eager-loaded. ([#1576](https://github.com/craftcms/cms/issues/1576))
 
 ### Fixed
 - Fixed a bug where the Plugin Store was listing featured plugins (e.g. “Recently Added”) in alphabetical order rather than the API-defined order. ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))

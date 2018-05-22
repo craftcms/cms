@@ -20,6 +20,7 @@ use craft\db\QueryAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
@@ -1042,6 +1043,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+            }
             return $cachedResult;
         }
 
@@ -1114,7 +1118,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Make sure the criteria hasn't changed
         if ($this->_resultCriteria !== $this->getCriteria()) {
             $this->_result = null;
-
             return null;
         }
 
@@ -1142,7 +1145,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getCriteria(): array
     {
-        return $this->toArray($this->criteriaAttributes(), [], false);
+        $attributes = $this->criteriaAttributes();
+
+        // Ignore the 'with' param
+        ArrayHelper::removeValue($attributes, 'with');
+
+        return $this->toArray($attributes, [], false);
     }
 
     /**
