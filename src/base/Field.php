@@ -321,7 +321,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @param mixed $value
      * @return bool
-     * @deprecated in 3.0.0-RC15. Use isEmpty() instead.
+     * @deprecated in 3.0.0-RC15. Use [[isFieldEmpty()]] instead.
      */
     public function isEmpty($value): bool
     {
