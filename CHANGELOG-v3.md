@@ -5,9 +5,6 @@
 ### Added
 - Added default plugin icon to plugins without icon in the Plugin Store.
 
-### Fixed
-- Fixed a bug where the `craft setup` CLI command could give an error on some environments preventing installation.
-
 ### Changed
 - Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
 - `craft\base\Plugin` now sets the default `$controllerNamespace` value to the plugin class’ namespace + `\controllers` or `\console\controllers`, depending on whether it’s a web or console request.
@@ -15,7 +12,8 @@
 ### Fixed
 - Fixed a bug where the Plugin Store was listing featured plugins (e.g. “Recently Added”) in alphabetical order rather than the API-defined order. ([pixelandtonic/craftnet#83](https://github.com/pixelandtonic/craftnet/issues/83))
 - Fixed a SQL error that occurred when programmatically saving a field layout, if the field’s `required` property wasn’t set.
-- Fixed a JavaScript error that could show up when multiple Assets fields were present on the same page.
+- Fixed a JavaScript error that could occur when multiple Assets fields were present on the same page.
+- Fixed an error that could occur when running the `setup` command on some environments.
 
 ## 3.0.8 - 2018-05-15
 
