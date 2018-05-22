@@ -16,6 +16,7 @@ use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use yii\base\BaseObject;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
@@ -23,7 +24,7 @@ use craft\models\Site;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ElementRelationParamParser
+class ElementRelationParamParser extends BaseObject
 {
     // Constants
     // =========================================================================

@@ -1569,7 +1569,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $parser = new ElementRelationParamParser([
-            'fields' => ArrayHelper::index($this->customFields, 'handle')
+            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : []
         ]);
         $condition = $parser->parse($this->relatedTo);
 
