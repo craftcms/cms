@@ -232,6 +232,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the full request path, whether that came from the path info or the path query parameter.
+     *
      * Leading and trailing slashes will be removed.
      *
      * @return string
@@ -265,6 +266,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the requested path, sans CP trigger and pagination info.
+     *
      * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
      *
      * @param bool $returnRealPathInfo Whether the real path info should be returned instead.
@@ -383,6 +385,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns whether the front end site was requested.
+     *
      * The result will always just be the opposite of whatever [[getIsCpRequest()]] returns.
      *
      * @return bool Whether the current request should be routed to the front-end site.
@@ -394,6 +397,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns whether a specific controller action was requested.
+     *
      * There are several ways that this method could return `true`:
      * - If the first segment in the Craft path matches the
      *   [[\craft\config\GeneralConfig::actionTrigger|action trigger]]
@@ -704,6 +708,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the named parameter value from either GET or the request body.
+     *
      * If the parameter does not exist, the second parameter to this method will be returned.
      *
      * @param string $name The parameter name.
@@ -852,6 +857,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the token used to perform CSRF validation.
+     *
      * This token is a masked version of [[rawCsrfToken]] to prevent [BREACH attacks](http://breachattack.com/).
      * This token may be passed along via a hidden field of an HTML form or an HTTP header value
      * to support CSRF validation.
@@ -1228,6 +1234,7 @@ class Request extends \yii\web\Request
 
     /**
      * Returns the named parameter value.
+     *
      * The name may include dots, to specify the path to a nested param.
      *
      * @param string|null $name

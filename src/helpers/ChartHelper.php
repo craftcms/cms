@@ -26,6 +26,7 @@ class ChartHelper
 
     /**
      * Returns the data for a run chart, based on a given DB query, start/end dates, and the desired time interval unit.
+     *
      * The query’s SELECT clause should already be set to a column aliased as `value`.
      * The $options array can override the following defaults:
      *

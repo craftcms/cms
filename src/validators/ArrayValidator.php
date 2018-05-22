@@ -23,6 +23,7 @@ class ArrayValidator extends Validator
 
     /**
      * @var int|array|null specifies the count limit of the value to be validated.
+     *
      * This can be specified in one of the following forms:
      * - an int: the exact count that the value should be of;
      * - an array of one element: the minimum count that the value should be of. For example, `[8]`.

@@ -416,6 +416,7 @@ class Db
 
     /**
      * Parses a query param value and returns a [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.

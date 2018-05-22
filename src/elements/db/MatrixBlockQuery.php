@@ -238,12 +238,15 @@ class MatrixBlockQuery extends ElementQuery
         // Figure out which content table to use
         $this->contentTable = null;
 
-        if (!$this->fieldId && $this->id && is_numeric($this->id)) {
-            $this->fieldId = (new Query())
+        if (!$this->fieldId && $this->id) {
+            $fieldIds = (new Query())
                 ->select(['fieldId'])
+                ->distinct()
                 ->from(['{{%matrixblocks}}'])
-                ->where(['id' => $this->id])
-                ->scalar();
+                ->where(Db::parseParam('id', $this->id))
+                ->column();
+
+            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] :  $fieldIds;
         }
 
         if ($this->fieldId && is_numeric($this->fieldId)) {

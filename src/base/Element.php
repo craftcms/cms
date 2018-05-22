@@ -191,6 +191,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
+     *
      * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
@@ -641,12 +642,7 @@ abstract class Element extends Component implements ElementInterface
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field) {
-                /** @var Field $field */
-                if ($field instanceof EagerLoadingFieldInterface) {
-                    $with = $elementQuery->with ?: [];
-                    $with[] = $field->handle;
-                    $elementQuery->with = $with;
-                }
+                $field->modifyElementIndexQuery($elementQuery);
             }
         }
     }
@@ -717,6 +713,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Checks if a property is set.
+     *
      * This method will check if $name is one of the following:
      * - "title"
      * - a magic property supported by [[\yii\base\Component::__isset()]]
@@ -1011,6 +1008,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Calls a custom validation function on a custom field.
+     *
      * This will be called by [[\yii\validators\InlineValidator]] if a custom field specified
      * a closure or the name of a class-level method as the validation type.
      *
@@ -1907,6 +1905,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * Finds Element instance(s) by the given condition.
+     *
      * This method is internally called by [[findOne()]] and [[findAll()]].
      *
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter

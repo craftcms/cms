@@ -43,6 +43,7 @@ class Config extends Component
 
     /**
      * @var string|null The environment ID Craft is currently running in.
+     *
      * ---
      * ```php
      * $env = Craft::$app->config->env;

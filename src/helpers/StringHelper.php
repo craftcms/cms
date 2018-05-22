@@ -225,6 +225,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns the index of the first occurrence of $needle in the string, and false if not found.
+     *
      * Accepts an optional offset from which to begin the search.
      *
      * @param string $str The string to check the index of.
@@ -239,6 +240,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns the index of the last occurrence of $needle in the string,and false if not found.
+     *
      * Accepts an optional offset from which to begin the search. Offsets may be negative to count from
      * the last character in the string.
      *

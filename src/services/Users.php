@@ -56,6 +56,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is activated.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
@@ -72,6 +73,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
@@ -83,6 +85,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
@@ -94,6 +97,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
@@ -105,6 +109,7 @@ class Users extends Component
 
     /**
      * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
+     *
      * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
@@ -116,6 +121,7 @@ class Users extends Component
 
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
+     *
      * You may set [[UserAssignGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
@@ -189,6 +195,7 @@ class Users extends Component
 
     /**
      * Returns whether a verification code is valid for the given user.
+     *
      * This method first checks if the code has expired past the
      * [[\craft\config\GeneralConfig::verificationCodeDuration|verificationCodeDuration]] config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
@@ -290,6 +297,7 @@ class Users extends Component
 
     /**
      * Sends a new account activation email for a user, regardless of their status.
+     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
@@ -312,6 +320,7 @@ class Users extends Component
 
     /**
      * Sends a new email verification email to a user, regardless of their status.
+     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
@@ -329,6 +338,7 @@ class Users extends Component
 
     /**
      * Sends a password reset email to a user.
+     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the forgot password email to.
@@ -827,6 +837,7 @@ class Users extends Component
 
     /**
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
+     *
      * This method will check the
      * [[\craft\config\GeneralConfig::purgePendingUsersDuration|purgePendingUsersDuration]] config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
@@ -933,6 +944,7 @@ class Users extends Component
 
     /**
      * Assigns a user to the default user group.
+     *
      * This method is called toward the end of a public registration request.
      *
      * @param User $user The user that was just registered.

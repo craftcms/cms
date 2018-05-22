@@ -142,6 +142,7 @@ class Updates extends Component
 
     /**
      * Returns a list of things with updated schema versions.
+     *
      * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
      *
      * @param bool $includeContent Whether pending content migrations should be considered

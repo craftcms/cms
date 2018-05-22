@@ -452,8 +452,7 @@ class View extends \yii\web\View
             $cacheKey = md5($template);
             if (!isset($this->_objectTemplates[$cacheKey])) {
                 // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-                $template = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
-                $template = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $template);
+                $template = $this->normalizeObjectTemplate($template);
                 $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
             }
 
@@ -500,7 +499,40 @@ class View extends \yii\web\View
     }
 
     /**
+     * Normalizes an object template for [[renderObjectTemplate()]].
+     *
+     * @param string $template
+     * @return string
+     */
+    public function normalizeObjectTemplate(string $template): string
+    {
+        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
+        $tokens = [];
+        while (true) {
+            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
+                $token = 'tok_'.StringHelper::randomString(10);
+                $tokens[$token] = $matches[0];
+                return $token;
+            }, $template, -1, $count);
+            if ($count === 0) {
+                break;
+            }
+        }
+
+        // Swap out the remaining {xyz} tags with {{object.xyz}}
+        $template = preg_replace('/(?<!\{)\{(\s*\w[^\{]*?)\}/', '{{object.$1|raw}}', $template);
+
+        // Bring the objects back
+        foreach (array_reverse($tokens) as $token => $value) {
+            $template = str_replace($token, $value, $template);
+        }
+
+        return $template;
+    }
+
+    /**
      * Returns whether a template exists.
+     *
      * Internally, this will just call [[resolveTemplate()]] with the given template name, and return whether that
      * method found anything.
      *
@@ -519,6 +551,7 @@ class View extends \yii\web\View
 
     /**
      * Finds a template on the file system and returns its path.
+     *
      * All of the following files will be searched for, in this order:
      *
      * - TemplateName
@@ -705,6 +738,7 @@ class View extends \yii\web\View
 
     /**
      * Starts a JavaScript buffer.
+     *
      * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
      * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
@@ -827,6 +861,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the content to be inserted in the head section.
+     *
      * This includes:
      * - Meta tags registered using [[registerMetaTag()]]
      * - Link tags registered with [[registerLinkTag()]]
@@ -858,6 +893,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the content to be inserted at the end of the body section.
+     *
      * This includes:
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
@@ -915,6 +951,7 @@ class View extends \yii\web\View
 
     /**
      * Registers all files provided by all registered asset bundles, including depending bundles files.
+     *
      * Removes a bundle from [[assetBundles]] once files are registered.
      */
     protected function registerAllAssetFiles()
@@ -964,6 +1001,7 @@ JS;
 
     /**
      * Returns the active namespace.
+     *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
@@ -976,6 +1014,7 @@ JS;
 
     /**
      * Sets the active namespace.
+     *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
@@ -998,6 +1037,7 @@ JS;
 
     /**
      * Sets the current template mode.
+     *
      * The template mode defines:
      * - the base path that templates should be looked for in
      * - the default template file extensions that should be automatically added when looking for templates
@@ -1055,6 +1095,7 @@ JS;
 
     /**
      * Renames HTML input names so they belong to a namespace.
+     *
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
      * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
@@ -1126,6 +1167,7 @@ JS;
 
     /**
      * Namespaces an input name.
+     *
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
@@ -1148,6 +1190,7 @@ JS;
 
     /**
      * Namespaces an input ID.
+     *
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
@@ -1170,6 +1213,7 @@ JS;
 
     /**
      * Formats an ID out of an input name.
+     *
      * This method takes a given input name and returns a valid ID based on it.
      * For example, if given the following input name:
      *     foo[bar][title]
@@ -1186,6 +1230,7 @@ JS;
 
     /**
      * Queues up a method to be called by a given template hook.
+     *
      * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
      *
      * ```php
@@ -1216,6 +1261,7 @@ JS;
 
     /**
      * Invokes a template hook.
+     *
      * This is called by [[HookNode|`{% hook %}` tags]].
      *
      * @param string $hook The hook name.

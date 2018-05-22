@@ -434,6 +434,7 @@ class Path extends Component
 
     /**
      * Returns the path to the file cache directory.
+     *
      * This will be located at `storage/runtime/cache/` by default, but that can be overridden with the 'cachePath'
      * config setting in `config/filecache.php`.
      *

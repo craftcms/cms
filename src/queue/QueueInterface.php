@@ -58,6 +58,7 @@ interface QueueInterface
 
     /**
      * Returns info about the jobs in the queue.
+     *
      * The response array should have sub-arrays with the following keys:
      * - 'id': The job ID
      * - 'status': The job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)

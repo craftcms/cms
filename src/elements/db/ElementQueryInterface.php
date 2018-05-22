@@ -171,6 +171,14 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function with($value);
 
     /**
+     * Appends a value to the [[with]] property.
+     *
+     * @param string|array|null $value The property value to append
+     * @return self The query object itself
+     */
+    public function andWith($value);
+
+    /**
      * Sets the [[withStructure]] property.
      *
      * @param bool $value The property value (defaults to true)

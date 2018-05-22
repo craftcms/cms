@@ -177,11 +177,12 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'dateCreated',
                     'dateUpdated',
                     'enabled',
+                    'enabledForSite',
+                    'fieldValue',
                     'id',
                     'level',
                     'lft',
                     'link',
-                    'enabledForSite',
                     'name', // global set-specific
                     'next',
                     'next',
@@ -320,7 +321,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @param mixed $value
      * @return bool
-     * @deprecated in 3.0.0-RC15. Use isEmpty() instead.
+     * @deprecated in 3.0.0-RC15. Use [[isValueEmpty()]] instead.
      */
     public function isEmpty($value): bool
     {
@@ -391,6 +392,16 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    {
+        if ($this instanceof EagerLoadingFieldInterface) {
+            $query->andWith($this->handle);
+        }
     }
 
     /**

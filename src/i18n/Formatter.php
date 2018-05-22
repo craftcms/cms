@@ -168,6 +168,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * Formats the value as a human-readable timestamp.
+     *
      * - If $value is from today, "Today" or the formatted time will be returned, depending on whether $value contains time information
      * - If $value is from yesterday, "Yesterday" will be returned
      * - If $value is within the past 7 days, the weekday will be returned
@@ -218,6 +219,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * Formats the value as a currency number.
+     *
      * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
@@ -286,6 +288,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * Formats a given date/time.
+     *
      * Code mostly copied from [[parent::formatDateTimeValue()]], with the exception that translatable strings
      * in the date/time format will be returned in the correct locale.
      *

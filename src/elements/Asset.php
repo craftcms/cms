@@ -503,6 +503,7 @@ class Asset extends Element
 
     /**
      * Checks if a property is set.
+     *
      * This method will check if $name is one of the following:
      * - a magic property supported by [[Element::__isset()]]
      * - an image transform handle
@@ -521,6 +522,7 @@ class Asset extends Element
 
     /**
      * Returns a property value.
+     *
      * This method will check if $name is one of the following:
      * - a magic property supported by [[Element::__get()]]
      * - an image transform handle
@@ -704,7 +706,7 @@ class Asset extends Element
             return null;
         }
 
-        if (FileHelper::isGif($this->filename) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if ($this->getMimeType() === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
             return AssetsHelper::generateUrl($volume, $this);
         }
 

@@ -96,6 +96,7 @@ class Sites extends Component
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site is deleted.
+     *
      * You may set [[SiteEvent::isValid]] to `false` to prevent the site from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';

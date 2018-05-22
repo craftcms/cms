@@ -55,6 +55,7 @@ class Localization
 
     /**
      * Normalizes a user-submitted number for use in code and/or to be saved into the database.
+     *
      * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
      * locale uses something else.
      *

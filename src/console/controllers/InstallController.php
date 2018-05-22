@@ -270,7 +270,7 @@ class InstallController extends Controller
         // (https://github.com/yiisoft/yii2/issues/10551)
         top:
         $this->stdout('Password: ');
-        if (($password = CliPrompt::hiddenPrompt()) === '') {
+        if (($password = CliPrompt::hiddenPrompt(true)) === '') {
             $this->stdout('Invalid input.'.PHP_EOL);
             goto top;
         }
@@ -279,7 +279,7 @@ class InstallController extends Controller
             goto top;
         }
         $this->stdout('Confirm: ');
-        if (!($matched = ($password === CliPrompt::hiddenPrompt()))) {
+        if (!($matched = ($password === CliPrompt::hiddenPrompt(true)))) {
             $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL, Console::FG_RED);
             goto top;
         }
