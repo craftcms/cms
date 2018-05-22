@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the contrast of success and error notices in the Control Panel to meet WCAG AA requirements. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Craft will no longer discard any preloaded elements when setting the `with` param on an `ElementCriteriaModel`, fixing a bug where disabled Matrix blocks could show up in Live Preview if any nested fields were getting eager-loaded. ([#1576](https://github.com/craftcms/cms/issues/1576))
 
 ## 2.6.3016 - 2018-05-15
 
