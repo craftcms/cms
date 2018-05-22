@@ -437,11 +437,8 @@ class Entry extends Element
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /** @var ElementQuery $elementQuery */
         if ($attribute === 'author') {
-            $with = $elementQuery->with ?: [];
-            $with[] = 'author';
-            $elementQuery->with = $with;
+            $elementQuery->andWith('author');
         } else {
             parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }

@@ -641,12 +641,7 @@ abstract class Element extends Component implements ElementInterface
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field) {
-                /** @var Field $field */
-                if ($field instanceof EagerLoadingFieldInterface) {
-                    $with = $elementQuery->with ?: [];
-                    $with[] = $field->handle;
-                    $elementQuery->with = $with;
-                }
+                $field->modifyElementIndexQuery($elementQuery);
             }
         }
     }

@@ -248,6 +248,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Modifies an element query.
+     *
      * This method will be called whenever elements are being searched for that
      * may have this field assigned to them. If the method returns `false`, the
      * query will be stopped before it ever gets a chance to execute.
@@ -259,6 +260,16 @@ interface FieldInterface extends SavableComponentInterface
      * elements are going to be found.
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value);
+
+    /**
+     * Modifies an element index query.
+     *
+     * This method will be called whenever an element index is being loaded,
+     * which contains a column for this field.
+     *
+     * @param ElementQueryInterface $query The element query
+     */
+    public function modifyElementIndexQuery(ElementQueryInterface $query);
 
     /**
      * Sets whether the field is fresh.

@@ -397,6 +397,16 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    {
+        if ($this instanceof EagerLoadingFieldInterface) {
+            $query->andWith($this->handle);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setIsFresh(bool $isFresh = null)
     {
         $this->_isFresh = $isFresh;

@@ -5,6 +5,8 @@
 ### Added
 - Added default plugin icon to plugins without icon in the Plugin Store.
 - Added `craft\helpers\ArrayHelper::without()` and `withoutValue()`.
+- Added `craft\base\FieldInterface::modifyElementIndexQuery()`.
+- Added `craft\elements\db\ElementQueryInterface::andWith()`.
 
 ### Changed
 - Fixed a bug where Craft was checking the file system when determining if an asset was a GIF, when it should have just been checking the file extension.
@@ -20,6 +22,7 @@
 - Fixed an error that could occur when running the `setup` command on some environments.
 - Fixed a PHP error that could occur when calling `craft\elements\db\ElementQuery::addOrderBy()` if `$columns` normalized to an empty array. ([#2896](https://github.com/craftcms/cms/issues/2896))
 - Fixed a bug where it wasn’t possible to access custom field values on Matrix blocks via `matrixblock` reference tags.
+- Fixed a bug where relational fields with only disabled elements selected would get empty table cells on element indexes. ([#2910](https://github.com/craftcms/cms/issues/2910))
 
 ## 3.0.8 - 2018-05-15
 

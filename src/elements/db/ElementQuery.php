@@ -748,6 +748,22 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function andWith($value)
+    {
+        if (empty($this->with)) {
+            $this->with = [$value];
+        } else {
+            if (is_string($this->with)) {
+                $this->with = StringHelper::split($this->with);
+            }
+            $this->with[] = $value;
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function withStructure(bool $value = true)
     {
         $this->withStructure = $value;
