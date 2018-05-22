@@ -133,6 +133,7 @@ class Number
 
     /**
      * Returns the numeric value of a variable.
+     *
      * If the variable is an object with a __toString() method, the numeric value of its string representation will be
      * returned.
      *

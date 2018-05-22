@@ -207,6 +207,7 @@ class UsersController extends Controller
 
     /**
      * Starts an elevated user session.
+     *
      * return Response
      */
     public function actionStartElevatedSession()
@@ -836,6 +837,7 @@ class UsersController extends Controller
 
     /**
      * Provides an endpoint for saving a user account.
+     *
      * This action accounts for the following scenarios:
      * - An admin registering a new user account.
      * - An admin editing an existing user account.

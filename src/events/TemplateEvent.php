@@ -30,6 +30,7 @@ class TemplateEvent extends CancelableEvent
 
     /**
      * @var string The rendering result of [[\craft\web\View::renderTemplate()]].
+     *
      * Event handlers may modify this property and the modified output will be
      * returned by [[\craft\web\View::renderTemplate()]]. This property is only used
      * by [[\craft\web\View::EVENT_AFTER_RENDER_TEMPLATE]] event.

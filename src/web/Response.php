@@ -127,6 +127,7 @@ class Response extends \yii\web\Response
 
     /**
      * Attempts to closes the connection with the HTTP client, without ending PHP script execution.
+     *
      * This method relies on [flush()](http://php.net/manual/en/function.flush.php), which may not actually work if
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
@@ -192,6 +193,7 @@ class Response extends \yii\web\Response
 
     /**
      * Clear the output buffer to prevent corrupt downloads.
+     *
      * Need to check the OB status first, or else some PHP versions will throw an E_NOTICE
      * since we have a custom error handler (http://pear.php.net/bugs/bug.php?id=9670).
      */

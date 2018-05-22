@@ -20,6 +20,7 @@ interface EagerLoadingFieldInterface extends SavableComponentInterface
 
     /**
      * Returns an array that maps source-to-target element IDs based on this custom field.
+     *
      * This method aids in the eager-loading of elements when performing an element query. The returned array should
      * contain the following keys:
      * - `elementType` – the fully qualified class name of the element type that should be eager-loaded

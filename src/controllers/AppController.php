@@ -114,6 +114,7 @@ class AppController extends Controller
 
     /**
      * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
+     *
      * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
      * to minimize site downtime after a deployment.
      *
@@ -401,6 +402,7 @@ class AppController extends Controller
 
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
+     *
      * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
      *
      * @param bool $allowUpdates Whether updates are allowed

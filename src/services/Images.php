@@ -219,6 +219,7 @@ class Images extends Component
 
     /**
      * Determines if there is enough memory to process this image.
+     *
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
      * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, then try again.

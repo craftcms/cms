@@ -17,6 +17,7 @@ class Console extends \yii\helpers\Console
 {
     /**
      * Prints a string to STDOUT.
+     *
      * You may optionally format the string with ANSI codes by
      * passing additional parameters using the constants defined in [[\yii\helpers\Console]].
      * Example:

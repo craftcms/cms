@@ -133,6 +133,7 @@ class Assets extends Component
 
     /**
      * Replace an Asset's file.
+     *
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
      * @param Asset $asset

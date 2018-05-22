@@ -415,6 +415,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * Returns the last modification time for the given path.
+     *
      * If the path is a directory, any nested files/directories will be checked as well.
      *
      * @param string $path the directory to be checked

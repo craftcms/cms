@@ -112,6 +112,7 @@ class Elements extends Component
 
     /**
      * @event ElementActionEvent The event that is triggered before an element action is performed.
+     *
      * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
@@ -158,6 +159,7 @@ class Elements extends Component
 
     /**
      * Returns an element by its ID.
+     *
      * If no element type is provided, the method will first have to run a DB query to determine what type of element
      * the $id is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
@@ -307,6 +309,7 @@ class Elements extends Component
 
     /**
      * Handles all of the routine tasks that go along with saving elements.
+     *
      * Those tasks include:
      *
      * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
@@ -735,6 +738,7 @@ class Elements extends Component
 
     /**
      * Merges two elements together.
+     *
      * This method will update the following:
      * - Any relations involving the merged element
      * - Any structures that contain the merged element

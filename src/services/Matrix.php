@@ -125,6 +125,7 @@ class Matrix extends Component
 
     /**
      * Validates a block type.
+     *
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
      * @param MatrixBlockType $blockType The block type.
@@ -408,6 +409,7 @@ class Matrix extends Component
 
     /**
      * Validates a Matrix field's settings.
+     *
      * If the settings don’t validate, any validation errors will be stored on the settings model.
      *
      * @param MatrixField $matrixField The Matrix field

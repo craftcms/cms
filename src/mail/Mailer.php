@@ -42,6 +42,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
     /**
      * Composes a new email based on a given key.
+     *
      * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
      * Plugins can register additional email keys using the
      * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
@@ -74,6 +75,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
     /**
      * Sends the given email message.
+     *
      * This method will log a message about the email being sent.
      * If [[useFileTransport]] is true, it will save the email as a file under [[fileTransportPath]].
      * Otherwise, it will call [[sendMessage()]] to send the email to its recipient(s).

@@ -306,6 +306,7 @@ class Locale extends BaseObject
 
     /**
      * Returns this locale’s script ID.
+     *
      * A script ID consists of only the last four characters after a dash in the locale ID.
      *
      * @return string|null The locale’s script ID, if it has one.
@@ -327,6 +328,7 @@ class Locale extends BaseObject
 
     /**
      * Returns this locale’s territory ID.
+     *
      * A territory ID consists of only the last two to three letter or digits after a dash in the locale ID.
      *
      * @return string|null The locale’s territory ID, if it has one.

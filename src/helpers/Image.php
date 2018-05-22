@@ -82,6 +82,7 @@ class Image
 
     /**
      * Returns any info that’s embedded in a given PNG file.
+     *
      * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo.
      *
      * @param string $file The path to the PNG file.

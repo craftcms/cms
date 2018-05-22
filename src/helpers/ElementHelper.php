@@ -194,6 +194,7 @@ class ElementHelper
 
     /**
      * Returns a list of sites that a given element supports.
+     *
      * Each site is represented as an array with 'siteId' and 'enabledByDefault' keys.
      *
      * @param ElementInterface $element

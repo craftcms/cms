@@ -48,6 +48,7 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     *
      * If --plugin is passed, this will automatically be set to 'plugin'. Otherwise defaults to 'content'.
      */
     public $type = MigrationManager::TYPE_CONTENT;

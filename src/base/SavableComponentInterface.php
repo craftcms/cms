@@ -50,6 +50,7 @@ interface SavableComponentInterface extends ComponentInterface
 
     /**
      * Returns the list of settings attribute names.
+     *
      * By default, this method returns all public non-static properties that were defined on the called class.
      * You may override this method to change the default behavior.
      *
@@ -67,6 +68,7 @@ interface SavableComponentInterface extends ComponentInterface
 
     /**
      * Returns the component’s settings HTML.
+     *
      * An extremely simple implementation would be to directly return some HTML:
      *
      * ```php
