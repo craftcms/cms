@@ -177,11 +177,11 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'dateCreated',
                     'dateUpdated',
                     'enabled',
+                    'enabledForSite',
                     'id',
                     'level',
                     'lft',
                     'link',
-                    'enabledForSite',
                     'name', // global set-specific
                     'next',
                     'next',
