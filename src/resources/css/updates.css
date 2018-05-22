@@ -43,7 +43,7 @@ body.rtl #main .update .release .release-notes ul li:before { float: right; }
 body.ltr #main .update .release .release-notes ul li:before { margin: 1px 0 1px -24px ; }
 body.rtl #main .update .release .release-notes ul li:before { margin: 1px -24px 1px 0 ; }
 
-#main .update .release .release-notes ul li.added:before { content: 'wand'; color: #0D99F2; }
+#main .update .release .release-notes ul li.added:before { content: 'wand'; color: #0a7ac2; }
 
 #main .update .release .release-notes ul li.improved:before { content: 'brush'; }
 

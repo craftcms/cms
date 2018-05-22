@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved the contrast of success and error notices in the Control Panel to meet WCAG AA requirements. ([#2885](https://github.com/craftcms/cms/issues/2885))
+
 ## 2.6.3016 - 2018-05-15
 
 ### Added
