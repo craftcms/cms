@@ -545,6 +545,21 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function orderBy($columns)
+    {
+        parent::orderBy($columns);
+
+        // If $columns normalizes to an empty array, just set it to null
+        if ($this->orderBy === []) {
+            $this->orderBy = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function addOrderBy($columns)
     {
         // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
@@ -552,7 +567,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->orderBy !== null && empty($this->orderBy)) {
             $this->orderBy = null;
         }
-        return parent::addOrderBy($columns);
+
+        parent::addOrderBy($columns);
+
+        // If $this->>orderBy is empty, just set it to null
+        if ($this->orderBy === []) {
+            $this->orderBy = null;
+        }
+
+        return $this;
     }
 
     /**
@@ -1401,10 +1424,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return ['score' => SORT_DESC];
         }
 
-        $result = parent::normalizeOrderBy($columns);
-
-        // If $columns normalizes to an empty array, just set it to null
-        return $result !== [] ? $result : null;
+        return parent::normalizeOrderBy($columns);
     }
 
     // Private Methods

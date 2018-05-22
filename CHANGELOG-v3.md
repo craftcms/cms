@@ -16,6 +16,7 @@
 - Fixed a SQL error that occurred when programmatically saving a field layout, if the field’s `required` property wasn’t set.
 - Fixed a JavaScript error that could occur when multiple Assets fields were present on the same page.
 - Fixed an error that could occur when running the `setup` command on some environments.
+- Fixed a PHP error that could occur when calling `craft\elements\db\ElementQuery::addOrderBy()` if `$columns` normalized to an empty array. ([#2896](https://github.com/craftcms/cms/issues/2896)) 
 
 ## 3.0.8 - 2018-05-15
 
