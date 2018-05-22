@@ -20,6 +20,7 @@ use craft\db\QueryAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
@@ -183,6 +184,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var string|string[]|null The reference code(s) used to identify the element(s).
+     *
      * This property is set when accessing elements via their reference tags, e.g. {entry:section/slug}.
      */
     public $ref;
@@ -545,6 +547,21 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function orderBy($columns)
+    {
+        parent::orderBy($columns);
+
+        // If $columns normalizes to an empty array, just set it to null
+        if ($this->orderBy === []) {
+            $this->orderBy = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function addOrderBy($columns)
     {
         // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
@@ -552,7 +569,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->orderBy !== null && empty($this->orderBy)) {
             $this->orderBy = null;
         }
-        return parent::addOrderBy($columns);
+
+        parent::addOrderBy($columns);
+
+        // If $this->>orderBy is empty, just set it to null
+        if ($this->orderBy === []) {
+            $this->orderBy = null;
+        }
+
+        return $this;
     }
 
     /**
@@ -718,6 +743,22 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function with($value)
     {
         $this->with = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function andWith($value)
+    {
+        if (empty($this->with)) {
+            $this->with = [$value];
+        } else {
+            if (is_string($this->with)) {
+                $this->with = StringHelper::split($this->with);
+            }
+            $this->with[] = $value;
+        }
         return $this;
     }
 
@@ -1019,6 +1060,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+            }
             return $cachedResult;
         }
 
@@ -1091,7 +1135,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Make sure the criteria hasn't changed
         if ($this->_resultCriteria !== $this->getCriteria()) {
             $this->_result = null;
-
             return null;
         }
 
@@ -1100,6 +1143,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Sets the resulting elements.
+     *
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
      * as long as none of the parameters have changed since setCachedResult() was called.
      *
@@ -1119,7 +1163,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getCriteria(): array
     {
-        return $this->toArray($this->criteriaAttributes(), [], false);
+        $attributes = $this->criteriaAttributes();
+
+        // Ignore the 'with' param
+        ArrayHelper::removeValue($attributes, 'with');
+
+        return $this->toArray($attributes, [], false);
     }
 
     /**
@@ -1153,6 +1202,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Returns the list of fields that should be returned by default by [[toArray()]] when no specific fields are specified.
+     *
      * A field is a named element in the returned array by [[toArray()]].
      * This method should return an array of field names or field definitions.
      * If the former, the field name will be treated as an object property name whose value will be used
@@ -1287,6 +1337,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * This method is called at the beginning of preparing an element query for the query builder.
+     *
      * The main Query object being prepared for the query builder is available via [[query]].
      * The subselect’s Query object being prepared is available via [[subQuery]].
      * The role of the subselect query is to apply conditions to the query and narrow the result set down to
@@ -1309,6 +1360,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * This method is called at the end of preparing an element query for the query builder.
+     *
      * It is called at the beginning of [[prepare()]], right after [[query]] and [[subQuery]] have been created.
      *
      * @return bool Whether the query should be prepared and returned to the query builder.
@@ -1326,6 +1378,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Returns the fields that should take part in an upcoming elements query.
+     *
      * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
      * their field types will each have an opportunity to help build the element query, and their columns in the content
      * table will be selected by the query (for those that have one).
@@ -1348,6 +1401,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Returns the condition that should be applied to the element query for a given status.
+     *
      * For example, if you support a status called “pending”, which maps back to a `pending` database column that will
      * either be 0 or 1, this method could do this:
      *
@@ -1401,10 +1455,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return ['score' => SORT_DESC];
         }
 
-        $result = parent::normalizeOrderBy($columns);
-
-        // If $columns normalizes to an empty array, just set it to null
-        return $result !== [] ? $result : null;
+        return parent::normalizeOrderBy($columns);
     }
 
     // Private Methods

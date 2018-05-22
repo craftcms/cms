@@ -73,6 +73,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
 
     /**
      * Builds the SQL expression used to return a DB result in a fixed order.
+     *
      * http://stackoverflow.com/a/1310188/684
      *
      * @param string $column The column name that contains the values.

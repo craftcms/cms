@@ -24,7 +24,7 @@ use yii\web\Response;
 
 /**
  * Template Caches service.
- * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|<code>Craft::$app->templateCaches</code>]].
+ * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -230,13 +230,17 @@ class TemplateCaches extends Component
             $elementQuery->customFields = $customFields;
             $hash = md5($serialized);
 
+            gc_disable();
             foreach ($this->_cachedQueries as &$queries) {
                 $queries[$hash] = [
                     $elementQuery->elementType,
                     $serialized
                 ];
+                gc_collect_cycles();
             }
+            $queries = null;
             unset($queries);
+            gc_enable();
         }
     }
 

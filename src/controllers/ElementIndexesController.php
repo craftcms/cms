@@ -91,6 +91,7 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the element query that’s defining which elements will be returned in the current request.
+     *
      * Other components can fetch this like so:
      *
      * ```php

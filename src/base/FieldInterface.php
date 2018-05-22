@@ -32,6 +32,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns which translation methods the field supports.
+     *
      * This method should return an array with at least one of the following values:
      * - 'none' (values will always be copied to other sites)
      * - 'language' (values will be copied to other sites with the same language)
@@ -48,6 +49,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns the column type that this field should get within the content table.
+     *
      * This method will only be called if [[hasContentColumn()]] returns true.
      *
      * @return string The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
@@ -60,6 +62,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns whether the field should be shown as translatable in the UI.
+     *
      * Note this method has no effect on whether the field’s value will get copied over to other
      * sites when the entry is actually getting saved. That is determined by [[getTranslationKey()]].
      *
@@ -70,6 +73,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns the field’s translation key, based on a given element.
+     *
      * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
      * then `getTranslationKey()` will be called for each custom field and for each site the element should be propagated to.
      * If the method returns the same value as it did for the initial site, then the initial site’s value will be copied over
@@ -82,6 +86,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns the field’s input HTML.
+     *
      * An extremely simple implementation would be to directly return some HTML:
      *
      * ```php
@@ -172,6 +177,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
+     *
      * This function is called to output field values when viewing entry drafts.
      *
      * @param mixed $value The field’s value
@@ -182,6 +188,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns the validation rules for an element with this field.
+     *
      * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],
      * with one difference: you can skip the first argument (the attribute list).
      * Below are some examples:
@@ -213,6 +220,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Returns the search keywords that should be associated with this field.
+     *
      * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
@@ -224,6 +232,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Normalizes the field’s value for use.
+     *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
      * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
@@ -237,6 +246,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
+     *
      * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      * Whatever this returns should be something [[normalizeValue()]] can handle.
      *
@@ -248,6 +258,7 @@ interface FieldInterface extends SavableComponentInterface
 
     /**
      * Modifies an element query.
+     *
      * This method will be called whenever elements are being searched for that
      * may have this field assigned to them. If the method returns `false`, the
      * query will be stopped before it ever gets a chance to execute.
@@ -259,6 +270,16 @@ interface FieldInterface extends SavableComponentInterface
      * elements are going to be found.
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value);
+
+    /**
+     * Modifies an element index query.
+     *
+     * This method will be called whenever an element index is being loaded,
+     * which contains a column for this field.
+     *
+     * @param ElementQueryInterface $query The element query
+     */
+    public function modifyElementIndexQuery(ElementQueryInterface $query);
 
     /**
      * Sets whether the field is fresh.

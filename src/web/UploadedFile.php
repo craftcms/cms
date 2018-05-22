@@ -44,6 +44,7 @@ class UploadedFile extends \yii\web\UploadedFile
 
     /**
      * Returns an array of instances starting with specified array name.
+     *
      * If multiple files were uploaded and saved as 'Files[0]', 'Files[1]', 'Files[n]'..., you can have them all by
      * passing 'Files' as array name.
      *
@@ -109,6 +110,7 @@ class UploadedFile extends \yii\web\UploadedFile
 
     /**
      * Swaps dot notation for the normal format.
+     *
      * ex: fields.assetsField => fields[assetsField]
      *
      * @param string $name The name to normalize.

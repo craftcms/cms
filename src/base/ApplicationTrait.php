@@ -1193,6 +1193,7 @@ trait ApplicationTrait
 
     /**
      * Tries to find a language match with the browser's preferred language(s).
+     *
      * If not uses the app's sourceLanguage.
      *
      * @return string

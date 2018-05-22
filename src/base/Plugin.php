@@ -84,6 +84,16 @@ class Plugin extends Module implements PluginInterface
         // Set this as the global instance of this plugin class
         static::setInstance($this);
 
+        // Set the default controller namespace
+        if ($this->controllerNamespace === null && ($pos = strrpos(static::class, '\\')) !== false) {
+            $namespace = substr(static::class, 0, $pos);
+            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                $this->controllerNamespace = $namespace.'\\console\\controllers';
+            } else {
+                $this->controllerNamespace = $namespace.'\\controllers';
+            }
+        }
+
         parent::__construct($id, $parent, $config);
     }
 

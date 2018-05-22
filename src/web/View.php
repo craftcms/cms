@@ -414,9 +414,15 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a micro template for accessing properties of a single object.
-     * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
-     * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
+     * Renders an object template.
+     *
+     * The passed-in `$object` will be available to the template as an `object` variable.
+     *
+     * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
+     * full Twig output tags (e.g. `{{ object.foo|raw }}`.
+     *
+     * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
+     * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
      *
      * @param string $template the source template string
      * @param mixed $object the object that should be passed into the template
@@ -526,6 +532,7 @@ class View extends \yii\web\View
 
     /**
      * Returns whether a template exists.
+     *
      * Internally, this will just call [[resolveTemplate()]] with the given template name, and return whether that
      * method found anything.
      *
@@ -544,6 +551,7 @@ class View extends \yii\web\View
 
     /**
      * Finds a template on the file system and returns its path.
+     *
      * All of the following files will be searched for, in this order:
      *
      * - TemplateName
@@ -553,8 +561,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
-     * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
+     * [[\craft\config\GeneralConfig::defaultTemplateExtensions|defaultTemplateExtensions]] and
+     * [[\craft\config\GeneralConfig::indexTemplateFilenames|indexTemplateFilenames]] config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -730,6 +738,7 @@ class View extends \yii\web\View
 
     /**
      * Starts a JavaScript buffer.
+     *
      * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
      * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
@@ -852,6 +861,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the content to be inserted in the head section.
+     *
      * This includes:
      * - Meta tags registered using [[registerMetaTag()]]
      * - Link tags registered with [[registerLinkTag()]]
@@ -883,6 +893,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the content to be inserted at the end of the body section.
+     *
      * This includes:
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
@@ -940,6 +951,7 @@ class View extends \yii\web\View
 
     /**
      * Registers all files provided by all registered asset bundles, including depending bundles files.
+     *
      * Removes a bundle from [[assetBundles]] once files are registered.
      */
     protected function registerAllAssetFiles()
@@ -989,6 +1001,7 @@ JS;
 
     /**
      * Returns the active namespace.
+     *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
@@ -1001,6 +1014,7 @@ JS;
 
     /**
      * Sets the active namespace.
+     *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
@@ -1023,6 +1037,7 @@ JS;
 
     /**
      * Sets the current template mode.
+     *
      * The template mode defines:
      * - the base path that templates should be looked for in
      * - the default template file extensions that should be automatically added when looking for templates
@@ -1080,6 +1095,7 @@ JS;
 
     /**
      * Renames HTML input names so they belong to a namespace.
+     *
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
      * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
@@ -1151,6 +1167,7 @@ JS;
 
     /**
      * Namespaces an input name.
+     *
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
@@ -1173,6 +1190,7 @@ JS;
 
     /**
      * Namespaces an input ID.
+     *
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
@@ -1195,6 +1213,7 @@ JS;
 
     /**
      * Formats an ID out of an input name.
+     *
      * This method takes a given input name and returns a valid ID based on it.
      * For example, if given the following input name:
      *     foo[bar][title]
@@ -1211,6 +1230,7 @@ JS;
 
     /**
      * Queues up a method to be called by a given template hook.
+     *
      * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
      *
      * ```php
@@ -1241,7 +1261,8 @@ JS;
 
     /**
      * Invokes a template hook.
-     * This is called by [[HookNode|<code>{% hook %}</code> tags]].
+     *
+     * This is called by [[HookNode|`{% hook %}` tags]].
      *
      * @param string $hook The hook name.
      * @param array &$context The current template context.

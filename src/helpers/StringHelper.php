@@ -225,6 +225,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns the index of the first occurrence of $needle in the string, and false if not found.
+     *
      * Accepts an optional offset from which to begin the search.
      *
      * @param string $str The string to check the index of.
@@ -239,6 +240,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns the index of the last occurrence of $needle in the string,and false if not found.
+     *
      * Accepts an optional offset from which to begin the search. Offsets may be negative to count from
      * the last character in the string.
      *
@@ -555,7 +557,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
      * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|<code>Craft::$app->security->generateRandomString()</code>]].
+     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
      * @param int $length The length of the random string. Defaults to 36.
      * @param bool $extendedChars Whether to include symbols in the random string.
@@ -575,7 +577,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Generates a random string of characters. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|<code>Craft::$app->security->generateRandomString()</code>]].
+     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
      * @param string $validChars A string containing the valid characters
      * @param int $length The length of the random string

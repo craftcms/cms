@@ -490,7 +490,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -505,6 +504,7 @@ class Asset extends Element
 
     /**
      * Checks if a property is set.
+     *
      * This method will check if $name is one of the following:
      * - a magic property supported by [[Element::__isset()]]
      * - an image transform handle
@@ -523,6 +523,7 @@ class Asset extends Element
 
     /**
      * Returns a property value.
+     *
      * This method will check if $name is one of the following:
      * - a magic property supported by [[Element::__get()]]
      * - an image transform handle
@@ -972,7 +973,7 @@ class Asset extends Element
     /**
      * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
      *
-     * @param bool whether the value should be returned in CSS syntax ("50% 25%") instead
+     * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null
      */
     public function getFocalPoint(bool $asCss = false)

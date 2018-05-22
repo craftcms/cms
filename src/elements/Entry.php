@@ -437,11 +437,8 @@ class Entry extends Element
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /** @var ElementQuery $elementQuery */
         if ($attribute === 'author') {
-            $with = $elementQuery->with ?: [];
-            $with[] = 'author';
-            $elementQuery->with = $with;
+            $elementQuery->andWith('author');
         } else {
             parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }
@@ -642,6 +639,14 @@ class Entry extends Element
     /**
      * Returns the entry's section.
      *
+     * ---
+     * ```php
+     * $section = $entry->section;
+     * ```
+     * ```twig
+     * {% set section = entry.section %}
+     * ```
+     *
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
@@ -660,6 +665,19 @@ class Entry extends Element
 
     /**
      * Returns the entry type.
+     *
+     * ---
+     * ```php
+     * $entryType = $entry->type;
+     * ```
+     * ```twig{1}
+     * {% switch entry.type.handle %}
+     *     {% case 'article' %}
+     *         {% include "news/_article" %}
+     *     {% case 'link' %}
+     *         {% include "news/_link" %}
+     * {% endswitch %}
+     * ```
      *
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
@@ -681,6 +699,14 @@ class Entry extends Element
 
     /**
      * Returns the entry's author.
+     *
+     * ---
+     * ```php
+     * $author = $entry->author;
+     * ```
+     * ```twig
+     * <p>By {{ entry.author.name }}</p>
+     * ```
      *
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
@@ -740,6 +766,16 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     *
+     * ---
+     * ```php
+     * $editable = $entry->isEditable;
+     * ```
+     * ```twig{1}
+     * {% if entry.isEditable %}
+     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     * {% endif %}
+     * ```
      */
     public function getIsEditable(): bool
     {
@@ -754,6 +790,16 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     *
+     * ---
+     * ```php
+     * $url = $entry->cpEditUrl;
+     * ```
+     * ```twig{2}
+     * {% if entry.isEditable %}
+     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     * {% endif %}
+     * ```
      */
     public function getCpEditUrl()
     {

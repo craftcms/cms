@@ -238,7 +238,7 @@ EOD;
             $dbConfig->password = $this->password;
         } else if ($this->interactive) {
             $this->stdout('Database password: ');
-            $dbConfig->password = CliPrompt::hiddenPrompt();
+            $dbConfig->password = CliPrompt::hiddenPrompt(true);
         }
 
         // database

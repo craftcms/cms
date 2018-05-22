@@ -60,6 +60,7 @@ trait PluginTrait
 
     /**
      * The plugin’s changelog URL.
+     *
      * The URL should begin with `https://` and point to a plain text Markdown-formatted changelog.
      * Version headers must follow the general format:
      *

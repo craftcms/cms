@@ -74,6 +74,7 @@ class Command extends \yii\queue\cli\Command
 
     /**
      * Runs all jobs from db-queue.
+     *
      * It can be used as cron job.
      */
     public function actionRun()
@@ -83,6 +84,7 @@ class Command extends \yii\queue\cli\Command
 
     /**
      * Listens db-queue and runs new jobs.
+     *
      * It can be used as demon process.
      *
      * @param integer $delay Number of seconds for waiting new job.

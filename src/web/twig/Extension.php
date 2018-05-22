@@ -392,19 +392,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function withoutFilter(array $arr, $exclude): array
     {
-        $filteredArray = [];
-
         if (!is_array($exclude)) {
             $exclude = (array)$exclude;
         }
 
-        foreach ($arr as $key => $value) {
-            if (!in_array($value, $exclude, false)) {
-                $filteredArray[$key] = $value;
-            }
+        foreach ($exclude as $value) {
+            ArrayHelper::removeValue($arr, $value);
         }
 
-        return $filteredArray;
+        return $arr;
     }
 
     /**

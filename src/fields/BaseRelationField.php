@@ -338,6 +338,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    {
+        $query->andWith([$this->handle, [
+            'status' => null,
+            'enabledForSite' => false,
+        ]]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return $this->localizeRelations;

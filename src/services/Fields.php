@@ -55,7 +55,7 @@ use yii\base\Exception;
 
 /**
  * Fields service.
- * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|<code>Craft::$app->fields</code>]].
+ * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -67,6 +67,23 @@ class Fields extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
+     *
+     * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
+     *
+     * See [Field Types](https://docs.craftcms.com/v3/field-types.html) for documentation on creating field types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Fields;
+     * use yii\base\Event;
+     *
+     * Event::on(Fields::class,
+     *     Fields::EVENT_REGISTER_FIELD_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyFieldType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
@@ -597,6 +614,16 @@ class Fields extends Component
 
     /**
      * Returns a field by its handle.
+     *
+     * ---
+     *
+     * ```php
+     * $body = Craft::$app->fields->getFieldByHandle('body');
+     * ```
+     * ```twig
+     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {{ body.instructions }}
+     * ```
      *
      * @param string $handle The field’s handle
      * @return FieldInterface|null The field, or null if it doesn’t exist

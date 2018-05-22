@@ -39,7 +39,7 @@ use yii\web\Response;
 /**
  * Craft Web Application class
  *
- * An instance of the Web Application class is globally accessible to web requests in Craft via [[\Craft::$app|<code>Craft::$app</code>]].
+ * An instance of the Web Application class is globally accessible to web requests in Craft via [[\Craft::$app|`Craft::$app`]].
  *
  * @property Request $request The request component
  * @property \craft\web\Response $response The response component

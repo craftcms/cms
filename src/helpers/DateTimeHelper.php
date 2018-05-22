@@ -48,6 +48,7 @@ class DateTimeHelper
 
     /**
      * The number of seconds in a month.
+     *
      * Based on a 30.4368 day month, with the product rounded.
      *
      * @var int
@@ -56,6 +57,7 @@ class DateTimeHelper
 
     /**
      * The number of seconds in a year.
+     *
      * Based on a 365.2416 day year, with the product rounded.
      *
      * @var int
@@ -75,6 +77,7 @@ class DateTimeHelper
 
     /**
      * Converts a value into a DateTime object.
+     *
      * Supports the following formats:
      *  - An array of the date and time in the current locale's short formats
      *  - All W3C date and time formats (http://www.w3.org/TR/NOTE-datetime)
@@ -233,6 +236,7 @@ class DateTimeHelper
 
     /**
      * Normalizes a time zone string to a PHP time zone identifier.
+     *
      * Supports the following formats:
      *  - Time zone abbreviation (EST, MDT)
      *  - Difference to Greenwich time (GMT) in hours, with/without a colon between the hours and minutes (+0200, -0200, +02:00, -02:00)

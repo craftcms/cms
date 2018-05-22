@@ -29,7 +29,7 @@ use yii\base\Exception;
 
 /**
  * Dashboard service.
- * An instance of the Dashboard service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDashboard()|<code>Craft::$app->dashboard</code>]].
+ * An instance of the Dashboard service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDashboard()|`Craft::$app->dashboard`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -41,6 +41,23 @@ class Dashboard extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering Dashboard widget types.
+     *
+     * Dashboard widgets must implement [[WidgetInterface]]. [[Widget]] provides a base implementation.
+     *
+     * See [Widget Types](https://docs.craftcms.com/v3/widget-types.html) for documentation on creating Dashboard widgets.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Dashboard;
+     * use yii\base\Event;
+     *
+     * Event::on(Dashboard::class,
+     *     Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyWidgetType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
 
