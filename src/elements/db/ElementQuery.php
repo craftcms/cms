@@ -1568,7 +1568,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $condition = (new ElementRelationParamParser())->parse($this->relatedTo);
+        $parser = new ElementRelationParamParser([
+            'fields' => ArrayHelper::index($this->customFields, 'handle')
+        ]);
+        $condition = $parser->parse($this->relatedTo);
 
         if ($condition === false) {
             throw new QueryAbortedException();

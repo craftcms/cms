@@ -35,6 +35,11 @@ class ElementRelationParamParser
     // =========================================================================
 
     /**
+     * @var FieldInterface[]|null The custom fields that are game for the query.
+     */
+    public $fields;
+
+    /**
      * @var int
      */
     private $_relateSourceMatrixBlocksCount = 0;
@@ -415,12 +420,10 @@ class ElementRelationParamParser
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;
-            $fieldModel = Craft::$app->getFields()->getFieldById($field);
-        } else {
-            $fieldHandleParts = explode('.', $field);
-            $fieldModel = Craft::$app->getFields()->getFieldByHandle($fieldHandleParts[0]);
+            return Craft::$app->getFields()->getFieldById($field);
         }
 
-        return $fieldModel;
+        $fieldHandleParts = explode('.', $field);
+        return $this->fields[$fieldHandleParts[0]] ?? null;
     }
 }
