@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.9 - 2018-05-22
 
 ### Added
 - Added default plugin icon to plugins without icon in the Plugin Store.
