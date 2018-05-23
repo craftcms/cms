@@ -72,6 +72,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Path $path The path service
  * @property \craft\services\Plugins $plugins The plugins service
  * @property \craft\services\PluginStore $pluginStore The plugin store service
+ * @property \craft\services\ProjectConfig $projectConfig The project config service
  * @property Queue|QueueInterface $queue The job queue
  * @property \craft\services\Relations $relations The relations service
  * @property \craft\services\Routes $routes The routes service
@@ -516,7 +517,7 @@ trait ApplicationTrait
         if (isset($row['siteName'])) {
             $row['name'] = $row['siteName'];
         }
-        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
+        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['configSnapshot'], $row['configMap']);
 
         return $this->_info = new Info($row);
     }
@@ -992,6 +993,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('structures');
+    }
+
+    /**
+     * Returns the system config service.
+     *
+     * @return \craft\services\ProjectConfig The system config service
+     */
+    public function getProjectConfig()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('projectConfig');
     }
 
     /**

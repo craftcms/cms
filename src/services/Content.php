@@ -231,12 +231,10 @@ class Content extends Component
 
         foreach ($fieldLayout->getFields() as $field) {
             /** @var Field $field */
-            if ($field->searchable) {
-                // Set the keywords for the content's site
-                $fieldValue = $element->getFieldValue($field->handle);
-                $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-            }
+            // Set the keywords for the content's site
+            $fieldValue = $element->getFieldValue($field->handle);
+            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+            $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
         }
 
         foreach ($searchKeywordsBySiteId as $siteId => $keywords) {

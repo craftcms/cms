@@ -31,15 +31,6 @@ class Deprecator extends Component
     // =========================================================================
 
     /**
-     * @var string|false Whether deprecation errors should be logged in the database ('db'),
-     * error logs ('logs'), or not at all (false).
-     *
-     * Changing this will prevent deprecation errors from showing up in the "Deprecation Errors" utility
-     * or in the "Deprecated" panel in the Debug Toolbar.
-     */
-    public $logTarget = 'db';
-
-    /**
      * @var string
      */
     private static $_tableName = '{{%deprecationerrors}}';
@@ -62,16 +53,14 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
+     * @return bool
      */
-    public function log(string $key, string $message)
+    public function log(string $key, string $message): bool
     {
-        if ($this->logTarget === false) {
-            return;
-        }
-
-        if ($this->logTarget === 'logs' ||  !Craft::$app->getIsInstalled()) {
+        if (!Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecation-error');
-            return;
+
+            return false;
         }
 
         // Get the debug backtrace
@@ -82,7 +71,7 @@ class Deprecator extends Component
 
         // Don't log the same key/fingerprint twice in the same request
         if (isset($this->_requestLogs[$index])) {
-            return;
+            return true;
         }
 
         $log = $this->_requestLogs[$index] = new DeprecationError([
@@ -113,6 +102,8 @@ class Deprecator extends Component
             ->execute();
 
         $log->id = $db->getLastInsertID();
+
+        return true;
     }
 
     /**

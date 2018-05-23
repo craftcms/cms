@@ -41,6 +41,7 @@
     "mikehaertl/php-shellcommand": "~1.2.5",
     "pixelandtonic/imagine": "~0.7.1.2",
     "seld/cli-prompt": "~1.0.3",
+    "symfony/yaml": "^4.0",
     "twig/twig": "~2.4.4",
     "yiisoft/yii2": "~2.0.15.1",
     "yiisoft/yii2-debug": "~2.0.10",

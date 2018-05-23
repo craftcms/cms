@@ -719,7 +719,6 @@ class Categories extends Component
             'fieldLayoutId',
             'name',
             'handle',
-            'uid'
         ]));
 
         if ($groupRecord->structure) {

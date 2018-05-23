@@ -815,7 +815,6 @@ class Fields extends Component
             $fieldRecord->handle = $field->handle;
             $fieldRecord->context = $field->context;
             $fieldRecord->instructions = $field->instructions;
-            $fieldRecord->searchable = $field->searchable;
             $fieldRecord->translationMethod = $field->translationMethod;
             $fieldRecord->translationKeyFormat = $field->translationKeyFormat;
             $fieldRecord->type = get_class($field);
@@ -1234,7 +1233,7 @@ class Fields extends Component
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;
                 $fieldRecord->fieldId = $field->id;
-                $fieldRecord->required = (bool)$field->required;
+                $fieldRecord->required = $field->required;
                 $fieldRecord->sortOrder = $field->sortOrder;
                 $fieldRecord->save(false);
             }
@@ -1376,7 +1375,6 @@ class Fields extends Component
                 'fields.handle',
                 'fields.context',
                 'fields.instructions',
-                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',

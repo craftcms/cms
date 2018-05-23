@@ -400,7 +400,7 @@ class EntriesController extends BaseEntriesController
         $this->_prepEditEntryVariables($variables);
 
         $view = $this->getView();
-        $tabsHtml = !empty($variables['tabs']) ? $view->renderTemplate('_includes/tabs', $variables) : null;
+        $tabsHtml = $view->renderTemplate('_includes/tabs', $variables);
         $fieldsHtml = $view->renderTemplate('entries/_fields', $variables);
         $headHtml = $view->getHeadHtml();
         $bodyHtml = $view->getBodyHtml();

@@ -1067,6 +1067,10 @@ class Assets extends Component
             $query->andWhere(Db::parseParam('name', $criteria->name));
         }
 
+        if ($criteria->uid) {
+            $query->andWhere(Db::parseParam('uid', $criteria->uid));
+        }
+
         if ($criteria->path !== null) {
             // Does the path have a comma in it?
             if (strpos($criteria->path, ',') !== false) {
