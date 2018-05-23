@@ -196,6 +196,11 @@ module.exports = {
         anchor: {
             level: [2, 3]
         },
+        toc: {
+            format(content) {
+                return content.replace(/[_`]/g, '')
+            }
+        },
         config(md) {
             md
                 .use(replaceApiLinks)
