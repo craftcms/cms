@@ -9,6 +9,7 @@ Before you begin, make sure that:
 - you've reviewed the [changes in Craft 3](changes-in-craft-3.md)
 - your server meets Craft 3’s [minimum requirements](requirements.md) (Craft 3 requires PHP 7+ and at least 256 MB of memory allocated to PHP)
 - your site is running at least **Craft 2.6.2788**
+- your plugins are all up-to-date, and you’ve verified that they’ve been updated for Craft 3 (you can see a report of your plugins’ Craft 3 compatibility status from the Updates page in the Craft 2 Control Panel) 
 - your **database is backed up** in case everything goes horribly wrong
 
 Once you've completed everything listed above you can continue with the upgrade process. 
@@ -38,6 +39,8 @@ With Craft 3 downloaded and prepped, follow these steps to complete the upgrade:
 7. Update your web server to point to your new project’s `web/` directory.
 
 8. Point your browser to your Control Panel URL (e.g. `http://example.dev/admin`). If you see the update prompt, you did everything right! Go ahead and click “Finish up” to update your database.
+
+9. If you had any plugins installed, you’ll need to install their Craft 3 counterparts from the “Plugin Store” section in the Control Panel. (See the plugins’ documentation for any additional upgrade instructions.)
 
 Now that you have successfully upgraded your Craft 2 project to Craft 3, please take some time to review the [changes in Craft 3](changes-in-craft-3.md).
 
