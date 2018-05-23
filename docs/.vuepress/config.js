@@ -112,6 +112,28 @@ module.exports = {
                     ]
                 },
                 {
+                    title: 'Variables',
+                    collapsable: false,
+                    children: [
+                        'assetfilemodel',
+                        'assetfoldermodel',
+                        'assetsourcemodel',
+                        'categorygroupmodel',
+                        'categorymodel',
+                        'datetime',
+                        'elementcriteriamodel',
+                        'entrymodel',
+                        'entrytypemodel',
+                        'globalsetmodel',
+                        'matrixblockmodel',
+                        'sectionmodel',
+                        'taggroupmodel',
+                        'tagmodel',
+                        'usergroupmodel',
+                        'usermodel'
+                    ]
+                },
+                {
                     title: 'More',
                     collapsable: false,
                     children: [
