@@ -19,7 +19,6 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
