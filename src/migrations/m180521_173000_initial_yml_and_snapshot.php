@@ -31,6 +31,12 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $destination = $path.'/system.yml';
         FileHelper::writeToFile($destination, $yaml);
 
+        $modTime = FileHelper::lastModifiedTime($destination);
+
+        $data['dateModified'] = [
+            $destination => $modTime
+        ];
+
         $snapshot = serialize($data);
         $map = Json::encode($this->_getUidMap($data));
 
@@ -39,7 +45,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'configMap' => $map
         ]);
 
-        Craft::$app->getCache()->set(ProjectConfig::CACHE_KEY, ['system.yml' => FileHelper::lastModifiedTime($destination)], ProjectConfig::CACHE_DURATION);
+        Craft::$app->getCache()->set(ProjectConfig::CACHE_KEY, [$destination => $modTime], ProjectConfig::CACHE_DURATION);
 
         return true;
     }
@@ -115,7 +121,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->all();
 
         foreach ($sites as $site) {
-            $data[$siteGroupMap[$site['groupId']]]['sites'][$site['uid']] = $site;
+            $target = $siteGroupMap[$site['groupId']];
+            unset($site['groupId']);
+
+            $data[$target]['sites'][$site['uid']] = $site;
         }
 
         return $data;
@@ -431,7 +440,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $extractLocation = function ($level, $currentPath) use (&$paths, &$extractLocation) {
             foreach ($level as $key => $element) {
                 // Record top level nodes and all UIDs.
-                $path = $currentPath ?? 'system.yml';
+                $path = $currentPath ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
 
                 if ($key === 'uid' || empty($currentPath)) {
                     // For top-level nodes we need the key
