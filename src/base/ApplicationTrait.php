@@ -517,7 +517,7 @@ trait ApplicationTrait
         if (isset($row['siteName'])) {
             $row['name'] = $row['siteName'];
         }
-        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['configSnapshot'], $row['configMap']);
+        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         return $this->_info = new Info($row);
     }
@@ -536,6 +536,11 @@ trait ApplicationTrait
 
             // TODO: Remove this after the next breakpoint
             unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
+
+            // TODO: Remove this after the next breakpoint
+            if (version_compare($this->_storedVersion, '3.1', '<')) {
+                unset($attributes['configSnapshot'], $attributes['configMap']);
+            }
 
             if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
                 unset($attributes['id']);
