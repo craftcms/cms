@@ -448,7 +448,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 }
 
                 if (is_array($element)) {
-                    $extractLocation($element, $path.'/'.$key);
+                    $extractLocation($element, $path.($currentPath ? '.' : '/').$key);
                 }
             }
         };
