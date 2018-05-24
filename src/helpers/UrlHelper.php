@@ -514,6 +514,10 @@ class UrlHelper
             $baseUrl = static::baseSiteUrl();
         }
 
+        if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {
+            $scheme = !$request->getIsConsoleRequest() && $request->getIsSecureConnection() ? 'https' : 'http';
+        }
+
         if ($scheme !== null) {
             // Make sure we're using the right scheme
             $baseUrl = static::urlWithScheme($baseUrl, $scheme);
