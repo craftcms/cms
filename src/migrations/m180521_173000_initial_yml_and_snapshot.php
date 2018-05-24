@@ -33,10 +33,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $modTime = FileHelper::lastModifiedTime($destination);
 
-        $data['dateModified'] = [
-            $destination => $modTime
-        ];
-
         $snapshot = serialize($data);
         $map = Json::encode($this->_getUidMap($data));
 
