@@ -545,21 +545,15 @@ class MigrationHelper
         $schema = $db->getSchema();
         $rawTableName = $schema->getRawTableName($tableName);
         $table = $db->getTableSchema($rawTableName);
-        $otherColumns = [];
 
         foreach ($table->getColumnNames() as $columnName) {
             $fks = static::findForeignKeysTo($rawTableName, $columnName);
 
             foreach ($fks as $otherTable => $row) {
-                foreach ($row as $columnInfo) {
-                    foreach ($columnInfo as $count => $value) {
-                        if ($count !== 0) {
-                            $otherColumns[] = $count;
-                        }
-                    }
+                foreach ($row as $fk) {
+                    $otherColumns = static::_getColumnsForFK($fk, true);
+                    static::dropForeignKeyIfExists($otherTable, $otherColumns, $migration);
                 }
-
-                static::dropForeignKeyIfExists($otherTable, $otherColumns, $migration);
             }
         }
     }
