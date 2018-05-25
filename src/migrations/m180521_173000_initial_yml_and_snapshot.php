@@ -407,7 +407,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field['fieldUid'] = $fieldRow['fieldUid'];
+            $field['dependsOn'] = $fieldRow['fieldUid'];
             $field['required'] = $fieldRow['required'];
             $field['sortOrder'] = $fieldRow['fieldOrder'];
 
@@ -431,20 +431,28 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     private function _getUidMap(array $data): array
     {
-        $paths = [];
+        $paths = [
+            'nodes' => [],
+            'elements' => [],
+            'dependencies' => [],
+        ];
 
         $extractLocation = function ($level, $currentPath) use (&$paths, &$extractLocation) {
             foreach ($level as $key => $element) {
                 // Record top level nodes and all UIDs.
                 $path = $currentPath ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
 
-                if ($key === 'uid' || empty($currentPath)) {
-                    // For top-level nodes we need the key
-                    if (is_array($element)) {
-                        $paths[$key] = $path;
-                    } else {
-                        $paths[$element] = $path;
+                if (empty($currentPath)) {
+                    $paths['nodes'][$key] = $path;
+                }
+                if ($key === 'uid') {
+                    $paths['elements'][$element] = $path;
+                }
+                if ($key === 'dependsOn') {
+                    if (empty($paths['dependencies'][$element])) {
+                        $paths['dependencies'][$element] = [];
                     }
+                    $paths['dependencies'][$element][] = $path;
                 }
 
                 if (is_array($element)) {
