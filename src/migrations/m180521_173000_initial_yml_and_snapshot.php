@@ -368,10 +368,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $fieldRows = (new Query())
             ->select([
                 'fields.handle',
+                'fields.uid AS fieldUid',
                 'layoutFields.fieldId',
                 'layoutFields.required',
                 'layoutFields.sortOrder AS fieldOrder',
-                'layoutFields.uid AS fieldUid',
                 'tabs.id AS tabId',
                 'tabs.name as tabName',
                 'tabs.sortOrder AS tabOrder',
@@ -402,21 +402,21 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                     [
                         'name' => $fieldRow['tabName'],
                         'sortOrder' => $fieldRow['tabOrder'],
-                        'uid' => $fieldRow['tabUid'],
                     ];
             }
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field = [
-                'uid' => $fieldRow['fieldUid'],
-            ];
-
-            $field['handle'] = $fieldRow['handle'];
+            $field['fieldUid'] = $fieldRow['fieldUid'];
             $field['required'] = $fieldRow['required'];
             $field['sortOrder'] = $fieldRow['fieldOrder'];
 
-            $tab['fields'][$field['uid']] = $field;
+            $tab['fields'][] = $field;
+        }
+
+        // get rid of tab UIDs as keys.
+        foreach ($fieldLayouts as &$fieldLayout) {
+            $fieldLayout['tabs'] = array_values($fieldLayout['tabs']);
         }
 
         return $fieldLayouts;
