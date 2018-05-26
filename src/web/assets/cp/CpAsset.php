@@ -7,6 +7,15 @@
 
 namespace craft\web\assets\cp;
 
+use Craft;
+use craft\config\GeneralConfig;
+use craft\elements\User;
+use craft\helpers\Assets;
+use craft\helpers\Json;
+use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
+use craft\models\Section;
+use craft\services\Sites;
 use craft\web\AssetBundle;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
@@ -76,6 +85,13 @@ class CpAsset extends AssetBundle
         if ($view instanceof View) {
             $this->_registerTranslations($view);
         }
+
+        // Define the Craft object
+        $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $js = <<<JS
+window.Craft = {$craftJson};
+JS;
+        $view->registerJs($js, View::POS_HEAD);
     }
 
     // Private Methods
@@ -195,5 +211,161 @@ class CpAsset extends AssetBundle
             '{num} Available Updates',
             '“{name}” deleted.',
         ]);
+    }
+
+    private function _craftData(): array
+    {
+        $request = Craft::$app->getRequest();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $isInstalled = Craft::$app->getIsInstalled();
+        $isMigrationNeeded = Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
+        $sitesService = Craft::$app->getSites();
+        $locale = Craft::$app->getLocale();
+        $orientation = $locale->getOrientation();
+        $userService = Craft::$app->getUser();
+        $currentUser = $userService->getIdentity();
+
+        $data = [
+            'actionTrigger' => $generalConfig->actionTrigger,
+            'actionUrl' => UrlHelper::actionUrl(),
+            'baseCpUrl' => UrlHelper::cpUrl(),
+            'baseSiteUrl' => UrlHelper::siteUrl(),
+            'baseUrl' => UrlHelper::url(),
+            'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
+            'defaultIndexCriteria' => ['enabledForSite' => null],
+            'editableCategoryGroups' => $isInstalled ? $this->_editableCategoryGroups() : [],
+            'edition' => Craft::$app->getEdition(),
+            'fileKinds' => Assets::getFileKinds(),
+            'forceConfirmUnload' => Craft::$app->getSession()->hasFlash('error'),
+            'isImagick' => Craft::$app->getImages()->getIsImagick(),
+            'isMultiSite' => Craft::$app->getIsMultiSite(),
+            'language' => Craft::$app->language,
+            'left' => $orientation === 'ltr' ? 'left' : 'right',
+            'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
+            'maxUploadSize' => Assets::getMaxUploadSize(),
+            'omitScriptNameInUrls' => (bool)$generalConfig->useCompressedJs,
+            'orientation' => $orientation,
+            'path' => $request->getPathInfo(),
+            'primarySiteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite()->id : null,
+            'Pro' => Craft::Pro,
+            'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
+            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userService->getRemainingSessionTime() : 0,
+            'right' => $orientation === 'ltr' ? 'right' : 'left',
+            'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
+            'scriptName' => $request->getScriptFile(),
+            'siteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->currentSite->id : null,
+            'sites' => $this->_sites($sitesService),
+            'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'Solo' => Craft::Solo,
+            'systemUid' => Craft::$app->getSystemUid(),
+            'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
+            'timezone' => Craft::$app->getTimeZone(),
+            'translations' => ['' => ''], // force encode as JS object
+            'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
+            'usePathInfo' => (bool)$generalConfig->usePathInfo,
+            'username' => $currentUser->username ?? null,
+        ];
+
+        if ($generalConfig->enableCsrfProtection) {
+            $data['csrfTokenValue'] = $request->getCsrfToken();
+            $data['csrfTokenName'] = $generalConfig->csrfTokenName;
+        }
+
+        return $data;
+    }
+
+    private function _datepickerOptions(Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    {
+        return [
+            'constrainInput' => false,
+            'dateFormat' => $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
+            'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
+            'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
+            'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
+            'firstDay' => ($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?: $generalConfig->defaultWeekStartDay,
+            'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
+            'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
+            'nextText' => Craft::t('app', 'Next'),
+            'prevText' => Craft::t('app', 'Prev'),
+        ];
+    }
+
+    private function _editableCategoryGroups(): array
+    {
+        $groups = [];
+
+        foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
+            $groups[] = [
+                'handle' => $group->handle,
+                'id' => $group->id,
+                'name' => Craft::t('site', $group->name),
+            ];
+        }
+
+        return $groups;
+    }
+
+    private function _publishableSections(User $currentUser): array
+    {
+        $sections = [];
+
+        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:'.$section->id)) {
+                $sections[] = [
+                    'entryTypes' => $this->_entryTypes($section),
+                    'handle' => $section->handle,
+                    'id' => $section->id,
+                    'name' => Craft::t('site', $section->name),
+                    'type' => $section->type,
+                ];
+            }
+        }
+
+        return $sections;
+    }
+
+    private function _entryTypes(Section $section): array
+    {
+        $types = [];
+
+        foreach ($section->getEntryTypes() as $type) {
+            $types[] = [
+                'handle' => $type->handle,
+                'id' => $type->id,
+                'name' => Craft::t('site', $type->name),
+            ];
+        }
+
+        return $types;
+    }
+
+    private function _sites(Sites $sitesService): array
+    {
+        $sites = [];
+
+        foreach ($sitesService->getAllSites() as $site) {
+            $sites[] = [
+                'handle' => $site->handle,
+                'id' => $site->id,
+                'name' => Craft::t('site', $site->name),
+            ];
+        }
+
+        return $sites;
+    }
+
+    private function _timepickerOptions(Locale $locale, string $orientation): array
+    {
+        return [
+            'closeOnWindowScroll' => false,
+            'lang' => [
+                'AM' => $locale->getAMName(),
+                'am' => mb_strtolower($locale->getAMName()),
+                'PM' => $locale->getPMName(),
+                'pm' => mb_strtolower($locale->getPMName()),
+            ],
+            'orientation' => $orientation[0],
+            'timeFormat' => $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
+        ];
     }
 }
