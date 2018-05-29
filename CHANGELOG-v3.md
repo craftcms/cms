@@ -13,6 +13,7 @@
 - Fixed a bug where `{id}` tags within element URI formats weren’t getting parsed correctly on first save. ([#2922](https://github.com/craftcms/cms/issues/2922))
 - Fixed a bug where `craft\helpers\MigrationHelper::dropAllForeignKeysToTable()` would silently not drop all foreign keys going to a table. ([#2897](https://github.com/craftcms/cms/issues/2897))
 - Fixed a “Craft is not defined” JavaScript error that could occur on the Forgot Password page in the Control Panel and Dev Toolbar requests.
+- Fixed a bug where rotating the screen on iOS would change how the page was zoomed.
 
 ## 3.0.9 - 2018-05-22
 
