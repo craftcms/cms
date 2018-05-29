@@ -17,6 +17,7 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
@@ -82,6 +83,7 @@ class Utilities extends Component
         $utilityTypes[] = DbBackup::class;
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
+        $utilityTypes[] = ProjectConfigUtility::class;
 
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes

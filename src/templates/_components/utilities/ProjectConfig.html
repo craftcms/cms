@@ -1,0 +1,13 @@
+{% import "_includes/forms" as forms %}
+
+{% if isUpdatePending %}
+    <p>There are pending changes to the configuration.</p>
+
+    <div class="buttons">
+        <a href="{{ actionUrl('project-config/apply-updates') }}" class="btn submit">{{ 'Apply the changes'|t('app') }}</a>
+    </div>
+{% else %}
+    <p>There are no pending changes to the configuration.</p>
+{% endif %}
+
+<p>Last changes made: {{lastModified|date('Y-m-d H:i')}}</p>
