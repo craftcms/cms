@@ -170,6 +170,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $sectionSiteRows = (new Query())
             ->select([
+                'sections_sites.uid',
                 'sections_sites.enabledByDefault',
                 'sections_sites.hasUrls',
                 'sections_sites.uriFormat',
@@ -183,7 +184,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->all();
 
         foreach ($sectionSiteRows as $sectionSiteRow) {
-            $sectionData[$sectionSiteRow['sectionUid']]['siteSettings'][$sectionSiteRow['siteUid']] = $sectionSiteRow;
+            $sectionData[$sectionSiteRow['sectionUid']]['siteSettings'][$sectionSiteRow['uid']] = $sectionSiteRow;
         }
 
         $entryTypeRows = (new Query())
@@ -433,7 +434,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
     {
         $paths = [
             'nodes' => [],
-            'elements' => [],
+            'entities' => [],
             'dependencies' => [],
         ];
 
@@ -446,7 +447,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                     $paths['nodes'][$key] = $path;
                 }
                 if ($key === 'uid') {
-                    $paths['elements'][$element] = $path;
+                    $paths['entities'][$element] = $path;
                 }
                 if ($key === 'dependsOn') {
                     if (empty($paths['dependencies'][$element])) {
