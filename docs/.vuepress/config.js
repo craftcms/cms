@@ -194,7 +194,7 @@ module.exports = {
     },
     markdown: {
         anchor: {
-            level: [2, 3]
+            level: [2, 3, 4]
         },
         toc: {
             format(content) {
