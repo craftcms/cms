@@ -12,7 +12,6 @@ The main benefits of Craft Plugins over Yii Modules are:
 
 - Plugins can be installed and uninstalled.
 - Plugins can have their own migration track.
-- Plugins can have their own section in the Control Panel.
 
 ## Getting Started
 
