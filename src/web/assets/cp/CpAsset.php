@@ -12,6 +12,7 @@ use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
@@ -228,6 +229,7 @@ JS;
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
+            'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),

@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\Stringy::getLangSpecificCharsArray()`.
+
 ### Changed
 - Generated site URLs now always include full host info, even if the base site URL is root/protocol-relative. ([#2919](https://github.com/craftcms/cms/issues/2919))
 - Variables passed into `craft\web\View::renderObjectTemplate()` can now be referenced using the shorthand syntax (e.g. `{foo}`).
+- `craft\helpers\StringHelper::asciiCharMap()` now has `$flat` and `$language` arguments.
 
 ### Deprecated
 - Deprecated the `customAsciiCharMappings` config setting. (Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).)
@@ -17,6 +21,7 @@
 - Fixed a bug where `craft\helpers\MigrationHelper::dropAllForeignKeysToTable()` would silently not drop all foreign keys going to a table. ([#2897](https://github.com/craftcms/cms/issues/2897))
 - Fixed a “Craft is not defined” JavaScript error that could occur on the Forgot Password page in the Control Panel and Dev Toolbar requests.
 - Fixed a bug where rotating the screen on iOS would change how the page was zoomed.
+- Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JS method weren’t using language-specific character replacements, or any custom replacements defined by the `customAsciiCharMappings` config setting.
 
 ## 3.0.9 - 2018-05-22
 
