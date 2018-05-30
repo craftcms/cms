@@ -793,10 +793,11 @@ class UsersController extends Controller
         }
 
         try {
-            $client = Craft::$app->getPluginStore()->getClient();
+            $client = Craft::$app->getApi()->client;
 
             if ($craftIdToken) {
-                $craftIdAccountResponse = $client->request('GET', 'account');
+                $options = Craft::$app->getPluginStore()->getApiRequestOptions();
+                $craftIdAccountResponse = $client->get('account', $options);
                 $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
 
                 if (isset($craftIdAccount['error'])) {
