@@ -272,10 +272,10 @@ class EmailService extends BaseApplicationComponent
 		));
 
 		$this->onBeforeSendEmail($event);
-		$beforeEventSent = $event->params['sent'];
+		$sent = $event->params['sent'];
 
 		// Is the event giving us the go-ahead?
-		if ($event->performAction)
+		if (!$sent && $event->performAction)
 		{
 			try
 			{
@@ -501,7 +501,7 @@ class EmailService extends BaseApplicationComponent
 			return true;
 		}
 
-		return $beforeEventSent;
+		return $sent;
 	}
 
 	/**
