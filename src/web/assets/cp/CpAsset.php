@@ -87,7 +87,7 @@ class CpAsset extends AssetBundle
         }
 
         // Define the Craft object
-        $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE);
         $js = <<<JS
 window.Craft = {$craftJson};
 JS;
