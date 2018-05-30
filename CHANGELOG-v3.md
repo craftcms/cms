@@ -22,6 +22,7 @@
 - Fixed a “Craft is not defined” JavaScript error that could occur on the Forgot Password page in the Control Panel and Dev Toolbar requests.
 - Fixed a bug where rotating the screen on iOS would change how the page was zoomed.
 - Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JS method weren’t using language-specific character replacements, or any custom replacements defined by the `customAsciiCharMappings` config setting.
+- Fixed a bug where the number `0` would not save in a Plain Text field.
 
 ## 3.0.9 - 2018-05-22
 
