@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -32,8 +32,11 @@ use yii\base\InvalidConfigException;
 /**
  * Entry represents an entry element.
  *
+ * @property User|null $author the entry's author
+ * @property Section $section the entry's section
+ * @property EntryType $type the entry type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Entry extends Element
 {
@@ -118,7 +121,6 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     *
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -288,7 +290,7 @@ class Entry extends Element
                 // They are viewing a specific section. See if it has URLs for the requested site
                 $controller = Craft::$app->controller;
                 if ($controller instanceof ElementIndexesController) {
-                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
                     if (isset($sections[0]->siteSettings[$siteId]) && $sections[0]->siteSettings[$siteId]->hasUrls) {
                         $showViewAction = true;
                     }
@@ -376,7 +378,7 @@ class Entry extends Element
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
-        // Hide Author from Craft Personal/Client
+        // Hide Author from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
             unset($attributes['author']);
         }
@@ -435,11 +437,8 @@ class Entry extends Element
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /** @var ElementQuery $elementQuery */
         if ($attribute === 'author') {
-            $with = $elementQuery->with ?: [];
-            $with[] = 'author';
-            $elementQuery->with = $with;
+            $elementQuery->andWith('author');
         } else {
             parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }
@@ -505,13 +504,13 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function init()
+    public function extraFields()
     {
-        parent::init();
-
-        if ($this->authorId === null) {
-            $this->authorId = Craft::$app->getUser()->getId();
-        }
+        $names = parent::extraFields();
+        $names[] = 'author';
+        $names[] = 'section';
+        $names[] = 'type';
+        return $names;
     }
 
     /**
@@ -549,6 +548,10 @@ class Entry extends Element
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
+        if ($this->getSection()->type !== Section::TYPE_SINGLE) {
+            $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
+        }
+
         return $rules;
     }
 
@@ -557,13 +560,16 @@ class Entry extends Element
      */
     public function getSupportedSites(): array
     {
+        $section = $this->getSection();
         $sites = [];
 
-        foreach ($this->getSection()->getSiteSettings() as $siteSettings) {
-            $sites[] = [
-                'siteId' => $siteSettings->siteId,
-                'enabledByDefault' => $siteSettings->enabledByDefault
-            ];
+        foreach ($section->getSiteSettings() as $siteSettings) {
+            if ($section->propagateEntries || $siteSettings->siteId == $this->siteId) {
+                $sites[] = [
+                    'siteId' => $siteSettings->siteId,
+                    'enabledByDefault' => $siteSettings->enabledByDefault
+                ];
+            }
         }
 
         return $sites;
@@ -595,7 +601,7 @@ class Entry extends Element
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
@@ -623,7 +629,23 @@ class Entry extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
+    }
+
+    /**
      * Returns the entry's section.
+     *
+     * ---
+     * ```php
+     * $section = $entry->section;
+     * ```
+     * ```twig
+     * {% set section = entry.section %}
+     * ```
      *
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
@@ -642,7 +664,20 @@ class Entry extends Element
     }
 
     /**
-     * Returns the type of entry.
+     * Returns the entry type.
+     *
+     * ---
+     * ```php
+     * $entryType = $entry->type;
+     * ```
+     * ```twig{1}
+     * {% switch entry.type.handle %}
+     *     {% case 'article' %}
+     *         {% include "news/_article" %}
+     *     {% case 'link' %}
+     *         {% include "news/_link" %}
+     * {% endswitch %}
+     * ```
      *
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
@@ -664,6 +699,14 @@ class Entry extends Element
 
     /**
      * Returns the entry's author.
+     *
+     * ---
+     * ```php
+     * $author = $entry->author;
+     * ```
+     * ```twig
+     * <p>By {{ entry.author.name }}</p>
+     * ```
      *
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
@@ -723,6 +766,16 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     *
+     * ---
+     * ```php
+     * $editable = $entry->isEditable;
+     * ```
+     * ```twig{1}
+     * {% if entry.isEditable %}
+     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     * {% endif %}
+     * ```
      */
     public function getIsEditable(): bool
     {
@@ -737,6 +790,16 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     *
+     * ---
+     * ```php
+     * $url = $entry->cpEditUrl;
+     * ```
+     * ```twig{2}
+     * {% if entry.isEditable %}
+     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     * {% endif %}
+     * ```
      */
     public function getCpEditUrl()
     {
@@ -745,7 +808,7 @@ class Entry extends Element
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $url = UrlHelper::cpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $url .= '/'.$this->getSite()->handle;
         }
 
@@ -845,15 +908,41 @@ EOD;
             ]);
         }
 
-        // Set the field layout ID and render the custom fields
-        $this->fieldLayoutId = $entryType->fieldLayoutId;
+        // Render the custom fields
         $html .= parent::getEditorHtml();
 
         return $html;
     }
 
+    /**
+     * Updates the entry's title, if its entry type has a dynamic title format.
+     */
+    public function updateTitle()
+    {
+        $entryType = $this->getType();
+        if (!$entryType->hasTitleField) {
+            // Set Craft to the entry's site's language, in case the title format has any static translations
+            $language = Craft::$app->language;
+            Craft::$app->language = $this->getSite()->language;
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+            Craft::$app->language = $language;
+        }
+    }
+
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate()
+    {
+        if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
+            $this->authorId = Craft::$app->getUser()->getId();
+        }
+
+        return parent::beforeValidate();
+    }
 
     /**
      * @inheritdoc
@@ -862,7 +951,6 @@ EOD;
     public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
-        $entryType = $this->getType();
 
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
@@ -889,18 +977,14 @@ EOD;
         if ($section->type == Section::TYPE_SINGLE) {
             $this->authorId = null;
             $this->expiryDate = null;
-        } else if (!$entryType->hasTitleField) {
-            // Set the dynamic title
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
+
+        $this->updateTitle();
 
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = DateTimeHelper::currentUTCDateTime();
         }
-
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $entryType->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }

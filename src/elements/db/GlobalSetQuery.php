@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -15,13 +15,12 @@ use yii\db\Connection;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
- *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GlobalSetQuery extends ElementQuery
 {
@@ -61,13 +60,11 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function editable(bool $value = true)
     {
         $this->editable = $value;
-
         return $this;
     }
 
@@ -75,13 +72,11 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[handle]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function handle($value)
     {
         $this->handle = $value;
-
         return $this;
     }
 

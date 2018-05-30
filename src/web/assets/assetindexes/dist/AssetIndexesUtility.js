@@ -61,7 +61,7 @@
                     }
 
                     this.$trigger.addClass('disabled');
-                    this.$trigger.blur();
+                    this.$trigger.trigger('blur');
                 }
             },
 
@@ -179,7 +179,7 @@
                     duration: 'fast', complete: $.proxy(function() {
                         this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
                         this.$trigger.removeClass('disabled');
-                        this.$trigger.focus();
+                        this.$trigger.trigger('focus');
                     }, this)
                 });
             }

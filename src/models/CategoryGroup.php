@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -21,9 +21,8 @@ use craft\validators\UniqueValidator;
  *
  * @property CategoryGroup_SiteSettings[] $siteSettings Site-specific settings
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CategoryGroup extends Model
 {
@@ -92,25 +91,20 @@ class CategoryGroup extends Model
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class],
             [['name', 'handle', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
+            [['siteSettings'], 'validateSiteSettings'],
         ];
     }
 
     /**
-     * @inheritdoc
+     * Validates the site settings.
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validateSiteSettings()
     {
-        $validates = parent::validate($attributeNames, $clearErrors);
-
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
-            foreach ($this->getSiteSettings() as $siteSettings) {
-                if (!$siteSettings->validate(null, $clearErrors)) {
-                    $validates = false;
-                }
+        foreach ($this->getSiteSettings() as $i => $siteSettings) {
+            if (!$siteSettings->validate()) {
+                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
         }
-
-        return $validates;
     }
 
     /**
@@ -148,8 +142,6 @@ class CategoryGroup extends Model
      * Sets the group's site-specific settings.
      *
      * @param CategoryGroup_SiteSettings[] $siteSettings
-     *
-     * @return void
      */
     public function setSiteSettings(array $siteSettings)
     {

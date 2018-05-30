@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db\mysql;
@@ -14,11 +14,9 @@ use yii\db\Exception;
 
 /**
  * @inheritdoc
- *
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Schema extends \yii\db\mysql\Schema
 {
@@ -56,6 +54,7 @@ class Schema extends \yii\db\mysql\Schema
 
     /**
      * Creates a query builder for the database.
+     *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
      *
      * @return QueryBuilder query builder instance
@@ -71,7 +70,6 @@ class Schema extends \yii\db\mysql\Schema
      * Quotes a database name for use in a query.
      *
      * @param string $name
-     *
      * @return string
      */
     public function quoteDatabaseName(string $name): string
@@ -83,7 +81,6 @@ class Schema extends \yii\db\mysql\Schema
      * Releases an existing savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
     public function releaseSavepoint($name)
@@ -104,7 +101,6 @@ class Schema extends \yii\db\mysql\Schema
      * Rolls back to a previously created savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
     public function rollBackSavepoint($name)
@@ -122,7 +118,13 @@ class Schema extends \yii\db\mysql\Schema
     }
 
     /**
-     * @inheritdoc
+     * Create a column schema builder instance giving the type and value precision.
+     *
+     * This method may be overridden by child classes to create a DBMS-specific column schema builder.
+     *
+     * @param string $type type of the column. See [[ColumnSchemaBuilder::$type]].
+     * @param int|string|array $length length or precision of the column. See [[ColumnSchemaBuilder::$length]].
+     * @return ColumnSchemaBuilder column schema builder instance
      */
     public function createColumnSchemaBuilder($type, $length = null)
     {
@@ -133,6 +135,8 @@ class Schema extends \yii\db\mysql\Schema
      * Returns the default backup command to execute.
      *
      * @return string The command to execute
+     * @throws \yii\base\ErrorException
+     * @throws \yii\base\NotSupportedException
      */
     public function getDefaultBackupCommand(): string
     {
@@ -153,7 +157,7 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         $defaultArgs =
-            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
             ' --add-drop-table'.
             ' --comments'.
             ' --create-options'.
@@ -167,7 +171,7 @@ class Schema extends \yii\db\mysql\Schema
             $defaultArgs.
             ' --single-transaction'.
             ' --no-data'.
-            ' --result-file={file}'.
+            ' --result-file="{file}"'.
             ' {database}';
 
         $dataDump = 'mysqldump'.
@@ -175,7 +179,7 @@ class Schema extends \yii\db\mysql\Schema
             ' --no-create-info'.
             implode('', $defaultTableIgnoreList).
             ' {database}'.
-            ' >> {file}';
+            ' >> "{file}"';
 
         return $schemaDump.' && '.$dataDump;
     }
@@ -184,13 +188,14 @@ class Schema extends \yii\db\mysql\Schema
      * Returns the default database restore command to execute.
      *
      * @return string The command to execute
+     * @throws \yii\base\ErrorException
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'mysqldump'.
-            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+        return 'mysql'.
+            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
             ' {database}'.
-            ' < {file}';
+            ' < "{file}"';
     }
 
     /**
@@ -204,8 +209,8 @@ class Schema extends \yii\db\mysql\Schema
      * ```
      *
      * @param string $tableName The name of the table to get the indexes for.
-     *
      * @return array All indexes for the given table.
+     * @throws \yii\base\NotSupportedException
      */
     public function findIndexes(string $tableName): array
     {
@@ -233,8 +238,8 @@ class Schema extends \yii\db\mysql\Schema
      * Loads the metadata for the specified table.
      *
      * @param string $name table name
-     *
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
+     * @throws \Exception
      */
     protected function loadTableSchema($name)
     {
@@ -254,6 +259,7 @@ class Schema extends \yii\db\mysql\Schema
      * Collects extra foreign key information details for the given table.
      *
      * @param TableSchema $table the table metadata
+     * @throws Exception
      */
     protected function findConstraints($table)
     {
@@ -299,6 +305,7 @@ SQL;
      * Creates a temporary my.cnf file based on the DB config settings.
      *
      * @return string The path to the my.cnf file
+     * @throws \yii\base\ErrorException
      */
     private function _createDumpConfigFile(): string
     {
@@ -307,9 +314,13 @@ SQL;
         $dbConfig = Craft::$app->getConfig()->getDb();
         $contents = '[client]'.PHP_EOL.
             'user='.$dbConfig->user.PHP_EOL.
-            'password='.$dbConfig->password.PHP_EOL.
+            'password="'.addslashes($dbConfig->password).'"'.PHP_EOL.
             'host='.$dbConfig->server.PHP_EOL.
             'port='.$dbConfig->port;
+
+        if ($dbConfig->unixSocket) {
+            $contents .= PHP_EOL.'socket='.$dbConfig->unixSocket;
+        }
 
         FileHelper::writeToFile($filePath, $contents);
 

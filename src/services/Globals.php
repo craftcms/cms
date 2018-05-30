@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -18,12 +18,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Globals service.
- *
- * An instance of the Globals service is globally accessible in Craft via [[Application::globals `Craft::$app->getGlobals()`]].
+ * Globals service.
+ * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->globals`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Globals extends Component
 {
@@ -69,6 +68,15 @@ class Globals extends Component
     /**
      * Returns all of the global set IDs.
      *
+     * ---
+     *
+     * ```php
+     * $globalSetIds = Craft::$app->globals->allSetIds;
+     * ```
+     * ```twig
+     * {% set globalSetIds = craft.app.globals.allSetIds %}
+     * ```
+     *
      * @return array
      */
     public function getAllSetIds(): array
@@ -85,6 +93,15 @@ class Globals extends Component
 
     /**
      * Returns all of the global set IDs that are editable by the current user.
+     *
+     * ---
+     *
+     * ```php
+     * $globalSetIds = Craft::$app->globals->editableSetIds;
+     * ```
+     * ```twig
+     * {% set globalSetIds = craft.app.globals.editableSetIds %}
+     * ```
      *
      * @return array
      */
@@ -109,6 +126,15 @@ class Globals extends Component
     /**
      * Returns all global sets.
      *
+     * ---
+     *
+     * ```php
+     * $globalSets = Craft::$app->globals->allSets;
+     * ```
+     * ```twig
+     * {% set globalSets = craft.app.globals.allSets %}
+     * ```
+     *
      * @return GlobalSet[]
      */
     public function getAllSets(): array
@@ -125,6 +151,15 @@ class Globals extends Component
 
     /**
      * Returns all global sets that are editable by the current user.
+     *
+     * ---
+     *
+     * ```php
+     * $globalSets = Craft::$app->globals->editableSets;
+     * ```
+     * ```twig
+     * {% set globalSets = craft.app.globals.editableSets %}
+     * ```
      *
      * @return GlobalSet[]
      */
@@ -146,6 +181,15 @@ class Globals extends Component
     /**
      * Returns the total number of global sets.
      *
+     * ---
+     *
+     * ```php
+     * $total = Craft::$app->globals->totalSets;
+     * ```
+     * ```twig
+     * {% set total = craft.app.globals.totalSets %}
+     * ```
+     *
      * @return int
      */
     public function getTotalSets(): int
@@ -155,6 +199,15 @@ class Globals extends Component
 
     /**
      * Returns the total number of global sets that are editable by the current user.
+     *
+     * ---
+     *
+     * ```php
+     * $total = Craft::$app->globals->totalEditableSets;
+     * ```
+     * ```twig
+     * {% set total = craft.app.globals.totalEditableSets %}
+     * ```
      *
      * @return int
      */
@@ -166,18 +219,28 @@ class Globals extends Component
     /**
      * Returns a global set by its ID.
      *
-     * @param int      $globalSetId
-     * @param int|null $siteId
+     * ---
      *
+     * ```php
+     * $globalSet = Craft::$app->globals->getSetById(1);
+     * ```
+     * ```twig
+     * {% set globalSet = craft.app.globals.getSetById(1) %}
+     * ```
+     *
+     * @param int $globalSetId
+     * @param int|null $siteId
      * @return GlobalSet|null
      */
     public function getSetById(int $globalSetId, int $siteId = null)
     {
         if ($siteId === null) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
 
-        if ($siteId == Craft::$app->getSites()->currentSite->id) {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        if ($siteId == Craft::$app->getSites()->getCurrentSite()->id) {
             if ($this->_allGlobalSets === null) {
                 $this->getAllSets();
             }
@@ -198,14 +261,23 @@ class Globals extends Component
     /**
      * Returns a global set by its handle.
      *
-     * @param string   $globalSetHandle
-     * @param int|null $siteId
+     * ---
      *
+     * ```php
+     * $globalSet = Craft::$app->globals->getSetByHandle('footerInfo');
+     * ```
+     * ```twig
+     * {% set globalSet = craft.app.globals.getSetByHandle('footerInfo') %}
+     * ```
+     *
+     * @param string $globalSetHandle
+     * @param int|null $siteId
      * @return GlobalSet|null
      */
     public function getSetByHandle(string $globalSetHandle, int $siteId = null)
     {
-        $currentSiteId = Craft::$app->getSites()->currentSite->id;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if ($siteId === null) {
             $siteId = $currentSiteId;
@@ -232,9 +304,8 @@ class Globals extends Component
     /**
      * Saves a global set.
      *
-     * @param GlobalSet $globalSet     The global set to be saved
-     * @param bool      $runValidation Whether the global set should be validated
-     *
+     * @param GlobalSet $globalSet The global set to be saved
+     * @param bool $runValidation Whether the global set should be validated
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
      * @throws \Throwable if reasons

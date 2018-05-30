@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -26,7 +26,7 @@ use yii\db\Schema;
  * Field is the base class for classes representing fields in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
@@ -43,7 +43,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @event FieldElementEvent The event that is triggered before the element is saved
-     *
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
@@ -55,7 +54,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @event FieldElementEvent The event that is triggered before the element is deleted
-     *
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
     const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
@@ -117,7 +115,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -180,11 +177,12 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'dateCreated',
                     'dateUpdated',
                     'enabled',
+                    'enabledForSite',
+                    'fieldValue',
                     'id',
                     'level',
                     'lft',
                     'link',
-                    'enabledForSite',
                     'name', // global set-specific
                     'next',
                     'next',
@@ -310,6 +308,21 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function isValueEmpty($value, ElementInterface $element): bool
+    {
+        $reflection = new \ReflectionMethod($this, 'isEmpty');
+        if ($reflection->getDeclaringClass()->getName() !== self::class) {
+            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ isEmpty() method has been deprecated. Use isValueEmpty() instead.');
+        }
+
+        return $this->isEmpty($value);
+    }
+
+    /**
+     * @param mixed $value
+     * @return bool
+     * @deprecated in 3.0.0-RC15. Use [[isValueEmpty()]] instead.
+     */
     public function isEmpty($value): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
@@ -327,9 +340,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param mixed            $value   The field’s value
+     * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
-     *
      * @return string The HTML that should be shown for this field in Table View
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
@@ -380,6 +392,16 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    {
+        if ($this instanceof EagerLoadingFieldInterface) {
+            $query->andWith($this->handle);
+        }
     }
 
     /**
@@ -477,7 +499,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns the field’s param name on the request.
      *
      * @param ElementInterface $element The element this field is associated with
-     *
      * @return string|null The field’s param name on the request
      */
     protected function requestParamName(ElementInterface $element)
@@ -499,7 +520,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns whether this is the first time the element's content has been edited.
      *
      * @param ElementInterface|null $element
-     *
      * @return bool
      */
     protected function isFresh(ElementInterface $element = null): bool

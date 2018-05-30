@@ -10,12 +10,10 @@
 
 
 <script>
-    import PluginCard from './PluginCard';
-
     export default {
 
         components: {
-            PluginCard,
+            PluginCard: require('./PluginCard'),
         },
 
         props: ['plugins', 'columns'],
@@ -23,13 +21,13 @@
         computed: {
 
             cssClass() {
-                let cssClass = 'ps-grid-plugins';
+                let cssClass = 'ps-grid-plugins'
 
-                if(this.columns) {
-                    cssClass += ' ps-grid-plugins-'+this.columns;
+                if (this.columns) {
+                    cssClass += ' ps-grid-plugins-' + this.columns
                 }
 
-                return cssClass;
+                return cssClass
             }
 
         },
@@ -37,7 +35,7 @@
         methods: {
 
             showPlugin(plugin) {
-                this.$root.showPlugin(plugin);
+                this.$root.showPlugin(plugin)
             },
 
         },

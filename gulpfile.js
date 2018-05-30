@@ -5,6 +5,8 @@
 // - jquery-touch-events
 // - jquery-ui
 // - qunit
+// - prismjs (custom css added)
+// - fabricjs
 
 var es = require('event-stream');
 var gulp = require('gulp');

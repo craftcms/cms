@@ -20,7 +20,6 @@
         errors: section.getErrors('name'),
         autofocus: true,
         required: true,
-        translatable: true
     }) }}
 
     {{ forms.textField({
@@ -138,6 +137,19 @@
         staticRows: true,
         errors: siteErrors|unique
     }) }}
+
+    {% if craft.app.getIsMultiSite() %}
+        <div class="type-channel {% if section.type != 'channel' %}hidden{% endif %}">
+            {{ forms.checkboxField({
+                label: 'Propagate entries across all enabled sites?'|t('app'),
+                instructions: 'Whether entries should be propagated across all the sites the section is enabled in. If this is disabled, each entry will only belong to the site it was created in.'|t('app'),
+                id: 'propagateEntries',
+                name: 'propagateEntries',
+                checked: section.propagateEntries,
+                warning: section.id and section.propagateEntries ? 'Changing this may result in data loss.'|t('app')
+            }) }}
+        </div>
+    {% endif %}
 
     <div class="type-structure {% if section.type != 'structure' %}hidden{% endif %}">
         {{ forms.textField({

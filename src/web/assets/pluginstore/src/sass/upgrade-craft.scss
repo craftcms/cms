@@ -1,0 +1,125 @@
+/* upgrade modal */
+
+#upgrade-craft {
+  .logo {
+    margin: 0 auto 24px !important;
+    font-weight: 500;
+    font-size: 18px;
+    color: $submitColor;
+    letter-spacing: 3.3px;
+    line-height: 14px;
+    border: 1px solid $submitColor;
+    border-radius: 3px;
+    padding: 10px 6.7px 9px 10px;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+}
+
+#upgrade-craft-compare table {
+  table-layout: fixed;
+
+  th,
+  td {
+    width: 33.33%;
+  }
+
+  th.feature {
+    font-weight: normal;
+    color: $mediumTextColor;
+  }
+
+  thead {
+    th {
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: normal;
+    }
+
+    tr {
+      &.logos th {
+        padding-bottom: 14px;
+
+        .logo {
+          margin-bottom: 0;
+        }
+
+        p {
+          white-space: normal;
+          max-width: 250px;
+        }
+      }
+
+      &.license-statuses td {
+        padding-top: 0;
+        padding-bottom: 14px;
+      }
+    }
+
+    tr.price {
+      th,
+      td {
+        position: relative;
+        padding-top: 14px;
+      }
+
+      td {
+        &:before {
+          position: absolute;
+          top: 0;
+          display: block;
+          width: 24px;
+          height: 1px;
+          content: '.';
+          font-size: 0;
+          background: $hairlineColor;
+        }
+
+        .listedprice {
+          @include margin-right(5px);
+          text-decoration: line-through;
+          color: $lightTextColor;
+        }
+      }
+
+      th:before {
+        @include left(0);
+      }
+
+      td:before {
+        @include left(14px);
+      }
+    }
+  }
+
+  tbody {
+    th,
+    td {
+      width: 33.33%;
+    }
+
+    tr:first-child {
+      th,
+      td {
+        border-top: none;
+      }
+    }
+
+    th.group {
+      padding-top: 30px;
+      border-bottom-style: solid;
+      color: $mediumTextColor;
+
+      &:before {
+        margin-top: -2px;
+        width: 24px;
+        font-size: 17px;
+      }
+    }
+
+    tr.buybtns td {
+      padding-top: 14px;
+      border-bottom: none;
+    }
+  }
+}

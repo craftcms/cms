@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -16,8 +16,8 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * User group functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class UserGroups
@@ -29,7 +29,6 @@ class UserGroups
      * Returns all user groups.
      *
      * @param string|null $indexBy
-     *
      * @return UserGroup[]
      */
     public function getAllGroups(string $indexBy = null): array
@@ -45,7 +44,6 @@ class UserGroups
      * Gets a user group by its ID.
      *
      * @param int $groupId
-     *
      * @return UserGroup|null
      */
     public function getGroupById(int $groupId)
@@ -59,7 +57,6 @@ class UserGroups
      * Gets a user group by its handle.
      *
      * @param string $groupHandle
-     *
      * @return UserGroup|null
      */
     public function getGroupByHandle(string $groupHandle)

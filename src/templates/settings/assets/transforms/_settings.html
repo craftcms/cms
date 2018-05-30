@@ -35,7 +35,6 @@
             errors: (transform is defined ? transform.getErrors('name') : null),
             autofocus: true,
             required: true,
-            translatable: true
         }) }}
 
         {{ forms.textField({
@@ -45,7 +44,6 @@
             value: (transform is defined ? transform.handle : null),
             errors: (transform is defined ? transform.getErrors('handle') : null),
             required: true,
-            translatable: true
         }) }}
 
         {% set modeInput %}
@@ -98,7 +96,6 @@
             size: 5,
             value: (transform is defined ? transform.width : null),
             errors: (transform is defined ? transform.getErrors('width') : null),
-            translatable: true
         }) }}
 
         {{ forms.textField({
@@ -108,7 +105,6 @@
             size: 5,
             value: (transform is defined ? transform.height : null),
             errors: (transform is defined ? transform.getErrors('height') : null),
-            translatable: true
         }) }}
 
         {{ forms.selectField({
@@ -125,7 +121,6 @@
             },
             value: (transform is defined ? transform.quality : 82),
             errors: (transform is defined ? transform.getErrors('quality') : null),
-            translatable: true
         }) }}
 
         {{ forms.selectField({
@@ -140,7 +135,6 @@
             },
             value: (transform is defined ? transform.interlace : 'none'),
             errors: (transform is defined ? transform.getErrors('interlace') : null),
-            translatable: true
         }) }}
 
         {% set formatOptions = [
@@ -158,7 +152,6 @@
             value: (transform is defined ? transform.format : null),
             errors: (transform is defined ? transform.getErrors('format') : null),
             options: formatOptions,
-            translatable: true
         }) }}
 
 

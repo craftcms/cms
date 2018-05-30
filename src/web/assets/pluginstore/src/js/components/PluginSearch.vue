@@ -8,7 +8,7 @@
                 </div>
 
                 <template v-if="sort">
-                    <sort-menu-btn :attributes="sortMenuBtn.attributes" :value="sort" @update:value="val => $emit('update:sort', val)" />
+                    <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)" />
                 </template>
 
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
@@ -20,21 +20,19 @@
 </template>
 
 <script>
-    import filter from 'lodash/filter';
-    import includes from 'lodash/includes';
-    import PluginGrid from './PluginGrid';
-    import SortMenuBtn from './SortMenuBtn';
+    import filter from 'lodash/filter'
+    import includes from 'lodash/includes'
 
     export default {
 
         components: {
-            PluginGrid,
-            SortMenuBtn,
+            PluginGrid: require('./PluginGrid'),
+            SortMenuBtn: require('./SortMenuBtn'),
         },
 
         props: ['plugins', 'sort'],
 
-        data () {
+        data() {
             return {
                 searchQuery: '',
                 showSpinner: false,
@@ -42,67 +40,69 @@
                 selectedAttribute: null,
                 selectedDirection: null,
 
-                sortMenuBtn: {
-                    attributes: {
-                        activeInstalls: "Popularity",
-                        lastUpdate: "Last Update",
-                        name: "Name",
-                        price: "Price",
-                    }
-                },
+                sortMenuBtnAttributes: null,
             }
         },
 
         computed: {
 
             pluginsToRender() {
-                let self = this;
+                let self = this
 
-                let searchQuery = this.searchQuery;
+                let searchQuery = this.searchQuery
 
-                if(!searchQuery) {
-                    this.$emit('hideResults');
-                    return [];
+                if (!searchQuery) {
+                    this.$emit('hideResults')
+                    return []
                 }
 
-                this.$emit('showResults');
+                this.$emit('showResults')
 
                 return filter(this.plugins, o => {
-                    if(o.packageName && includes(o.packageName.toLowerCase(), searchQuery.toLowerCase())) {
-                        return true;
+                    if (o.packageName && includes(o.packageName.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true
                     }
 
-                    if(o.name && includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
-                        return true;
+                    if (o.name && includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true
                     }
 
-                    if(o.shortDescription && includes(o.shortDescription.toLowerCase(), searchQuery.toLowerCase())) {
-                        return true;
+                    if (o.shortDescription && includes(o.shortDescription.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true
                     }
 
-                    if(o.description && includes(o.description.toLowerCase(), searchQuery.toLowerCase())) {
-                        return true;
+                    if (o.description && includes(o.description.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true
                     }
 
-                    if(o.developerName && includes(o.developerName.toLowerCase(), searchQuery.toLowerCase())) {
-                        return true;
+                    if (o.developerName && includes(o.developerName.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true
                     }
 
-                    if(o.developerUrl && includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
-                        return true;
+                    if (o.developerUrl && includes(o.developerUrl.toLowerCase(), searchQuery.toLowerCase())) {
+                        return true
                     }
 
-                    if(o.keywords.length > 0) {
+                    if (o.keywords.length > 0) {
                         for (let i = 0; i < o.keywords.length; i++) {
-                            if(includes(o.keywords[i].toLowerCase(), searchQuery.toLowerCase())) {
-                                return true;
+                            if (includes(o.keywords[i].toLowerCase(), searchQuery.toLowerCase())) {
+                                return true
                             }
                         }
                     }
-                });
+                })
             },
 
         },
+
+        mounted() {
+            this.sortMenuBtnAttributes = {
+                activeInstalls: this.$options.filters.t("Popularity", 'app'),
+                lastUpdate: this.$options.filters.t("Last Update", 'app'),
+                name: this.$options.filters.t("Name", 'app'),
+                price: this.$options.filters.t("Price", 'app'),
+            }
+        }
 
     }
 </script>

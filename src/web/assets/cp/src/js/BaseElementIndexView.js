@@ -11,6 +11,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         $scroller: null,
 
         elementIndex: null,
+        thumbLoader: null,
         elementSelect: null,
 
         loadingMore: false,
@@ -38,6 +39,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             this.setTotalVisible($elements.length);
             this.setMorePending(this.settings.batchSize && $elements.length == this.settings.batchSize);
+
+            // Instantiate the thumb loader
+            this.thumbLoader = new Craft.ElementThumbLoader();
+            this.thumbLoader.load($elements);
 
             if (this.settings.selectable) {
                 this.elementSelect = new Garnish.Select(
@@ -269,7 +274,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             var data = this.getLoadMoreParams();
 
-            Craft.postActionRequest('element-indexes/get-more-elements', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
                 this.loadingMore = false;
                 this.$loadingMoreSpinner.addClass('hidden');
 
@@ -279,7 +284,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     this.appendElements($newElements);
                     Craft.appendHeadHtml(response.headHtml);
                     Craft.appendFootHtml(response.footHtml);
-                    picturefill();
 
                     if (this.elementSelect) {
                         this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
@@ -306,6 +310,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
         appendElements: function($newElements) {
             $newElements.appendTo(this.$elementContainer);
+            this.thumbLoader.load($newElements);
             this.onAppendElements($newElements);
         },
 
@@ -341,6 +346,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Remove the "loading-more" spinner, since we added that outside of the view container
             this.$loadingMoreSpinner.remove();
 
+            // Kill the thumb loader
+            this.thumbLoader.destroy();
+            delete this.thumbLoader;
+
             // Delete the element select
             if (this.elementSelect) {
                 this.elementIndex.off('enableElements', this._handleEnableElements);
@@ -361,6 +370,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             selectable: false,
             multiSelect: false,
             checkboxMode: false,
+            loadMoreElementsAction: 'element-indexes/get-more-elements',
             onAppendElements: $.noop,
             onSelectionChange: $.noop
         }

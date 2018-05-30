@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -15,16 +15,14 @@ use craft\records\CraftIdToken as OauthTokenRecord;
 use DateInterval;
 use DateTime;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
 
 /**
- * Class PluginStore service.
- *
- * An instance of the PluginStore service is globally accessible in Craft via [[Application::pluginStore `Craft::$app->getPluginStore()`]].
+ * Plugin Store service.
+ * An instance of the Plugin Store service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPluginStore()|`Craft::$app->pluginStore`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginStore extends Component
 {
@@ -51,16 +49,6 @@ class PluginStore extends Component
      */
     public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
 
-    /**
-     * @var string Stripe API key
-     */
-    public $stripeApiKey;
-
-    /**
-     * @var bool Enabled Craft ID
-     */
-    public $enableCraftId = false;
-
     // Public Methods
     // =========================================================================
 
@@ -68,35 +56,29 @@ class PluginStore extends Component
      * Returns the Craft ID account.
      *
      * @return array|null
+     * @throws \Exception
      */
     public function getCraftIdAccount()
     {
-        try {
-            $craftIdToken = $this->getToken();
+        $craftIdToken = $this->getToken();
 
-            if ($craftIdToken && $craftIdToken->hasExpired()) {
-                $craftIdToken = null;
-            }
-
-            $client = $this->getClient();
-
-            if ($craftIdToken) {
-                $craftIdAccountResponse = $client->request('GET', 'account');
-                $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-                if (!isset($craftIdAccount['error'])) {
-                    return $craftIdAccount;
-                }
-            }
-        } catch (ServerException $e) {
-            // Todo: Handle exception
+        if (!$craftIdToken) {
+            return null;
         }
 
-        return null;
+        $client = $this->getClient();
+        $craftIdAccountResponse = $client->request('GET', 'account');
+        $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
+
+        if (isset($craftIdAccount['error'])) {
+            throw new \Exception("Couldn’t get Craft ID account: ".$craftIdAccount['error']);
+        }
+
+        return $craftIdAccount;
     }
 
     /**
-     * Get authenticated client.
+     * Returns the authenticated Guzzle client.
      *
      * @return Client
      */
@@ -116,7 +98,7 @@ class PluginStore extends Component
     }
 
     /**
-     * Save OAuth token.
+     * Saves the OAuth token.
      *
      * @param array $tokenArray
      */
@@ -164,44 +146,46 @@ class PluginStore extends Component
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
             $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
-            $oauthTokenRecord->refreshToken = $oauthToken->refreshToken;
             $oauthTokenRecord->save();
         }
     }
 
     /**
-     * Get OAuth token.
+     * Returns the OAuth token.
      *
-     * @return mixed
+     * @return CraftIdToken|null
      */
     public function getToken()
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-
         // Get the token from the session
-
         $token = Craft::$app->getSession()->get('pluginStore.token');
 
+        if ($token && !$token->hasExpired()) {
+            return $token;
+        }
 
         // Or use the token from the database otherwise
+        $oauthTokenRecord = OauthTokenRecord::find()
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$oauthTokenRecord) {
+            return null;
+        }
+
+        $token = new CraftIdToken($oauthTokenRecord->getAttributes());
 
         if (!$token || ($token && $token->hasExpired())) {
-
-            $oauthTokenRecord = OauthTokenRecord::find()
-                ->where(['userId' => $userId])
-                ->one();
-
-            if ($oauthTokenRecord) {
-                return new CraftIdToken($oauthTokenRecord->getAttributes());
-            }
+            return null;
         }
 
         return $token;
     }
 
     /**
-     * Delete OAuth token.
+     * Deletes an OAuth token.
      */
     public function deleteToken()
     {
@@ -217,16 +201,16 @@ class PluginStore extends Component
             $oauthToken->delete();
         }
 
+
         // Delete session token
 
         Craft::$app->getSession()->remove('pluginStore.token');
     }
 
     /**
-     * Delete token from its user ID.
+     * Deletes the token from its user ID.
      *
      * @param int $userId
-     *
      * @return bool
      */
     public function deleteTokenByUserId(int $userId): bool
@@ -245,10 +229,9 @@ class PluginStore extends Component
     }
 
     /**
-     * Get token by user ID.
+     * Returns the token by user ID.
      *
      * @param $userId
-     *
      * @return CraftIdToken|null
      */
     public function getTokenByUserId($userId)
@@ -269,7 +252,6 @@ class PluginStore extends Component
      * Returns a plugin store token record based on its ID.
      *
      * @param int $id
-     *
      * @return OauthTokenRecord
      */
     private function _getOauthTokenRecordById($id = null)
@@ -284,38 +266,5 @@ class PluginStore extends Component
         }
 
         return $record;
-    }
-
-
-    /**
-     * Save token to DB.
-     *
-     * @param CraftIdToken $token
-     *
-     * @return bool
-     */
-    private function _saveToken(CraftIdToken $token)
-    {
-        // is new ?
-        $isNewToken = !$token->id;
-
-        // populate record
-        $record = $this->_getOauthTokenRecordById($token->id);
-        $record->userId = $token->userId;
-        $record->accessToken = $token->accessToken;
-        $record->expiryDate = $token->expiryDate;
-        $record->refreshToken = $token->refreshToken;
-
-        // save record
-        if ($record->save(false)) {
-            // populate id
-            if ($isNewToken) {
-                $token->id = $record->id;
-            }
-
-            return true;
-        }
-
-        return false;
     }
 }

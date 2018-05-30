@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\config;
@@ -15,7 +15,7 @@ use yii\base\InvalidConfigException;
  * DB config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DbConfig extends BaseObject
 {
@@ -62,7 +62,6 @@ class DbConfig extends BaseObject
      *
      * - MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
      * - PostgreSQL: https://secure.php.net/manual/en/ref.pdo-pgsql.connection.php
-     *
      * If you set this, then the [[server]], [[port]], [[user]], [[password]], [[database]],
      * [[driver]] and [[unixSocket]] config settings will be ignored.
      */
@@ -77,7 +76,6 @@ class DbConfig extends BaseObject
     public $port;
     /**
      * @var string The database schema to use (PostgreSQL only).
-     *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';
@@ -100,6 +98,7 @@ class DbConfig extends BaseObject
     public $unixSocket;
     /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.
+     *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]]
      * will be extracted from it.
      */

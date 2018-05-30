@@ -9,12 +9,13 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 $sidebarBgColor: hsl($hue, 20%, 25%);
 $sidebarLinkHoverBgColor: hsla($hue, 20%, 20%, 0.05);
 
-$editionStaticColor: hsl($hue, 20%, 10%);
+$editionStaticColor: hsl($hue, 20%, 5%);
 $editionHoverColor: hsl($hue, 20%, 70%);
 
 html,
 body {
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 #global-container {
@@ -29,6 +30,7 @@ body {
 /* global sidebar */
 
 $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
+$sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 #global-sidebar {
   flex: 0 0 $sidebarWidth;
@@ -102,23 +104,20 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     display: flex;
     flex-direction: row;
     align-items: top;
-    @include padding(14px, 44px, 14px, 10px);
+    @include padding(14px, 14px, 14px, 10px);
     min-height: -webkit-min-content;
     min-height: -moz-min-content;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
 
     &:after {
-      position: absolute;
-      top: calc(50% - 9px);
-      @include right(16px);
-      font-size: 19px;
+      display: none;
     }
 
     #site-icon {
       width: 32px;
       height: 32px;
-      @include margin-right(14px);
+      @include margin(6px, 14px, 0, 0);
 
       img,
       svg {
@@ -138,6 +137,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       h2 {
         margin: 0;
+
+        span {
+          white-space: nowrap;
+        }
       }
 
       #user-info {
@@ -281,85 +284,32 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       ul {
         display: block;
+        margin-bottom: 10px;
 
         li a {
-          @include padding-left(60px);
+          @include padding(3px, 14px, 3px, 56px);
+          font-size: 12px;
+
+          &:not(.active) {
+            color: $sidebarLinkSecondaryColor;
+          }
         }
       }
     }
   }
 }
 
-#edition {
+#app-info {
   padding: 14px 14px 24px;
+  color: $editionStaticColor;
   text-align: center;
 
-  #edition-logo {
-    user-select: none;
-    border: 1px solid $editionStaticColor;
-    border-radius: 3px;
-    display: inline-flex;
-    height: 23px;
-    transition: border-color linear 100ms;
+  #edition {
+    font-size: 14px;
 
-    & > .edition-name,
-    & > .edition-trial {
-      padding: 8px 8px 7px;
-      line-height: 8px;
-      font-weight: 500;
-    }
+    &.hot:hover {
+      cursor: pointer;
 
-    & > .edition-name {
-      color: $editionStaticColor;
-      letter-spacing: 2.2px;
-      padding-right: 5.8px;
-      text-transform: uppercase;
-      transition: color linear 100ms;
-    }
-
-    & > .edition-trial {
-      display: inline-block;
-      position: relative;
-      @include margin-left(5px);
-      @include padding-left(5px);
-      background: $editionStaticColor;
-      color: $sidebarBgColor;
-      border-radius: 0 1px 1px 0;
-      letter-spacing: 1px;
-      @include padding-right(7px);
-      text-transform: lowercase;
-      transition: background linear 100ms;
-
-      &:before {
-        display: block;
-        position: absolute;
-        top: 0;
-        content: '.';
-        font-size: 0;
-        width: 0;
-        height: 0;
-        border-style: solid;
-        transition: border-color linear 100ms;
-
-        body.ltr & {
-          left: -10px;
-          border-width: 0 10px 23px 0;
-          border-color: transparent $editionStaticColor transparent transparent;
-        }
-
-        body.rtl & {
-          right: -10px;
-          border-width: 0 0 23px 10px;
-          border-color: transparent transparent transparent $editionStaticColor;
-        }
-      }
-    }
-  }
-
-  &.hot {
-    cursor: pointer;
-
-    &:hover {
       #edition-logo {
         border-color: $editionHoverColor;
 
@@ -382,6 +332,73 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         }
       }
     }
+
+    #edition-logo {
+      user-select: none;
+      border: 1px solid $editionStaticColor;
+      border-radius: 3px;
+      display: inline-flex;
+      height: 24px;
+      transition: border-color linear 100ms;
+
+      & > .edition-name,
+      & > .edition-trial {
+        padding: 8px 8px 7px;
+        line-height: 8px;
+        font-weight: 500;
+      }
+
+      & > .edition-name {
+        letter-spacing: 2.2px;
+        padding-right: 5.8px;
+        text-transform: uppercase;
+        transition: color linear 100ms;
+      }
+
+      & > .edition-trial {
+        display: inline-block;
+        position: relative;
+        @include margin-left(5px);
+        @include padding-left(5px);
+        background: $editionStaticColor;
+        color: $sidebarBgColor;
+        border-radius: 0 1px 1px 0;
+        letter-spacing: 1px;
+        @include padding-right(7px);
+        text-transform: lowercase;
+        transition: background linear 100ms;
+
+        &:before {
+          display: block;
+          position: absolute;
+          top: 0;
+          content: '.';
+          font-size: 0;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          transition: border-color linear 100ms;
+
+          body.ltr & {
+            left: -10px;
+            border-width: 0 10px 23px 0;
+            border-color: transparent $editionStaticColor transparent transparent;
+          }
+
+          body.rtl & {
+            right: -10px;
+            border-width: 0 0 23px 10px;
+            border-color: transparent transparent transparent $editionStaticColor;
+          }
+        }
+      }
+    }
+  }
+
+  #version {
+    margin-top: 4px;
+    font-size: 12px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -440,15 +457,22 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     flex-direction: row;
     align-items: stretch;
     padding: 0 24px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    background: rgba(0, 0, 0, 0.03);
+    font-size: 12px;
 
     &.empty {
       display: none;
+      & + #main #header {
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
     }
 
     &:not(.empty) {
       display: flex;
+      & + #main #header {
+        padding-top: 7px;
+        padding-bottom: 7px;
+      }
     }
 
     nav {
@@ -475,7 +499,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
           a {
             display: inline-block;
-            padding: 10px 0;
+            padding: 5px 0 1px;
             color: $mediumTextColor;
 
             &:hover {
@@ -499,11 +523,15 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
   #main {
     #header {
+      display: flex;
       align-items: center;
+      align-content: stretch;
+      flex-wrap: wrap;
       justify-content: space-between;
       position: relative;
       z-index: 2;
-      padding: 20px 24px 13px;
+      padding-left: 24px;
+      padding-right: 24px;
       box-sizing: border-box;
       width: calc(100vw - #{$sidebarWidth});
       background: $bgColor;
@@ -530,6 +558,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       h1 {
         line-height: 32px;
         margin-top: 0;
+        margin-bottom: 0;
         display: inline;
         white-space: nowrap;
         overflow: hidden;
@@ -538,10 +567,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         &:not(:last-child) {
           @include margin-right(24px !important);
         }
-      }
-
-      #extra-headers {
-        flex: 0 0 0;
       }
 
       .buttons,
@@ -593,6 +618,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         flex: 0 0 $sidebarWidth;
         width: $sidebarWidth;
         box-sizing: border-box;
+        padding-bottom: 48px;
       }
 
       #content-container {
@@ -680,7 +706,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         #content {
           flex: 1;
           background: #fff;
-          padding: 24px;
+          padding: 24px 24px 48px;
           word-wrap: break-word;
         }
       }
@@ -688,7 +714,8 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
       #details {
         flex: 0 0 $detailsWidth;
         width: $detailsWidth;
-        background: hsl($hue, 10%, 85%);
+        background: darken($bgColor, 3%);
+        padding-bottom: 32px;
 
         body.ltr & {
           box-shadow: inset 1px 0 0 $hairlineColorAlpha;
@@ -702,7 +729,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
           padding: 16px 24px;
 
           &.read-only {
-            background: rgba(0, 0, 0, 0.05);
+            background: darken($bgColor, 6%);
           }
 
           & > .field,
@@ -720,6 +747,10 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
             padding: 0 24px;
           }
 
+          & > .field + .field {
+            border-top-color: darken($bgColor, 15%);
+          }
+
           .text::placeholder,
           .datewrapper .text:placeholder-shown + div[data-icon],
           .timewrapper .text:placeholder-shown + div[data-icon] {
@@ -733,7 +764,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
         hr {
           margin: 0;
-          border-top-color: $mediumHairlineColorAlpha;
+          border-top-color: darken($bgColor, 15%);
         }
 
         .spinner {
@@ -783,6 +814,8 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
     #main {
       #header {
         width: 100vw;
+        padding-top: 7px !important;
+        padding-bottom: 7px !important;
 
         body.ltr.fixed-header & {
           left: 0;
@@ -838,32 +871,23 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         #sidebar-toggle {
           display: block;
           position: relative;
-          background: $lightBgColor;
           box-shadow: inset 0 -1px 0 $hairlineColor;
-          color: $secondarySubmitColor;
+          color: $textColor;
+          text-align: center;
           line-height: 21px;
           @include padding(14px, 50px, 14px, 24px);
           padding: 14px 24px;
 
-          &:hover {
-            text-decoration: none;
+          body:not(.showing-sidebar) & {
+            background: $lightBgColor;
           }
 
-          &:after {
-            @include icon;
-            position: absolute;
-            top: calc(50% - 10px);
-            right: 7px;
-            font-size: 16px;
-            width: 43px;
-            line-height: 20px;
+          body.showing-sidebar & {
+            background: linear-gradient(hsl($hue, 5%, 90%), hsl($hue, 5%, 92%));
+          }
 
-            body.showing-sidebar & {
-              content: 'upangle';
-            }
-            body:not(.showing-sidebar) & {
-              content: 'downangle';
-            }
+          &:hover {
+            text-decoration: none;
           }
         }
 
@@ -995,12 +1019,12 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
 #nav-toggle {
   display: none;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
+  width: 36px;
+  height: 26px;
+  line-height: 26px;
   color: $secondarySubmitColor;
   text-align: center;
-  @include margin-left(-24px);
+  @include margin-left(-10px);
 
   &:before {
     @include icon;
@@ -1021,240 +1045,6 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   & > .item {
     display: none;
     box-sizing: border-box;
-  }
-}
-
-/* upgrade modal */
-#upgrademodal {
-  min-height: 550px;
-
-  &.loading {
-    background-image: url(../images/spinner_big.gif);
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
-  }
-
-  .body {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-  }
-
-  .logo {
-    margin: 0 auto 24px !important;
-    font-weight: 500;
-    font-size: 18px;
-    color: $submitColor;
-    letter-spacing: 3.3px;
-    line-height: 14px;
-    border: 1px solid $submitColor;
-    border-radius: 3px;
-    padding: 10px 6.7px 9px 10px;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-}
-
-#upgrademodal-compare table {
-  table-layout: fixed;
-
-  th,
-  td {
-    width: 33.33%;
-  }
-
-  th.feature {
-    font-weight: normal;
-    color: $mediumTextColor;
-  }
-
-  thead {
-    th {
-      font-size: 13px;
-      line-height: 18px;
-      font-weight: normal;
-    }
-
-    tr {
-      &.logos th {
-        padding-bottom: 14px;
-
-        .logo {
-          margin-bottom: 0;
-        }
-
-        p {
-          white-space: normal;
-          max-width: 250px;
-        }
-      }
-
-      &.license-statuses td {
-        padding-top: 0;
-        padding-bottom: 14px;
-
-        .license-status:before {
-          border: 1px solid;
-          border-radius: 9px;
-          width: 17px;
-          height: 17px;
-          line-height: 17px;
-          margin-right: 5px;
-        }
-
-        .installed {
-          color: $successColor;
-
-          &:before {
-            border-color: $successColor;
-          }
-        }
-
-        .licensed {
-          color: $noticeColor;
-
-          &:before {
-            border-color: $noticeColor;
-          }
-        }
-      }
-    }
-
-    tr.price {
-      th,
-      td {
-        position: relative;
-        padding-top: 14px;
-      }
-
-      td {
-        &:before {
-          position: absolute;
-          top: 0;
-          display: block;
-          width: 24px;
-          height: 1px;
-          content: '.';
-          font-size: 0;
-          background: $hairlineColor;
-        }
-
-        .listedprice {
-          @include margin-right(5px);
-          text-decoration: line-through;
-          color: $lightTextColor;
-        }
-      }
-
-      th:before {
-        @include left(0);
-      }
-
-      td:before {
-        @include left(14px);
-      }
-    }
-  }
-
-  tbody {
-    th,
-    td {
-      width: 33.33%;
-    }
-
-    tr:first-child {
-      th,
-      td {
-        border-top: none;
-      }
-    }
-
-    th.group {
-      padding-top: 30px;
-      border-bottom-style: solid;
-      color: $mediumTextColor;
-
-      &:before {
-        margin-top: -2px;
-        width: 24px;
-        font-size: 17px;
-      }
-    }
-
-    tr.buybtns td {
-      padding-top: 14px;
-      border-bottom: none;
-    }
-  }
-}
-
-#upgrademodal-checkout {
-  background: $lightBgColor;
-
-  .logowrapper {
-    text-align: center;
-  }
-
-  form {
-    max-width: 350px;
-    margin: 0 auto !important;
-    padding-bottom: 10px;
-
-    .field {
-      margin: 14px 0;
-    }
-
-    p.icon.secure {
-      margin-top: 24px;
-
-      &:before {
-        @include margin-right(5px);
-      }
-    }
-  }
-
-  .buttons {
-    & > .left,
-    & > .right {
-      margin-top: 5px;
-    }
-  }
-
-  #pay-button {
-    @include floatleft;
-    @include margin-right(5px);
-  }
-
-  #pay-spinner {
-    margin: 0;
-  }
-
-  .spinner#coupon-spinner {
-    position: absolute;
-    top: 0;
-    margin-top: 0;
-    @include right(-24px);
-  }
-}
-
-#upgrademodal-success .message {
-  display: block;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  margin-top: -71px;
-  padding-top: 62px;
-  text-align: center;
-  background: url(../images/success.png) no-repeat 50% 0;
-
-  p {
-    margin-bottom: 24px;
-    font-size: 15px;
-    line-height: 1.4;
   }
 }
 
@@ -1334,6 +1124,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
   overflow: auto;
   background: $lightBgColor;
   box-sizing: border-box;
+  font-size: 13px;
 
   body.ltr & {
     box-shadow: inset -1px 0 0 $hairlineColor;
@@ -1430,7 +1221,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
         display: flex;
         flex-direction: row;
         align-items: center;
-        @include padding(10px, 14px, 10px, 24px);
+        @include padding(7px, 14px, 7px, 24px);
         min-height: 24px;
         box-sizing: border-box;
         color: $textColor;
@@ -1489,7 +1280,7 @@ $sidebarLinkStaticColor: hsl($hue, 5%, 85%);
 
       .toggle {
         position: absolute;
-        top:px;
+        top: 10px;
       }
 
       ul {
@@ -1526,15 +1317,6 @@ nav > ul > li > ul > li > ul > li > ul > li > .toggle {
 nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
   @include left(60px);
 }
-
-//> .sidebar {
-//  @include padding(0, 0, 0, 0);
-//  @include margin(0, 0, 0, 0);
-//}
-//
-//> nav li a {
-//  @include margin-left(0);
-//}
 
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),

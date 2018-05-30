@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\image;
@@ -31,7 +31,7 @@ use yii\base\ErrorException;
  * Raster class is used for raster image manipulations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Raster extends Image
 {
@@ -177,6 +177,7 @@ class Raster extends Image
 
         // For Imagick, convert CMYK to RGB, save and re-open.
         if (!Craft::$app->getImages()->getIsGd()
+            && !Craft::$app->getConfig()->getGeneral()->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
@@ -311,7 +312,7 @@ class Raster extends Image
 
                     $y1 = 0;
                     $y2 = $y1 + $targetHeight;
-                } elseif ($newHeight - $targetHeight > 0) {
+                } else if ($newHeight - $targetHeight > 0) {
                     switch ($verticalPosition) {
                         case 'top':
                             $y1 = 0;
@@ -391,7 +392,6 @@ class Raster extends Image
      * Rotates the image by the given degrees.
      *
      * @param float $degrees
-     *
      * @return static Self reference
      */
     public function rotate(float $degrees)
@@ -433,7 +433,6 @@ class Raster extends Image
      * Sets the image quality.
      *
      * @param int $quality
-     *
      * @return static Self reference
      */
     public function setQuality(int $quality)
@@ -447,7 +446,6 @@ class Raster extends Image
      * Sets the interlace setting.
      *
      * @param string $interlace
-     *
      * @return static Self reference
      */
     public function setInterlace(string $interlace)
@@ -493,7 +491,6 @@ class Raster extends Image
      * Loads an image from an SVG string.
      *
      * @param string $svgContent
-     *
      * @return static Self reference
      * @throws ImageException if the SVG string cannot be loaded.
      */
@@ -533,7 +530,6 @@ class Raster extends Image
      * Returns EXIF metadata for a file by its path.
      *
      * @param string $filePath
-     *
      * @return array
      */
     public function getExifMetadata(string $filePath): array
@@ -555,10 +551,8 @@ class Raster extends Image
      * Sets properties for text drawing on the image.
      *
      * @param string $fontFile path to the font file on server
-     * @param int    $size     font size to use
-     * @param string $color    font color to use in hex format
-     *
-     * @return void
+     * @param int $size font size to use
+     * @param string $color font color to use in hex format
      */
     public function setFontProperties(string $fontFile, int $size, string $color)
     {
@@ -573,8 +567,7 @@ class Raster extends Image
      * Returns the bounding text box for a text string and an angle
      *
      * @param string $text
-     * @param int    $angle
-     *
+     * @param int $angle
      * @return \Imagine\Image\BoxInterface
      * @throws ImageException if attempting to create text box with no font properties
      */
@@ -591,11 +584,9 @@ class Raster extends Image
      * Writes text on an image.
      *
      * @param string $text
-     * @param int    $x
-     * @param int    $y
-     * @param int    $angle
-     *
-     * @return void
+     * @param int $x
+     * @param int $y
+     * @param int $angle
      * @throws ImageException If attempting to create text box with no font properties et.
      */
     public function writeText(string $text, int $x, int $y, int $angle = 0)
@@ -614,12 +605,11 @@ class Raster extends Image
 
     /**
      * @param string $tempFileName
-     * @param int    $originalSize
+     * @param int $originalSize
      * @param string $extension
-     * @param int    $minQuality
-     * @param int    $maxQuality
-     * @param int    $step
-     *
+     * @param int $minQuality
+     * @param int $maxQuality
+     * @param int $step
      * @return string the resulting file path
      */
     private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
@@ -672,9 +662,8 @@ class Raster extends Image
     /**
      * Returns save options.
      *
-     * @param int|null    $quality
+     * @param int|null $quality
      * @param string|null $extension
-     *
      * @return array
      */
     private function _getSaveOptions(int $quality = null, string $extension = null): array

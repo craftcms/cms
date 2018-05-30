@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -14,7 +14,7 @@ use yii\helpers\Inflector;
  * App helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class App
 {
@@ -36,33 +36,24 @@ class App
      */
     public static function editions(): array
     {
-        return [Craft::Personal, Craft::Client, Craft::Pro];
+        return [Craft::Solo, Craft::Pro];
     }
 
     /**
      * Returns the name of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
-     *
      * @return string The edition’s name.
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Client:
-                return 'Client';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                return 'Personal';
-        }
+        return ($edition == Craft::Pro) ? 'Pro' : 'Solo';
     }
 
     /**
      * Returns whether an edition is valid.
      *
      * @param mixed $edition An edition’s ID (or is it?)
-     *
      * @return bool Whether $edition is a valid edition ID.
      */
     public static function isValidEdition($edition): bool
@@ -75,10 +66,42 @@ class App
     }
 
     /**
+     * Returns the PHP version, without the distribution info.
+     *
+     * @return string
+     */
+    public static function phpVersion(): string
+    {
+        return PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+    }
+
+    /**
+     * Returns a PHP extension version, without the distribution info.
+     *
+     * @param string $name The extension name
+     * @return string
+     */
+    public static function extensionVersion(string $name): string
+    {
+        $version = phpversion($name);
+        return static::normalizeVersion($version);
+    }
+
+    /**
+     * Removes distribution info from a version
+     *
+     * @param string $version
+     * @return string
+     */
+    public static function normalizeVersion(string $version): string
+    {
+        return preg_replace('/^([^~+-]+).*$/', '$1', $version);
+    }
+
+    /**
      * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.
-     *
      * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
     public static function phpConfigValueAsBool(string $var): bool
@@ -89,78 +112,6 @@ class App
 
         /** @noinspection TypeUnsafeComparisonInspection */
         return ($value == 1 || strtolower($value) === 'on');
-    }
-
-    /**
-     * Normalizes a version number based on the same logic as PHP’s [version_compare](http://php.net/manual/en/function.version-compare.php) uses internally.
-     *
-     * @param string $version The version number
-     *
-     * @return string The normalized version number
-     */
-    public static function normalizeVersionNumber(string $version): string
-    {
-        // Periods before/after non-numeric sequences
-        $version = preg_replace('/\D+/', '.$0.', $version);
-
-        // Convert sequences of ./-/+'s into single periods
-        $version = preg_replace('/[\._\-\+]+/', '.', $version);
-
-        // Remove any leading/trailing periods
-        $version = trim($version, '.');
-
-        return $version;
-    }
-
-    /**
-     * Returns the major version from a given version number.
-     *
-     * @param string $version The full version number
-     *
-     * @return string|null The major version
-     */
-    public static function majorVersion(string $version)
-    {
-        $version = static::normalizeVersionNumber($version);
-        $parts = explode('.', $version, 2);
-
-        if (!empty($parts[0])) {
-            return $parts[0];
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the major and minor (X.Y) versions from a given version number.
-     *
-     * @param string $version The full version number
-     *
-     * @return string|null The X.Y parts of the version number
-     */
-    public static function majorMinorVersion(string $version)
-    {
-        preg_match('/^\d+\.\d+/', $version, $matches);
-
-        if (isset($matches[0])) {
-            return $matches[0];
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the Craft download URL for a given version.
-     *
-     * @param string $version The Craft version
-     *
-     * @return string The download URL
-     */
-    public static function craftDownloadUrl(string $version): string
-    {
-        $xy = self::majorMinorVersion($version);
-
-        return "https://download.craftcdn.com/craft/{$xy}/{$version}/Craft-{$version}.zip";
     }
 
     /**
@@ -183,7 +134,6 @@ class App
      * Returns a humanized class name.
      *
      * @param string $class
-     *
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -195,10 +145,8 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, and gives
+     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, and gives
      * the script an unlimited amount of time to execute.
-     *
-     * @return void
      */
     public static function maxPowerCaptain()
     {
@@ -213,5 +161,31 @@ class App
 
         // Try to disable the max execution time
         @set_time_limit(0);
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function licenseKey()
+    {
+        $path = Craft::$app->getPath()->getLicenseKeyPath();
+
+        // Check to see if the key exists and it's not a temp one.
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $contents = file_get_contents($path);
+        if (empty($contents) || $contents === 'temp') {
+            return null;
+        }
+
+        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $contents));
+
+        if (strlen($licenseKey) !== 250) {
+            return null;
+        }
+
+        return $licenseKey;
     }
 }

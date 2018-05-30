@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -24,6 +24,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -31,11 +32,10 @@ use ZipArchive;
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
  * widgets, getting [[\craft\widgets\Feed]] feeds and sending [[\craft\widgets\CraftSupport]] support ticket requests.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DashboardController extends Controller
 {
@@ -169,7 +169,6 @@ class DashboardController extends Controller
      * Saves a widget’s settings.
      *
      * @return Response
-     *
      * @throws BadRequestHttpException
      */
     public function actionSaveWidgetSettings(): Response
@@ -289,9 +288,9 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws \yii\base\ErrorException
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\base\InvalidParamException
+     * @throws ErrorException
+     * @throws BadRequestHttpException
+     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
@@ -479,7 +478,7 @@ class DashboardController extends Controller
 
         // Delete the zip file
         if (is_file($zipPath)) {
-            FileHelper::removeFile($zipPath);
+            FileHelper::unlink($zipPath);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
@@ -496,7 +495,6 @@ class DashboardController extends Controller
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
      * @param WidgetInterface $widget
-     *
      * @return array|false
      */
     private function _getWidgetInfo(WidgetInterface $widget)
@@ -543,7 +541,6 @@ class DashboardController extends Controller
      * Returns a widget type’s SVG icon.
      *
      * @param WidgetInterface $widget
-     *
      * @return string
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
@@ -571,7 +568,6 @@ class DashboardController extends Controller
      * Returns the default icon SVG for a given widget type.
      *
      * @param WidgetInterface $widget
-     *
      * @return string
      */
     private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
@@ -585,7 +581,6 @@ class DashboardController extends Controller
      * Attempts to save a widget and responds with JSON.
      *
      * @param WidgetInterface $widget
-     *
      * @return Response
      */
     private function _saveAndReturnWidget(WidgetInterface $widget): Response

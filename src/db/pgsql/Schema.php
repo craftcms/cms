@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db\pgsql;
@@ -14,11 +14,9 @@ use yii\db\Exception;
 
 /**
  * @inheritdoc
- *
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Schema extends \yii\db\pgsql\Schema
 {
@@ -35,6 +33,7 @@ class Schema extends \yii\db\pgsql\Schema
 
     /**
      * Creates a query builder for the database.
+     *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
      *
      * @return QueryBuilder query builder instance
@@ -50,7 +49,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Quotes a database name for use in a query.
      *
      * @param string $name
-     *
      * @return string
      */
     public function quoteDatabaseName(string $name): string
@@ -62,7 +60,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Releases an existing savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
 
@@ -84,7 +81,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Rolls back to a previously created savepoint.
      *
      * @param string $name The savepoint name.
-     *
      * @throws Exception
      */
     public function rollBackSavepoint($name)
@@ -107,7 +103,10 @@ class Schema extends \yii\db\pgsql\Schema
     public function getLastInsertID($sequenceName = '')
     {
         if ($sequenceName !== '') {
-            $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName).'_id_seq';
+            if (strpos($sequenceName, '.') === false) {
+                $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName);
+            }
+            $sequenceName .= '_id_seq';
         }
 
         return parent::getLastInsertID($sequenceName);
@@ -136,16 +135,7 @@ class Schema extends \yii\db\pgsql\Schema
             $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
         }
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $envCommand = 'PGPASSWORD='.$dbConfig->password;
-
-        if (Platform::isWindows()) {
-            $envCommand = 'set '.$envCommand.'&&';
-        } else {
-            $envCommand .= ' ';
-        }
-
-        return $envCommand.
+        return $this->_pgpasswordCommand().
             'pg_dump'.
             ' --dbname={database}'.
             ' --host={server}'.
@@ -153,7 +143,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}'.
             ' --if-exists'.
             ' --clean'.
-            ' --file={file}'.
+            ' --file="{file}"'.
             ' --schema={schema}'.
             implode('', $defaultTableIgnoreList);
     }
@@ -165,13 +155,14 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'psql'.
+        return $this->_pgpasswordCommand().
+            'psql'.
             ' --dbname={database}'.
             ' --host={server}'.
             ' --port={port}'.
             ' --username={user}'.
             ' --no-password'.
-            ' < {file}';
+            ' < "{file}"';
     }
 
     /**
@@ -185,7 +176,6 @@ class Schema extends \yii\db\pgsql\Schema
      * ```
      *
      * @param string $tableName The name of the table to get the indexes for.
-     *
      * @return array All indexes for the given table.
      */
     public function findIndexes(string $tableName): array
@@ -214,7 +204,6 @@ class Schema extends \yii\db\pgsql\Schema
      * Loads the metadata for the specified table.
      *
      * @param string $name table name
-     *
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
     public function loadTableSchema($name)
@@ -229,6 +218,9 @@ class Schema extends \yii\db\pgsql\Schema
 
         return null;
     }
+
+    // Protected Methods
+    // =========================================================================
 
     /**
      * Collects extra foreign key information details for the given table.
@@ -322,7 +314,6 @@ SQL;
      * Gets information about given table indexes.
      *
      * @param TableSchema $table The table metadata
-     *
      * @return array Index and column names
      */
     protected function getIndexInformation(TableSchema $table): array
@@ -345,5 +336,18 @@ ORDER BY i.relname, k';
             ':schemaName' => $table->schemaName,
             ':tableName' => $table->name,
         ])->queryAll();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the PGPASSWORD command for backup/restore actions.
+     *
+     * @return string
+     */
+    private function _pgpasswordCommand(): string
+    {
+        return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
     }
 }

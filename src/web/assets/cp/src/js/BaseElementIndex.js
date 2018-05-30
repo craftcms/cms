@@ -235,7 +235,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.$search.focus();
+                    this.$search.trigger('focus');
                 }
 
                 this.stopSearching();
@@ -246,7 +246,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Auto-focus the Search box
             if (!Garnish.isMobileBrowser(true)) {
-                this.$search.focus();
+                this.$search.trigger('focus');
             }
 
             // Initialize the sort menu
@@ -576,6 +576,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
+            // Kill the old view class
+            if (this.view) {
+                this.view.destroy();
+                delete this.view;
+            }
+
+            this.$elements.html('');
+
             var params = this.getViewParams();
 
             Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
@@ -756,9 +764,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection('asc');
+                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
 
-                if (attr === 'score' || attr === 'structure') {
+                if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
                 }
                 else {
@@ -1106,17 +1114,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return $(this.settings.buttonContainer);
             }
             else {
-                // Add it to the page header
-                var $extraHeadersContainer = $('#extra-headers');
-
-                if (!$extraHeadersContainer.length) {
-                    $extraHeadersContainer = $('<div id="extra-headers"/>').appendTo($('#header'));
-                }
-
-                var $container = $extraHeadersContainer.find('> .buttons:first');
+                var $container = $('#button-container');
 
                 if (!$container.length) {
-                    $container = $('<div class="buttons right"/>').appendTo($extraHeadersContainer);
+                    $container = $('<div id="button-container"/>').appendTo(Craft.cp.$header);
                 }
 
                 return $container;
@@ -1425,12 +1426,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Cleanup
             // -------------------------------------------------------------
 
-            // Kill the old view class
-            if (this.view) {
-                this.view.destroy();
-                delete this.view;
-            }
-
             // Get rid of the old action triggers regardless of whether the new batch has actions or not
             if (this.actions) {
                 this.hideActionTriggers();
@@ -1497,7 +1492,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$elements.html(response.html);
             Craft.appendHeadHtml(response.headHtml);
             Craft.appendFootHtml(response.footHtml);
-            picturefill();
 
             // Create the view
             // -------------------------------------------------------------

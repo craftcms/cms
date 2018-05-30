@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\validators;
@@ -14,10 +14,18 @@ use yii\validators\UrlValidator as YiiUrlValidator;
  * Class UrlValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UrlValidator extends YiiUrlValidator
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool Whether the value can begin with an alias
+     */
+    public $allowAlias = false;
+
     // Public Methods
     // =========================================================================
 
@@ -32,7 +40,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Enable support for validating international domain names if the intl extension is available.
-        if (!isset($config['enableIDN']) && Craft::$app->getI18n()->getIsIntlLoaded()) {
+        if (!isset($config['enableIDN']) && Craft::$app->getI18n()->getIsIntlLoaded() && defined('INTL_IDNA_VARIANT_UTS46')) {
             $config['enableIDN'] = true;
         }
 
@@ -44,6 +52,13 @@ class UrlValidator extends YiiUrlValidator
      */
     public function validateValue($value)
     {
+        if ($this->allowAlias && strncmp($value, '@', 1) === 0) {
+            $value = Craft::getAlias($value);
+
+            // Prevent validateAttribute() from prepending a default scheme if the alias is missing one
+            $this->defaultScheme = null;
+        }
+
         // Add support for protocol-relative URLs
         if ($this->defaultScheme !== null && strpos($value, '/') === 0) {
             $this->defaultScheme = null;

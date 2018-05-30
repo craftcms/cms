@@ -1,19 +1,20 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
 
 use Craft;
+use yii\base\InvalidConfigException;
 
 /**
  * Class EntryDraft model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryDraft extends BaseEntryRevisionModel
 {
@@ -51,6 +52,15 @@ class EntryDraft extends BaseEntryRevisionModel
         }
 
         parent::__construct($config);
+
+        try {
+            $this->getType();
+        } catch (InvalidConfigException $e) {
+            // We must be missing our typeId or it's invalid.
+            $entryTypes = $this->getSection()->getEntryTypes();
+            $entryType = reset($entryTypes);
+            $this->typeId = $entryType->id;
+        }
 
         // Use the live content as a starting point
         Craft::$app->getContent()->populateElementContent($this);

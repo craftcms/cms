@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console;
@@ -13,12 +13,11 @@ use yii\base\InvalidValueException;
 use yii\web\IdentityInterface;
 
 /**
- * The User service provides APIs for managing the user authentication status.
- *
- * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
+ * The User component provides APIs for managing the user authentication status.
+ * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|`Craft::$app->user`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class User extends Component
 {
@@ -49,7 +48,6 @@ class User extends Component
      * Returns whether the current user has a given permission.
      *
      * @param string $permissionName The name of the permission.
-     *
      * @return bool Whether the current user has the permission.
      */
     public function checkPermission(string $permissionName): bool
@@ -72,9 +70,8 @@ class User extends Component
     /**
      * Sets the user identity object.
      *
-     * @param IdentityInterface|null $identity The identity object. If null, it means the current user will be
-     *                                         a guest without any associated identity.
-     *
+     * @param IdentityInterface|null $identity The identity object. If null, it
+     * means the current user will be a guest without any associated identity.
      * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
     public function setIdentity(IdentityInterface $identity = null)

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -17,7 +17,7 @@ use yii\db\Schema;
  * Lightswitch represents a Lightswitch field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Lightswitch extends Field implements PreviewableFieldInterface
 {
@@ -101,11 +101,10 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     public function normalizeValue($value, ElementInterface $element = null)
     {
         // If this is a new entry, look for a default option
-        if ($value === null && $this->isFresh($element)) {
+        if ($value === null) {
             $value = $this->default;
         }
 
-        // It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
-        return $value == false ? '0' : $value;
+        return (bool)$value;
     }
 }

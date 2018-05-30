@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodevisitors;
@@ -11,7 +11,7 @@ namespace craft\web\twig\nodevisitors;
  * EventTagFinder adds “head”, “beginBody”, and “endBody” events to the template as it’s being compiled.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseEventTagVisitor implements \Twig_NodeVisitorInterface
 {

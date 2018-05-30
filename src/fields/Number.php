@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -19,7 +19,7 @@ use craft\i18n\Locale;
  * Number represents a Number field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Number extends Field implements PreviewableFieldInterface
 {
@@ -36,6 +36,11 @@ class Number extends Field implements PreviewableFieldInterface
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var int|float|null The default value for new elements
+     */
+    public $defaultValue;
 
     /**
      * @var int|float The minimum allowed number
@@ -67,18 +72,28 @@ class Number extends Field implements PreviewableFieldInterface
     {
         parent::init();
 
+        // Normalize $defaultValue
+        if ($this->defaultValue === '') {
+            $this->defaultValue = null;
+        }
+
         // Normalize $max
-        if ($this->max !== null && empty($this->max)) {
+        if ($this->max === '') {
             $this->max = null;
         }
 
         // Normalize $min
-        if ($this->min !== null && empty($this->min)) {
+        if ($this->min === '') {
             $this->min = null;
         }
 
+        // Normalize $decimals
+        if (!$this->decimals) {
+            $this->decimals = 0;
+        }
+
         // Normalize $size
-        if ($this->size !== null && empty($this->size)) {
+        if ($this->size !== null && !$this->size) {
             $this->size = null;
         }
     }
@@ -134,7 +149,7 @@ class Number extends Field implements PreviewableFieldInterface
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value;
+        return $value === '' ? null : $value;
     }
 
     /**
@@ -142,12 +157,14 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $decimals = $this->decimals;
+        if ($this->isFresh($element) && $this->defaultValue !== null) {
+            $value = $this->defaultValue;
+        }
 
         // If decimals is 0 (or null, empty for whatever reason), don't run this
-        if ($decimals) {
+        if ($value !== null && $this->decimals) {
             $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $value = number_format($value, $decimals, $decimalSeparator, '');
+            $value = number_format($value, $this->decimals, $decimalSeparator, '');
         }
 
         return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">'.

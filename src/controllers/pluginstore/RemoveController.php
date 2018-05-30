@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers\pluginstore;
@@ -14,7 +14,7 @@ use craft\controllers\BaseUpdaterController;
  * RemoveController handles the plugin removal workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class RemoveController extends BaseUpdaterController
 {
@@ -75,7 +75,7 @@ class RemoveController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function postComposerOptimizeState(): array
+    protected function postComposerInstallState(): array
     {
         return $this->actionState(self::ACTION_FINISH, [
             'status' => Craft::t('app', 'The plugin was removed successfully.'),

@@ -1,21 +1,18 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
-
-use Craft;
-use yii\log\FileTarget;
 
 /**
  * Manages application db-queue.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
- * @since  3.0
+ * @since 3.0
  */
 class Command extends \yii\queue\cli\Command
 {
@@ -32,11 +29,18 @@ class Command extends \yii\queue\cli\Command
      */
     public $defaultAction = 'info';
 
+    /**
+     * @inheritdoc
+     */
+    public $verboseConfig = [
+        'class' => VerboseBehavior::class,
+    ];
+
     // Protected Methods
     // =========================================================================
 
     /**
-     * @inheritdoc
+     *
      */
     protected function isWorkerAction($actionID)
     {
@@ -47,7 +51,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     * @inheritdoc
+     *
      */
     public function beforeAction($action)
     {
@@ -55,19 +59,11 @@ class Command extends \yii\queue\cli\Command
             return false;
         }
 
-        // Set the log target to queue.log
-        $logDispatcher = Craft::$app->getLog();
-        if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
-            /** @var FileTarget $logTarget */
-            $logTarget = $logDispatcher->targets[0];
-            $logTarget->logFile = Craft::getAlias('@storage/logs/queue.log');
-        }
-
         return true;
     }
 
     /**
-     * @inheritdoc
+     *
      */
     public function actions()
     {
@@ -78,6 +74,7 @@ class Command extends \yii\queue\cli\Command
 
     /**
      * Runs all jobs from db-queue.
+     *
      * It can be used as cron job.
      */
     public function actionRun()
@@ -87,6 +84,7 @@ class Command extends \yii\queue\cli\Command
 
     /**
      * Listens db-queue and runs new jobs.
+     *
      * It can be used as demon process.
      *
      * @param integer $delay Number of seconds for waiting new job.

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -10,13 +10,13 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\models\SystemMessage;
 
-Craft::$app->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Email functions.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class EmailMessages
@@ -39,9 +39,8 @@ class EmailMessages
     /**
      * Returns a system email message by its key.
      *
-     * @param string      $key
+     * @param string $key
      * @param string|null $language
-     *
      * @return SystemMessage|null
      */
     public function getMessage(string $key, string $language = null)

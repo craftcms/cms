@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -16,11 +16,10 @@ use craft\web\Controller;
 /**
  * BaseEntriesController is a base class that any entry-related controllers, such as [[EntriesController]] and
  * [[EntryRevisionsController]], extend to share common functionality.
- *
  * It extends [[Controller]], overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseEntriesController extends Controller
 {
@@ -31,9 +30,7 @@ abstract class BaseEntriesController extends Controller
      * Enforces all Edit Entry permissions.
      *
      * @param Entry $entry
-     * @param bool  $duplicate
-     *
-     * @return void
+     * @param bool $duplicate
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
@@ -68,7 +65,7 @@ abstract class BaseEntriesController extends Controller
                 case EntryDraft::class:
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
-                    if ($entry->creatorId != $userSessionService->getIdentity()->id) {
+                    if (!$entry->creatorId || $entry->creatorId != $userSessionService->getIdentity()->id) {
                         $this->requirePermission('editPeerEntryDrafts'.$permissionSuffix);
                     }
 

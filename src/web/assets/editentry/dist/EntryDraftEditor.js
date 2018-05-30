@@ -70,7 +70,7 @@
                 }
 
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.$nameInput.focus();
+                    this.$nameInput.trigger('focus');
                 }
             },
 

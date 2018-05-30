@@ -20,6 +20,7 @@ Craft.CP = Garnish.Base.extend(
         $selectedTab: null,
         $sidebar: null,
         $contentContainer: null,
+        $edition: null,
 
         $collapsibleTables: null,
 
@@ -31,9 +32,6 @@ Craft.CP = Garnish.Base.extend(
         displayedJobInfoUnchanged: 1,
         trackJobProgressTimeout: null,
         jobProgressIcon: null,
-
-        $edition: null,
-        upgradeModal: null,
 
         checkingForUpdates: false,
         forcingRefreshOnUpdatesCheck: false,
@@ -58,7 +56,6 @@ Craft.CP = Garnish.Base.extend(
             this.$details = $('#details');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
-
             this.$collapsibleTables = $('table.collapsible');
             this.$edition = $('#edition');
 
@@ -113,13 +110,23 @@ Craft.CP = Garnish.Base.extend(
             this.initTabs();
 
             if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', 'showUpgradeModal');
+                this.addListener(this.$edition, 'click', function() {
+                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+                });
             }
 
             if ($.isTouchCapable()) {
                 this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
                 this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
             }
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('target', '_blank')
+                }
+            });
         },
 
         initConfirmUnloadForms: function() {
@@ -183,13 +190,13 @@ Craft.CP = Garnish.Base.extend(
                 $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
             }
 
-            this.$primaryForm.submit();
+            this.$primaryForm.trigger('submit');
         },
 
         updateSidebarMenuLabel: function() {
             var $item = this.$sidebar.find('a.sel:first');
             var $label = $item.children('.label');
-            $('#sidebar-toggle').text($label.length ? $label.text() : $item.text());
+            $('#selected-sidebar-item-label').text($label.length ? $label.text() : $item.text());
             Garnish.$bod.removeClass('showing-sidebar');
         },
 
@@ -425,30 +432,6 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initAlerts: function() {
-            // Is there a domain mismatch?
-            var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-            if ($transferDomainLink.length) {
-                this.addListener($transferDomainLink, 'click', $.proxy(function(ev) {
-                    ev.preventDefault();
-
-                    if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?'))) {
-                        Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                if (response.success) {
-                                    $transferDomainLink.parent().remove();
-                                    this.displayNotice(Craft.t('app', 'License transferred.'));
-                                }
-                                else {
-                                    this.displayError(response.error);
-                                }
-                            }
-
-                        }, this));
-                    }
-                }, this));
-            }
-
             // Are there any shunnable alerts?
             var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
@@ -475,13 +458,6 @@ Craft.CP = Garnish.Base.extend(
                     }, this));
 
                 }, this));
-            }
-
-            // Is there an edition resolution link?
-            var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
-
-            if ($editionResolutionLink.length) {
-                this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
             }
         },
 
@@ -688,15 +664,6 @@ Craft.CP = Garnish.Base.extend(
                     delete this.jobProgressIcon;
                 }
             }
-        },
-
-        showUpgradeModal: function() {
-            if (!this.upgradeModal) {
-                this.upgradeModal = new Craft.UpgradeModal();
-            }
-            else {
-                this.upgradeModal.show();
-            }
         }
     },
     {
@@ -750,7 +717,7 @@ var JobProgressIcon = Garnish.Base.extend(
         _progressBar: null,
 
         init: function() {
-            this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+            this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
             this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
             this.$label = $('<span class="label"></span>').appendTo(this.$a);

@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\elements\Asset;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
@@ -21,7 +22,7 @@ use craft\models\SiteGroup;
  * Installation Migration
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Install extends Migration
 {
@@ -78,6 +79,11 @@ class Install extends Migration
         Craft::$app->getElements()->saveElement($user);
         echo " done\n";
 
+        // Set their preferred language
+        Craft::$app->getUsers()->saveUserPreferences($user, [
+            'language' => $this->site->language,
+        ]);
+
         // Log them in
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
             Craft::$app->getUser()->login($user);
@@ -101,15 +107,10 @@ class Install extends Migration
         return false;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Creates the tables.
-     *
-     * @return void
      */
-    protected function createTables()
+    public function createTables()
     {
         $this->createTable('{{%assetindexdata}}', [
             'id' => $this->primaryKey(),
@@ -130,7 +131,7 @@ class Install extends Migration
             'volumeId' => $this->integer(),
             'folderId' => $this->integer()->notNull(),
             'filename' => $this->string()->notNull(),
-            'kind' => $this->string(50)->notNull()->defaultValue('unknown'),
+            'kind' => $this->string(50)->notNull()->defaultValue(Asset::KIND_UNKNOWN),
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
@@ -139,7 +140,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%assettransformindex}}', [
             'id' => $this->primaryKey(),
@@ -177,7 +178,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%categorygroups}}', [
             'id' => $this->primaryKey(),
@@ -260,6 +261,11 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable('{{%resourcepaths}}', [
+            'hash' => $this->string()->notNull(),
+            'path' => $this->string()->notNull(),
+            'PRIMARY KEY([[hash]])',
+        ]);
         $this->createTable('{{%systemmessages}}', [
             'id' => $this->primaryKey(),
             'language' => $this->string()->notNull(),
@@ -280,7 +286,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%entrydrafts}}', [
             'id' => $this->primaryKey(),
@@ -384,7 +390,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
-            'edition' => $this->smallInteger()->unsigned()->notNull(),
+            'edition' => $this->tinyInteger()->unsigned()->notNull(),
             'timezone' => $this->string(30),
             'name' => $this->string()->notNull(),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
@@ -404,7 +410,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%matrixblocktypes}}', [
             'id' => $this->primaryKey(),
@@ -433,7 +439,7 @@ class Install extends Migration
             'version' => $this->string()->notNull(),
             'schemaVersion' => $this->string()->notNull(),
             'licenseKey' => $this->char(24),
-            'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
+            'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'astray', 'unknown'])->notNull()->defaultValue('unknown'),
             'enabled' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),
@@ -486,6 +492,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', ['single', 'channel', 'structure'])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
+            'propagateEntries' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -494,10 +501,10 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
-            'enabledByDefault' => $this->boolean()->defaultValue(true)->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'uriFormat' => $this->text(),
             'template' => $this->string(500),
+            'enabledByDefault' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -582,7 +589,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%templatecacheelements}}', [
             'cacheId' => $this->integer()->notNull(),
@@ -606,8 +613,8 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'token' => $this->char(32)->notNull(),
             'route' => $this->text(),
-            'usageLimit' => $this->smallInteger()->unsigned(),
-            'usageCount' => $this->smallInteger()->unsigned(),
+            'usageLimit' => $this->tinyInteger()->unsigned(),
+            'usageCount' => $this->tinyInteger()->unsigned(),
             'expiryDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -665,17 +672,16 @@ class Install extends Migration
             'email' => $this->string()->notNull(),
             'password' => $this->string(),
             'admin' => $this->boolean()->defaultValue(false)->notNull(),
-            'client' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
             'pending' => $this->boolean()->defaultValue(false)->notNull(),
-            'archived' => $this->boolean()->defaultValue(false)->notNull(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
-            'invalidLoginCount' => $this->smallInteger()->unsigned(),
+            'invalidLoginCount' => $this->tinyInteger()->unsigned(),
             'lastInvalidLoginDate' => $this->dateTime(),
             'lockoutDate' => $this->dateTime(),
+            'hasDashboard' => $this->boolean()->notNull()->defaultValue(false),
             'verificationCode' => $this->string(),
             'verificationCodeIssuedDate' => $this->dateTime(),
             'unverifiedEmail' => $this->string(),
@@ -684,7 +690,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
-            'PRIMARY KEY(id)',
+            'PRIMARY KEY([[id]])',
         ]);
         $this->createTable('{{%volumefolders}}', [
             'id' => $this->primaryKey(),
@@ -726,10 +732,8 @@ class Install extends Migration
 
     /**
      * Creates the indexes.
-     *
-     * @return void
      */
-    protected function createIndexes()
+    public function createIndexes()
     {
         $this->createIndex(null, '{{%assetindexdata}}', ['sessionId', 'volumeId']);
         $this->createIndex(null, '{{%assetindexdata}}', ['volumeId'], false);
@@ -907,10 +911,8 @@ class Install extends Migration
 
     /**
      * Adds the foreign keys.
-     *
-     * @return void
      */
-    protected function addForeignKeys()
+    public function addForeignKeys()
     {
         $this->addForeignKey(null, '{{%assetindexdata}}', ['volumeId'], '{{%volumes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%assets}}', ['folderId'], '{{%volumefolders}}', ['id'], 'CASCADE', null);
@@ -994,20 +996,18 @@ class Install extends Migration
 
     /**
      * Populates the DB with the default data.
-     *
-     * @return void
      */
-    protected function insertDefaultData()
+    public function insertDefaultData()
     {
         // Populate the info table
         echo '    > populate the info table ...';
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
-            'edition' => '0',
+            'edition' => 0,
             'name' => $this->site->name,
-            'on' => '1',
-            'maintenance' => '0',
+            'on' => true,
+            'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo " done\n";

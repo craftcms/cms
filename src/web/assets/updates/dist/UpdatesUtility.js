@@ -6,6 +6,7 @@
             $body: null,
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
+            allowUpdates: null,
             showUpdateAllBtn: true,
             updates: null,
 
@@ -37,6 +38,8 @@
                         $status.text(error);
                     }
                     else {
+                        this.allowUpdates = response.allowUpdates;
+
                         // Craft CMS update?
                         if (response.updates.cms) {
                             this.processUpdate(response.updates.cms, false);
@@ -65,7 +68,7 @@
 
                             $('#page-title').find('h1').text(headingText);
 
-                            if (this.showUpdateAllBtn && this.updates.length > 1) {
+                            if (this.allowUpdates && this.showUpdateAllBtn && this.updates.length > 1) {
                                 this.createUpdateForm(Craft.t('app', 'Update all'), this.updates)
                                     .insertAfter($('#header').children('h1'));
                             }
@@ -109,7 +112,7 @@
                     $form.append($('<input/>', {
                         type: 'hidden',
                         name: 'install['+updates[i].updateInfo.handle+']',
-                        value: updates[i].updateInfo.latestAllowedVersion
+                        value: updates[i].updateInfo.latestVersion
                     }));
                 }
 
@@ -128,7 +131,6 @@
         {
             updateInfo: null,
             isPlugin: null,
-            latestVersion: null,
 
             $container: null,
             $header: null,
@@ -154,15 +156,10 @@
                 if (this.updateInfo.status !== 'eligible') {
                     $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p>').insertBefore(this.$releaseContainer);
 
-                    if (this.updateInfo.status === 'expired' || this.updateInfo.latestAllowedVersion === null) {
+                    if (this.updateInfo.status === 'expired' || this.updateInfo.latestVersion === null) {
                         this.updatesPage.showUpdateAllBtn = false;
                     }
                 }
-            },
-
-            canUpdateToLatest: function()
-            {
-                return this.updateInfo.releases.length && this.updateInfo.latestAllowedVersion === this.updateInfo.releases[0].version;
             },
 
             createPane: function() {
@@ -179,7 +176,7 @@
             },
 
             createCta: function() {
-                if (this.latestAllowedVersion === null) {
+                if (!this.updatesPage.allowUpdates || !this.updateInfo.latestVersion) {
                     return;
                 }
 
@@ -198,10 +195,6 @@
 
             initReleases: function() {
                 for (var i = 0; i < this.updateInfo.releases.length; i++) {
-                    if (this.latestAllowedVersion === null && this.updateInfo.releases[i].allowed) {
-                        this.latestAllowedVersion = this.updateInfo.releases[i].version;
-                    }
-
                     new Release(this, this.updateInfo.releases[i]);
                 }
             }

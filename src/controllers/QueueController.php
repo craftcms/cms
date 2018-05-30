@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
-use yii\log\FileTarget;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -21,7 +20,7 @@ use yii\web\ServerErrorHttpException;
  * The QueueController class is a controller that handles various queue-related operations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class QueueController extends Controller
 {
@@ -49,14 +48,6 @@ class QueueController extends Controller
         // Make sure the queue uses our interface
         if (!Craft::$app->getQueue() instanceof QueueInterface) {
             throw new ServerErrorHttpException('The queue class '.get_class(Craft::$app->getQueue()).' doesn’t support web-based runners.');
-        }
-
-        // Set the log target to queue.log
-        $logDispatcher = Craft::$app->getLog();
-        if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
-            /** @var FileTarget $logTarget */
-            $logTarget = $logDispatcher->targets[0];
-            $logTarget->logFile = Craft::getAlias('@storage/logs/queue.log');
         }
 
         return true;

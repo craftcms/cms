@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -22,7 +22,7 @@ use yii\db\Schema;
  * BaseOptionsField is the base class for classes representing an options field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
@@ -162,31 +162,25 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = $this->defaultValue();
         }
 
+        // Normalize to an array
+        $selectedValues = (array)$value;
+
         if ($this->multi) {
-            // In case the field used to be a single-option field
-            $value = (array)$value;
-
-            // Convert all the values to OptionData objects
-            foreach ($value as &$val) {
+            // Convert the value to a MultiOptionsFieldData object
+            $options = [];
+            foreach ($selectedValues as $val) {
                 $label = $this->optionLabel($val);
-                $val = new OptionData($label, $val, true);
+                $options[] = new OptionData($label, $val, true);
             }
-            unset($val);
-
-            $value = new MultiOptionsFieldData($value);
+            $value = new MultiOptionsFieldData($options);
         } else {
-            // In case the field used to be a multi-option field
-            if (is_array($value)) {
-                $value = reset($value) ?: null;
-            }
-
             // Convert the value to a SingleOptionFieldData object
+            $value = reset($selectedValues) ?: null;
             $label = $this->optionLabel($value);
             $value = new SingleOptionFieldData($label, $value, true);
         }
 
         $options = [];
-        $selectedValues = (array)$value;
 
         if ($this->options) {
             foreach ($this->options as $option) {
@@ -222,7 +216,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function isEmpty($value): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
         if ($value instanceof SingleOptionFieldData) {
@@ -249,7 +243,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return (string)$value->value;
+        return (string)$value->label;
+    }
+
+    /**
+     * Returns whether the field type supports storing multiple selected options.
+     *
+     * @return bool
+     * @see multi
+     */
+    public function getIsMultiOptionsField(): bool
+    {
+        return $this->multi;
     }
 
     // Protected Methods
@@ -287,7 +292,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Returns an option's label by its value.
      *
      * @param string|null $value
-     *
      * @return string|null
      */
     protected function optionLabel(string $value = null)

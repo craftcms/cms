@@ -1,9 +1,9 @@
 <?php
 /**
- * The base class for all asset Volumes.  All Volume types must extend this class.
+ * The base class for all asset Volumes. All Volume types must extend this class.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 
 namespace craft\base;
@@ -35,12 +35,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Asset::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Asset::class,
         ];
+        return $behaviors;
     }
 
     /**

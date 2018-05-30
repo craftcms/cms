@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\db;
@@ -19,13 +19,11 @@ use yii\db\Connection;
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
  * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
- *
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, Connection $db = null)
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UserQuery extends ElementQuery
 {
@@ -39,11 +37,6 @@ class UserQuery extends ElementQuery
      * @var bool Whether to only return users that are admins.
      */
     public $admin = false;
-
-    /**
-     * @var bool Whether to only return the client user.
-     */
-    public $client = false;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
@@ -117,27 +110,11 @@ class UserQuery extends ElementQuery
      * Sets the [[admin]] property.
      *
      * @param bool $value The property value (defaults to true)
-     *
      * @return static self reference
      */
     public function admin(bool $value = true)
     {
         $this->admin = $value;
-
-        return $this;
-    }
-
-    /**
-     * Sets the [[client]] property.
-     *
-     * @param bool $value The property value (defaults to true)
-     *
-     * @return static self reference
-     */
-    public function client(bool $value = true)
-    {
-        $this->client = $value;
-
         return $this;
     }
 
@@ -145,13 +122,11 @@ class UserQuery extends ElementQuery
      * Sets the [[can]] property.
      *
      * @param string|int|null $value The property value
-     *
      * @return static self reference
      */
     public function can($value)
     {
         $this->can = $value;
-
         return $this;
     }
 
@@ -159,7 +134,6 @@ class UserQuery extends ElementQuery
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|UserGroup|null $value The property value
-     *
      * @return static self reference
      */
     public function group($value)
@@ -183,13 +157,11 @@ class UserQuery extends ElementQuery
      * Sets the [[groupId]] property.
      *
      * @param int|int[]|null $value The property value
-     *
      * @return static self reference
      */
     public function groupId($value)
     {
         $this->groupId = $value;
-
         return $this;
     }
 
@@ -197,13 +169,11 @@ class UserQuery extends ElementQuery
      * Sets the [[email]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function email($value)
     {
         $this->email = $value;
-
         return $this;
     }
 
@@ -211,13 +181,11 @@ class UserQuery extends ElementQuery
      * Sets the [[username]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function username($value)
     {
         $this->username = $value;
-
         return $this;
     }
 
@@ -225,13 +193,11 @@ class UserQuery extends ElementQuery
      * Sets the [[firstName]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function firstName($value)
     {
         $this->firstName = $value;
-
         return $this;
     }
 
@@ -239,13 +205,11 @@ class UserQuery extends ElementQuery
      * Sets the [[lastName]] property.
      *
      * @param string|string[]|null $value The property value
-     *
      * @return static self reference
      */
     public function lastName($value)
     {
         $this->lastName = $value;
-
         return $this;
     }
 
@@ -253,13 +217,11 @@ class UserQuery extends ElementQuery
      * Sets the [[lastLoginDate]] property.
      *
      * @param mixed $value The property value
-     *
      * @return static self reference
      */
     public function lastLoginDate($value)
     {
         $this->lastLoginDate = $value;
-
         return $this;
     }
 
@@ -286,24 +248,26 @@ class UserQuery extends ElementQuery
             'users.lastName',
             'users.email',
             'users.admin',
-            'users.client',
             'users.locked',
             'users.pending',
             'users.suspended',
-            'users.archived',
             'users.lastLoginDate',
             'users.lockoutDate',
+            // TODO: uncomment after next breakpoint
+            //'users.hasDashboard',
         ]);
 
         // TODO: remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '>=')) {
+        $version = Craft::$app->getInfo()->version;
+        if (version_compare($version, '3.0.0-alpha.2910', '>=')) {
             $this->query->addSelect(['users.photoId']);
+        }
+        if (version_compare($version, '3.0.4', '>=')) {
+            $this->query->addSelect(['users.hasDashboard']);
         }
 
         if ($this->admin) {
-            $this->subQuery->andWhere(['users.admin' => '1']);
-        } else if ($this->client) {
-            $this->subQuery->andWhere(['users.client' => '1']);
+            $this->subQuery->andWhere(['users.admin' => true]);
         } else {
             $this->_applyCanParam();
         }
@@ -353,26 +317,21 @@ class UserQuery extends ElementQuery
         switch ($status) {
             case User::STATUS_ACTIVE:
                 return [
-                    'users.archived' => '0',
-                    'users.suspended' => '0',
-                    'users.locked' => '0',
-                    'users.pending' => '0'
+                    'users.suspended' => false,
+                    'users.locked' => false,
+                    'users.pending' => false
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.pending' => '1'
+                    'users.pending' => true
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.locked' => '1'
+                    'users.locked' => true
                 ];
             case User::STATUS_SUSPENDED:
                 return [
-                    'users.suspended' => '1'
-                ];
-            case User::STATUS_ARCHIVED:
-                return [
-                    'users.archived' => '1'
+                    'users.suspended' => true
                 ];
             default:
                 return parent::statusCondition($status);
@@ -385,7 +344,6 @@ class UserQuery extends ElementQuery
     /**
      * Applies the 'can' param to the query being prepared.
      *
-     * @return void
      * @throws QueryAbortedException
      */
     private function _applyCanParam()
@@ -426,11 +384,11 @@ class UserQuery extends ElementQuery
         if (!empty($permittedUserIds)) {
             $condition = [
                 'or',
-                ['users.admin' => '1'],
+                ['users.admin' => true],
                 ['elements.id' => $permittedUserIds]
             ];
         } else {
-            $condition = ['users.admin' => '1'];
+            $condition = ['users.admin' => true];
         }
 
         $this->subQuery->andWhere($condition);

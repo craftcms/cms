@@ -437,7 +437,7 @@
 
                 // Focus on the first input
                 setTimeout($.proxy(function() {
-                    this.$settingsForm.find(':focusable:first').focus();
+                    this.$settingsForm.find(':focusable:first').trigger('focus');
                 }, this), 1);
             },
 

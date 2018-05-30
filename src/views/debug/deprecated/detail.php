@@ -34,12 +34,8 @@ $logs = $panel->data;
             <?php foreach ($logs as $log): ?>
                 <tr>
                     <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
-                    <td>
-                        <code><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')).($log->line ? ':'.$log->line : '') ?></code>
-                    </td>
-                    <td>
-                        <a href="<?= $panel->getUrl().'&trace='.$log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a>
-                    </td>
+                    <td><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')).($log->line ? ':'.$log->line : '') ?></td>
+                    <td><a href="<?= $panel->getUrl().'&trace='.$log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

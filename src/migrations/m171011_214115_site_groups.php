@@ -15,8 +15,11 @@ class m171011_214115_site_groups extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->dropTableIfExists('{{%sitegroups}}');
+
         // Make the schema changes
-        $this->addColumn('{{%sites}}', 'groupId', $this->integer());
+        $this->addColumn('{{%sites}}', 'groupId', $this->integer()->after('id'));
         $this->createTable('{{%sitegroups}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),

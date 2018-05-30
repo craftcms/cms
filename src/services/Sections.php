@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -28,12 +28,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Sections service.
- *
- * An instance of the Sections service is globally accessible in Craft via [[Application::sections `Craft::$app->getSections()`]].
+ * Sections service.
+ * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Sections extends Component
 {
@@ -117,6 +116,15 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
+     * ---
+     *
+     * ```php
+     * $sectionIds = Craft::$app->sections->allSectionIds;
+     * ```
+     * ```twig
+     * {% set sectionIds = craft.app.sections.allSectionIds %}
+     * ```
+     *
      * @return int[] All the sections’ IDs.
      */
     public function getAllSectionIds(): array
@@ -136,6 +144,15 @@ class Sections extends Component
 
     /**
      * Returns all of the section IDs that are editable by the current user.
+     *
+     * ---
+     *
+     * ```php
+     * $sectionIds = Craft::$app->sections->editableSectionIds;
+     * ```
+     * ```twig
+     * {% set sectionIds = craft.app.sections.editableSectionIds %}
+     * ```
      *
      * @return array All the editable sections’ IDs.
      */
@@ -158,6 +175,15 @@ class Sections extends Component
 
     /**
      * Returns all sections.
+     *
+     * ---
+     *
+     * ```php
+     * $sections = Craft::$app->sections->allSections;
+     * ```
+     * ```twig
+     * {% set sections = craft.app.sections.allSections %}
+     * ```
      *
      * @return Section[] All the sections.
      */
@@ -185,6 +211,15 @@ class Sections extends Component
     /**
      * Returns all editable sections.
      *
+     * ---
+     *
+     * ```php
+     * $sections = Craft::$app->sections->editableSections;
+     * ```
+     * ```twig
+     * {% set sections = craft.app.sections.editableSections %}
+     * ```
+     *
      * @return Section[] All the editable sections.
      */
     public function getEditableSections(): array
@@ -205,8 +240,18 @@ class Sections extends Component
     /**
      * Returns all sections of a given type.
      *
-     * @param string $type
+     * ---
      *
+     * ```php
+     * use craft\models\Section;
+     *
+     * $singles = Craft::$app->sections->getSectionsByType(Section::TYPE_SINGLE);
+     * ```
+     * ```twig
+     * {% set singles = craft.app.sections.getSectionsByType('single') %}
+     * ```
+     *
+     * @param string $type The section type (`single`, `channel`, or `structure`)
      * @return Section[] All the sections of the given type.
      */
     public function getSectionsByType(string $type): array
@@ -225,6 +270,15 @@ class Sections extends Component
     /**
      * Gets the total number of sections.
      *
+     * ---
+     *
+     * ```php
+     * $total = Craft::$app->sections->totalSections;
+     * ```
+     * ```twig
+     * {% set total = craft.app.sections.totalSections %}
+     * ```
+     *
      * @return int
      */
     public function getTotalSections(): int
@@ -234,6 +288,15 @@ class Sections extends Component
 
     /**
      * Gets the total number of sections that are editable by the current user.
+     *
+     * ---
+     *
+     * ```php
+     * $total = Craft::$app->sections->totalEditableSections;
+     * ```
+     * ```twig
+     * {% set total = craft.app.sections.totalEditableSections %}
+     * ```
      *
      * @return int
      */
@@ -245,8 +308,16 @@ class Sections extends Component
     /**
      * Returns a section by its ID.
      *
-     * @param int $sectionId
+     * ---
      *
+     * ```php
+     * $section = Craft::$app->sections->getSectionById(1);
+     * ```
+     * ```twig
+     * {% set section = craft.app.sections.getSectionById(1) %}
+     * ```
+     *
+     * @param int $sectionId
      * @return Section|null
      */
     public function getSectionById(int $sectionId)
@@ -275,8 +346,16 @@ class Sections extends Component
     /**
      * Gets a section by its handle.
      *
-     * @param string $sectionHandle
+     * ---
      *
+     * ```php
+     * $section = Craft::$app->sections->getSectionByHandle('news');
+     * ```
+     * ```twig
+     * {% set section = craft.app.sections.getSectionByHandle('news') %}
+     * ```
+     *
+     * @param string $sectionHandle
      * @return Section|null
      */
     public function getSectionByHandle(string $sectionHandle)
@@ -298,7 +377,6 @@ class Sections extends Component
      * Returns a section’s site-specific settings.
      *
      * @param int $sectionId
-     *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
     public function getSectionSiteSettings(int $sectionId): array
@@ -329,9 +407,32 @@ class Sections extends Component
     /**
      * Saves a section.
      *
-     * @param Section $section       The section to be saved
-     * @param bool    $runValidation Whether the section should be validated
+     * ---
      *
+     * ```php
+     * use craft\models\Section;
+     * use craft\models\Section_SiteSettings;
+     *
+     * $section = new Section([
+     *     'name' => 'News',
+     *     'handle' => 'news',
+     *     'type' => Section::TYPE_CHANNEL,
+     *     'siteSettings' => [
+     *         new Section_SiteSettings([
+     *             'siteId' => Craft::$app->sites->getPrimarySite()->id,
+     *             'enabledByDefault' => true,
+     *             'hasUrls' => true,
+     *             'uriFormat' => 'foo/{slug}',
+     *             'template' => 'foo/_entry',
+     *         ]),
+     *     ]
+     * ]);
+     *
+     * $success = Craft::$app->sections->saveSection($section);
+     * ```
+     *
+     * @param Section $section The section to be saved
+     * @param bool $runValidation Whether the section should be validated
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Throwable if reasons
@@ -370,17 +471,23 @@ class Sections extends Component
                 'handle',
                 'type',
                 'enableVersioning',
+                'propagateEntries',
             ]));
         } else {
             $sectionRecord = new SectionRecord();
         }
 
         // Main section settings
+        if ($section->type !== Section::TYPE_CHANNEL) {
+            $section->propagateEntries = true;
+        }
+
         /** @var SectionRecord $sectionRecord */
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
-        $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
+        $sectionRecord->enableVersioning = (bool)$section->enableVersioning;
+        $sectionRecord->propagateEntries = (bool)$section->propagateEntries;
 
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
@@ -458,9 +565,14 @@ class Sections extends Component
                 }
 
                 $siteSettingsRecord->enabledByDefault = $siteSettings->enabledByDefault;
-                $siteSettingsRecord->hasUrls = $siteSettings->hasUrls;
-                $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
-                $siteSettingsRecord->template = $siteSettings->template;
+
+                if ($siteSettingsRecord->hasUrls = $siteSettings->hasUrls) {
+                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
+                    $siteSettingsRecord->template = $siteSettings->template;
+                } else {
+                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat = null;
+                    $siteSettingsRecord->template = $siteSettings->template = null;
+                }
 
                 $siteSettingsRecord->save(false);
 
@@ -531,22 +643,47 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             if (!$isNewSection) {
-                // Get the most-primary site that this section was already enabled in
-                /** @noinspection PhpUndefinedVariableInspection */
-                $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
+                if ($section->propagateEntries) {
+                    // Find a site that the section was already enabled in, and still is
+                    $oldSiteIds = array_keys($allOldSiteSettingsRecords);
+                    $newSiteIds = array_keys($allSiteSettings);
+                    $persistentSiteIds = array_values(array_intersect($newSiteIds, $oldSiteIds));
 
-                if (!empty($siteIds)) {
+                    // Try to make that the primary site, if it's in the list
+                    $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+                    if (!in_array($siteId, $persistentSiteIds, false)) {
+                        $siteId = $persistentSiteIds[0];
+                    }
+
                     Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
+                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                            'section' => $section->name,
+                        ]),
                         'elementType' => Entry::class,
                         'criteria' => [
-                            'siteId' => $siteIds[0],
+                            'siteId' => $siteId,
                             'sectionId' => $section->id,
                             'status' => null,
                             'enabledForSite' => false,
-                            'limit' => null,
                         ]
                     ]));
+                } else {
+                    // Resave entries for each site
+                    foreach ($allSiteSettings as $siteId => $siteSettings) {
+                        Craft::$app->getQueue()->push(new ResaveElements([
+                            'description' => Craft::t('app', 'Resaving {section} entries ({site})', [
+                                'section' => $section->name,
+                                'site' => $siteSettings->getSite()->name,
+                            ]),
+                            'elementType' => Entry::class,
+                            'criteria' => [
+                                'siteId' => $siteId,
+                                'sectionId' => $section->id,
+                                'status' => null,
+                                'enabledForSite' => false,
+                            ]
+                        ]));
+                    }
                 }
             }
 
@@ -571,8 +708,13 @@ class Sections extends Component
     /**
      * Deletes a section by its ID.
      *
-     * @param int $sectionId
+     * ---
      *
+     * ```php
+     * $success = Craft::$app->sections->deleteSectionById(1);
+     * ```
+     *
+     * @param int $sectionId
      * @return bool Whether the section was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -590,8 +732,13 @@ class Sections extends Component
     /**
      * Deletes a section.
      *
-     * @param Section $section
+     * ---
      *
+     * ```php
+     * $success = Craft::$app->sections->deleteSection($section);
+     * ```
+     *
+     * @param Section $section
      * @return bool Whether the section was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -673,8 +820,7 @@ class Sections extends Component
      * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
      *
      * @param Section $section
-     * @param int     $siteId
-     *
+     * @param int $siteId
      * @return bool
      */
     public function isSectionTemplateValid(Section $section, int $siteId): bool
@@ -707,8 +853,13 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param int $sectionId
+     * ---
      *
+     * ```php
+     * $entryTypes = Craft::$app->sections->getEntryTypesBySectionId(1);
+     * ```
+     *
+     * @param int $sectionId
      * @return EntryType[]
      */
     public function getEntryTypesBySectionId(int $sectionId): array
@@ -728,8 +879,13 @@ class Sections extends Component
     /**
      * Returns an entry type by its ID.
      *
-     * @param int $entryTypeId
+     * ---
      *
+     * ```php
+     * $entryType = Craft::$app->sections->getEntryTypeById(1);
+     * ```
+     *
+     * @param int $entryTypeId
      * @return EntryType|null
      */
     public function getEntryTypeById(int $entryTypeId)
@@ -752,8 +908,13 @@ class Sections extends Component
     /**
      * Returns entry types that have a given handle.
      *
-     * @param string $entryTypeHandle
+     * ---
      *
+     * ```php
+     * $entryType = Craft::$app->sections->getEntryTypeByHandle('article');
+     * ```
+     *
+     * @param string $entryTypeHandle
      * @return EntryType[]
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
@@ -772,9 +933,8 @@ class Sections extends Component
     /**
      * Saves an entry type.
      *
-     * @param EntryType $entryType     The entry type to be saved
-     * @param bool      $runValidation Whether the entry type should be validated
-     *
+     * @param EntryType $entryType The entry type to be saved
+     * @param bool $runValidation Whether the entry type should be validated
      * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Throwable if reasons
@@ -859,19 +1019,42 @@ class Sections extends Component
         if (!$isNewEntryType) {
             // Re-save the entries of this type
             $section = $entryType->getSection();
-            $siteIds = array_keys($section->getSiteSettings());
+            $allSiteSettings = $section->getSiteSettings();
 
-            Craft::$app->getQueue()->push(new ResaveElements([
-                'description' => Craft::t('app', 'Resaving {type} entries', ['type' => $entryType->name]),
-                'elementType' => Entry::class,
-                'criteria' => [
-                    'siteId' => $siteIds[0],
-                    'sectionId' => $section->id,
-                    'typeId' => $entryType->id,
-                    'status' => null,
-                    'enabledForSite' => false,
-                ]
-            ]));
+            if ($section->propagateEntries) {
+                $siteIds = array_keys($allSiteSettings);
+
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'description' => Craft::t('app', 'Resaving {type} entries', [
+                        'type' => $entryType->name,
+                    ]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'siteId' => $siteIds[0],
+                        'sectionId' => $section->id,
+                        'typeId' => $entryType->id,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ]
+                ]));
+            } else {
+                foreach ($allSiteSettings as $siteId => $siteSettings) {
+                    Craft::$app->getQueue()->push(new ResaveElements([
+                        'description' => Craft::t('app', 'Resaving {type} entries ({site})', [
+                            'type' => $entryType->name,
+                            'site' => $siteSettings->getSite()->name,
+                        ]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'siteId' => $siteId,
+                            'sectionId' => $section->id,
+                            'typeId' => $entryType->id,
+                            'status' => null,
+                            'enabledForSite' => false,
+                        ]
+                    ]));
+                }
+            }
         }
 
         return true;
@@ -881,7 +1064,6 @@ class Sections extends Component
      * Reorders entry types.
      *
      * @param array $entryTypeIds
-     *
      * @return bool Whether the entry types were reordered successfully
      * @throws \Throwable if reasons
      */
@@ -909,8 +1091,13 @@ class Sections extends Component
     /**
      * Deletes an entry type by its ID.
      *
-     * @param int $entryTypeId
+     * ---
      *
+     * ```php
+     * $success = Craft::$app->sections->deleteEntryTypeById(1);
+     * ```
+     *
+     * @param int $entryTypeId
      * @return bool Whether the entry type was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -928,8 +1115,13 @@ class Sections extends Component
     /**
      * Deletes an entry type.
      *
-     * @param EntryType $entryType
+     * ---
      *
+     * ```php
+     * $success = Craft::$app->sections->deleteEntry($entryType);
+     * ```
+     *
+     * @param EntryType $entryType
      * @return bool Whether the entry type was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -1006,6 +1198,7 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
+                'sections.propagateEntries',
                 'structures.maxLevels',
             ])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
@@ -1016,11 +1209,9 @@ class Sections extends Component
     /**
      * Performs some Single-specific tasks when a section is saved.
      *
-     * @param Section                $section
-     * @param bool                   $isNewSection
+     * @param Section $section
+     * @param bool $isNewSection
      * @param Section_SiteSettings[] $allSiteSettings
-     *
-     * @return void
      * @see saveSection()
      * @throws Exception if reasons
      */
@@ -1035,9 +1226,10 @@ class Sections extends Component
                     'e.id',
                     'typeId',
                     'siteId' => (new Query())
-                        ->select('i18n.siteId')
-                        ->from('{{%elements_sites}} i18n')
-                        ->where('[[i18n.elementId]] = [[e.id]]')
+                        ->select('es.siteId')
+                        ->from('{{%elements_sites}} es')
+                        ->where('[[es.elementId]] = [[e.id]]')
+                        ->andWhere(['in', 'es.siteId', ArrayHelper::getColumn($allSiteSettings, 'siteId')])
                         ->limit(1)
                 ])
                 ->from(['{{%entries}} e'])
@@ -1086,11 +1278,10 @@ class Sections extends Component
             $entry->siteId = $firstSiteSettings->siteId;
             $entry->sectionId = $section->id;
             $entry->typeId = $firstEntryType->id;
-            $entry->fieldLayoutId = $firstEntryType->fieldLayoutId;
+            $entry->title = $section->name;
         }
 
         // (Re)save it with an updated title, slug, and URI format.
-        $entry->title = $section->name;
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getElements()->saveElement($entry)) {
             throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI');
@@ -1114,11 +1305,12 @@ class Sections extends Component
             }
         }
 
-        // Update the remaining entry type's name, if this isn't a new section
+        // Update the remaining entry type's name and handle, if this isn't a new section
         // ---------------------------------------------------------------------
 
         if (!$isNewSection) {
             $entryTypes[$entry->typeId]->name = $section->name;
+            $entryTypes[$entry->typeId]->handle = $section->handle;
             $this->saveEntryType($entryTypes[$entry->typeId]);
         }
     }
@@ -1126,12 +1318,10 @@ class Sections extends Component
     /**
      * Performs some Structure-specific tasks when a section is saved.
      *
-     * @param Section                      $section
-     * @param bool                         $isNewSection
-     * @param bool                         $isNewStructure
+     * @param Section $section
+     * @param bool $isNewSection
+     * @param bool $isNewStructure
      * @param Section_SiteSettingsRecord[] $allOldSiteSettingsRecords
-     *
-     * @return void
      * @see saveSection()
      * @throws Exception if reasons
      */

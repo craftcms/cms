@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -14,7 +14,7 @@ use craft\helpers\DateTimeHelper;
  * Model base class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class Model extends \yii\base\Model
 {
@@ -79,6 +79,25 @@ abstract class Model extends \yii\base\Model
         return $fields;
     }
 
+    /**
+     * Adds errors from another model, with a given attribute name prefix.
+     *
+     * @param \yii\base\Model $model The other model
+     * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
+     */
+    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
+    {
+        if ($attrPrefix !== '') {
+            $attrPrefix = rtrim($attrPrefix, '.').'.';
+        }
+
+        foreach ($model->getErrors() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $this->addError($attrPrefix.$attribute, $error);
+            }
+        }
+    }
+
     // Deprecated Methods
     // -------------------------------------------------------------------------
 
@@ -86,9 +105,7 @@ abstract class Model extends \yii\base\Model
      * Returns the first error of the specified attribute.
      *
      * @param string $attribute The attribute name.
-     *
      * @return string The error message. Null is returned if no error.
-     *
      * @deprecated in 3.0. Use [[getFirstError()]] instead.
      */
     public function getError(string $attribute): string

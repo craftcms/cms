@@ -20,14 +20,24 @@ class m150403_185142_volumes extends Migration
     public function safeUp()
     {
         if ($this->db->tableExists('{{%assetfiles}}')) {
+            // In case this was run in a previous update attempt
+            $this->dropTableIfExists('{{%assets}}');
+
             MigrationHelper::renameTable('{{%assetfiles}}', '{{%assets}}', $this);
         }
 
         if ($this->db->tableExists('{{%assetsources}}')) {
+            // In case this was run in a previous update attempt
+            $this->execute($this->db->getQueryBuilder()->checkIntegrity(false, '', '{{%volumes}}'));
+            $this->dropTableIfExists('{{%volumes}}');
+
             MigrationHelper::renameTable('{{%assetsources}}', '{{%volumes}}', $this);
         }
 
         if ($this->db->tableExists('{{%assetfolders}}')) {
+            // In case this was run in a previous update attempt
+            $this->dropTableIfExists('{{%volumefolders}}');
+
             MigrationHelper::renameTable('{{%assetfolders}}', '{{%volumefolders}}', $this);
         }
 
@@ -36,11 +46,11 @@ class m150403_185142_volumes extends Migration
         }
 
         if (!$this->db->columnExists('{{%volumes}}', 'url')) {
-            $this->addColumn('{{%volumes}}', 'url', 'string');
+            $this->addColumn('{{%volumes}}', 'url', $this->string()->after('type'));
         }
 
         if (!$this->db->columnExists('{{%assetindexdata}}', 'timestamp')) {
-            $this->addColumn('{{%assetindexdata}}', 'timestamp', 'datetime');
+            $this->addColumn('{{%assetindexdata}}', 'timestamp', $this->dateTime()->after('size'));
         }
 
         if ($this->db->columnExists('{{%assets}}', 'sourceId')) {

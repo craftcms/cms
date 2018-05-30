@@ -1,19 +1,16 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import cart from './modules/cart'
-import developers from './modules/developers'
-import pluginstore from './modules/pluginstore'
+import pluginStore from './modules/pluginstore'
 import craft from './modules/craft'
-import vuexplugins from './vuexplugins'
 
-Vue.use(Vuex);
+Vue.use(Vuex)
 
 export default new Vuex.Store({
-    plugins: [vuexplugins],
+    strict: true,
     modules: {
         cart,
-        developers,
-        pluginstore,
+        pluginStore,
         craft
     },
 })

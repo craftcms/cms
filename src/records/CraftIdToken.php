@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,14 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class CraftIdToken record.
  *
- * @property int       $id           ID
- * @property int       $userId       User ID
- * @property string    $accessToken  Access Token
- * @property \DateTime $expiryDate   Expiration Date
- * @property string    $refreshToken Refresh Token
- *
+ * @property int $id ID
+ * @property int $userId User ID
+ * @property string $accessToken Access Token
+ * @property \DateTime $expiryDate Expiration Date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class CraftIdToken extends ActiveRecord
 {
@@ -29,7 +27,6 @@ class CraftIdToken extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -19,12 +19,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Content service.
- *
- * An instance of the Content service is globally accessible in Craft via [[Application::content `Craft::$app->getContent()`]].
+ * Content service.
+ * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Content extends Component
 {
@@ -66,7 +65,6 @@ class Content extends Component
      * Returns the content row for a given element, with field column prefixes removed from the keys.
      *
      * @param ElementInterface $element The element whose content we're looking for.
-     *
      * @return array|null The element's content row values, or null if the row could not be found
      */
     public function getContentRow(ElementInterface $element)
@@ -107,8 +105,6 @@ class Content extends Component
      * Populates a given element with its custom field values.
      *
      * @param ElementInterface $element The element for which we should create a new content model.
-     *
-     * @return void
      */
     public function populateElementContent(ElementInterface $element)
     {
@@ -142,9 +138,8 @@ class Content extends Component
      * Saves an element's content.
      *
      * @param ElementInterface $element The element whose content we're saving.
-     *
      * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
-     *                 element and its content model.
+     * element and its content model.
      * @throws Exception if $element has not been saved yet
      */
     public function saveContent(ElementInterface $element): bool
@@ -227,9 +222,7 @@ class Content extends Component
      * Updates the search indexes based on the new content values.
      *
      * @param ElementInterface $element
-     * @param FieldLayout      $fieldLayout
-     *
-     * @return void
+     * @param FieldLayout $fieldLayout
      */
     private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
     {
@@ -253,7 +246,6 @@ class Content extends Component
      * Removes the column prefixes from a given row.
      *
      * @param array $row
-     *
      * @return array
      */
     private function _removeColumnPrefixesFromRow(array $row): array

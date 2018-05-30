@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -21,7 +21,7 @@ use yii\base\Component;
  * CP functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Cp extends Component
 {
@@ -51,16 +51,6 @@ class Cp extends Component
     }
 
     /**
-     * Returns true if Craft ID is enabled.
-     *
-     * @return string
-     */
-    public function enableCraftId()
-    {
-        return Craft::$app->getPluginStore()->enableCraftId;
-    }
-
-    /**
      * Returns the Craft ID account URL.
      *
      * @return string
@@ -81,7 +71,7 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Dashboard'),
                 'url' => 'dashboard',
-                'icon' => 'gauge'
+                'fontIcon' => 'gauge'
             ],
         ];
 
@@ -89,7 +79,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
-                'icon' => 'section'
+                'fontIcon' => 'section'
             ];
         }
 
@@ -97,7 +87,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals',
-                'icon' => 'globe'
+                'fontIcon' => 'globe'
             ];
         }
 
@@ -105,7 +95,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'icon' => 'categories'
+                'fontIcon' => 'categories'
             ];
         }
 
@@ -113,7 +103,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
                 'url' => 'assets',
-                'icon' => 'assets'
+                'fontIcon' => 'assets'
             ];
         }
 
@@ -121,7 +111,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
-                'icon' => 'users'
+                'fontIcon' => 'users'
             ];
         }
 
@@ -152,7 +142,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
-                'icon' => 'tool',
+                'fontIcon' => 'tool',
                 'badgeCount' => $badgeCount
             ];
         }
@@ -161,12 +151,12 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => 'settings'
+                'fontIcon' => 'settings'
             ];
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
-                'icon' => 'plugin'
+                'fontIcon' => 'plugin'
             ];
         }
 
@@ -296,8 +286,8 @@ class Cp extends Component
      */
     public function areAlertsCached(): bool
     {
-        // The license key status gets cached on each Elliott request
-        return (Craft::$app->getEt()->getLicenseKeyStatus() !== false);
+        // The license key status gets cached on each Craftnet request
+        return (Craft::$app->getCache()->get('licenseKeyStatus') !== false);
     }
 
     /**

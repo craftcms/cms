@@ -13,7 +13,6 @@
 ]) %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
-{% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
 {% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
 
@@ -41,7 +40,7 @@
                             {{ "Save and continue editing"|t('app') }}
                         </a>
                     </li>
-                    <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                    <li><a class="formsubmit" data-redirect="{{ 'users/new#'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -49,7 +48,7 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
+    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
         <input type="hidden" name="action" value="users/save-user">
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
@@ -59,7 +58,8 @@
 
             {% if not isNewUser %}
                 {{ forms.field({
-                    label: "Photo"|t('app')
+                    label: "Photo"|t('app'),
+                    id: 'photo'
                 }, include('users/_photo', {user: user}, with_context = false)) }}
             {% endif %}
 
@@ -129,10 +129,10 @@
             {% endfor %}
         {% endif %}
 
-        {% if CraftEdition >= CraftClient and currentUser.can('assignUserPermissions') %}
+        {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
             <div id="perms" class="hidden">
 
-                {% if CraftEdition == CraftPro %}
+                {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
                     <h2>{{ "User Groups"|t('app') }}</h2>
 
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
@@ -167,26 +167,28 @@
                     <hr>
                 {% endif %}
 
-                <h2>{{ "Permissions"|t('app') }}</h2>
+                {% if currentUser.can('assignUserPermissions') %}
+                    <h2>{{ "Permissions"|t('app') }}</h2>
 
-                {% if currentUser.admin and CraftEdition == CraftPro %}
-                    {{ forms.checkboxField({
-                        label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
-                        name: 'admin',
-                        id: 'admin',
-                        checked: user.admin,
-                        reverseToggle: 'permissions'
-                    }) }}
+                    {% if currentUser.admin and CraftEdition == CraftPro %}
+                        {{ forms.checkboxField({
+                            label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
+                            name: 'admin',
+                            id: 'admin',
+                            checked: user.admin,
+                            reverseToggle: 'permissions'
+                        }) }}
+                    {% endif %}
+
+                    <input type="hidden" name="permissions" value="">
+
+                    <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
+                        {% include "_includes/permissions" with {
+                            userOrGroup: (user.admin ? null : user),
+                            groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : []
+                        } only %}
+                    </div>
                 {% endif %}
-
-                <input type="hidden" name="permissions" value="">
-
-                <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
-                    {% include "_includes/permissions" with {
-                        userOrGroup: (user.admin ? null : user),
-                        groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : []
-                    } only %}
-                </div>
 
             </div>
         {% endif %}
@@ -196,11 +198,11 @@
                 {% set languageInput %}
                     <div class="select">
                         <select id="language" name="preferredLanguage">
-                            {% set allAppLanguages = craft.app.i18n.getAppLocaleIds %}
-                            {% set userLanguage = user.getPreferredLanguage() ?: (user.getIsCurrent() ? craft.app.language : allAppLanguages[0]) %}
+                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName') %}
+                            {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
 
-                            {% for language in allAppLanguages %}
-                                <option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ craft.app.i18n.getLocaleById(language).getDisplayName() }}</option>
+                            {% for locale in allAppLocales %}
+                                <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -239,13 +241,16 @@
             </div>
         {% endif %}
 
+        {# Give plugins a chance to add other things here #}
+        {% hook "cp.users.edit.content" %}
+
         <input type="submit" class="hidden">
     </form>
 {% endblock %}
 
 {% block details %}
     {% if not isNewUser %}
-        {% if CraftEdition >= CraftClient %}
+        {% if CraftEdition == CraftPro %}
             <form class="meta read-only" method="post" accept-charset="UTF-8">
                 {{ hiddenInputs }}
                 <div class="data first">
@@ -307,11 +312,6 @@
                     {% endif %}
                 {% endif %}
             </form>
-        {% endif %}
-
-        {% if user.getIsCurrent() and craft.cp.enableCraftId() %}
-            <hr>
-            {% include 'users/_pluginstore' %}
         {% endif %}
     {% endif %}
 

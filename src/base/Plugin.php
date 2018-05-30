@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -22,11 +22,10 @@ use yii\base\Module;
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
- * @property string           $handle   The plugin’s handle (alias of [[id]])
+ * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Plugin extends Module implements PluginInterface
 {
@@ -84,6 +83,16 @@ class Plugin extends Module implements PluginInterface
 
         // Set this as the global instance of this plugin class
         static::setInstance($this);
+
+        // Set the default controller namespace
+        if ($this->controllerNamespace === null && ($pos = strrpos(static::class, '\\')) !== false) {
+            $namespace = substr(static::class, 0, $pos);
+            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                $this->controllerNamespace = $namespace.'\\console\\controllers';
+            } else {
+                $this->controllerNamespace = $namespace.'\\controllers';
+            }
+        }
 
         parent::__construct($id, $parent, $config);
     }

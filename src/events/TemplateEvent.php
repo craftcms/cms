@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\events;
@@ -11,7 +11,7 @@ namespace craft\events;
  * TemplateEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TemplateEvent extends CancelableEvent
 {
@@ -30,6 +30,7 @@ class TemplateEvent extends CancelableEvent
 
     /**
      * @var string The rendering result of [[\craft\web\View::renderTemplate()]].
+     *
      * Event handlers may modify this property and the modified output will be
      * returned by [[\craft\web\View::renderTemplate()]]. This property is only used
      * by [[\craft\web\View::EVENT_AFTER_RENDER_TEMPLATE]] event.
