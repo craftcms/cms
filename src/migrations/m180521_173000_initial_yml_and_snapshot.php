@@ -97,8 +97,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($siteGroups as $siteGroup) {
             $siteGroup['sites'] = [];
             $siteGroupMap[$siteGroup['id']] = $siteGroup['uid'];
-            unset($siteGroup['id']);
-            $data[$siteGroup['uid']] = $siteGroup;
+
+            $data[$siteGroupMap[$siteGroup['id']]] = $siteGroup;
+            unset($data[$siteGroupMap[$siteGroup['id']]]['id'], $data[$siteGroupMap[$siteGroup['id']]]['uid']);
         }
 
         $sites = (new Query())
@@ -118,9 +119,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         foreach ($sites as $site) {
             $target = $siteGroupMap[$site['groupId']];
-            unset($site['groupId']);
+            $uid = $site['uid'];
 
-            $data[$target]['sites'][$site['uid']] = $site;
+            unset($site['groupId'], $site['uid']);
+
+            $data[$target]['sites'][$uid] = $site;
         }
 
         return $data;
@@ -161,11 +164,13 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 unset($section['structure']);
             }
 
-            unset($section['id'], $section['structureMaxLevels']);
 
-            $sectionData[$section['uid']] = $section;
-            $sectionData[$section['uid']]['entryTypes'] = [];
-            $sectionData[$section['uid']]['siteSettings'] = [];
+            $uid = $section['uid'];
+            unset($section['id'], $section['structureMaxLevels'], $section['uid']);
+
+            $sectionData[$uid] = $section;
+            $sectionData[$uid]['entryTypes'] = [];
+            $sectionData[$uid]['siteSettings'] = [];
         }
 
         $sectionSiteRows = (new Query())
@@ -184,7 +189,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->all();
 
         foreach ($sectionSiteRows as $sectionSiteRow) {
-            $sectionData[$sectionSiteRow['sectionUid']]['siteSettings'][$sectionSiteRow['uid']] = $sectionSiteRow;
+            $sectionUid = $sectionSiteRow['sectionUid'];
+            $uid = $sectionSiteRow['uid'];
+            unset($sectionSiteRow['sectionUid'], $sectionSiteRow['uid']);
+            $sectionData[$sectionUid]['siteSettings'][$uid] = $sectionSiteRow;
         }
 
         $entryTypeRows = (new Query())
@@ -210,11 +218,16 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($entryTypeRows as $entryType) {
-            $entryType['fieldLayout'] = $fieldLayouts[$entryType['fieldLayoutId']];
-            $uid = $entryType['sectionUid'];
-            unset($entryType['fieldLayoutId'], $entryType['sectionUid']);
+            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
 
-            $sectionData[$uid]['entryTypes'][$entryType['uid']] = $entryType;
+            $layoutUid = $layout['uid'];
+            $sectionUid = $entryType['sectionUid'];
+            $uid = $entryType['uid'];
+
+            unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+
+            $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
         }
 
         return $sectionData;
@@ -243,8 +256,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($fieldGroups as $fieldGroup) {
             $fieldGroup['fields'] = [];
             $fieldGroupMap[$fieldGroup['id']] = $fieldGroup['uid'];
-            unset($fieldGroup['id']);
-            $data[$fieldGroup['uid']] = $fieldGroup;
+            $data[$fieldGroupMap[$fieldGroup['id']]] = $fieldGroup;
+            unset($data[$fieldGroupMap[$fieldGroup['id']]]['id'], $data[$fieldGroupMap[$fieldGroup['id']]]['uid']);
         }
 
         $fields = (new Query())
@@ -276,20 +289,31 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->from('{{%matrixblocktypes}}')
             ->all();
 
+        $layoutIds = [];
+        $blockTypeData = [];
+
         foreach ($matrixBlockTypes as $matrixBlockType) {
-            $layoutId = $matrixBlockType['fieldLayoutId'];
             $fieldId = $matrixBlockType['fieldId'];
             unset($matrixBlockType['fieldId']);
-            $layoutIds[] = $layoutId;
+
+            $layoutIds[] = $matrixBlockType['fieldLayoutId'];
             $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
         }
 
         $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($matrixBlockTypes as $matrixBlockType) {
-            $blockTypeData[$fieldId][$matrixBlockType['uid']]['layout'] = $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']];
-            unset($blockTypeData[$fieldId][$matrixBlockType['uid']]['fieldLayoutId']);
+            $fieldId = $matrixBlockType['fieldId'];
+            $layoutUid = $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['uid'];
+            $blockTypeData[$fieldId][$matrixBlockType['uid']]['layouts'] = [$layoutUid => $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]];
+            unset($blockTypeData[$fieldId][$matrixBlockType['uid']]['fieldLayoutId'], $blockTypeData[$fieldId][$matrixBlockType['uid']]['layouts'][$layoutUid]['uid']);
 
+        }
+
+        foreach ($blockTypeData as &$blockTypes) {
+            foreach ($blockTypes as &$blockType) {
+                unset($blockType['uid']);
+            }
         }
 
         foreach ($fields as $field) {
@@ -298,11 +322,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             }
 
             if ($field['type'] === 'craft\fields\Matrix') {
-                $field['blocks'] = $blockTypeData[$field['id']];
+                $field['blockTypes'] = $blockTypeData[$field['id']];
             }
-
-            unset($field['id']);
-            $data[$fieldGroupMap[$field['groupId']]]['fields'][$field['uid']] = $field;
+            $fieldUid = $field['uid'];
+            unset($field['id'], $field['uid']);
+            $data[$fieldGroupMap[$field['groupId']]]['fields'][$fieldUid] = $field;
         }
 
         return $data;
@@ -344,14 +368,17 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $data = [];
 
         foreach ($volumes as $volume) {
-            $volume['folder'] = ['uid' => $volume['folderUid']];
             if (isset($fieldLayouts[$volume['fieldLayoutId']])) {
-                $volume['layout'] = $fieldLayouts[$volume['fieldLayoutId']];
+                $layoutUid = $fieldLayouts[$volume['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$volume['fieldLayoutId']]['fieldLayoutId']['uid']);
+                $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
             } else {
-                $volume['layout'] = [];
+                $volume['fieldLayouts'] = [];
             }
-            unset($volume['fieldLayoutId'], $volume['folderUid']);
-            $data[$volume['uid']] = $volume;
+
+            $uid = $volume['uid'];
+            unset($volume['fieldLayoutId'], $volume['uid']);
+            $data[$uid] = $volume;
         }
 
         return $data;
@@ -373,6 +400,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'layoutFields.fieldId',
                 'layoutFields.required',
                 'layoutFields.sortOrder AS fieldOrder',
+                'layoutFields.uid AS layoutFieldUid',
                 'tabs.id AS tabId',
                 'tabs.name as tabName',
                 'tabs.sortOrder AS tabOrder',
@@ -412,12 +440,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $field['required'] = $fieldRow['required'];
             $field['sortOrder'] = $fieldRow['fieldOrder'];
 
-            $tab['fields'][] = $field;
-        }
+            $layoutFieldUid = $fieldRow['layoutFieldUid'];
+            unset($fieldRow['layoutFieldUid']);
 
-        // get rid of tab UIDs as keys.
-        foreach ($fieldLayouts as &$fieldLayout) {
-            $fieldLayout['tabs'] = array_values($fieldLayout['tabs']);
+            $tab['fields'][$layoutFieldUid] = $field;
         }
 
         return $fieldLayouts;
@@ -434,8 +460,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
     {
         $paths = [
             'nodes' => [],
-            'entities' => [],
-            'dependencies' => [],
+            'items' => []
         ];
 
         $extractLocation = function ($level, $currentPath) use (&$paths, &$extractLocation) {
@@ -446,14 +471,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 if (empty($currentPath)) {
                     $paths['nodes'][$key] = $path;
                 }
-                if ($key === 'uid') {
-                    $paths['entities'][$element] = $path;
-                }
-                if ($key === 'dependsOn') {
-                    if (empty($paths['dependencies'][$element])) {
-                        $paths['dependencies'][$element] = [];
-                    }
-                    $paths['dependencies'][$element][] = $path;
+                
+                // Does it look like a UID?
+                if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $key)) {
+                    $paths['items'][$key] = $path.'.'.$key;
                 }
 
                 if (is_array($element)) {
