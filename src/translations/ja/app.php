@@ -447,7 +447,7 @@ return [
     'Find and Replace' => '検索と置換',
     'Finish up' => '終了にする',
     'Finishing up…' => '終了しています…',
-    'First Name' => 'ファイル名',
+    'First Name' => '名',
     'Fit' => 'フィット',
     'Flash' => 'Flash',
     'Flip Horizontal' => '左右反転',
@@ -555,7 +555,7 @@ return [
     'Last 7 days' => '最近7日',
     'Last Login' => '最後のログイン',
     'Last Month' => '先月',
-    'Last Name' => 'ラストネーム',
+    'Last Name' => '姓',
     'Last Occurrence' => '前回発生した現象',
     'Last Update' => '最終更新',
     'Last Week' => '先週',
@@ -1210,7 +1210,7 @@ return [
     'five' => '5',
     'folders' => 'フォルダ',
     'folders and files' => 'フォルダとファイル',
-    'forgot_password_body' => 'こんにちわ、{{user.friendlyName}} さん、
+    'forgot_password_body' => 'こんにちは、{{user.friendlyName}} さん、
 
 {{siteName}}を再設定するには、このリンクをクリックしてください：
 
@@ -1233,7 +1233,7 @@ return [
     'seconds' => '秒',
     'seven' => '7',
     'six' => '6',
-    'test_email_body' => 'こんにちわ　{{user.friendlyName}} さん、
+    'test_email_body' => 'こんにちは　{{user.friendlyName}} さん、
 
 おめでとうございます！ Craft はメールの送信に成功しました。
 
@@ -1244,7 +1244,7 @@ return [
     'test_email_subject' => 'これはCraftからのテストメールです。',
     'three' => '3',
     'two' => '2',
-    'verify_new_email_body' => 'こんにちわ、{{user.friendlyName}} さん、
+    'verify_new_email_body' => 'こんにちは、{{user.friendlyName}} さん、
 
 このリンクをクリックして新しいメールアドレスを確認してください：
 
