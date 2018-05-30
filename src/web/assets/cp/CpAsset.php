@@ -243,7 +243,7 @@ JS;
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
-            'omitScriptNameInUrls' => (bool)$generalConfig->useCompressedJs,
+            'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'path' => $request->getPathInfo(),
             'primarySiteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite()->id : null,
