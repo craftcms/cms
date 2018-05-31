@@ -23,6 +23,7 @@
 - Fixed a bug where rotating the screen on iOS would change how the page was zoomed.
 - Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JS method weren’t using language-specific character replacements, or any custom replacements defined by the `customAsciiCharMappings` config setting.
 - Fixed a bug where the number `0` would not save in a Plain Text field.
+- Fixed a bug where Craft could pick the wrong current site if the primary site had a root-relative or protocol-relative URL, and another site didn’t, but was otherwise an equal match.
 
 ## 3.0.9 - 2018-05-22
 

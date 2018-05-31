@@ -1097,7 +1097,7 @@ class Request extends \yii\web\Request
             // It's a possible match!
             $scores[$i] = 8 + strlen($parsedPath);
 
-            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : 'http';
+            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
             $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
 
             // Do the ports match?
