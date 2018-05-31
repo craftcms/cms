@@ -325,8 +325,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 $field['blockTypes'] = $blockTypeData[$field['id']];
             }
             $fieldUid = $field['uid'];
-            unset($field['id'], $field['uid']);
-            $data[$fieldGroupMap[$field['groupId']]]['fields'][$fieldUid] = $field;
+            $groupId = $field['groupId'];
+            unset($field['id'], $field['uid'], $field['groupId']);
+            $data[$fieldGroupMap[$groupId]]['fields'][$fieldUid] = $field;
         }
 
         return $data;
@@ -471,7 +472,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 if (empty($currentPath)) {
                     $paths['nodes'][$key] = $path;
                 }
-                
+
                 // Does it look like a UID?
                 if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $key)) {
                     $paths['items'][$key] = $path.'.'.$key;
