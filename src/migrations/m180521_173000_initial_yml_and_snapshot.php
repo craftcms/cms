@@ -7,7 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\services\ProjectConfig;
 use Symfony\Component\Yaml\Yaml;
 
 /**

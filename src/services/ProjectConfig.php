@@ -248,6 +248,8 @@ class ProjectConfig extends Component
             $traverseAndExtract($config, $file.'/', $map);
         }
 
+        unset($nodes['imports']);
+
         return [
             'nodes' => $nodes,
             'map' => $map
