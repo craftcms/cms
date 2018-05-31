@@ -6,8 +6,31 @@
     <div class="buttons">
         <a href="{{ actionUrl('project-config/apply-updates') }}" class="btn submit">{{ 'Apply the changes'|t('app') }}</a>
     </div>
-{% else %}
-    <p>There are no pending changes to the configuration.</p>
+
+    <hr />
 {% endif %}
 
-<p>Last changes made: {{lastModified|date('Y-m-d H:i')}}</p>
+{% if isMapOutdated %}
+    <p>Configuration mapping might be changed due to changes in configuration file tree or file modify times.</p>
+
+    <form method="post" id="regenerate-map">
+        {{ csrfInput() }}
+        <input type="hidden" name="action" value="project-config/regenerate-config-mappings" />
+        <input class="btn submit" type="submit" value="{{ 'Regenerate mapping data'|t('app') }}" />
+    </form>
+
+<hr />
+{% endif %}
+
+<p>You can regenerate the configuration data using the current configuration in use.</p>
+<p class="warning">This will overwrite the <code>system.yml</code> configuration file, destroying changes you might have made.</p>
+    <form method="post" id="regenerate-config">
+        {{ csrfInput() }}
+        <input type="hidden" name="action" value="project-config/regenerate-config" />
+        <input class="btn submit" type="submit" value="{{ 'Regenerate configuration data'|t('app') }}" />
+    </form>
+
+{% js %}
+    new Craft.ElevatedSessionForm('#regenerate-config');
+    new Craft.ElevatedSessionForm('#regenerate-map');
+{% endjs %}
