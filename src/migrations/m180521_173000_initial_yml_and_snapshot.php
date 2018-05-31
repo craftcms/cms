@@ -33,15 +33,15 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $modTime = FileHelper::lastModifiedTime($destination);
 
+        $configMap = Craft::$app->getProjectConfig()->generateConfigMap();
         $snapshot = serialize($data);
-        $map = Json::encode($this->_getUidMap($data));
 
         $this->update('{{%info}}', [
             'configSnapshot' => $snapshot,
-            'configMap' => $map
+            'configMap' => Json::encode($configMap)
         ]);
 
-        Craft::$app->getCache()->set(ProjectConfig::CACHE_KEY, [$destination => $modTime], ProjectConfig::CACHE_DURATION);
+        Craft::$app->getProjectConfig()->updateDateModifiedCache([$destination => $modTime]);
 
         return true;
     }
@@ -448,44 +448,5 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         }
 
         return $fieldLayouts;
-    }
-
-    /**
-     * Return the UID map for the project config array.
-     *
-     * @param array $data
-     *
-     * @return array
-     */
-    private function _getUidMap(array $data): array
-    {
-        $paths = [
-            'nodes' => [],
-            'items' => []
-        ];
-
-        $extractLocation = function ($level, $currentPath) use (&$paths, &$extractLocation) {
-            foreach ($level as $key => $element) {
-                // Record top level nodes and all UIDs.
-                $path = $currentPath ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
-
-                if (empty($currentPath)) {
-                    $paths['nodes'][$key] = $path;
-                }
-
-                // Does it look like a UID?
-                if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $key)) {
-                    $paths['items'][$key] = $path.'.'.$key;
-                }
-
-                if (is_array($element)) {
-                    $extractLocation($element, $path.($currentPath ? '.' : '/').$key);
-                }
-            }
-        };
-
-        $extractLocation($data, null);
-
-        return $paths;
     }
 }

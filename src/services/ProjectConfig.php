@@ -37,6 +37,30 @@ class ProjectConfig extends Component
     const ENTITY_FIELDS = 'fields';
     const ENTITY_VOLUMES = 'volumes';
 
+    // Public methods
+    // =========================================================================
+    /**
+     * @param string $path
+     * @return array|mixed|null
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function get(string $path) {
+        $snapshot = $this->getCurrentSnapshot();
+        $pathParts = explode('.', $path);
+
+        $current = $snapshot;
+
+        foreach ($pathParts as $pathPart) {
+            if (array_key_exists($pathPart, $current)) {
+                $current = $current[$pathPart];
+            } else {
+                return null;
+            }
+        }
+
+        return $current;
+    }
+
     /**
      * Whether there is an update pending based on config and snapshot.
      *
@@ -82,6 +106,30 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Returns true if config mapping might have changed due to changes in file config tree or modify times.
+     *
+     * @return bool
+     */
+    public function isConfigMapOutdated(): bool {
+        $yamlTree = $this->getConfigFileModifiedTimes();
+        $cachedTree = $this->getConfigFileModifyDates();
+
+        // Tree has changed
+        if (\count(array_diff_key($yamlTree, $cachedTree)) || \count(array_diff_key($cachedTree, $yamlTree))) {
+            return true;
+        }
+
+        // Date modified has changed
+        foreach ($yamlTree as $file => $dateModified) {
+            if ($dateModified !== $cachedTree[$file]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get config file modified dates.
      *
      * @return array
@@ -109,7 +157,7 @@ class ProjectConfig extends Component
     public function updateDateModifiedCache(array $fileList = null): bool
     {
         if (!$fileList) {
-            $fileList = $this->getCurrentConfigFileList();
+            $fileList = $this->getConfigFileModifiedTimes();
         }
 
         return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
@@ -120,30 +168,17 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    public function getCurrentConfigFileList(): array
+    public function getConfigFileModifiedTimes(): array
     {
-        $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/system.yml';
-        $fileList = [];
+        $fileList = $this->_getConfigFileList();
 
-        $traverseFile = function($filePath) use (&$traverseFile, &$fileList) {
-            $fileList[$filePath] = FileHelper::lastModifiedTime($filePath);
+        $output = [];
 
-            $config = Yaml::parseFile($filePath);
-            $fileDir = pathinfo($filePath, PATHINFO_DIRNAME);
+        foreach ($fileList as $file) {
+            $output[$file] = FileHelper::lastModifiedTime($file);
+        }
 
-            if (isset($config['imports'])) {
-                foreach ($config['imports'] as $file) {
-                    if (PathHelper::ensurePathIsContained($file)) {
-                        $traverseFile($fileDir.'/'.$file);
-                    }
-                }
-            }
-        };
-
-        $traverseFile($baseFile);
-
-        return $fileList;
+        return $output;
     }
 
     /**
@@ -153,26 +188,14 @@ class ProjectConfig extends Component
      */
     public function generateSnapshotFromConfigFiles(): array
     {
-        $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/system.yml';
+        $fileList = $this->_getConfigFileList();
 
         $snapshot = [];
 
-        $traverseFile = function($filePath) use (&$traverseFile, &$snapshot) {
-            $config = Yaml::parseFile($filePath);
+        foreach ($fileList as $file) {
+            $config = Yaml::parseFile($file);
             $snapshot = array_merge($snapshot, $config);
-            $fileDir = pathinfo($filePath, PATHINFO_DIRNAME);
-
-            if (isset($config['imports'])) {
-                foreach ($config['imports'] as $file) {
-                    if (PathHelper::ensurePathIsContained($file)) {
-                        $traverseFile($fileDir.'/'.$file);
-                    }
-                }
-            }
-        };
-
-        $traverseFile($baseFile);
+        }
 
         return $snapshot;
     }
@@ -186,5 +209,79 @@ class ProjectConfig extends Component
     public function getCurrentSnapshot(): array
     {
         return unserialize(Craft::$app->getInfo()->configSnapshot, ['allowed_classes' => false]);
+    }
+
+    /**
+     * Generate the configuration mapping data from configuration files.
+     *
+     * @return array
+     */
+    public function generateConfigMap(): array
+    {
+        $fileList = $this->_getConfigFileList();
+
+        $nodes = [];
+        $map = [];
+
+        $traverseAndExtract = function ($config, $prefix, &$map) use (&$traverseAndExtract) {
+            foreach ($config as $key => $value) {
+                // Does it look like a UID?
+                if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $key)) {
+                    $map[$key] = $prefix.'.'.$key;
+                }
+
+                if (\is_array($value)) {
+                    $traverseAndExtract($value, $prefix.(substr($prefix, -1) !== '/' ? '.' : '').$key, $map);
+                }
+            }
+        };
+
+        foreach ($fileList as $file) {
+            $config = Yaml::parseFile($file);
+
+            // Take record of top nodes
+            $topNodes = array_keys($config);
+            foreach ($topNodes as $topNode) {
+                $nodes[$topNode] = $file;
+            }
+
+            $traverseAndExtract($config, $file.'/', $map);
+        }
+
+        return [
+            'nodes' => $nodes,
+            'map' => $map
+        ];
+    }
+
+    // Private methods
+    // =========================================================================
+    /**
+     * Load the system.yml file and figure out all the files imported and used.
+     *
+     * @return array
+     */
+    private function _getConfigFileList() : array {
+        $basePath = Craft::$app->getPath()->getConfigPath();
+        $baseFile = $basePath.'/system.yml';
+
+        $traverseFile = function($filePath) use (&$traverseFile) {
+            $fileList = [$filePath];
+            $config = Yaml::parseFile($filePath);
+            $fileDir = pathinfo($filePath, PATHINFO_DIRNAME);
+
+            if (isset($config['imports'])) {
+                foreach ($config['imports'] as $file) {
+                    if (PathHelper::ensurePathIsContained($file)) {
+                        $fileList = array_merge($fileList, $traverseFile($fileDir.'/'.$file));
+                    }
+                }
+            }
+
+            return $fileList;
+        };
+
+
+        return $traverseFile($baseFile);
     }
 }
