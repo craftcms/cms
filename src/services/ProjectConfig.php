@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Component;
@@ -161,6 +162,20 @@ class ProjectConfig extends Component
         }
 
         return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
+    }
+
+    /**
+     * Update the configuration mapping.
+     * 
+     * @return bool
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function updateConfigMap(): bool
+    {
+        $configMap = $this->generateConfigMap();
+        $info = Craft::$app->getInfo();
+        $info->configMap = Json::encode($configMap);
+        return Craft::$app->saveInfo($info) && $this->updateDateModifiedCache();
     }
 
     /**
