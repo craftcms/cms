@@ -133,7 +133,7 @@ Returns the contents of a given SVG file.
 
 The `svg()` function has the following arguments:
 
-- **`svg`** – The SVG file path, or an SVG file’s contents.
+- **`svg`** – The SVG file path, an SVG file’s contents, or an <api:craft\elements\Asset> object that represents an SVG file.
 - **`sanitize`** – Whether the SVG should be sanitized of any potentially malicious scripts (`true` by default).
 
 ## `url( path, params, protocol, mustShowScriptName )`
