@@ -45,7 +45,8 @@ class ProjectConfig extends Component
      * @return array|mixed|null
      * @throws \yii\web\ServerErrorHttpException
      */
-    public function get(string $path) {
+    public function get(string $path)
+    {
         $snapshot = $this->getCurrentSnapshot();
         $pathParts = explode('.', $path);
 
@@ -60,6 +61,68 @@ class ProjectConfig extends Component
         }
 
         return $current;
+    }
+
+    /**
+     * Save a value to YML configuration by path.
+     *
+     * @param string $path
+     * @param $value
+     * @return bool
+     */
+    public function save(string $path, $value)
+    {
+        $pathParts = explode('.', $path);
+        $endPart = end($pathParts);
+
+        $configMap = $this->getCurrentConfigMap();
+        $nodeConfig = $configMap['nodes'] ?? [];
+        $map = $configMap['map'] ?? [];
+
+        $existingNodePath = null;
+        // Does it look like UID?
+        if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $endPart) && !empty($map[$endPart])) {
+            $existingNodePath = $map[$endPart];
+        }
+
+        $topNode = array_shift($pathParts);
+        $targetFilePath = $nodeConfig[$topNode] ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
+        $nodePath = $targetFilePath.'/'.$path;
+
+        // Moving data between locations
+        $previousFilePath = null;
+
+        // Delete previous stored data?
+        if ($existingNodePath && $existingNodePath !== $nodePath) {
+            $parts = explode('/', $existingNodePath);
+            $previousNodeLocation = array_pop($parts);
+            $previousFilePath = implode('/', $parts);
+            $previousYaml = Yaml::parseFile($previousFilePath);
+            $arrayAccess = $this->_nodePathToArrayAccess($previousNodeLocation);
+            eval('unset($previousYaml'.$arrayAccess.');');
+        }
+
+        // If this is a moving node within the same file.
+        if  ($targetFilePath == $previousFilePath) {
+            $targetYaml = $previousYaml;
+        } else {
+            // If this was a moving file from a different file.
+            if ($previousFilePath) {
+                $this->_saveYaml($previousYaml, $previousFilePath);
+            }
+            $targetYaml = Yaml::parseFile($targetFilePath);
+        }
+
+        $arrayAccess = $this->_nodePathToArrayAccess($path);
+        eval('$targetYaml'.$arrayAccess.' = $value;');
+
+        $this->_saveYaml($targetYaml, $targetFilePath);
+
+        $this->updateSnapshot();
+        $this->updateConfigMap();
+        $this->updateDateModifiedCache();
+
+        return true;
     }
 
     /**
@@ -166,7 +229,7 @@ class ProjectConfig extends Component
 
     /**
      * Update the configuration mapping.
-     * 
+     *
      * @return bool
      * @throws \yii\web\ServerErrorHttpException
      */
@@ -175,7 +238,23 @@ class ProjectConfig extends Component
         $configMap = $this->generateConfigMap();
         $info = Craft::$app->getInfo();
         $info->configMap = Json::encode($configMap);
-        return Craft::$app->saveInfo($info) && $this->updateDateModifiedCache();
+
+        return Craft::$app->saveInfo($info);
+    }
+
+    /**
+     * Update the configuration snapshot.
+     *
+     * @return bool
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function updateSnapshot(): bool
+    {
+        $snapshot = $this->generateSnapshotFromConfigFiles();
+        $info = Craft::$app->getInfo();
+        $info->configSnapshot = serialize($snapshot);
+
+        return Craft::$app->saveInfo($info);
     }
 
     /**
@@ -189,6 +268,7 @@ class ProjectConfig extends Component
 
         $output = [];
 
+        clearstatcache();
         foreach ($fileList as $file) {
             $output[$file] = FileHelper::lastModifiedTime($file);
         }
@@ -213,6 +293,17 @@ class ProjectConfig extends Component
         }
 
         return $snapshot;
+    }
+
+    /**
+     * Get the stored config map.
+     *
+     * @return array
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function getCurrentConfigMap(): array
+    {
+        return Json::decode(Craft::$app->getInfo()->configMap);
     }
 
     /**
@@ -278,7 +369,7 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getConfigFileList() : array {
+    private function _getConfigFileList(): array {
         $basePath = Craft::$app->getPath()->getConfigPath();
         $baseFile = $basePath.'/system.yml';
 
@@ -300,5 +391,47 @@ class ProjectConfig extends Component
 
 
         return $traverseFile($baseFile);
+    }
+
+    /**
+     * Convert a node string to a string to be used in `eval()` to access an array key.
+     *
+     * @param string $nodePath
+     * @return string
+     */
+    private function _nodePathToArrayAccess(string $nodePath): string {
+        // Clean up!
+        $nodePath = preg_replace('/[^a-z0-9\-\.]/i', '', $nodePath);
+        return "['".preg_replace('/\./', "']['", $nodePath)."']";
+    }
+
+    /**
+     * Save YML data to a file, cleaning up empty values while doing so.
+     *
+     * @param $data
+     * @param $path
+     * @throws \yii\base\ErrorException
+     */
+    private function _saveYaml($data, $path) {
+        $traverseAndClean = function (&$array) use (&$traverseAndClean) {
+            $remove = [];
+            foreach ($array as $key => &$value) {
+                if (\is_array($value)) {
+                    $traverseAndClean($value);
+                    if (empty($value)) {
+                        $remove[] = $key;
+                    }
+                }
+            }
+
+            // Remove empty stuff
+            foreach ($remove as $removeKey) {
+                unset($array[$removeKey]);
+            }
+        };
+
+        $traverseAndClean($data);
+
+        FileHelper::writeToFile($path, Yaml::dump($data, 10, 2));
     }
 }
