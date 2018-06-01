@@ -361,9 +361,8 @@ class DashboardController extends Controller
             }
 
             // License key
-            $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
-            if (is_file($licenseKeyPath)) {
-                $zip->addFile($licenseKeyPath, 'license.key');
+            if (($licenseKey = App::licenseKey()) !== null) {
+                $zip->addFromString('license.key', $licenseKey);
             }
 
             // Logs

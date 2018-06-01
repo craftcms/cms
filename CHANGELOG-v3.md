@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added support for a `CRAFT_LICENSE_KEY` PHP constant, which can be set to the project’s license key, taking precedence over the `license.key` file.
 - Added `craft\helpers\Stringy::getLangSpecificCharsArray()`.
 - Added `craft\web\View::setRegisteredAssetBundles()`.
 - Added `craft\web\View::setRegisteredJsFiles()`.

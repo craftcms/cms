@@ -450,7 +450,7 @@ class Api extends Component
         }
 
         // Craft license
-        $headers['X-Craft-License'] = App::licenseKey() ?? '🙏';
+        $headers['X-Craft-License'] = App::licenseKey() ?? (defined('CRAFT_LICENSE_KEY') ? '😱' : '🙏');
 
         // plugin info
         $pluginLicenses = [];
