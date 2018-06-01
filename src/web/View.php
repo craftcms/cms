@@ -29,7 +29,16 @@ use yii\web\AssetBundle as YiiAssetBundle;
 
 /**
  * @inheritdoc
- * @property Environment $twig the Twig environment
+ * @property string $templateMode the current template mode (either `site` or `cp`)
+ * @property string $templatesPath the base path that templates should be found in
+ * @property string|null $namespace the active namespace
+ * @property-read array $cpTemplateRoots any registered CP template roots
+ * @property-read array $siteTemplateRoots any registered site template roots
+ * @property-read bool $isRenderingPageTemplate whether a page template is currently being rendered
+ * @property-read bool $isRenderingTemplate whether a template is currently being rendered
+ * @property-read Environment $twig the Twig environment
+ * @property-read string $bodyHtml the content to be inserted at the end of the body section
+ * @property-read string $headHtml the content to be inserted in the head section
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -942,9 +951,9 @@ JS;
     }
 
     /**
-     * Returns the current template mode (either 'site' or 'cp').
+     * Returns the current template mode (either `site` or `cp`).
      *
-     * @return string Either 'site' or 'cp'.
+     * @return string Either `site` or `cp`.
      */
     public function getTemplateMode(): string
     {
