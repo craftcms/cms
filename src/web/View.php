@@ -805,54 +805,6 @@ class View extends \yii\web\View
     /**
      * @inheritdoc
      */
-    protected function renderHeadHtml()
-    {
-        $lines = [];
-        if (!empty($this->title)) {
-            $lines[] = '<title>'.Html::encode($this->title).'</title>';
-        }
-        if (!empty($this->_scripts[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
-        }
-
-        $html = parent::renderHeadHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderBodyBeginHtml()
-    {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
-        }
-
-        $html = parent::renderBodyBeginHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderBodyEndHtml($ajaxMode)
-    {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_END])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
-        }
-
-        $html = parent::renderBodyEndHtml($ajaxMode);
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function endBody()
     {
         $this->registerAssetFlashes();
@@ -923,42 +875,6 @@ class View extends \yii\web\View
         }
 
         return $html;
-    }
-
-    /**
-     * Registers any asset bundles and JS code that were queued-up in the session flash data.
-     *
-     * @throws Exception if any of the registered asset bundles are not actually asset bundles
-     */
-    protected function registerAssetFlashes()
-    {
-        $session = Craft::$app->getSession();
-
-        if ($session->getIsActive()) {
-            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
-                if (!is_subclass_of($name, YiiAssetBundle::class)) {
-                    throw new Exception("$name is not an asset bundle");
-                }
-
-                $this->registerAssetBundle($name, $position);
-            }
-
-            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
-                $this->registerJs($js, $position, $key);
-            }
-        }
-    }
-
-    /**
-     * Registers all files provided by all registered asset bundles, including depending bundles files.
-     *
-     * Removes a bundle from [[assetBundles]] once files are registered.
-     */
-    protected function registerAllAssetFiles()
-    {
-        foreach ($this->assetBundles as $bundleName => $bundle) {
-            $this->registerAssetFiles($bundleName);
-        }
     }
 
     /**
@@ -1361,6 +1277,93 @@ JS;
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $event);
             $output = $event->output;
+        }
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderHeadHtml()
+    {
+        $lines = [];
+        if (!empty($this->title)) {
+            $lines[] = '<title>'.Html::encode($this->title).'</title>';
+        }
+        if (!empty($this->_scripts[self::POS_HEAD])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
+        }
+
+        $html = parent::renderHeadHtml();
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyBeginHtml()
+    {
+        $lines = [];
+        if (!empty($this->_scripts[self::POS_BEGIN])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
+        }
+
+        $html = parent::renderBodyBeginHtml();
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyEndHtml($ajaxMode)
+    {
+        $lines = [];
+        if (!empty($this->_scripts[self::POS_END])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
+        }
+
+        $html = parent::renderBodyEndHtml($ajaxMode);
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
+    }
+
+    /**
+     * Registers any asset bundles and JS code that were queued-up in the session flash data.
+     *
+     * @throws Exception if any of the registered asset bundles are not actually asset bundles
+     */
+    protected function registerAssetFlashes()
+    {
+        $session = Craft::$app->getSession();
+
+        if ($session->getIsActive()) {
+            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+                if (!is_subclass_of($name, YiiAssetBundle::class)) {
+                    throw new Exception("$name is not an asset bundle");
+                }
+
+                $this->registerAssetBundle($name, $position);
+            }
+
+            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+                $this->registerJs($js, $position, $key);
+            }
+        }
+    }
+
+    /**
+     * Registers all files provided by all registered asset bundles, including depending bundles files.
+     *
+     * Removes a bundle from [[assetBundles]] once files are registered.
+     */
+    protected function registerAllAssetFiles()
+    {
+        foreach ($this->assetBundles as $bundleName => $bundle) {
+            $this->registerAssetFiles($bundleName);
         }
     }
 
