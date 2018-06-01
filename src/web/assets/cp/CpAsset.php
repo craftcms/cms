@@ -320,6 +320,7 @@ JS;
                     'handle' => $section->handle,
                     'id' => $section->id,
                     'name' => Craft::t('site', $section->name),
+                    'sites' => $section->getSiteIds(),
                     'type' => $section->type,
                 ];
             }
