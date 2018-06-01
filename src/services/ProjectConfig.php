@@ -40,7 +40,10 @@ class ProjectConfig extends Component
 
     // Public methods
     // =========================================================================
+
     /**
+     * Get a value by path from the snapshot.
+     *
      * @param string $path
      * @return array|mixed|null
      * @throws \yii\web\ServerErrorHttpException
@@ -48,19 +51,9 @@ class ProjectConfig extends Component
     public function get(string $path)
     {
         $snapshot = $this->getCurrentSnapshot();
-        $pathParts = explode('.', $path);
 
-        $current = $snapshot;
-
-        foreach ($pathParts as $pathPart) {
-            if (array_key_exists($pathPart, $current)) {
-                $current = $current[$pathPart];
-            } else {
-                return null;
-            }
-        }
-
-        return $current;
+        $arrayAccess = $this->_nodePathToArrayAccess($path);
+        return eval('return $snapshot'.$arrayAccess.';');
     }
 
     /**
