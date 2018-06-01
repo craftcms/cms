@@ -12,7 +12,6 @@ Your `web/index.php` file can specify a few PHP constants, which Craft’s boots
 - `CRAFT_CONTENT_MIGRATIONS_PATH` – The path to the `migrations/` directory used to store content migrations. (It is assumed to live within the base directory by default.)
 - `CRAFT_ENVIRONMENT` – The environment ID that multi-environment configs can reference when defining their environment-specific config values. (`$_SERVER['SERVER_NAME']` will be used by default.)
 - `CRAFT_LICENSE_KEY_PATH` – The path that Craft should store its license key file, including its filename. (It will be stored as `license.key` within your `config/` directory by default.)
-- `CRAFT_PLUGINS_PATH` – The path to the `plugins/` directory used to store manually-installed plugins. (It is assumed to live within the base directory by default.)
 - `CRAFT_SITE` – The Site handle or ID that Craft should be serving from this `index.php` file. (Only set this if you have a good reason to. Craft will automatically serve the correct site by inspecting the requested URL, unless this is set.)
 - `CRAFT_STORAGE_PATH` – The path to the `storage/` directory. (It is assumed to live within the base directory by default.)
 - `CRAFT_TEMPLATES_PATH` – The path to the `templates/` directory. (It is assumed to live within the base directory by default.)
