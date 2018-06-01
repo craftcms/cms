@@ -138,7 +138,7 @@ class ProjectConfig extends Component
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configSnapshot['imports']);
+        unset($configSnapshot['imports'], $currentSnapshot['imports']);
 
         // flatten both snapshots so we can compare them.
 
