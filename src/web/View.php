@@ -39,6 +39,8 @@ use yii\web\AssetBundle as YiiAssetBundle;
  * @property-read Environment $twig the Twig environment
  * @property-read string $bodyHtml the content to be inserted at the end of the body section
  * @property-read string $headHtml the content to be inserted in the head section
+ * @property-write string[] $registeredAssetBundles the asset bundle names that should be marked as already registered
+ * @property-write string[] $registeredJsFiles the JS files that should be marked as already registered
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -195,6 +197,20 @@ class View extends \yii\web\View
      * @var
      */
     private $_isRenderingPageTemplate = false;
+
+    /**
+     * @var string[]
+     * @see registerAssetFiles()
+     * @see setRegisteredAssetBundles()
+     */
+    private $_registeredAssetBundles = [];
+
+    /**
+     * @var string[]
+     * @see registerJsFile()
+     * @see setRegisteredJsfiles()
+     */
+    private $_registeredJsFiles = [];
 
     // Public Methods
     // =========================================================================
@@ -792,6 +808,19 @@ class View extends \yii\web\View
     }
 
     /**
+     * @inheritdoc
+     */
+    public function registerJsFile($url, $options = [], $key = null)
+    {
+        $key = $key ?: $url;
+        if (isset($this->_registeredJsFiles[$key])) {
+            return;
+        }
+        $this->_registeredJsFiles[$key] = true;
+        parent::registerJsFile($url, $options, $key);
+    }
+
+    /**
      * Registers a generic `<script>` code block.
      *
      * @param string $script the generic `<script>` code block to be registered
@@ -1206,6 +1235,26 @@ JS;
         return $return;
     }
 
+    /**
+     * Sets the JS files that should be marked as already registered.
+     *
+     * @param string[] $keys
+     */
+    public function setRegisteredJsFiles(array $keys)
+    {
+        $this->_registeredJsFiles = array_flip($keys);
+    }
+
+    /**
+     * Sets the asset bundle names that should be marked as already registered.
+     *
+     * @param string[] $names Asset bundle names
+     */
+    public function setRegisteredAssetBundles(array $names)
+    {
+        $this->_registeredAssetBundles = array_flip($names);
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1335,6 +1384,28 @@ JS;
             $lines[] = implode("\n", $this->_scripts[self::POS_END]);
         }
 
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            if (!empty($this->_registeredJsFiles)) {
+                $json = Json::encode($this->_registeredJsFiles);
+                $js = <<<JS
+if (typeof Craft !== 'undefined') {
+    jQuery.extend(Craft.registeredJsFiles, {$json}); 
+}
+JS;
+                $this->registerJs($js, self::POS_END);
+            }
+
+            if (!empty($this->_registeredAssetBundles)) {
+                $json = Json::encode($this->_registeredAssetBundles);
+                $js = <<<JS
+if (typeof Craft !== 'undefined') {
+    jQuery.extend(Craft.registeredAssetBundles, {$json}); 
+}
+JS;
+                $this->registerJs($js, self::POS_END);
+            }
+        }
+
         $html = parent::renderBodyEndHtml($ajaxMode);
 
         return empty($lines) ? $html : implode("\n", $lines).$html;
@@ -1374,6 +1445,19 @@ JS;
         foreach ($this->assetBundles as $bundleName => $bundle) {
             $this->registerAssetFiles($bundleName);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function registerAssetFiles($name)
+    {
+        // Don't re-register bundles
+        if (isset($this->_registeredAssetBundles[$name])) {
+            return;
+        }
+        $this->_registeredAssetBundles[$name] = true;
+        parent::registerAssetFiles($name);
     }
 
     // Private Methods

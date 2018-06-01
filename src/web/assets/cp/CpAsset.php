@@ -251,6 +251,8 @@ JS;
             'primarySiteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite()->id : null,
             'Pro' => Craft::Pro,
             'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
+            'registeredAssetBundles' => ['' => ''], // force encode as JS object
+            'registeredJsFiles' => ['' => ''], // force encode as JS object
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userService->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,

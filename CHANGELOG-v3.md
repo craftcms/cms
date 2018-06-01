@@ -4,6 +4,8 @@
 
 ### Added
 - Added `craft\helpers\Stringy::getLangSpecificCharsArray()`.
+- Added `craft\web\View::setRegisteredAssetBundles()`.
+- Added `craft\web\View::setRegisteredJsFiles()`.
 
 ### Changed
 - Generated site URLs now always include full host info, even if the base site URL is root/protocol-relative. ([#2919](https://github.com/craftcms/cms/issues/2919))
@@ -24,6 +26,7 @@
 - Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JS method weren’t using language-specific character replacements, or any custom replacements defined by the `customAsciiCharMappings` config setting.
 - Fixed a bug where the number `0` would not save in a Plain Text field.
 - Fixed a bug where Craft could pick the wrong current site if the primary site had a root-relative or protocol-relative URL, and another site didn’t, but was otherwise an equal match.
+- Fixed a bug where Control Panel Ajax requests could cause some asset bundles and JavaScript files to be double-registered in the browser.
 
 ## 3.0.9 - 2018-05-22
 
