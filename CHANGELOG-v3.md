@@ -12,6 +12,7 @@
 - Generated site URLs now always include full host info, even if the base site URL is root/protocol-relative. ([#2919](https://github.com/craftcms/cms/issues/2919))
 - Variables passed into `craft\web\View::renderObjectTemplate()` can now be referenced using the shorthand syntax (e.g. `{foo}`).
 - `craft\helpers\StringHelper::asciiCharMap()` now has `$flat` and `$language` arguments.
+- Craft no longer saves new versions of entries when absolutely nothing changed about them in the save request. ([#2923](https://github.com/craftcms/cms/issues/2923))
 
 ### Deprecated
 - Deprecated the `customAsciiCharMappings` config setting. (Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).)
