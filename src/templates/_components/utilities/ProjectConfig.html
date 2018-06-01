@@ -3,9 +3,21 @@
 {% if isUpdatePending %}
     <p>There are pending changes to the configuration.</p>
 
-    <div class="buttons">
-        <a href="{{ actionUrl('project-config/apply-updates') }}" class="btn submit">{{ 'Apply the changes'|t('app') }}</a>
-    </div>
+        <p>If you want to apply the changes from the configuration, click the button below.</p>
+        <form method="post" id="apply-changes">
+            {{ csrfInput() }}
+            <input type="hidden" name="action" value="project-config/apply-configuration-changes" />
+            <input class="btn submit" type="submit" value="{{ 'Apply the changes to configuration'|t('app') }}" />
+        </form>
+
+        <p>If you want to generate a new snapshot and adopt the new configuration schema, without actually applying the changes, click the button below.</p>
+        <p class="warning">This will effectively ignore you from applying this update again. Only press this if you know what you're doing.</p>
+
+        <form method="post" id="regenerate-snapshot">
+            {{ csrfInput() }}
+            <input type="hidden" name="action" value="project-config/regenerate-snapshot" />
+            <input class="btn submit" type="submit" value="{{ 'Create a new snapshot, but DO NOT apply the changes'|t('app') }}" />
+        </form>
 
     <hr />
 {% endif %}
@@ -33,4 +45,6 @@
 {% js %}
     new Craft.ElevatedSessionForm('#regenerate-config');
     new Craft.ElevatedSessionForm('#regenerate-map');
+    new Craft.ElevatedSessionForm('#apply-changes');
+    new Craft.ElevatedSessionForm('#regenerate-snapshot');
 {% endjs %}

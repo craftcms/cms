@@ -46,9 +46,9 @@ class ProjectConfigController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested user group cannot be found
      */
-    public function actionRegenerateConfig()
+    public function actionRegenerateSnapshot()
     {
-
+        Craft::$app->getProjectConfig()->updateSnapshot();
 
         return $this->redirectToPostedUrl();
     }
