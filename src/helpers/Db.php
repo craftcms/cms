@@ -493,7 +493,10 @@ class Db
                         ];
                     }
                 }
-            } else if (is_string($val)) {
+                continue;
+            }
+
+            if (is_string($val)) {
                 // Trim any whitespace from the value
                 $val = trim($val);
 
@@ -515,12 +518,11 @@ class Db
                         $val,
                         false
                     ];
-                } else {
-                    $condition[] = [$operator, $column, $val];
+                    continue;
                 }
-            } else {
-                $condition[] = [$operator, $column, $val];
             }
+
+            $condition[] = [$operator, $column, $val];
         }
 
         return $condition;
