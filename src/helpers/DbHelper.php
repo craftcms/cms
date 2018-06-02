@@ -472,6 +472,9 @@ class DbHelper
 			$join = 'or';
 		}
 
+		$inVals = [];
+		$notInVals = [];
+
 		foreach ($value as $val)
 		{
 			static::_normalizeEmptyValue($val);
@@ -514,6 +517,20 @@ class DbHelper
 				continue;
 			}
 
+			// ['or', 1, 2, 3] => IN (1, 2, 3)
+			if ($join == 'or' && $operator == '=')
+			{
+				$inVals[] =  $val;
+				continue;
+			}
+
+			// ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
+			if ($join == 'and' && $operator == '!=')
+			{
+				$notInVals[] = $val;
+				continue;
+			}
+
 			// Find a unique param name
 			$paramKey = ':'.str_replace('.', '', $column);
 			$i = 1;
@@ -527,6 +544,16 @@ class DbHelper
 			$params[$param] = $val;
 
 			$conditions[] = $column.$operator.$param;
+		}
+
+		if (!empty($inVals))
+		{
+			$conditions[] = array('in', $column, $inVals);
+		}
+
+		if (!empty($notInVals))
+		{
+			$conditions[] = array('not in', $column, $notInVals);
 		}
 
 		if (count($conditions) == 1)
