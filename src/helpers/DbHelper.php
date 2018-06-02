@@ -472,8 +472,8 @@ class DbHelper
 			$join = 'or';
 		}
 
-		$inVals = [];
-		$notInVals = [];
+		$inVals = array();
+		$notInVals = array();
 
 		foreach ($value as $val)
 		{
