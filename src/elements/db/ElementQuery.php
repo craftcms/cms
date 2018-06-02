@@ -1081,8 +1081,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             return reset($cachedResult) ?: null;
         }
 
-        $row = parent::one($db);
-        return $row ? $this->_createElement($row) : null;
+        if ($row = parent::one($db)) {
+            $elements = $this->populate([$row]);
+            return reset($elements) ?: null;
+        }
+
+        return null;
     }
 
     /**
