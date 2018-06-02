@@ -457,6 +457,9 @@ class Db
         $condition = [$glue];
         $isMysql = Craft::$app->getDb()->getIsMysql();
 
+        $inVals = [];
+        $notInVals = [];
+
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator);
@@ -522,7 +525,27 @@ class Db
                 }
             }
 
+            // ['or', 1, 2, 3] => IN (1, 2, 3)
+            if ($glue == 'or' && $operator === '=') {
+                $inVals[] = $val;
+                continue;
+            }
+
+            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
+            if ($glue == 'and' && $operator === '!=') {
+                $notInVals[] = $val;
+                continue;
+            }
+
             $condition[] = [$operator, $column, $val];
+        }
+
+        if (!empty($inVals)) {
+            $condition[] = ['in', $column, $inVals];
+        }
+
+        if (!empty($notInVals)) {
+            $condition[] = ['not in', $column, $notInVals];
         }
 
         return $condition;

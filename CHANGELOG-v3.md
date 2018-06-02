@@ -14,6 +14,7 @@
 - `craft\helpers\StringHelper::asciiCharMap()` now has `$flat` and `$language` arguments.
 - Craft no longer saves new versions of entries when absolutely nothing changed about them in the save request. ([#2923](https://github.com/craftcms/cms/issues/2923))
 - `minVersionRequired` is no longer enforced on a plugin when updating it if was coming from a `dev-` branch.
+- Improved the performance of element queries when a lot of values were passed into a param, such as `id`, by using `IN()` and `NOT IN()` conditions when possible. ([#2937](https://github.com/craftcms/cms/pull/2937))
 
 ### Deprecated
 - Deprecated the `customAsciiCharMappings` config setting. (Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).)
