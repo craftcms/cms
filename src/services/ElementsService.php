@@ -704,7 +704,14 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($criteria->id)
 		{
-			$query->andWhere(DbHelper::parseParam('elements.id', $criteria->id, $query->params));
+			if (is_array($criteria->id))
+			{
+				$query->andWhere(array('in', 'elements.id', $criteria->id));
+			}
+			else
+			{
+				$query->andWhere(DbHelper::parseParam('elements.id', $criteria->id, $query->params));
+			}
 		}
 
 		if ($criteria->archived)
