@@ -8,6 +8,7 @@
 - `email.beforeSendEmail` events now have a `sent` parameter, which can be set to `true` if a plugin has sent the email, and `EmailService::sendEmail()` should return `true`. ([#2917](https://github.com/craftcms/cms/pull/2917))
 - Improved the performance of element queries when a lot of values were passed into a param, such as `id`, by using `IN()` and `NOT IN()` conditions when possible. ([#2937](https://github.com/craftcms/cms/pull/2937))
 - Updated Redactor to 2.13.
+- Updated Garnish to 0.1.23.
 
 ## 2.6.3016 - 2018-05-15
 
