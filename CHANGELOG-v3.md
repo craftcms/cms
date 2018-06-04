@@ -16,6 +16,7 @@
 - `minVersionRequired` is no longer enforced on a plugin when updating it if was coming from a `dev-` branch.
 - Improved the performance of element queries when a lot of values were passed into a param, such as `id`, by using `IN()` and `NOT IN()` conditions when possible. ([#2937](https://github.com/craftcms/cms/pull/2937))
 - Craft no longer skips files with leading underscores in file names when indexing Assets. ([#2943](https://github.com/craftcms/cms/issues/2943))
+- Updated Garnish to 0.1.23.
 
 ### Deprecated
 - Deprecated the `customAsciiCharMappings` config setting. (Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).)
