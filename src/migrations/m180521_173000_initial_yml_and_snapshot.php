@@ -259,7 +259,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             unset($data[$fieldGroupMap[$fieldGroup['id']]]['id'], $data[$fieldGroupMap[$fieldGroup['id']]]['uid']);
         }
 
-        $fields = (new Query())
+        $fieldRows= (new Query())
             ->select([
                 'id',
                 'groupId',
@@ -275,6 +275,13 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ])
             ->from('{{%fields}}')
             ->all();
+
+        $fields = [];
+
+        // Index by UID
+        foreach ($fieldRows as $fieldRow) {
+            $fields[$fieldRow['uid']] = $fieldRow;
+        }
 
         $matrixBlockTypes = (new Query())
             ->select([
@@ -304,6 +311,20 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($matrixBlockTypes as $matrixBlockType) {
             $fieldId = $matrixBlockType['fieldId'];
             $layoutUid = $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['uid'];
+
+            // Nest the field definitions inside Matrix block type definitions.
+            foreach ($matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['tabs'] as &$tab) {
+                $tabFields = [];
+
+                foreach ($tab['fields'] as $field) {
+                    // Replace the dependency with actual definition
+                    $tabFields[$field['dependsOn']] = $fields[$field['dependsOn']];
+                    unset($tabFields[$field['dependsOn']]['uid']);
+                }
+
+                $tab['fields'] = $tabFields;
+            }
+
             $blockTypeData[$fieldId][$matrixBlockType['uid']]['layouts'] = [$layoutUid => $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]];
             unset($blockTypeData[$fieldId][$matrixBlockType['uid']]['fieldLayoutId'], $blockTypeData[$fieldId][$matrixBlockType['uid']]['layouts'][$layoutUid]['uid']);
 
