@@ -40,15 +40,29 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * Regnerate a config from current site structure and save the changes the YAML configuration.
+     * Regnerate snapshot from current YAML configuration files.
      * This will also update the snapshot.
      *
-     * @return Response|null
+     * @return Response
      * @throws NotFoundHttpException if the requested user group cannot be found
      */
-    public function actionRegenerateSnapshot()
+    public function actionRegenerateSnapshot(): Response
     {
         Craft::$app->getProjectConfig()->updateSnapshot();
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Regenerate the config from current site snapshot and save the changes the YAML configuration.
+     * This will also update the snapshot.
+     *
+     * @return Response
+     * @throws NotFoundHttpException if the requested user group cannot be found
+     */
+    public function actionRegenerateConfig(): Response
+    {
+        Craft::$app->getProjectConfig()->generateConfigFileFromSnapshot();
 
         return $this->redirectToPostedUrl();
     }
@@ -60,9 +74,13 @@ class ProjectConfigController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested user group cannot be found
      */
-    public function actionRegenerateConfigMappings()
+    public function actionRegenerateConfigMappings(): Response
     {
-        Craft::$app->getProjectConfig()->updateConfigMap();
+        $configService = Craft::$app->getProjectConfig();
+
+        if ($configService->updateConfigMap()) {
+            $configService->updateDateModifiedCache();
+        }
 
         return $this->redirectToPostedUrl();
     }

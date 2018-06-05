@@ -289,6 +289,21 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Generate the configuration file based on the current snapshot.
+     *
+     * @return void
+     */
+    public function generateConfigFileFromSnapshot() {
+        $snapshot = $this->getCurrentSnapshot();
+
+        $basePath = Craft::$app->getPath()->getConfigPath();
+        $baseFile = $basePath.'/system.yml';
+
+        $this->_saveYaml($snapshot, $baseFile);
+        $this->updateDateModifiedCache();
+    }
+
+    /**
      * Get the stored config map.
      *
      * @return array
@@ -401,11 +416,11 @@ class ProjectConfig extends Component
     /**
      * Save YML data to a file, cleaning up empty values while doing so.
      *
-     * @param $data
-     * @param $path
+     * @param array $data
+     * @param string $path
      * @throws \yii\base\ErrorException
      */
-    private function _saveYaml($data, $path) {
+    private function _saveYaml(array $data, string $path) {
         $traverseAndClean = function (&$array) use (&$traverseAndClean) {
             $remove = [];
             foreach ($array as $key => &$value) {
