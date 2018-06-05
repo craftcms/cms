@@ -308,18 +308,23 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
+        // Nest the field definitions inside Matrix block type definitions.
         foreach ($matrixBlockTypes as $matrixBlockType) {
             $fieldId = $matrixBlockType['fieldId'];
             $layoutUid = $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['uid'];
 
-            // Nest the field definitions inside Matrix block type definitions.
             foreach ($matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['tabs'] as &$tab) {
                 $tabFields = [];
 
                 foreach ($tab['fields'] as $field) {
                     // Replace the dependency with actual definition
-                    $tabFields[$field['dependsOn']] = $fields[$field['dependsOn']];
-                    unset($tabFields[$field['dependsOn']]['uid']);
+                    $fieldDefinition = $fields[$field['dependsOn']];
+                    unset($fieldDefinition['uid'], $fieldDefinition['id'], $fieldDefinition['groupId']);
+
+                    $tabFields[] = [
+                        'sortOrder' => $field['sortOrder'],
+                        'field' => $fieldDefinition
+                    ];
                 }
 
                 $tab['fields'] = $tabFields;
