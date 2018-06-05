@@ -55,10 +55,10 @@ class AssetIndexes extends Utility
     {
         /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
-        $sourceOptions = [];
+        $volumeOptions = [];
 
         foreach ($volumes as $volume) {
-            $sourceOptions[] = [
+            $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
                 'value' => $volume->id
             ];
@@ -66,8 +66,8 @@ class AssetIndexes extends Utility
 
         $view = Craft::$app->getView();
         $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect', [
-            'name' => 'sources',
-            'options' => $sourceOptions,
+            'name' => 'volumes',
+            'options' => $volumeOptions,
             'showAllOption' => true,
             'values' => '*',
         ]);
