@@ -472,6 +472,9 @@ class DbHelper
 			$join = 'or';
 		}
 
+		$inVals = array();
+		$notInVals = array();
+
 		foreach ($value as $val)
 		{
 			static::_normalizeEmptyValue($val);
@@ -487,47 +490,70 @@ class DbHelper
 				{
 					$conditions[] = array('and', $column.' is not null', $column.' != ""');
 				}
+
+				continue;
+			}
+
+			// Trim any whitespace from the value
+			$val = trim($val);
+
+			// This could be a LIKE condition
+			if ($operator == '=' || $operator == '!=')
+			{
+				$val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
+				$like = (bool) $count;
 			}
 			else
 			{
-				// Trim any whitespace from the value
-				$val = trim($val);
-
-				// This could be a LIKE condition
-				if ($operator == '=' || $operator == '!=')
-				{
-					$val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
-					$like = (bool) $count;
-				}
-				else
-				{
-					$like = false;
-				}
-
-				// Unescape any asterisks
-				$val = str_replace('\*', '*', $val);
-
-				if ($like)
-				{
-					$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
-				}
-				else
-				{
-					// Find a unique param name
-					$paramKey = ':'.str_replace('.', '', $column);
-					$i = 1;
-
-					while (isset($params[$paramKey.$i]))
-					{
-						$i++;
-					}
-
-					$param = $paramKey.$i;
-					$params[$param] = $val;
-
-					$conditions[] = $column.$operator.$param;
-				}
+				$like = false;
 			}
+
+			// Unescape any asterisks
+			$val = str_replace('\*', '*', $val);
+
+			if ($like)
+			{
+				$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
+				continue;
+			}
+
+			// ['or', 1, 2, 3] => IN (1, 2, 3)
+			if ($join == 'or' && $operator == '=')
+			{
+				$inVals[] =  $val;
+				continue;
+			}
+
+			// ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
+			if ($join == 'and' && $operator == '!=')
+			{
+				$notInVals[] = $val;
+				continue;
+			}
+
+			// Find a unique param name
+			$paramKey = ':'.str_replace('.', '', $column);
+			$i = 1;
+
+			while (isset($params[$paramKey.$i]))
+			{
+				$i++;
+			}
+
+			$param = $paramKey.$i;
+			$params[$param] = $val;
+
+			$conditions[] = $column.$operator.$param;
+		}
+
+		if (!empty($inVals))
+		{
+			$conditions[] = array('in', $column, $inVals);
+		}
+
+		if (!empty($notInVals))
+		{
+			$conditions[] = array('not in', $column, $notInVals);
 		}
 
 		if (count($conditions) == 1)

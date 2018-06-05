@@ -1,7 +1,7 @@
 /*
 	Redactor II
-	Version 2.12
-	Updated: December 4, 2017
+	Version 2.13
+	Updated: April 17, 2018
 
 	http://imperavi.com/redactor/
 
@@ -101,7 +101,7 @@
 
 	// Options
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '2.12';
+	$.Redactor.VERSION = '2.13';
 	$.Redactor.modules = ['air', 'autosave', 'block', 'buffer', 'build', 'button', 'caret', 'clean', 'code', 'core', 'detect', 'dropdown',
 						  'events', 'file', 'focus', 'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'linkify', 'list', 'marker', 'modal', 'observe', 'offset', 'paragraphize', 'paste', 'placeholder',
@@ -147,7 +147,7 @@
 		pasteImages: true,
 		pasteLinks: true,
 		pasteBlockTags: ['pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tbody', 'thead', 'tfoot', 'th', 'tr', 'td', 'ul', 'ol', 'li', 'blockquote', 'p', 'figure', 'figcaption'],
-		pasteInlineTags: ['br', 'strong', 'ins', 'code', 'del', 'span', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small', 'b', 'u', 'em', 'i'],
+		pasteInlineTags: ['br', 'strong', 'ins', 'code', 'del', 'span', 'samp', 'kbd', 'sup', 'sub', 'abbr','mark', 'var', 'cite', 'small', 'b', 'u', 'em', 'i'],
 
 		preClass: false, // string
 		preSpaces: 4, // or false
@@ -183,6 +183,7 @@
 		s3: false,
 
         linkNewTab: false,
+        linkNewTabHide: false,
 		linkTooltip: true,
 		linkNofollow: false,
 		linkSize: 30,
@@ -308,7 +309,7 @@
 		// private
 		type: 'textarea', // textarea, div, inline, pre
 		inline: false,
-		inlineTags: ['a', 'span', 'strong', 'strike', 'b', 'u', 'em', 'i', 'code', 'del', 'ins', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small'],
+		inlineTags: ['a', 'span', 'strong', 'strike', 'b', 'u', 'em', 'i', 'code', 'del', 'ins', 'samp', 'kbd', 'sup', 'sub', 'abbr', 'mark', 'var', 'cite', 'small'],
 		blockTags: ['pre', 'ul', 'ol', 'li', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',  'dl', 'dt', 'dd', 'div', 'td', 'blockquote', 'output', 'figcaption', 'figure', 'address', 'section', 'header', 'footer', 'aside', 'article', 'iframe'],
 		paragraphize: true,
 		paragraphizeBlocks: ['table', 'div', 'pre', 'form', 'ul', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'dl', 'blockquote', 'figcaption',
@@ -2784,11 +2785,8 @@
                         html = html.replace(/<o:p[^>]*>/gi, '');
                         html = html.replace(/<\/o:p>/gi, '');
 
-						var msword = this.clean.isHtmlMsWord(html);
-						if (msword)
-						{
-							html = this.clean.cleanMsWord(html);
-						}
+                        // ms word
+						html = this.clean.cleanMsWord(html);
 					}
 
 					html = $.trim(html);
@@ -2945,10 +2943,6 @@
 					var matchNL = html.match(/\n/gi);
 
 					return (!matchBR && !matchNL) ? true : false;
-				},
-				isHtmlMsWord: function(html)
-				{
-					return html.match(/class="?Mso|style="[^"]*\bmso-|style='[^'']*\bmso-|w:WordDocument/i);
 				},
 				removeEmptyInlineTags: function(html)
 				{
@@ -3511,6 +3505,11 @@
 					}
 
 					this.placeholder.enable();
+
+                    if (!options.start)
+                    {
+					    this.observe.load();
+					}
 				},
 				get: function()
 				{
@@ -5359,7 +5358,7 @@
                             filter = ',' + this.opts.keepStyleAttr.join(',');
                         }
 
-						$el.find(this.opts.inlineTags.join(',')).not('img' + filter).removeAttr('style');
+						$el.find(this.opts.inlineTags.join(',')).not('img, [data-redactor-style-cache], [data-redactor-span]' + filter).removeAttr('style');
 
 						var $parent = $el.parent();
 						if ($parent.length !== 0 && $parent[0].tagName === 'LI')
@@ -6101,19 +6100,40 @@
                 // All
 				removeFormat: function()
 				{
+    				var nodes = this.selection.inlines();
+
+    				if (nodes.length === 1)
+    				{
+        				var node = nodes[0];
+        				while (node)
+    					{
+    						if (this.utils.isInlineTag(node.tagName))
+    						{
+    							if ($(node).hasClass('redactor-in'))
+    							{
+        							return false;
+                                }
+                                else
+                                {
+                                    nodes.push(node);
+                                }
+    						}
+
+    						node = node.parentNode;
+    					}
+    				}
+
+
     				this.selection.save();
 
-    				var nodes = this.inline.getClearedNodes();
     				for (var i = 0; i < nodes.length; i++)
     				{
-        				if (nodes[i].nodeType === 1)
+        				$(nodes[i]).replaceWith(function()
         				{
-            				$(nodes[i]).replaceWith(function()
-                            {
-                                return $(this).contents();
-                            });
-        				}
+            				return $(this).contents();
+        				});
     				}
+
 
     				this.selection.restore();
 				}
@@ -6249,7 +6269,7 @@
 					if (data.pre) this.clean.cleanPre();
 
                     this.caret.end(endNode);
-                    this.linkify.format();
+                    this.linkify.format(true);
 				},
 				text: function(text)
 				{
@@ -6672,6 +6692,7 @@
         					return;
     					}
 					}
+
 
 					// backspace & delete
 					if (key === this.keyCode.BACKSPACE || key === this.keyCode.DELETE)
@@ -7142,9 +7163,11 @@
 				},
 				setupSelectAll: function(e, key)
 				{
-					if (this.keydown.ctrl && key === 65)
+    				if ((e.ctrlKey || e.metaKey) && !e.altKey && key === 65)
 					{
+    					e.preventDefault();
 						this.utils.enableSelectAll();
+    					this.selection.all();
 					}
 					else if (key !== this.keyCode.LEFT_WIN && !this.keydown.ctrl)
 					{
@@ -7674,6 +7697,12 @@
     					link.target = true;
 					}
 
+					// hide new link
+					if (this.opts.linkNewTabHide)
+					{
+					    $('#redactor-link-blank-section').hide();
+					}
+
 					// set modal values
 					this.link.setModalValues(link);
 
@@ -7732,7 +7761,7 @@
 				},
 				isUrl: function(url)
 				{
-    				var reUrl = new RegExp('^((https?|ftp):\\/\\/)?(([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*(\\?[;&a-z\\d%_.~+=-]*)?(\\#[-a-z\\d_]*)?$','i');
+    				var reUrl = /^(?:(?:(?:https?|ftp):)?\/\/)?(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i;
 
     				return (reUrl.test(url)) ? url : false;
 				},
@@ -7760,7 +7789,7 @@
 					{
     					if (this.opts.linkValidation)
     					{
-        					link.url = (this.link.isUrl(link.url)) ? 'http://' + link.url.replace(/(ftp|https?):\/\//gi, '') : link.url;
+        					link.url = (this.link.isUrl(link.url) && link.url.search(/^(ftp|https?)/i) === -1) ? 'http://' + link.url.replace(/(ftp|https?):\/\//gi, '') : link.url;
 						}
 					}
 
@@ -7893,7 +7922,7 @@
 
 					$el.before(text.replace(text, html)).remove();
 				},
-				format: function()
+				format: function(lastFocus)
 				{
 					if (!this.opts.linkify || this.utils.isCurrentOrParent('pre'))
 					{
@@ -7925,6 +7954,11 @@
 					// callback
 					setTimeout($.proxy(function()
 					{
+    					if (lastFocus === true && $objects.length > 0)
+    					{
+        					this.caret.end($objects.last());
+    					}
+
 						this.code.sync();
 						this.core.callback('linkify', $objects);
 
@@ -8031,7 +8065,7 @@
 
                     var nodes = this.list._getBlocks();
                     var block = this.selection.block();
-                    var $list = $(block).parents('ul, ol').last();
+                    var $list = $(block).parents('ul, ol', this.core.editor()[0]).last();
                     if (nodes.length === 0 && $list.length !== 0)
                     {
                         nodes = [$list.get(0)];
@@ -8548,7 +8582,7 @@
 								+ '<label>' + this.lang.get('text') + '</label>'
 								+ '<input type="text" id="redactor-link-url-text" aria-label="' + this.lang.get('text') + '" />'
 							+ '</section>'
-							+ '<section>'
+							+ '<section id="redactor-link-blank-section">'
 								+ '<label class="checkbox"><input type="checkbox" id="redactor-link-blank"> ' + this.lang.get('link-in-new-tab') + '</label>'
 							+ '</section>'
 							+ '<section>'
@@ -9411,9 +9445,17 @@
 
 					}, this));
 
+                    var htmlF;
+                    if (pre && this.detect.isFirefox())
+					{
+						e = e.originalEvent || e;
+						e.preventDefault();
+						htmlF = e.clipboardData.getData("text/plain");
+					}
+
 					setTimeout($.proxy(function()
 					{
-						var html = this.paste.getPasteBoxCode(pre);
+						var html = (htmlF) ? htmlF : this.paste.getPasteBoxCode(pre);
 
 						// buffer
 						this.buffer.set();

@@ -32,7 +32,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	private $_supportedFieldHandles;
 
 	/**
-	 * @var
+	 * @var BaseElementModel[]|null
 	 */
 	private $_matchedElements;
 
@@ -212,6 +212,13 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 
 		if (parent::setAttribute($name, $value))
 		{
+			//  Don't wipe out the matched elements if this is just 'with'
+			if ($name === 'with' && !empty($this->_matchedElements)) {
+				$elementType = craft()->elements->getElementType($this->_matchedElements[0]->getElementType());
+				craft()->elements->eagerLoadElements($elementType, $this->_matchedElements, $value);
+				return true;
+			}
+
 			$this->_matchedElements = null;
 			$this->_matchedElementsAtOffsets = null;
 			$this->_cachedIds = null;

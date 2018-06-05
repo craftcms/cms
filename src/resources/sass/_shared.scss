@@ -42,10 +42,10 @@ $secondarySubmitColor: hsl($hue, 10%, 60%);
 $secondarySubmitHoverColor: hsl($hue, 10%, 50%);
 $secondarySubmitActiveColor: hsl($hue, 10%, 40%);
 
-$errorcolor: $orange;
-$warningcolor: $orange;
-$successcolor: $green;
-$noticecolor: $blue;
+$errorcolor: darken($orange, 17%);
+$warningcolor: $errorcolor;
+$successcolor: darken($green, 10%);
+$noticecolor: darken($blue, 10%);
 
 $btnBorderRadius: 3px;
 $paneBorderRadius: 4px;
