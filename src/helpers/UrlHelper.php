@@ -510,13 +510,17 @@ class UrlHelper
             }
         } else if ($cpUrl) {
             $baseUrl = static::baseCpUrl();
-
-            if ($scheme !== null) {
-                // Make sure we're using the right scheme
-                $baseUrl = static::urlWithScheme($baseUrl, $scheme);
-            }
         } else {
             $baseUrl = static::baseSiteUrl();
+        }
+
+        if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {
+            $scheme = !$request->getIsConsoleRequest() && $request->getIsSecureConnection() ? 'https' : 'http';
+        }
+
+        if ($scheme !== null) {
+            // Make sure we're using the right scheme
+            $baseUrl = static::urlWithScheme($baseUrl, $scheme);
         }
 
         // Put it all together

@@ -1081,8 +1081,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             return reset($cachedResult) ?: null;
         }
 
-        $row = parent::one($db);
-        return $row ? $this->_createElement($row) : null;
+        if ($row = parent::one($db)) {
+            $elements = $this->populate([$row]);
+            return reset($elements) ?: null;
+        }
+
+        return null;
     }
 
     /**
@@ -1568,7 +1572,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $condition = (new ElementRelationParamParser())->parse($this->relatedTo);
+        $parser = new ElementRelationParamParser([
+            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : []
+        ]);
+        $condition = $parser->parse($this->relatedTo);
 
         if ($condition === false) {
             throw new QueryAbortedException();

@@ -16,6 +16,7 @@ use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use yii\base\BaseObject;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
@@ -23,7 +24,7 @@ use craft\models\Site;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ElementRelationParamParser
+class ElementRelationParamParser extends BaseObject
 {
     // Constants
     // =========================================================================
@@ -33,6 +34,11 @@ class ElementRelationParamParser
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var FieldInterface[]|null The custom fields that are game for the query.
+     */
+    public $fields;
 
     /**
      * @var int
@@ -415,12 +421,10 @@ class ElementRelationParamParser
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;
-            $fieldModel = Craft::$app->getFields()->getFieldById($field);
-        } else {
-            $fieldHandleParts = explode('.', $field);
-            $fieldModel = Craft::$app->getFields()->getFieldByHandle($fieldHandleParts[0]);
+            return Craft::$app->getFields()->getFieldById($field);
         }
 
-        return $fieldModel;
+        $fieldHandleParts = explode('.', $field);
+        return $this->fields[$fieldHandleParts[0]] ?? null;
     }
 }
