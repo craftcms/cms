@@ -1,4 +1,4 @@
-/*!   - 2018-06-01 */
+/*!   - 2018-06-05 */
 (function($){
 
 /** global: Craft */
@@ -7340,7 +7340,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (this.settings.context === 'index') {
                 if (this._folderDrag && this._getSourceLevel($source) > 1) {
-                    if (this._getFolderIdFromSourceKey($source.data('key'))) {
+                    if ($source.data('folder-id')) {
                         this._folderDrag.addItems($source.parent());
                     }
                 }
@@ -7412,7 +7412,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     for (var i = 0; i < this.$sources.length; i++) {
                         // Make sure it's a volume folder
                         var $source = this.$sources.eq(i);
-                        if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+                        if (!this._getFolderUidFromSourceKey($source.data('key'))) {
                             continue;
                         }
                         targets.push($source);
@@ -7442,7 +7442,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         for (var i = 0; i < $selected.length; i++) {
                             var $source = $selected.eq(i);
 
-                            if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+                            if (!this._getFolderUidFromSourceKey($source.data('key'))) {
                                 continue;
                             }
 
@@ -7487,7 +7487,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             var $source = this.$sources.eq(i),
                                 key = $source.data('key');
 
-                            if (!this._getFolderIdFromSourceKey(key)) {
+                            if (!this._getFolderUidFromSourceKey(key)) {
                                 continue;
                             }
 
@@ -7513,7 +7513,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 // Keep it selected
                 var originatingSource = this.$source;
 
-                var targetFolderId = this._getFolderIdFromSourceKey(this._assetDrag.$activeDropTarget.data('key')),
+                var targetFolderId = this._assetDrag.$activeDropTarget.data('folder-id'),
                     originalAssetIds = [];
 
                 // For each file, prepare array data.
@@ -7677,7 +7677,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 this._folderDrag.$activeDropTarget &&
                 this._folderDrag.$activeDropTarget.siblings('ul').children('li').filter(this._folderDrag.$draggee).length === 0
             ) {
-                var targetFolderId = this._getFolderIdFromSourceKey(this._folderDrag.$activeDropTarget.data('key'));
+                var targetFolderId = this._folderDrag.$activeDropTarget.data('folder-id');
 
                 this._collapseExtraExpandedFolders(targetFolderId);
 
@@ -7686,11 +7686,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                 for (var i = 0; i < this._folderDrag.$draggee.length; i++) {
                     var $a = this._folderDrag.$draggee.eq(i).children('a'),
-                        folderId = this._getFolderIdFromSourceKey($a.data('key')),
-                        $source = this._getSourceByFolderId(folderId);
+                        folderId = $a.data('folder-id');
 
                     // Make sure it's not already in the target folder
-                    if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId) {
+                    if (folderId != targetFolderId) {
                         folderIds.push(folderId);
                     }
                 }
@@ -7755,7 +7754,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                 }
 
                                 if (data.newFolderId) {
-                                    newSourceKey = this._folderDrag.$activeDropTarget.data('key') + '/folder:' + data.newFolderId;
+                                    newSourceKey = this._folderDrag.$activeDropTarget.data('key') + '/folder:' + data.newFolderUid;
                                 }
                             }
 
@@ -7908,7 +7907,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _selectSourceByFolderId: function(targetFolderId) {
-            var $targetSource = this._getSourceByFolderId(targetFolderId);
+            var $targetSource = this._getSourceByKey(targetFolderId);
 
             // Make sure that all the parent sources are expanded and this source is visible.
             var $parentSources = $targetSource.parent().parents('li');
@@ -7974,11 +7973,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         onSelectSource: function() {
-            var folderId = this._getFolderIdFromSourceKey(this.sourceKey);
+            var $source = this._getSourceByKey(this.sourceKey);
+            var folderId = $source.data('folder-id');
 
             if (folderId && this.$source.attr('data-upload')) {
                 this.uploader.setParams({
-                    folderId: folderId
+                    folderId: this.$source.attr('data-folder-id')
                 });
                 this.$uploadButton.removeClass('disabled');
             } else {
@@ -7988,8 +7988,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
-        _getFolderIdFromSourceKey: function(sourceKey) {
-            var m = sourceKey.match(/\bfolder:(\d+)$/);
+        _getFolderUidFromSourceKey: function(sourceKey) {
+            var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
 
             return m ? m[1] : null;
         },
@@ -8359,10 +8359,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             clearTimeout(this._expandDropTargetFolderTimeout);
 
             if ($dropTarget) {
-                var folderId = this._getFolderIdFromSourceKey($dropTarget.data('key'));
+                var folderId = $dropTarget.data('folder-id');
 
                 if (folderId) {
-                    this.dropTargetFolder = this._getSourceByFolderId(folderId);
+                    this.dropTargetFolder = this._getSourceByKey(folderId);
 
                     if (this._hasSubfolders(this.dropTargetFolder) && !this._isExpanded(this.dropTargetFolder)) {
                         this._expandDropTargetFolderTimeout = setTimeout($.proxy(this, '_expandFolder'), 500);
@@ -8392,7 +8392,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var $excludedSources;
 
             if (dropTargetFolderId) {
-                $excludedSources = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
+                $excludedSources = this._getSourceByKey(dropTargetFolderId).parents('li').children('a');
             }
 
             for (var i = this._tempExpandedFolders.length - 1; i >= 0; i--) {
@@ -8406,8 +8406,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
         },
 
-        _getSourceByFolderId: function(folderId) {
-            return this.$sources.filter('[data-key$="folder:' + folderId + '"]');
+        _getSourceByKey: function(key) {
+            return this.$sources.filter('[data-key$="' + key + '"]');
         },
 
         _hasSubfolders: function($source) {
@@ -8420,7 +8420,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _expandFolder: function() {
             // Collapse any temp-expanded drop targets that aren't parents of this one
-            this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
+            this._collapseExtraExpandedFolders(this.dropTargetFolder.data('folder-id'));
 
             this.dropTargetFolder.siblings('.toggle').trigger('click');
 
@@ -8436,7 +8436,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _createFolderContextMenu: function($source) {
             // Make sure it's a volume folder
-            if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+            if (!this._getFolderUidFromSourceKey($source.data('key'))) {
                 return;
             }
 
@@ -8456,7 +8456,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (subfolderName) {
                 var params = {
-                    parentId: this._getFolderIdFromSourceKey($parentFolder.data('key')),
+                    parentId: $parentFolder.data('folder-id'),
                     folderName: subfolderName
                 };
 
@@ -8470,9 +8470,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                         var $subfolder = $(
                             '<li>' +
-                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderId + '"' +
+                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
                             (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
                             ' data-upload="' + $parentFolder.attr('data-upload') + '"' +
+                            ' data-folder-id="' + data.folderId + '"' +
                             '>' +
                             data.folderName +
                             '</a>' +
@@ -8494,7 +8495,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         _deleteFolder: function($targetFolder) {
             if (confirm(Craft.t('app', 'Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())}))) {
                 var params = {
-                    folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
+                    folderId: $targetFolder.data('folder-id')
                 };
 
                 this.setIndexBusy();
@@ -8528,7 +8529,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (newName && newName !== oldName) {
                 var params = {
-                    folderId: this._getFolderIdFromSourceKey($targetFolder.data('key')),
+                    folderId: $targetFolder.data('folder-id'),
                     newName: newName
                 };
 
@@ -8541,7 +8542,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         $targetFolder.text(data.newName);
 
                         // If the current folder was renamed.
-                        if (this._getFolderIdFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderIdFromSourceKey($targetFolder.data('key'))) {
+                        if (this._getFolderUidFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderUidFromSourceKey($targetFolder.data('key'))) {
                             this.updateElements();
                         }
                     }
@@ -9578,7 +9579,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.editableCategoryGroups.length; i++) {
                 var group = Craft.editableCategoryGroups[i];
 
-                if (this.getSourceByKey('group:' + group.id)) {
+                if (this.getSourceByKey('group:' + group.uid)) {
                     this.editableGroups.push(group);
                 }
             }
@@ -9756,7 +9757,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right group is selected
-                    var groupSourceKey = 'group:' + groupId;
+                    var groupSourceKey = 'group:' + group.uid;
 
                     if (this.sourceKey !== groupSourceKey) {
                         this.selectSourceByKey(groupSourceKey);
@@ -13415,7 +13416,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.id)) {
+                if (this.getSourceByKey('section:' + section.uid)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -13608,7 +13609,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + sectionId;
+                    var sectionSourceKey = 'section:' + section.uid;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);
