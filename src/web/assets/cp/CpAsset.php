@@ -303,6 +303,7 @@ JS;
                 'handle' => $group->handle,
                 'id' => $group->id,
                 'name' => Craft::t('site', $group->name),
+                'uid' => Craft::t('site', $group->uid),
             ];
         }
 
