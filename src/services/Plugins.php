@@ -21,7 +21,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\db\Exception;
 use yii\helpers\Inflector;
@@ -207,7 +206,11 @@ class Plugins extends Component
                 if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
 
                     /** @var Plugin $plugin */
-                    if (!StringHelper::startsWith($row['version'], 'dev') && ($plugin->minVersionRequired && version_compare($row['version'], $plugin->minVersionRequired, '<'))) {
+                    if (
+                        $plugin->minVersionRequired &&
+                        strpos($row['version'], 'dev-') !== 0 &&
+                        version_compare($row['version'], $plugin->minVersionRequired, '<')
+                    ) {
                         throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
                             'version' => $plugin->minVersionRequired,
                             'targetVersion' => $plugin->version,

@@ -13,9 +13,9 @@
 - Variables passed into `craft\web\View::renderObjectTemplate()` can now be referenced using the shorthand syntax (e.g. `{foo}`).
 - `craft\helpers\StringHelper::asciiCharMap()` now has `$flat` and `$language` arguments.
 - Craft no longer saves new versions of entries when absolutely nothing changed about them in the save request. ([#2923](https://github.com/craftcms/cms/issues/2923))
-- `minVersionRequired` is no longer enforced on a plugin when updating it if was coming from a `dev-` branch.
+- Craft no longer enforces plugins’ `minVersionRequired` settings if the currently-installed version begins with `dev-`.
 - Improved the performance of element queries when a lot of values were passed into a param, such as `id`, by using `IN()` and `NOT IN()` conditions when possible. ([#2937](https://github.com/craftcms/cms/pull/2937))
-- Craft no longer skips files with leading underscores in file names when indexing Assets. ([#2943](https://github.com/craftcms/cms/issues/2943))
+- The Asset Indexes utility no longer skips files with leading underscores. ([#2943](https://github.com/craftcms/cms/issues/2943))
 - Updated Garnish to 0.1.23.
 
 ### Deprecated
@@ -26,7 +26,7 @@
 - Fixed a bug where it was not possible to fetch Matrix blocks with the `relatedTo` param if a specific custom field was specified.
 - Fixed a bug where `craft\helpers\UrlHelper::url()` and `siteUrl()` were not respecting the `$scheme` argument for site URLs.
 - Fixed a bug where `{id}` tags within element URI formats weren’t getting parsed correctly on first save. ([#2922](https://github.com/craftcms/cms/issues/2922))
-- Fixed a bug where `craft\helpers\MigrationHelper::dropAllForeignKeysToTable()` would silently not drop all foreign keys going to a table. ([#2897](https://github.com/craftcms/cms/issues/2897))
+- Fixed a bug where `craft\helpers\MigrationHelper::dropAllForeignKeysToTable()` wasn’t working correctly. ([#2897](https://github.com/craftcms/cms/issues/2897))
 - Fixed a “Craft is not defined” JavaScript error that could occur on the Forgot Password page in the Control Panel and Dev Toolbar requests.
 - Fixed a bug where rotating the screen on iOS would change how the page was zoomed.
 - Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JS method weren’t using language-specific character replacements, or any custom replacements defined by the `customAsciiCharMappings` config setting.
@@ -37,7 +37,7 @@
 - Fixed a bug where the `|date`, `|time`, and `|datetime` filters weren’t respecting their `$timezone` arguments. ([#2926](https://github.com/craftcms/cms/issues/2926))
 - Fixed a SQL syntax error that could occur in the Control Panel in some edge-case environments.
 - Fixed a bug where element queries weren’t respecting the `asArray` param when calling `one()`. ([#2940](https://github.com/craftcms/cms/issues/2940))
-- Fixed a bug where Craft would not pick up any file changes if the Volume being indexed had no files. ([#2955](https://github.com/craftcms/cms/issues/2955))
+- Fixed a bug where the Asset Indexes utility wouldn’t work as expected if all of a volume’s assets had been deleted from the file system. ([#2955](https://github.com/craftcms/cms/issues/2955))
 - Fixed a SQL error that could occur when a `{% cache %}` tag had no body. ([#2953](https://github.com/craftcms/cms/issues/2953))
 
 ## 3.0.9 - 2018-05-22
