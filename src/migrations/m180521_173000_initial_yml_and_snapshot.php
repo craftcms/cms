@@ -393,8 +393,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 $layoutUid = $fieldLayouts[$volume['fieldLayoutId']]['uid'];
                 unset($fieldLayouts[$volume['fieldLayoutId']]['fieldLayoutId']['uid']);
                 $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
-            } else {
-                $volume['fieldLayouts'] = [];
             }
 
             $uid = $volume['uid'];
@@ -433,6 +431,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->innerJoin('{{%fieldlayouts}} AS layouts', '[[layoutFields.layoutId]] = [[layouts.id]]')
             ->innerJoin('{{%fields}} AS fields', '[[layoutFields.fieldId]] = [[fields.id]]')
             ->where(['layouts.id' => $layoutIds])
+            ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
             ->all();
 
         $fieldLayouts = [];
