@@ -13,6 +13,7 @@ use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use craft\services\Sites;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -159,7 +160,13 @@ class Request extends \yii\web\Request
 
         try {
             // Figure out which site is being requested
-            $site = $this->_getCurrentSite();
+            $sitesService = Craft::$app->getSites();
+            if ($sitesService->getHasCurrentSite()) {
+                $site = $sitesService->getCurrentSite();
+            } else {
+                $site = $this->_requestedSite($sitesService);
+                $sitesService->setCurrentSite($site);
+            }
 
             // If the requested URI begins with the current site's base URL path,
             // make sure that our internal path doesn't include those segments
@@ -1046,22 +1053,14 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Determine the current site for the request, either because it is already defined
-     * or by finding the one that most closely matches the requested URL.
+     * Returns the site that most closely matches the requested URL.
      *
+     * @param Sites $sitesService
      * @return Site
      * @throws SiteNotFoundException if no sites exist
      */
-    private function _getCurrentSite(): Site
+    private function _requestedSite(Sites $sitesService): Site
     {
-        $sitesService = Craft::$app->getSites();
-
-        // If a current site is already defined, go with that
-        if ($sitesService->getHasCurrentSite()) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            return $sitesService->getCurrentSite();
-        }
-
         $sites = $sitesService->getAllSites();
 
         $hostName = $this->getHostName();
@@ -1097,7 +1096,7 @@ class Request extends \yii\web\Request
             // It's a possible match!
             $scores[$i] = 8 + strlen($parsedPath);
 
-            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : 'http';
+            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
             $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
 
             // Do the ports match?
@@ -1124,9 +1123,7 @@ class Request extends \yii\web\Request
         // Sort by scores descending
         arsort($scores, SORT_NUMERIC);
         $first = ArrayHelper::firstKey($scores);
-        $site = $sites[$first];
-        $sitesService->setCurrentSite($site);
-        return $site;
+        return $sites[$first];
     }
 
     /**

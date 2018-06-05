@@ -132,7 +132,7 @@ class AssetIndexer extends Component
                 $segments = explode('/', $path);
 
                 foreach ($segments as $segment) {
-                    if (isset($segment[0]) && $segment[0] === '_') {
+                    if (isset($segment[0]) && $segment[0] === '_' && $value['type'] === 'dir') {
                         return false;
                     }
                 }

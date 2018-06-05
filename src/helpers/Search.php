@@ -7,6 +7,8 @@
 
 namespace craft\helpers;
 
+use Craft;
+
 /**
  * Search helper.
  *
@@ -79,15 +81,11 @@ class Search
     private static function _getCharMap(): array
     {
         // Keep local copy
-        static $map = [];
+        static $map;
 
-        if (empty($map)) {
+        if ($map === null) {
             // This will replace accented chars with non-accented chars
-            foreach (StringHelper::asciiCharMap() as $asciiChar => $charsArray) {
-                foreach ($charsArray as $char) {
-                    $map[$char] = $asciiChar;
-                }
-            }
+            $map = StringHelper::asciiCharMap(true, Craft::$app->language);
 
             // Replace punctuation with a space
             foreach (self::_getPunctuation() as $value) {

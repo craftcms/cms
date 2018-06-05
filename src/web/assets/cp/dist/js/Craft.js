@@ -1,4 +1,4 @@
-/*!   - 2018-05-22 */
+/*!   - 2018-06-01 */
 (function($){
 
 /** global: Craft */
@@ -7,137 +7,6 @@
 $.extend(Craft,
     {
         navHeight: 48,
-
-        /**
-         * Map of high-ASCII codes to their low-ASCII characters.
-         *
-         * @var object
-         */
-        asciiCharMap: {
-            'a': [
-                'à', 'á', 'ả', 'ã', 'ạ', 'ă', 'ắ', 'ằ', 'ẳ', 'ẵ', 'ặ', 'â', 'ấ', 'ầ', 'ẩ', 'ẫ', 'ậ',
-                'ä', 'ā', 'ą', 'å', 'α', 'ά', 'ἀ', 'ἁ', 'ἂ', 'ἃ', 'ἄ', 'ἅ', 'ἆ', 'ἇ', 'ᾀ', 'ᾁ', 'ᾂ',
-                'ᾃ', 'ᾄ', 'ᾅ', 'ᾆ', 'ᾇ', 'ὰ', 'ά', 'ᾰ', 'ᾱ', 'ᾲ', 'ᾳ', 'ᾴ', 'ᾶ', 'ᾷ', 'а', 'أ'
-            ],
-            'b': ['б', 'β', 'Ъ', 'Ь', 'ب'],
-            'c': ['ç', 'ć', 'č', 'ĉ', 'ċ'],
-            'd': ['ď', 'ð', 'đ', 'ƌ', 'ȡ', 'ɖ', 'ɗ', 'ᵭ', 'ᶁ', 'ᶑ', 'д', 'δ', 'د', 'ض'],
-            'e': [
-                'é', 'è', 'ẻ', 'ẽ', 'ẹ', 'ê', 'ế', 'ề', 'ể', 'ễ', 'ệ', 'ë', 'ē', 'ę', 'ě', 'ĕ', 'ė',
-                'ε', 'έ', 'ἐ', 'ἑ', 'ἒ', 'ἓ', 'ἔ', 'ἕ', 'ὲ', 'έ', 'е', 'ё', 'э', 'є', 'ə'
-            ],
-            'f': ['ф', 'φ', 'ف'],
-            'g': ['ĝ', 'ğ', 'ġ', 'ģ', 'г', 'ґ', 'γ', 'ج'],
-            'h': ['ĥ', 'ħ', 'η', 'ή', 'ح', 'ه'],
-            'i': [
-                'í', 'ì', 'ỉ', 'ĩ', 'ị', 'î', 'ï', 'ī', 'ĭ', 'į', 'ı', 'ι', 'ί', 'ϊ', 'ΐ', 'ἰ', 'ἱ',
-                'ἲ', 'ἳ', 'ἴ', 'ἵ', 'ἶ', 'ἷ', 'ὶ', 'ί', 'ῐ', 'ῑ', 'ῒ', 'ΐ', 'ῖ', 'ῗ', 'і', 'ї', 'и'
-            ],
-            'j': ['ĵ', 'ј', 'Ј'],
-            'k': ['ķ', 'ĸ', 'к', 'κ', 'Ķ', 'ق', 'ك'],
-            'l': ['ł', 'ľ', 'ĺ', 'ļ', 'ŀ', 'л', 'λ', 'ل'],
-            'm': ['м', 'μ', 'م'],
-            'n': ['ñ', 'ń', 'ň', 'ņ', 'ŉ', 'ŋ', 'ν', 'н', 'ن'],
-            'o': [
-                'ó', 'ò', 'ỏ', 'õ', 'ọ', 'ô', 'ố', 'ồ', 'ổ', 'ỗ', 'ộ', 'ơ', 'ớ', 'ờ', 'ở', 'ỡ', 'ợ',
-                'ø', 'ō', 'ő', 'ŏ', 'ο', 'ὀ', 'ὁ', 'ὂ', 'ὃ', 'ὄ', 'ὅ', 'ὸ', 'ό', 'ö', 'о', 'و', 'θ'
-            ],
-            'p': ['п', 'π'],
-            'r': ['ŕ', 'ř', 'ŗ', 'р', 'ρ', 'ر'],
-            's': ['ś', 'š', 'ş', 'с', 'σ', 'ș', 'ς', 'س', 'ص'],
-            't': ['ť', 'ţ', 'т', 'τ', 'ț', 'ت', 'ط'],
-            'u': [
-                'ú', 'ù', 'ủ', 'ũ', 'ụ', 'ư', 'ứ', 'ừ', 'ử', 'ữ', 'ự', 'ü', 'û', 'ū', 'ů', 'ű', 'ŭ',
-                'ų', 'µ', 'у'
-            ],
-            'v': ['в'],
-            'w': ['ŵ', 'ω', 'ώ'],
-            'x': ['χ'],
-            'y': ['ý', 'ỳ', 'ỷ', 'ỹ', 'ỵ', 'ÿ', 'ŷ', 'й', 'ы', 'υ', 'ϋ', 'ύ', 'ΰ', 'ي'],
-            'z': ['ź', 'ž', 'ż', 'з', 'ζ', 'ز'],
-            'aa': ['ع'],
-            'ae': ['æ'],
-            'ch': ['ч'],
-            'dj': ['ђ', 'đ'],
-            'dz': ['џ'],
-            'gh': ['غ'],
-            'kh': ['х', 'خ'],
-            'lj': ['љ'],
-            'nj': ['њ'],
-            'oe': ['œ'],
-            'ps': ['ψ'],
-            'sh': ['ш'],
-            'shch': ['щ'],
-            'ss': ['ß'],
-            'th': ['þ', 'ث', 'ذ', 'ظ'],
-            'ts': ['ц'],
-            'ya': ['я'],
-            'yu': ['ю'],
-            'zh': ['ж'],
-            '(c)': ['©'],
-            'A': [
-                'Á', 'À', 'Ả', 'Ã', 'Ạ', 'Ă', 'Ắ', 'Ằ', 'Ẳ', 'Ẵ', 'Ặ', 'Â', 'Ấ', 'Ầ', 'Ẩ', 'Ẫ',
-                'Ậ', 'Ä', 'Å', 'Ā', 'Ą', 'Α', 'Ά', 'Ἀ', 'Ἁ', 'Ἂ', 'Ἃ', 'Ἄ', 'Ἅ', 'Ἆ', 'Ἇ', 'ᾈ',
-                'ᾉ', 'ᾊ', 'ᾋ', 'ᾌ', 'ᾍ', 'ᾎ', 'ᾏ', 'Ᾰ', 'Ᾱ', 'Ὰ', 'Ά', 'ᾼ', 'А'
-            ],
-            'B': ['Б', 'Β'],
-            'C': ['Ć', 'Č', 'Ĉ', 'Ċ'],
-            'D': ['Ď', 'Ð', 'Đ', 'Ɖ', 'Ɗ', 'Ƌ', 'ᴅ', 'ᴆ', 'Д', 'Δ'],
-            'E': [
-                'É', 'È', 'Ẻ', 'Ẽ', 'Ẹ', 'Ê', 'Ế', 'Ề', 'Ể', 'Ễ', 'Ệ', 'Ë', 'Ē', 'Ę', 'Ě', 'Ĕ',
-                'Ė', 'Ε', 'Έ', 'Ἐ', 'Ἑ', 'Ἒ', 'Ἓ', 'Ἔ', 'Ἕ', 'Έ', 'Ὲ', 'Е', 'Ё', 'Э', 'Є', 'Ə'
-            ],
-            'F': ['Ф', 'Φ'],
-            'G': ['Ğ', 'Ġ', 'Ģ', 'Г', 'Ґ', 'Γ'],
-            'H': ['Η', 'Ή'],
-            'I': [
-                'Í', 'Ì', 'Ỉ', 'Ĩ', 'Ị', 'Î', 'Ï', 'Ī', 'Ĭ', 'Į', 'İ', 'Ι', 'Ί', 'Ϊ', 'Ἰ', 'Ἱ',
-                'Ἳ', 'Ἴ', 'Ἵ', 'Ἶ', 'Ἷ', 'Ῐ', 'Ῑ', 'Ὶ', 'Ί', 'И', 'І', 'Ї'
-            ],
-            'K': ['К', 'Κ'],
-            'L': ['Ĺ', 'Ł', 'Л', 'Λ', 'Ļ'],
-            'M': ['М', 'Μ'],
-            'N': ['Ń', 'Ñ', 'Ň', 'Ņ', 'Ŋ', 'Н', 'Ν'],
-            'O': [
-                'Ó', 'Ò', 'Ỏ', 'Õ', 'Ọ', 'Ô', 'Ố', 'Ồ', 'Ổ', 'Ỗ', 'Ộ', 'Ơ', 'Ớ', 'Ờ', 'Ở', 'Ỡ',
-                'Ợ', 'Ö', 'Ø', 'Ō', 'Ő', 'Ŏ', 'Ο', 'Ό', 'Ὀ', 'Ὁ', 'Ὂ', 'Ὃ', 'Ὄ', 'Ὅ', 'Ὸ', 'Ό',
-                'О', 'Θ', 'Ө'
-            ],
-            'P': ['П', 'Π'],
-            'R': ['Ř', 'Ŕ', 'Р', 'Ρ'],
-            'S': ['Ş', 'Ŝ', 'Ș', 'Š', 'Ś', 'С', 'Σ'],
-            'T': ['Ť', 'Ţ', 'Ŧ', 'Ț', 'Т', 'Τ'],
-            'U': [
-                'Ú', 'Ù', 'Ủ', 'Ũ', 'Ụ', 'Ư', 'Ứ', 'Ừ', 'Ử', 'Ữ', 'Ự', 'Û', 'Ü', 'Ū', 'Ů', 'Ű',
-                'Ŭ', 'Ų', 'У'
-            ],
-            'V': ['В'],
-            'W': ['Ω', 'Ώ'],
-            'X': ['Χ'],
-            'Y': ['Ý', 'Ỳ', 'Ỷ', 'Ỹ', 'Ỵ', 'Ÿ', 'Ῠ', 'Ῡ', 'Ὺ', 'Ύ', 'Ы', 'Й', 'Υ', 'Ϋ'],
-            'Z': ['Ź', 'Ž', 'Ż', 'З', 'Ζ'],
-            'AE': ['Æ'],
-            'CH': ['Ч'],
-            'DJ': ['Ђ'],
-            'DZ': ['Џ'],
-            'KH': ['Х'],
-            'LJ': ['Љ'],
-            'NJ': ['Њ'],
-            'PS': ['Ψ'],
-            'SH': ['Ш'],
-            'SHCH': ['Щ'],
-            'SS': ['ẞ'],
-            'TH': ['Þ'],
-            'TS': ['Ц'],
-            'YA': ['Я'],
-            'YU': ['Ю'],
-            'ZH': ['Ж'],
-            ' ': [
-                "\xC2\xA0", "\xE2\x80\x80", "\xE2\x80\x81", "\xE2\x80\x82", "\xE2\x80\x83", "\xE2\x80\x84",
-                "\xE2\x80\x85", "\xE2\x80\x86", "\xE2\x80\x87", "\xE2\x80\x88", "\xE2\x80\x89", "\xE2\x80\x8A",
-                "\xE2\x80\xAF", "\xE2\x81\x9F", "\xE3\x80\x80"
-            ]
-        },
 
         /**
          * Get a translated message.
@@ -471,7 +340,10 @@ $.extend(Craft,
                 data = {};
             }
 
-            var headers = {};
+            var headers = {
+                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
+                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
+            };
 
             if (Craft.csrfTokenValue && Craft.csrfTokenName) {
                 headers['X-CSRF-Token'] = Craft.csrfTokenValue;
@@ -938,25 +810,11 @@ $.extend(Craft,
          */
         asciiString: function(str) {
             var asciiStr = '';
+            var char;
 
-            for (var stringCounter = 0; stringCounter < str.length; stringCounter++) {
-                var asciiCode = str.charCodeAt(stringCounter);
-                var char = str.charAt(stringCounter);
-
-                if (asciiCode >= 32 && asciiCode < 128) {
-                    asciiStr += char;
-                }
-                else {
-                    for (var property in Craft.asciiCharMap) {
-                        if (Craft.asciiCharMap.hasOwnProperty(property)) {
-                            for (var searchCounter = 0; searchCounter < Craft.asciiCharMap[property].length; searchCounter++) {
-                                if (Craft.asciiCharMap[property][searchCounter] === char) {
-                                    asciiStr += property;
-                                }
-                            }
-                        }
-                    }
-                }
+            for (var i = 0; i < str.length; i++) {
+                char = str.charAt(i);
+                asciiStr += Craft.asciiCharMap[char] || char;
             }
 
             return asciiStr;
@@ -7482,7 +7340,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (this.settings.context === 'index') {
                 if (this._folderDrag && this._getSourceLevel($source) > 1) {
-                    if ($source.data('folder-id')) {
+                    if (this._getFolderIdFromSourceKey($source.data('key'))) {
                         this._folderDrag.addItems($source.parent());
                     }
                 }
@@ -7554,7 +7412,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     for (var i = 0; i < this.$sources.length; i++) {
                         // Make sure it's a volume folder
                         var $source = this.$sources.eq(i);
-                        if (!this._getFolderUidFromSourceKey($source.data('key'))) {
+                        if (!this._getFolderIdFromSourceKey($source.data('key'))) {
                             continue;
                         }
                         targets.push($source);
@@ -7584,7 +7442,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         for (var i = 0; i < $selected.length; i++) {
                             var $source = $selected.eq(i);
 
-                            if (!this._getFolderUidFromSourceKey($source.data('key'))) {
+                            if (!this._getFolderIdFromSourceKey($source.data('key'))) {
                                 continue;
                             }
 
@@ -7629,7 +7487,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             var $source = this.$sources.eq(i),
                                 key = $source.data('key');
 
-                            if (!this._getFolderUidFromSourceKey(key)) {
+                            if (!this._getFolderIdFromSourceKey(key)) {
                                 continue;
                             }
 
@@ -7655,7 +7513,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 // Keep it selected
                 var originatingSource = this.$source;
 
-                var targetFolderId = this._assetDrag.$activeDropTarget.data('folder-id'),
+                var targetFolderId = this._getFolderIdFromSourceKey(this._assetDrag.$activeDropTarget.data('key')),
                     originalAssetIds = [];
 
                 // For each file, prepare array data.
@@ -7819,7 +7677,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 this._folderDrag.$activeDropTarget &&
                 this._folderDrag.$activeDropTarget.siblings('ul').children('li').filter(this._folderDrag.$draggee).length === 0
             ) {
-                var targetFolderId = this._folderDrag.$activeDropTarget.data('folder-id');
+                var targetFolderId = this._getFolderIdFromSourceKey(this._folderDrag.$activeDropTarget.data('key'));
 
                 this._collapseExtraExpandedFolders(targetFolderId);
 
@@ -7828,10 +7686,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                 for (var i = 0; i < this._folderDrag.$draggee.length; i++) {
                     var $a = this._folderDrag.$draggee.eq(i).children('a'),
-                        folderId = $a.data('folder-id');
+                        folderId = this._getFolderIdFromSourceKey($a.data('key')),
+                        $source = this._getSourceByFolderId(folderId);
 
                     // Make sure it's not already in the target folder
-                    if (folderId != targetFolderId) {
+                    if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId) {
                         folderIds.push(folderId);
                     }
                 }
@@ -7896,7 +7755,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                 }
 
                                 if (data.newFolderId) {
-                                    newSourceKey = this._folderDrag.$activeDropTarget.data('key') + '/folder:' + data.newFolderUid;
+                                    newSourceKey = this._folderDrag.$activeDropTarget.data('key') + '/folder:' + data.newFolderId;
                                 }
                             }
 
@@ -8049,7 +7908,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _selectSourceByFolderId: function(targetFolderId) {
-            var $targetSource = this._getSourceByKey(targetFolderId);
+            var $targetSource = this._getSourceByFolderId(targetFolderId);
 
             // Make sure that all the parent sources are expanded and this source is visible.
             var $parentSources = $targetSource.parent().parents('li');
@@ -8115,12 +7974,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         onSelectSource: function() {
-            var $source = this._getSourceByKey(this.sourceKey);
-            var folderId = $source.data('folder-id');
+            var folderId = this._getFolderIdFromSourceKey(this.sourceKey);
 
             if (folderId && this.$source.attr('data-upload')) {
                 this.uploader.setParams({
-                    folderId: this.$source.attr('data-folder-id')
+                    folderId: folderId
                 });
                 this.$uploadButton.removeClass('disabled');
             } else {
@@ -8130,8 +7988,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
-        _getFolderUidFromSourceKey: function(sourceKey) {
-            var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
+        _getFolderIdFromSourceKey: function(sourceKey) {
+            var m = sourceKey.match(/\bfolder:(\d+)$/);
 
             return m ? m[1] : null;
         },
@@ -8501,10 +8359,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             clearTimeout(this._expandDropTargetFolderTimeout);
 
             if ($dropTarget) {
-                var folderId = $dropTarget.data('folder-id');
+                var folderId = this._getFolderIdFromSourceKey($dropTarget.data('key'));
 
                 if (folderId) {
-                    this.dropTargetFolder = this._getSourceByKey(folderId);
+                    this.dropTargetFolder = this._getSourceByFolderId(folderId);
 
                     if (this._hasSubfolders(this.dropTargetFolder) && !this._isExpanded(this.dropTargetFolder)) {
                         this._expandDropTargetFolderTimeout = setTimeout($.proxy(this, '_expandFolder'), 500);
@@ -8534,7 +8392,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var $excludedSources;
 
             if (dropTargetFolderId) {
-                $excludedSources = this._getSourceByKey(dropTargetFolderId).parents('li').children('a');
+                $excludedSources = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
             }
 
             for (var i = this._tempExpandedFolders.length - 1; i >= 0; i--) {
@@ -8548,8 +8406,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
         },
 
-        _getSourceByKey: function(key) {
-            return this.$sources.filter('[data-key$="' + key + '"]');
+        _getSourceByFolderId: function(folderId) {
+            return this.$sources.filter('[data-key$="folder:' + folderId + '"]');
         },
 
         _hasSubfolders: function($source) {
@@ -8562,7 +8420,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _expandFolder: function() {
             // Collapse any temp-expanded drop targets that aren't parents of this one
-            this._collapseExtraExpandedFolders(this.dropTargetFolder.data('folder-id'));
+            this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
             this.dropTargetFolder.siblings('.toggle').trigger('click');
 
@@ -8578,7 +8436,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _createFolderContextMenu: function($source) {
             // Make sure it's a volume folder
-            if (!this._getFolderUidFromSourceKey($source.data('key'))) {
+            if (!this._getFolderIdFromSourceKey($source.data('key'))) {
                 return;
             }
 
@@ -8598,7 +8456,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (subfolderName) {
                 var params = {
-                    parentId: $parentFolder.data('folder-id'),
+                    parentId: this._getFolderIdFromSourceKey($parentFolder.data('key')),
                     folderName: subfolderName
                 };
 
@@ -8612,10 +8470,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                         var $subfolder = $(
                             '<li>' +
-                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
+                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderId + '"' +
                             (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
                             ' data-upload="' + $parentFolder.attr('data-upload') + '"' +
-                            ' data-folder-id="' + data.folderId + '"' +
                             '>' +
                             data.folderName +
                             '</a>' +
@@ -8637,7 +8494,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         _deleteFolder: function($targetFolder) {
             if (confirm(Craft.t('app', 'Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())}))) {
                 var params = {
-                    folderId: $targetFolder.data('folder-id')
+                    folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
                 };
 
                 this.setIndexBusy();
@@ -8671,7 +8528,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (newName && newName !== oldName) {
                 var params = {
-                    folderId: $targetFolder.data('folder-id'),
+                    folderId: this._getFolderIdFromSourceKey($targetFolder.data('key')),
                     newName: newName
                 };
 
@@ -8684,7 +8541,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         $targetFolder.text(data.newName);
 
                         // If the current folder was renamed.
-                        if (this._getFolderUidFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderUidFromSourceKey($targetFolder.data('key'))) {
+                        if (this._getFolderIdFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderIdFromSourceKey($targetFolder.data('key'))) {
                             this.updateElements();
                         }
                     }
@@ -9721,7 +9578,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.editableCategoryGroups.length; i++) {
                 var group = Craft.editableCategoryGroups[i];
 
-                if (this.getSourceByKey('group:' + group.uid)) {
+                if (this.getSourceByKey('group:' + group.id)) {
                     this.editableGroups.push(group);
                 }
             }
@@ -9899,7 +9756,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right group is selected
-                    var groupSourceKey = 'group:' + group.uid;
+                    var groupSourceKey = 'group:' + groupId;
 
                     if (this.sourceKey !== groupSourceKey) {
                         this.selectSourceByKey(groupSourceKey);
@@ -13558,7 +13415,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.uid)) {
+                if (this.getSourceByKey('section:' + section.id)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -13630,7 +13487,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
                 // Otherwise only show a menu button
                 if (selectedSection) {
-                    href = this._getSectionTriggerHref(selectedSection, true);
+                    href = this._getSectionTriggerHref(selectedSection);
                     label = (this.settings.context === 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
                     this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
@@ -13654,7 +13511,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                     for (i = 0; i < this.publishableSections.length; i++) {
                         var section = this.publishableSections[i];
 
-                        if (this.settings.context === 'index' || section !== selectedSection) {
+                        if (
+                            (this.settings.context === 'index' && $.inArray(this.siteId, section.sites) !== -1) ||
+                            (this.settings.context !== 'index' && section !== selectedSection)
+                        ) {
                             href = this._getSectionTriggerHref(section);
                             label = (this.settings.context === 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
                             menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
@@ -13690,10 +13550,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             }
         },
 
-        _getSectionTriggerHref: function(section, includeSite) {
+        _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
                 var uri = 'entries/' + section.handle + '/new';
-                if (includeSite && this.siteId && this.siteId != Craft.primarySiteId) {
+                if (this.siteId && this.siteId != Craft.siteId) {
                     for (var i = 0; i < Craft.sites.length; i++) {
                         if (Craft.sites[i].id == this.siteId) {
                             uri += '/'+Craft.sites[i].handle;
@@ -13701,8 +13561,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                     }
                 }
                 return 'href="' + Craft.getUrl(uri) + '"';
-            }
-            else {
+            } else {
                 return 'data-id="' + section.id + '"';
             }
         },
@@ -13749,7 +13608,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + section.uid;
+                    var sectionSourceKey = 'section:' + sectionId;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);

@@ -515,7 +515,7 @@ class User extends \yii\web\User
                     Craft::$app->getDb()->createCommand()
                         ->update(
                             '{{%sessions}}',
-                            [],
+                            ['dateUpdated' => 'dateUpdated'],
                             [
                                 'userId' => $this->getId(),
                                 'uid' => $tokenUid
