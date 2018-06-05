@@ -37,6 +37,7 @@
 - Fixed a bug where the `|date`, `|time`, and `|datetime` filters weren’t respecting their `$timezone` arguments. ([#2926](https://github.com/craftcms/cms/issues/2926))
 - Fixed a SQL syntax error that could occur in the Control Panel in some edge-case environments.
 - Fixed a bug where element queries weren’t respecting the `asArray` param when calling `one()`. ([#2940](https://github.com/craftcms/cms/issues/2940))
+- Fixed a bug where Craft would not pick up any file changes if the Volume being indexed had no files. ([#2955](https://github.com/craftcms/cms/issues/2955))
 - Fixed a SQL error that could occur when a `{% cache %}` tag had no body. ([#2953](https://github.com/craftcms/cms/issues/2953))
 
 ## 3.0.9 - 2018-05-22
