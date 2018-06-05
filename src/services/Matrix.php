@@ -280,6 +280,9 @@ class Matrix extends Component
                     $blockType->id = $blockTypeRecord->id;
                 }
 
+                // Set the UID on the block type
+                $blockType->uid = $blockTypeRecord->uid;
+
                 // Save the fields and field layout
                 // -------------------------------------------------------------
 
@@ -776,7 +779,8 @@ class Matrix extends Component
                 'fieldLayoutId',
                 'name',
                 'handle',
-                'sortOrder'
+                'sortOrder',
+                'uid'
             ])
             ->from(['{{%matrixblocktypes}}'])
             ->orderBy(['sortOrder' => SORT_ASC]);

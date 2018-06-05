@@ -33,6 +33,11 @@ class FieldLayout extends Model
      */
     public $type;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
 
     /**
      * @var

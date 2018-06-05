@@ -840,6 +840,8 @@ class Fields extends Component
                 }
             }
 
+            $field->uid = $fieldRecord->uid;
+
             // Cache it
             $this->_fieldsById[$field->id] = $field;
             $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
@@ -1219,6 +1221,8 @@ class Fields extends Component
             $layout->id = $layoutRecord->id;
         }
 
+        $layout->uid = $layoutRecord->uid;
+
         foreach ($layout->getTabs() as $tab) {
             $tabRecord = new FieldLayoutTabRecord();
             $tabRecord->layoutId = $layout->id;
@@ -1226,6 +1230,7 @@ class Fields extends Component
             $tabRecord->sortOrder = $tab->sortOrder;
             $tabRecord->save(false);
             $tab->id = $tabRecord->id;
+            $tab->uid = $tabRecord->uid;
 
             foreach ($tab->getFields() as $field) {
                 /** @var Field $field */
@@ -1378,7 +1383,8 @@ class Fields extends Component
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',
-                'fields.settings'
+                'fields.settings',
+                'fields.uid'
             ])
             ->from(['{{%fields}} fields'])
             ->orderBy(['fields.name' => SORT_ASC]);
@@ -1395,6 +1401,7 @@ class Fields extends Component
             ->select([
                 'id',
                 'type',
+                'uid'
             ])
             ->from(['{{%fieldlayouts}}']);
     }
@@ -1412,6 +1419,7 @@ class Fields extends Component
                 'layoutId',
                 'name',
                 'sortOrder',
+                'uid'
             ])
             ->from(['{{%fieldlayouttabs}}'])
             ->orderBy(['sortOrder' => SORT_ASC]);
