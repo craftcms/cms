@@ -81,20 +81,28 @@ class Cp
             // Domain mismatch?
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
+                $domainLink = '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>';
 
-                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+                if (defined('CRAFT_LICENSE_KEY')) {
+                    $message = Craft::t('app', 'The license key in use belongs to {domain}', [
+                        'domain' => $domainLink
+                    ]);
+                } else {
+                    $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
 
-                // If the license key path starts with the root project path, trim the project path off
-                $rootPath = Craft::getAlias('@root');
-                if (strpos($keyPath, $rootPath.'/') === 0) {
-                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                    // If the license key path starts with the root project path, trim the project path off
+                    $rootPath = Craft::getAlias('@root');
+                    if (strpos($keyPath, $rootPath.'/') === 0) {
+                        $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                    }
+
+                    $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                        'file' => $keyPath,
+                        'domain' => $domainLink
+                    ]);
                 }
 
-                $alerts[] = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                        'file' => $keyPath,
-                        'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-                    ]).
-                    ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('app', 'Learn more').'</a>';
+                $alerts[] = $message.' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('app', 'Learn more').'</a>';
             }
 
             // Any plugin issues?

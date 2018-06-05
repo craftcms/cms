@@ -1650,7 +1650,7 @@ body.rtl .categoriesfield .structure ul { margin-right: 12px; }
   .hud .tip-right { background-image: url(../images/hudtip_right_2x.png); background-size: 15px 30px; }
   .hud .tip-bottom { background-image: url(../images/hudtip_bottom_2x.png); background-size: 30px 15px; }
   .hud.has-footer .tip-bottom { background-image: url(../images/hudtip_bottom_gray_2x.png); } }
-html, body { overflow-x: hidden; }
+html, body { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
 
 #global-container { display: -webkit-box; display: -ms-flexbox; display: flex; min-height: 0; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; height: 100vh; width: 100vw; }
 

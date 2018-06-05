@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.9',
+    'version' => '3.0.10',
     'schemaVersion' => '3.0.91',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -112,9 +112,6 @@ return [
         ],
         'users' => [
             'class' => craft\services\Users::class,
-        ],
-        'view' => [
-            'class' => craft\web\View::class,
         ],
         'volumes' => [
             'class' => craft\services\Volumes::class,
@@ -262,6 +259,21 @@ return [
                     $target,
                 ]
             ]);
+        },
+
+        'view' => function() {
+            $config = [
+                'class' => craft\web\View::class,
+            ];
+
+            $request = Craft::$app->getRequest();
+            if ($request->getIsCpRequest()) {
+                $headers = $request->getHeaders();
+                $config['registeredAssetBundles'] = explode(',', $headers->get('X-Registered-Asset-Bundles', ''));
+                $config['registeredJsFiles'] = explode(',', $headers->get('X-Registered-Js-Files', ''));
+            }
+
+            return Craft::createObject($config);
         },
     ],
 ];

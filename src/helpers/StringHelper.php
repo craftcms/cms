@@ -23,14 +23,6 @@ class StringHelper extends \yii\helpers\StringHelper
 
     const UTF8 = 'UTF-8';
 
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var
-     */
-    private static $_asciiCharMap;
-
     // Public Methods
     // =========================================================================
 
@@ -847,25 +839,44 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Returns ASCII character mappings, merging in any custom defined mappings from the 'customAsciiCharMappings'
-     * config setting.
+     * Returns ASCII character mappings, merging in any custom defined mappings from the
+     * [[\craft\config\GeneralConfig::customAsciiCharMappings|customAsciiCharMappings]] config setting.
      *
+     * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
+     * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
      * @return array The fully merged ASCII character mappings.
      */
-    public static function asciiCharMap(): array
+    public static function asciiCharMap(bool $flat = false, string $language = null): array
     {
-        if (self::$_asciiCharMap !== null) {
-            return self::$_asciiCharMap;
+        $map = (new Stringy())->getAsciiCharMap();
+
+        if (!$flat) {
+            return $map;
         }
 
-        // Get the map from Stringy.
-        self::$_asciiCharMap = (new Stringy(''))->getAsciiCharMap();
-
-        foreach (Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings as $asciiChar => $values) {
-            self::$_asciiCharMap[$asciiChar] = $values;
+        $flatMap = [];
+        foreach ($map as $ascii => $chars) {
+            foreach ($chars as $char) {
+                $flatMap[$char] = $ascii;
+            }
         }
 
-        return self::$_asciiCharMap;
+        // Include language specific replacements (unless the ASCII chars have custom mappings)
+        if ($language !== null) {
+            $langSpecific = Stringy::getLangSpecificCharsArray($language);
+            if (!empty($langSpecific)) {
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
+                $customChars = array_flip($customChars);
+                foreach ($langSpecific[0] as $i => $char) {
+                    if (!isset($customChars[$char])) {
+                        $flatMap[$char] = $langSpecific[1][$i];
+                    }
+                }
+            }
+        }
+
+        return $flatMap;
     }
 
     /**
@@ -877,7 +888,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str): string
     {
-        return (string)BaseStringy::create($str)->toAscii();
+        return (string)BaseStringy::create($str)->toAscii(Craft::$app->language);
     }
 
     /**

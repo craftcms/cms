@@ -639,7 +639,7 @@ class Assets
     /**
      * Returns the maximum allowed upload size in bytes per all config settings combined.
      *
-     * @return mixed
+     * @return int|float
      */
     public static function getMaxUploadSize()
     {

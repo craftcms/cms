@@ -170,20 +170,20 @@ class UtilitiesController extends Controller
             $batches = [];
             $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
 
-            // Selection of sources or all sources?
-            if (is_array($params['sources'])) {
-                $sourceIds = $params['sources'];
+            // Selection of volumes or all volumes?
+            if (is_array($params['volumes'])) {
+                $volumeIds = $params['volumes'];
             } else {
-                $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+                $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
             }
 
             $missingFolders = [];
             $skippedFiles = [];
             $grandTotal = 0;
 
-            foreach ($sourceIds as $sourceId) {
+            foreach ($volumeIds as $volumeId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $sourceId);
+                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $volumeId);
 
                 if (!empty($indexList['error'])) {
                     return $this->asJson($indexList);
@@ -203,7 +203,7 @@ class UtilitiesController extends Controller
                     $batch[] = [
                         'params' => [
                             'sessionId' => $sessionId,
-                            'sourceId' => $sourceId,
+                            'volumeId' => $volumeId,
                             'total' => $indexList['total'],
                             'process' => 1,
                             'cacheImages' => $params['cacheImages']
@@ -223,7 +223,7 @@ class UtilitiesController extends Controller
                 ]
             ];
 
-            Craft::$app->getSession()->set('assetsSourcesBeingIndexed', $sourceIds);
+            Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);
             Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
             Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
 
@@ -235,7 +235,7 @@ class UtilitiesController extends Controller
 
         if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['sourceId'], $params['cacheImages']);
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
             return $this->asJson([
                 'success' => true

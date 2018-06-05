@@ -32,6 +32,11 @@ class Schema extends \yii\db\mysql\Schema
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public $columnSchemaClass = ColumnSchema::class;
+
+    /**
      * @var int The maximum length that objects' names can be.
      */
     public $maxObjectNameLength = 64;

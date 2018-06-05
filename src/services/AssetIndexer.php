@@ -132,7 +132,7 @@ class AssetIndexer extends Component
                 $segments = explode('/', $path);
 
                 foreach ($segments as $segment) {
-                    if (isset($segment[0]) && $segment[0] === '_') {
+                    if (isset($segment[0]) && $segment[0] === '_' && $value['type'] === 'dir') {
                         return false;
                     }
                 }
@@ -326,6 +326,11 @@ class AssetIndexer extends Component
             ->from(['{{%assetindexdata}}'])
             ->where(['sessionId' => $sessionId])
             ->column();
+
+        // What if there were no files at all?
+        if (empty($volumeIds)) {
+            $volumeIds = Craft::$app->getSession()->get('assetsVolumesBeingIndexed');
+        }
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);

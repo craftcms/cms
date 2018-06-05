@@ -15,6 +15,7 @@ $editionHoverColor: hsl($hue, 20%, 70%);
 html,
 body {
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 #global-container {

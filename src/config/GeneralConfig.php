@@ -151,8 +151,14 @@ class GeneralConfig extends BaseObject
      *
      * This array is merged into the default one in StringHelper::asciiCharMap(). The key is the ASCII character to
      * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
-     * For example:
-     *     'c'    => ['ç', 'ć', 'č', 'ĉ', 'ċ']
+     * ---
+     * ```php
+     * 'customAsciiCharMappings' => [
+     *     'c' => ['ç', 'ć', 'č', 'ĉ', 'ċ'],
+     * ],
+     * ```
+     *
+     * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/danielstjules/Stringy).
      */
     public $customAsciiCharMappings = [];
     /**

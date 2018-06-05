@@ -149,7 +149,7 @@ class Number extends Field implements PreviewableFieldInterface
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $this->isValueEmpty($value, $element) ? null : $value;
+        return $value === '' ? null : $value;
     }
 
     /**

@@ -34,70 +34,71 @@ use yii\web\ServerErrorHttpException;
 /**
  * ApplicationTrait
  *
- * @property \craft\services\Api $api The API service
- * @property AssetManager $assetManager The asset manager component
- * @property \craft\services\Assets $assets The assets service
- * @property \craft\services\AssetIndexer $assetIndexing The asset indexer service
- * @property \craft\services\AssetTransforms $assetTransforms The asset transforms service
- * @property bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
- * @property bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
- * @property \craft\services\Categories $categories The categories service
- * @property \craft\services\Composer $composer The Composer service
- * @property \craft\services\Config $config The config service
- * @property \craft\services\Content $content The content service
- * @property \craft\db\MigrationManager $contentMigrator The content migration manager
- * @property \craft\services\Dashboard $dashboard The dashboard service
- * @property Connection $db The database connection component
- * @property \craft\services\Deprecator $deprecator The deprecator service
- * @property \craft\services\ElementIndexes $elementIndexes The element indexes service
- * @property \craft\services\Elements $elements The elements service
- * @property \craft\services\Entries $entries The entries service
- * @property \craft\services\EntryRevisions $entryRevisions The entry revisions service
- * @property \craft\feeds\Feeds $feeds The feeds service
- * @property \craft\services\Fields $fields The fields service
- * @property Formatter $formatter The formatter component
- * @property \craft\services\Globals $globals The globals service
- * @property bool $hasWrongEdition Whether Craft is running with the wrong edition
- * @property I18N $i18n The internationalization (i18n) component
- * @property \craft\services\Images $images The images service
- * @property bool $sInMaintenanceMode Whether someone is currently performing a system update
  * @property bool $isInstalled Whether Craft is installed
- * @property bool $sMultiSite Whether this site has multiple sites
- * @property bool $isSystemOn Whether the front end is accepting HTTP requests
- * @property \craft\i18n\Locale $locale The Locale object for the target language
- * @property \craft\mail\Mailer $mailer The mailer component
- * @property \craft\services\Matrix $matrix The matrix service
- * @property \craft\db\MigrationManager $migrator The application’s migration manager
- * @property \yii\mutex\Mutex $mutex The application’s mutex service
- * @property \craft\services\Path $path The path service
- * @property \craft\services\Plugins $plugins The plugins service
- * @property \craft\services\PluginStore $pluginStore The plugin store service
- * @property Queue|QueueInterface $queue The job queue
- * @property \craft\services\Relations $relations The relations service
- * @property \craft\services\Routes $routes The routes service
- * @property \craft\services\Search $search The search service
- * @property Security $security The security component
- * @property \craft\services\Sections $sections The sections service
- * @property \craft\services\Sites $sites The sites service
- * @property \craft\services\Structures $structures The structures service
- * @property \craft\services\SystemMessages $systemMessages The system email messages service
- * @property \craft\services\SystemSettings $systemSettings The system settings service
- * @property \craft\services\Tags $tags The tags service
- * @property \craft\services\TemplateCaches $templateCaches The template caches service
- * @property \craft\services\Tokens $tokens The tokens service
- * @property \craft\services\Updates $updates The updates service
- * @property \craft\services\UserGroups $userGroups The user groups service
- * @property \craft\services\UserPermissions $userPermissions The user permissions service
- * @property \craft\services\Users $users The users service
- * @property \craft\services\Utilities $utilities The utilities service
- * @property View $view The view component
- * @property \craft\services\Volumes $volumes The volumes service
+ * @property int $edition The active Craft edition
+ * @property-read \craft\db\MigrationManager $contentMigrator The content migration manager
+ * @property-read \craft\db\MigrationManager $migrator The application’s migration manager
+ * @property-read \craft\feeds\Feeds $feeds The feeds service
+ * @property-read \craft\i18n\Locale $locale The Locale object for the target language
+ * @property-read \craft\mail\Mailer $mailer The mailer component
+ * @property-read \craft\services\Api $api The API service
+ * @property-read \craft\services\AssetIndexer $assetIndexing The asset indexer service
+ * @property-read \craft\services\Assets $assets The assets service
+ * @property-read \craft\services\AssetTransforms $assetTransforms The asset transforms service
+ * @property-read \craft\services\Categories $categories The categories service
+ * @property-read \craft\services\Composer $composer The Composer service
+ * @property-read \craft\services\Config $config The config service
+ * @property-read \craft\services\Content $content The content service
+ * @property-read \craft\services\Dashboard $dashboard The dashboard service
+ * @property-read \craft\services\Deprecator $deprecator The deprecator service
+ * @property-read \craft\services\ElementIndexes $elementIndexes The element indexes service
+ * @property-read \craft\services\Elements $elements The elements service
+ * @property-read \craft\services\Entries $entries The entries service
+ * @property-read \craft\services\EntryRevisions $entryRevisions The entry revisions service
+ * @property-read \craft\services\Fields $fields The fields service
+ * @property-read \craft\services\Globals $globals The globals service
+ * @property-read \craft\services\Images $images The images service
+ * @property-read \craft\services\Matrix $matrix The matrix service
+ * @property-read \craft\services\Path $path The path service
+ * @property-read \craft\services\Plugins $plugins The plugins service
+ * @property-read \craft\services\PluginStore $pluginStore The plugin store service
+ * @property-read \craft\services\Relations $relations The relations service
+ * @property-read \craft\services\Routes $routes The routes service
+ * @property-read \craft\services\Search $search The search service
+ * @property-read \craft\services\Sections $sections The sections service
+ * @property-read \craft\services\Sites $sites The sites service
+ * @property-read \craft\services\Structures $structures The structures service
+ * @property-read \craft\services\SystemMessages $systemMessages The system email messages service
+ * @property-read \craft\services\SystemSettings $systemSettings The system settings service
+ * @property-read \craft\services\Tags $tags The tags service
+ * @property-read \craft\services\TemplateCaches $templateCaches The template caches service
+ * @property-read \craft\services\Tokens $tokens The tokens service
+ * @property-read \craft\services\Updates $updates The updates service
+ * @property-read \craft\services\UserGroups $userGroups The user groups service
+ * @property-read \craft\services\UserPermissions $userPermissions The user permissions service
+ * @property-read \craft\services\Users $users The users service
+ * @property-read \craft\services\Utilities $utilities The utilities service
+ * @property-read \craft\services\Volumes $volumes The volumes service
+ * @property-read \yii\mutex\Mutex $mutex The application’s mutex service
+ * @property-read AssetManager $assetManager The asset manager component
+ * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
+ * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
+ * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
+ * @property-read bool $isSystemOn Whether the front end is accepting HTTP requests
+ * @property-read bool $sInMaintenanceMode Whether someone is currently performing a system update
+ * @property-read bool $sMultiSite Whether this site has multiple sites
+ * @property-read Connection $db The database connection component
+ * @property-read Formatter $formatter The formatter component
+ * @property-read I18N $i18n The internationalization (i18n) component
+ * @property-read Queue|QueueInterface $queue The job queue
+ * @property-read Security $security The security component
+ * @property-read View $view The view component
  * @method AssetManager getAssetManager() Returns the asset manager component.
- * @method Connection getDb()           Returns the database connection component.
- * @method Formatter getFormatter()    Returns the formatter component.
- * @method I18N getI18n()         Returns the internationalization (i18n) component.
- * @method Security getSecurity()     Returns the security component.
- * @method View getView()         Returns the view component.
+ * @method Connection getDb() Returns the database connection component.
+ * @method Formatter getFormatter() Returns the formatter component.
+ * @method I18N getI18n() Returns the internationalization (i18n) component.
+ * @method Security getSecurity() Returns the security component.
+ * @method View getView() Returns the view component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */

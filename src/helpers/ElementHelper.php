@@ -146,7 +146,7 @@ class ElementHelper
             $variables['id'] = $element->tempId = 'id-'.StringHelper::randomString(10);
         }
 
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
 
         // Remove any leading/trailing/double slashes
         $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);

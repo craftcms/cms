@@ -29,7 +29,18 @@ use yii\web\AssetBundle as YiiAssetBundle;
 
 /**
  * @inheritdoc
- * @property Environment $twig the Twig environment
+ * @property string $templateMode the current template mode (either `site` or `cp`)
+ * @property string $templatesPath the base path that templates should be found in
+ * @property string|null $namespace the active namespace
+ * @property-read array $cpTemplateRoots any registered CP template roots
+ * @property-read array $siteTemplateRoots any registered site template roots
+ * @property-read bool $isRenderingPageTemplate whether a page template is currently being rendered
+ * @property-read bool $isRenderingTemplate whether a template is currently being rendered
+ * @property-read Environment $twig the Twig environment
+ * @property-read string $bodyHtml the content to be inserted at the end of the body section
+ * @property-read string $headHtml the content to be inserted in the head section
+ * @property-write string[] $registeredAssetBundles the asset bundle names that should be marked as already registered
+ * @property-write string[] $registeredJsFiles the JS files that should be marked as already registered
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -186,6 +197,20 @@ class View extends \yii\web\View
      * @var
      */
     private $_isRenderingPageTemplate = false;
+
+    /**
+     * @var string[]
+     * @see registerAssetFiles()
+     * @see setRegisteredAssetBundles()
+     */
+    private $_registeredAssetBundles = [];
+
+    /**
+     * @var string[]
+     * @see registerJsFile()
+     * @see setRegisteredJsfiles()
+     */
+    private $_registeredJsFiles = [];
 
     // Public Methods
     // =========================================================================
@@ -520,7 +545,7 @@ class View extends \yii\web\View
         }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace('/(?<!\{)\{(\s*\w[^\{]*?)\}/', '{{object.$1|raw}}', $template);
+        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ ($1 ?? object.$1)$2|raw }}', $template);
 
         // Bring the objects back
         foreach (array_reverse($tokens) as $token => $value) {
@@ -783,6 +808,19 @@ class View extends \yii\web\View
     }
 
     /**
+     * @inheritdoc
+     */
+    public function registerJsFile($url, $options = [], $key = null)
+    {
+        $key = $key ?: $url;
+        if (isset($this->_registeredJsFiles[$key])) {
+            return;
+        }
+        $this->_registeredJsFiles[$key] = true;
+        parent::registerJsFile($url, $options, $key);
+    }
+
+    /**
      * Registers a generic `<script>` code block.
      *
      * @param string $script the generic `<script>` code block to be registered
@@ -800,54 +838,6 @@ class View extends \yii\web\View
     {
         $key = $key ?: md5($script);
         $this->_scripts[$position][$key] = Html::script($script, $options);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderHeadHtml()
-    {
-        $lines = [];
-        if (!empty($this->title)) {
-            $lines[] = '<title>'.Html::encode($this->title).'</title>';
-        }
-        if (!empty($this->_scripts[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
-        }
-
-        $html = parent::renderHeadHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderBodyBeginHtml()
-    {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
-        }
-
-        $html = parent::renderBodyBeginHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderBodyEndHtml($ajaxMode)
-    {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_END])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
-        }
-
-        $html = parent::renderBodyEndHtml($ajaxMode);
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
     }
 
     /**
@@ -926,42 +916,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers any asset bundles and JS code that were queued-up in the session flash data.
-     *
-     * @throws Exception if any of the registered asset bundles are not actually asset bundles
-     */
-    protected function registerAssetFlashes()
-    {
-        $session = Craft::$app->getSession();
-
-        if ($session->getIsActive()) {
-            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
-                if (!is_subclass_of($name, YiiAssetBundle::class)) {
-                    throw new Exception("$name is not an asset bundle");
-                }
-
-                $this->registerAssetBundle($name, $position);
-            }
-
-            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
-                $this->registerJs($js, $position, $key);
-            }
-        }
-    }
-
-    /**
-     * Registers all files provided by all registered asset bundles, including depending bundles files.
-     *
-     * Removes a bundle from [[assetBundles]] once files are registered.
-     */
-    protected function registerAllAssetFiles()
-    {
-        foreach ($this->assetBundles as $bundleName => $bundle) {
-            $this->registerAssetFiles($bundleName);
-        }
-    }
-
-    /**
      * Translates messages for a given translation category, so they will be
      * available for `Craft.t()` calls in the Control Panel.
      * Note this should always be called *before* any JavaScript is registered
@@ -1026,9 +980,9 @@ JS;
     }
 
     /**
-     * Returns the current template mode (either 'site' or 'cp').
+     * Returns the current template mode (either `site` or `cp`).
      *
-     * @return string Either 'site' or 'cp'.
+     * @return string Either `site` or `cp`.
      */
     public function getTemplateMode(): string
     {
@@ -1281,6 +1235,26 @@ JS;
         return $return;
     }
 
+    /**
+     * Sets the JS files that should be marked as already registered.
+     *
+     * @param string[] $keys
+     */
+    public function setRegisteredJsFiles(array $keys)
+    {
+        $this->_registeredJsFiles = array_flip($keys);
+    }
+
+    /**
+     * Sets the asset bundle names that should be marked as already registered.
+     *
+     * @param string[] $names Asset bundle names
+     */
+    public function setRegisteredAssetBundles(array $names)
+    {
+        $this->_registeredAssetBundles = array_flip($names);
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1362,6 +1336,128 @@ JS;
             $this->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $event);
             $output = $event->output;
         }
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderHeadHtml()
+    {
+        $lines = [];
+        if (!empty($this->title)) {
+            $lines[] = '<title>'.Html::encode($this->title).'</title>';
+        }
+        if (!empty($this->_scripts[self::POS_HEAD])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
+        }
+
+        $html = parent::renderHeadHtml();
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyBeginHtml()
+    {
+        $lines = [];
+        if (!empty($this->_scripts[self::POS_BEGIN])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
+        }
+
+        $html = parent::renderBodyBeginHtml();
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyEndHtml($ajaxMode)
+    {
+        $lines = [];
+        if (!empty($this->_scripts[self::POS_END])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
+        }
+
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            if (!empty($this->_registeredJsFiles)) {
+                $json = Json::encode($this->_registeredJsFiles);
+                $js = <<<JS
+if (typeof Craft !== 'undefined') {
+    jQuery.extend(Craft.registeredJsFiles, {$json}); 
+}
+JS;
+                $this->registerJs($js, self::POS_END);
+            }
+
+            if (!empty($this->_registeredAssetBundles)) {
+                $json = Json::encode($this->_registeredAssetBundles);
+                $js = <<<JS
+if (typeof Craft !== 'undefined') {
+    jQuery.extend(Craft.registeredAssetBundles, {$json}); 
+}
+JS;
+                $this->registerJs($js, self::POS_END);
+            }
+        }
+
+        $html = parent::renderBodyEndHtml($ajaxMode);
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
+    }
+
+    /**
+     * Registers any asset bundles and JS code that were queued-up in the session flash data.
+     *
+     * @throws Exception if any of the registered asset bundles are not actually asset bundles
+     */
+    protected function registerAssetFlashes()
+    {
+        $session = Craft::$app->getSession();
+
+        if ($session->getIsActive()) {
+            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+                if (!is_subclass_of($name, YiiAssetBundle::class)) {
+                    throw new Exception("$name is not an asset bundle");
+                }
+
+                $this->registerAssetBundle($name, $position);
+            }
+
+            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+                $this->registerJs($js, $position, $key);
+            }
+        }
+    }
+
+    /**
+     * Registers all files provided by all registered asset bundles, including depending bundles files.
+     *
+     * Removes a bundle from [[assetBundles]] once files are registered.
+     */
+    protected function registerAllAssetFiles()
+    {
+        foreach ($this->assetBundles as $bundleName => $bundle) {
+            $this->registerAssetFiles($bundleName);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function registerAssetFiles($name)
+    {
+        // Don't re-register bundles
+        if (isset($this->_registeredAssetBundles[$name])) {
+            return;
+        }
+        $this->_registeredAssetBundles[$name] = true;
+        parent::registerAssetFiles($name);
     }
 
     // Private Methods
