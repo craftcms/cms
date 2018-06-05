@@ -421,7 +421,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'layoutFields.fieldId',
                 'layoutFields.required',
                 'layoutFields.sortOrder AS fieldOrder',
-                'layoutFields.uid AS layoutFieldUid',
                 'tabs.id AS tabId',
                 'tabs.name as tabName',
                 'tabs.sortOrder AS tabOrder',
@@ -461,10 +460,13 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $field['required'] = $fieldRow['required'];
             $field['sortOrder'] = $fieldRow['fieldOrder'];
 
-            $layoutFieldUid = $fieldRow['layoutFieldUid'];
-            unset($fieldRow['layoutFieldUid']);
 
-            $tab['fields'][$layoutFieldUid] = $field;
+            $tab['fields'][] = $field;
+        }
+
+        // Get rid of UIDs
+        foreach ($fieldLayouts as &$fieldLayout) {
+            $fieldLayout['tabs'] = array_values($fieldLayout['tabs']);
         }
 
         return $fieldLayouts;
