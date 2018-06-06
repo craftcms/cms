@@ -142,7 +142,6 @@ class ProjectConfig extends Component
 
                 if (is_array($value)) {
                     $flatten($value, $thisPath, $result);
-                    $result[$thisPath] = '.';
                 } else {
                     $result[$thisPath] = $value;
                 }
