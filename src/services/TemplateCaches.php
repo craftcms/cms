@@ -238,7 +238,6 @@ class TemplateCaches extends Component
                 ];
                 gc_collect_cycles();
             }
-            $queries = null;
             unset($queries);
             gc_enable();
         }

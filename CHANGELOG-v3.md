@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.10.1 - 2018-06-06
+
+### Fixed
+- Fixed a bug where Craft wasn’t converting empty strings to `null` when saving data to nontextual columns.
+- Fixed a bug where Craft would show a Database Connection Error on Install requests, if it couldn’t connect to the database.
+- Fixed a bug where Craft wasn’t keeping track of element queries that were executed within `{% cache %}` tags. ([#2959](https://github.com/craftcms/cms/issues/2959))
+
 ## 3.0.10 - 2018-06-05
 
 ### Added
