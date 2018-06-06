@@ -68,6 +68,10 @@ Like the [`date`](#date) filter, but the result will also include a timestamp.
 
 Runs a [`DateInterval`](http://php.net/manual/en/class.dateinterval.php) object through <api:craft\helpers\DateTimeHelper::humanDurationFromInterval()>
 
+```twig
+<p>Posted {{ entry.postDate.diff(now)|duration(false) }} ago.</p>
+```
+
 ## `encenc`
 
 Encrypts and base64-encodes a string.
