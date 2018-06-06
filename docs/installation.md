@@ -143,28 +143,6 @@ The command will ask you a few questions to learn how to connect to your databas
 
 ### Web Browser Setup
 
-#### Database Credentials
-
-Edit the `/.env` file and set the variables related to the database connection. For example, when using [Laravel Homestead](https://laravel.com/docs/homestead) locally for development, essential values might look like this:
-
-```
-# Only an example.
-# Your credentials will likely be different.
-DB_DRIVER="mysql"
-DB_SERVER="localhost"
-DB_USER="homestead"
-DB_PASSWORD="secret"
-DB_DATABASE="your_database_name"
-DB_PORT="3306"
-```
-
-:::tip
-The `.env` file should be unique in every environment (local machine, production server, etc.) and _not_ shared or committed to a Git repo. This will protect sensitive information on your staging and production servers, and allow collaborating developers to define their own database credentials locally.
-:::
-
-#### Browser Setup Wizard
-
-
 In your web browser, go to `http://<HOSTNAME>/index.php?p=admin` (substituting `<HOSTNAME>` with your web server’s host name). If you’ve done everything right so far, you should be greeted by Craft’s Setup Wizard.
 
 ![Craft Installation Screen](./images/installation-step-0.png)
@@ -173,7 +151,15 @@ The first step of the installer is to accept the [license agreement](https://cra
 
 ![Craft Installation License Agreement](./images/installation-step-1.png)
 
-The second step of the installer is to create an admin account. Don’t be one of _those people_ and be sure to pick a strong password.
+The second step is to enter your database connection information.
+
+::: tip
+If the Setup Wizard skips this step, it’s because Craft is already able to connect to your database. 
+:::
+
+![Craft Installation Database Connection Information](./images/installation-step-2.png)
+
+The third step of the installer is to create an admin account. Don’t be one of _those people_ and be sure to pick a strong password.
 
 ![Craft Installation Create User Account](./images/installation-step-3.png)
 
