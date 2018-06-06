@@ -10,7 +10,7 @@ You can refer to Craft’s own element action classes for examples. They are loc
 
 To get an element action to show up on an element index page, it has to be registered with the element type.
 
-If it’s for a custom element type that is defined by the same plugin, simply include your element action in the element class’s [`defineActions()` method](element-types.md#index-page-actions).
+If it’s for a custom element type that is defined by the same plugin, simply include your element action in the element class’s [defineActions()](element-types.md#index-page-actions) method.
 
 If it’s for an element type that is out of the plugin’s control, you can register it using the `registerActions` event:
 

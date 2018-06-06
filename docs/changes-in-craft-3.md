@@ -481,7 +481,7 @@ The following methods are now deprecated in Craft 3, and will be completely remo
 | `ids(criteria)` | `ids()` (setting criteria params here is now deprecated)
 | `find()`        | `all()`
 | `first()`       | `one()`
-| `last()`        | `inReverse().one()` _(see [`last()`](#last))_
+| `last()`        | `inReverse().one()` _(see [last()](#last))_
 | `total()`       | `count()`
 
 ### Treating Queries as Arrays
@@ -510,7 +510,7 @@ New:
 {% set total = craft.entries.section('news').count() %}
 ``` 
 
-Alternatively, if you already needed to fetch the actual query results, and you didn’t set the `offset` or `limit` params, you can use the [`|length`](https://twig.symfony.com/doc/2.x/filters/length.html) filter to find the total size of the results array without the need for an extra database query.
+Alternatively, if you already needed to fetch the actual query results, and you didn’t set the `offset` or `limit` params, you can use the [length](https://twig.symfony.com/doc/2.x/filters/length.html) filter to find the total size of the results array without the need for an extra database query.
 
 ```twig
 {% set entries = craft.entries()

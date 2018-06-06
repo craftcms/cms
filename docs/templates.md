@@ -14,7 +14,7 @@ There are several times when you’ll need to enter a path to one of your templa
 
 * When choosing which template [entry](sections-and-entries.md) and [category](categories.md) URLs should load
 * When assigning a template to a [route](routing.md#dynamic-routes)
-* Within [`{% include %}`](http://twig.sensiolabs.org/doc/tags/include.html), [`{% extends %}`](http://twig.sensiolabs.org/doc/tags/extends.html), and [`{% embed %}`](http://twig.sensiolabs.org/doc/tags/embed.html) template tags
+* Within [include](http://twig.sensiolabs.org/doc/tags/include.html), [extends](http://twig.sensiolabs.org/doc/tags/extends.html), and [embed](http://twig.sensiolabs.org/doc/tags/embed.html) template tags
 
 Craft has a standard template path format that applies to each of these cases: a Unix-style file system path to the template file, relative from your `craft/templates` directory.
 

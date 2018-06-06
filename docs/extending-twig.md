@@ -13,7 +13,7 @@ The `CraftVariable` instance can be extended by plugins with [behaviors](http://
 - Use a **behavior** to add custom properties or methods directly onto the `craft` variable (e.g. `craft.foo()`).
 - Use a **service** to add a sub-object to the `craft` variable, which can be accessed with a custom property name, called the service’s “ID”. (e.g. `craft.foo.*`).
 
-You can attach your behavior or service to the `CraftVariable` instance by registering an [`EVENT_INIT`](api:craft\web\twig\variables\CraftVariable::EVENT_INIT) event handler from your plugin’s `init()` method:
+You can attach your behavior or service to the `CraftVariable` instance by registering an [EVENT_INIT](api:craft\web\twig\variables\CraftVariable::EVENT_INIT) event handler from your plugin’s `init()` method:
 
 ```php
 use craft\web\twig\variables\CraftVariable;

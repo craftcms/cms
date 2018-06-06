@@ -147,13 +147,13 @@ To get Craft to see your plugin, you will need to install it as a Composer depen
 
 #### Path Repository
 
-During development, the easiest way to work on your plugin is with a [`path` repository][path], which will tell Composer to symlink your plugin into the `vendor/` folder right alongside other dependencies.
+During development, the easiest way to work on your plugin is with a [path repository][path], which will tell Composer to symlink your plugin into the `vendor/` folder right alongside other dependencies.
 
 To set it up, open your Craft project’s `composer.json` file and make the following changes:
 
-- Set [`minimum-stability`](https://getcomposer.org/doc/04-schema.md#minimum-stability) to `"dev"`
-- Set [`prefer-stable`](https://getcomposer.org/doc/04-schema.md#prefer-stable) to `true`
-- Add a new [`path`](https://getcomposer.org/doc/05-repositories.md#path) repository record, pointed at your plugin’s root directory.
+- Set [minimum-stability](https://getcomposer.org/doc/04-schema.md#minimum-stability) to `"dev"`
+- Set [prefer-stable](https://getcomposer.org/doc/04-schema.md#prefer-stable) to `true`
+- Add a new [path repository](https://getcomposer.org/doc/05-repositories.md#path) record, pointed at your plugin’s root directory.
 
 ```json
 {

@@ -38,7 +38,7 @@ If the migration is being run from a console request, this will ensure the messa
 
 ### Manipulating Database Data
 
-Craft 3 adds a `$includeAuditColumns` argument to the [`batchInsert()`], [`insert()`], and [`update()`] migration methods (set to `true` by default) that determines whether to insert/update data in the “audit” columns (`dateCreated`, `dateUpdated`, `uid`). If the table you are inserting into does not have all three of these columns, you must pass `false` to that argument so you don’t get a SQL error.
+Craft 3 adds a `$includeAuditColumns` argument to the [batchInsert()], [insert()], and [update()] migration methods (set to `true` by default) that determines whether to insert/update data in the “audit” columns (`dateCreated`, `dateUpdated`, `uid`). If the table you are inserting into does not have all three of these columns, you must pass `false` to that argument so you don’t get a SQL error.
 
 ## Executing Migrations
 
@@ -54,6 +54,6 @@ If your Craft install is running from a Vagrant box, you will need to SSH into t
 
 To execute migrations from the Migrations utility, go to Utilities → Migrations in the Control Panel and click the “Apply new migrations” button.
 
-[`batchInsert()`]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#batchInsert()-detail
-[`insert()`]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#insert()-detail
-[`update()`]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#update()-detail
+[batchInsert()]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#batchInsert()-detail
+[insert()]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#insert()-detail
+[update()]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#update()-detail

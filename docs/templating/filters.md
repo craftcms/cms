@@ -40,7 +40,7 @@ If you pass `true` into the second argument, the “.00” will be stripped if t
 
 ## `date`
 
-Like Twig’s core [`date`](https://twig.symfony.com/doc/2.x/filters/date.html) filter, but with additional support for the following `format` values:
+Like Twig’s core [date](https://twig.symfony.com/doc/2.x/filters/date.html) filter, but with additional support for the following `format` values:
 
 - `'short'`
 - `'medium'` (default)
@@ -58,7 +58,7 @@ A `translate` argument is also available. If `true` is passed, the formatted dat
 
 ## `datetime`
 
-Like the [`date`](#date) filter, but the result will also include a timestamp.
+Like the [date](#date) filter, but the result will also include a timestamp.
 
 ```twig
 {{ entry.postDate|datetime('short') }}
@@ -66,7 +66,7 @@ Like the [`date`](#date) filter, but the result will also include a timestamp.
 
 ## `duration`
 
-Runs a [`DateInterval`](http://php.net/manual/en/class.dateinterval.php) object through <api:craft\helpers\DateTimeHelper::humanDurationFromInterval()>
+Runs a [DateInterval](http://php.net/manual/en/class.dateinterval.php) object through <api:craft\helpers\DateTimeHelper::humanDurationFromInterval()>
 
 ```twig
 <p>Posted {{ entry.postDate.diff(now)|duration(false) }} ago.</p>
@@ -191,7 +191,7 @@ Returns an array containing only the values that are also in a passed-in array.
 
 ## `json_encode`
 
-Like Twig’s core [`json_encode`](https://twig.symfony.com/doc/2.x/filters/json_encode.html) filter, but if the `options` argument isn’t set, it will default to `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT` if the response content type is either `text/html` or `application/xhtml+xml`.  
+Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html) filter, but if the `options` argument isn’t set, it will default to `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT` if the response content type is either `text/html` or `application/xhtml+xml`.  
 
 ## `kebab`
 
@@ -317,7 +317,7 @@ Returns a string formatted in “snake_case”.
 
 ## `time`
 
-Like the [`time`](#time) filter, but for times rather than dates.
+Like the [time](#time) filter, but for times rather than dates.
 
 ```twig
 {{ entry.postDate|time('short') }}

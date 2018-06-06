@@ -37,7 +37,7 @@ To output your Matrix blocks in a template, use a [for-loop](http://twig.sensiol
 
 All of the code you put within the for-loop will be repeated for each Matrix block in the field. The current block will get set to that `block` variable we’ve defined, and it will be a <api:craft\elements\MatrixBlock> model.
 
-Here’s an example of what the template might look like for a Matrix field with four Block Types (Heading, Text, Image, and Quote). We can determine the current block type’s handle by checking [`block.type`](api:craft\elements\MatrixBlock::getType()).
+Here’s an example of what the template might look like for a Matrix field with four Block Types (Heading, Text, Image, and Quote). We can determine the current block type’s handle by checking `block.type` (<api:craft\elements\MatrixBlock::getType()>).
 
 ```twig
 {% for block in entry.myMatrixField.all() %}
@@ -69,7 +69,7 @@ Here’s an example of what the template might look like for a Matrix field with
 {% endfor %}
 ```
 
-> This code can be simplified using the [`{% switch %}`](templating/tags/switch.md) tag.
+> This code can be simplified using the [switch](templating/tags/switch.md) tag.
 
 ### Filtering by block type
 

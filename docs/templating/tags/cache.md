@@ -32,13 +32,17 @@ Specifies the name of the key the cache should use. If this is not provided, a r
 {% cache using key "page-header" %}
 ```
 
-Tip: You can combine this parameter with [`globally`](#globally) to cache templates on a per-page basis, without letting any query string variables get included in the path:
+::: tip
+You can combine this parameter with [globally](#globally) to cache templates on a per-page basis, without letting any query string variables get included in the path:
 
 ```twig
 {% cache globally using key craft.app.request.pathInfo %}
 ```
+:::
 
-Warning: If you change the template code within a `{% cache %}` that uses a custom key, any existing template caches will not automatically be purged. You will either need to assign the tag a new key, or clear your existing template caches manually using the Clear Caches tool in Settings.
+::: warning
+If you change the template code within a `{% cache %}` that uses a custom key, any existing template caches will not automatically be purged. You will either need to assign the tag a new key, or clear your existing template caches manually using the Clear Caches tool in Settings.
+:::
 
 ### `for`
 
@@ -72,7 +76,9 @@ A [DateTime](http://php.net/manual/en/class.datetime.php) object defining when t
 {% cache until entry.eventDate %}
 ```
 
-Tip: You can only use [`for`](#for) **_or_** [`until`](#until) in a single `{% cache %}` tag.
+::: tip
+You can only use [for](#for) **_or_** [until](#until) in a single `{% cache %}` tag.
+:::
 
 ### `if`
 
@@ -92,7 +98,9 @@ Prevents the `{% cache %}` tag from activating if a certain condition is met.
 {% cache unless currentUser %}
 ```
 
-Tip: You can only use [`if`](#if) **_or_** [`unless`](#unless) in a single `{% cache %}` tag.
+::: tip
+You can only use [if](#if) **_or_** [unless](#unless) in a single `{% cache %}` tag.
+:::
 
 ## Cache clearing
 

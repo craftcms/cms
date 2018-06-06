@@ -194,7 +194,7 @@ $component->onEventName = $callback;
 
 This would directly register the event listener on the component.
 
-In Craft 3/Yii 2, use [`yii\base\Component::on()`](http://www.yiiframework.com/doc-2.0/yii-base-component.html#on()-detail) instead:
+In Craft 3/Yii 2, use <api:yii\base\Component::on()> instead:
 
 ```php
 $component->on('eventName', $callback);

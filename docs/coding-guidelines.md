@@ -27,10 +27,10 @@ Do your best to follow these guidelines when writing code for Craft and Craft pl
 - Use strict comparison operators (`===` and `!==`) whenever possible.
 - Use `$foo === null`/`$bar !== null` rather than `is_null($foo)`/`!is_null($bar)`.
 - Use `(int)$foo`/`(float)$bar` rather than `intval($foo)`/`floatval($bar)`.
-- Always pass `true`/`false` to the third argument of [`in_array()`](http://php.net/manual/en/function.in-array.php) to indicate whether the check should be type-script (and make it `true` whenever possible).
+- Always pass `true`/`false` to the third argument of [in_array()](http://php.net/manual/en/function.in-array.php) to indicate whether the check should be type-script (and make it `true` whenever possible).
 - Use `$obj->property !== null` rather than `isset($obj->property)` in conditions that check if an object property is set.
 - Use `empty()`/`!empty()` in conditions that check if an array is/isn’t empty.
-- Refer to class names using the [`::class` keyword](http://php.net/manual/en/language.oop5.basic.php#language.oop5.basic.class.class) (`Foo::class`) rather than as a string (`'some\nmspace\Foo'`) or Yii’s [`::className()`](http://www.yiiframework.com/doc-2.0/yii-base-object.html#className()-detail) static method (which is going to be removed in Yii 2.1).
+- Refer to class names using the [::class](http://php.net/manual/en/language.oop5.basic.php#language.oop5.basic.class.class) keyword (`Foo::class`) rather than as a string (`'some\nmspace\Foo'`) or <api:yii\base\BaseObject::className()>.
 - Initialize arrays explicitly (`$array = []`) rather than implicitly (e.g. `$array[] = 'foo'` where `$array` wasn’t defined yet).
 - Use `self::_foo()` rather than `static::_foo()` when calling private static functions, since `static::` would break if the class is extended.
 - Use `self::CONSTANT` rather than `static::CONSTANT` (unnecessary overhead).
@@ -309,7 +309,7 @@ $entry->setAuthor($newAuthor);
 
 ### App Component Getters
 
-App components should have their own getter functions, which call the app component getter method [`get()`](http://www.yiiframework.com/doc-2.0/yii-di-servicelocator.html#get()-detail) directly:
+App components should have their own getter functions, which call the app component getter method [get()](http://www.yiiframework.com/doc-2.0/yii-di-servicelocator.html#get()-detail) directly:
 
 ```php
 /**
