@@ -639,7 +639,18 @@ class DateTimeHelper
             $timeComponents[] = $dateInterval->s == 1 ? Craft::t('app', '1 second') : Craft::t('app', '{num} seconds', ['num' => $dateInterval->s]);
         }
 
-        return implode(', ', $timeComponents);
+        $last = array_pop($timeComponents);
+        if (!empty($timeComponents)) {
+            $string = implode(', ', $timeComponents);
+            if (count($timeComponents) > 1) {
+                $string .= ',';
+            }
+            $string .= ' '.Craft::t('app', 'and').' ';
+        } else {
+            $string = '';
+        }
+        $string .= $last;
+        return $string;
     }
 
     // Private Methods
