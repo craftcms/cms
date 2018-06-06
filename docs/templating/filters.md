@@ -27,15 +27,19 @@ Runs an array through [ArrayHelper::getColumn()](api:yii\helpers\BaseArrayHelper
 {% set entryIds = entries|column('id') %}
 ```
 
-## `currency( currency, stripZeroCents )`
+## `currency( currency, numberOptions, textOptions, stripZeroCents )`
 
 Formats a number with a given currency according to the user’s preferred language.
 
-If you pass `true` into the second argument, the “.00” will be stripped if there’s zero cents.
+If you pass `true` into the last argument, the “.00” will be stripped if there’s zero cents.
+
+See [here for a list](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterOptions-detail) of the possible `numberOptions`.
+
+See [here for a list](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterTextOptions-detail) of the possible textOptions`.
 
 ```twig
 {{ 1000000|currency('USD') }} => $1,000,000.00
-{{ 1000000|currency('USD', true) }} => $1,000,000
+{{ 1000000|currency('USD', [], [], true) }} => $1,000,000
 ```
 
 ## `date`
