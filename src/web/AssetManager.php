@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\errors\DbConnectException;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
 
@@ -96,6 +97,8 @@ class AssetManager extends \yii\web\AssetManager
                 ], [], false)
                 ->execute();
         } catch (DbException $e) {
+            // Craft is either not installed or not updated to 3.0.3+ yet
+        } catch (DbConnectException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 

@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where Craft wasn’t converting empty strings to `null` when saving data to nontextual columns.
+- Fixed a bug where Craft would show a Database Connection Error on Install requests, if it couldn’t connect to the database.
 
 ## 3.0.10 - 2018-06-05
 
