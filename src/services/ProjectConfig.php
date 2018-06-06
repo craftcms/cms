@@ -118,13 +118,14 @@ class ProjectConfig extends Component
         return true;
     }
 
-    /**
-     * Whether there is an update pending based on config and snapshot.
-     *
-     * @return bool
-     */
-    public function isUpdatePending(): bool
+    public function getPendingChanges(): array
     {
+        $changes = [
+            'newItems' => [],
+            'removedItems' => [],
+            'changedItems' => [],
+        ];
+
         $configSnapshot = $this->generateSnapshotFromConfigFiles();
         $currentSnapshot = $this->getCurrentSnapshot();
 
@@ -137,7 +138,7 @@ class ProjectConfig extends Component
 
         $flatten = function ($array, $path, &$result) use (&$flatten) {
             foreach ($array as $key => $value) {
-                $thisPath = $path.'#'.$key;
+                $thisPath = ltrim($path.'.'.$key, '.');
 
                 if (is_array($value)) {
                     $flatten($value, $thisPath, $result);
@@ -151,15 +152,66 @@ class ProjectConfig extends Component
         $flatten($configSnapshot, '', $flatConfig);
         $flatten($currentSnapshot, '', $flatCurrent);
 
-
+        // Compare and if something is different, mark the immediate parent as changed.
         foreach ($flatConfig as $key => $value) {
-            if (!array_key_exists($key, $flatCurrent) || $flatCurrent[$key] !== $value) {
-                return true;
+            // Drop the last part of path
+            $immediateParent = pathinfo($key, PATHINFO_FILENAME);
+
+            if (!array_key_exists($key, $flatCurrent)) {
+                $changes['newItems'][] = $immediateParent;
+            } elseif ($flatCurrent[$key] !== $value) {
+                $changes['changedItems'][] = $immediateParent;
             }
+
             unset($flatCurrent[$key]);
         }
 
-        return !empty($flatCurrent);
+        $changes['removedItems'] = array_keys($flatCurrent);
+
+        foreach ($changes['removedItems'] as &$removedItem) {
+            // Drop the last part of path
+            $removedItem = pathinfo($removedItem, PATHINFO_FILENAME);
+        }
+
+        // Sort by number of dots to ensure deepest paths listed first
+        $sorter = function($a, $b) {
+            $aDepth = substr_count($a, '.');
+            $bDepth = substr_count($b, '.');
+
+            if ($aDepth === $bDepth) {
+                return 0;
+            }
+
+            return $aDepth > $bDepth ? -1 : 1;
+        };
+
+        $changes['newItems'] = array_unique($changes['newItems']);
+        $changes['removedItems'] = array_unique($changes['removedItems']);
+        $changes['changedItems'] = array_unique($changes['changedItems']);
+
+        uasort($changes['newItems'], $sorter);
+        uasort($changes['removedItems'], $sorter);
+        uasort($changes['changedItems'], $sorter);
+
+        return $changes;
+    }
+
+    /**
+     * Whether there is an update pending based on config and snapshot.
+     *
+     * @return bool
+     */
+    public function isUpdatePending(): bool
+    {
+        $changes = $this->getPendingChanges();
+
+        foreach ($changes as $changeType) {
+            if (!empty($changeType)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
