@@ -35,7 +35,7 @@ class ProjectConfig extends Utility
      */
     public static function id(): string
     {
-        return 'projectConfig';
+        return 'project-config';
     }
 
     /**
