@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft wasn’t converting empty strings to `null` when saving data to nontextual columns.
+
 ## 3.0.10 - 2018-06-05
 
 ### Added
