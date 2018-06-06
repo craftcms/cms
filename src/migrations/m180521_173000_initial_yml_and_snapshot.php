@@ -179,7 +179,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sections_sites.hasUrls',
                 'sections_sites.uriFormat',
                 'sections_sites.template',
-                'sites.uid AS siteUid',
+                'sites.uid AS dependsOn',
                 'sections.uid AS sectionUid',
             ])
             ->from('{{%sections_sites}} sections_sites')
