@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the output of `craft\helpers\DateTimeHelper::humanDurationFromInterval()`.
+- Updated  Garnish to 0.1.24.
 
 ### Fixed
 - Fixed JavaScript errors that could occur in the Control Panel on pages with Ajax requests. ([#2966](https://github.com/craftcms/cms/issues/2966))
