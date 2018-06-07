@@ -812,11 +812,16 @@ class View extends \yii\web\View
      */
     public function registerJsFile($url, $options = [], $key = null)
     {
-        $key = $key ?: $url;
-        if (isset($this->_registeredJsFiles[$key])) {
-            return;
+        // If 'depends' is specified, ignore it  for now because the file will
+        // get registered as an asset bundle
+        if (empty($options['depends'])) {
+            $key = $key ?: $url;
+            if (isset($this->_registeredJsFiles[$key])) {
+                return;
+            }
+            $this->_registeredJsFiles[$key] = true;
         }
-        $this->_registeredJsFiles[$key] = true;
+
         parent::registerJsFile($url, $options, $key);
     }
 

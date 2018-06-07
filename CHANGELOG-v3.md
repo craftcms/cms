@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed JavaScript errors that could occur in the Control Panel on pages with Ajax requests. ([#2966](https://github.com/craftcms/cms/issues/2966))
 - Fixed a bug where "New Entry" drop down menu would not show up. ([#2961](https://github.com/craftcms/cms/issues/2961))
+- Fixed a bug where JavaScript files registered with `craft\web\View::registerJsFile()` would be ignored if the `depends` option was set. ([#2965](https://github.com/craftcms/cms/issues/2965))
 
 ## 3.0.10.1 - 2018-06-06
 
