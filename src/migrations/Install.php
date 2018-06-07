@@ -1012,6 +1012,8 @@ class Install extends Migration
             'on' => true,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
+            'configSnapshot' => serialize([]),
+            'configMap' => json_encode([])
         ]));
         echo " done\n";
 
