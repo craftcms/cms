@@ -812,11 +812,16 @@ class View extends \yii\web\View
      */
     public function registerJsFile($url, $options = [], $key = null)
     {
-        $key = $key ?: $url;
-        if (isset($this->_registeredJsFiles[$key])) {
-            return;
+        // If 'depends' is specified, ignore it  for now because the file will
+        // get registered as an asset bundle
+        if (empty($options['depends'])) {
+            $key = $key ?: $url;
+            if (isset($this->_registeredJsFiles[$key])) {
+                return;
+            }
+            $this->_registeredJsFiles[$key] = true;
         }
-        $this->_registeredJsFiles[$key] = true;
+
         parent::registerJsFile($url, $options, $key);
     }
 
@@ -1255,6 +1260,19 @@ JS;
         $this->_registeredAssetBundles = array_flip($names);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function endPage($ajaxMode = false)
+    {
+        if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_registeredJs('registeredJsFiles', $this->_registeredJsFiles);
+            $this->_registeredJs('registeredAssetBundles', $this->_registeredAssetBundles);
+        }
+
+        parent::endPage($ajaxMode);
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1382,28 +1400,6 @@ JS;
         $lines = [];
         if (!empty($this->_scripts[self::POS_END])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_END]);
-        }
-
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            if (!empty($this->_registeredJsFiles)) {
-                $json = Json::encode($this->_registeredJsFiles);
-                $js = <<<JS
-if (typeof Craft !== 'undefined') {
-    jQuery.extend(Craft.registeredJsFiles, {$json}); 
-}
-JS;
-                $this->registerJs($js, self::POS_END);
-            }
-
-            if (!empty($this->_registeredAssetBundles)) {
-                $json = Json::encode($this->_registeredAssetBundles);
-                $js = <<<JS
-if (typeof Craft !== 'undefined') {
-    jQuery.extend(Craft.registeredAssetBundles, {$json}); 
-}
-JS;
-                $this->registerJs($js, self::POS_END);
-            }
         }
 
         $html = parent::renderBodyEndHtml($ajaxMode);
@@ -1598,6 +1594,23 @@ JS;
         $this->_textareaMarkers[$marker] = $matches[2];
 
         return $matches[1].$marker.$matches[3];
+    }
+
+    private function _registeredJs($property, $names)
+    {
+        if (empty($names)) {
+            return;
+        }
+
+        $js = "if (typeof Craft !== 'undefined') {\n";
+        foreach (array_keys($names) as $name) {
+            if ($name) {
+                $jsName = Json::encode($name);
+                $js .= "  Craft.{$property}[{$jsName}] = true;\n";
+            }
+        }
+        $js .= '}';
+        $this->registerJs($js, self::POS_HEAD);
     }
 
     /**
