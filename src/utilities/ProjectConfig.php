@@ -57,7 +57,6 @@ class ProjectConfig extends Utility
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
             'isUpdatePending' => $service->isUpdatePending(),
             'isMapOutdated' => $service->isConfigMapOutdated(),
-            'lastModified' => max($service->getConfigFileModifyDates())
         ]);
     }
 
