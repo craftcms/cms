@@ -48,7 +48,9 @@ class ProjectConfigController extends Controller
      */
     public function actionRegenerateSnapshot(): Response
     {
-        Craft::$app->getProjectConfig()->updateSnapshot();
+        $configService = Craft::$app->getProjectConfig();
+        $configService->updateSnapshot();
+        $configService->updateDateModifiedCache();
 
         return $this->redirectToPostedUrl();
     }
