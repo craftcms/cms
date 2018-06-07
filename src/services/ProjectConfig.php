@@ -103,7 +103,7 @@ class ProjectConfig extends Component
             if ($previousFilePath) {
                 $this->_saveYaml($previousYaml, $previousFilePath);
             }
-            $targetYaml = Yaml::parseFile($targetFilePath);
+            $targetYaml = file_exists($targetFilePath) ? Yaml::parseFile($targetFilePath) : [];
         }
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
@@ -118,6 +118,11 @@ class ProjectConfig extends Component
         return true;
     }
 
+    /**
+     * Return a nested array for pending config changes
+     *
+     * @return array
+     */
     public function getPendingChanges(): array
     {
         $changes = [
@@ -362,7 +367,7 @@ class ProjectConfig extends Component
      */
     public function getCurrentConfigMap(): array
     {
-        return Json::decode(Craft::$app->getInfo()->configMap);
+        return Json::decode(Craft::$app->getInfo()->configMap) ?? [];
     }
 
     /**
