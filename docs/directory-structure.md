@@ -6,6 +6,10 @@ When you download a fresh copy of Craft 3, your project will have the following 
 
 Holds all of your Craft and plugin [configuration files](configuration.md), as well as your `license.key` file.
 
+#### `modules/`
+
+Holds any [Yii modules](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules) your site might be using.
+
 #### `storage/`
 
 This is where Craft stores a bunch of files that get dynamically generated at runtime.
