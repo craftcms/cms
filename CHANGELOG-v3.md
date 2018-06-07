@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.10.3 - 2018-06-07
+
+### Fixed
+- Fixed a bug where the “New Entry” menu on the Entries index page would not contain any options on single-site installs, running MySQL. ([#2961](https://github.com/craftcms/cms/issues/2961))
+- Fixed a bug where the `siteName` config setting wasn’t working as expected when set to an array. ([#2968](https://github.com/craftcms/cms/issues/2968))
+
 ## 3.0.10.2 - 2018-06-07
 
 ### Changed
