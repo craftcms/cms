@@ -396,6 +396,7 @@ class Volumes extends Component
             $volumeRecord->hasUrls = $volume->hasUrls;
             $volumeRecord->settings = $volume->getSettings();
             $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
+            $volumeRecord->uid = $volume->uid;
 
             if ($volume->hasUrls) {
                 $volumeRecord->url = $volume->url;
@@ -681,6 +682,7 @@ class Volumes extends Component
                 'fieldLayoutId',
                 'type',
                 'settings',
+                'uid'
             ])
             ->from(['{{%volumes}}'])
             ->orderBy(['sortOrder' => SORT_ASC]);
