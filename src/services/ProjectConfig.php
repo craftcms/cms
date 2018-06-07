@@ -492,7 +492,7 @@ class ProjectConfig extends Component
             $this->_config = $this->_getCofigurationFromConfigFiles();
         }
 
-        return $this->_snapshot;
+        return $this->_config;
     }
 
     /**
