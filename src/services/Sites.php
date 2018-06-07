@@ -648,67 +648,72 @@ class Sites extends Component
             throw $e;
         }
 
-        if (Craft::$app->getIsInstalled()) {
-            // Did the primary site just change?
-            $oldPrimarySiteId = $this->getPrimarySite()->id;
-            if ($site->primary && $site->id != $oldPrimarySiteId) {
-                $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
-            }
+        try {
+            if (Craft::$app->getIsInstalled()) {
+                // Did the primary site just change?
+                $oldPrimarySiteId = $this->getPrimarySite()->id;
+                if ($site->primary && $site->id != $oldPrimarySiteId) {
+                    $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
+                }
 
-            if ($isNewSite) {
-                // TODO: Move this code into element/category modules
-                // Create site settings for each of the category groups
-                $allSiteSettings = (new Query())
-                    ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                    ->from(['{{%categorygroups_sites}}'])
-                    ->where(['siteId' => $this->getPrimarySite()->id])
-                    ->all();
+                if ($isNewSite) {
+                    // TODO: Move this code into element/category modules
+                    // Create site settings for each of the category groups
+                    $allSiteSettings = (new Query())
+                        ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
+                        ->from(['{{%categorygroups_sites}}'])
+                        ->where(['siteId' => $this->getPrimarySite()->id])
+                        ->all();
 
-                if (!empty($allSiteSettings)) {
-                    $newSiteSettings = [];
+                    if (!empty($allSiteSettings)) {
+                        $newSiteSettings = [];
 
-                    foreach ($allSiteSettings as $siteSettings) {
-                        $newSiteSettings[] = [
-                            $siteSettings['groupId'],
-                            $site->id,
-                            $siteSettings['uriFormat'],
-                            $siteSettings['template'],
-                            $siteSettings['hasUrls']
-                        ];
+                        foreach ($allSiteSettings as $siteSettings) {
+                            $newSiteSettings[] = [
+                                $siteSettings['groupId'],
+                                $site->id,
+                                $siteSettings['uriFormat'],
+                                $siteSettings['template'],
+                                $siteSettings['hasUrls']
+                            ];
+                        }
+
+                        Craft::$app->getDb()->createCommand()
+                            ->batchInsert(
+                                '{{%categorygroups_sites}}',
+                                ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
+                                $newSiteSettings)
+                            ->execute();
                     }
 
-                    Craft::$app->getDb()->createCommand()
-                        ->batchInsert(
-                            '{{%categorygroups_sites}}',
-                            ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
-                            $newSiteSettings)
-                        ->execute();
-                }
+                    // Re-save most localizable element types
+                    // (skip entries because they only support specific sites)
+                    // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
+                    $queue = Craft::$app->getQueue();
+                    $elementTypes = [
+                        Asset::class,
+                        Category::class,
+                        GlobalSet::class,
+                        Tag::class,
+                    ];
 
-                // Re-save most localizable element types
-                // (skip entries because they only support specific sites)
-                // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
-                $queue = Craft::$app->getQueue();
-                $elementTypes = [
-                    Asset::class,
-                    Category::class,
-                    GlobalSet::class,
-                    Tag::class,
-                ];
-
-                foreach ($elementTypes as $elementType) {
-                    $queue->push(new ResaveElements([
-                        'elementType' => $elementType,
-                        'criteria' => [
-                            'siteId' => $oldPrimarySiteId,
-                            'status' => null,
-                            'enabledForSite' => false
-                        ]
-                    ]));
+                    foreach ($elementTypes as $elementType) {
+                        $queue->push(new ResaveElements([
+                            'elementType' => $elementType,
+                            'criteria' => [
+                                'siteId' => $oldPrimarySiteId,
+                                'status' => null,
+                                'enabledForSite' => false
+                            ]
+                        ]));
+                    }
                 }
+            } else {
+                // This must be the primary site
+                $this->_primarySite = $site;
             }
-        } else {
-            // This must be the primary site
+        // If no primary site found, this is probably the first site and also the primary site.
+        } catch (SiteNotFoundException $exception) {
             $this->_primarySite = $site;
         }
 

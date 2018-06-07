@@ -569,10 +569,14 @@ trait ApplicationTrait
                     ->insert('{{%info}}', $attributes)
                     ->execute();
 
-                if (Craft::$app->getIsInstalled()) {
-                    // Set the new id
-                    $info->id = $this->getDb()->getLastInsertID('{{%info}}');
-                }
+                $this->setIsInstalled();
+
+                $row = (new Query())
+                    ->from(['{{%info}}'])
+                    ->one();
+
+                // Reload from DB with the new ID and modified dates.
+                $info = new Info($row);
             }
 
             // Use this as the new cached Info
