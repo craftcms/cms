@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated  Garnish to 0.1.24.
+
 ## 2.6.3017 - 2018-06-05
 
 ### Changed
