@@ -221,7 +221,8 @@ class ProjectConfig extends Component
      *
      * @return void
      */
-    public function regenerateConfigFileFromSnapshot() {
+    public function regenerateConfigFileFromSnapshot()
+    {
         $snapshot = $this->_getCurrentSnapshot();
 
         $basePath = Craft::$app->getPath()->getConfigPath();
@@ -234,7 +235,8 @@ class ProjectConfig extends Component
     /**
      * Apply any pending changes
      */
-    public function applyPendingChanges() {
+    public function applyPendingChanges()
+    {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -311,7 +313,8 @@ class ProjectConfig extends Component
      *
      * @return bool
      */
-    public function isConfigMapOutdated(): bool {
+    public function isConfigMapOutdated(): bool
+    {
         $yamlTree = $this->_getConfigFileModifiedTimes();
         $cachedTree = $this->_getConfigFileModifyDates();
 
@@ -378,7 +381,8 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getConfigDependencies(): array {
+    private function _getConfigDependencies(): array
+    {
         // TODO stub
         return [];
     }
@@ -627,7 +631,8 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getConfigFileList(): array {
+    private function _getConfigFileList(): array
+    {
         $basePath = Craft::$app->getPath()->getConfigPath();
         $baseFile = $basePath.'/system.yml';
 
@@ -657,7 +662,8 @@ class ProjectConfig extends Component
      * @param string $nodePath
      * @return string
      */
-    private function _nodePathToArrayAccess(string $nodePath): string {
+    private function _nodePathToArrayAccess(string $nodePath): string
+    {
         // Clean up!
         $nodePath = preg_replace('/[^a-z0-9\-\.]/i', '', $nodePath);
         return "['".preg_replace('/\./', "']['", $nodePath)."']";
@@ -670,7 +676,8 @@ class ProjectConfig extends Component
      * @param string $path
      * @throws \yii\base\ErrorException
      */
-    private function _saveYaml(array $data, string $path) {
+    private function _saveYaml(array $data, string $path)
+    {
         $traverseAndClean = function (&$array) use (&$traverseAndClean) {
             $remove = [];
             foreach ($array as $key => &$value) {
