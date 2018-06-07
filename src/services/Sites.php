@@ -1036,8 +1036,8 @@ class Sites extends Component
                     }
                 }
 
-                if (is_array($generalConfig->siteName) && isset($generalConfig->siteUrl[$site->handle])) {
-                    $site->overrideName($generalConfig->siteUrl[$site->handle]);
+                if (is_array($generalConfig->siteName) && isset($generalConfig->siteName[$site->handle])) {
+                    $site->overrideName($generalConfig->siteName[$site->handle]);
                 }
                 if (is_array($generalConfig->siteUrl) && isset($generalConfig->siteUrl[$site->handle])) {
                     $site->overrideBaseUrl($generalConfig->siteUrl[$site->handle]);
