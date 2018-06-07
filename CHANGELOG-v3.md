@@ -5,6 +5,9 @@
 ### Changed
 - Improved the output of `craft\helpers\DateTimeHelper::humanDurationFromInterval()`.
 
+### Fixed
+- Fixed JavaScript errors that could occur in the Control Panel on pages with Ajax requests. ([#2966](https://github.com/craftcms/cms/issues/2966))
+
 ## 3.0.10.1 - 2018-06-06
 
 ### Fixed
