@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.10.2 - 2018-06-07
 
 ### Changed
 - Improved the output of `craft\helpers\DateTimeHelper::humanDurationFromInterval()`.
