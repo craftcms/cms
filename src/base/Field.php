@@ -14,6 +14,7 @@ use craft\events\FieldElementEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -233,6 +234,23 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfigData(): array
+    {
+        return [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'context' => $this->context,
+            'instructions' => $this->instructions,
+            'translationMethod' => $this->translationMethod,
+            'translationKeyFormat' => $this->translationKeyFormat,
+            'type' => static::class,
+            'settings' => Json::encode($this->getSettings()),
+        ];
     }
 
     /**

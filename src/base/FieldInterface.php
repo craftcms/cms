@@ -61,6 +61,16 @@ interface FieldInterface extends SavableComponentInterface
     public function getContentColumnType(): string;
 
     /**
+     * Returns the configuration data this field will store in the project configuration.
+     *
+     * This method will be called after a field has been saved so that more complex fields have a way of supplying
+     * their own data.
+     *
+     * @return array The data ti be saved.
+     */
+    public function getConfigData(): array;
+
+    /**
      * Returns whether the field should be shown as translatable in the UI.
      *
      * Note this method has no effect on whether the field’s value will get copied over to other

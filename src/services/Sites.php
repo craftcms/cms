@@ -270,6 +270,9 @@ class Sites extends Component
             ]));
         }
 
+        $configPath = 'sites.'.$groupRecord->uid.'.name';
+        Craft::$app->getProjectConfig()->save($configPath, $group->name);
+
         return true;
     }
 
@@ -724,6 +727,19 @@ class Sites extends Component
                 'isNew' => $isNewSite,
             ]));
         }
+
+        $groupUid = SiteGroupRecord::findOne($site->groupId)->uid;
+        $siteuid = $siteRecord->uid;
+        $configPath = 'sites.'.$groupUid.'.site.'.$siteuid;
+        Craft::$app->getProjectConfig()->save($configPath, [
+            'name' => $site->name,
+            'handle' => $site->handle,
+            'language' => $site->language,
+            'hasUrls' => $site->hasUrls,
+            'baseUrl' => $site->baseUrl,
+            'sortOrder' => $site->sortOrder,
+            'primary' => $site->primary,
+        ]);
 
         return true;
     }
