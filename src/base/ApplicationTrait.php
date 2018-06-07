@@ -539,7 +539,7 @@ trait ApplicationTrait
             unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
             // TODO: Remove this after the next breakpoint
-            if (version_compare($this->_storedVersion, '3.1', '<')) {
+            if ($this->_storedVersion && version_compare($this->_storedVersion, '3.1', '<')) {
                 unset($attributes['configSnapshot'], $attributes['configMap']);
             }
 
