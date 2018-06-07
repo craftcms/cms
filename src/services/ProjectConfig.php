@@ -8,18 +8,20 @@
 namespace craft\services;
 
 use Craft;
+use craft\events\ParseConfigEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Project config service.
  * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|<code>Craft::$app->projectConfig</code>]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.1
  */
 class ProjectConfig extends Component
 {
@@ -38,6 +40,95 @@ class ProjectConfig extends Component
     const ENTITY_FIELDS = 'fields';
     const ENTITY_VOLUMES = 'volumes';
 
+    // Regexp patterns
+    // -------------------------------------------------------------------------
+    const UID_PATTERN = '[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}';
+
+    // Events
+    // =========================================================================
+    /**
+     * @event ParseConfigEvent The event that is triggered on encountering a new config object
+     *
+     * Components can get notified when a new config object is encountered
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, function(ParseConfigEvent $e) {
+     *      // Do something with the new configuration info
+     * });
+     * ```
+     */
+    const EVENT_NEW_CONFIG_OBJECT = 'newConfigObject';
+
+    /**
+     * @event ParseConfigEvent The event that is triggered on encountering a changed config object
+     *
+     * Components can get notified when changes in a config object are encountered
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, function(ParseConfigEvent $e) {
+     *      // Do something with the changed configuration info
+     * });
+     * ```
+     */
+    const EVENT_CHANGED_CONFIG_OBJECT = 'changedConfigObject';
+
+    /**
+     * @event ParseConfigEvent The event that is triggered on encountering a removed config object
+     *
+     * Components can get notified when a config object is removed
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, function(ParseConfigEvent $e) {
+     *      // Do something with the information that a configuration object was removed
+     * });
+     * ```
+     */
+    const EVENT_REMOVED_CONFIG_OBJECT = 'removedConfigObject';
+
+    /**
+     * @event ParseConfigEvent The event that is triggered after parsing all configuration changes
+     *
+     * Components can get notified when all configuration has been parsed
+     *
+     * ```php
+     * use craft\events\ParseConfigEvent;
+     * use craft\services\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_AFTER_PARSE_CONFIG, function(ParseConfigEvent $e) {
+     *      // Apply buffered changes
+     * });
+     * ```
+     */
+    const EVENT_AFTER_PARSE_CONFIG = 'afterParseConfig';
+
+    /**
+     * Current snapshot as stoed in database.
+     *
+     * @var array
+     */
+
+    /**
+     * Current configuration as stored in YAML
+     * @var
+     */
+    private $_snapshot;
+    private $_config;
+    private $_configMap;
+
+
     // Public methods
     // =========================================================================
 
@@ -48,12 +139,18 @@ class ProjectConfig extends Component
      * @return array|mixed|null
      * @throws \yii\web\ServerErrorHttpException
      */
-    public function get(string $path)
+    public function get(string $path, $getFromConfig = false)
     {
-        $snapshot = $this->getCurrentSnapshot();
+        if ($getFromConfig) {
+            $source = $this->_getCurrentConfig();
+        } else {
+            $source = $this->_getCurrentSnapshot();
+        }
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
-        return eval('return $snapshot'.$arrayAccess.';');
+
+        // TODO figure out a better but not convoluted way without eval
+        return eval('return $source'.$arrayAccess.';');
     }
 
     /**
@@ -68,13 +165,13 @@ class ProjectConfig extends Component
         $pathParts = explode('.', $path);
         $endPart = end($pathParts);
 
-        $configMap = $this->getCurrentConfigMap();
+        $configMap = $this->_getCurrentConfigMap();
         $nodeConfig = $configMap['nodes'] ?? [];
         $map = $configMap['map'] ?? [];
 
         $existingNodePath = null;
         // Does it look like UID?
-        if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $endPart) && !empty($map[$endPart])) {
+        if (preg_match('/'.self::UID_PATTERN.'/i', $endPart) && !empty($map[$endPart])) {
             $existingNodePath = $map[$endPart];
         }
 
@@ -111,11 +208,291 @@ class ProjectConfig extends Component
 
         $this->_saveYaml($targetYaml, $targetFilePath);
 
-        $this->updateSnapshot();
+        $this->regenerateSnapshotFromConfig();
         $this->updateConfigMap();
-        $this->updateDateModifiedCache();
+        $this->_updateLastParsedConfigCache();
 
         return true;
+    }
+
+
+    /**
+     * Generate the configuration file based on the current snapshot.
+     *
+     * @return void
+     */
+    public function regenerateConfigFileFromSnapshot() {
+        $snapshot = $this->_getCurrentSnapshot();
+
+        $basePath = Craft::$app->getPath()->getConfigPath();
+        $baseFile = $basePath.'/system.yml';
+
+        $this->_saveYaml($snapshot, $baseFile);
+        $this->_updateLastParsedConfigCache();
+    }
+
+    /**
+     * Apply any pending changes
+     */
+    public function applyPendingChanges() {
+        $transaction = Craft::$app->getDb()->beginTransaction();
+
+        try {
+            $changes = $this->_getPendingChanges();
+
+            Craft::info('Looking for pending changes', __METHOD__);
+
+            if (!empty($changes['newItems'])) {
+                Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
+                foreach ($changes['newItems'] as $itemPath) {
+                    $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
+                        'configPath' => $itemPath
+                    ]));
+                }
+            }
+
+            if (!empty($changes['changedItems'])) {
+                Craft::info('Parsing '.count($changes['changedItems']).' changed configuration objects', __METHOD__);
+                foreach ($changes['changedItems'] as $itemPath) {
+                    $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
+                        'configPath' => $itemPath
+                    ]));
+                }
+            }
+
+            if (!empty($changes['removedItems'])) {
+                Craft::info('Parsing '.count($changes['removedItems']).' removed configuration objects', __METHOD__);
+
+                foreach ($changes['removedItems'] as $itemPath) {
+                    $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
+                        'configPath' => $itemPath
+                    ]));
+                }
+            }
+
+            Craft::info('Finalizing configuration parsing', __METHOD__);
+            $this->trigger(self::EVENT_AFTER_PARSE_CONFIG, new ParseConfigEvent());
+
+            $dependencies = $this->_getConfigDependencies();
+
+            Craft::info('Resolving '.count($dependencies).' dependencies', __METHOD__);
+
+            // TODO finish this
+            throw new Exception('Stuff');
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+    }
+
+    /**
+     * Whether there is an update pending based on config and snapshot.
+     *
+     * @return bool
+     */
+    public function isUpdatePending(): bool
+    {
+        $changes = $this->_getPendingChanges();
+
+        foreach ($changes as $changeType) {
+            if (!empty($changeType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if config mapping might have changed due to changes in file config tree or modify times.
+     *
+     * @return bool
+     */
+    public function isConfigMapOutdated(): bool {
+        $yamlTree = $this->_getConfigFileModifiedTimes();
+        $cachedTree = $this->_getConfigFileModifyDates();
+
+        // Tree has changed
+        if (\count(array_diff_key($yamlTree, $cachedTree)) || \count(array_diff_key($cachedTree, $yamlTree))) {
+            return true;
+        }
+
+        // Date modified has changed
+        foreach ($yamlTree as $file => $dateModified) {
+            if ($dateModified !== $cachedTree[$file]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Update the configuration mapping.
+     *
+     * @return bool
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function updateConfigMap(): bool
+    {
+        $configMap = $this->_generateConfigMap();
+        $this->_configMap = $configMap;
+
+        $info = Craft::$app->getInfo();
+        $info->configMap = Json::encode($configMap);
+        Craft::$app->saveInfo($info);
+
+        $this->_updateLastParsedConfigCache();
+
+        return true;
+    }
+
+    /**
+     * Update the configuration snapshot.
+     *
+     * @return bool
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function regenerateSnapshotFromConfig(): bool
+    {
+        $snapshot = $this->_getCofigurationFromConfigFiles();
+        $this->_snapshot = $snapshot;
+
+        $info = Craft::$app->getInfo();
+        $info->configSnapshot = serialize($snapshot);
+        Craft::$app->saveInfo($info);
+
+        $this->_updateLastParsedConfigCache();
+
+        return true;
+    }
+
+    // Private methods
+    // =========================================================================
+
+    /**
+     * Get dependencies as announced by config parsers
+     *
+     * @return array
+     */
+    private function _getConfigDependencies(): array {
+        // TODO stub
+        return [];
+    }
+
+    /**
+     * Get config file modified dates.
+     *
+     * @return array
+     */
+    private function _getConfigFileModifyDates(): array
+    {
+        $cachedTimes = Craft::$app->getCache()->get(self::CACHE_KEY);
+
+        if (!$cachedTimes) {
+            return [];
+        }
+
+        $this->_updateLastParsedConfigCache($cachedTimes);
+
+        return $cachedTimes;
+    }
+
+    /**
+     * Update config file modified date cache. If no modified dates passed, the config file tree will be parsed
+     * to figure out the modified dates.
+     *
+     * @param array|null $fileList
+     * @return bool
+     */
+    private function _updateLastParsedConfigCache(array $fileList = null): bool
+    {
+        if (!$fileList) {
+            $fileList = $this->_getConfigFileModifiedTimes();
+        }
+
+        return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
+    }
+
+    /**
+     * Retrieve a a config file tree with modified times based on the main `system.yml` configuration file.
+     *
+     * @return array
+     */
+    private function _getConfigFileModifiedTimes(): array
+    {
+        $fileList = $this->_getConfigFileList();
+
+        $output = [];
+
+        clearstatcache();
+        foreach ($fileList as $file) {
+            $output[$file] = FileHelper::lastModifiedTime($file);
+        }
+
+        return $output;
+    }
+
+    /**
+     * Generate the configuration snapshot based on the configuration files.
+     *
+     * @return array
+     */
+    private function _getCofigurationFromConfigFiles(): array
+    {
+        $fileList = $this->_getConfigFileList();
+
+        $snapshot = [];
+
+        foreach ($fileList as $file) {
+            $config = Yaml::parseFile($file);
+            $snapshot = array_merge($snapshot, $config);
+        }
+
+        return $snapshot;
+    }
+
+    /**
+     * Get the stored config map.
+     *
+     * @return array
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    private function _getCurrentConfigMap(): array
+    {
+        return Json::decode(Craft::$app->getInfo()->configMap) ?? [];
+    }
+
+    /**
+     * Get the stored snapshot.
+     *
+     * @return array
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    private function _getCurrentSnapshot(): array
+    {
+        if (empty($this->_snapshot)) {
+            $this->_snapshot = unserialize(Craft::$app->getInfo()->configSnapshot, ['allowed_classes' => false]);
+        }
+
+        return $this->_snapshot;
+    }
+
+    /**
+     * Get the current config.
+     *
+     * @return array
+     */
+    private function _getCurrentConfig(): array
+    {
+        if (etmpy($this->_config)) {
+            $this->_config = $this->_getCofigurationFromConfigFiles();
+        }
+
+        return $this->_snapshot;
     }
 
     /**
@@ -123,7 +500,7 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    public function getPendingChanges(): array
+    private function _getPendingChanges(): array
     {
         $changes = [
             'newItems' => [],
@@ -131,8 +508,8 @@ class ProjectConfig extends Component
             'changedItems' => [],
         ];
 
-        $configSnapshot = $this->generateSnapshotFromConfigFiles();
-        $currentSnapshot = $this->getCurrentSnapshot();
+        $configSnapshot = $this->_getCofigurationFromConfigFiles();
+        $currentSnapshot = $this->_getCurrentSnapshot();
 
         $flatConfig = [];
         $flatCurrent = [];
@@ -201,192 +578,11 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Whether there is an update pending based on config and snapshot.
-     *
-     * @return bool
-     */
-    public function isUpdatePending(): bool
-    {
-        $changes = $this->getPendingChanges();
-
-        foreach ($changes as $changeType) {
-            if (!empty($changeType)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns true if config mapping might have changed due to changes in file config tree or modify times.
-     *
-     * @return bool
-     */
-    public function isConfigMapOutdated(): bool {
-        $yamlTree = $this->getConfigFileModifiedTimes();
-        $cachedTree = $this->getConfigFileModifyDates();
-
-        // Tree has changed
-        if (\count(array_diff_key($yamlTree, $cachedTree)) || \count(array_diff_key($cachedTree, $yamlTree))) {
-            return true;
-        }
-
-        // Date modified has changed
-        foreach ($yamlTree as $file => $dateModified) {
-            if ($dateModified !== $cachedTree[$file]) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Get config file modified dates.
-     *
-     * @return array
-     */
-    public function getConfigFileModifyDates(): array
-    {
-        $cachedTimes = Craft::$app->getCache()->get(self::CACHE_KEY);
-
-        if (!$cachedTimes) {
-            return [];
-        }
-
-        $this->updateDateModifiedCache($cachedTimes);
-
-        return $cachedTimes;
-    }
-
-    /**
-     * Update config file modified date cache. If no modified dates passed, the config file tree will be parsed
-     * to figure out the modified dates.
-     *
-     * @param array|null $fileList
-     * @return bool
-     */
-    public function updateDateModifiedCache(array $fileList = null): bool
-    {
-        if (!$fileList) {
-            $fileList = $this->getConfigFileModifiedTimes();
-        }
-
-        return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
-    }
-
-    /**
-     * Update the configuration mapping.
-     *
-     * @return bool
-     * @throws \yii\web\ServerErrorHttpException
-     */
-    public function updateConfigMap(): bool
-    {
-        $configMap = $this->generateConfigMap();
-        $info = Craft::$app->getInfo();
-        $info->configMap = Json::encode($configMap);
-
-        return Craft::$app->saveInfo($info);
-    }
-
-    /**
-     * Update the configuration snapshot.
-     *
-     * @return bool
-     * @throws \yii\web\ServerErrorHttpException
-     */
-    public function updateSnapshot(): bool
-    {
-        $snapshot = $this->generateSnapshotFromConfigFiles();
-        $info = Craft::$app->getInfo();
-        $info->configSnapshot = serialize($snapshot);
-
-        return Craft::$app->saveInfo($info);
-    }
-
-    /**
-     * Retrieve a a config file tree with modified times based on the main `system.yml` configuration file.
-     *
-     * @return array
-     */
-    public function getConfigFileModifiedTimes(): array
-    {
-        $fileList = $this->_getConfigFileList();
-
-        $output = [];
-
-        clearstatcache();
-        foreach ($fileList as $file) {
-            $output[$file] = FileHelper::lastModifiedTime($file);
-        }
-
-        return $output;
-    }
-
-    /**
-     * Generate the configuration snapshot based on the configuration files.
-     *
-     * @return array
-     */
-    public function generateSnapshotFromConfigFiles(): array
-    {
-        $fileList = $this->_getConfigFileList();
-
-        $snapshot = [];
-
-        foreach ($fileList as $file) {
-            $config = Yaml::parseFile($file);
-            $snapshot = array_merge($snapshot, $config);
-        }
-
-        return $snapshot;
-    }
-
-    /**
-     * Generate the configuration file based on the current snapshot.
-     *
-     * @return void
-     */
-    public function generateConfigFileFromSnapshot() {
-        $snapshot = $this->getCurrentSnapshot();
-
-        $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/system.yml';
-
-        $this->_saveYaml($snapshot, $baseFile);
-        $this->updateDateModifiedCache();
-    }
-
-    /**
-     * Get the stored config map.
-     *
-     * @return array
-     * @throws \yii\web\ServerErrorHttpException
-     */
-    public function getCurrentConfigMap(): array
-    {
-        return Json::decode(Craft::$app->getInfo()->configMap) ?? [];
-    }
-
-    /**
-     * Get the stored snapshot.
-     *
-     * @return array
-     * @throws \yii\web\ServerErrorHttpException
-     */
-    public function getCurrentSnapshot(): array
-    {
-        return unserialize(Craft::$app->getInfo()->configSnapshot, ['allowed_classes' => false]);
-    }
-
-    /**
      * Generate the configuration mapping data from configuration files.
      *
      * @return array
      */
-    public function generateConfigMap(): array
+    private function _generateConfigMap(): array
     {
         $fileList = $this->_getConfigFileList();
 
@@ -396,7 +592,7 @@ class ProjectConfig extends Component
         $traverseAndExtract = function ($config, $prefix, &$map) use (&$traverseAndExtract) {
             foreach ($config as $key => $value) {
                 // Does it look like a UID?
-                if (preg_match('/[0-f]{8}-[0-f]{4}-[0-f]{4}-[0-f]{4}-[0-f]{12}/i', $key)) {
+                if (preg_match('/'.self::UID_PATTERN.'/i', $key)) {
                     $map[$key] = $prefix.'.'.$key;
                 }
 
@@ -426,8 +622,6 @@ class ProjectConfig extends Component
         ];
     }
 
-    // Private methods
-    // =========================================================================
     /**
      * Load the system.yml file and figure out all the files imported and used.
      *
