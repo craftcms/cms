@@ -7,6 +7,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\services\ProjectConfig;
 use Symfony\Component\Yaml\Yaml;
 
@@ -35,35 +36,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $snapshot = serialize($data);
 
-        $nodes = [];
-        $map = [];
-
-        // Generate config map
-        $traverseAndExtract = function ($config, $prefix, &$map) use (&$traverseAndExtract) {
-            foreach ($config as $key => $value) {
-                // Does it look like a UID?
-                if (preg_match('/'.ProjectConfig::UID_PATTERN.'/i', $key)) {
-                    $map[$key] = $prefix.'.'.$key;
-                }
-
-                if (\is_array($value)) {
-                    $traverseAndExtract($value, $prefix.(substr($prefix, -1) !== '/' ? '.' : '').$key, $map);
-                }
-            }
-        };
-
-        // Take record of top nodes
-        $topNodes = array_keys($data);
-        foreach ($topNodes as $topNode) {
-            $nodes[$topNode] = $destination;
-        }
-
-        $traverseAndExtract($data, $destination.'/', $map);
-
-        $configMap = [
-            'nodes' => $nodes,
-            'map' => $map
-        ];
+        $configMap = ProjectConfigHelper::generateConfigMap([$destination]);
 
         $this->update('{{%info}}', [
             'configSnapshot' => $snapshot,

@@ -12,6 +12,7 @@ use craft\events\ParseConfigEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Component;
 use yii\base\Exception;
@@ -136,6 +137,7 @@ class ProjectConfig extends Component
      * Get a value by path from the snapshot.
      *
      * @param string $path
+     * @param bool $getFromConfig whether data should be fetched from config instead of snapshot. Defaults to `false`
      * @return array|mixed|null
      * @throws \yii\web\ServerErrorHttpException
      */
@@ -492,7 +494,7 @@ class ProjectConfig extends Component
      */
     private function _getCurrentConfig(): array
     {
-        if (etmpy($this->_config)) {
+        if (empty($this->_config)) {
             $this->_config = $this->_getCofigurationFromConfigFiles();
         }
 
@@ -590,40 +592,8 @@ class ProjectConfig extends Component
     {
         $fileList = $this->_getConfigFileList();
 
-        $nodes = [];
-        $map = [];
+        return ProjectConfigHelper::generateConfigMap($fileList);
 
-        $traverseAndExtract = function ($config, $prefix, &$map) use (&$traverseAndExtract) {
-            foreach ($config as $key => $value) {
-                // Does it look like a UID?
-                if (preg_match('/'.self::UID_PATTERN.'/i', $key)) {
-                    $map[$key] = $prefix.'.'.$key;
-                }
-
-                if (\is_array($value)) {
-                    $traverseAndExtract($value, $prefix.(substr($prefix, -1) !== '/' ? '.' : '').$key, $map);
-                }
-            }
-        };
-
-        foreach ($fileList as $file) {
-            $config = Yaml::parseFile($file);
-
-            // Take record of top nodes
-            $topNodes = array_keys($config);
-            foreach ($topNodes as $topNode) {
-                $nodes[$topNode] = $file;
-            }
-
-            $traverseAndExtract($config, $file.'/', $map);
-        }
-
-        unset($nodes['imports']);
-
-        return [
-            'nodes' => $nodes,
-            'map' => $map
-        ];
     }
 
     /**
