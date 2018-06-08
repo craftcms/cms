@@ -143,7 +143,7 @@ User photos are stored as assets now. When upgrading to Craft 3, Craft will auto
 
 Here’s how you can resolve this:
 
-1. Move the `storage/userphotos/` folder somewhere below your web root (e.g. `public_html/userphotos/`)
+1. Move the `storage/userphotos/` folder somewhere below your web root (e.g. `web/userphotos/`)
 2. Go to Settings → Assets → Volumes → User Photos and configure the volume based on the new folder location:
     - Update the File System Path setting to point to the new folder location
     - Enable the “Assets in this volume have public URLs” setting
