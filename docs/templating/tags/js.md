@@ -17,7 +17,7 @@ The tag calls [yii\web\View::registerJs()](http://www.yiiframework.com/doc-2.0/y
 
 ```twig
 {% set script = '_gaq.push(["_trackEvent", "Search", "'~searchTerm|e('js')~'"' %}
-{% do view.registerJs(styles) %}
+{% do view.registerJs(script) %}
 ```
 :::
 
