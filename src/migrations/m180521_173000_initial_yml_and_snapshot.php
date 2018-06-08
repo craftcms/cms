@@ -378,11 +378,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'volumes.url',
                 'volumes.settings',
                 'volumes.sortOrder',
-                'volumes.uid',
-                'folder.uid as folderUid',
+                'volumes.uid'
             ])
-            ->leftJoin('{{%volumefolders}} folder', '[[folder.volumeId]] = [[volumes.id]]')
-            ->where(['folder.parentId' => null])
             ->from(['{{%volumes}} volumes'])
             ->all();
 
