@@ -193,6 +193,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($sectionSiteRows as $sectionSiteRow) {
             $sectionUid = $sectionSiteRow['sectionUid'];
             $uid = $sectionSiteRow['uid'];
+            $sectionSiteRow['dependsOn'] = ['source' => 'sites', 'uid' => $sectionSiteRow['dependsOn']];
             unset($sectionSiteRow['sectionUid'], $sectionSiteRow['uid']);
             $sectionData[$sectionUid]['siteSettings'][$uid] = $sectionSiteRow;
         }
@@ -321,11 +322,12 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
                 foreach ($tab['fields'] as $field) {
                     // Replace the dependency with actual definition
-                    $fieldDefinition = $fields[$field['dependsOn']];
+                    $fieldDefinition = $fields[$field['dependsOn']['uid']];
                     unset($fieldDefinition['uid'], $fieldDefinition['id'], $fieldDefinition['groupId']);
 
                     $tabFields[] = [
                         'sortOrder' => $field['sortOrder'],
+                        'required' => $field['required'],
                         'field' => $fieldDefinition
                     ];
                 }
@@ -460,7 +462,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field['dependsOn'] = $fieldRow['fieldUid'];
+            $field['dependsOn'] = ['source' => 'fields', 'uid' => $fieldRow['fieldUid']];
             $field['required'] = $fieldRow['required'];
             $field['sortOrder'] = $fieldRow['fieldOrder'];
 
