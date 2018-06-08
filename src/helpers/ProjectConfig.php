@@ -79,11 +79,7 @@ class ProjectConfig
             $dependencies = [];
             foreach ($data as $key => $value) {
                 if ($key === 'dependsOn') {
-                    if (is_array($value)) {
-                        $dependencies = array_merge($dependencies, $value);
-                    } else {
-                        $dependencies[] = $value;
-                    }
+                    $dependencies[] = $value;
                 } else if (is_array($value)) {
                     $dependencies = array_merge($dependencies, $traverse($value));
                 }
