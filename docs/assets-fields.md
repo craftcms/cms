@@ -7,7 +7,7 @@ Assets fields allow you to select related [assets](assets.md).
 Assets fields have the following settings:
 
 * **Restrict uploads to a single folder?** – Whether file uploads/selections should be constrained to a single folder
-* **Sources** – Which asset sources the field should be able to select/upload files from
+* **Volumes** – Which asset volumes the field should be able to select/upload files from
 * **Default Upload Location** – The default location that files dragged directly onto the field should be saved in
 * **Restrict allowed file types?** Whether the field should only be able to select/upload files of a certain type(s)
 * **Target Locale** – Which locale assets should be related with (this setting only appears if you’re running Craft Pro with more than one site locale)
@@ -16,7 +16,7 @@ Assets fields have the following settings:
 
 ### Restricting Uploads to a Single Folder
 
-If the “Restrict uploads to a single folder?” setting is checked, the “Sources” and “Default Upload Location” settings will be replaced with an “Upload Location” setting.
+If the “Restrict uploads to a single folder?” setting is checked, the “Volumes” and “Default Upload Location” settings will be replaced with an “Upload Location” setting.
 
 ### Restricting Allowed File Types
 

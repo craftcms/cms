@@ -48,8 +48,6 @@
 | `siteId`              | `int|null`                           | The site ID that the elements should be returned in
 | `size`                | `int|null`                           | The size (in bytes) that the resulting assets must have
 | `slug`                | `string|string[]|null`               | The slug that resulting elements must have
-| `source`              | `string|string[]|Volume`             | Sets the `volumeId` param based on a given volume(s)’s handle(s)
-| `sourceId`            | `int|int[]`                          | Sets the `volumeId` param
 | `status`              | `string|string[]|null`               | The status(es) that the resulting elements must have
 | `structureId`         | `int|false|null`                     | The structure ID that should be used to join in the structureelements table
 | `title`               | `string|string[]|null`               | The title that resulting elements must have

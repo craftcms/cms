@@ -39,7 +39,7 @@ The permissions Craft comes with are:
 |       ↳  Delete other authors’ drafts | `deletePeerEntryDrafts:[SectionID]`
 | Edit _[Global Set Name]_ | `editGlobalSet:[GlobalSetID]`
 | Edit _[Category Group Name]_ | `editCategories:[CategoryGroupID]`
-| View _[Asset Source Name]_ | `viewAssetSource:[SourceID]`
-| ↳  Upload files | `uploadToAssetSource:[SourceID]`
-| ↳  Create subfolders | `createSubfoldersInAssetSource:[SourceID]`
-| ↳  Remove files | `removeFromAssetSource:[SourceID]`
+| View _[Asset Volume Name]_ | `viewVolume:[VolumeID]`
+| ↳  Upload files | `saveAssetInVolume:[VolumeID]`
+| ↳  Create subfolders | `createFoldersInVolume:[VolumeID]`
+| ↳  Remove files | `deleteFilesAndFoldersInVolume:[VolumeID]`

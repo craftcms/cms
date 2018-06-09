@@ -23,7 +23,7 @@ Some of the folders you might find in there include:
 
   For the curious, here are the types of things you will find in craft/storage/runtime (though this is not a comprehensive list):
 
-  - `assets/` – Stores image thumbnails, resized file icons, and copies of images stored on remote asset sources, to save Craft an HTTP request when it needs the images to generate new thumbnails or transforms.
+  - `assets/` – Stores image thumbnails, resized file icons, and copies of images stored on remote asset volumes, to save Craft an HTTP request when it needs the images to generate new thumbnails or transforms.
   - `cache/` – Stores data caches.
   - `compiled_classes/` – Stores some dynamically-defined PHP classes.
   - `compiled_templates/` – Stores compiled Twig templates.

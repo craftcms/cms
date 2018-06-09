@@ -53,7 +53,7 @@ Everything in Craft that has content associated with it will provide a field lay
 
 * [Entries](sections-and-entries.md) use the field layout defined by their entry type in Settings → Sections → Edit Entry Types → [Entry Type name] → Field Layout.
 * [Global sets](globals.md) each get their own field layout, defined in Settings → Globals → [Global Set name] → Field Layout.
-* [Assets](assets.md) use the field layout defined by their asset source in Settings → Assets → [asset source name] → Field Layout.
+* [Assets](assets.md) use the field layout defined by their asset volume in Settings → Assets → [Asset Volume name] → Field Layout.
 * [Categories](categories.md) use the field layout defined by their Category Group in Settings → Categories → [Category Group name] → Field Layout.
 * [Tags](tags.md) use the field layout defined by their Tag Group in Settings → Tags → [Tag Group name] → Field Layout.
 * [Users](users.md) all share a single field layout defined in Settings → Users → Fields.
