@@ -5,6 +5,9 @@
 ### Changed
 - Updated  Garnish to 0.1.24.
 
+### Fixed
+- Fixed a bug where Craft would show a nag alert in the Control Panel when the licensed edition wasn’t cached.
+
 ## 2.6.3017 - 2018-06-05
 
 ### Changed
