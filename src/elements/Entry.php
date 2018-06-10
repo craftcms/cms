@@ -353,8 +353,16 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
-            'elements.dateCreated' => Craft::t('app', 'Date Created'),
-            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'elements.dateCreated',
+                'attribute' => 'dateCreated'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'elements.dateUpdated',
+                'attribute' => 'dateUpdated'
+            ],
         ];
     }
 

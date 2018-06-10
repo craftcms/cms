@@ -195,8 +195,16 @@ class Category extends Element
         return [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
-            'elements.dateCreated' => Craft::t('app', 'Date Created'),
-            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'elements.dateCreated',
+                'attribute' => 'dateCreated'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'elements.dateUpdated',
+                'attribute' => 'dateUpdated'
+            ],
         ];
     }
 

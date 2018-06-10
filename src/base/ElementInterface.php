@@ -289,28 +289,31 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the sort options for the element type.
      *
-     * This method should return an array, where the keys reference database column names that should be sorted on,
-     * and where the values define the user-facing labels.
+     * This method should return an array, where each item is a sub-array with the following keys:
+     *
+     * - `label` – The sort option label
+     * - `orderBy` – A comma-delimited string of columns to order the query by
+     * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated with
      *
      * ```php
      * return [
-     *     'columnName1' => Craft::t('app', 'Attribute Label 1'),
-     *     'columnName2' => Craft::t('app', 'Attribute Label 2'),
+     *     [
+     *         'label' => Craft::t('app', 'Attribute Label'),
+     *         'orderBy' => 'columnName',
+     *         'attribute' => 'attributeName'
+     *     ],
      * ];
      * ```
      *
-     * If you want to sort by multilple columns simultaneously, you can specify multiple column names in the key,
-     * separated by commas.
+     * A shorthand syntax is also supported, if there is no corresponding table attribute, or the table attribute
+     * has the exact same name as the column.
      *
      * ```php
      * return [
-     *     'columnName1, columnName2 asc' => Craft::t('app', 'Attribute Label 1'),
-     *     'columnName3'                  => Craft::t('app', 'Attribute Label 2'),
+     *     'columnName' => Craft::t('app', 'Attribute Label'),
      * ];
      * ```
      *
-     * If you do that, you can specify the sort direction for the subsequent columns (`asc` or `desc`. There is no point
-     * in specifying the sort direction for the first column, though, since the end user has full control over that.
      * Note that this method will only get called once for the entire index; not each time that a new source is
      * selected.
      *
