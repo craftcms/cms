@@ -68,6 +68,7 @@ class UserGroups extends Component
                 'id',
                 'name',
                 'handle',
+                'uid'
             ]));
         }
 
