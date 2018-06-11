@@ -394,9 +394,9 @@ class Users extends Component
         }
 
         $volumes = Craft::$app->getVolumes();
-        $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeId');
+        $volumeUid = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeUid');
 
-        if (!$volumeId || ($volume = $volumes->getVolumeById($volumeId)) === null) {
+        if (!$volumeUid || ($volume = $volumes->getVolumeByUid($volumeUid)) === null) {
             throw new VolumeException(Craft::t('app',
                 'The volume set for user photo storage is not valid.'));
         }
@@ -427,7 +427,7 @@ class Users extends Component
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
-            $photo->volumeId = $volumeId;
+            $photo->volumeId = $volume->id;
 
             // Save photo.
             $elementsService = Craft::$app->getElements();

@@ -151,7 +151,7 @@ return [
                     'requireEmailVerification' => true,
                     'allowPublicRegistration' => false,
                     'defaultGroup' => null,
-                    'photoVolumeId' => null,
+                    'photoVolumeUid' => null,
                     'photoSubpath' => ''
                 ],
             ]
