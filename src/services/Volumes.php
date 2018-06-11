@@ -333,6 +333,20 @@ class Volumes extends Component
     }
 
     /**
+     * Returns a volume by its UID.
+     *
+     * @param string $volumeUid
+     * @return VolumeInterface|null
+     */
+    public function getVolumeByUid(string $volumeUid) {
+        $result = $this->_createVolumeQuery()
+            ->where(['uid' => $volumeUid])
+            ->one();
+
+        return $result ? $this->createVolume($result) : null;
+    }
+
+    /**
      * Returns a volumn by its handle.
      *
      * @param string $handle
