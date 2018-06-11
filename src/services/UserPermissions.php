@@ -549,16 +549,16 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param int $sourceId
+     * @param int $volumeId
      * @return array
      */
-    private function _getVolumePermissions(int $sourceId): array
+    private function _getVolumePermissions(int $volumeId): array
     {
-        $suffix = ':'.$sourceId;
+        $suffix = ':'.$volumeId;
 
         return [
             "viewVolume{$suffix}" => [
-                'label' => Craft::t('app', 'View source'),
+                'label' => Craft::t('app', 'View volume'),
                 'nested' => [
                     "saveAssetInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),
