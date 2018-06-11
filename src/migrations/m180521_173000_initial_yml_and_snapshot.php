@@ -453,6 +453,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->from(['{{%systemsettings}}'])
             ->pairs();
 
+        foreach ($settings as &$setting) {
+            $setting = Json::decode($setting);
+        }
+
         return $settings;
     }
 
