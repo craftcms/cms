@@ -15,6 +15,19 @@ class Plugin extends \craft\base\Plugin
 }
 ```
 
+::: tip
+Alternatively, you can set this from your plugin’s `composer.json` file, via `extra.hasCpSection`.
+
+```json
+{
+  "extra": {
+    // ...
+    "hasCpSection": true
+  }
+}
+```
+:::
+
 With that in place, Craft will add a new user permission for your plugin, and users that have it will get a new item in their global Control Panel nav, pointing to `/admin/plugin-handle`.
 
 By default, when someone goes to `/admin/plugin-handle`, Craft will look for an `index.html` or `index.twig` template within your plugin’s `templates/` directory (which should go in your plugin’s source directory).
