@@ -380,7 +380,7 @@ class Asset extends Element
     // =========================================================================
 
     /**
-     * @var int|null Source ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
