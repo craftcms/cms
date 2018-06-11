@@ -70,7 +70,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'sites' => $this->_getSiteData(),
             'sections' => $this->_getSectionData(),
             'fields' => $this->_getFieldData(),
-            'volumes' => $this->_getVolumeData()
+            'volumes' => $this->_getVolumeData(),
+            'categoryGroups' => $this->_getCategoryGroupData(),
+            'tagGroups' => $this->_getTagGroupData(),
+            'system' => $this->_getSystemSettingData(),
+            'users' => $this->_getUserData(),
         ];
 
         return $data;
@@ -409,6 +413,170 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         return $data;
     }
+
+    /**
+     * Return user group data config array.
+     *
+     * @return array
+     */
+    private function _getUserData(): array
+    {
+        $layoutId = (new Query())
+            ->select(['id'])
+            ->from(['{{%fieldlayouts}}'])
+            ->where(['type' =>  'craft\\elements\\User'])
+            ->scalar();
+
+        if ($layoutId) {
+            $layout = $this->_generateFieldLayoutArray([$layoutId]);
+
+            if ($layout) {
+                return ['layouts' => array_values($layout)];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Return user setting data config array.
+     *
+     * @return array
+     */
+    private function _getSystemSettingData(): array
+    {
+        $settings = (new Query())
+            ->select([
+                'category',
+                'settings',
+            ])
+            ->from(['{{%systemsettings}}'])
+            ->pairs();
+
+        return $settings;
+    }
+
+    /**
+     * Return category group data config array.
+     *
+     * @return array
+     */
+    private function _getCategoryGroupData(): array
+    {
+        $groupRows = (new Query())
+            ->select([
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+                'groups.fieldLayoutId',
+                'structures.uid AS structure',
+                'structures.maxLevels AS structureMaxLevels',
+            ])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
+            ->from(['{{%categorygroups}} groups'])
+            ->all();
+
+        $groupData = [];
+
+        $layoutIds = [];
+
+        foreach ($groupRows as $group) {
+            $layoutIds[] = $group['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($groupRows as $group) {
+            if (!empty($group['structure'])) {
+                $section['structure'] = [
+                    'uid' => $group['structure'],
+                    'maxLevels' => $group['structureMaxLevels']
+                ];
+            } else {
+                unset($group['structure']);
+            }
+
+            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$group['fieldLayoutId']]['fieldLayoutId']['uid']);
+                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
+            }
+
+            $uid = $group['uid'];
+            unset($group['structureMaxLevels'], $group['uid'], $group['fieldLayoutId']);
+
+            $groupData[$uid] = $group;
+            $groupData[$uid]['siteSettings'] = [];
+        }
+
+        $groupSiteRows = (new Query())
+            ->select([
+                'groups_sites.uid',
+                'groups_sites.hasUrls',
+                'groups_sites.uriFormat',
+                'groups_sites.template',
+                'sites.uid AS dependsOn',
+                'groups.uid AS groupUid',
+            ])
+            ->from('{{%categorygroups_sites}} groups_sites')
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
+            ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
+            ->all();
+
+        foreach ($groupSiteRows as $groupSiteRow) {
+            $groupUid = $groupSiteRow['groupUid'];
+            $uid = $groupSiteRow['uid'];
+            $groupSiteRows['dependsOn'] = ['source' => 'sites', 'uid' => $groupSiteRow['dependsOn']];
+            unset($groupData['sectionUid'], $groupSiteRow['uid']);
+            $groupData[$groupUid]['siteSettings'][$uid] = $groupSiteRows;
+        }
+
+
+        return $groupData;
+    }
+
+    /**
+     * Return tag group data config array.
+     *
+     * @return array
+     */
+    private function _getTagGroupData(): array {
+        $groupRows = (new Query())
+            ->select([
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+                'groups.fieldLayoutId',
+            ])
+            ->from(['{{%taggroups}} groups'])
+            ->all();
+
+        $groupData = [];
+
+        $layoutIds = [];
+
+        foreach ($groupRows as $group) {
+            $layoutIds[] = $group['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($groupRows as $group) {
+            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$group['fieldLayoutId']]['fieldLayoutId']['uid']);
+                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
+            }
+
+            $uid = $group['uid'];
+            unset($group['uid'], $group['fieldLayoutId']);
+
+            $groupData[$uid] = $group;
+        }
+
+        return $groupData;
+    }
+
 
     /**
      * Generate field layout config data for a list of array ids
