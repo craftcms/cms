@@ -4,6 +4,7 @@
 
 ### Changed
 - Sort options defined by element types’ `sortOptions()` / `defineSortOptoins()` methods can now be specified as sub-arrays with `label`, `orderBy`, and `attribute` keys.
+- The “Cache remote images?” option in the Asset Indexes utility is now enabled by default. ([#2977](https://github.com/craftcms/cms/issues/2977))
 
 ### Fixed
 - Fixed a bug where the “New Entry” menu on the Entries index page would not contain any options on single-site installs, running MySQL. ([#2961](https://github.com/craftcms/cms/issues/2961))
