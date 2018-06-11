@@ -13,6 +13,7 @@
 - Fixed a bug where it was not possible to order search results by search score, if the element type didn’t specify any sort options.
 - Fixed a bug where clicking on “Date Created” and “Date Updated” column headers on element indexes wouldn’t update the sort order. ([#2975](https://github.com/craftcms/cms/issues/2975))
 - Fixed a bug where Edit Entry pages were listing more than the 10 most recent versions. ([#2976](https://github.com/craftcms/cms/issues/2976))
+- Fixed a SQL error that occurred when upgrading from Craft 2 to 3 via the terminal. ([#1347](https://github.com/craftcms/cms/issues/1347))
 
 ## 3.0.10.2 - 2018-06-07
 
