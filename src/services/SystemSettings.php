@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Craft;
 use craft\helpers\Json;
 use craft\models\MailSettings;
 use craft\records\SystemSettings as SystemSettingsRecord;
@@ -109,6 +110,9 @@ class SystemSettings extends Component
 
         $record->settings = $settings;
         $record->save();
+
+        $configPath = 'system.'.$category;
+        Craft::$app->getProjectConfig()->save($configPath, $settings);
 
         return !$record->hasErrors();
     }
