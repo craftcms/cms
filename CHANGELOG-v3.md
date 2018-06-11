@@ -4,6 +4,7 @@
 
 ### Changed
 - Sort options defined by element types’ `sortOptions()` / `defineSortOptoins()` methods can now be specified as sub-arrays with `label`, `orderBy`, and `attribute` keys.
+- Entries and categories can now be sorted by their slugs.
 - The “Cache remote images?” option in the Asset Indexes utility is now enabled by default. ([#2977](https://github.com/craftcms/cms/issues/2977))
 
 ### Fixed
