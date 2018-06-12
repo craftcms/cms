@@ -38,6 +38,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
 use craft\fields\Users as UsersField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -930,6 +931,18 @@ class Fields extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%fields}}', ['id' => $field->id])
                 ->execute();
+
+            // Clear caches
+            unset(
+                $this->_fieldsById[$field->id],
+                $this->_fieldsByContextAndHandle[$field->context][$field->handle],
+                $this->_allFieldsInContext[$field->context],
+                $this->_fieldsWithContent[$field->context]
+            );
+
+            if (isset($this->_allFieldHandlesByContext[$field->context])) {
+                ArrayHelper::removeValue($this->_allFieldHandlesByContext[$field->context], $field->handle);
+            }
 
             $field->afterDelete();
 
