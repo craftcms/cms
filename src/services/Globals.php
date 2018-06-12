@@ -112,11 +112,11 @@ class Globals extends Component
         }
 
         $this->_editableGlobalSetIds = [];
-        $allGlobalSetIds = $this->getAllSetIds();
+        $allGlobalSets = $this->getAllSets();
 
-        foreach ($allGlobalSetIds as $globalSetId) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSetId)) {
-                $this->_editableGlobalSetIds[] = $globalSetId;
+        foreach ($allGlobalSets as $globalSet) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSet->uid)) {
+                $this->_editableGlobalSetIds[] = $globalSet->id;
             }
         }
 

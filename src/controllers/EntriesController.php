@@ -108,7 +108,7 @@ class EntriesController extends BaseEntriesController
 
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        $variables['permissionSuffix'] = ':'.$entry->sectionId;
+        $variables['permissionSuffix'] = ':'.$entry->getSection()->uid;
 
         if (Craft::$app->getEdition() === Craft::Pro && $section->type !== Section::TYPE_SINGLE) {
             // Author selector variables
@@ -482,7 +482,7 @@ class EntriesController extends BaseEntriesController
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntries:'.$entry->getSection()->uid);
         }
 
         // If we're duplicating the entry, swap $entry with the duplicate
@@ -520,8 +520,8 @@ class EntriesController extends BaseEntriesController
         // Even more permission enforcement
         if ($entry->enabled) {
             if ($entry->id) {
-                $this->requirePermission('publishEntries:'.$entry->sectionId);
-            } else if (!$currentUser->can('publishEntries:'.$entry->sectionId)) {
+                $this->requirePermission('publishEntries:'.$entry->getSection()->uid);
+            } else if (!$currentUser->can('publishEntries:'.$entry->getSection()->uid)) {
                 $entry->enabled = false;
             }
         }
@@ -611,9 +611,9 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($entry->authorId == $currentUser->id) {
-            $this->requirePermission('deleteEntries:'.$entry->sectionId);
+            $this->requirePermission('deleteEntries:'.$entry->getSection()->uid);
         } else {
-            $this->requirePermission('deletePeerEntries:'.$entry->sectionId);
+            $this->requirePermission('deletePeerEntries:'.$entry->getSection()->uid);
         }
 
         if (!Craft::$app->getElements()->deleteElement($entry)) {

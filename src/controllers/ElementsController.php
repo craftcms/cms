@@ -15,6 +15,7 @@ use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -261,10 +262,13 @@ class ElementsController extends BaseElementsController
         $attributes = $request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
+        $site = Craft::$app->getSites()->getSiteById($siteId);
+
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$siteId)) {
+
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$site->uid)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
@@ -274,7 +278,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$site->uid)) {
                     $newSiteId = $siteId;
                     break;
                 }

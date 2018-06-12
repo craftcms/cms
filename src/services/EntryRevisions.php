@@ -163,7 +163,7 @@ class EntryRevisions extends Component
             foreach ($allDrafts as $draft) {
                 if (
                     ($draft->creatorId && $draft->creatorId == $user->id) ||
-                    $user->can('editPeerEntryDrafts:'.$draft->sectionId)
+                    $user->can('editPeerEntryDrafts:'.$draft->getSection()->uid)
                 ) {
                     $editableDrafts[] = $draft;
                 }

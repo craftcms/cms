@@ -127,7 +127,7 @@ class UserPermissions extends Component
             ];
 
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $userGroup) {
-                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->id] = [
+                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->uid] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
                         'group' => Craft::t('site', $userGroup->name)
                     ])
@@ -145,7 +145,7 @@ class UserPermissions extends Component
             $sites = Craft::$app->getSites()->getAllSites();
 
             foreach ($sites as $site) {
-                $permissions[$label]['editSite:'.$site->id] = [
+                $permissions[$label]['editSite:'.$site->uid] = [
                     'label' => Craft::t('app', 'Edit “{title}”',
                         ['title' => Craft::t('site', $site->name)])
                 ];
@@ -194,7 +194,7 @@ class UserPermissions extends Component
 
         foreach ($volumes as $volume) {
             $label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('site', $volume->name)]);
-            $permissions[$label] = $this->_getVolumePermissions($volume->id);
+            $permissions[$label] = $this->_getVolumePermissions($volume->uid);
         }
 
         // Utilities
@@ -430,7 +430,7 @@ class UserPermissions extends Component
      */
     private function _getSingleEntryPermissions(Section $section): array
     {
-        $suffix = ':'.$section->id;
+        $suffix = ':'.$section->uid;
 
         return [
             "editEntries{$suffix}" => [
@@ -464,7 +464,7 @@ class UserPermissions extends Component
      */
     private function _getEntryPermissions(Section $section): array
     {
-        $suffix = ':'.$section->id;
+        $suffix = ':'.$section->uid;
 
         return [
             "editEntries{$suffix}" => [
@@ -517,7 +517,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($globalSets as $globalSet) {
-            $permissions['editGlobalSet:'.$globalSet->id] = [
+            $permissions['editGlobalSet:'.$globalSet->uid] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $globalSet->name)])
             ];
@@ -537,7 +537,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($groups as $group) {
-            $permissions['editCategories:'.$group->id] = [
+            $permissions['editCategories:'.$group->uid] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $group->name)])
             ];
@@ -549,16 +549,16 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param int $sourceId
+     * @param string $volumeUid
      * @return array
      */
-    private function _getVolumePermissions(int $sourceId): array
+    private function _getVolumePermissions(string $volumeUid): array
     {
-        $suffix = ':'.$sourceId;
+        $suffix = ':'.$volumeUid;
 
         return [
             "viewVolume{$suffix}" => [
-                'label' => Craft::t('app', 'View source'),
+                'label' => Craft::t('app', 'View volume'),
                 'nested' => [
                     "saveAssetInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),

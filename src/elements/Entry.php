@@ -207,7 +207,7 @@ class Entry extends Element
                     if ($type == Section::TYPE_STRUCTURE) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
+                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->uid);
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -252,12 +252,12 @@ class Entry extends Element
             $canEdit = false;
 
             foreach ($sections as $section) {
-                $canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->id);
+                $canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->uid);
 
                 // Only show the Set Status action if we're sure they can make changes in all the sections
                 if (!(
                     $canPublishEntries &&
-                    ($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
+                    ($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:'.$section->uid))
                 )
                 ) {
                     $canSetStatus = false;
@@ -312,7 +312,7 @@ class Entry extends Element
                 // New child?
                 if (
                     $section->type == Section::TYPE_STRUCTURE &&
-                    $userSessionService->checkPermission('createEntries:'.$section->id)
+                    $userSessionService->checkPermission('createEntries:'.$section->uid)
                 ) {
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
@@ -328,8 +328,8 @@ class Entry extends Element
 
                 // Delete?
                 if (
-                    $userSessionService->checkPermission('deleteEntries:'.$section->id) &&
-                    $userSessionService->checkPermission('deletePeerEntries:'.$section->id)
+                    $userSessionService->checkPermission('deleteEntries:'.$section->uid) &&
+                    $userSessionService->checkPermission('deletePeerEntries:'.$section->uid)
                 ) {
                     $actions[] = Craft::$app->getElements()->createAction([
                         'type' => Delete::class,
@@ -780,9 +780,9 @@ class Entry extends Element
     public function getIsEditable(): bool
     {
         return (
-            Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
+            Craft::$app->getUser()->checkPermission('publishEntries:'.$this->getSection()->uid) && (
                 $this->authorId == Craft::$app->getUser()->getIdentity()->id ||
-                Craft::$app->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
+                Craft::$app->getUser()->checkPermission('publishPeerEntries:'.$this->getSection()->uid) ||
                 $this->getSection()->type == Section::TYPE_SINGLE
             )
         );

@@ -164,9 +164,9 @@ class Sections extends Component
 
         $this->_editableSectionIds = [];
 
-        foreach ($this->getAllSectionIds() as $sectionId) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
-                $this->_editableSectionIds[] = $sectionId;
+        foreach ($this->getAllSections() as $section) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:'.$section->uid)) {
+                $this->_editableSectionIds[] = $section->id;
             }
         }
 
@@ -1199,6 +1199,7 @@ class Sections extends Component
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.propagateEntries',
+                'sections.uid',
                 'structures.maxLevels',
             ])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')

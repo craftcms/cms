@@ -184,9 +184,9 @@ class Volumes extends Component
 
         $this->_viewableVolumeIds = [];
 
-        foreach ($this->getAllVolumeIds() as $volumeId) {
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volumeId)) {
-                $this->_viewableVolumeIds[] = $volumeId;
+        foreach ($this->getAllVolumes() as $volume) {
+            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->uid)) {
+                $this->_viewableVolumeIds[] = $volume->id;
             }
         }
 
@@ -208,7 +208,7 @@ class Volumes extends Component
 
         foreach ($this->getAllVolumes() as $volume) {
             /** @var Volume $volume */
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->uid)) {
                 $this->_viewableVolumes[] = $volume;
             }
         }
@@ -470,7 +470,7 @@ class Volumes extends Component
         $this->_volumesById[$volume->id] = $volume;
         $this->_volumesByHandle[$volume->handle] = $volume;
 
-        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:'.$volume->uid)) {
             $this->_viewableVolumeIds[] = $volume->id;
         }
 

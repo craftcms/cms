@@ -205,6 +205,17 @@ class ElementHelper
     {
         $sites = [];
 
+        static $siteUidMap = null;
+
+        // Load an ID => UID map
+        if (empty($siteUidMap)) {
+            $allSites = Craft::$app->getSites()->getAllSites();
+
+            foreach ($allSites as $siteModel) {
+                $siteUidMap[$siteModel->id] = $siteModel->uid;
+            }
+        }
+
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
                 $site = [
@@ -213,6 +224,9 @@ class ElementHelper
             } else if (!isset($site['siteId'])) {
                 throw new Exception('Missing "siteId" key in '.get_class($element).'::getSupportedSites()');
             }
+
+            $site['siteUid'] = $siteUidMap[$site['siteId']];
+
             $sites[] = array_merge([
                 'enabledByDefault' => true,
             ], $site);
@@ -232,7 +246,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteUid'])) {
                         return true;
                     }
                 }
@@ -257,7 +271,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteUid'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }

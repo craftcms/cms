@@ -229,8 +229,8 @@ class Asset extends Element
 
             $userSessionService = Craft::$app->getUser();
             $canDeleteAndSave = (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id) &&
-                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
+                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->uid) &&
+                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->uid)
             );
 
             // Rename File
@@ -239,7 +239,7 @@ class Asset extends Element
             }
 
             // Replace File
-            if ($userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)) {
+            if ($userSessionService->checkPermission('saveAssetInVolume:'.$volume->uid)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -257,7 +257,7 @@ class Asset extends Element
             }
 
             // Delete
-            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)) {
+            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->uid)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -354,7 +354,7 @@ class Asset extends Element
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->volumeId),
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->getVolume()->uid),
                 'folder-id' => $folder->id
             ]
         ];
@@ -596,7 +596,7 @@ class Asset extends Element
     public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission(
-            'saveAssetInVolume:'.$this->volumeId
+            'saveAssetInVolume:'.$this->getVolume()->uid
         );
     }
 
@@ -1080,10 +1080,13 @@ class Asset extends Element
 
             // Is the image editable, and is the user allowed to edit?
             $user = Craft::$app->getUser();
+
+            $volume = $this->getVolume();
+
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$this->volumeId) &&
-                $user->checkPermission('saveAssetInVolume:'.$this->volumeId)
+                $user->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->uid) &&
+                $user->checkPermission('saveAssetInVolume:'.$volume->uid)
             );
 
             $html .= '<div class="image-preview-container'.($editable ? ' editable' : '').'">'.
