@@ -43,6 +43,7 @@ use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidValueException;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
 
@@ -408,23 +409,9 @@ abstract class Element extends Component implements ElementInterface
                 unset($viewState['order']);
             }
         } else {
-            $sortOptions = static::sortOptions();
-
-            if (!empty($sortOptions)) {
-                $sortOptions = array_keys($sortOptions);
-                $sortOptions[] = 'score';
-                $order = (!empty($viewState['order']) && in_array($viewState['order'], $sortOptions, true)) ? $viewState['order'] : reset($sortOptions);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
-
-                // Combine them, accounting for the possibility that $order could contain multiple values,
-                // and be defensive about the possibility that the first value actually has "asc" or "desc"
-
-                // typeId             => typeId [sort]
-                // typeId, title      => typeId [sort], title
-                // typeId, title desc => typeId [sort], title desc
-                // typeId desc        => typeId [sort]
-
-                $elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order));
+            $orderBy = self::_indexOrderBy($viewState);
+            if ($orderBy !== false) {
+                $elementQuery->orderBy($orderBy);
             }
         }
 
@@ -645,6 +632,55 @@ abstract class Element extends Component implements ElementInterface
                 $field->modifyElementIndexQuery($elementQuery);
             }
         }
+    }
+
+    /**
+     * Returns the orderBy value for element indexes
+     *
+     * @param array $viewState
+     * @return array|false
+     */
+    private static function _indexOrderBy(array $viewState)
+    {
+        // Define the available sort attribute/option pairs
+        $sortOptions = [];
+        foreach (static::sortOptions() as $key => $sortOption) {
+            if (is_string($key)) {
+                // Shorthand syntax
+                $sortOptions[$key] = $key;
+            } else {
+                if (!isset($sortOption['orderBy'])) {
+                    throw new InvalidValueException('Sort options must specify an orderBy value');
+                }
+                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                $sortOptions[$attribute] = $sortOption['orderBy'];
+            }
+        }
+        $sortOptions['score'] = 'score';
+
+        if (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) {
+            $columns = $sortOptions[$viewState['order']];
+        } else if (count($sortOptions) > 1) {
+            $columns = reset($sortOptions);
+        } else {
+            return false;
+        }
+
+        // Borrowed from QueryTrait::normalizeOrderBy()
+        $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        $result = [];
+        foreach ($columns as $i => $column) {
+            if ($i === 0) {
+                // The first column's sort direction is always user-defined
+                $result[$column] = !empty($viewState['sort']) && strcasecmp($viewState['sort'], 'desc') ? SORT_ASC : SORT_DESC;
+            } else if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
+                $result[$matches[1]] = strcasecmp($matches[2], 'desc') ? SORT_ASC : SORT_DESC;
+            } else {
+                $result[$column] = SORT_ASC;
+            }
+        }
+
+        return $result;
     }
 
     // Properties

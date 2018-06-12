@@ -242,8 +242,16 @@ class User extends Element implements IdentityInterface
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
-                'elements.dateCreated' => Craft::t('app', 'Date Created'),
-                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+                [
+                    'label' => Craft::t('app', 'Date Created'),
+                    'orderBy' => 'elements.dateCreated',
+                    'attribute' => 'dateCreated'
+                ],
+                [
+                    'label' => Craft::t('app', 'Date Updated'),
+                    'orderBy' => 'elements.dateUpdated',
+                    'attribute' => 'dateUpdated'
+                ],
             ];
         } else {
             $attributes = [
@@ -252,8 +260,16 @@ class User extends Element implements IdentityInterface
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
-                'elements.dateCreated' => Craft::t('app', 'Date Created'),
-                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+                [
+                    'label' => Craft::t('app', 'Date Created'),
+                    'orderBy' => 'elements.dateCreated',
+                    'attribute' => 'dateCreated'
+                ],
+                [
+                    'label' => Craft::t('app', 'Date Updated'),
+                    'orderBy' => 'elements.dateUpdated',
+                    'attribute' => 'dateUpdated'
+                ],
             ];
         }
 

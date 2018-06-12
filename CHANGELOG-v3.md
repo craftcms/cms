@@ -1,5 +1,19 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.11 - 2018-06-12
+
+### Changed
+- Sort options defined by element types’ `sortOptions()` / `defineSortOptoins()` methods can now be specified as sub-arrays with `label`, `orderBy`, and `attribute` keys.
+- Entries and categories can now be sorted by their slugs.
+- The “Cache remote images?” option in the Asset Indexes utility is now enabled by default. ([#2977](https://github.com/craftcms/cms/issues/2977))
+
+### Fixed
+- Fixed a bug where it was not possible to order search results by search score, if the element type didn’t specify any sort options.
+- Fixed a bug where clicking on “Date Created” and “Date Updated” column headers on element indexes wouldn’t update the sort order. ([#2975](https://github.com/craftcms/cms/issues/2975))
+- Fixed a bug where Edit Entry pages were listing more than the 10 most recent versions. ([#2976](https://github.com/craftcms/cms/issues/2976))
+- Fixed a SQL error that occurred when upgrading from Craft 2 to 3 via the terminal. ([#1347](https://github.com/craftcms/cms/issues/1347))
+- Fixed the alignment of expand/collapse toggles in asset index sidebars. ([#2981](https://github.com/craftcms/cms/issues/2981))
+
 ## 3.0.10.3 - 2018-06-07
 
 ### Fixed
@@ -20,7 +34,7 @@
 ## 3.0.10.1 - 2018-06-06
 
 ### Fixed
-- Fixed a bug where Craft wasn’t converting empty strings to `null` when saving data to nontextual columns.
+- Fixed a bug where Craft wasn’t converting empty strings to `null` when saving data to non-textual columns.
 - Fixed a bug where Craft would show a Database Connection Error on Install requests, if it couldn’t connect to the database.
 - Fixed a bug where Craft wasn’t keeping track of element queries that were executed within `{% cache %}` tags. ([#2959](https://github.com/craftcms/cms/issues/2959))
 
@@ -92,7 +106,7 @@
 
 ### Added
 - Number fields now have a “Default Value” setting. ([#927](https://github.com/craftcms/cms/issues/927))
-- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ colorspaces from getting converted to sRGB on environments running ImageMagick.
+- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ color spaces from getting converted to sRGB on environments running ImageMagick.
 
 ### Changed
 - Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))

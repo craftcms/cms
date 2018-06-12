@@ -283,8 +283,16 @@ class Asset extends Element
             'filename' => Craft::t('app', 'Filename'),
             'size' => Craft::t('app', 'File Size'),
             'dateModified' => Craft::t('app', 'File Modification Date'),
-            'elements.dateCreated' => Craft::t('app', 'Date Uploaded'),
-            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+            [
+                'label' => Craft::t('app', 'Date Uploaded'),
+                'orderBy' => 'elements.dateCreated',
+                'attribute' => 'dateCreated'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'elements.dateUpdated',
+                'attribute' => 'dateUpdated'
+            ],
         ];
     }
 
@@ -372,7 +380,7 @@ class Asset extends Element
     // =========================================================================
 
     /**
-     * @var int|null Source ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 

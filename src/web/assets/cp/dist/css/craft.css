@@ -1957,7 +1957,7 @@ body.rtl .sidebar nav li a .icon { margin: 0 -10px 0 10px ; }
 .sidebar nav li a .badge { -ms-flex-negative: 1; flex-shrink: 1; padding: 0 6px; font-size: 11px; line-height: 16px; border-radius: 8px; background: #8f98a3; color: #fff; }
 body.ltr .sidebar nav li a .badge { margin: 0 -4px 0 10px ; }
 body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
-.sidebar nav li .toggle { position: absolute; top: 10px; }
+.sidebar nav li .toggle { position: absolute; top: 7px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
 
