@@ -99,52 +99,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getConfigData(): array
-    {
-        $data = parent::getConfigData();
-
-        $blockTypes = $this->getBlockTypes();
-        $data['blockTypes'] = [];
-
-        foreach ($blockTypes as $blockType) {
-            $layout = $blockType->getFieldLayout();
-            $tab = $layout->getTabs()[0];
-            $fields = $tab->getFields();
-            $fieldData = [];
-
-            /** @var Field $field */
-            foreach ($fields as $field) {
-                $fieldData[] = [
-                    'sortOrder' => $field->sortOrder,
-                    'field' => $field->getConfigData()
-                ];
-            }
-
-            $data['blockTypes'][$blockType->uid] = [
-                'name' => $blockType->name,
-                'handle' => $blockType->handle,
-                'sortOrder' => $blockType->sortOrder,
-                'layouts' => [
-                    $layout->uid => [
-                        'tabs' => [
-                            [
-                                'name' => $tab->name,
-                                'sortOrder' => $tab->sortOrder,
-                                'fields' => $fieldData
-                            ]
-                        ]
-                    ]
-                ]
-            ];
-
-        }
-
-        return $data;
-    }
-
-    /**
      * Returns the block types.
      *
      * @return MatrixBlockType[]

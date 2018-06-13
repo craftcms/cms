@@ -239,23 +239,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getConfigData(): array
-    {
-        return [
-            'name' => $this->name,
-            'handle' => $this->handle,
-            'context' => $this->context,
-            'instructions' => $this->instructions,
-            'translationMethod' => $this->translationMethod,
-            'translationKeyFormat' => $this->translationKeyFormat,
-            'type' => static::class,
-            'settings' => Json::encode($this->getSettings()),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);

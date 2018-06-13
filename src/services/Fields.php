@@ -305,9 +305,6 @@ class Fields extends Component
             ]));
         }
 
-        $configPath = 'fields.'.$groupRecord->uid.'.name';
-        Craft::$app->getProjectConfig()->save($configPath, $group->name);
-
         return true;
     }
 
@@ -876,14 +873,6 @@ class Fields extends Component
                 'field' => $field,
                 'isNew' => $isNewField,
             ]));
-        }
-
-        // Private party, top level fields only
-        if ($field->context === 'global') {
-            $groupUid = FieldGroupRecord::findOne($field->groupId)->uid;
-            $fieldUid = $fieldRecord->uid;
-            $configPath = 'fields.'.$groupUid.'.fields.'.$fieldUid;
-            Craft::$app->getProjectConfig()->save($configPath, $field->getConfigData());
         }
 
         return true;

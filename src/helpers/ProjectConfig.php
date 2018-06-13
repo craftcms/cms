@@ -66,27 +66,4 @@ class ProjectConfig
             'map' => $map
         ];
     }
-
-    /**
-     * Extract dependencies from an array of data.
-     *
-     * @param array $data
-     * @return array
-     */
-    public static function getDependencies(array $data)
-    {
-        $traverse = function ($data) use (&$traverse) {
-            $dependencies = [];
-            foreach ($data as $key => $value) {
-                if ($key === 'dependsOn') {
-                    $dependencies[] = $value;
-                } else if (is_array($value)) {
-                    $dependencies = array_merge($dependencies, $traverse($value));
-                }
-            }
-            return $dependencies;
-        };
-
-        return $traverse($data);
-    }
 }

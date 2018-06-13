@@ -131,21 +131,6 @@ class ProjectConfig extends Component
      */
     private $_configMap;
 
-    /**
-     * @var array Resolved dependency store
-     */
-    private $_uidMap = [];
-
-    /**
-     * @var array All unresolved dependencies
-     */
-    private $_unresolvedDependencies = [];
-
-    /**
-     * @var array All dependees that have unresolved dependencies
-     */
-    private $_dependees = [];
-
     // Public methods
     // =========================================================================
 
@@ -262,6 +247,8 @@ class ProjectConfig extends Component
 
             Craft::info('Looking for pending changes', __METHOD__);
 
+            print_r($changes);
+            die();
             if (!empty($changes['newItems'])) {
                 Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
                 foreach ($changes['newItems'] as $itemPath) {
@@ -302,47 +289,6 @@ class ProjectConfig extends Component
             throw $e;
         }
 
-    }
-
-    /**
-     * Resolve a list of dependencies and call the callback with provided data when it's all resolved.
-     *
-     * @param array $dependencyList
-     * @param callable $callback
-     * @param mixed $configData
-     * @return mixed
-     */
-    public function resolveDependencies(array $dependencyList, callable $callback, $configData = null)
-    {
-        if (empty($dependencyList)) {
-            return $callback($configData);
-        }
-
-        $unresolved = [];
-
-        // Check our current ability to resolve dependencies
-        foreach ($dependencyList as $dependency) {
-            if (!$this->_canResolveDependency($dependency['source'], $dependency['uid'])) {
-                $unresolved[] = $dependency['uid'];
-            }
-        }
-
-        // All good, fire it up!
-        if (empty($unresolved)) {
-            return $callback($configData);
-        }
-
-        // Store the dependee
-        $dependeeKey = uniqid('dependee', true);
-        $this->_dependees[$dependeeKey] = ['callback' => $callback, 'data' => $configData, 'dependencies' => array_flip($unresolved)];
-
-        // Store all unresolved dependencies and point them to the dependee
-        foreach ($unresolved as $uid) {
-            if(empty($this->_unresolvedDependencies[$uid])) {
-                $this->_unresolvedDependencies[$uid] = [];
-            }
-            $this->_unresolvedDependencies[$uid][] = $dependeeKey;
-        }
     }
 
     /**
@@ -428,70 +374,8 @@ class ProjectConfig extends Component
         return true;
     }
 
-    /**
-     * Register an UID.
-     *
-     * @param string $type
-     * @param string $uid
-     * @param int $id
-     */
-    public function registerUid(string $type, string $uid, int $id)
-    {
-        if (!array_key_exists($type, $this->_uidMap)) {
-            $this->_uidMap[$type] = [];
-        }
-
-        $this->_uidMap[$type][$uid] = $id;
-
-        // See if this resolves any dependencies
-        if (!empty($this->_unresolvedDependencies[$uid])) {
-            foreach ($this->_unresolvedDependencies[$uid] as $dependeeKey) {
-                $dependee = $this->_dependees[$dependeeKey];
-                unset($dependee['dependencies'][$uid]);
-
-                // If that was the last dependency
-                if (empty($dependee['dependencies'])) {
-                    // Remove from list
-                    unset($this->_dependees[$dependeeKey]);
-                    // Resolve
-                    $dependee['callback']($dependee['data']);
-                }
-            }
-        }
-    }
     // Private methods
     // =========================================================================
-
-    /**
-     * Check if a dependency can be resolved
-     *
-     * @param $type
-     * @param $uid
-     *
-     * @return bool
-     */
-    private function _canResolveDependency($type, $uid): bool
-    {
-        if (!array_key_exists($type, $this->_uidMap)) {
-            $this->_uidMap[$type] = $this->_loadUidMap($type);
-        }
-
-        return array_key_exists($uid, $this->_uidMap[$type]);
-    }
-
-    /**
-     * Load UIDs by table name and store as map.
-     *
-     * @param $table
-     *
-     * @return array
-     */
-    private function _loadUidMap($table): array
-    {
-        $table = '{{%'.preg_replace('/[^a-z0-9_]/i', '', $table).'}}';
-
-        return (new Query())->select(['uid', 'id'])->from($table)->pairs();
-    }
 
     /**
      * Get config file modified dates.
