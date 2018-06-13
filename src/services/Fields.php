@@ -1394,7 +1394,7 @@ class Fields extends Component
                 'fields.settings'
             ])
             ->from(['{{%fields}} fields'])
-            ->orderBy(['fields.name' => SORT_ASC]);
+            ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
     /**
