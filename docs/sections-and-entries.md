@@ -72,19 +72,27 @@ A shortcut syntax is also available for output tags that reference a property on
 {author.username}/{slug}
 ```
 
-Structure sections may wish to have an Entry URI Format that differs depending on whether it’s a top-level entry or a nested one:
+Structure sections may want to have nested paths for child entries:
 
 ```twig
-{% if level == 1 %}docs{% else %}{parent.uri}{% endif %}{slug}
+{parent.uri}/{slug}
 ```
 
-With that Entry URI Format, a top-level entry might end up with the URI `docs/templating`, whereas a nested entry might end up with the URI `docs/templating/tags`.
+With the above Entry URI Format, a top-level entry’s URI might end up as `templating`, whereas a nested entry’s UIR might end up as `templating/tags`.
 
-The same template could also be expressed with this syntax:
+Structure sections might also want to include a segment before the nested path:
 
 ```twig
 {parent.uri ?? 'docs'}/{slug}
 ``` 
+
+The above template could also be expressed with this syntax:
+
+```twig
+{% if level == 1 %}docs{% else %}{parent.uri}{% endif %}/{slug}
+```
+
+With the above Entry URI Format, a top-level entry’s URI might end up as `docs/templating`, whereas a nested entry’s UIR might end up as `docs/templating/tags`.
 
 ## Entry Types
 
