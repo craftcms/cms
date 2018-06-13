@@ -28,7 +28,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $data = $this->_getProjectConfigData();
 
-        $yaml = Yaml::dump($data, 10, 2);
+        $yaml = Yaml::dump($data, 20, 2);
         $destination = $path.'/system.yml';
         FileHelper::writeToFile($destination, $yaml);
 
@@ -73,7 +73,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'volumes' => $this->_getVolumeData(),
             'categoryGroups' => $this->_getCategoryGroupData(),
             'tagGroups' => $this->_getTagGroupData(),
-            'system' => $this->_getSystemSettingData(),
+            'settings' => $this->_getSystemSettingData(),
             'users' => $this->_getUserData(),
         ];
 
@@ -186,7 +186,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sections_sites.hasUrls',
                 'sections_sites.uriFormat',
                 'sections_sites.template',
-                'sites.uid AS dependsOn',
+                'sites.uid AS site',
                 'sections.uid AS sectionUid',
             ])
             ->from('{{%sections_sites}} sections_sites')
@@ -197,7 +197,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($sectionSiteRows as $sectionSiteRow) {
             $sectionUid = $sectionSiteRow['sectionUid'];
             $uid = $sectionSiteRow['uid'];
-            $sectionSiteRow['dependsOn'] = ['source' => 'sites', 'uid' => $sectionSiteRow['dependsOn']];
             unset($sectionSiteRow['sectionUid'], $sectionSiteRow['uid']);
             $sectionData[$sectionUid]['siteSettings'][$uid] = $sectionSiteRow;
         }
@@ -288,6 +287,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         // Index by UID
         foreach ($fieldRows as $fieldRow) {
+            $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             $fields[$fieldRow['uid']] = $fieldRow;
         }
 
@@ -324,12 +324,13 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             foreach ($matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['tabs'] as &$tab) {
                 $tabFields = [];
 
-                foreach ($tab['fields'] as $field) {
+                foreach ($tab['fields'] as $fieldUid => $field) {
                     // Replace the dependency with actual definition
-                    $fieldDefinition = $fields[$field['dependsOn']['uid']];
+                    $fieldDefinition = $fields[$fieldUid];
+
                     unset($fieldDefinition['uid'], $fieldDefinition['id'], $fieldDefinition['groupId']);
 
-                    $tabFields[] = [
+                    $tabFields[$fieldUid] = [
                         'sortOrder' => $field['sortOrder'],
                         'required' => $field['required'],
                         'field' => $fieldDefinition
@@ -406,6 +407,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
             }
 
+            $volume['settings'] = Json::decodeIfJson($volume['settings']);
+
             $uid = $volume['uid'];
             unset($volume['fieldLayoutId'], $volume['uid']);
             $data[$uid] = $volume;
@@ -421,6 +424,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     private function _getUserData(): array
     {
+        $data = [];
+
         $layoutId = (new Query())
             ->select(['id'])
             ->from(['{{%fieldlayouts}}'])
@@ -431,11 +436,43 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $layout = $this->_generateFieldLayoutArray([$layoutId]);
 
             if ($layout) {
-                return ['layouts' => array_values($layout)];
+                $data['layouts'] = array_values($layout);
             }
         }
 
-        return [];
+        $groups = (new Query())
+            ->select(['id', 'name', 'handle', 'uid'])
+            ->from(['{{%usergroups}}'])
+            ->all();
+
+        $permissions = (new Query())
+            ->select(['id', 'name'])
+            ->from(['{{%userpermissions}}'])
+            ->pairs();
+
+        $groupPermissions = (new Query())
+            ->select(['permissionId', 'groupId'])
+            ->from(['{{%userpermissions_usergroups}}'])
+            ->all();
+
+        $permissionList = [];
+
+        foreach ($groupPermissions as $groupPermission) {
+            $permissionList[$groupPermission['groupId']][] = $permissions[$groupPermission['permissionId']];
+        }
+
+
+        foreach ($groups as $group) {
+            $data['groups'][$group['uid']] = [
+                'name' => $group['name'],
+                'handle' => $group['handle'],
+                'permissions' => $permissionList[$group['id']] ?? []
+            ];
+        }
+
+        $data['permissions'] = array_unique(array_values($permissions));
+
+        return $data;
     }
 
     /**
@@ -454,9 +491,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->pairs();
 
         foreach ($settings as &$setting) {
-            $setting = Json::decode($setting);
+            $setting = Json::decodeIfJson($setting);
         }
-
         return $settings;
     }
 
@@ -519,7 +555,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'groups_sites.hasUrls',
                 'groups_sites.uriFormat',
                 'groups_sites.template',
-                'sites.uid AS dependsOn',
+                'sites.uid AS site',
                 'groups.uid AS groupUid',
             ])
             ->from('{{%categorygroups_sites}} groups_sites')
@@ -530,9 +566,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($groupSiteRows as $groupSiteRow) {
             $groupUid = $groupSiteRow['groupUid'];
             $uid = $groupSiteRow['uid'];
-            $groupSiteRows['dependsOn'] = ['source' => 'sites', 'uid' => $groupSiteRow['dependsOn']];
-            unset($groupData['sectionUid'], $groupSiteRow['uid']);
-            $groupData[$groupUid]['siteSettings'][$uid] = $groupSiteRows;
+            unset($groupSiteRow['uid'], $groupSiteRow['groupUid']);
+            $groupData[$groupUid]['siteSettings'][$uid] = $groupSiteRow;
         }
 
 
@@ -634,12 +669,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field['dependsOn'] = ['source' => 'fields', 'uid' => $fieldRow['fieldUid']];
             $field['required'] = $fieldRow['required'];
             $field['sortOrder'] = $fieldRow['fieldOrder'];
 
-
-            $tab['fields'][] = $field;
+            $tab['fields'][$fieldRow['fieldUid']] = $field;
         }
 
         // Get rid of UIDs
