@@ -78,7 +78,7 @@ Structure sections may want to have nested paths for child entries:
 {parent.uri}/{slug}
 ```
 
-With the above Entry URI Format, a top-level entry’s URI might end up as `templating`, whereas a nested entry’s UIR might end up as `templating/tags`.
+With the above Entry URI Format, a top-level entry’s URI might end up as `templating`, whereas a nested entry’s URI might end up as `templating/tags`.
 
 Structure sections might also want to include a segment before the nested path:
 
@@ -92,7 +92,7 @@ The above template could also be expressed with this syntax:
 {% if level == 1 %}docs{% else %}{parent.uri}{% endif %}/{slug}
 ```
 
-With the above Entry URI Format, a top-level entry’s URI might end up as `docs/templating`, whereas a nested entry’s UIR might end up as `docs/templating/tags`.
+With the above Entry URI Format, a top-level entry’s URI might end up as `docs/templating`, whereas a nested entry’s URI might end up as `docs/templating/tags`.
 
 ## Entry Types
 
