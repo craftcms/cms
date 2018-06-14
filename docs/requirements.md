@@ -34,6 +34,8 @@ Craft requires the following PHP extensions:
 * [SPL](http://php.net/manual/en/book.spl.php)
 * [Zip](https://secure.php.net/manual/en/book.zip.php)
 
+Additionally, the PHP [`proc_*`](https://secure.php.net/manual/en/ref.exec.php) methods must be enabled in order for Craft to be able to send emails.
+
 ## Optional PHP Extensions
 
 * [iconv](http://us1.php.net/manual/en/book.iconv.php) – Adds support for more character encodings than PHP’s built-in [mb_convert_encoding()](http://php.net/manual/en/function.mb-convert-encoding.php) function, which Craft will take advantage of when converting strings to UTF-8.
