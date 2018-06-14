@@ -216,6 +216,40 @@ class ProjectConfig extends Component
         return true;
     }
 
+    /**
+     * Process config changes for a path.
+     *
+     * @param $configPath
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function processConfigChanges($configPath): bool {
+        $configData = $this->get($configPath, true);
+        $snapshotData = $this->get($configPath);
+
+        if ($snapshotData && !$configData) {
+            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
+                'configPath' => $configPath
+            ]));
+        } else {
+            if (!$snapshotData) {
+                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
+                    'configPath' => $configPath
+                ]));
+            } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
+                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
+                    'configPath' => $configPath
+                ]));
+            } else {
+                return true;
+            }
+        }
+
+        $snapshot = $this->_getCurrentSnapshot();
+        $arrayAccess = $this->_nodePathToArrayAccess($configPath);
+        eval('$snapshot'.$arrayAccess.' = $configData;');
+
+        return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
+    }
 
     /**
      * Generate the configuration file based on the current snapshot.
