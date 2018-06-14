@@ -185,7 +185,7 @@ class ProjectConfig extends Component
         $previousFilePath = null;
 
         // Delete previous stored data?
-        if ($existingNodePath && $existingNodePath !== $nodePath) {
+        if ($existingNodePath && ($existingNodePath !== $nodePath || null === $value)) {
             $parts = explode('/', $existingNodePath);
             $previousNodeLocation = array_pop($parts);
             $previousFilePath = implode('/', $parts);
@@ -195,7 +195,7 @@ class ProjectConfig extends Component
         }
 
         // If this is a moving node within the same file.
-        if  ($targetFilePath == $previousFilePath) {
+        if  ($targetFilePath == $previousFilePath || null === $value) {
             $targetYaml = $previousYaml;
         } else {
             // If this was a moving file from a different file.
@@ -205,14 +205,13 @@ class ProjectConfig extends Component
             $targetYaml = file_exists($targetFilePath) ? Yaml::parseFile($targetFilePath) : [];
         }
 
-        $arrayAccess = $this->_nodePathToArrayAccess($path);
-        eval('$targetYaml'.$arrayAccess.' = $value;');
+        if (null !== $value) {
+            $arrayAccess = $this->_nodePathToArrayAccess($path);
+            eval('$targetYaml'.$arrayAccess.' = $value;');
+        }
 
         $this->_saveYaml($targetYaml, $targetFilePath);
-
-        $this->regenerateSnapshotFromConfig();
         $this->updateConfigMap();
-        $this->_updateLastParsedConfigCache();
 
         return true;
     }
