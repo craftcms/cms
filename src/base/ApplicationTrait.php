@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
+use craft\events\ParseConfigEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\i18n\Formatter;
@@ -22,10 +23,12 @@ use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\ProjectConfig;
 use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\mutex\Mutex;
 use yii\queue\db\Queue;
@@ -1151,6 +1154,9 @@ trait ApplicationTrait
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
+        // Register all the listeners for config items
+        $this->_registerConfigListeners();
+
         // Fire an 'afterInit' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
@@ -1231,5 +1237,12 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    private function _registerConfigListeners()
+    {
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getSystemSettings(), 'handleChangedSettings']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getSystemSettings(), 'handleChangedSettings']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getSystemSettings(), 'handleDeletedSettings']);
     }
 }

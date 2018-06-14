@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\events\ParseConfigEvent;
 use craft\helpers\Json;
 use craft\models\MailSettings;
 use craft\records\SystemSettings as SystemSettingsRecord;
@@ -88,33 +89,13 @@ class SystemSettings extends Component
      */
     public function saveSettings(string $category, array $settings = null): bool
     {
-        $record = $this->_getSettingsRecord($category);
+        $projectConfig = Craft::$app->getProjectConfig();
 
-        if ($record === null) {
-            // If there are no new settings, we're already done
-            if (!$settings) {
-                return true;
-            }
+        $configPath = 'settings.'.$category;
 
-            // Create a new SystemSettings record, and save a reference to it
-            $record = new SystemSettingsRecord();
-            $record->category = $category;
-            $this->_settingsRecords[$category] = $record;
-        } else if (!$settings) {
-            // Delete the record
-            $record->delete();
-            $this->_settingsRecords[$category] = false;
+        $projectConfig->save($configPath, $settings);
 
-            return true;
-        }
-
-        $record->settings = $settings;
-        $record->save();
-
-        $configPath = 'system.'.$category;
-        Craft::$app->getProjectConfig()->save($configPath, $settings);
-
-        return !$record->hasErrors();
+        return $projectConfig->processConfigChanges($configPath);
     }
 
     /**
@@ -127,6 +108,51 @@ class SystemSettings extends Component
         $settings = $this->getSettings('email');
 
         return new MailSettings($settings);
+    }
+
+    /**
+     * Handle system setting configuration change
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleChangedSettings(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        if (preg_match('/settings\.([a-z0-9]+)$/i', $path, $matches)) {
+            $settings = Craft::$app->getProjectConfig()->get($path, true);
+            $category = $matches[1];
+
+            $record = $this->_getSettingsRecord($category);
+
+            if ($record === null) {
+                $record = new SystemSettingsRecord();
+                $record->category = $category;
+                $this->_settingsRecords[$category] = $record;
+            }
+
+            $record->settings = $settings;
+            $record->save();
+        }
+    }
+
+    /**
+     * Handle system settings getting deleted.
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleDeletedSettings(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        if (preg_match('/settings\.([a-z0-9]+)$/i', $path, $matches)) {
+            $settings = Craft::$app->getProjectConfig()->get($path, true);
+            $category = $matches[1];
+
+            $record = $this->_getSettingsRecord($category);
+            if ($record) {
+                $record->delete();
+                $this->_settingsRecords[$category] = false;
+            }
+        }
     }
 
     // Private Methods
