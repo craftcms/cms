@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where Craft would show a nag alert in the Control Panel when the licensed edition wasn’t cached.
+- Fixed a bug where Dropdown fields could show an incorrect selected value in limited circumstances.
 
 ## 2.6.3017 - 2018-06-05
 
