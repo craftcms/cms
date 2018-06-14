@@ -279,8 +279,6 @@ class ProjectConfig extends Component
 
             Craft::info('Looking for pending changes', __METHOD__);
 
-            print_r($changes);
-            die();
             if (!empty($changes['newItems'])) {
                 Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
                 foreach ($changes['newItems'] as $itemPath) {
@@ -312,9 +310,11 @@ class ProjectConfig extends Component
             Craft::info('Finalizing configuration parsing', __METHOD__);
             $this->trigger(self::EVENT_AFTER_PARSE_CONFIG, new ParseConfigEvent());
 
-            // TODO finish this
-            throw new Exception('Stuff');
             $transaction->commit();
+
+            $this->updateConfigMap();
+            $this->regenerateSnapshotFromConfig();
+            $this->_updateLastParsedConfigCache();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
@@ -387,7 +387,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Update the configuration snapshot.
+     * Regenerate the configuration snapshot.
      *
      * @return bool
      * @throws \yii\web\ServerErrorHttpException
@@ -395,12 +395,7 @@ class ProjectConfig extends Component
     public function regenerateSnapshotFromConfig(): bool
     {
         $snapshot = $this->_getCofigurationFromConfigFiles();
-        $this->_snapshot = $snapshot;
-
-        $info = Craft::$app->getInfo();
-        $info->configSnapshot = serialize($snapshot);
-        Craft::$app->saveInfo($info);
-
+        $this->_saveSnapshot($snapshot);
         $this->_updateLastParsedConfigCache();
 
         return true;
@@ -408,6 +403,23 @@ class ProjectConfig extends Component
 
     // Private methods
     // =========================================================================
+
+    /**
+     * Saves the snapshot.
+     *
+     * @param $snapshot
+     * @return bool
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    private function _saveSnapshot($snapshot): bool
+    {
+        $this->_snapshot = $snapshot;
+        $info = Craft::$app->getInfo();
+        $info->configSnapshot = serialize($snapshot);
+        Craft::$app->saveInfo($info);
+
+        return true;
+    }
 
     /**
      * Get config file modified dates.
@@ -496,7 +508,6 @@ class ProjectConfig extends Component
      * Get the stored snapshot.
      *
      * @return array
-     * @throws \yii\web\ServerErrorHttpException
      */
     private function _getCurrentSnapshot(): array
     {
@@ -688,5 +699,7 @@ class ProjectConfig extends Component
         $traverseAndClean($data);
 
         FileHelper::writeToFile($path, Yaml::dump($data, 10, 2));
+
+        $this->_config = null;
     }
 }
