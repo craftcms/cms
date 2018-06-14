@@ -140,7 +140,6 @@ class ProjectConfig extends Component
      * @param string $path
      * @param bool $getFromConfig whether data should be fetched from config instead of snapshot. Defaults to `false`
      * @return array|mixed|null
-     * @throws \yii\web\ServerErrorHttpException
      */
     public function get(string $path, $getFromConfig = false)
     {
@@ -153,7 +152,7 @@ class ProjectConfig extends Component
         $arrayAccess = $this->_nodePathToArrayAccess($path);
 
         // TODO figure out a better but not convoluted way without eval
-        return eval('return $source'.$arrayAccess.';');
+        return eval('return isset($source'.$arrayAccess.') ? $source'.$arrayAccess.' : null;');
     }
 
     /**
