@@ -89,13 +89,9 @@ class SystemSettings extends Component
      */
     public function saveSettings(string $category, array $settings = null): bool
     {
-        $projectConfig = Craft::$app->getProjectConfig();
-
         $configPath = 'settings.'.$category;
 
-        $projectConfig->save($configPath, $settings);
-
-        return $projectConfig->processConfigChanges($configPath);
+        return Craft::$app->getProjectConfig()->save($configPath, $settings);
     }
 
     /**

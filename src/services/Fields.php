@@ -18,6 +18,7 @@ use craft\errors\MissingComponentException;
 use craft\events\FieldEvent;
 use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
+use craft\events\ParseConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
@@ -146,6 +147,9 @@ class Fields extends Component
      * @event FieldLayoutEvent The event that is triggered after a field layout is deleted.
      */
     const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
+
+    const CONFIG_FIELDGROUP_KEY = 'fields';
+    const CONFIG_FIELDS_KEY = 'fields';
 
     // Properties
     // =========================================================================
@@ -288,15 +292,32 @@ class Fields extends Component
             return false;
         }
 
-        $groupRecord = $this->_getGroupRecord($group);
-        $groupRecord->name = $group->name;
-        $groupRecord->save(false);
+        $projectConfig = Craft::$app->getProjectConfig();
 
-        // Now that we have an ID, save it on the model & models
+        $configData = [
+            'name' => $group->name
+        ];
+
         if ($isNewGroup) {
-            $group->id = $groupRecord->id;
+            $uid = StringHelper::UUID();
+        } else {
+            $groupRecord = $this->_getGroupRecord($group->id);
+            $uid = $groupRecord->uid;
+            $configData[self::CONFIG_FIELDS_KEY] = $projectConfig->get(self::CONFIG_FIELDGROUP_KEY.'.'.$uid.'.'.self::CONFIG_FIELDS_KEY);
         }
 
+        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY.'.'.$uid, $configData);
+
+        if ($isNewGroup) {
+            $group->id = (new Query())
+                ->select(['id'])
+                ->from('{{%fieldgroups}}')
+                ->where(['uid' => $uid])
+                ->scalar();
+        }
+
+        $group->uid = $uid;
+        
         // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
@@ -306,6 +327,57 @@ class Fields extends Component
         }
 
         return true;
+    }
+
+
+    /**
+     * Handle field group change
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleChangedGroup(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match a field group?
+        if (preg_match('/'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $uid = $matches[1];
+
+            $groupRecord = $this->_getGroupRecord($uid);
+
+            // If this is a new group, set the UID we want.
+            if (!$groupRecord->id) {
+                $groupRecord->uid = $uid;
+            }
+
+            $groupRecord->name = $data['name'];
+            $groupRecord->save(false);
+
+            return true;
+        }
+    }
+
+    /**
+     * Handle field group getting deleted.
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleDeletedGroup(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match a field group?
+        if (preg_match('/'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $uid = $matches[1];
+
+            $record = $this->_getGroupRecord($uid);
+
+            if ($record->id) {
+                $record->delete();
+
+                // Delete our cache of it
+                unset($this->_groupsById[$record->id]);
+            }
+        }
     }
 
     /**
@@ -359,12 +431,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%fieldgroups}}', ['id' => $group->id])
-            ->execute();
-
-        // Delete our cache of it
-        unset($this->_groupsById[$group->id]);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY.'.'.$group->uid, null);
 
         // Fire an 'afterDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
@@ -1358,6 +1425,7 @@ class Fields extends Component
             ->select([
                 'id',
                 'name',
+                'uid',
             ])
             ->from(['{{%fieldgroups}}'])
             ->orderBy(['name' => SORT_ASC]);
@@ -1430,21 +1498,16 @@ class Fields extends Component
      *
      * @param FieldGroup $group
      * @return FieldGroupRecord
-     * @throws FieldGroupNotFoundException if $group->id is invalid
      */
-    private function _getGroupRecord(FieldGroup $group): FieldGroupRecord
+    private function _getGroupRecord($criteria): FieldGroupRecord
     {
-        if ($group->id) {
-            $groupRecord = FieldGroupRecord::findOne($group->id);
-
-            if (!$groupRecord) {
-                throw new FieldGroupNotFoundException("No field group exists with the ID '{$group->id}'");
-            }
-        } else {
-            $groupRecord = new FieldGroupRecord();
+        if (is_numeric($criteria)) {
+            $groupRecord = FieldGroupRecord::findOne($criteria);
+        } else if (\is_string($criteria)) {
+            $groupRecord = FieldGroupRecord::findOne(['uid' => $criteria]);
         }
 
-        return $groupRecord;
+        return $groupRecord ?? new FieldGroupRecord();
     }
 
     /**

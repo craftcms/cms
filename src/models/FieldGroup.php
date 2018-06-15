@@ -34,6 +34,11 @@ class FieldGroup extends Model
      */
     public $name;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

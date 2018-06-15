@@ -216,14 +216,13 @@ class ProjectConfig extends Component
         $this->_saveYaml($targetYaml, $targetFilePath);
         $this->updateConfigMap();
 
-        return true;
+        return $this->processConfigChanges($path);
     }
 
     /**
      * Process config changes for a path.
      *
      * @param $configPath
-     * @throws \yii\web\ServerErrorHttpException
      */
     public function processConfigChanges($configPath): bool {
         $configData = $this->get($configPath, true);
