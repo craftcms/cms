@@ -253,15 +253,39 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Deletes an asset transform by its id.
+     * Deletes an asset transform by its ID.
      *
-     * @param int $transformId
-     * @return bool
+     * @param int $transformId The transform's ID
+     * @return bool Whether the transform was deleted.
      * @throws \yii\db\Exception on DB error
      */
-    public function deleteTransform(int $transformId): bool
+    public function deleteTransformById(int $transformId): bool
     {
         $transform = $this->getTransformById($transformId);
+
+        if (!$transform) {
+            return false;
+        }
+
+        return $this->deleteTransform($transform);
+    }
+
+    /**
+     * Deletes an asset transform.
+     *
+     * Note that passing an ID to this function is now deprecated, use {@link deleteTransformById()} instead.
+     *
+     * @param int|AssetTransform $transform The transform
+     * @return bool Whether the transform was deleted
+     * @throws \yii\db\Exception on DB error
+     */
+    public function deleteTransform($transform): bool
+    {
+        if (is_int($transform)) {
+            Craft::$app->getDeprecator()->log(self::class.'::deleteTransform()', self::class.'::deleteTransform() should only be called with AssetTransform references. Use '.self::class.'::deleteTransformById() when using an integer ID.');
+
+            return $this->deleteTransformById($transform);
+        }
 
         // Fire a 'beforeDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
@@ -273,7 +297,7 @@ class AssetTransforms extends Component
         Craft::$app->getDb()->createCommand()
             ->delete(
                 '{{%assettransforms}}',
-                ['id' => $transformId])
+                ['id' => $transform->id])
             ->execute();
 
         // Fire an 'afterDeleteAssetTransform' event
