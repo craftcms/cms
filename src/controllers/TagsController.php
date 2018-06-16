@@ -161,9 +161,9 @@ class TagsController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getTags()->deleteTagGroupById($sectionId);
+        Craft::$app->getTags()->deleteTagGroupById($groupId);
 
         return $this->asJson(['success' => true]);
     }
