@@ -423,9 +423,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         folderId = this._getFolderIdFromSourceKey($a.data('key')),
                         $source = this._getSourceByFolderId(folderId);
 
-                    // Make sure it's not already in the target folder
+                    // Make sure it's not already in the target folder and use this single folder Id.
                     if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId) {
                         folderIds.push(folderId);
+                        break;
                     }
                 }
 
