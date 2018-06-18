@@ -10,6 +10,7 @@
 - Fixed a PHP error that could occur when saving entries with a URI format that contained certain Twig filters. ([#2995](https://github.com/craftcms/cms/issues/2995))
 - Fixed a bug where the Find and Replace utility wasn’t updating element titles. ([#2996](https://github.com/craftcms/cms/issues/2996))
 - Fixed some wonky behavior if one of the custom user profile tabs was called “Account”. ([#2998](https://github.com/craftcms/cms/issues/2998))
+- Fixed a bug where dragging a folder in Assets would have unpredictable results if a different folder was selected at that time. ([#2873](https://github.com/craftcms/cms/issues/2873))
 
 ## 3.0.11 - 2018-06-12
 
