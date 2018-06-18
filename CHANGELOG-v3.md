@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.12 - 2018-06-18
 
 ### Added
 - Added a `leaves` element query param that limits the selected elements to just the leaves in the structure (elements without children).
