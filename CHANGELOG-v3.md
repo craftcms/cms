@@ -18,6 +18,7 @@
 - Fixed some wonky behavior if one of the custom user profile tabs was called “Account”. ([#2998](https://github.com/craftcms/cms/issues/2998))
 - Fixed a bug where dragging a folder in Assets would have unpredictable results if a different folder was selected at that time. ([#2873](https://github.com/craftcms/cms/issues/2873))
 - Fixed a bug where Craft would not invalidate the dynamically-generated  `craft\behaviors\ContentBehavior` and `craft\behaviors\ElementQueryBehavior` afetr saving/deleting a custom field, if the request didn’t end normally. ([#2999](https://github.com/craftcms/cms/issues/2999))
+- Fixed a bug where `{shorthand}` variables in templates rendered by `craft\web\View::renderObjectTemplate()` could end up referencing global variables, if the variable wasn’t a property of the object. ([#3002](https://github.com/craftcms/cms/issues/3002))
 
 ## 3.0.11 - 2018-06-12
 

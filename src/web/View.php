@@ -497,6 +497,7 @@ class View extends \yii\web\View
             }
 
             $variables['object'] = $object;
+            $variables['_variables'] = $variables;
 
             // Render it!
             $twig->setDefaultEscaperStrategy(false);
@@ -545,7 +546,7 @@ class View extends \yii\web\View
         }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ ($1 ?? object.$1)$2|raw }}', $template);
+        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ (_variables.$1 ?? object.$1)$2|raw }}', $template);
 
         // Bring the objects back
         foreach (array_reverse($tokens) as $token => $value) {
