@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.12 - 2018-06-18
 
 ### Added
 - Added a `leaves` element query param that limits the selected elements to just the leaves in the structure (elements without children).
@@ -17,12 +17,12 @@
 
 ### Fixed
 - Fixed a caching bug where the Fields service could still think a field existed after it had been deleted. ([#2985](https://github.com/craftcms/cms/issues/2985))
+- Fixed a bug where Craft would not invalidate the dynamically-generated `craft\behaviors\ContentBehavior` and `craft\behaviors\ElementQueryBehavior` after saving/deleting a custom field, if the request didn’t end normally. ([#2999](https://github.com/craftcms/cms/issues/2999))
 - Fixed a PHP error that could occur when saving entries with a URI format that contained certain Twig filters. ([#2995](https://github.com/craftcms/cms/issues/2995))
+- Fixed a bug where `{shorthand}` variables in templates rendered by `craft\web\View::renderObjectTemplate()` could end up referencing global variables, if the variable wasn’t a property of the object. ([#3002](https://github.com/craftcms/cms/issues/3002))
 - Fixed a bug where the Find and Replace utility wasn’t updating element titles. ([#2996](https://github.com/craftcms/cms/issues/2996))
 - Fixed some wonky behavior if one of the custom user profile tabs was called “Account”. ([#2998](https://github.com/craftcms/cms/issues/2998))
-- Fixed a bug where dragging a folder in Assets would have unpredictable results if a different folder was selected at that time. ([#2873](https://github.com/craftcms/cms/issues/2873))
-- Fixed a bug where Craft would not invalidate the dynamically-generated  `craft\behaviors\ContentBehavior` and `craft\behaviors\ElementQueryBehavior` afetr saving/deleting a custom field, if the request didn’t end normally. ([#2999](https://github.com/craftcms/cms/issues/2999))
-- Fixed a bug where `{shorthand}` variables in templates rendered by `craft\web\View::renderObjectTemplate()` could end up referencing global variables, if the variable wasn’t a property of the object. ([#3002](https://github.com/craftcms/cms/issues/3002))
+- Fixed a bug where dragging a folder on the Assets index page could have unexpected results. ([#2873](https://github.com/craftcms/cms/issues/2873))
 - Reduced the likelihood of SQL deadlock errors when saving elements. ([#3003](https://github.com/craftcms/cms/issues/3003))
 
 ## 3.0.11 - 2018-06-12
