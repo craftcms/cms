@@ -4,6 +4,9 @@
 
 ### Added
 - Added a `leaves` element query param that limits the selected elements to just the leaves in the structure (elements without children).
+- Added `craft\services\Categories::deleteGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
+- Added `craft\services\Tags::deleteTagGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
+- Added `craft\services\UserGroups::deleteGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
 
 ### Removed
 - Removed `craft\services\Fields::updateFieldVersionAfterRequest()`.
