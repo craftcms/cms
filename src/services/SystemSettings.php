@@ -20,6 +20,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @deprecated in 3.1. Use [[\craft\ProjectConfig]] instead.
  */
 class SystemSettings extends Component
 {
@@ -31,11 +32,6 @@ class SystemSettings extends Component
      */
     public $defaults;
 
-    /**
-     * @var
-     */
-    private $_settingsRecords;
-
     // Public Methods
     // =========================================================================
 
@@ -44,22 +40,11 @@ class SystemSettings extends Component
      *
      * @param string $category
      * @return array
+     * @deprecated in 3.1. Use [[\craft\ProjectConfig::get()]] instead.
      */
     public function getSettings(string $category): array
     {
-        $record = $this->_getSettingsRecord($category);
-
-        if ($record !== null) {
-            $settings = Json::decode($record->settings);
-        } else {
-            $settings = [];
-        }
-
-        if (isset($this->defaults[$category])) {
-            $settings = array_merge($this->defaults[$category], $settings);
-        }
-
-        return $settings;
+        return Craft::$app->getProjectConfig()->get($category) ?? [];
     }
 
     /**
@@ -68,16 +53,11 @@ class SystemSettings extends Component
      * @param string $category
      * @param string $key
      * @return mixed
+     * @deprecated in 3.1. Use [[\craft\ProjectConfig::get()]] instead.
      */
     public function getSetting(string $category, string $key)
     {
-        $settings = $this->getSettings($category);
-
-        if (isset($settings[$key])) {
-            return $settings[$key];
-        }
-
-        return null;
+        return Craft::$app->getProjectConfig()->get($category.'.'.$key);
     }
 
     /**
@@ -86,98 +66,23 @@ class SystemSettings extends Component
      * @param string $category
      * @param array|null $settings
      * @return bool Whether the new settings saved
+     * @deprecated in 3.1. Use [[\craft\ProjectConfig::save()]] instead.
      */
     public function saveSettings(string $category, array $settings = null): bool
     {
-        $configPath = 'settings.'.$category;
-
-        return Craft::$app->getProjectConfig()->save($configPath, $settings);
+        return Craft::$app->getProjectConfig()->save($category, $settings);
     }
 
     /**
      * Returns the email settings.
      *
      * @return MailSettings
+     * @deprecated in 3.1. Use [[\craft\ProjectConfig::get()]] instead.
      */
     public function getEmailSettings(): MailSettings
     {
         $settings = $this->getSettings('email');
 
         return new MailSettings($settings);
-    }
-
-    /**
-     * Handle system setting configuration change
-     *
-     * @param ParseConfigEvent $event
-     */
-    public function handleChangedSettings(ParseConfigEvent $event) {
-        $path = $event->configPath;
-
-        if (preg_match('/settings\.([a-z0-9]+)$/i', $path, $matches)) {
-            $settings = Craft::$app->getProjectConfig()->get($path, true);
-            $category = $matches[1];
-
-            $record = $this->_getSettingsRecord($category);
-
-            if ($record === null) {
-                $record = new SystemSettingsRecord();
-                $record->category = $category;
-                $this->_settingsRecords[$category] = $record;
-            }
-
-            $record->settings = $settings;
-            $record->save();
-        }
-    }
-
-    /**
-     * Handle system settings getting deleted.
-     *
-     * @param ParseConfigEvent $event
-     */
-    public function handleDeletedSettings(ParseConfigEvent $event) {
-        $path = $event->configPath;
-
-        if (preg_match('/settings\.([a-z0-9]+)$/i', $path, $matches)) {
-            $settings = Craft::$app->getProjectConfig()->get($path, true);
-            $category = $matches[1];
-
-            $record = $this->_getSettingsRecord($category);
-            if ($record) {
-                $record->delete();
-                $this->_settingsRecords[$category] = false;
-            }
-        }
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Returns a SystemSettings record by its category.
-     *
-     * @param string $category
-     * @return SystemSettingsRecord|null The SystemSettings record or null
-     */
-    private function _getSettingsRecord(string $category)
-    {
-        if (!isset($this->_settingsRecords[$category])) {
-            $record = SystemSettingsRecord::findOne([
-                'category' => $category
-            ]);
-
-            if ($record) {
-                $this->_settingsRecords[$category] = $record;
-            } else {
-                $this->_settingsRecords[$category] = false;
-            }
-        }
-
-        if ($this->_settingsRecords[$category] !== false) {
-            return $this->_settingsRecords[$category];
-        }
-
-        return null;
     }
 }

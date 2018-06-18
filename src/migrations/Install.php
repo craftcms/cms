@@ -569,14 +569,6 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%systemsettings}}', [
-            'id' => $this->primaryKey(),
-            'category' => $this->string(15)->notNull(),
-            'settings' => $this->text(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
         $this->createTable('{{%taggroups}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
@@ -840,7 +832,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%structureelements}}', ['rgt'], false);
         $this->createIndex(null, '{{%structureelements}}', ['level'], false);
         $this->createIndex(null, '{{%structureelements}}', ['elementId'], false);
-        $this->createIndex(null, '{{%systemsettings}}', ['category'], true);
         $this->createIndex(null, '{{%taggroups}}', ['name'], true);
         $this->createIndex(null, '{{%taggroups}}', ['handle'], true);
         $this->createIndex(null, '{{%tags}}', ['groupId'], false);

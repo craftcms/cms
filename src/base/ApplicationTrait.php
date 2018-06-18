@@ -1241,11 +1241,6 @@ trait ApplicationTrait
 
     private function _registerConfigListeners()
     {
-        // Settings
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getSystemSettings(), 'handleChangedSettings']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getSystemSettings(), 'handleChangedSettings']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getSystemSettings(), 'handleDeletedSettings']);
-
         // Field groups
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getFields(), 'handleChangedGroup']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getFields(), 'handleChangedGroup']);

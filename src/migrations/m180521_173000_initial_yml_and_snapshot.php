@@ -45,6 +45,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         Craft::$app->getCache()->set(ProjectConfig::CACHE_KEY, [$destination => $modTime], ProjectConfig::CACHE_DURATION);
 
+        $this->dropTableIfExists('{{%systemsettings}}');
+
         return true;
     }
 
@@ -73,9 +75,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'volumes' => $this->_getVolumeData(),
             'categoryGroups' => $this->_getCategoryGroupData(),
             'tagGroups' => $this->_getTagGroupData(),
-            'settings' => $this->_getSystemSettingData(),
             'users' => $this->_getUserData(),
         ];
+
+        $data = array_merge($data, $this->_getSystemSettingData());
 
         return $data;
 
