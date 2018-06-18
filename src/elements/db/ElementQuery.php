@@ -158,6 +158,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $enabledForSite = true;
 
     /**
+     * @var bool Whether the elements must be “leaves” in the structure.
+     */
+    public $leaves = false;
+
+    /**
      * @var int|array|ElementInterface|null The element relation criteria.
      */
     public $relatedTo;
@@ -680,6 +685,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
         $this->enabledForSite = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[leaves]] property.
+     *
+     * @param bool $value The property value.
+     * @return static self reference
+     */
+    public function leaves(bool $value = true)
+    {
+        $this->leaves = $value;
         return $this;
     }
 
@@ -1761,6 +1778,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->level) {
             $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
+        }
+
+        if ($this->leaves) {
+            $this->subQuery->andWhere('[[structureelements.rgt]] = [[structureelements.lft]] + 1');
         }
     }
 
