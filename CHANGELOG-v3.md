@@ -9,6 +9,9 @@
 - Added `craft\services\Tags::deleteTagGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
 - Added `craft\services\UserGroups::deleteGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
 
+### Changed
+- Improved Control Panel styling. ([#2883](https://github.com/craftcms/cms/issues/2883))
+
 ### Removed
 - Removed `craft\services\Fields::updateFieldVersionAfterRequest()`.
 
