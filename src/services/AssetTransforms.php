@@ -35,6 +35,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Asset Transforms service.
@@ -273,7 +274,7 @@ class AssetTransforms extends Component
     /**
      * Deletes an asset transform.
      *
-     * Note that passing an ID to this function is now deprecated, use {@link deleteTransformById()} instead.
+     * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
      *
      * @param int|AssetTransform $transform The transform
      * @return bool Whether the transform was deleted
@@ -281,10 +282,13 @@ class AssetTransforms extends Component
      */
     public function deleteTransform($transform): bool
     {
+        // todo: remove this code in 3.0 & hardcode the $transform type
         if (is_int($transform)) {
-            Craft::$app->getDeprecator()->log(self::class.'::deleteTransform()', self::class.'::deleteTransform() should only be called with AssetTransform references. Use '.self::class.'::deleteTransformById() when using an integer ID.');
-
+            Craft::$app->getDeprecator()->log(self::class.'::deleteTransform(id)', self::class.'::deleteTransform() should only be called with a '.AssetTransform::class.' reference. Use '.self::class.'::deleteTransformById() to get a transform by its ID.');
             return $this->deleteTransformById($transform);
+        }
+        if (!$transform instanceof AssetTransform) {
+            throw new InvalidArgumentException('$transform must be a '.AssetTransform::class.' object.');
         }
 
         // Fire a 'beforeDeleteAssetTransform' event

@@ -518,7 +518,6 @@ class Categories extends Component
      */
     public function deleteGroup(CategoryGroup $group): bool
     {
-
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
