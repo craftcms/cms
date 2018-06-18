@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -38,6 +39,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
 use craft\fields\Users as UsersField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -206,10 +208,10 @@ class Fields extends Component
     private $_layoutsByType;
 
     /**
-     * @var bool Whether we’re listening for the request end, to update the field version
-     * @see updateFieldVersionAfterRequest()
+     * @var bool Whether we've already updated the field version in this request
+     * @see updateFieldVersion()
      */
-    private $_listeningForRequestEnd = false;
+    private $_updatedFieldVersion = false;
 
     // Public Methods
     // =========================================================================
@@ -863,7 +865,7 @@ class Fields extends Component
         ContentBehavior::$fieldHandles[$field->handle] = true;
 
         // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
+        $this->updateFieldVersion();
 
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
@@ -931,6 +933,18 @@ class Fields extends Component
                 ->delete('{{%fields}}', ['id' => $field->id])
                 ->execute();
 
+            // Clear caches
+            unset(
+                $this->_fieldsById[$field->id],
+                $this->_fieldsByContextAndHandle[$field->context][$field->handle],
+                $this->_allFieldsInContext[$field->context],
+                $this->_fieldsWithContent[$field->context]
+            );
+
+            if (isset($this->_allFieldHandlesByContext[$field->context])) {
+                ArrayHelper::removeValue($this->_allFieldHandlesByContext[$field->context], $field->handle);
+            }
+
             $field->afterDelete();
 
             $transaction->commit();
@@ -941,7 +955,7 @@ class Fields extends Component
         }
 
         // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
+        $this->updateFieldVersion();
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -1317,26 +1331,27 @@ class Fields extends Component
     }
 
     /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
-     */
-    public function updateFieldVersionAfterRequest()
-    {
-        if ($this->_listeningForRequestEnd) {
-            return;
-        }
-
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateFieldVersion']);
-        $this->_listeningForRequestEnd = true;
-    }
-
-    /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
+     * will get regenerated on the next request.
+     *
+     * This will only have an effect once per request. Subsequent calls will be ignored.
      */
     public function updateFieldVersion()
     {
+        if ($this->_updatedFieldVersion) {
+            return;
+        }
+
+        // Make sure that ContentBehavior and ElementQueryBehavior have already been loaded,
+        // so the field version change won't be detected until the next request
+        class_exists(ContentBehavior::class);
+        class_exists(ElementQueryBehavior::class);
+
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
         Craft::$app->saveInfo($info);
+
+        $this->_updatedFieldVersion = true;
     }
 
     // Private Methods
@@ -1381,7 +1396,7 @@ class Fields extends Component
                 'fields.settings'
             ])
             ->from(['{{%fields}} fields'])
-            ->orderBy(['fields.name' => SORT_ASC]);
+            ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
     /**

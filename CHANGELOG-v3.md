@@ -1,9 +1,34 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.12 - 2018-06-18
+
+### Added
+- Added a `leaves` element query param that limits the selected elements to just the leaves in the structure (elements without children).
+- Added `craft\helpers\Db::deleteIfExists()`.
+- Added `craft\services\Categories::deleteGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
+- Added `craft\services\Tags::deleteTagGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
+- Added `craft\services\UserGroups::deleteGroup()`. ([#3000](https://github.com/craftcms/cms/pull/3000))
+
+### Changed
+- Improved Control Panel styling. ([#2883](https://github.com/craftcms/cms/issues/2883))
+
+### Removed
+- Removed `craft\services\Fields::updateFieldVersionAfterRequest()`.
+
+### Fixed
+- Fixed a caching bug where the Fields service could still think a field existed after it had been deleted. ([#2985](https://github.com/craftcms/cms/issues/2985))
+- Fixed a bug where Craft would not invalidate the dynamically-generated `craft\behaviors\ContentBehavior` and `craft\behaviors\ElementQueryBehavior` after saving/deleting a custom field, if the request didn’t end normally. ([#2999](https://github.com/craftcms/cms/issues/2999))
+- Fixed a PHP error that could occur when saving entries with a URI format that contained certain Twig filters. ([#2995](https://github.com/craftcms/cms/issues/2995))
+- Fixed a bug where `{shorthand}` variables in templates rendered by `craft\web\View::renderObjectTemplate()` could end up referencing global variables, if the variable wasn’t a property of the object. ([#3002](https://github.com/craftcms/cms/issues/3002))
+- Fixed a bug where the Find and Replace utility wasn’t updating element titles. ([#2996](https://github.com/craftcms/cms/issues/2996))
+- Fixed some wonky behavior if one of the custom user profile tabs was called “Account”. ([#2998](https://github.com/craftcms/cms/issues/2998))
+- Fixed a bug where dragging a folder on the Assets index page could have unexpected results. ([#2873](https://github.com/craftcms/cms/issues/2873))
+- Reduced the likelihood of SQL deadlock errors when saving elements. ([#3003](https://github.com/craftcms/cms/issues/3003))
+
 ## 3.0.11 - 2018-06-12
 
 ### Changed
-- Sort options defined by element types’ `sortOptions()` / `defineSortOptoins()` methods can now be specified as sub-arrays with `label`, `orderBy`, and `attribute` keys.
+- Sort options defined by element types’ `sortOptions()` / `defineSortOptions()` methods can now be specified as sub-arrays with `label`, `orderBy`, and `attribute` keys.
 - Entries and categories can now be sorted by their slugs.
 - The “Cache remote images?” option in the Asset Indexes utility is now enabled by default. ([#2977](https://github.com/craftcms/cms/issues/2977))
 

@@ -53,7 +53,7 @@ $noticeColor: darken($blue, 10%);
 
 // UI element styles
 $btnBorderRadius: 2px;
-$textBorderRadius: 0;
+$textBorderRadius: 2px;
 $paneBorderRadius: 5px;
 $menuBorderRadius: 2px;
 $elementBorderRadius: 2px;
@@ -351,7 +351,7 @@ $elementBorderRadius: 2px;
 }
 
 @mixin text-input-focused-styles {
-  border-color: $darkHairlineColorAlpha;
+  border-color: $blue;
   outline: none;
 }
 

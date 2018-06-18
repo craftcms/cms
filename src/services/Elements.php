@@ -31,6 +31,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\FindAndReplace;
@@ -503,26 +504,24 @@ class Elements extends Component
 
         // Delete the rows that don't need to be there anymore
         if (!$isNewElement) {
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%elements_sites}}',
+            Db::deleteIfExists(
+                '{{%elements_sites}}',
+                [
+                    'and',
+                    ['elementId' => $element->id],
+                    ['not', ['siteId' => $supportedSiteIds]]
+                ]
+            );
+
+            if ($element::hasContent()) {
+                Db::deleteIfExists(
+                    $element->getContentTable(),
                     [
                         'and',
                         ['elementId' => $element->id],
                         ['not', ['siteId' => $supportedSiteIds]]
-                    ])
-                ->execute();
-
-            if ($element::hasContent()) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        $element->getContentTable(),
-                        [
-                            'and',
-                            ['elementId' => $element->id],
-                            ['not', ['siteId' => $supportedSiteIds]]
-                        ])
-                    ->execute();
+                    ]
+                );
             }
         }
 

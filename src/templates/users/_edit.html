@@ -120,7 +120,7 @@
 
         {% if CraftEdition == CraftPro %}
             {% for tab in user.getFieldLayout().getTabs() %}
-                <div id="{{ tab.getHtmlId() }}" class="hidden">
+                <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
                     {% include "_includes/fields" with {
                         fields:  tab.getFields(),
                         element: user

@@ -9,7 +9,7 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 $sidebarBgColor: hsl($hue, 20%, 25%);
 $sidebarLinkHoverBgColor: hsla($hue, 20%, 20%, 0.05);
 
-$editionStaticColor: hsl($hue, 20%, 5%);
+$editionStaticColor: hsl($hue, 20%, 8%);
 $editionHoverColor: hsl($hue, 20%, 70%);
 
 html,
@@ -63,6 +63,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   & > a,
   *:not(.has-subnav) > a {
     outline: none;
+    transition: background-color linear 100ms;
 
     &:hover,
     &.active,
@@ -71,7 +72,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background-color: darken($sidebarBgColor, 3%);
+      transition: none;
 
       .icon {
         opacity: 1;
@@ -80,7 +82,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
     &.active,
     &:active {
-      background: rgba(255, 255, 255, 0.07);
+      background: darken($sidebarBgColor, 6%);
     }
 
     .icon {
@@ -104,11 +106,9 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     display: flex;
     flex-direction: row;
     align-items: top;
-    @include padding(14px, 14px, 14px, 10px);
+    @include padding(28px, 14px, 28px, 10px);
     min-height: -webkit-min-content;
     min-height: -moz-min-content;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background-clip: padding-box;
 
     &:after {
       display: none;
@@ -166,13 +166,13 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 
   #devmode + #system-info {
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding-top: 26px;
+    padding-bottom: 26px;
   }
 
   nav {
     flex: 1;
-    margin: 13px 0 0;
+    margin: 12px 0 0;
   }
 
   #job-icon {
@@ -229,7 +229,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     li {
       &:not(.has-subnav) > a.sel {
         color: #fff;
-        background: rgba(255, 255, 255, 0.1);
+        background: darken($sidebarBgColor, 6%);
         border-color: $submitColor;
         opacity: 1;
 
@@ -456,22 +456,25 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   #crumbs {
     flex-direction: row;
     align-items: stretch;
-    padding: 0 24px;
-    font-size: 12px;
+    padding: 16px 24px 0;
+    font-size: 13px;
+    background: darken($bgColor, 3%);
 
     &.empty {
       display: none;
+
       & + #main #header {
-        padding-top: 20px;
-        padding-bottom: 20px;
+        padding-top: 33px;
+        padding-bottom: 33px;
       }
     }
 
     &:not(.empty) {
       display: flex;
+
       & + #main #header {
-        padding-top: 7px;
-        padding-bottom: 7px;
+        padding-top: 3px;
+        padding-bottom: 21px;
       }
     }
 
@@ -534,7 +537,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       padding-right: 24px;
       box-sizing: border-box;
       width: calc(100vw - #{$sidebarWidth});
-      background: $bgColor;
+      background: darken($bgColor, 3%);
       box-shadow: 0 1px 0 $hairlineColorAlpha;
 
       body.fixed-header & {
@@ -638,12 +641,9 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           ul {
             display: flex;
             flex-direction: row;
-            width: calc(100% + 1px);
+            width: calc(100% - 1px);
 
             li {
-              box-sizing: border-box;
-              @include border-right(1px solid $hairlineColorAlpha);
-
               a {
                 position: relative;
                 display: block;
@@ -687,6 +687,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
                   background: #fff;
                   padding-bottom: 10px;
                   cursor: default;
+                  box-shadow: 0 0 0 1px $hairlineColorAlpha;
 
                   &:after {
                     body.ltr & {
@@ -706,30 +707,23 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         #content {
           flex: 1;
           background: #fff;
+          background-clip: padding-box;
           padding: 24px 24px 48px;
           word-wrap: break-word;
+          @include border-right(1px solid $hairlineColorAlpha);
         }
       }
 
       #details {
         flex: 0 0 $detailsWidth;
         width: $detailsWidth;
-        background: darken($bgColor, 3%);
-        padding-bottom: 32px;
-
-        body.ltr & {
-          box-shadow: inset 1px 0 0 $hairlineColorAlpha;
-        }
-
-        body.rtl & {
-          box-shadow: inset -1px 0 0 $hairlineColorAlpha;
-        }
+        padding: 24px 0 32px;
 
         .meta {
           padding: 16px 24px;
 
           &.read-only {
-            background: darken($bgColor, 6%);
+            background: darken($bgColor, 3%);
           }
 
           & > .field,
@@ -748,7 +742,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           }
 
           & > .field + .field {
-            border-top-color: darken($bgColor, 15%);
+            border-top-color: $hairlineColorAlpha;
           }
 
           .text::placeholder,
@@ -764,7 +758,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
         hr {
           margin: 0;
-          border-top-color: darken($bgColor, 15%);
+          border-top-color: $hairlineColorAlpha;
         }
 
         .spinner {
@@ -814,8 +808,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     #main {
       #header {
         width: 100vw;
-        padding-top: 7px !important;
-        padding-bottom: 7px !important;
+        padding-top: 3px !important;
+        padding-bottom: 21px !important;
 
         body.ltr.fixed-header & {
           left: 0;
@@ -1183,10 +1177,13 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       position: relative;
 
       &:not(.has-subnav) > a {
+        transition: background-color linear 100ms;
+
         &:hover {
           text-decoration: none;
           color: $textColor;
           background: $sidebarLinkHoverBgColor;
+          transition: none;
         }
 
         &.sel {

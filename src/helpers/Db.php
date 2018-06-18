@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\Query;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -614,6 +615,37 @@ class Db
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
+    }
+
+    /**
+     * Executes a DELETE command, but only if there are any rows to delete.
+     *
+     * @param string $table the table where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     * @param Connection|null $db
+     * @return int number of rows affected by the execution.
+     * @throws \yii\db\Exception execution failed
+     */
+    public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
+        $exists = (new Query())
+            ->from($table)
+            ->where($condition, $params)
+            ->exists($db);
+
+        if (!$exists) {
+            return 0;
+        }
+
+        return $db->createCommand()
+            ->delete($table, $condition, $params)
+            ->execute();
     }
 
     // Private Methods

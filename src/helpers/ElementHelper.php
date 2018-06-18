@@ -186,10 +186,7 @@ class ElementHelper
      */
     public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
-        $element = (object)['slug' => StringHelper::randomString()];
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
-
-        return StringHelper::contains($uri, $element->slug);
+        return (bool)preg_match('/\bslug\b/', $uriFormat);
     }
 
     /**

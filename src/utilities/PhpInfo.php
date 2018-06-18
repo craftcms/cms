@@ -63,7 +63,7 @@ class PhpInfo extends Utility
     private static function _phpInfo(): array
     {
         ob_start();
-        phpinfo(-1);
+        phpinfo(INFO_ALL);
         $phpInfoStr = ob_get_clean();
 
         $replacePairs = [

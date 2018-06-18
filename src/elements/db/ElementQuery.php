@@ -158,6 +158,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $enabledForSite = true;
 
     /**
+     * @var bool Whether the elements must be “leaves” in the structure.
+     */
+    public $leaves = false;
+
+    /**
      * @var int|array|ElementInterface|null The element relation criteria.
      */
     public $relatedTo;
@@ -680,6 +685,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
         $this->enabledForSite = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[leaves]] property.
+     *
+     * @param bool $value The property value.
+     * @return static self reference
+     */
+    public function leaves(bool $value = true)
+    {
+        $this->leaves = $value;
         return $this;
     }
 
@@ -1602,146 +1619,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->_shouldJoinStructureData()) {
-            $this->query
-                ->addSelect([
-                    'structureelements.root',
-                    'structureelements.lft',
-                    'structureelements.rgt',
-                    'structureelements.level',
-                ]);
-
-            if ($this->structureId) {
-                $this->query
-                    ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
-                $this->subQuery
-                    ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
-                    ->andWhere(['structureelements.structureId' => $this->structureId]);
-            } else {
-                $this->query
-                    ->addSelect(['structureelements.structureId'])
-                    ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
-                $this->subQuery
-                    ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]');
-            }
-
-            if ($this->hasDescendants !== null) {
-                if ($this->hasDescendants) {
-                    $this->subQuery->andWhere('[[structureelements.rgt]] > [[structureelements.lft]] + 1');
-                } else {
-                    $this->subQuery->andWhere('[[structureelements.rgt]] = [[structureelements.lft]] + 1');
-                }
-            }
-
-            if ($this->ancestorOf) {
-                /** @var Element $ancestorOf */
-                $ancestorOf = $this->_normalizeStructureParamValue('ancestorOf', $class);
-
-                $this->subQuery->andWhere([
-                    'and',
-                    ['<', 'structureelements.lft', $ancestorOf->lft],
-                    ['>', 'structureelements.rgt', $ancestorOf->rgt],
-                    ['structureelements.root' => $ancestorOf->root]
-                ]);
-
-                if ($this->ancestorDist) {
-                    $this->subQuery->andWhere(['>=', 'structureelements.level', $ancestorOf->level - $this->ancestorDist]);
-                }
-            }
-
-            if ($this->descendantOf) {
-                /** @var Element $descendantOf */
-                $descendantOf = $this->_normalizeStructureParamValue('descendantOf', $class);
-
-                $this->subQuery->andWhere([
-                    'and',
-                    ['>', 'structureelements.lft', $descendantOf->lft],
-                    ['<', 'structureelements.rgt', $descendantOf->rgt],
-                    ['structureelements.root' => $descendantOf->root]
-                ]);
-
-                if ($this->descendantDist) {
-                    $this->subQuery->andWhere(['<=', 'structureelements.level', $descendantOf->level + $this->descendantDist]);
-                }
-            }
-
-            if ($this->siblingOf) {
-                /** @var Element $siblingOf */
-                $siblingOf = $this->_normalizeStructureParamValue('siblingOf', $class);
-
-                $this->subQuery->andWhere([
-                    'and',
-                    [
-                        'structureelements.level' => $siblingOf->level,
-                        'structureelements.root' => $siblingOf->root,
-                    ],
-                    ['not', ['structureelements.elementId' => $siblingOf->id]]
-                ]);
-
-                if ($siblingOf->level != 1) {
-                    /** @var Element $parent */
-                    $parent = $siblingOf->getParent();
-
-                    if (!$parent) {
-                        throw new QueryAbortedException();
-                    }
-
-                    $this->subQuery->andWhere([
-                        'and',
-                        ['>', 'structureelements.lft', $parent->lft],
-                        ['<', 'structureelements.rgt', $parent->rgt]
-                    ]);
-                }
-            }
-
-            if ($this->prevSiblingOf) {
-                /** @var Element $prevSiblingOf */
-                $prevSiblingOf = $this->_normalizeStructureParamValue('prevSiblingOf', $class);
-
-                $this->subQuery->andWhere([
-                    'structureelements.level' => $prevSiblingOf->level,
-                    'structureelements.rgt' => $prevSiblingOf->lft - 1,
-                    'structureelements.root' => $prevSiblingOf->root
-                ]);
-            }
-
-            if ($this->nextSiblingOf) {
-                /** @var Element $nextSiblingOf */
-                $nextSiblingOf = $this->_normalizeStructureParamValue('nextSiblingOf', $class);
-
-                $this->subQuery->andWhere([
-                    'structureelements.level' => $nextSiblingOf->level,
-                    'structureelements.lft' => $nextSiblingOf->rgt + 1,
-                    'structureelements.root' => $nextSiblingOf->root
-                ]);
-            }
-
-            if ($this->positionedBefore) {
-                /** @var Element $positionedBefore */
-                $positionedBefore = $this->_normalizeStructureParamValue('positionedBefore', $class);
-
-                $this->subQuery->andWhere([
-                    'and',
-                    ['<', 'structureelements.rgt', $positionedBefore->lft],
-                    ['structureelements.root' => $positionedBefore->root]
-                ]);
-            }
-
-            if ($this->positionedAfter) {
-                /** @var Element $positionedAfter */
-                $positionedAfter = $this->_normalizeStructureParamValue('positionedAfter', $class);
-
-                $this->subQuery->andWhere([
-                    'and',
-                    ['>', 'structureelements.lft', $positionedAfter->rgt],
-                    ['structureelements.root' => $positionedAfter->root],
-                ]);
-            }
-
-            if ($this->level) {
-                $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
-            }
-        } else {
+        if (!$this->_shouldJoinStructureData()) {
             $structureParams = [
                 'hasDescendants',
                 'ancestorOf',
@@ -1759,6 +1637,151 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new QueryAbortedException("Unable to apply the '{$param}' param because 'structureId' isn't set");
                 }
             }
+
+            return;
+        }
+
+        $this->query
+            ->addSelect([
+                'structureelements.root',
+                'structureelements.lft',
+                'structureelements.rgt',
+                'structureelements.level',
+            ]);
+
+        if ($this->structureId) {
+            $this->query
+                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
+            $this->subQuery
+                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
+                ->andWhere(['structureelements.structureId' => $this->structureId]);
+        } else {
+            $this->query
+                ->addSelect(['structureelements.structureId'])
+                ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
+            $this->subQuery
+                ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]');
+        }
+
+        if ($this->hasDescendants !== null) {
+            if ($this->hasDescendants) {
+                $this->subQuery->andWhere('[[structureelements.rgt]] > [[structureelements.lft]] + 1');
+            } else {
+                $this->subQuery->andWhere('[[structureelements.rgt]] = [[structureelements.lft]] + 1');
+            }
+        }
+
+        if ($this->ancestorOf) {
+            /** @var Element $ancestorOf */
+            $ancestorOf = $this->_normalizeStructureParamValue('ancestorOf', $class);
+
+            $this->subQuery->andWhere([
+                'and',
+                ['<', 'structureelements.lft', $ancestorOf->lft],
+                ['>', 'structureelements.rgt', $ancestorOf->rgt],
+                ['structureelements.root' => $ancestorOf->root]
+            ]);
+
+            if ($this->ancestorDist) {
+                $this->subQuery->andWhere(['>=', 'structureelements.level', $ancestorOf->level - $this->ancestorDist]);
+            }
+        }
+
+        if ($this->descendantOf) {
+            /** @var Element $descendantOf */
+            $descendantOf = $this->_normalizeStructureParamValue('descendantOf', $class);
+
+            $this->subQuery->andWhere([
+                'and',
+                ['>', 'structureelements.lft', $descendantOf->lft],
+                ['<', 'structureelements.rgt', $descendantOf->rgt],
+                ['structureelements.root' => $descendantOf->root]
+            ]);
+
+            if ($this->descendantDist) {
+                $this->subQuery->andWhere(['<=', 'structureelements.level', $descendantOf->level + $this->descendantDist]);
+            }
+        }
+
+        if ($this->siblingOf) {
+            /** @var Element $siblingOf */
+            $siblingOf = $this->_normalizeStructureParamValue('siblingOf', $class);
+
+            $this->subQuery->andWhere([
+                'and',
+                [
+                    'structureelements.level' => $siblingOf->level,
+                    'structureelements.root' => $siblingOf->root,
+                ],
+                ['not', ['structureelements.elementId' => $siblingOf->id]]
+            ]);
+
+            if ($siblingOf->level != 1) {
+                /** @var Element $parent */
+                $parent = $siblingOf->getParent();
+
+                if (!$parent) {
+                    throw new QueryAbortedException();
+                }
+
+                $this->subQuery->andWhere([
+                    'and',
+                    ['>', 'structureelements.lft', $parent->lft],
+                    ['<', 'structureelements.rgt', $parent->rgt]
+                ]);
+            }
+        }
+
+        if ($this->prevSiblingOf) {
+            /** @var Element $prevSiblingOf */
+            $prevSiblingOf = $this->_normalizeStructureParamValue('prevSiblingOf', $class);
+
+            $this->subQuery->andWhere([
+                'structureelements.level' => $prevSiblingOf->level,
+                'structureelements.rgt' => $prevSiblingOf->lft - 1,
+                'structureelements.root' => $prevSiblingOf->root
+            ]);
+        }
+
+        if ($this->nextSiblingOf) {
+            /** @var Element $nextSiblingOf */
+            $nextSiblingOf = $this->_normalizeStructureParamValue('nextSiblingOf', $class);
+
+            $this->subQuery->andWhere([
+                'structureelements.level' => $nextSiblingOf->level,
+                'structureelements.lft' => $nextSiblingOf->rgt + 1,
+                'structureelements.root' => $nextSiblingOf->root
+            ]);
+        }
+
+        if ($this->positionedBefore) {
+            /** @var Element $positionedBefore */
+            $positionedBefore = $this->_normalizeStructureParamValue('positionedBefore', $class);
+
+            $this->subQuery->andWhere([
+                'and',
+                ['<', 'structureelements.rgt', $positionedBefore->lft],
+                ['structureelements.root' => $positionedBefore->root]
+            ]);
+        }
+
+        if ($this->positionedAfter) {
+            /** @var Element $positionedAfter */
+            $positionedAfter = $this->_normalizeStructureParamValue('positionedAfter', $class);
+
+            $this->subQuery->andWhere([
+                'and',
+                ['>', 'structureelements.lft', $positionedAfter->rgt],
+                ['structureelements.root' => $positionedAfter->root],
+            ]);
+        }
+
+        if ($this->level) {
+            $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
+        }
+
+        if ($this->leaves) {
+            $this->subQuery->andWhere('[[structureelements.rgt]] = [[structureelements.lft]] + 1');
         }
     }
 
