@@ -135,7 +135,7 @@ Some settings and functions in Craft support [Yii aliases](http://www.yiiframewo
 - Volumes’ Base URL settings
 - Local volumes’ File System Path settings
 - The <config:resourceBasePath> and <config:resourceBaseUrl> config settings
-- The [svg()](templating/functions.md#svg-svg-sanitize-) Twig function
+- The [svg()](templating/functions.md#svg-svg-sanitize) Twig function
 
 The following aliases are available out of the box:
 

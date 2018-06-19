@@ -57,7 +57,7 @@ Take a look at how we assigned the `image` variable in our examples, before and 
 {% set image = entry.assetsField[0] ?? null %}
 ```
 
-When the assets _aren’t_ eager-loaded, `entry.assetsField` gives you an [element query](../element-queries.md) that is preconfigured to return the related assets.
+When the assets _aren’t_ eager-loaded, `entry.assetsField` gives you an [element query](element-queries.md) that is preconfigured to return the related assets.
 
 However when the assets _are_ eager-loaded, `entry.assetsField` gets overwritten with an array of the eager-loaded assets. So `one()`, `all()`, and other element query methods are not available. Instead you must stick to the standard array syntaxes. In our example, we’re grabbing the first asset with `entry.assetsField[0]`, and we’re using Twig’s _null-coalescing operator_ (`??`) to define a default value (`null`) in case there is no related asset.
 

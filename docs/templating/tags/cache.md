@@ -124,7 +124,7 @@ There are also some cases where it’s _not_ a good idea to use them:
 
 * Don’t use them to cache static text; that will be more expensive than simply outputting the text.
 * You can’t use them outside of top-level `{% block %}` tags within a template that extends another.
-* The `{% cache %}` tag will only cache HTML, so using tags like [{% css %}](templating/includecss) and [{% js %}](templating/includejs) inside of it doesn’t make sense because they don’t actually output HTML therefore their output won’t be cached.
+* The `{% cache %}` tag will only cache HTML, so using tags like [{% css %}](css.md) and [{% js %}](js.md) inside of it doesn’t make sense because they don’t actually output HTML therefore their output won’t be cached.
 
     ```twig
     {# Bad: #}
@@ -147,4 +147,4 @@ There are also some cases where it’s _not_ a good idea to use them:
     ```
 
 
-Tip: The `{% cache %}` tag will detect if there are any ungenerated [image transform](image-transforms.md) URLs within it. If there are, it will hold off on caching the template until the next request, so those temporary image URLs won’t get cached.
+Tip: The `{% cache %}` tag will detect if there are any ungenerated [image transform](../../image-transforms.md) URLs within it. If there are, it will hold off on caching the template until the next request, so those temporary image URLs won’t get cached.

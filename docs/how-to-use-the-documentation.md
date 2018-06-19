@@ -8,7 +8,7 @@ How you use the documentation will depend on your experience and situation.
 
 ## I'm Just Getting Started With Craft
 
-If you're new to Craft and want to get the bigger picture, start with [About Craft CMS](index.md). After that, read through [The Pieces of Craft](the-pieces-of-craft.md) and the [Craft Directory Structure](directory-structure.md). These three pieces of documentation will help you have a better understanding of how Craft works. 
+If you're new to Craft and want to get the bigger picture, start with [About Craft CMS](README.md). After that, read through [The Pieces of Craft](the-pieces-of-craft.md) and the [Craft Directory Structure](directory-structure.md). These three pieces of documentation will help you have a better understanding of how Craft works. 
 
 After reading those three items, you can continue on to installing Craft via the [Installation instructions](installation.md).
 

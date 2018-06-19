@@ -250,7 +250,7 @@ You can optionally pass `false` to it if you want group symbols to be omitted (e
 
 ## `parseRefs`
 
-Parses a string for [reference tags](reference-tags.md).
+Parses a string for [reference tags](../reference-tags.md).
 
 ```twig
 {% set content %}

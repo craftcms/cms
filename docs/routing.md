@@ -33,7 +33,7 @@ Here is how Craft handles each request:
 
 4. **Does the URI match a template?**
 
-   Finally, Craft will check if the URI is a valid [template path](templating-overview.md#template-paths). If it is, Craft will return the matched template. Note: if any of the URI segments begin with an underscore (`_`), Craft will return a 404. Craft hides from direct access any template path segments that begin with an underscore.
+   Finally, Craft will check if the URI is a valid [template path](templates.md#template-paths). If it is, Craft will return the matched template. Note: if any of the URI segments begin with an underscore (`_`), Craft will return a 404. Craft hides from direct access any template path segments that begin with an underscore.
 
 5. **404**
 
