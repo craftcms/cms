@@ -693,7 +693,7 @@ class Products extends BaseRelationField
 }
 ```
 
-### Reference Tags
+## Reference Tags
 
 If you want your elements to support reference tags (e.g. `{product:100}`), add a static `refHandle()` method to your element class that returns a unique handle that should be used for its reference tags.
 
