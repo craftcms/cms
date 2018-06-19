@@ -287,11 +287,15 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->all();
 
         $fields = [];
+        $fieldService = Craft::$app->getFields();
 
         // Index by UID
         foreach ($fieldRows as $fieldRow) {
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
+            $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
+            $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
             $fields[$fieldRow['uid']] = $fieldRow;
+
         }
 
         $matrixBlockTypes = (new Query())
