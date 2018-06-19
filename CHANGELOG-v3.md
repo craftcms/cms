@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `|date`, `|time`, and `|datetime` filters now support a `locale` argument, for specifying which locale’s formatter should be doing the date/time formatting. ([#3006](https://github.com/craftcms/cms/issues/3006))
+
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
 
