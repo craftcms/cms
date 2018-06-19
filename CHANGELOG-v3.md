@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Changed
+- Editable tables now submit an empty string when they have no rows.
+
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
+- Fixed a bug where Table fields wouldn't remember if they had no rows in their Default Values setting. ([#2979](https://github.com/craftcms/cms/issues/2979)) 
 
 ## 3.0.12 - 2018-06-18
 
