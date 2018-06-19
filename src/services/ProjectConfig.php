@@ -398,7 +398,8 @@ class ProjectConfig extends Component
     {
         $snapshot = $this->_getCofigurationFromConfigFiles();
         $this->_saveSnapshot($snapshot);
-        $this->_updateLastParsedConfigCache();
+
+        $this->updateConfigMap();
 
         return true;
     }
