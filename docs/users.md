@@ -36,31 +36,31 @@ Permission | Handle
 -|-
 Access the site when the system is off | `accessSiteWhenSystemIsOff`
 Access the CP | `accessCp`
-↳  Access the CP when the system is off | `accessCpWhenSystemIsOff`
-↳  Perform Craft and plugin updates | `performUpdates`
-↳  Access _[Plugin Name]_ | `accessPlugin-[PluginHandle]`
+↳&nbsp; Access the CP when the system is off | `accessCpWhenSystemIsOff`
+↳&nbsp; Perform Craft and plugin updates | `performUpdates`
+↳&nbsp; Access _[Plugin Name]_ | `accessPlugin-[PluginHandle]`
 Edit users | `editUsers`
-↳  Register users | `registerUsers`
-↳  Assign permissions | `assignUserPermissions`
-↳  Administrate users | `administrateUsers`
+↳&nbsp; Register users | `registerUsers`
+↳&nbsp; Assign permissions | `assignUserPermissions`
+↳&nbsp; Administrate users | `administrateUsers`
 Delete users | `deleteUsers`
 Edit _[Locale Name]_ | `editLocale:[LocaleID]`
 Edit entries | `editEntries:[SectionID]`
-↳  Create entries | `createEntries:[SectionID]`
-↳  Publish entries | `publishEntries:[SectionID]`
-↳  Delete entries | `deleteEntries:[SectionID]`
-↳  Edit other authors’ entries | `editPeerEntries:[SectionID]`
-&nbsp;&nbsp;&nbsp; ↳  Publish other authors’ entries | `publishPeerEntries:[SectionID]`
-&nbsp;&nbsp;&nbsp; ↳  Delete other authors’ entries | `deletePeerEntries:[SectionID]`
-↳  Edit other authors’ drafts | `editPeerEntryDrafts:[SectionID]`
-&nbsp;&nbsp;&nbsp; ↳  Publish other authors’ drafts | `publishPeerEntryDrafts:[SectionID]`
-&nbsp;&nbsp;&nbsp; ↳  Delete other authors’ drafts | `deletePeerEntryDrafts:[SectionID]`
+↳&nbsp; Create entries | `createEntries:[SectionID]`
+↳&nbsp; Publish entries | `publishEntries:[SectionID]`
+↳&nbsp; Delete entries | `deleteEntries:[SectionID]`
+↳&nbsp; Edit other authors’ entries | `editPeerEntries:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳&nbsp; Publish other authors’ entries | `publishPeerEntries:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳&nbsp; Delete other authors’ entries | `deletePeerEntries:[SectionID]`
+↳&nbsp; Edit other authors’ drafts | `editPeerEntryDrafts:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳&nbsp; Publish other authors’ drafts | `publishPeerEntryDrafts:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳&nbsp; Delete other authors’ drafts | `deletePeerEntryDrafts:[SectionID]`
 Edit _[Global Set Name]_ | `editGlobalSet:[GlobalSetID]`
 Edit _[Category Group Name]_ | `editCategories:[CategoryGroupID]`
 View _[Asset Source Name]_ | `viewAssetSource:[SourceID]`
-↳  Upload files | `uploadToAssetSource:[SourceID]`
-↳  Create subfolders | `createSubfoldersInAssetSource:[SourceID]`
-↳  Remove files | `removeFromAssetSource:[SourceID]`
+↳&nbsp; Upload files | `uploadToAssetSource:[SourceID]`
+↳&nbsp; Create subfolders | `createSubfoldersInAssetSource:[SourceID]`
+↳&nbsp; Remove files | `removeFromAssetSource:[SourceID]`
 
 ## Public Registration
 
