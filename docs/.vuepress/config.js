@@ -124,7 +124,6 @@ module.exports = {
                         'users',
                         'globals',
                         'tags',
-                        'relations',
                         'routing',
                         'searching',
                         'sites',
@@ -152,7 +151,9 @@ module.exports = {
                     title: 'Advanced Topics',
                     collapsable: false,
                     children: [
-                        'eager-loading-elements'
+                        'relations',
+                        'reference-tags',
+                        'eager-loading-elements',
                     ]
                 },
                 {
