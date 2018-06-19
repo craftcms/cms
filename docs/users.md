@@ -50,11 +50,11 @@ Edit entries | `editEntries:[SectionID]`
 ↳  Publish entries | `publishEntries:[SectionID]`
 ↳  Delete entries | `deleteEntries:[SectionID]`
 ↳  Edit other authors’ entries | `editPeerEntries:[SectionID]`
-      ↳  Publish other authors’ entries | `publishPeerEntries:[SectionID]`
-      ↳  Delete other authors’ entries | `deletePeerEntries:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳  Publish other authors’ entries | `publishPeerEntries:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳  Delete other authors’ entries | `deletePeerEntries:[SectionID]`
 ↳  Edit other authors’ drafts | `editPeerEntryDrafts:[SectionID]`
-      ↳  Publish other authors’ drafts | `publishPeerEntryDrafts:[SectionID]`
-      ↳  Delete other authors’ drafts | `deletePeerEntryDrafts:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳  Publish other authors’ drafts | `publishPeerEntryDrafts:[SectionID]`
+&nbsp;&nbsp;&nbsp; ↳  Delete other authors’ drafts | `deletePeerEntryDrafts:[SectionID]`
 Edit _[Global Set Name]_ | `editGlobalSet:[GlobalSetID]`
 Edit _[Category Group Name]_ | `editCategories:[CategoryGroupID]`
 View _[Asset Source Name]_ | `viewAssetSource:[SourceID]`
