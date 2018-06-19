@@ -1246,5 +1246,10 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getFields(), 'handleChangedGroup']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getFields(), 'handleDeletedGroup']);
 
+        // Fields
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getFields(), 'handleChangedField']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getFields(), 'handleChangedField']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getFields(), 'handleDeletedField']);
+
     }
 }
