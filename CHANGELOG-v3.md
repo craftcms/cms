@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
+
 ## 3.0.12 - 2018-06-18
 
 ### Added

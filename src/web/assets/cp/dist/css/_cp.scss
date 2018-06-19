@@ -724,6 +724,10 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
           &.read-only {
             background: darken($bgColor, 3%);
+
+            &:first-child {
+              margin-top: 30px;
+            }
           }
 
           & > .field,

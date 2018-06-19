@@ -1802,6 +1802,7 @@ body.rtl #main-container #main #main-content #content-container #content { borde
 #main-container #main #main-content #details { -webkit-box-flex: 0; -ms-flex: 0 0 350px; flex: 0 0 350px; width: 350px; padding: 24px 0 32px; }
 #main-container #main #main-content #details .meta { padding: 16px 24px; }
 #main-container #main #main-content #details .meta.read-only { background: #e7eef3; }
+#main-container #main #main-content #details .meta.read-only:first-child { margin-top: 30px; }
 #main-container #main #main-content #details .meta > .field, #main-container #main #main-content #details .meta > .data { padding-left: 0; padding-right: 0; }
 #main-container #main #main-content #details .meta > .field > .heading > label, #main-container #main #main-content #details .meta > .field > .heading, #main-container #main #main-content #details .meta > .data > .heading > label, #main-container #main #main-content #details .meta > .data > .heading { color: #52606f; }
 #main-container #main #main-content #details .meta > .field.has-errors { margin: 0 -24px !important; padding: 0 24px; }
