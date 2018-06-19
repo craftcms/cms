@@ -847,6 +847,7 @@ class Fields extends Component
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => \get_class($field),
             'settings' => $field->getSettings(),
+            'contentColumnType' => $field->getContentColumnType(),
         ];
 
 
@@ -931,16 +932,16 @@ class Fields extends Component
             try {
                 $fieldRecord = $this->_getFieldRecord($fieldUid);
                 $groupRecord = $this->_getGroupRecord($groupUid);
-                $mockField = $this->createField($data['type']);
                 $isNewField = $fieldRecord->isNewRecord;
+                $fieldtype = $data['type'];
 
                 // Create/alter the content table column
                 $contentTable = Craft::$app->getContent()->contentTable;
                 $oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
                 $newColumnName = Craft::$app->getContent()->fieldColumnPrefix.$data['handle'];
 
-                if ($mockField->hasContentColumn()) {
-                    $columnType = $mockField->getContentColumnType();
+                if ($fieldtype::hasContentColumn()) {
+                    $columnType = $data['contentColumnType'];
 
                     // Make sure we're working with the latest data in the case of a renamed field.
                     Craft::$app->getDb()->schema->refresh();
