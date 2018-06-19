@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\Query;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -614,6 +615,38 @@ class Db
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
+    }
+
+    /**
+     * Return an ID by an UID for a table.
+     *
+     * @param string $table
+     * @param string $uid
+     * @return false|null|string
+     */
+    public static function idByUid($table, $uid)
+    {
+        return (new Query())
+            ->select(['id'])
+            ->from($table)
+            ->where(['uid' => $uid])
+            ->scalar();
+    }
+
+    /**
+     * Return UID by an ID for a table.
+     *
+     * @param string $table
+     * @param int $id
+     * @return false|null|string
+     */
+    public static function uidById($table, $id)
+    {
+        return (new Query())
+            ->select(['uid'])
+            ->from($table)
+            ->where(['id' => $id])
+            ->scalar();
     }
 
     // Private Methods

@@ -309,11 +309,7 @@ class Fields extends Component
         $projectConfig->save(self::CONFIG_FIELDGROUP_KEY.'.'.$uid, $configData);
 
         if ($isNewGroup) {
-            $group->id = (new Query())
-                ->select(['id'])
-                ->from('{{%fieldgroups}}')
-                ->where(['uid' => $uid])
-                ->scalar();
+            $group->id = Db::idByUid('{{%fieldgroups}}', $uid);
         }
 
         $group->uid = $uid;
@@ -565,10 +561,7 @@ class Fields extends Component
         }
 
         if (!empty($config['id']) && empty($config['uid'])) {
-            $uid = (new Query())->select(['uid'])
-                ->from('{{%fields}}')
-                ->where(['id' => $config['id']])
-                ->scalar();
+            $uid = Db::uidById('{{%fields}}', $config['id']);
             $config['uid'] = $uid;
         }
 
@@ -863,11 +856,7 @@ class Fields extends Component
         $projectConfig->save($configPath, $configData);
 
         if ($isNewField) {
-            $field->id = (new Query())
-                ->select(['id'])
-                ->from('{{%fields}}')
-                ->where(['uid' => $uid])
-                ->scalar();
+            $field->id = Db::idByUid('{{%fields}}', $uid);
             $field->uid = $uid;
         } else {
             // Save the old field handle on the model in case the field type needs to do something with it.
