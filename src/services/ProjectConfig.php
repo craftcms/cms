@@ -701,7 +701,7 @@ class ProjectConfig extends Component
 
         $traverseAndClean($data);
 
-        FileHelper::writeToFile($path, Yaml::dump($data, 10, 2));
+        FileHelper::writeToFile($path, Yaml::dump($data, 20, 2));
 
         $this->_config = null;
     }
