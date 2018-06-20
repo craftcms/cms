@@ -449,9 +449,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
+    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         if ($date instanceof \DateInterval) {
             return \twig_date_format_filter($env, $date, $format, $timezone);
@@ -467,7 +468,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $formatter = Craft::$app->getFormatter();
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate($date, $format);
@@ -508,9 +509,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
+    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -522,7 +524,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $formatter = Craft::$app->getFormatter();
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime($date, $format);
@@ -537,9 +539,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
+    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -551,7 +554,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $formatter = Craft::$app->getFormatter();
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime($date, $format);
