@@ -143,6 +143,7 @@ class ProjectConfig extends Component
      */
     public function get(string $path, $getFromConfig = false)
     {
+        // TODO if getting current config, check files currently stored in memory before grabbing the file from disk
         if ($getFromConfig) {
             $source = $this->_getCurrentConfig();
         } else {
@@ -159,60 +160,31 @@ class ProjectConfig extends Component
      * Save a value to YML configuration by path.
      *
      * @param string $path
-     * @param $value
+     * @param mixed $value
+     * @param bool $updateSilently whether updates should be broadcast via updates. Defaults to true.
+     *
      * @return bool
      */
-    public function save(string $path, $value, $updateSilently = false)
+    public function save(string $path, $value, bool $updateSilently = false)
     {
         $pathParts = explode('.', $path);
-        $endPart = end($pathParts);
 
         $configMap = $this->_getCurrentConfigMap();
-        $nodeConfig = $configMap['nodes'] ?? [];
-        $map = $configMap['map'] ?? [];
-
-        $existingNodePath = null;
-        // Does it look like UID?
-        if (preg_match('/'.self::UID_PATTERN.'/i', $endPart) && !empty($map[$endPart])) {
-            $existingNodePath = $map[$endPart];
-        }
 
         $topNode = array_shift($pathParts);
-        $targetFilePath = $nodeConfig[$topNode] ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
-        $nodePath = $targetFilePath.'/'.$path;
+        $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
 
-        // Moving data between locations
-        $previousFilePath = null;
-
-        // Delete previous stored data?
-        if ($existingNodePath && $existingNodePath !== $nodePath) {
-            $parts = explode('/', $existingNodePath);
-            $previousNodeLocation = array_pop($parts);
-            $previousFilePath = implode('/', $parts);
-            $previousYaml = Yaml::parseFile($previousFilePath);
-            $arrayAccess = $this->_nodePathToArrayAccess($previousNodeLocation);
-            eval('unset($previousYaml'.$arrayAccess.');');
-        }
-
-        // If this is a moving node within the same file.
-        if  ($targetFilePath == $previousFilePath) {
-            $targetYaml = $previousYaml;
-        } else {
-            // If this was a moving file from a different file.
-            if ($previousFilePath) {
-                $this->_saveYaml($previousYaml, $previousFilePath);
-            }
-            $targetYaml = file_exists($targetFilePath) ? Yaml::parseFile($targetFilePath) : [];
-        }
+        $targetYaml = file_exists($targetFilePath) ? Yaml::parseFile($targetFilePath) : [];
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
 
-        if (null !== $value) {
-            eval('$targetYaml'.$arrayAccess.' = $value;');
-        } else {
+        if (null === $value) {
             eval('unset($targetYaml'.$arrayAccess.');');
+        } else {
+            eval('$targetYaml'.$arrayAccess.' = $value;');
         }
 
+        // TODO store yaml file contents in memory during the request and batch save when request ends
         $this->_saveYaml($targetYaml, $targetFilePath);
         $this->updateConfigMap();
 
@@ -221,6 +193,16 @@ class ProjectConfig extends Component
         }
 
         return $this->processConfigChanges($path);
+    }
+
+    /**
+     * Delete a value from the YML configuration by its path.
+     *
+     * @param string $path
+     * @param bool $deleteSilently whether delete should be broadcast via updates. Defaults to true.
+     */
+    public function delete($path, bool $deleteSilently = false) {
+        $this->save($path, null, $deleteSilently);
     }
 
     /**

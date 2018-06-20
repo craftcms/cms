@@ -32,20 +32,6 @@ class ProjectConfig
     public static function generateConfigMap(array $fileList): array
     {
         $nodes = [];
-        $map = [];
-
-        $traverseAndExtract = function ($config, $prefix, &$map) use (&$traverseAndExtract) {
-            foreach ($config as $key => $value) {
-                // Does it look like a UID?
-                if (preg_match('/'.ProjectConfigService::UID_PATTERN.'/i', $key)) {
-                    $map[$key][] = $prefix.'.'.$key;
-                }
-
-                if (\is_array($value)) {
-                    $traverseAndExtract($value, $prefix.(substr($prefix, -1) !== '/' ? '.' : '').$key, $map);
-                }
-            }
-        };
 
         foreach ($fileList as $file) {
             $config = Yaml::parseFile($file);
@@ -56,14 +42,10 @@ class ProjectConfig
                 $nodes[$topNode] = $file;
             }
 
-            $traverseAndExtract($config, $file.'/', $map);
         }
 
         unset($nodes['imports']);
 
-        return [
-            'nodes' => $nodes,
-            'map' => $map
-        ];
+        return $nodes;
     }
 }
