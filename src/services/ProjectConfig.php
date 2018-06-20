@@ -162,7 +162,7 @@ class ProjectConfig extends Component
      * @param $value
      * @return bool
      */
-    public function save(string $path, $value)
+    public function save(string $path, $value, $updateSilently = false)
     {
         $pathParts = explode('.', $path);
         $endPart = end($pathParts);
@@ -215,6 +215,10 @@ class ProjectConfig extends Component
 
         $this->_saveYaml($targetYaml, $targetFilePath);
         $this->updateConfigMap();
+
+        if ($updateSilently) {
+            return true;
+        }
 
         return $this->processConfigChanges($path);
     }
