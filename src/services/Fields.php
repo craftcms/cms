@@ -334,7 +334,7 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field group?
-        if (preg_match('/'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $data = Craft::$app->getProjectConfig()->get($path, true);
             $uid = $matches[1];
 
@@ -359,7 +359,7 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field group?
-        if (preg_match('/'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $record = $this->_getGroupRecord($uid);
@@ -909,7 +909,7 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field?
-        if (preg_match('/'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $groupUid = $matches[1];
             $fieldUid = $matches[2];
             $data = Craft::$app->getProjectConfig()->get($path, true);
@@ -1051,7 +1051,7 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field?
-        if (preg_match('/'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $field = $this->_getFieldRecord($matches[2]);
 
