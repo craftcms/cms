@@ -3,12 +3,14 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\MissingComponentException;
 use craft\errors\VolumeException;
+use craft\events\FieldEvent;
 use craft\events\ParseConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
@@ -737,6 +739,50 @@ class Volumes extends Component
 
                 throw $e;
             }
+        }
+    }
+
+    /**
+     * Prune a deleted field from volume layouts.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $fieldPruned = false;
+        $projectConfig = Craft::$app->getProjectConfig();
+        $volumes = $projectConfig->get('volumes');
+
+        // Loop through the volumes and see if the UID exists in the field layouts.
+        foreach ($volumes as &$volume) {
+            if (!empty($volume['fieldLayouts'])) {
+                foreach ($volume['fieldLayouts'] as &$layout) {
+                    if (!empty($layout['tabs'])) {
+                        foreach ($layout['tabs'] as &$tab) {
+                            if (!empty($tab['fields'])) {
+                                // Remove the straggler.
+                                if (array_key_exists($fieldUid, $tab['fields'])) {
+                                    unset($tab['fields'][$fieldUid]);
+                                    $fieldPruned = true;
+                                    // If last field, just remove field layouts entry altogether.
+                                    if (empty($tab['fields'])) {
+                                        unset($volume['fieldLayouts']);
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($fieldPruned) {
+            $projectConfig->save('volumes', $volumes, true);
         }
     }
 

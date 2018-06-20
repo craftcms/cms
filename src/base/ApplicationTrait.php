@@ -23,6 +23,7 @@ use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\Fields;
 use craft\services\ProjectConfig;
 use craft\services\Security;
 use craft\web\Application as WebApplication;
@@ -1255,6 +1256,7 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getVolumes(), 'handleChangedVolume']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getVolumes(), 'handleChangedVolume']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getVolumes(), 'handleDeletedVolume']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$this->getVolumes(), 'pruneDeletedField']);
 
     }
 }
