@@ -4,9 +4,12 @@
 
 ### Added
 - `|date`, `|time`, and `|datetime` filters now support a `locale` argument, for specifying which locale’s formatter should be doing the date/time formatting. ([#3006](https://github.com/craftcms/cms/issues/3006))
+- Added `craft\queue\jobs\PropagateElements`.
+- Added `craft\services\Elements::propagateElement()`.
 
 ### Changed
 - Editable tables now submit an empty string when they have no rows.
+- Reduced the overhead when adding a new site by only resaving existing assets, categories, global sets, and tags once for the newly-created site, rather than for all sites.
 
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.

@@ -23,7 +23,7 @@ use craft\events\SiteGroupEvent;
 use craft\helpers\App;
 use craft\models\Site;
 use craft\models\SiteGroup;
-use craft\queue\jobs\ResaveElements;
+use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
 use yii\base\Component;
@@ -676,13 +676,14 @@ class Sites extends Component
                 ];
 
                 foreach ($elementTypes as $elementType) {
-                    $queue->push(new ResaveElements([
+                    $queue->push(new PropagateElements([
                         'elementType' => $elementType,
                         'criteria' => [
                             'siteId' => $oldPrimarySiteId,
                             'status' => null,
                             'enabledForSite' => false
-                        ]
+                        ],
+                        'siteId' => $site->id,
                     ]));
                 }
             }

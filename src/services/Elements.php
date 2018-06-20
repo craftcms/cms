@@ -1305,7 +1305,34 @@ class Elements extends Component
         }
     }
 
-    // Public Methods
+    /**
+     * Propagates an element to a different site.
+     *
+     * @param ElementInterface $element The element to propagate
+     * @param int $siteId The site ID that the element should be propagated to
+     * @throws Exception if the element couldn't be propagated
+     */
+    public function propagateElement(ElementInterface $element, int $siteId)
+    {
+        /** @var Element $element */
+        $isNewElement = !$element->id;
+
+        // Get the sites supported by this element
+        if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+            throw new Exception('All elements must have at least one site associated with them.');
+        }
+
+        // Make sure the element actually supports the site it's being saved in
+        $supportedSites = ArrayHelper::index($supportedSites, 'siteId');
+        $siteInfo = $supportedSites[(string)$siteId] ?? null;
+        if ($siteInfo === null) {
+            throw new Exception('Attempting to propagate an element to an unsupported site.');
+        }
+
+        $this->_propagateElement($element, $isNewElement, $siteInfo);
+    }
+
+    // Private Methods
     // =========================================================================
 
     /**
@@ -1326,15 +1353,15 @@ class Elements extends Component
         }
 
         // If it doesn't exist yet, just clone the master site
-        if ($isNewSiteForElement = $siteElement === null) {
+        if ($isNewSiteForElement = ($siteElement === null)) {
             /** @var Element $siteElement */
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
+        } else {
+            $siteElement->enabled = $element->enabled;
         }
-
-        $siteElement->enabled = $element->enabled;
 
         // Copy any non-translatable field values
         if ($element::hasContent()) {
