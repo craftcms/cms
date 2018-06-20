@@ -410,7 +410,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($volumes as $volume) {
             if (isset($fieldLayouts[$volume['fieldLayoutId']])) {
                 $layoutUid = $fieldLayouts[$volume['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$volume['fieldLayoutId']]['fieldLayoutId']['uid']);
+                unset($fieldLayouts[$volume['fieldLayoutId']]['uid']);
                 $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
             }
 
