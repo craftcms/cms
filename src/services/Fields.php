@@ -840,13 +840,17 @@ class Fields extends Component
             'contentColumnType' => $field->getContentColumnType(),
         ];
 
-
         if ($isNewField) {
             $uid = StringHelper::UUID();
         } else {
             $uid = $field->uid;
-            $oldFieldRecord =$this->_getFieldRecord($uid);
+            $oldFieldRecord = $this->_getFieldRecord($uid);
+            $oldGroupRecord = $this->_getGroupRecord($oldFieldRecord->groupId);
 
+            // If moving between groups, discard old data.
+            if ($oldGroupRecord->uid != $groupRecord->uid) {
+                $projectConfig->delete(self::CONFIG_FIELDGROUP_KEY.'.'.$oldGroupRecord->uid.'.'.self::CONFIG_FIELDS_KEY.'.'.$uid, true);
+            }
         }
 
         $configPath = self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid.'.'.self::CONFIG_FIELDS_KEY.'.'.$uid;
@@ -886,7 +890,6 @@ class Fields extends Component
 
         // Update the field version at the end of the request
         $this->updateFieldVersionAfterRequest();
-
 
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
