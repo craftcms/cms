@@ -38,7 +38,7 @@ class ProjectConfig
             foreach ($config as $key => $value) {
                 // Does it look like a UID?
                 if (preg_match('/'.ProjectConfigService::UID_PATTERN.'/i', $key)) {
-                    $map[$key] = $prefix.'.'.$key;
+                    $map[$key][] = $prefix.'.'.$key;
                 }
 
                 if (\is_array($value)) {
