@@ -89,13 +89,22 @@ class Formatter extends \yii\i18n\Formatter
         if (strncmp($format, 'php:', 4) === 0) {
             $format = substr($format, 4);
             // special cases for PHP format characters not supported by ICU
-            $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
+            $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
             $formatted = '';
             foreach (array_filter($split) as $i => $seg) {
                 if ($i % 2 === 0) {
                     $formatted .= $this->asDate($value, FormatConverter::convertDatePhpToIcu($seg));
                 } else {
-                    $formatted .= $value->format($seg);
+                    switch ($seg) {
+                        case 'A':
+                            $formatted .= mb_strtoupper($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
+                            break;
+                        case 'a':
+                            $formatted .= mb_strtolower($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
+                            break;
+                        default:
+                            $formatted .= $value->format($seg);
+                    }
                 }
             }
             return $formatted;

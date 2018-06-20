@@ -12,6 +12,7 @@
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
 - Fixed a bug where Table fields wouldn’t remember if they had no rows in their Default Values setting. ([#2979](https://github.com/craftcms/cms/issues/2979))
 - Fixed a bug where passing `timezone=false` to the `|date`, `|time`, and `|datetime` filters would not preserve the given date’s time zone.
+- Fixed a bug where AM/PM strings in formatted dates weren’t respecting the casing specified by the `A`/`a` character in the date format. ([#3007](https://github.com/craftcms/cms/issues/3007))
 
 ## 3.0.12 - 2018-06-18
 
