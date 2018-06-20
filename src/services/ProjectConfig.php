@@ -355,7 +355,7 @@ class ProjectConfig extends Component
     public function isConfigMapOutdated(): bool
     {
         $yamlTree = $this->_getConfigFileModifiedTimes();
-        $cachedTree = $this->_getConfigFileModifyDates();
+        $cachedTree = $this->_getCachedConfigFileModifiedTimes();
 
         // Tree has changed
         if (\count(array_diff_key($yamlTree, $cachedTree)) || \count(array_diff_key($cachedTree, $yamlTree))) {
@@ -434,7 +434,7 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getConfigFileModifyDates(): array
+    private function _getCachedConfigFileModifiedTimes(): array
     {
         $cachedTimes = Craft::$app->getCache()->get(self::CACHE_KEY);
 
