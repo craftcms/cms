@@ -81,6 +81,34 @@ class FieldLayout extends Model
     }
 
     /**
+     * Return the field layout config or null if no fields configured.
+     *
+     * @return array|null
+     */
+    public function getConfig()
+    {
+        $output = [];
+
+        foreach ($this->getTabs() as $tab) {
+            $tabData = [
+                'name' => $tab->name,
+                'sortOrder' => $tab->sortOrder,
+            ];
+
+            /** @var Field $field */
+            foreach ($tab->getFields() as $field) {
+                $tabData['fields'][$field->uid] = [
+                    'required' => $field->required,
+                    'sortOrder' => $field->sortOrder
+                ];
+            }
+            $output['tabs'][] = $tabData;
+        }
+
+        return empty($output) ? null : $output;
+    }
+
+    /**
      * Returns the layout’s fields.
      *
      * @return FieldInterface[] The layout’s fields.
