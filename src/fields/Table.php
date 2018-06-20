@@ -59,12 +59,20 @@ class Table extends Field
     /**
      * @var array|null The columns that should be shown in the table
      */
-    public $columns;
+    public $columns = [
+        'col1' => [
+            'heading' => '',
+            'handle' => '',
+            'type' => 'singleline'
+        ]
+    ];
 
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults;
+    public $defaults = [
+        'row1' => []
+    ];
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -85,7 +93,11 @@ class Table extends Field
             $this->addRowLabel = Craft::t('app', 'Add a row');
         }
 
-        if ($this->defaults === '') {
+        if (!is_array($this->columns)) {
+            $this->columns = [];
+        }
+
+        if (!is_array($this->defaults)) {
             $this->defaults = [];
         }
 
@@ -142,20 +154,6 @@ class Table extends Field
      */
     public function getSettingsHtml()
     {
-        if (empty($this->columns)) {
-            $this->columns = [
-                'col1' => [
-                    'heading' => '',
-                    'handle' => '',
-                    'type' => 'singleline'
-                ]
-            ];
-        }
-
-        if ($this->defaults === null) {
-            $this->defaults = ['row1' => []];
-        }
-
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
@@ -245,16 +243,7 @@ class Table extends Field
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
-
-        $input = '<input type="hidden" name="'.$this->handle.'" value="">';
-
-        $tableHtml = $this->_getInputHtml($value, $element, false);
-
-        if ($tableHtml) {
-            $input .= $tableHtml;
-        }
-
-        return $input;
+        return $this->_getInputHtml($value, $element, false);
     }
 
     /**
@@ -415,13 +404,13 @@ class Table extends Field
      * @param mixed $value
      * @param ElementInterface|null $element
      * @param bool $static
-     * @return string|null
+     * @return string
      */
-    private function _getInputHtml($value, ElementInterface $element = null, bool $static)
+    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
         /** @var Element $element */
         if (empty($this->columns)) {
-            return null;
+            return '';
         }
 
         // Translate the column headings
