@@ -325,7 +325,6 @@ class Fields extends Component
         return true;
     }
 
-
     /**
      * Handle field group change
      *
@@ -348,8 +347,6 @@ class Fields extends Component
 
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
-
-            return true;
         }
     }
 
