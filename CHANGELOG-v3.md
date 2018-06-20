@@ -5,8 +5,12 @@
 ### Added
 - `|date`, `|time`, and `|datetime` filters now support a `locale` argument, for specifying which locale’s formatter should be doing the date/time formatting. ([#3006](https://github.com/craftcms/cms/issues/3006))
 
+### Changed
+- Editable tables now submit an empty string when they have no rows.
+
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
+- Fixed a bug where Table fields wouldn’t remember if they had no rows in their Default Values setting. ([#2979](https://github.com/craftcms/cms/issues/2979))
 - Fixed a bug where passing `timezone=false` to the `|date`, `|time`, and `|datetime` filters would not preserve the given date’s time zone.
 
 ## 3.0.12 - 2018-06-18
