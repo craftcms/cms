@@ -46,7 +46,7 @@ class ProjectConfig extends Component
     // TODO update StringHelper::isUUID() to use that
     // Regexp patterns
     // -------------------------------------------------------------------------
-    const UID_PATTERN = '[a-zA-Z][a-zA-Z0-9_]*';
+    const UID_PATTERN = '[a-zA-Z0-9_-]+';
 
     // Events
     // =========================================================================
