@@ -470,7 +470,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $date = \twig_date_converter($env, $date, $timezone);
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
-        $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
@@ -526,7 +526,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $date = \twig_date_converter($env, $date, $timezone);
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
-        $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
@@ -556,7 +556,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $date = \twig_date_converter($env, $date, $timezone);
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
-        $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
