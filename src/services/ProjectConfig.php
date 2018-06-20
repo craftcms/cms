@@ -380,11 +380,12 @@ class ProjectConfig extends Component
      */
     public function updateConfigMap(): bool
     {
-        $configMap = $this->_generateConfigMap();
-        $this->_configMap = $configMap;
+        if (!$this->_configMap) {
+            $this->_configMap = $this->_generateConfigMap();
+        }
 
         $info = Craft::$app->getInfo();
-        $info->configMap = Json::encode($configMap);
+        $info->configMap = Json::encode($this->_configMap);
         Craft::$app->saveInfo($info);
 
         $this->_updateLastParsedConfigCache();
