@@ -626,11 +626,13 @@ class Db
      */
     public static function idByUid($table, $uid)
     {
-        return (new Query())
+        $id = (new Query())
             ->select(['id'])
             ->from($table)
             ->where(['uid' => $uid])
             ->scalar();
+
+        return !empty($id) ? $id : null;
     }
 
     /**
@@ -642,11 +644,13 @@ class Db
      */
     public static function uidById($table, $id)
     {
-        return (new Query())
+        $uid = (new Query())
             ->select(['uid'])
             ->from($table)
             ->where(['id' => $id])
             ->scalar();
+
+        return !empty($uid) ? $uid : null;
     }
 
     // Private Methods
