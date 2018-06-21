@@ -11,6 +11,9 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
+use craft\fields\PlainText;
+use craft\helpers\Db;
+use craft\records\FieldLayoutField;
 
 /**
  * FieldLayout model class.
@@ -106,6 +109,39 @@ class FieldLayout extends Model
         }
 
         return empty($output) ? null : $output;
+    }
+
+    /**
+     * Return a field layout created from config data.
+     *
+     * @return static
+     */
+    public static function createFromConfig(array $config)
+    {
+        $layout = new FieldLayout();
+
+        // TODO this is horrible. Especially pretending to be a text field just to populate the tabs.
+        foreach ($config['tabs'] as $tab) {
+            $layoutTab = new FieldLayoutTab();
+            $layoutTab->name = $tab['name'];
+            $layoutTab->sortOrder = $tab['sortOrder'];
+
+            foreach ($tab['fields'] as $uid => $field) {
+                $layoutFields[] = Craft::$app->getFields()->createField([
+                    'type' => PlainText::class,
+                    'id' => Db::idByUid('{{%fields}}', $uid),
+                    'uid' => $uid,
+                    'sortOrder' => $field['sortOrder'],
+                    'required' => $field['required']
+                ]);
+            }
+            $layoutTab->setFields($layoutFields);
+            $tabs[] = $layoutTab;
+        }
+
+        $layout->setTabs($tabs);
+
+        return $layout;
     }
 
     /**
