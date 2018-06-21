@@ -134,7 +134,7 @@ class ProjectConfig extends Component
     private $_configMap;
 
     /**
-     * @var array A list of already parsed top level nodes
+     * @var array A list of already parsed change paths
      */
     private $_parsedChanges = [];
 
@@ -199,7 +199,7 @@ class ProjectConfig extends Component
             return true;
         }
 
-        return $this->_processConfigChanges($path);
+        return $this->processConfigChanges($path);
     }
 
     /**
@@ -372,6 +372,47 @@ class ProjectConfig extends Component
         $this->updateConfigMap();
 
         return true;
+    }
+
+    /**
+     * Process config changes for a path.
+     *
+     * @param $configPath
+     */
+    public function processConfigChanges($configPath): bool
+    {
+
+        if (!empty($this->_parsedChanges[$configPath])) {
+            return true;
+        }
+        $this->_parsedChanges[$configPath] = true;
+
+        $configData = $this->get($configPath, true);
+        $snapshotData = $this->get($configPath);
+
+        if ($snapshotData && !$configData) {
+            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
+                'configPath' => $configPath
+            ]));
+        } else {
+            if (!$snapshotData) {
+                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
+                    'configPath' => $configPath
+                ]));
+            } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
+                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
+                    'configPath' => $configPath
+                ]));
+            } else {
+                return true;
+            }
+        }
+
+        $snapshot = $this->_getCurrentSnapshot();
+        $arrayAccess = $this->_nodePathToArrayAccess($configPath);
+        eval('$snapshot'.$arrayAccess.' = $configData;');
+
+        return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
     }
 
     // Private methods
@@ -681,40 +722,5 @@ class ProjectConfig extends Component
         FileHelper::writeToFile($path, Yaml::dump($data, 20, 2));
 
         $this->_config = null;
-    }
-
-    /**
-     * Process config changes for a path.
-     *
-     * @param $configPath
-     */
-    private function _processConfigChanges($configPath): bool {
-
-        $configData = $this->get($configPath, true);
-        $snapshotData = $this->get($configPath);
-
-        if ($snapshotData && !$configData) {
-            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
-                'configPath' => $configPath
-            ]));
-        } else {
-            if (!$snapshotData) {
-                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
-                    'configPath' => $configPath
-                ]));
-            } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
-                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
-                    'configPath' => $configPath
-                ]));
-            } else {
-                return true;
-            }
-        }
-
-        $snapshot = $this->_getCurrentSnapshot();
-        $arrayAccess = $this->_nodePathToArrayAccess($configPath);
-        eval('$snapshot'.$arrayAccess.' = $configData;');
-
-        return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
     }
 }
