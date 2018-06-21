@@ -18,6 +18,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder;
 use craft\volumes\Local;
@@ -444,9 +445,6 @@ class Volumes extends Component
             $configData['fieldLayouts'] = [
                 $layoutUid => $fieldLayoutConfig
             ];
-
-            // Save the field layout
-            Craft::$app->getFields()->saveLayout($fieldLayout);
         }
 
 
@@ -509,7 +507,22 @@ class Volumes extends Component
                 $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
                 $volumeRecord->settings = $data['settings'];
                 $volumeRecord->uid = $volumeUid;
-                $volumeRecord->fieldLayoutId = !empty($data['fieldLayouts']) ? Db::idByUid('{{%fieldlayouts}}', key($data['fieldLayouts'])) : null;
+
+                if (!empty($data['fieldLayouts'])) {
+                    $fields = Craft::$app->getFields();
+
+                    // Delete the field layout
+                    $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
+
+                    //Create the new layout
+                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout->type = Asset::class;
+                    $layout->uid = key($data['fieldLayouts']);
+                    $fields->saveLayout($layout);
+                    $volumeRecord->fieldLayoutId = $layout->id;
+                } else {
+                    $volumeRecord->fieldLayoutId = null;
+                }
 
                 // Save the volume
                 $volumeRecord->save(false);
