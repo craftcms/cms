@@ -48,13 +48,9 @@ class ProjectConfigController extends Controller
      */
     public function actionApplyConfigurationChanges(): Response
     {
-        $changes = Craft::$app->getProjectConfig()->applyPendingChanges();
+        Craft::$app->getProjectConfig()->applyPendingChanges();
 
-        return $this->renderTemplate('_special/config_changes', [
-            'newItems' => $changes['newItems'],
-            'removedItems' => $changes['removedItems'],
-            'changedItems' => $changes['changedItems'],
-        ]);
+        return $this->redirectToPostedUrl();
     }
 
     /**
