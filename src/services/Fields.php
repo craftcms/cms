@@ -915,6 +915,10 @@ class Fields extends Component
         if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $groupUid = $matches[1];
             $fieldUid = $matches[2];
+
+            // Ensure we have the field group in place first
+            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
+
             $data = Craft::$app->getProjectConfig()->get($path, true);
 
             $transaction = Craft::$app->getDb()->beginTransaction();
