@@ -9,14 +9,12 @@ use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\MissingComponentException;
-use craft\errors\VolumeException;
 use craft\events\FieldEvent;
 use craft\events\ParseConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\Volume as AssetVolumeRecord;
@@ -454,7 +452,6 @@ class Volumes extends Component
             $volume->id = Db::idByUid('{{%volumes}}', $volumeUid);
         }
 
-        $this->ensureTopFolder($volume);
         $volume->afterSave($isNewVolume);
 
 
@@ -527,18 +524,20 @@ class Volumes extends Component
                 // Save the volume
                 $volumeRecord->save(false);
 
-                if (!$isNewVolume) {
-                    // Update the top folder's name with the volume's new name
-                    $assets = Craft::$app->getAssets();
-                    $topFolder = $assets->findFolder([
-                        'volumeId' => $volumeRecord->id,
-                        'parentId' => ':empty:'
-                    ]);
+                $assets = Craft::$app->getAssets();
+                $topFolder = $assets->findFolder([
+                    'volumeId' => $volumeRecord->id,
+                    'parentId' => ':empty:'
+                ]);
 
-                    if ($topFolder !== null && $topFolder->name != $volumeRecord->name) {
-                        $topFolder->name = $volumeRecord->name;
-                        $assets->storeFolderRecord($topFolder);
-                    }
+                if ($topFolder === null) {
+                    $topFolder = new VolumeFolder([
+                        'volumeId' => $volumeRecord->id,
+                        'parentId' => null,
+                        'name' => $volumeRecord->name,
+                        'path' => ''
+                    ]);
+                    $topFolder->save();
                 }
 
                 $transaction->commit();
