@@ -488,10 +488,14 @@ class Volumes extends Component
     {
         $path = $event->configPath;
 
-        // Does it match a field?
+        // Does it match a volume?
         if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+
             $volumeUid = $matches[1];
             $data = Craft::$app->getProjectConfig()->get($path, true);
+
+            // Make sure fields are processed
+            Craft::$app->getProjectConfig()->applyPendingChanges(Fields::CONFIG_FIELDGROUP_KEY);
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
