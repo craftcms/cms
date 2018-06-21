@@ -634,6 +634,9 @@ class Volumes extends Component
                 Craft::$app->getElements()->deleteElement($asset);
             }
 
+            // Delete the field layout.
+            Craft::$app->getFields()->deleteLayoutById($volume->fieldLayoutId);
+
             // Nuke the asset volume.
             $db->createCommand()
                 ->delete('{{%volumes}}', ['id' => $volume->id])
