@@ -133,6 +133,11 @@ class ProjectConfig extends Component
      */
     private $_configMap;
 
+    /**
+     * @var array A list of already parsed top level nodes
+     */
+    private $_parsedChanges = [];
+
     // Public methods
     // =========================================================================
 
@@ -194,7 +199,7 @@ class ProjectConfig extends Component
             return true;
         }
 
-        return $this->processConfigChanges($path);
+        return $this->_processConfigChanges($path);
     }
 
     /**
@@ -205,40 +210,6 @@ class ProjectConfig extends Component
      */
     public function delete($path, bool $deleteSilently = false) {
         $this->save($path, null, $deleteSilently);
-    }
-
-    /**
-     * Process config changes for a path.
-     *
-     * @param $configPath
-     */
-    public function processConfigChanges($configPath): bool {
-        $configData = $this->get($configPath, true);
-        $snapshotData = $this->get($configPath);
-
-        if ($snapshotData && !$configData) {
-            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
-                'configPath' => $configPath
-            ]));
-        } else {
-            if (!$snapshotData) {
-                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
-                    'configPath' => $configPath
-                ]));
-            } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
-                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
-                    'configPath' => $configPath
-                ]));
-            } else {
-                return true;
-            }
-        }
-
-        $snapshot = $this->_getCurrentSnapshot();
-        $arrayAccess = $this->_nodePathToArrayAccess($configPath);
-        eval('$snapshot'.$arrayAccess.' = $configData;');
-
-        return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
     }
 
     /**
@@ -259,13 +230,23 @@ class ProjectConfig extends Component
 
     /**
      * Apply any pending changes
+     *
+     * @param string $key The name of the key to process. If null (default) entire tree will be processed.
      */
-    public function applyPendingChanges()
+    public function applyPendingChanges($key = null)
     {
+        if ($key) {
+            if (!empty($this->_parsedChanges[$key])) {
+                return true;
+            }
+
+            $this->_parsedChanges[$key] = true;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $changes = $this->_getPendingChanges();
+            $changes = $this->_getPendingChanges($key);
 
             Craft::info('Looking for pending changes', __METHOD__);
 
@@ -527,9 +508,11 @@ class ProjectConfig extends Component
     /**
      * Return a nested array for pending config changes
      *
+     * @param string $key The name of the key to process. If null (default) entire tree will be processed.
+     *
      * @return array
      */
-    private function _getPendingChanges(): array
+    private function _getPendingChanges($key = null): array
     {
         $changes = [
             'newItems' => [],
@@ -543,7 +526,12 @@ class ProjectConfig extends Component
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configSnapshot['imports'], $currentSnapshot['imports']);
+        if ($key) {
+            $configSnapshot = [$key => $configSnapshot[$key] ?? []];
+            $currentSnapshot = [$key => $currentSnapshot[$key] ?? []];
+        } else {
+            unset($configSnapshot['imports'], $currentSnapshot['imports']);
+        }
 
         // flatten both snapshots so we can compare them.
 
@@ -693,5 +681,40 @@ class ProjectConfig extends Component
         FileHelper::writeToFile($path, Yaml::dump($data, 20, 2));
 
         $this->_config = null;
+    }
+
+    /**
+     * Process config changes for a path.
+     *
+     * @param $configPath
+     */
+    private function _processConfigChanges($configPath): bool {
+
+        $configData = $this->get($configPath, true);
+        $snapshotData = $this->get($configPath);
+
+        if ($snapshotData && !$configData) {
+            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
+                'configPath' => $configPath
+            ]));
+        } else {
+            if (!$snapshotData) {
+                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
+                    'configPath' => $configPath
+                ]));
+            } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
+                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
+                    'configPath' => $configPath
+                ]));
+            } else {
+                return true;
+            }
+        }
+
+        $snapshot = $this->_getCurrentSnapshot();
+        $arrayAccess = $this->_nodePathToArrayAccess($configPath);
+        eval('$snapshot'.$arrayAccess.' = $configData;');
+
+        return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
     }
 }
