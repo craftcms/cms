@@ -11,23 +11,26 @@ Craft supports the following search syntax:
 Searching for… | will find elements…
 -|-
 `salty` | containing the word “salty”.
-`body:salty` | where the `body` field contains “salty”.
 `salty dog` | containing both “salty” and “dog”.
-`body:salty body:dog` | where the `body` field contains both “salty” and “dog”.
 `salty OR dog` | containing either “salty” or “dog” (or both).
-`body:salty OR body:dog` | where the `body` field contains either “salty” or “dog”.
 `salty -dog` | containing “salty” but not “dog”.
-`body:salty -body:dog` | where the `body` field contains “salty” but not “dog”.
 `"salty dog"` | containing the exact phrase “salty dog”.
-`body:"salty dog"` | where the `body` field contains the exact phrase “salty dog”.
-`salty locale:en_us` | containing “salty” in the ‘en_us’ locale.
+`salty locale:en_us` | containing “salty” in the `en_us` locale.
 `sal*` | containing a word that begins with “sal”.
 `*ty` | containing a word that ends with “ty”.
 `*alt*` | containing a word that contains “alt”.
+`body:salty` | where the `body` field contains “salty”.
+`body:salty body:dog` | where the `body` field contains both “salty” and “dog”.
+`body:salty OR body:dog` | where the `body` field contains either “salty” or “dog”.
+`body:salty -body:dog` | where the `body` field contains “salty” but not “dog”.
+`body:"salty dog"` | where the `body` field contains the exact phrase “salty dog”.
 `body:sal*` | where the `body` field contains a word that begins with “sal”.
+`body:*ty` | where the `body` field contains a word that ends with “ty”.
+`body:*alt*` | where the `body` field contains a word that contains “alt”.
 `body::salty` | where the `body` filed is set to “salty” and nothing more.
 `body::"salty dog"` | where the `body` field is set to “salty dog” and nothing more.
 `body::salty*` | where the `body` field begins with “salty”.
+`body::*dog` | where the `body` field ends with “dog”.
 `body:*` | where the `body` field contains any value.
 `-body:*` | where the `body` field is empty.
 
