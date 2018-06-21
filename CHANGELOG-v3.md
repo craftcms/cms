@@ -16,6 +16,7 @@
 - Fixed a bug where Table fields wouldn’t remember if they had no rows in their Default Values setting. ([#2979](https://github.com/craftcms/cms/issues/2979))
 - Fixed a bug where passing `timezone=false` to the `|date`, `|time`, and `|datetime` filters would not preserve the given date’s time zone.
 - Fixed a bug where AM/PM strings in formatted dates weren’t respecting the casing specified by the `A`/`a` character in the date format. ([#3007](https://github.com/craftcms/cms/issues/3007))
+- Fixed a bug you could get an invalid license warning in cases where web API calls returned a 500 response code.
 
 ## 3.0.12 - 2018-06-18
 

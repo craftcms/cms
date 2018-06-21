@@ -327,7 +327,7 @@ class Api extends Component
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
-            if (($response = $e->getResponse()) === null) {
+            if (($response = $e->getResponse()) === null || $response->getStatusCode() === 500) {
                 throw $e;
             }
         }
