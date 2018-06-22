@@ -121,14 +121,8 @@ class UtilsController extends BaseController
 				{
 					continue;
 				}
-				else if ((!isset($row[3]) || $row[2] == $row[3]))
-				{
-					$value = $row[2];
-				}
-				else
-				{
-					$value = array_slice($row, 2);
-				}
+
+				$value = $row[2];
 
 				if (
 					in_array($row[1], array('HTTP_COOKIE', 'Cookie', 'Set-Cookie', '_SERVER["HTTP_COOKIE"]')) ||

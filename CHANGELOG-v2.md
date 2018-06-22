@@ -6,6 +6,8 @@
 - Updated  Garnish to 0.1.24.
 - From now on the root folder for Local Asset Sources will be created, if it doesn't exist.
 - Leading/trailing whitespace characters are now stripped from element titles on save. ([#3020](https://github.com/craftcms/cms/issues/3020))
+- The PHP Info utility no longer displays the original values for settings and only the current environment value. ([#2990](https://github.com/craftcms/cms/issues/2990))
+
 
 ### Fixed
 - Fixed a bug where Craft would show a nag alert in the Control Panel when the licensed edition wasn’t cached.
