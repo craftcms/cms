@@ -105,8 +105,8 @@ class PhpInfo extends Utility
                     }
 
                     $value = $row[2];
-
                     $name = $row[1];
+
                     $phpInfo[$heading][$name] = $security->redactIfSensitive($name, $value);
                 }
             }
