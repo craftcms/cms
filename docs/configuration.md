@@ -250,3 +250,33 @@ return [
     // ...
 ];
 ```
+
+### Queue Component
+
+Craft’s job queue is powered by the [Yii2 Queue Extension](https://github.com/yiisoft/yii2-queue). By default Craft will use a [custom queue driver](craft\queue\Queue) based on the extension’s [DB driver](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/driver-db.md), but you can switch to a different driver by overriding Craft’s `queue` component from `config/app.php`:
+
+```php
+<?php
+
+return [
+    'components' => [
+        'queue' => [
+            'class' => \yii\queue\redis\Queue::class,
+            'redis' => 'redis', // Redis connection component or its config
+            'channel' => 'queue', // Queue channel key
+        ], 
+    ],
+    
+    // ...
+];
+```
+
+Available drivers are listed in the [Yii2 Queue Extension documentation](https://github.com/yiisoft/yii2-queue/tree/master/docs/guide).
+
+::: warning
+Only drivers that implement <api:craft\queue\QueueInterface> will be visible within the Control Panel.
+:::
+
+::: tip
+If your queue driver supplies its own worker, set the <config:runQueueAutomatically> config setting to `false` in `config/general.php`.  
+:::
