@@ -2155,7 +2155,13 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($criteria instanceof ElementQueryInterface) {
+            /** @var ElementQuery $criteria */
             $query = clone $criteria;
+
+            // clone its behaviors too (https://github.com/yiisoft/yii2/issues/16247)
+            foreach ($criteria->getBehaviors() as $name => $behavior) {
+                $query->attachBehavior($name, clone $behavior);
+            }
         } else {
             $query = static::find()
                 ->siteId($this->siteId);
