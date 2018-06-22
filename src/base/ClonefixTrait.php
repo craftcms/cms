@@ -14,6 +14,8 @@ use craft\db\Query;
  *
  * This provides an improved `__clone()` method over [[\yii\base\Component::__clone()]],
  * which rushes a fix for https://github.com/yiisoft/yii2/issues/16247.
+ *
+ * @todo remove this in 4.0
  */
 trait ClonefixTrait
 {
