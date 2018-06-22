@@ -121,7 +121,7 @@ You can define custom criteria parameters that will get applied as elements are 
 
 ```twig
 {% set entries = craft.entries()
-    .section('news'),
+    .section('news')
     .with([
         ['assetsField', { kind: 'image' }]
     ])
