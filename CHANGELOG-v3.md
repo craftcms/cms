@@ -11,6 +11,7 @@
 ### Changed
 - Editable tables now submit an empty string when they have no rows.
 - Reduced the overhead when adding a new site by only resaving existing assets, categories, global sets, and tags once for the newly-created site, rather than for all sites.
+- Web-based queue workers now call `craft\helpers\App::maxPowerCaptain()` before running the queue. ([#3011](https://github.com/craftcms/cms/issues/3011))
 
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.

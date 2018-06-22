@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\App;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -81,6 +82,7 @@ class QueueController extends Controller
         }
 
         // Run the queue
+        App::maxPowerCaptain();
         $queue->run();
 
         return $response;
