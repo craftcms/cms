@@ -18,6 +18,11 @@ use craft\helpers\DateTimeHelper;
  */
 abstract class Model extends \yii\base\Model
 {
+    // Traits
+    // =========================================================================
+
+    use ClonefixTrait;
+
     // Public Methods
     // =========================================================================
 
