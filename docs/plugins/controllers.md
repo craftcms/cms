@@ -183,7 +183,7 @@ BaseController makes several methods available to your action methods:
 
 ### `$this->renderTemplate($template, $variables)`
 
-This is a shortcut for [TemplatesService::render()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#render-detail), but rather than returning the rendered template, it will output it to the browser and end the request. It will also include any CSS and JS that is queued up via [includeCssFile()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#includeCssFile-detail), [includeJsFile()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#includeJsFile-detail), et al., and it will set the appropriate MIME type header based on the template file’s extension.
+This is a shortcut for <api:Craft\TemplatesService::render()>, but rather than returning the rendered template, it will output it to the browser and end the request. It will also include any CSS and JS that is queued up via <api:Craft\includeCssFile()>, <api:Craft\includeJsFile()>, et al., and it will set the appropriate MIME type header based on the template file’s extension.
 
 ### `$this->requireLogin()`
 

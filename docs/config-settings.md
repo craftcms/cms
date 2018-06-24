@@ -77,7 +77,7 @@ The DB, file, Memcache(d), and Redis cache methods each have their own additiona
 
 Any custom ASCII character mappings.
 
-This array is merged into the default mapping array in [StringHelper::getAsciiCharMap()](https://docs.craftcms.com/api/v2/helpers/StringHelper.html#getAsciiCharMap-detail).
+This array is merged into the default mapping array in <api:Craft\StringHelper::getAsciiCharMap()>.
 
 The keys should be the HTML decimal code equivalent of the character to search for and the value is the ASCII character used for swapping.
 

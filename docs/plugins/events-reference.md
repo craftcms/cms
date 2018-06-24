@@ -12,7 +12,7 @@ See [Hooks and Events](/v2/plugins/hooks-and-events.html) for an explanation of 
 
 Raised by
 
-:   [AppBehavior::setEdition()](https://docs.craftcms.com/api/v2/etc/behaviors/AppBehavior.html#setEdition-detail)
+:   <api:Craft\AppBehavior::setEdition()>
 
 Raised after Craft’s edition changes.
 
@@ -24,7 +24,7 @@ Raised after Craft’s edition changes.
 
 Raised by
 
-:   [DbConnection::backup()](https://docs.craftcms.com/api/v2/etc/db/DbConnection.html#backup-detail)
+:   <api:Craft\DbConnection::backup()>
 
 Raised after a database backup has been created.
 
@@ -36,46 +36,46 @@ Raised after a database backup has been created.
 
 Raised by
 
-:   [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
+:   <api:Craft\EmailService::sendEmail()>, <api:Craft\EmailService::sendEmailByKey()>
 
 Raised right before an email is sent.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that is receiving the email.
-- `emailModel` – The [EmailModel](https://docs.craftcms.com/api/v2/models/EmailModel.html) defining the email to be sent.
+- `user` – A <api:Craft\UserModel> object representing the user that is receiving the email.
+- `emailModel` – The <api:Craft\EmailModel> defining the email to be sent.
 - `variables` – Any variables that are going to be available to the email template.
 
 ::: tip
-Event handlers can prevent the email from getting sent by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the email from getting sent by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### email.onSendEmail
 
 Raised by
 
-:   [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
+:   <api:Craft\EmailService::sendEmail()>, <api:Craft\EmailService::sendEmailByKey()>
 
 Raised when an email is sent.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that received the email.
-- `emailModel` – The [EmailModel](https://docs.craftcms.com/api/v2/models/EmailModel.html) defining the email that was sent.
+- `user` – A <api:Craft\UserModel> object representing the user that received the email.
+- `emailModel` – The <api:Craft\EmailModel> defining the email that was sent.
 - `variables` – Any variables that were available to the email template.
 
 ### email.onSendEmailError
 
 Raised by
 
-:   [EmailService::sendEmail()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmail-detail), [EmailService::sendEmailByKey()](https://docs.craftcms.com/api/v2/services/EmailService.html#sendEmailByKey-detail)
+:   <api:Craft\EmailService::sendEmail()>, <api:Craft\EmailService::sendEmailByKey()>
 
 Raised when an email fails to send.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that received the email.
-- `emailModel` – The [EmailModel](https://docs.craftcms.com/api/v2/models/EmailModel.html) defining the email that was sent.
+- `user` – A <api:Craft\UserModel> object representing the user that received the email.
+- `emailModel` – The <api:Craft\EmailModel> defining the email that was sent.
 - `variables` – Any variables that were available to the email template.
 - `error` – The error defined by PHPMailer.
 
@@ -83,7 +83,7 @@ Raised when an email fails to send.
 
 Raised by
 
-:   [LocalizationService::addSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#addSiteLocale-detail)
+:   <api:Craft\LocalizationService::addSiteLocale()>
 
 Raised when a new locale is added to the site.
 
@@ -95,7 +95,7 @@ Raised when a new locale is added to the site.
 
 Raised by
 
-:   [LocalizationService::deleteSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#deleteSiteLocale-detail)
+:   <api:Craft\LocalizationService::deleteSiteLocale()>
 
 Raised right before a locale is deleted.
 
@@ -105,14 +105,14 @@ Raised right before a locale is deleted.
 - `transferContentTo` – The ID of the locale that the deleted locale’s content should be transferred to, if any.
 
 ::: tip
-Event handlers can prevent the locale from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the locale from getting deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### localization.onDeleteLocale
 
 Raised by
 
-:   [LocalizationService::deleteSiteLocale()](https://docs.craftcms.com/api/v2/services/LocalizationService.html#deleteSiteLocale-detail)
+:   <api:Craft\LocalizationService::deleteSiteLocale()>
 
 Raised when a locale is deleted.
 
@@ -125,7 +125,7 @@ Raised when a locale is deleted.
 
 Raised by
 
-:   [PluginsService::loadPlugins()](https://docs.craftcms.com/api/v2/services/PluginsService.html#loadPlugins-detail)
+:   <api:Craft\PluginsService::loadPlugins()>
 
 Raised when Craft has finished loading all the plugins.
 
@@ -133,7 +133,7 @@ Raised when Craft has finished loading all the plugins.
 
 Raised by
 
-:   [UpdatesService::prepareUpdate()](https://docs.craftcms.com/api/v2/services/UpdatesService.html#prepareUpdate-detail)
+:   <api:Craft\UpdatesService::prepareUpdate()>
 
 Raised when an update is beginning.
 
@@ -145,7 +145,7 @@ Raised when an update is beginning.
 
 Raised by
 
-:   [UpdatesService::updateCleanUp()](https://docs.craftcms.com/api/v2/services/UpdatesService.html#updateCleanUp-detail)
+:   <api:Craft\UpdatesService::updateCleanUp()>
 
 Raised when an update has ended.
 
@@ -159,52 +159,52 @@ Raised when an update has ended.
 
 Raised by
 
-:   [ContentService::saveContent()](https://docs.craftcms.com/api/v2/services/ContentService.html#saveContent-detail)
+:   <api:Craft\ContentService::saveContent()>
 
 Raised when any element’s content is saved.
 
 #### Params:
 
-- `content` – A [ContentModel](https://docs.craftcms.com/api/v2/models/ContentModel.html) object representing the saved content.
+- `content` – A <api:Craft\ContentModel> object representing the saved content.
 - `isNewContent` – A boolean indicating whether this was a new set of content.
 
 ### elements.onBeforeBuildElementsQuery
 
 Raised by
 
-:   [ElementsService::buildElementsQuery()](https://docs.craftcms.com/api/v2/services/ElementsService.html#buildElementsQuery-detail)
+:   <api:Craft\ElementsService::buildElementsQuery()>
 
 Raised before Craft builds out an elements query, enabling plugins to modify the query or prevent it from actually happening.
 
 #### Params:
 
-- `criteria` – The [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) object that defines the parameters for the query.
+- `criteria` – The <api:Craft\ElementCriteriaModel> object that defines the parameters for the query.
 - `justIds` – `true` or `false` depending on whether the query should only be returning the IDs of the matched elements.
-- `query` – The [DbCommand](https://docs.craftcms.com/api/v2/etc/db/DbCommand.html) object that is being built out.
+- `query` – The <api:Craft\DbCommand> object that is being built out.
 
 ::: tip
-Event handlers can prevent the element query from being executed by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the element query from being executed by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### elements.onBuildElementsQuery
 
 Raised by
 
-:   [ElementsService::buildElementsQuery()](https://docs.craftcms.com/api/v2/services/ElementsService.html#buildElementsQuery-detail)
+:   <api:Craft\ElementsService::buildElementsQuery()>
 
 Raised after Craft has built out an elements query, enabling plugins to modify the query.
 
 #### Params:
 
-- `criteria` – The [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) object that defines the parameters for the query.
+- `criteria` – The <api:Craft\ElementCriteriaModel> object that defines the parameters for the query.
 - `justIds` – `true` or `false` depending on whether the query should only be returning the IDs of the matched elements.
-- `query` – The [DbCommand](https://docs.craftcms.com/api/v2/etc/db/DbCommand.html) object that is being built out.
+- `query` – The <api:Craft\DbCommand> object that is being built out.
 
 ### elements.onBeforeDeleteElements
 
 Raised by
 
-:   [ElementsService::deleteElementById()](https://docs.craftcms.com/api/v2/services/ElementsService.html#deleteElementById-detail)
+:   <api:Craft\ElementsService::deleteElementById()>
 
 Raised right before any elements are about to be deleted.
 
@@ -216,7 +216,7 @@ Raised right before any elements are about to be deleted.
 
 Raised by
 
-:   [ElementsService::mergeElementsByIds()](https://docs.craftcms.com/api/v2/services/ElementsService.html#mergeElementsByIds-detail)
+:   <api:Craft\ElementsService::mergeElementsByIds()>
 
 Raised when any element merged with another element.
 
@@ -229,67 +229,67 @@ Raised when any element merged with another element.
 
 Raised by
 
-:   [StructuresService::prepend()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prepend-detail), [StructuresService::append()](https://docs.craftcms.com/api/v2/services/StructuresService.html#append-detail), [StructuresService::prependToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prependToRoot-detail), [StructuresService::appendToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#appendToRoot-detail), [StructuresService::moveBefore()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveBefore-detail), [StructuresService::moveAfter()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveAfter-detail)
+:   <api:Craft\StructuresService::prepend()>, <api:Craft\StructuresService::append()>, <api:Craft\StructuresService::prependToRoot()>, <api:Craft\StructuresService::appendToRoot()>, <api:Craft\StructuresService::moveBefore()>, <api:Craft\StructuresService::moveAfter()>
 
 Raised right before an element is moved within a structure.
 
 #### Params:
 
 - `structureId` – The ID of the structure that the element is being moved within.
-- `element` – A [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) object representing the element that is about to be moved.
+- `element` – A <api:Craft\BaseElementModel> object representing the element that is about to be moved.
 
 ::: tip
-Event handlers can prevent the element from getting moved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the element from getting moved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### structures.onMoveElement
 
 Raised by
 
-:   [StructuresService::prepend()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prepend-detail), [StructuresService::append()](https://docs.craftcms.com/api/v2/services/StructuresService.html#append-detail), [StructuresService::prependToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#prependToRoot-detail), [StructuresService::appendToRoot()](https://docs.craftcms.com/api/v2/services/StructuresService.html#appendToRoot-detail), [StructuresService::moveBefore()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveBefore-detail), [StructuresService::moveAfter()](https://docs.craftcms.com/api/v2/services/StructuresService.html#moveAfter-detail)
+:   <api:Craft\StructuresService::prepend()>, <api:Craft\StructuresService::append()>, <api:Craft\StructuresService::prependToRoot()>, <api:Craft\StructuresService::appendToRoot()>, <api:Craft\StructuresService::moveBefore()>, <api:Craft\StructuresService::moveAfter()>
 
 Raised when an element is moved within a structure.
 
 #### Params:
 
 - `structureId` – The ID of the structure that the element was moved within.
-- `element` – A [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) object representing the element that was moved.
+- `element` – A <api:Craft\BaseElementModel> object representing the element that was moved.
 
 ### elements.onBeforePerformAction
 
 Raised by
 
-:   [ElementIndexController::actionPerformAction()](https://docs.craftcms.com/api/v2/controllers/ElementIndexController.html#actionPerformAction-detail)
+:   <api:Craft\ElementIndexController::actionPerformAction()>
 
 Raised before a batch element action gets triggered.
 
 #### Params:
 
 - `action` – The element action class that is going to be performing the action.
-- `criteria` – The [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) object that defines which element(s.html) the user has chosen to perform the action on.
+- `criteria` – The <api:Craft\ElementCriteriaModel> object that defines which element(s.html) the user has chosen to perform the action on.
 
 ::: tip
-Event handlers can prevent the element action from being triggered by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the element action from being triggered by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### elements.onPerformAction
 
 Raised by
 
-:   [ElementIndexController::actionPerformAction()](https://docs.craftcms.com/api/v2/controllers/ElementIndexController.html#actionPerformAction-detail)
+:   <api:Craft\ElementIndexController::actionPerformAction()>
 
 Raised after a batch element action has been performed.
 
 #### Params:
 
 - `action` – The element action class that performed the action.
-- `criteria` – The [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) object that defines which element(s.html) the user had chosen to perform the action on.
+- `criteria` – The <api:Craft\ElementCriteriaModel> object that defines which element(s.html) the user had chosen to perform the action on.
 
 ### elements.onPopulateElement
 
 Raised by
 
-:   [ElementsService::findElements()](https://docs.craftcms.com/api/v2/services/ElementsService.html#findElements-detail)
+:   <api:Craft\ElementsService::findElements()>
 
 Raised when any element model is populated from its database result.
 
@@ -302,7 +302,7 @@ Raised when any element model is populated from its database result.
 
 Raised by
 
-:   [ElementsService::populateElements()](https://docs.craftcms.com/api/v2/services/ElementsService.html#populateElements-detail)
+:   <api:Craft\ElementsService::populateElements()>
 
 Raised when all of the element models have been populated from an element query.
 
@@ -315,43 +315,43 @@ Raised when all of the element models have been populated from an element query.
 
 Raised by
 
-:   [ElementsService::saveElement()](https://docs.craftcms.com/api/v2/services/ElementsService.html#saveElement-detail)
+:   <api:Craft\ElementsService::saveElement()>
 
 Raised right before an element is saved.
 
 #### Params:
 
-- `element` – A [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) object representing the element that is about to be saved.
+- `element` – A <api:Craft\BaseElementModel> object representing the element that is about to be saved.
 - `isNewElement` – A boolean indicating whether this is a brand new element.
 
 ::: tip
-Event handlers can prevent the element from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the element from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### elements.onSaveElement
 
 Raised by
 
-:   [ElementsService::saveElement()](https://docs.craftcms.com/api/v2/services/ElementsService.html#saveElement-detail)
+:   <api:Craft\ElementsService::saveElement()>
 
 Raised when an element is saved.
 
 #### Params:
 
-- `element` – A [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) object representing the element that was just saved.
+- `element` – A <api:Craft\BaseElementModel> object representing the element that was just saved.
 - `isNewElement` – A boolean indicating whether this is a brand new element.
 
 ### fields.onSaveFieldLayout
 
 Raised by
 
-:   [FieldsService::saveLayout()](https://docs.craftcms.com/api/v2/services/FieldsService.html#saveLayout-detail)
+:   <api:Craft\FieldsService::saveLayout()>
 
 Raised when a field layout is saved.
 
 #### Params:
 
-- `layout` – A [FieldLayoutModel](https://docs.craftcms.com/api/v2/models/FieldLayoutModel.html) object representing the field layout that was just saved.
+- `layout` – A <api:Craft\FieldLayoutModel> object representing the field layout that was just saved.
 
 ## Entry API Events
 
@@ -359,118 +359,118 @@ Raised when a field layout is saved.
 
 Raised by
 
-:   [EntriesService::saveEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail)
+:   <api:Craft\EntriesService::saveEntry()>
 
 Raised right before an entry is saved.
 
 #### Params:
 
-- `entry` – An [EntryModel](https://docs.craftcms.com/api/v2/models/EntryModel.html) object representing the entry that is about to be saved.
+- `entry` – An <api:Craft\EntryModel> object representing the entry that is about to be saved.
 - `isNewEntry` – A boolean indicating whether this is a brand new entry.
 
 ::: tip
-Event handlers can prevent the entry from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the entry from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### entries.onSaveEntry
 
 Raised by
 
-:   [EntriesService::saveEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail)
+:   <api:Craft\EntriesService::saveEntry()>
 
 Raised when an entry is saved.
 
 #### Params:
 
-- `entry` – An [EntryModel](https://docs.craftcms.com/api/v2/models/EntryModel.html) object representing the entry that was just saved.
+- `entry` – An <api:Craft\EntryModel> object representing the entry that was just saved.
 - `isNewEntry` – A boolean indicating whether this is a brand new entry.
 
 ### entries.onBeforeDeleteEntry
 
 Raised by
 
-:   [EntriesService::deleteEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#deleteEntry-detail)
+:   <api:Craft\EntriesService::deleteEntry()>
 
 Raised right before an entry is deleted.
 
 #### Params:
 
-- `entry` – An [EntryModel](https://docs.craftcms.com/api/v2/models/EntryModel.html) object representing the entry that is about to be deleted.
+- `entry` – An <api:Craft\EntryModel> object representing the entry that is about to be deleted.
 
 ::: tip
-Event handlers can prevent the entry from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the entry from being deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### entries.onDeleteEntry
 
 Raised by
 
-:   [EntriesService::deleteEntry()](https://docs.craftcms.com/api/v2/services/EntriesService.html#deleteEntry-detail)
+:   <api:Craft\EntriesService::deleteEntry()>
 
 Raised when an entry is deleted.
 
 #### Params:
 
-- `entry` – An [EntryModel](https://docs.craftcms.com/api/v2/models/EntryModel.html) object representing the entry that was just deleted.
+- `entry` – An <api:Craft\EntryModel> object representing the entry that was just deleted.
 
 ### entryRevisions.onSaveDraft
 
 Raised by
 
-:   [EntryRevisionsService::saveDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#saveDraft-detail)
+:   <api:Craft\EntryRevisionsService::saveDraft()>
 
 Raised right before a draft is saved.
 
 #### Params:
 
-- `draft` – An [EntryDraftModel](https://docs.craftcms.com/api/v2/models/EntryDraftModel.html) object representing the draft that was just saved.
+- `draft` – An <api:Craft\EntryDraftModel> object representing the draft that was just saved.
 - `isNewDraft` – A boolean indicating whether this is a brand new draft.
 
 ### entryRevisions.onPublishDraft
 
 Raised by
 
-:   [EntryRevisionsService::publishDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#publishDraft-detail)
+:   <api:Craft\EntryRevisionsService::publishDraft()>
 
 Raised when an draft is published.
 
 #### Params:
 
-- `draft` – An [EntryDraftModel](https://docs.craftcms.com/api/v2/models/EntryDraftModel.html) object representing the draft that was just published.
+- `draft` – An <api:Craft\EntryDraftModel> object representing the draft that was just published.
 
 ### entryRevisions.onBeforeDeleteDraft
 
 Raised by
 
-:   [EntryRevisionsService::deleteDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#deleteDraft-detail)
+:   <api:Craft\EntryRevisionsService::deleteDraft()>
 
 Raised right before a draft is deleted.
 
 #### Params:
 
-- `draft` – An [EntryDraftModel](https://docs.craftcms.com/api/v2/models/EntryDraftModel.html) object representing the draft that is able to be deleted.
+- `draft` – An <api:Craft\EntryDraftModel> object representing the draft that is able to be deleted.
 
 ::: tip
-Event handlers can prevent the draft from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the draft from getting deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### entryRevisions.onDeleteDraft
 
 Raised by
 
-:   [EntryRevisionsService::deleteDraft()](https://docs.craftcms.com/api/v2/services/EntryRevisionsService.html#deleteDraft-detail)
+:   <api:Craft\EntryRevisionsService::deleteDraft()>
 
 Raised right after a draft is deleted.
 
 #### Params:
 
-- `draft` – An [EntryDraftModel](https://docs.craftcms.com/api/v2/models/EntryDraftModel.html) object representing the draft that was just deleted.
+- `draft` – An <api:Craft\EntryDraftModel> object representing the draft that was just deleted.
 
 ### sections.onBeforeDeleteSection
 
 Raised by
 
-:   [SectionsService::deleteSectionById()](https://docs.craftcms.com/api/v2/services/SectionsService.html#deleteSectionById-detail)
+:   <api:Craft\SectionsService::deleteSectionById()>
 
 Raised right before a section is deleted.
 
@@ -479,14 +479,14 @@ Raised right before a section is deleted.
 - `sectionId` – The ID of the section that is about to be deleted.
 
 ::: tip
-Event handlers can prevent the section from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the section from being deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### sections.onDeleteSection
 
 Raised by
 
-:   [SectionsService::deleteSectionById()](https://docs.craftcms.com/api/v2/services/SectionsService.html#deleteSectionById-detail)
+:   <api:Craft\SectionsService::deleteSectionById()>
 
 Raised after a section is deleted.
 
@@ -498,60 +498,60 @@ Raised after a section is deleted.
 
 Raised by
 
-:   [SectionsService::saveEntryType()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveEntryType-detail)
+:   <api:Craft\SectionsService::saveEntryType()>
 
 Raised right before an entry type is saved.
 
 #### Params:
 
-- `entryType` – An [EntryTypeModel](https://docs.craftcms.com/api/v2/models/EntryTypeModel.html) object representing the entry type that is about to be saved.
+- `entryType` – An <api:Craft\EntryTypeModel> object representing the entry type that is about to be saved.
 - `isNewEntryType` – A boolean indicating whether this is a brand new entry type.
 
 ::: tip
-Event handlers can prevent the entry type from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the entry type from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### sections.onSaveEntryType
 
 Raised by
 
-:   [SectionsService::saveEntryType()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveEntryType-detail)
+:   <api:Craft\SectionsService::saveEntryType()>
 
 Raised when an entry type is saved.
 
 #### Params:
 
-- `entryType` – An [EntryTypeModel](https://docs.craftcms.com/api/v2/models/EntryTypeModel.html) object representing the entry type that was just saved.
+- `entryType` – An <api:Craft\EntryTypeModel> object representing the entry type that was just saved.
 - `isNewEntryType` – A boolean indicating whether this is a brand new entry type.
 
 ### sections.onBeforeSaveSection
 
 Raised by
 
-:   [SectionsService::saveSection()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveSection-detail)
+:   <api:Craft\SectionsService::saveSection()>
 
 Raised right before a section is saved.
 
 #### Params:
 
-- `section` – An [SectionModel](https://docs.craftcms.com/api/v2/models/SectionModel.html) object representing the section that is about to be saved.
+- `section` – An <api:Craft\SectionModel> object representing the section that is about to be saved.
 - `isNewSection` – A boolean indicating whether this is a brand new section.
 
 ::: tip
-Event handlers can prevent the section from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the section from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### sections.onSaveSection
 
 Raised by
 
-:   [SectionsService::saveSection()](https://docs.craftcms.com/api/v2/services/SectionsService.html#saveSection-detail)
+:   <api:Craft\SectionsService::saveSection()>
 
 Raised when a section is saved.
 
 #### Params:
 
-- `section` – An [SectionModel](https://docs.craftcms.com/api/v2/models/SectionModel.html) object representing the section that was just saved.
+- `section` – An <api:Craft\SectionModel> object representing the section that was just saved.
 - `isNewSection` – A boolean indicating whether this is a brand new section.
 
 ## Category API Events
@@ -560,61 +560,61 @@ Raised when a section is saved.
 
 Raised by
 
-:   [CategoriesService::saveCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#saveCategory-detail)
+:   <api:Craft\CategoriesService::saveCategory()>
 
 Raised before any category is saved.
 
 #### Params:
 
-- `category` – A [CategoryModel](https://docs.craftcms.com/api/v2/models/CategoryModel.html) object representing the category about to be saved.
+- `category` – A <api:Craft\CategoryModel> object representing the category about to be saved.
 - `isNewCategory` – A boolean indicating whether this is a new category.
 
 ::: tip
-Event handlers can prevent the category from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the category from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### categories.onSaveCategory
 
 Raised by
 
-:   [CategoriesService::saveCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#saveCategory-detail)
+:   <api:Craft\CategoriesService::saveCategory()>
 
 Raised when any category is saved.
 
 #### Params:
 
-- `category` – A [CategoryModel](https://docs.craftcms.com/api/v2/models/CategoryModel.html) object representing the category being saved.
+- `category` – A <api:Craft\CategoryModel> object representing the category being saved.
 - `isNewCategory` – A boolean indicating whether this is a new category.
 
 ### categories.onBeforeDeleteCategory
 
 Raised by
 
-:   [CategoriesService::deleteCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteCategory-detail)
+:   <api:Craft\CategoriesService::deleteCategory()>
 
 Raised before any category is deleted.
 
 #### Params:
 
-- `category` – A [CategoryModel](https://docs.craftcms.com/api/v2/models/CategoryModel.html) object representing the category about to be deleted.
+- `category` – A <api:Craft\CategoryModel> object representing the category about to be deleted.
 
 ### categories.onDeleteCategory
 
 Raised by
 
-:   [CategoriesService::deleteCategory()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteCategory-detail)
+:   <api:Craft\CategoriesService::deleteCategory()>
 
 Raised when any category is deleted.
 
 #### Params:
 
-- `category` – A [CategoryModel](https://docs.craftcms.com/api/v2/models/CategoryModel.html) object representing the category being deleted.
+- `category` – A <api:Craft\CategoryModel> object representing the category being deleted.
 
 ### categories.onBeforeDeleteGroup
 
 Raised by
 
-:   [CategoriesService::deleteGroupById()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteGroupById-detail)
+:   <api:Craft\CategoriesService::deleteGroupById()>
 
 Raised before a category group is deleted.
 
@@ -623,14 +623,14 @@ Raised before a category group is deleted.
 - `groupId` – The ID of the category group that’s about to be deleted.
 
 ::: tip
-Event handlers can prevent the category group from being deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the category group from being deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### categories.onDeleteGroup
 
 Raised by
 
-:   [CategoriesService::deleteGroupById()](https://docs.craftcms.com/api/v2/services/CategoriesService.html#deleteGroupById-detail)
+:   <api:Craft\CategoriesService::deleteGroupById()>
 
 Raised after a category group is deleted.
 
@@ -644,30 +644,30 @@ Raised after a category group is deleted.
 
 Raised by
 
-:   [TagsService::saveTag()](https://docs.craftcms.com/api/v2/services/TagsService.html#saveTag-detail)
+:   <api:Craft\TagsService::saveTag()>
 
 Raised when a tag is able to be saved.
 
 #### Params:
 
-- `tag` – A [TagModel](https://docs.craftcms.com/api/v2/models/TagModel.html) object representing the tag that is about to be saved.
+- `tag` – A <api:Craft\TagModel> object representing the tag that is about to be saved.
 - `isNewTag` – A boolean indicating whether this is a brand new tag.
 
 ::: tip
-Event handlers can prevent the tag from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the tag from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### tags.onSaveTag
 
 Raised by
 
-:   [TagsService::saveTag()](https://docs.craftcms.com/api/v2/services/TagsService.html#saveTag-detail)
+:   <api:Craft\TagsService::saveTag()>
 
 Raised when a tag is saved.
 
 #### Params:
 
-- `tag` – A [TagModel](https://docs.craftcms.com/api/v2/models/TagModel.html) object representing the tag that was just saved.
+- `tag` – A <api:Craft\TagModel> object representing the tag that was just saved.
 - `isNewTag` – A boolean indicating whether this is a brand new tag.
 
 ## Asset API Events
@@ -676,100 +676,100 @@ Raised when a tag is saved.
 
 Raised by
 
-:   [AssetsService::deleteFiles()](https://docs.craftcms.com/api/v2/services/AssetsService.html#deleteFiles-detail)
+:   <api:Craft\AssetsService::deleteFiles()>
 
 Raised right before an asset is deleted.
 
 #### Params:
 
-- `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset about to be deleted.
+- `asset` – An <api:Craft\AssetFileModel> object representing the asset about to be deleted.
 
 ### assets.onDeleteAsset
 
 Raised by
 
-:   [AssetsService::deleteFiles()](https://docs.craftcms.com/api/v2/services/AssetsService.html#deleteFiles-detail)
+:   <api:Craft\AssetsService::deleteFiles()>
 
 Raised when an asset is deleted.
 
 #### Params:
 
-- `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset that was just deleted.
+- `asset` – An <api:Craft\AssetFileModel> object representing the asset that was just deleted.
 
 ### assets.onBeforeReplaceFile
 
 Raised by
 
-:   [AssetsController::actionReplaceFile()](https://docs.craftcms.com/api/v2/controllers/AssetsController.html#actionReplaceFile-detail)
+:   <api:Craft\AssetsController::actionReplaceFile()>
 
 Raised right before an asset’s file is replaced.
 
 #### Params:
 
-- `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset whose file is about to be replaced.
+- `asset` – An <api:Craft\AssetFileModel> object representing the asset whose file is about to be replaced.
 
 ::: tip
-Event handlers can prevent the file from getting replaced by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the file from getting replaced by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### assets.onReplaceFile
 
 Raised by
 
-:   [AssetsController::actionReplaceFile()](https://docs.craftcms.com/api/v2/controllers/AssetsController.html#actionReplaceFile-detail)
+:   <api:Craft\AssetsController::actionReplaceFile()>
 
 Raised when any asset’s file is replaced.
 
 #### Params:
 
-- `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset whose file was just replaced.
+- `asset` – An <api:Craft\AssetFileModel> object representing the asset whose file was just replaced.
 
 ### assets.onBeforeSaveAsset
 
 Raised by
 
-:   [AssetsService::storeFile()](https://docs.craftcms.com/api/v2/services/AssetsService.html#storeFile-detail)
+:   <api:Craft\AssetsService::storeFile()>
 
 Raised right before an asset is saved.
 
 #### Params:
 
-- `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset about to be saved.
+- `asset` – An <api:Craft\AssetFileModel> object representing the asset about to be saved.
 - `isNewAsset` – A boolean indicating whether this is a new asset.
 
 ::: tip
-Event handlers can prevent the asset from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the asset from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### assets.onSaveAsset
 
 Raised by
 
-:   [AssetsService::storeFile()](https://docs.craftcms.com/api/v2/services/AssetsService.html#storeFile-detail)
+:   <api:Craft\AssetsService::storeFile()>
 
 Raised when any asset is saved.
 
 #### Params:
 
-- `asset` – An [AssetFileModel](https://docs.craftcms.com/api/v2/models/AssetFileModel.html) object representing the asset being saved.
+- `asset` – An <api:Craft\AssetFileModel> object representing the asset being saved.
 - `isNewAsset` – A boolean indicating whether this is a new asset.
 
 ### assets.onBeforeUploadAsset
 
 Raised by
 
-:   [BaseAssetSourceType::insertFileByPath()](https://docs.craftcms.com/api/v2/assetsourcetypes/BaseAssetSourceType.html#insertFileByPath-detail)
+:   <api:Craft\BaseAssetSourceType::insertFileByPath()>
 
 Raised right before an asset is uploaded to its source.
 
 #### Params:
 
 - `path` – The path to the temporary file on the server.
-- `folder` – An [AssetFolderModel](https://docs.craftcms.com/api/v2/models/AssetFolderModel.html) object representing the asset folder that the file is going to be saved to.
+- `folder` – An <api:Craft\AssetFolderModel> object representing the asset folder that the file is going to be saved to.
 - `filename` – The filename of the file.
 
 ::: tip
-Event handlers can prevent the asset from getting uploaded by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the asset from getting uploaded by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ## Global Set API Events
@@ -778,29 +778,29 @@ Event handlers can prevent the asset from getting uploaded by setting [`$event->
 
 Raised by
 
-:   [GlobalsService::saveContent()](https://docs.craftcms.com/api/v2/services/GlobalsService.html#saveContent-detail)
+:   <api:Craft\GlobalsService::saveContent()>
 
 Raised right before a Global Set’s content is saved.
 
 #### Params:
 
-- `globalSet` – A [GlobalSetModel](https://docs.craftcms.com/api/v2/models/GlobalSetModel.html) object representing the Global Set whose content is about to be saved.
+- `globalSet` – A <api:Craft\GlobalSetModel> object representing the Global Set whose content is about to be saved.
 
 ::: tip
-Event handlers can prevent the global set from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the global set from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### globals.onSaveGlobalContent
 
 Raised by
 
-:   [GlobalsService::saveContent()](https://docs.craftcms.com/api/v2/services/GlobalsService.html#saveContent-detail)
+:   <api:Craft\GlobalsService::saveContent()>
 
 Raised when a Global Set’s content is saved.
 
 #### Params:
 
-- `globalSet` – A [GlobalSetModel](https://docs.craftcms.com/api/v2/models/GlobalSetModel.html) object representing the Global Set whose content was just saved.
+- `globalSet` – A <api:Craft\GlobalSetModel> object representing the Global Set whose content was just saved.
 
 ## User API Events
 
@@ -808,7 +808,7 @@ Raised when a Global Set’s content is saved.
 
 Raised by
 
-:   [UserSessionService::login()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#login-detail)
+:   <api:Craft\UserSessionService::login()>
 
 Raised right before a user is logged in.
 
@@ -817,14 +817,14 @@ Raised right before a user is logged in.
 - `username` – A string of the username that is about to log in.
 
 ::: tip
-Event handlers can prevent the user from getting logged in by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting logged in by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### userSession.onLogin
 
 Raised by
 
-:   [UserSessionService::login()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#login-detail)
+:   <api:Craft\UserSessionService::login()>
 
 Raised when a user has logged in.
 
@@ -836,23 +836,23 @@ Raised when a user has logged in.
 
 Raised by
 
-:   [UserSessionService::beforeLogout()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#beforeLogout-detail)
+:   <api:Craft\UserSessionService::beforeLogout()>
 
 Raised right before a user is logged out.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that is getting logged out.
+- `user` – A <api:Craft\UserModel> object representing the user that is getting logged out.
 
 ::: tip
-Event handlers can prevent the user from getting logged out by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting logged out by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### userSession.onLogout
 
 Raised by
 
-:   [UserSessionService::afterLogout()](https://docs.craftcms.com/api/v2/services/UserSessionService.html#afterLogout-detail)
+:   <api:Craft\UserSessionService::afterLogout()>
 
 Raised when a user is logged out.
 
@@ -860,35 +860,35 @@ Raised when a user is logged out.
 
 Raised by
 
-:   [UsersService::activateUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#activateUser-detail)
+:   <api:Craft\UsersService::activateUser()>
 
 Raised right before a user is activated.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be activated.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be activated.
 
 ::: tip
-Event handlers can prevent the user from getting activated by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting activated by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onActivateUser
 
 Raised by
 
-:   [UsersService::activateUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#activateUser-detail)
+:   <api:Craft\UsersService::activateUser()>
 
 Raised when a user is activated.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that has just been activated.
+- `user` – A <api:Craft\UserModel> object representing the user that has just been activated.
 
 ### userGroups.onBeforeAssignUserToGroups
 
 Raised by
 
-:   [UserGroupsService::assignUserToGroups](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToGroups-detail)
+:   <api:Craft\UserGroupsService::assignUserToGroups>
 
 Raised right before a user’s group assignments are updated. Note that this could be called even if the group assignments haven’t changed.
 
@@ -898,14 +898,14 @@ Raised right before a user’s group assignments are updated. Note that this cou
 - `groupIds` – The user’s new group IDs (if any).
 
 ::: tip
-Event handlers can prevent the user’s new group assignments from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user’s new group assignments from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### userGroups.onAssignUserToGroups
 
 Raised by
 
-:   [UserGroupsService::assignUserToGroups](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToGroups-detail)
+:   <api:Craft\UserGroupsService::assignUserToGroups>
 
 Raised right after a user’s group assignments are updated.
 
@@ -918,233 +918,233 @@ Raised right after a user’s group assignments are updated.
 
 Raised by
 
-:   [UsersService::deleteUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#deleteUser-detail)
+:   <api:Craft\UsersService::deleteUser()>
 
 Raised right before a user is deleted.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be deleted.
-- `transferContentTo` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that the deleted user’s content should be transferred to, if any.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be deleted.
+- `transferContentTo` – A <api:Craft\UserModel> object representing the user that the deleted user’s content should be transferred to, if any.
 
 ::: tip
-Event handlers can prevent the user from getting deleted by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onDeleteUser
 
 Raised by
 
-:   [UsersService::deleteUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#deleteUser-detail)
+:   <api:Craft\UsersService::deleteUser()>
 
 Raised when a user is deleted.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just deleted.
-- `transferContentTo` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that the deleted user’s content should have been transferred to, if any.
+- `user` – A <api:Craft\UserModel> object representing the user that was just deleted.
+- `transferContentTo` – A <api:Craft\UserModel> object representing the user that the deleted user’s content should have been transferred to, if any.
 
 ### users.onBeforeSaveUser
 
 Raised by
 
-:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail)
+:   <api:Craft\UsersService::saveUser()>
 
 Raised right before a user is saved.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be saved.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be saved.
 - `isNewUser` – A boolean indicating whether this is a brand new user account.
 
 ::: tip
-Event handlers can prevent the user from getting saved by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onSaveUser
 
 Raised by
 
-:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail)
+:   <api:Craft\UsersService::saveUser()>
 
 Raised when a user is saved.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just saved.
+- `user` – A <api:Craft\UserModel> object representing the user that was just saved.
 - `isNewUser` – A boolean indicating whether this is a brand new user account.
 
 ### users.onBeforeSetPassword
 
 Raised by
 
-:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail), [UsersService::changePassword()](https://docs.craftcms.com/api/v2/services/UsersService.html#changePassword-detail)
+:   <api:Craft\UsersService::saveUser()>, <api:Craft\UsersService::changePassword()>
 
 Raised right before a user’s password is changed.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user whose password is about to be changed.
+- `user` – A <api:Craft\UserModel> object representing the user whose password is about to be changed.
 - **password** – The user’s new password.
 
 ::: tip
-Event handlers can prevent the user’s password from getting changed by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user’s password from getting changed by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onSetPassword
 
 Raised by
 
-:   [UsersService::saveUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#saveUser-detail), [UsersService::changePassword()](https://docs.craftcms.com/api/v2/services/UsersService.html#changePassword-detail)
+:   <api:Craft\UsersService::saveUser()>, <api:Craft\UsersService::changePassword()>
 
 Raised when a user’s password is changed.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user whose password was changed.
+- `user` – A <api:Craft\UserModel> object representing the user whose password was changed.
 
 ### users.onBeforeSuspendUser
 
 Raised by
 
-:   [UsersService::suspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#suspendUser-detail)
+:   <api:Craft\UsersService::suspendUser()>
 
 Raised right before a user is suspended.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be suspended.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be suspended.
 
 ::: tip
-Event handlers can prevent the user from getting suspended by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting suspended by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onSuspendUser
 
 Raised by
 
-:   [UsersService::suspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#suspendUser-detail)
+:   <api:Craft\UsersService::suspendUser()>
 
 Raised when a user is suspended.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just suspended.
+- `user` – A <api:Craft\UserModel> object representing the user that was just suspended.
 
 ### users.onLockUser
 
 Raised by
 
-:   [UsersService::lockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#lockUser-detail)
+:   <api:Craft\UsersService::lockUser()>
 
 Raised when a user is locked.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/services/models/UserModel.html) object representing the user that was just locked.
+- `user` – A <api:Craft\UserModel> object representing the user that was just locked.
 
 ### users.onBeforeUnlockUser
 
 Raised by
 
-:   [UsersService::unlockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unlockUser-detail)
+:   <api:Craft\UsersService::unlockUser()>
 
 Raised right before a user is unlocked.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be unlocked.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be unlocked.
 
 ::: tip
-Event handlers can prevent the user from getting unlocked by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting unlocked by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onUnlockUser
 
 Raised by
 
-:   [UsersService::unlockUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unlockUser-detail)
+:   <api:Craft\UsersService::unlockUser()>
 
 Raised when a user is unlocked.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just unlocked.
+- `user` – A <api:Craft\UserModel> object representing the user that was just unlocked.
 
 ### users.onBeforeUnsuspendUser
 
 Raised by
 
-:   [UsersService::unsuspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unsuspendUser-detail)
+:   <api:Craft\UsersService::unsuspendUser()>
 
 Raised right before a user is unsuspended.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be unsuspended.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be unsuspended.
 
 ::: tip
-Event handlers can prevent the user from getting unsuspended by setting [`$event->performAction`](https://docs.craftcms.com/api/v2/etc/events/Event.html#performAction-detail) to `false`.
+Event handlers can prevent the user from getting unsuspended by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onUnsuspendUser
 
 Raised by
 
-:   [UsersService::unsuspendUser()](https://docs.craftcms.com/api/v2/services/UsersService.html#unsuspendUser-detail)
+:   <api:Craft\UsersService::unsuspendUser()>
 
 Raised when a user is unsuspended.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just unsuspended.
+- `user` – A <api:Craft\UserModel> object representing the user that was just unsuspended.
 
 ### users.onBeforeVerifyUser
 
 Raised by
 
-:   [UsersController::actionSetPassword()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionSetPassword-detail), [UsersController::actionVerifyEmail()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionVerifyEmail-detail)
+:   <api:Craft\UsersController::actionSetPassword()>, <api:Craft\UsersController::actionVerifyEmail()>
 
 Raised right before a user’s email is verified.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that’s about to be verified.
+- `user` – A <api:Craft\UserModel> object representing the user that’s about to be verified.
 
 ### users.onVerifyUser
 
 Raised by
 
-:   [UsersController::actionSetPassword()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionSetPassword-detail), [UsersController::actionVerifyEmail()](https://docs.craftcms.com/api/v2/controllers/UsersController.html#actionVerifyEmail-detail)
+:   <api:Craft\UsersController::actionSetPassword()>, <api:Craft\UsersController::actionVerifyEmail()>
 
 Raised when a user’s email is verified.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just verified.
+- `user` – A <api:Craft\UserModel> object representing the user that was just verified.
 
 ### userGroups.onBeforeAssignUserToDefaultGroup
 
 Raised by
 
-:   [UserGroupsService::assignUserToDefaultGroup()](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToDefaultGroup-detail)
+:   <api:Craft\UserGroupsService::assignUserToDefaultGroup()>
 
 Raised towards the end of a public user registration request before a user is assigned to a default user group.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just registered.
+- `user` – A <api:Craft\UserModel> object representing the user that was just registered.
 - `defaultGroupId` – The id of the user group that the user is about to be assigned to.
 
 ### userGroups.onAssignUserToDefaultGroup
 
 Raised by
 
-:   [UserGroupsService::assignUserToDefaultGroup()](https://docs.craftcms.com/api/v2/services/UserGroupsService.html#assignUserToDefaultGroup-detail)
+:   <api:Craft\UserGroupsService::assignUserToDefaultGroup()>
 
 Raised towards the end of a public user registration request after a user is assigned to a default user group.
 
 #### Params:
 
-- `user` – A [UserModel](https://docs.craftcms.com/api/v2/models/UserModel.html) object representing the user that was just registered.
+- `user` – A <api:Craft\UserModel> object representing the user that was just registered.
 - `defaultGroupId` – The id of the user group that the user was just assigned to.

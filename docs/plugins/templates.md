@@ -6,7 +6,7 @@ If your plugin needs its own templates, you can place them in a `templates/` fol
 
 ## Plugin Template Paths, Explained
 
-To manually render a template from your plugin’s PHP code, call [TemplatesService::render()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#render-detail):
+To manually render a template from your plugin’s PHP code, call <api:Craft\TemplatesService::render()>:
 
 ```php
 craft()->templates->render('pluginHandle/path/to/template')
@@ -24,7 +24,7 @@ So, if you were to call `craft()->templates->render('cocktailrecipes/settings')`
 As you can see, the `templates/` folder segment is assumed, so there’s no need to include it when calling `render()`.
 
 ::: tip
-Craft will only automatically look for templates within the plugin folders for CP requests. If you are going to be calling `TemplatesService::render()` from a front end site request, you will need to manually tell Craft where to find your template using [PathService::setTemplatesPath()](https://docs.craftcms.com/api/v2/services/PathService.html#setTemplatesPath-detail) first:
+Craft will only automatically look for templates within the plugin folders for CP requests. If you are going to be calling `TemplatesService::render()` from a front end site request, you will need to manually tell Craft where to find your template using <api:Craft\PathService::setTemplatesPath()> first:
 
 ```php
 $oldPath = craft()->path->getTemplatesPath();

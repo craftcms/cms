@@ -51,11 +51,11 @@ To make sense of that “cocktailrecipes/ingredientlist/input” template path, 
 
 ## Binding Javascript
 
-It’s easy to bind some Javascript to your field type’s input. You just need to keep in mind that there’s a good chance the HTML returned by `getInputHtml()` is going to be run through [namespaceInputs()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#namespaceInputs-detail) before being output to the page. Which means that any `name=` and `id=` HTML attributes will get prefixed with something.
+It’s easy to bind some Javascript to your field type’s input. You just need to keep in mind that there’s a good chance the HTML returned by `getInputHtml()` is going to be run through <api:Craft\namespaceInputs()> before being output to the page. Which means that any `name=` and `id=` HTML attributes will get prefixed with something.
 
 For example, when editing an entry, fields get namespaced with “field”. So an input with the name “cocktails” becomes “fields[cocktails]”, and an element with the ID “cocktails” would become “fields-cocktails”.
 
-If your Javascript code relies on knowing an ID within your field’s HTML, all you have to do is pass the ID through [namespaceInputId()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#namespaceInputId-detail) before placing it in your Javascript code:
+If your Javascript code relies on knowing an ID within your field’s HTML, all you have to do is pass the ID through <api:Craft\namespaceInputId()> before placing it in your Javascript code:
 
 ```php
 public function getInputHtml($name, $value)

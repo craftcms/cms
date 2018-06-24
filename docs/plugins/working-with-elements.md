@@ -4,9 +4,9 @@ Assets, categories, entries, global sets, Matrix blocks, tags, and users are all
 
 ## Fetching Elements
 
-To fetch elements in Craft, you first need to create a new [ElementCriteriaModel](https://docs.craftcms.com/api/v2/models/ElementCriteriaModel.html) instance (yes, the same type of object used to [fetch elements from your templates](../templating/elementcriteriamodel.md)).
+To fetch elements in Craft, you first need to create a new <api:Craft\ElementCriteriaModel> instance (yes, the same type of object used to [fetch elements from your templates](../templating/elementcriteriamodel.md)).
 
-[ElementsService](https://docs.craftcms.com/api/v2/services/ElementsService.html) provides a `getCriteria()` function that makes this easy:
+<api:Craft\ElementsService> provides a `getCriteria()` function that makes this easy:
 
 ```php
 $criteria = craft()->elements->getCriteria(ElementType::Entry);
@@ -84,7 +84,7 @@ Here are some existing resources, if you want to start diving in:
 * [Introduction to Element Types in Craft CMS - Part 1 of 3](https://straightupcraft.com/events/introduction-to-element-types-in-craft-cms-part-1-of-3) _(video)_
 * [Introduction to Element Types in Craft CMS - Part 2 of 3](https://straightupcraft.com/events/element-types-and-the-element-service-part-2-of-3) _(video)_
 * [Introduction to Element Types in Craft CMS - Part 3 of 3](https://straightupcraft.com/events/exploring-the-element-type-model-part-3-of-3) _(video)_
-* [BaseElementType](https://docs.craftcms.com/api/v2/elementtypes/BaseElementType.html) class reference
-* [BaseElementModel](https://docs.craftcms.com/api/v2/models/BaseElementModel.html) class reference
-* [ElementsService](https://docs.craftcms.com/api/v2/services/ElementsService.html) class reference
+* <api:Craft\BaseElementType> class reference
+* <api:Craft\BaseElementModel> class reference
+* <api:Craft\ElementsService> class reference
 * [Events](https://github.com/pixelandtonic/Events) sample Element Type plugin

@@ -8,7 +8,7 @@ The following methods are available:
 
 ### `getFieldByHandle( handle )`
 
-Returns a [FieldModel](https://docs.craftcms.com/api/v2/models/FieldModel.html) object representing a field by its handle.
+Returns a <api:Craft\FieldModel> object representing a field by its handle.
 
 ```twig
 {% set body = craft.fields.getFieldByHandle('body') %}

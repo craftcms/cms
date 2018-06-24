@@ -8,4 +8,4 @@ By default, Craft will search for the resource file in its own `craft/app/resour
 
 So if an image were located at `craft/plugins/cocktailrecipes/resources/images/gin.png`, it would be accessible via `UrlHelper::getResourceUrl('cocktailrecipes/images/gin.png')` and `{{ resourceUrl('cocktailrecipes/images/gin.png') }}`.
 
-[TemplatesService](https://docs.craftcms.com/api/v2/services/TemplatesService.html) also provides the handy functions, `includeCssResource('path/to/file.css')` and `includeJsResource('path/to/file.js')`, which queue up CSS and JS files to be included in the template within `<link>` and `<script>` tags. These functions also have template tag counterparts, `{% includeCssResource "path/to/file.css" %}` and `{% includeJsResource "path/to/file.js" %}`.
+<api:Craft\TemplatesService> also provides the handy functions, `includeCssResource('path/to/file.css')` and `includeJsResource('path/to/file.js')`, which queue up CSS and JS files to be included in the template within `<link>` and `<script>` tags. These functions also have template tag counterparts, `{% includeCssResource "path/to/file.css" %}` and `{% includeJsResource "path/to/file.js" %}`.

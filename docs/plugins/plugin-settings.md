@@ -31,7 +31,7 @@ return array(
 );
 ```
 
-You can then grab the config value throughout your plugin code using [ConfigService::get()](https://docs.craftcms.com/api/v2/services/ConfigService.html#get-detail), passing your plugin handle (lowercased) as the second argument:
+You can then grab the config value throughout your plugin code using <api:Craft\ConfigService::get()>, passing your plugin handle (lowercased) as the second argument:
 
 ```php
 $configSettingValue = craft()->config->get('foo', 'cocktailrecipes');
@@ -49,7 +49,7 @@ return array(
 
 ## Settings Page
 
-To give your plugin its own settings page within the Control Panel, first define which settings the plugin actually has. You do that by creating a protected [defineSettings()](https://docs.craftcms.com/api/v2/etc/components/BaseSavableComponentType.html#defineSettings-detail) method within your primary plugin class. This method returns an array whose keys define the setting names, and values define the parameters (the type of value, etc.).
+To give your plugin its own settings page within the Control Panel, first define which settings the plugin actually has. You do that by creating a protected <api:Craft\defineSettings()> method within your primary plugin class. This method returns an array whose keys define the setting names, and values define the parameters (the type of value, etc.).
 
 ```php
 <?php
@@ -68,7 +68,7 @@ class CocktailRecipesPlugin extends BasePlugin
 }
 ```
 
-Next you need to add a public [getSettingsHtml()](https://docs.craftcms.com/api/v2/etc/components/ISavableComponentType.html#getSettingsHtml-detail) method which returns the HTML for displaying your settings. We recommend that you create a template for the actual settings HTML, and load it up with [TemplatesService::render()](https://docs.craftcms.com/api/v2/services/TemplatesService.html#render-detail).
+Next you need to add a public <api:Craft\getSettingsHtml()> method which returns the HTML for displaying your settings. We recommend that you create a template for the actual settings HTML, and load it up with <api:Craft\TemplatesService::render()>.
 
 ```php
 <?php
