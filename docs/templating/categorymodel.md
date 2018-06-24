@@ -17,15 +17,15 @@ CategoryModel objects have the following properties:
 
 ### `ancestors`
 
-Alias of [getAncestors()](#getAncestors).
+Alias of [getAncestors()](#getancestors).
 
 ### `children`
 
-Alias of [getChildren()](#getChildren).
+Alias of [getChildren()](#getchildren).
 
 ### `cpEditUrl`
 
-Alias of [getCpEditUrl()](#getCpEditUrl).
+Alias of [getCpEditUrl()](#getcpediturl).
 
 ### `dateCreated`
 
@@ -37,7 +37,7 @@ A [DateTime](datetime.md) object of the date the category was last updated.
 
 ### `descendants`
 
-Alias of [getDescendants()](#getDescendants).
+Alias of [getDescendants()](#getdescendants).
 
 ### `enabled`
 
@@ -45,7 +45,7 @@ Whether the category is enabled.
 
 ### `group`
 
-Alias of [getGroup()](#getGroup).
+Alias of [getGroup()](#getgroup).
 
 ### `hasDescendants`
 
@@ -69,7 +69,7 @@ The category’s level.
 
 ### `link`
 
-Alias of [getLink()](#getLink).
+Alias of [getLink()](#getlink).
 
 ### `locale`
 
@@ -77,27 +77,27 @@ The locale the category was fetched in.
 
 ### `next`
 
-Alias of [getNext()](#getNext).
+Alias of [getNext()](#getnext).
 
 ### `nextSibling`
 
-Alias of [getNextSibling()](#getNextSibling).
+Alias of [getNextSibling()](#getnextsibling).
 
 ### `parent`
 
-Alias of [getParent()](#getParent).
+Alias of [getParent()](#getparent).
 
 ### `prev`
 
-Alias of [getPrev()](#getPrev).
+Alias of [getPrev()](#getprev).
 
 ### `prevSibling`
 
-Alias of [getPrevSibling()](#getPrevSibling).
+Alias of [getPrevSibling()](#getprevsibling).
 
 ### `siblings`
 
-Alias of [getSiblings()](#getSiblings).
+Alias of [getSiblings()](#getsiblings).
 
 ### `slug`
 
@@ -113,7 +113,7 @@ The category’s URI.
 
 ### `url`
 
-Alias of [getUrl()](#getUrl)
+Alias of [getUrl()](#geturl)
 
 
 ## Methods

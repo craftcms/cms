@@ -17,7 +17,7 @@ GlobalSetModel objects have the following properties:
 
 ### `cpEditUrl`
 
-Alias of [getCpEditUrl()](#getCpEditUrl).
+Alias of [getCpEditUrl()](#getcpediturl).
 
 ### `handle`
 

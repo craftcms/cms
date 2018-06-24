@@ -418,7 +418,7 @@ Whether Craft should use XSendFile to serve files when possible.
 
 **Since**: Craft 2.2
 
-The name that Craft should give CSRF cookies, and which [getCsrfInput()](templating/functions.md#getCsrfInput) will give to the input it returns, if [CSRF Protection](https://craftcms.com/support/csrf-protection) is enabled.
+The name that Craft should give CSRF cookies, and which [getCsrfInput()](templating/functions.md#getcsrfinput) will give to the input it returns, if [CSRF Protection](https://craftcms.com/support/csrf-protection) is enabled.
 
 ```php
 'csrfTokenName' => 'CSRF',
@@ -857,7 +857,7 @@ This will also prevent the “Deleting stale template caches” background task 
 
 **Since**: Craft 1.1
 
-The template file extensions Craft will look for when matching a template path to a file on the front end. (Also see [indexTemplateFilenames](#indexTemplateFilenames).)
+The template file extensions Craft will look for when matching a template path to a file on the front end. (Also see [indexTemplateFilenames](#indextemplatefilenames).)
 
 ```php
 'defaultTemplateExtensions' => array('html', 'htm', 'xhtml'),
@@ -899,7 +899,7 @@ The path prefix to HTTP error code templates, like 404.html.
 
 **Since**: Craft 1.1
 
-The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end. (Also see [defaultTemplateExtensions](#defaultTemplateExtensions).)
+The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end. (Also see [defaultTemplateExtensions](#defaulttemplateextensions).)
 
 ```php
 'indexTemplateFilenames' => array('index', 'default'),
@@ -1151,7 +1151,7 @@ This setting will also come into effect if the user visits the CP’s Login page
 
 The URL or path that users should be redirected to after logging in from the front-end site.
 
-This setting will also come into effect if the user visits the site’s Login page (as specified by [loginPath](#loginPath)) when they are already logged in.
+This setting will also come into effect if the user visits the site’s Login page (as specified by [loginPath](#loginpath)) when they are already logged in.
 
 ```php
 'postLoginRedirect' => 'members/home',
@@ -1329,7 +1329,7 @@ The amount of time a user verification code can be used before expiring.
 
 **Since**: Craft 1.0
 
-A list of file extensions that Craft will allow when a user is uploading files. Note that if you only want to add additional file extensions, without overriding the default extensions, you can use [extraAllowedFileExtensions](#extraAllowedFileExtensions) instead.
+A list of file extensions that Craft will allow when a user is uploading files. Note that if you only want to add additional file extensions, without overriding the default extensions, you can use [extraAllowedFileExtensions](#extraallowedfileextensions) instead.
 
 ```php
 'allowedFileExtensions' => 'jpg, jpeg, png, gif',
@@ -1371,7 +1371,7 @@ The default quality Craft will use when creating [image transforms](image-transf
 
 **Since**: Craft 2.0
 
-A list of additional file extensions that Craft will allow when a user is uploading files, which will get appended to the list specified by [allowedFileExtensions](#allowedFileExtensions).
+A list of additional file extensions that Craft will allow when a user is uploading files, which will get appended to the list specified by [allowedFileExtensions](#allowedfileextensions).
 
 ```php
 'extraAllowedFileExtensions' => 'log',
@@ -1399,7 +1399,7 @@ The string that should replace spaces in filenames after a file has been uploade
 
 **Since**: Craft 2.1
 
-Configures Craft to generate new image transforms right when [getUrl()](templating/assetfilemodel.md#getUrl) is called, rather than when the browser first requests the image.
+Configures Craft to generate new image transforms right when [getUrl()](templating/assetfilemodel.md#geturl) is called, rather than when the browser first requests the image.
 
 ```php
 'generateTransformsBeforePageLoad' => true,

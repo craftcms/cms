@@ -107,7 +107,7 @@ Just as with `general.php`, that `'*'` key is required to trigger multi-environm
 
 ## Environment-Specific Variables
 
-Something else that goes hand-in-hand with Craft’s multi-environment config support is the [environmentVariables](config-settings.md#environmentVariables) config setting. The value of this setting is an array of custom variables that can be accessed from various settings within the Control Panel.
+Something else that goes hand-in-hand with Craft’s multi-environment config support is the [environmentVariables](config-settings.md#environmentvariables) config setting. The value of this setting is an array of custom variables that can be accessed from various settings within the Control Panel.
 
 ### Example: Multi-Environment Asset Source Settings
 
@@ -164,5 +164,5 @@ There are only three settings within Craft that support environment variables. T
 * Site URL (in Settings → General)
 
 ::: tip
-It’s generally better to use the [siteUrl](config-settings.md#siteUrl) config setting for setting your site URL, rather than placing an environment variable within the Site URL setting in Settings → General. (See [this answer](http://craftcms.stackexchange.com/a/921/9) on Craft’s Stack Exchange site for an explanation.)
+It’s generally better to use the [siteUrl](config-settings.md#siteurl) config setting for setting your site URL, rather than placing an environment variable within the Site URL setting in Settings → General. (See [this answer](http://craftcms.stackexchange.com/a/921/9) on Craft’s Stack Exchange site for an explanation.)
 :::

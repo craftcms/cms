@@ -35,7 +35,7 @@ Searching for… | will find elements…
 `-body:*` | where the `body` field is empty.
 
 ::: tip
-You can alter the default behavior of search terms with the [defaultSearchTermOptions](config-settings.md#defaultSearchTermOptions) config setting. See _[Enabling Fuzzy Search by Default](https://craftcms.com/support/enabling-fuzzy-search-by-default)_ for more info.
+You can alter the default behavior of search terms with the [defaultSearchTermOptions](config-settings.md#defaultsearchtermoptions) config setting. See _[Enabling Fuzzy Search by Default](https://craftcms.com/support/enabling-fuzzy-search-by-default)_ for more info.
 :::
 
 ## Searching for specific element attributes
@@ -95,7 +95,7 @@ You can specify the search query in two different ways:
 }) %}
 ```
 
-If you go the latter route, note that the `query` property is required. Beyond that, all of the same keys available to the [defaultSearchTermOptions](config-settings.md#defaultSearchTermOptions) config setting can also be used here.
+If you go the latter route, note that the `query` property is required. Beyond that, all of the same keys available to the [defaultSearchTermOptions](config-settings.md#defaultsearchtermoptions) config setting can also be used here.
 
 ### Ordering results by score
 

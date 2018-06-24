@@ -69,7 +69,7 @@ The accepted duration units are:
 - `week`(`s`)
 
 ::: tip
-If this parameter is omitted, your [cacheDuration](../config-settings.md#cacheDuration) config setting will be used to define the default duration.
+If this parameter is omitted, your [cacheDuration](../config-settings.md#cacheduration) config setting will be used to define the default duration.
 :::
 
 ### `until`

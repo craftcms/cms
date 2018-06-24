@@ -24,7 +24,7 @@ The name of the folder.
 
 ### `parent`
 
-Alias of [getParent()](#getParent).
+Alias of [getParent()](#getparent).
 
 ### `parentId`
 

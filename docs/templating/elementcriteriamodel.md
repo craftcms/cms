@@ -28,7 +28,7 @@ Those aren’t the only ways you’ll interact with ElementCriteriaModel objects
     {% set assets = entry.myAssetsField %}
     ```
 
-* Calling a category’s [getChildren()](categorymodel.md#getChildren) function will give you an ElementCriteriaModel with its [descendantOf](craft.categories.md#descendantOf) and [descendantDist](craft.categories.md#descendantDist) parameters pre-populated.
+* Calling a category’s [getChildren()](categorymodel.md#getchildren) function will give you an ElementCriteriaModel with its [descendantOf](craft.categories.md#descendantof) and [descendantDist](craft.categories.md#descendantdist) parameters pre-populated.
 
     ```twig
     {% set children = category.getChildren() %}

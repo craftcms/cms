@@ -10,7 +10,7 @@ The following methods are available:
 
 Returns the items in the feed located at the given URL.
 
-Only the first argument is required (`url`). If `limit` is passed, the function will return no more than that many items. If `offset` is passed, that many items will be skipped from the beginning of the feed. And if `cacheDuration` is passed, the results will be cached for the given amount of time. (If no `cacheDuration` is passed, Craft will default to the time specified by the [cacheDuration](../config-settings.md#cacheDuration) config setting.)
+Only the first argument is required (`url`). If `limit` is passed, the function will return no more than that many items. If `offset` is passed, that many items will be skipped from the beginning of the feed. And if `cacheDuration` is passed, the results will be cached for the given amount of time. (If no `cacheDuration` is passed, Craft will default to the time specified by the [cacheDuration](../config-settings.md#cacheduration) config setting.)
 
 #### Item Properties
 

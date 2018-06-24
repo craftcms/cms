@@ -12,11 +12,11 @@ Here is an outline of what that entails:
 
 1. **Is it a resource request?**
 
-   Resource request URIs begin with `cpresources/` (or whatever your [resourceTrigger](config-settings.md#resourceTrigger) config setting is set to). They are used to serve CP resources, user photos, etc..
+   Resource request URIs begin with `cpresources/` (or whatever your [resourceTrigger](config-settings.md#resourcetrigger) config setting is set to). They are used to serve CP resources, user photos, etc..
 
 2. **Is it an action request?**
 
-   Action requests either have a URL which begins with `actions/` (or whatever your [actionTrigger](config-settings.md#actionTrigger) config setting is set to), or an “action” param in POST or the query string. Action requests get routed to a controller action, which are used to perform… *actions*. Controller actions are built into the system for core actions, but plugins may also have Controllers that define their own custom actions.
+   Action requests either have a URL which begins with `actions/` (or whatever your [actionTrigger](config-settings.md#actiontrigger) config setting is set to), or an “action” param in POST or the query string. Action requests get routed to a controller action, which are used to perform… *actions*. Controller actions are built into the system for core actions, but plugins may also have Controllers that define their own custom actions.
 
   The request doesn’t necessarily end after a controller has been called. The controller may allow it to keep going.
 

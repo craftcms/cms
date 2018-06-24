@@ -16,7 +16,7 @@ TagModel objects have the following properties:
 
 ### `group`
 
-Alias of [getGroup()](#getGroup).
+Alias of [getGroup()](#getgroup).
 
 ### `groupId`
 
@@ -32,11 +32,11 @@ The locale the tag was fetched in.
 
 ### `next`
 
-Alias of [getNext()](#getNext).
+Alias of [getNext()](#getnext).
 
 ### `prev`
 
-Alias of [getPrev()](#getPrev).
+Alias of [getPrev()](#getprev).
 
 ### `slug`
 

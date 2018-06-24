@@ -8,7 +8,7 @@ The following properties are available:
 
 ### `firstSegment`
 
-Alias of [getFirstSegment()](#getFirstSegment).
+Alias of [getFirstSegment()](#getfirstsegment).
 
 ### `isAjax`
 
@@ -32,39 +32,39 @@ Whether the current request is over SSL.
 
 ### `lastSegment`
 
-Alias of [getLastSegment()](#getLastSegment).
+Alias of [getLastSegment()](#getlastsegment).
 
 ### `pageNum`
 
-Alias of [getPageNum()](#getPageNum).
+Alias of [getPageNum()](#getpagenum).
 
 ### `path`
 
-Alias of [getPath()](#getPath).
+Alias of [getPath()](#getpath).
 
 ### `queryString`
 
-Alias of [getQueryString()](#getQueryString).
+Alias of [getQueryString()](#getquerystring).
 
 ### `queryStringWithoutPath`
 
-Alias of [getQueryStringWithoutPath()](#getQueryStringWithoutPath).
+Alias of [getQueryStringWithoutPath()](#getquerystringwithoutpath).
 
 ### `segments`
 
-Alias of [getSegments()](#getSegments).
+Alias of [getSegments()](#getsegments).
 
 ### `serverName`
 
-Alias of [getServerName()](#getServerName).
+Alias of [getServerName()](#getservername).
 
 ### `url`
 
-Alias of [getUrl()](#getUrl).
+Alias of [getUrl()](#geturl).
 
 ### `urlReferrer`
 
-Alias of [getUrlReferrer()](#getUrlReferrer).
+Alias of [getUrlReferrer()](#geturlreferrer).
 
 
 

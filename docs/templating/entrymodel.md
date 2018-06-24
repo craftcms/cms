@@ -16,11 +16,11 @@ EntryModel objects have the following properties:
 
 ### `ancestors`
 
-Alias of [getAncestors()](#getAncestors).
+Alias of [getAncestors()](#getancestors).
 
 ### `author`
 
-Alias of [getAuthor()](#getAuthor).
+Alias of [getAuthor()](#getauthor).
 
 ### `authorId`
 
@@ -28,11 +28,11 @@ The entry’s author’s ID.
 
 ### `children`
 
-Alias of [getChildren()](#getChildren).
+Alias of [getChildren()](#getchildren).
 
 ### `cpEditUrl`
 
-Alias of [getCpEditUrl()](#getCpEditUrl).
+Alias of [getCpEditUrl()](#getcpediturl).
 
 ### `dateCreated`
 
@@ -44,7 +44,7 @@ A [DateTime](datetime.md) object of the date the entry was last updated.
 
 ### `descendants`
 
-Alias of [getDescendants()](#getDescendants).
+Alias of [getDescendants()](#getdescendants).
 
 ### `enabled`
 
@@ -76,7 +76,7 @@ The entry’s level (if it’s in a Structure section).
 
 ### `link`
 
-Alias of [getLink()](#getLink).
+Alias of [getLink()](#getlink).
 
 ### `locale`
 
@@ -84,15 +84,15 @@ The locale the entry was fetched in.
 
 ### `next`
 
-Alias of [getNext()](#getNext).
+Alias of [getNext()](#getnext).
 
 ### `nextSibling`
 
-Alias of [getNextSibling()](#getNextSibling).
+Alias of [getNextSibling()](#getnextsibling).
 
 ### `parent`
 
-Alias of [getParent()](#getParent).
+Alias of [getParent()](#getparent).
 
 ### `postDate`
 
@@ -100,15 +100,15 @@ A [DateTime](datetime.md) object of the entry’s Post Date, if any.
 
 ### `prev`
 
-Alias of [getPrev()](#getPrev).
+Alias of [getPrev()](#getprev).
 
 ### `prevSibling`
 
-Alias of [getPrevSibling()](#getPrevSibling).
+Alias of [getPrevSibling()](#getprevsibling).
 
 ### `section`
 
-Alias of [getSection()](#getSection).
+Alias of [getSection()](#getsection).
 
 ### `sectionId`
 
@@ -116,7 +116,7 @@ The ID of the entry’s [section](../sections-and-entries.md#sections).
 
 ### `siblings`
 
-Alias of [getSiblings()](#getSiblings).
+Alias of [getSiblings()](#getsiblings).
 
 ### `slug`
 
@@ -132,7 +132,7 @@ The entry’s title.
 
 ### `type`
 
-Alias of [getType()](#getType).
+Alias of [getType()](#gettype).
 
 ### `uri`
 
@@ -140,7 +140,7 @@ The entry’s URI.
 
 ### `url`
 
-Alias of [getUrl()](#getUrl)
+Alias of [getUrl()](#geturl)
 
 
 ## Methods

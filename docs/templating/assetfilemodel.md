@@ -24,7 +24,7 @@ A [DateTime](datetime.md) object of the date the asset was last updated.
 
 ### `extension`
 
-Alias of [getExtension()](#getExtension).
+Alias of [getExtension()](#getextension).
 
 ### `filename`
 
@@ -32,7 +32,7 @@ The name of the file.
 
 ### `folder`
 
-Alias of [getFolder()](#getFolder).
+Alias of [getFolder()](#getfolder).
 
 ### `folderId`
 
@@ -40,7 +40,7 @@ The ID of the folder that the file lives in.
 
 ### `height`
 
-Alias of [getHeight()](#getHeight).
+Alias of [getHeight()](#getheight).
 
 ### `id`
 
@@ -48,7 +48,7 @@ The file’s ID.
 
 ### `img`
 
-Alias of [getImg()](#getImg).
+Alias of [getImg()](#getimg).
 
 ### `kind`
 
@@ -78,19 +78,19 @@ The locale the asset was fetched in.
 
 ### `link`
 
-Alias of [getLink()](#getLink).
+Alias of [getLink()](#getlink).
 
 ### `mimeType`
 
-Alias of [getMimeType()](#getMimeType).
+Alias of [getMimeType()](#getmimetype).
 
 ### `next`
 
-Alias of [getNext()](#getNext).
+Alias of [getNext()](#getnext).
 
 ### `prev`
 
-Alias of [getPrev()](#getPrev).
+Alias of [getPrev()](#getprev).
 
 ### `size`
 
@@ -102,7 +102,7 @@ The size of the file in bytes. You can output it as a formatted filesize using C
 
 ### `source`
 
-Alias of [getSource()](#getSource).
+Alias of [getSource()](#getsource).
 
 ### `sourceId`
 
@@ -114,11 +114,11 @@ The file’s title.
 
 ### `url`
 
-Alias of [getUrl()](#getUrl).
+Alias of [getUrl()](#geturl).
 
 ### `width`
 
-Alias of [getWidth()](#getWidth).
+Alias of [getWidth()](#getwidth).
 
 
 ## Methods
@@ -139,7 +139,7 @@ If the file is an image, this returns the image’s height.
 
 You may optionally pass in a transform handle/object to get the height of the image for the given transform. (See [image-transforms](../image-transforms.md) for more info.)
 
-If you’ve already set a default transform via [setTransform()](#setTransform) and you wish to get the original image height, you can pass in `false` instead.
+If you’ve already set a default transform via [setTransform()](#settransform) and you wish to get the original image height, you can pass in `false` instead.
 
 ### `getImg()`
 
@@ -171,7 +171,7 @@ Returns the image’s URL.
 
 You may optionally pass in a transform handle/object to get the url of the image for the given transform. (See [image-transforms](../image-transforms.md) for more info.)
 
-If you’ve already set a default transform via [setTransform()](#setTransform) and you wish to get the original image URL, you can pass in `false` instead.
+If you’ve already set a default transform via [setTransform()](#settransform) and you wish to get the original image URL, you can pass in `false` instead.
 
 ### `getWidth( transform )`
 
@@ -179,11 +179,11 @@ If the file is an image, this returns the image’s width.
 
 You may optionally pass in a transform handle/object to get the width of the image for the given transform. (See [image-transforms](../image-transforms.md) for more info.)
 
-If you’ve already set a default transform via [setTransform()](#setTransform) and you wish to get the original image width, you can pass in `false` instead.
+If you’ve already set a default transform via [setTransform()](#settransform) and you wish to get the original image width, you can pass in `false` instead.
 
 ### `setTransform( transform )`
 
-Sets the default transform that should be used by [getWidth()](#getWidth), [getHeight()](#getHeight), and [getUrl()](#getUrl), if no alternate transform is provided to those functions. You can pass in either an asset transform’s handle (as a string), or an object defining the transform.
+Sets the default transform that should be used by [getWidth()](#getwidth), [getHeight()](#getheight), and [getUrl()](#geturl), if no alternate transform is provided to those functions. You can pass in either an asset transform’s handle (as a string), or an object defining the transform.
 
 ```twig
 {% set transform = {

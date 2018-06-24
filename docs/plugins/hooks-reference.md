@@ -239,7 +239,7 @@ public function getCpAlerts($path, $fetch)
 
 The hook is passed the following arguments:
 
-* **`$path`** – The path to the main CP page that the alert will be displayed on. (This won’t nceessarily be the same as [HttpRequestService::getPath()](/api/v2services/HttpRequestService.html#getPath-detail) because getCpAlerts() is often called over Ajax after the main page has loaded.)
+* **`$path`** – The path to the main CP page that the alert will be displayed on. (This won’t nceessarily be the same as <api:Craft\HttpRequestService::getPath()> because getCpAlerts() is often called over Ajax after the main page has loaded.)
 * **`$fetch`** – Whether the method can create HTTP requests when determining if it should display alerts. When this is `false`, if the alerts can not be determined without an HTTP request, `null` should be returned, so the method does not significantly impact CP page load times.
 
 ## Routing Hooks

@@ -215,7 +215,7 @@ If your Element Action is intended for your own custom Element Type, you can do 
 
 If you want to add your Element Action to a third party’s Element Type, you will need to use its corresponding plugin hook (assuming the Element Type provides one). The following hooks are provided by Craft’s built-in Element Types:
 
-* [addEntryActions](hooks-reference.md#addEntryActions)
-* [addCategoryActions](hooks-reference.md#addCategoryActions)
-* [addAssetActions](hooks-reference.md#addAssetActions)
-* [addUserActions](hooks-reference.md#addUserActions)
+* [addEntryActions](hooks-reference.md#addentryactions)
+* [addCategoryActions](hooks-reference.md#addcategoryactions)
+* [addAssetActions](hooks-reference.md#addassetactions)
+* [addUserActions](hooks-reference.md#adduseractions)

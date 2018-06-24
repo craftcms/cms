@@ -16,15 +16,15 @@ Returns whether a user is currently logged in.
 {% endif %}
 ```
 
-(Note that checking for [currentUser](global-variables.md#currentUser) works just as well for this.)
+(Note that checking for [currentUser](global-variables.md#currentuser) works just as well for this.)
 
 ### `rememberedUsername`
 
-Alias of [getRememberedUsername()](#getRememberedUsername)
+Alias of [getRememberedUsername()](#getrememberedusername)
 
 ### `returnUrl`
 
-Alias of [getReturnUrl()](#returnUrl)
+Alias of [getReturnUrl()](#returnurl)
 
 ## Methods
 
@@ -40,7 +40,7 @@ Returns any flash messages that have been queued up for the user. Pass `false` i
 
 ### `getRememberedUsername()`
 
-Returns the user’s username, even if they are not logged in, if they have logged in [recently enough](../config-settings.md#rememberUsernameDuration) for Craft to still remember it.
+Returns the user’s username, even if they are not logged in, if they have logged in [recently enough](../config-settings.md#rememberusernameduration) for Craft to still remember it.
 
 ```twig
 <input type="text" name="loginName" value="{{ craft.session.getRememberedUsername() }}">
@@ -48,7 +48,7 @@ Returns the user’s username, even if they are not logged in, if they have logg
 
 ### `getReturnUrl()`
 
-Returns the URL the user was trying to access before getting sent to the login page, because they hit a [requireLogin](tags.md#requireLogin) tag.
+Returns the URL the user was trying to access before getting sent to the login page, because they hit a [requireLogin](tags.md#requirelogin) tag.
 
 ### `hasFlash()`
 

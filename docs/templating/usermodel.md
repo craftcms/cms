@@ -32,15 +32,15 @@ The user’s email address.
 
 ### `fullName`
 
-Alias of [getFullName()](#getFullName).
+Alias of [getFullName()](#getfullname).
 
 ### `friendlyName`
 
-Alias of [getFriendlyName()](#getFriendlyName).
+Alias of [getFriendlyName()](#getfriendlyname).
 
 ### `groups`
 
-Alias of [getGroups()](#getGroups).
+Alias of [getGroups()](#getgroups).
 
 ### `firstName`
 
@@ -56,11 +56,11 @@ A [DateTime](datetime.md) of the last time the user logged in.
 
 ### `name`
 
-Alias of [getName()](#getName).
+Alias of [getName()](#getname).
 
 ### `next`
 
-Alias of [getNext](#getNext).
+Alias of [getNext](#getnext).
 
 ### `id`
 
@@ -72,7 +72,7 @@ Whether this is the currently logged-in user.
 
 ### `photoUrl`
 
-Alias of [getPhotoUrl](#getPhotoUrl).
+Alias of [getPhotoUrl](#getphotourl).
 
 ### `preferredLocale`
 
@@ -80,7 +80,7 @@ The user’s preferred locale.
 
 ### `prev`
 
-Alias of [getPrev](#getPrev).
+Alias of [getPrev](#getprev).
 
 ### `status`
 
