@@ -24,5 +24,5 @@ Add `first` at the end of the tag if you want this CSS file to be included befor
 
 ## Where does it get output?
 
-A `<link>` tag that points to your CSS file will be output by the [getHeadHtml()](functions.md#getHeadHtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</head>` tag.
+A `<link>` tag that points to your CSS file will be output by the [getHeadHtml()](functions.md#getheadhtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</head>` tag.
 

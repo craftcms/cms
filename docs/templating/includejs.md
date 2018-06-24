@@ -28,5 +28,5 @@ Add `first` at the end of the tag if you want this Javascript to be included bef
 
 ## Where does it get output?
 
-Your Javascript snippet will be output by the [getFootHtml()](functions.md#getFootHtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</body>` tag.
+Your Javascript snippet will be output by the [getFootHtml()](functions.md#getfoothtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</body>` tag.
 
