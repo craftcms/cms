@@ -5,7 +5,7 @@ In addition to the template functions that [Twig comes with](http://twig.sensiol
 
 ## `alias( string )`
 
-Passes a string through [Craft::getAlias()](http://www.yiiframework.com/doc-2.0/yii-baseyii.html#getAlias()-detail), which will check if the string begins with an [alias](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html). (See [Configuration](../configuration.md#aliases) for more info.)
+Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which will check if the string begins with an [alias](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html). (See [Configuration](../configuration.md#aliases) for more info.)
 
 ```twig
 <img src="{{ alias('@assetBaseUrl/images/logo.png') }}">

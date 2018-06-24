@@ -50,7 +50,7 @@ The following are valid reference tags:
 
 ## Parsing Reference Tags
 
-You can parse any string for reference tags in your templates using the [`parseRefs`](templating/filters.md#parseRefs) filter:
+You can parse any string for reference tags in your templates using the [parseRefs](templating/filters.md#parserefs) filter:
 
 ```twig
 {{ entry.body|parseRefs|raw }}

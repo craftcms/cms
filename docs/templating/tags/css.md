@@ -11,7 +11,7 @@ The `{% css %}` tag can be used to register a `<style>` tag in the page’s `<he
 ```
 
 ::: tip
-The tag calls [yii\web\View::registerCss()](http://www.yiiframework.com/doc-2.0/yii-web-view.html#registerCss()-detail) under the hood, which can also be accessed via the global `view` variable.
+The tag calls <api:yii\web\View::registerCss()> under the hood, which can also be accessed via the global `view` variable.
 
 ```twig
 {% set styles = ".content { color: #{entry.textColor}; }" %}
@@ -31,4 +31,4 @@ Any HTML attributes that should be included on the `<style>` tag.
 {% css with {type: 'text/css'} %}
 ```
 
-Attributes will be rendered by [yii\helpers\Html::renderTagAttributes()](http://www.yiiframework.com/doc-2.0/yii-helpers-basehtml.html#renderTagAttributes()-detail).
+Attributes will be rendered by <api:yii\helpers\BaseHtml::renderTagAttributes()>.

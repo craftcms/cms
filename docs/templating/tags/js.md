@@ -13,7 +13,7 @@ The `{% js %}` tag can be used to register a `<script>` tag on the page.
 ```
 
 ::: tip
-The tag calls [yii\web\View::registerJs()](http://www.yiiframework.com/doc-2.0/yii-web-view.html#registerJs()-detail) under the hood, which can also be accessed via the global `view` variable.
+The tag calls <api:yii\web\View::registerJs()> under the hood, which can also be accessed via the global `view` variable.
 
 ```twig
 {% set script = '_gaq.push(["_trackEvent", "Search", "'~searchTerm|e('js')~'"' %}

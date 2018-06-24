@@ -31,7 +31,7 @@ class Foo extends Component
 }
 ```
 
-Once the service class exists, you can register it as a component on your primary plugin class by calling [setComponents()](http://www.yiiframework.com/doc-2.0/yii-di-servicelocator.html#setComponents()-detail) from its [init()](http://www.yiiframework.com/doc-2.0/yii-base-object.html#init()-detail) method:
+Once the service class exists, you can register it as a component on your primary plugin class by calling [setComponents()](api:yii\di\ServiceLocator::setComponents()) from its [init()](http://www.yiiframework.com/doc-2.0/yii-base-object.html#init()-detail) method:
 
 ```php
 public function init()
