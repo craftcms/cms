@@ -295,21 +295,24 @@ It’s a good practice to make any URL segments in your site routes configurable
 
 Called by
 
-:   [EntryElementType::getAvailableActions()](https://docs.craftcms.com/api/v2/elementtypes/EntryElementType.html#getAvailableActions-detail)
+:   [UrlManager::parseUrl()](https://docs.craftcms.com/api/v2/craft-urlmanager.html#method-parseurl)
 
 Return
 
-:   An array of element actions.
+:   A route, or `null`
 
-Gives plugins a chance to add additional actions to the entry index page. Each item in the array can either be an element action’s class handle or an instantiated [IElementAction](https://docs.craftcms.com/api/v2/elementactions/IElementAction.html) object.
+Gives plugins a chance to override the default site route for a given element.
 
 ```php
-public function addEntryActions($source)
+public function getElementRoute(BaseElementModel $element)
 {
-    return array(
-        'Foo',
-        new BarElementAction(),
-    );
+    if (
+        $element->getElementType() == ElementType::Entry &&
+        $element->getSection()->handle == 'products'
+    )
+    {
+        return array('action' => 'products/viewEntry');
+    }
 }
 ```
 
