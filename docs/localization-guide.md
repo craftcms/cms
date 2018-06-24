@@ -46,7 +46,7 @@ When you mark a Matrix field as translatable, all of the blocks will be defined 
 
 ## Step 4: Define your site URLs
 
-You can set Craft’s Site URL setting on a per-locale basis via the [siteUrl](config-settings.md#siteurl) config setting. So open up `craft/config/general.php` and add that setting to the array:
+You can set Craft’s Site URL setting on a per-locale basis via the <config:siteUrl> config setting. So open up `craft/config/general.php` and add that setting to the array:
 
 ```php
 return array(

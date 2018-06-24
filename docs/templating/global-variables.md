@@ -38,7 +38,7 @@ A [UserModel](usermodel.md) object set to the currently logged-in user (if there
 
 ## `loginUrl`
 
-The URL to your site’s login page, based on the [loginPath](../config-settings.md#loginpath) config setting.
+The URL to your site’s login page, based on the <config:loginPath> config setting.
 
 ```twig
 {% if not currentUser %}
@@ -48,7 +48,7 @@ The URL to your site’s login page, based on the [loginPath](../config-settings
 
 ## `logoutUrl`
 
-The URL Craft uses to log users out, based on the [logoutPath](../config-settings.md#logoutpath) config setting. Note that Craft will automatically redirect users to your homepage after going here; there’s no such thing as a “logout _page_”.
+The URL Craft uses to log users out, based on the <config:logoutPath> config setting. Note that Craft will automatically redirect users to your homepage after going here; there’s no such thing as a “logout _page_”.
 
 ```twig
 {% if currentUser %}

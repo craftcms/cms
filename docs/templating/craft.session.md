@@ -40,7 +40,7 @@ Returns any flash messages that have been queued up for the user. Pass `false` i
 
 ### `getRememberedUsername()`
 
-Returns the user’s username, even if they are not logged in, if they have logged in [recently enough](../config-settings.md#rememberusernameduration) for Craft to still remember it.
+Returns the user’s username, even if they are not logged in, if they have logged in [recently enough](config:rememberUsernameDuration) for Craft to still remember it.
 
 ```twig
 <input type="text" name="loginName" value="{{ craft.session.getRememberedUsername() }}">

@@ -38,7 +38,7 @@ If **Mode** is set to “Crop”, an additional “Crop Position” setting will
 
 If you leave either **Width** or **Height** blank, that dimension will be set to whatever maintains the image’s aspect ratio. So for example, if you have an image that is 600 by 400 pixels, and you set a transform’s Width to 60, but leave Height blank, the resulting height will be 40.
 
-If you leave **Quality** blank, Craft will use the quality set by your [defaultImageQuality](config-settings.md#defaultimagequality) config setting.
+If you leave **Quality** blank, Craft will use the quality set by your <config:defaultImageQuality> config setting.
 
 **Image Format** can be set to the following values:
 
