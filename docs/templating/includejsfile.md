@@ -24,5 +24,5 @@ Add `first` at the end of the tag if you want this Javascript file to be include
 
 ## Where does it get output?
 
-A `<script>` tag that points to your Javascript file will be output by the [`getFootHtml()`](functions.md#getFootHtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</html>` tag.
+A `<script>` tag that points to your Javascript file will be output by the [getFootHtml()](functions.md#getFootHtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</html>` tag.
 

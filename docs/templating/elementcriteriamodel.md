@@ -22,13 +22,13 @@ Craft provides five functions which create and return new ElementCriteriaModel o
 
 Those aren’t the only ways you’ll interact with ElementCriteriaModel objects, though. They’re actually used all over the place. Here are two examples:
 
-* Calling a relational field (e.g. an [Assets](../assets-fields.md) field) from an element will give you an ElementCriteriaModel with its [`relatedTo`](../relations.md#the-relatedTo-param) parameter pre-populated.
+* Calling a relational field (e.g. an [Assets](../assets-fields.md) field) from an element will give you an ElementCriteriaModel with its [relatedTo](../relations.md#the-relatedTo-param) parameter pre-populated.
 
     ```twig
     {% set assets = entry.myAssetsField %}
     ```
 
-* Calling a category’s [`getChildren()`](categorymodel.md#getChildren) function will give you an ElementCriteriaModel with its [`descendantOf`](craft.categories.md#descendantOf) and [`descendantDist`](craft.categories.md#descendantDist) parameters pre-populated.
+* Calling a category’s [getChildren()](categorymodel.md#getChildren) function will give you an ElementCriteriaModel with its [descendantOf](craft.categories.md#descendantOf) and [descendantDist](craft.categories.md#descendantDist) parameters pre-populated.
 
     ```twig
     {% set children = category.getChildren() %}
@@ -118,7 +118,7 @@ This function will fetch all the matching elements and return them as an array. 
 {# `entries` is an array of EntryModel objects #}
 ```
 
-You don’t actually need to call `find()` yourself though: It will be called automatically as soon as the ElementCriteriaModel is treated like an array (that is, as soon as you check how many elements there are using the [`|length`](http://twig.sensiolabs.org/doc/filters/length.html) filter, or start looping through the elements with a [`{% for %}`](http://twig.sensiolabs.org/doc/tags/for.html) loop).
+You don’t actually need to call `find()` yourself though: It will be called automatically as soon as the ElementCriteriaModel is treated like an array (that is, as soon as you check how many elements there are using the [length](http://twig.sensiolabs.org/doc/filters/length.html) filter, or start looping through the elements with a [for](http://twig.sensiolabs.org/doc/tags/for.html) loop).
 
 ```twig
 {% set entries = craft.entries.section('blog').limit(10) %}
@@ -145,7 +145,7 @@ This function will return the first matching element, if it can find one.
 ```
 
 ::: tip
-Since there’s a chance that `first()` won’t return anything if there are no matching elements, you should **always** make sure it actually returned something before you start working with the element it supposedly returned. (The same applies to [`last()`](#last) and [`nth()`](#nth).)
+Since there’s a chance that `first()` won’t return anything if there are no matching elements, you should **always** make sure it actually returned something before you start working with the element it supposedly returned. (The same applies to [last()](#last) and [nth()](#nth).)
 :::
 
 ### `last()`
@@ -196,7 +196,7 @@ The `offset` and `limit` parameters (which are shared among all element types) w
 :::
 
 ::: tip
-If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [`|length`](http://twig.sensiolabs.org/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.
+If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [length](http://twig.sensiolabs.org/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.
 
 ```twig
 {% if entry.myAssetsField|length %}

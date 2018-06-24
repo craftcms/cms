@@ -28,11 +28,11 @@ The locale the block was fetched in.
 
 ### `next`
 
-Alias of [`getNext()`](#getNext).
+Alias of [getNext()](#getNext).
 
 ### `owner`
 
-Alias of [`getOwner()`](#getOwner).
+Alias of [getOwner()](#getOwner).
 
 ### `ownerId`
 
@@ -40,7 +40,7 @@ The ID of the element that the block’s Matrix field belongs to.
 
 ### `prev`
 
-Alias of [`getPrev()`](#getPrev).
+Alias of [getPrev()](#getPrev).
 
 ### `sortOrder`
 

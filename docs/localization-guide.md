@@ -124,7 +124,7 @@ Here are some examples of what that might look like. Note that your actual webro
 Finally, you will need to open up each of those `index.php` files and make the following changes to them:
 
 1. Make sure that the `$craftPath` variable is set correctly. (By default it’s set to `'../craft'`, which assumes that `index.php` is only one level away from the `craft/` folder. This may not be the case anymore.)
-2. Set the [`CRAFT_LOCALE`](php-constants.md#craft-locale) PHP constant, which tells Craft which locale’s content it should serve from this location.
+2. Set the [CRAFT_LOCALE](php-constants.md#craft-locale) PHP constant, which tells Craft which locale’s content it should serve from this location.
 
 Here’s what your file might look like:
 

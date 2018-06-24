@@ -151,7 +151,7 @@ If you want your form to allow multiple files being uploaded at once, just add t
 
 ## See Also
 
-- [`craft.assets`](templating/craft.assets.md)
+- [craft.assets](templating/craft.assets.md)
 - [ElementCriteriaModel](templating/elementcriteriamodel.md)
 - [AssetFileModel](templating/assetfilemodel.md)
 - [Relations](relations.md)

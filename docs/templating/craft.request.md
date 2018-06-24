@@ -8,7 +8,7 @@ The following properties are available:
 
 ### `firstSegment`
 
-Alias of [`getFirstSegment()`](#getFirstSegment).
+Alias of [getFirstSegment()](#getFirstSegment).
 
 ### `isAjax`
 
@@ -32,39 +32,39 @@ Whether the current request is over SSL.
 
 ### `lastSegment`
 
-Alias of [`getLastSegment()`](#getLastSegment).
+Alias of [getLastSegment()](#getLastSegment).
 
 ### `pageNum`
 
-Alias of [`getPageNum()`](#getPageNum).
+Alias of [getPageNum()](#getPageNum).
 
 ### `path`
 
-Alias of [`getPath()`](#getPath).
+Alias of [getPath()](#getPath).
 
 ### `queryString`
 
-Alias of [`getQueryString()`](#getQueryString).
+Alias of [getQueryString()](#getQueryString).
 
 ### `queryStringWithoutPath`
 
-Alias of [`getQueryStringWithoutPath()`](#getQueryStringWithoutPath).
+Alias of [getQueryStringWithoutPath()](#getQueryStringWithoutPath).
 
 ### `segments`
 
-Alias of [`getSegments()`](#getSegments).
+Alias of [getSegments()](#getSegments).
 
 ### `serverName`
 
-Alias of [`getServerName()`](#getServerName).
+Alias of [getServerName()](#getServerName).
 
 ### `url`
 
-Alias of [`getUrl()`](#getUrl).
+Alias of [getUrl()](#getUrl).
 
 ### `urlReferrer`
 
-Alias of [`getUrlReferrer()`](#getUrlReferrer).
+Alias of [getUrlReferrer()](#getUrlReferrer).
 
 
 
@@ -146,7 +146,7 @@ Returns the query string, except for the `p=` param (which was probably added by
 Returns the full URL for the current request.
 
 ::: tip
-By the time the request makes it to Craft, the _actual_ URL will be whatever your .htaccess file has redirected the request to behind the scenes, e.g. http://example.com/index.php?p=some/path. So rather than returning the actual URL, `getUrl()` returns what the URL probably looks like to the browser. It’s really just a shortcut for calling [`url()`](functions.md#url) and passing in [`craft.request.path`](#path).
+By the time the request makes it to Craft, the _actual_ URL will be whatever your .htaccess file has redirected the request to behind the scenes, e.g. http://example.com/index.php?p=some/path. So rather than returning the actual URL, `getUrl()` returns what the URL probably looks like to the browser. It’s really just a shortcut for calling [url()](functions.md#url) and passing in [craft.request.path](#path).
 
 ```twig
 {{ url(craft.request.path) }}

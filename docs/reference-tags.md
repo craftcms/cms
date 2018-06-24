@@ -45,7 +45,7 @@ As you can see, they are made up three segments:
 
 ## Parsing Reference Tags
 
-You can parse any string for reference tags in your templates using the [`parseRefs`](templating/filters.md#parseRefs) filter:
+You can parse any string for reference tags in your templates using the [parseRefs](templating/filters.md#parseRefs) filter:
 
 ```twig
 {{ entry.body|parseRefs|raw }}

@@ -44,7 +44,7 @@ Only fetch users with the given first name.
 
 ### `fixedOrder`
 
-If set to `true`, users will be returned in the same order as the IDs entered in the [`id`](#id) param.
+If set to `true`, users will be returned in the same order as the IDs entered in the [id](#id) param.
 
 ### `group`
 

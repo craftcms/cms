@@ -86,7 +86,7 @@ Only fetch entries that are a given number of levels below the entry specified b
 
 ### `fixedOrder`
 
-If set to `true`, entries will be returned in the same order as the IDs entered in the [`id`](#id) param.
+If set to `true`, entries will be returned in the same order as the IDs entered in the [id](#id) param.
 
 ### `id`
 

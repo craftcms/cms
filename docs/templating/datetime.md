@@ -97,13 +97,13 @@ Returns the 4-digit year.
 
 ## See Also
 
-You can output your date in any format you’d like using Twig’s [`date` filter](http://twig.sensiolabs.org/doc/filters/date.html):
+You can output your date in any format you’d like using Twig’s [date](http://twig.sensiolabs.org/doc/filters/date.html) filter:
 
 ```twig
 <p>Today’s date is {{ now|date("M d, Y") }}.</p>
 ```
 
-You can get a date that is relative to an existing DateTime object using Twig’s [`date_modify` filter](http://twig.sensiolabs.org/doc/filters/date_modify.html):
+You can get a date that is relative to an existing DateTime object using Twig’s [date_modify](http://twig.sensiolabs.org/doc/filters/date_modify.html) filter:
 
 ```twig
 {% set tomorrow = now|date_modify("+1 day") %}

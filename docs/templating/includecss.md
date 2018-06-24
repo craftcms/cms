@@ -30,5 +30,5 @@ Add `first` at the end of the tag if you want this CSS to be included before any
 
 ## Where does it get output?
 
-Your CSS snippet will be output by the [`getHeadHtml()`](functions.md#getHeadHtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</head>` tag.
+Your CSS snippet will be output by the [getHeadHtml()](functions.md#getHeadHtml) function. If you aren’t calling that function anywhere, Craft will insert it right before the HTML’s `</head>` tag.
 

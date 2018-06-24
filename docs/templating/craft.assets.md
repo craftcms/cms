@@ -18,7 +18,7 @@ Only fetch the asset(s) with the given filename.
 
 ### `fixedOrder`
 
-If set to `true`, assets will be returned in the same order as the IDs entered in the [`id`](#id) param.
+If set to `true`, assets will be returned in the same order as the IDs entered in the [id](#id) param.
 
 ### `folderId`
 

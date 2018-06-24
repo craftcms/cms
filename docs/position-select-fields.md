@@ -34,7 +34,7 @@ You can also access the option’s value in conditionals:
 {% endif %}
 ```
 
-Or you can feed it into a [`{% switch %}`](templating/switch.md) tag:
+Or you can feed it into a [switch](templating/switch.md) tag:
 
 ```twig
 {% switch entry.positionSelectFieldHandle %}

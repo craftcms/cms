@@ -16,15 +16,15 @@ Returns whether a user is currently logged in.
 {% endif %}
 ```
 
-(Note that checking for [`currentUser`](global-variables.md#currentUser) works just as well for this.)
+(Note that checking for [currentUser](global-variables.md#currentUser) works just as well for this.)
 
 ### `rememberedUsername`
 
-Alias of [`getRememberedUsername()`](#getRememberedUsername)
+Alias of [getRememberedUsername()](#getRememberedUsername)
 
 ### `returnUrl`
 
-Alias of [`getReturnUrl()`](#returnUrl)
+Alias of [getReturnUrl()](#returnUrl)
 
 ## Methods
 
@@ -48,7 +48,7 @@ Returns the user’s username, even if they are not logged in, if they have logg
 
 ### `getReturnUrl()`
 
-Returns the URL the user was trying to access before getting sent to the login page, because they hit a [`{% requireLogin %}`](tags.md#requireLogin) tag.
+Returns the URL the user was trying to access before getting sent to the login page, because they hit a [requireLogin](tags.md#requireLogin) tag.
 
 ### `hasFlash()`
 

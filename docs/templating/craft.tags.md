@@ -14,7 +14,7 @@ You can access your site’s [tags](../tags.md) from your templates via `craft.t
 
 ### `fixedOrder`
 
-If set to `true`, tags will be returned in the same order as the IDs entered in the [`id`](#id) param.
+If set to `true`, tags will be returned in the same order as the IDs entered in the [id](#id) param.
 
 ### `group`
 

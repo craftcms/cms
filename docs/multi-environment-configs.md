@@ -58,7 +58,7 @@ return array(
 Craft will compare the additional array keys (`'example.test'` and `'example.com'`) with the `$_SERVER['SERVER_NAME']` server environment variable. If your server is configured properly, that should be your site’s domain name (without the ‘http://’).
 
 ::: tip
-You can change the string Craft uses to determine the current environment by defining the [`CRAFT_ENVIRONMENT`](php-constants.md#craft-environment) constant in your `index.php` file.
+You can change the string Craft uses to determine the current environment by defining the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant in your `index.php` file.
 :::
 
 When Craft is comparing your config keys with `$_SERVER['SERVER_NAME']`, it’s only looking for a *partial match*. So the environment key `'example.com'` will also work if you’re accessing your site via www.example.com or any other subdomain. You could even just use the TLD if you’re feeling adventurous:

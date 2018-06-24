@@ -97,7 +97,7 @@ If your Tags field is only meant to have a single tag selected, remember that ca
 
 ### See Also
 
-- [`craft.tags`](templating/craft.tags.md)
+- [craft.tags](templating/craft.tags.md)
 - [ElementCriteriaModel](templating/elementcriteriamodel.md)
 - [TagModel](templating/tagmodel.md)
 - [Relations](relations.md)

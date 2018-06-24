@@ -100,7 +100,7 @@ If your Entries field is only meant to have a single entry selected, remember th
 
 ### See Also
 
-- [`craft.entries`](templating/craft.entries.md)
+- [craft.entries](templating/craft.entries.md)
 - [ElementCriteriaModel](templating/elementcriteriamodel.md)
 - [EntryModel](templating/entrymodel.md)
 - [Relations](relations.md)

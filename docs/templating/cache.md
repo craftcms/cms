@@ -35,7 +35,7 @@ Specifies the name of the key the cache should use. If this is not provided, a r
 ```
 
 ::: tip
-You can combine this parameter with [`globally`](#globally) to cache templates on a per-page basis, without letting any query string variables get included in the path:
+You can combine this parameter with [globally](#globally) to cache templates on a per-page basis, without letting any query string variables get included in the path:
 
 ```twig
 {% cache globally using key craft.request.path %}
@@ -81,7 +81,7 @@ A [DateTime](datetime.md) object defining when the cache should expire.
 ```
 
 ::: tip
-You can only use [`for`](#for) **_or_** [`until`](#until) in a single `{% cache %}` tag.
+You can only use [for](#for) **_or_** [until](#until) in a single `{% cache %}` tag.
 :::
 
 ### `if`
@@ -103,7 +103,7 @@ Prevents the `{% cache %}` tag from activating if a certain condition is met.
 ```
 
 ::: tip
-You can only use [`if`](#if) **_or_** [`unless`](#unless) in a single `{% cache %}` tag.
+You can only use [if](#if) **_or_** [unless](#unless) in a single `{% cache %}` tag.
 :::
 
 ## Cache clearing

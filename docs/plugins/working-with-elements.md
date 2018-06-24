@@ -68,7 +68,7 @@ It all works exactly the same as you’re probably used to when working with ele
 
 ## Saving Elements
 
-If you need to make changes to an element, or create a new one, generally the best place to do that will be through the element types’ own APIs. For example entries should be saved with [`craft()->entries->saveEntry()`](https://docs.craftcms.com/api/v2/services/EntriesService.html#saveEntry-detail).
+If you need to make changes to an element, or create a new one, generally the best place to do that will be through the element types’ own APIs. For example entries should be saved with [craft()->entries->saveEntry()](api:Craft\EntriesService::saveEntry()).
 
 ## Creating new Element Types
 

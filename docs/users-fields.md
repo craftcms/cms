@@ -93,7 +93,7 @@ If your Users field is only meant to have a single user selected, remember that 
 
 ### See Also
 
-- [`craft.users`](templating/craft.users.md)
+- [craft.users](templating/craft.users.md)
 - [ElementCriteriaModel](templating/elementcriteriamodel.md)
 - [UserModel](templating/usermodel.md)
 - [Relations](relations.md)

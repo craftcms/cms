@@ -43,7 +43,7 @@ Only fetch categories that are a given number of levels below the category speci
 
 ### `fixedOrder`
 
-If set to `true`, categories will be returned in the same order as the IDs entered in the [`id`](#id) param.
+If set to `true`, categories will be returned in the same order as the IDs entered in the [id](#id) param.
 
 ### `group`
 

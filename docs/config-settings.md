@@ -324,7 +324,7 @@ Your site’s name. If this is set, it will take precedence over the Site Name s
 
 **Since**: Craft 2.0
 
-Your site’s URL. If this is set, it will take precedence over the Site URL setting in Settings → General, as well as the [`CRAFT_SITE_URL` constant](php-constants.md#craft-site-url), if set.
+Your site’s URL. If this is set, it will take precedence over the Site URL setting in Settings → General, as well as the [CRAFT_SITE_URL](php-constants.md#craft-site-url) constant, if set.
 
 This is the recommended way to set the site URL on multi-lingual sites, as it gives Craft a way of knowing the correct URLs it should point localized entries/categories to.
 
@@ -418,7 +418,7 @@ Whether Craft should use XSendFile to serve files when possible.
 
 **Since**: Craft 2.2
 
-The name that Craft should give CSRF cookies, and which [`getCsrfInput()`](templating/functions.md#getCsrfInput) will give to the input it returns, if [CSRF Protection](https://craftcms.com/support/csrf-protection) is enabled.
+The name that Craft should give CSRF cookies, and which [getCsrfInput()](templating/functions.md#getCsrfInput) will give to the input it returns, if [CSRF Protection](https://craftcms.com/support/csrf-protection) is enabled.
 
 ```php
 'csrfTokenName' => 'CSRF',
@@ -841,7 +841,7 @@ Whether Craft should specify the path using PATH_INFO or as a query string param
 
 **Since**: Craft 2.2
 
-Whether element queries should be recorded when the [`{% cache %}`](templating/cache.md) tag is doing its thing. If this is set to `false`, it will be up to you to clear caches manually when making changes that would result in an element showing up within a `{% cache %}` tag where it would not have before (such as creating new entries).
+Whether element queries should be recorded when the [cache](templating/cache.md) tag is doing its thing. If this is set to `false`, it will be up to you to clear caches manually when making changes that would result in an element showing up within a `{% cache %}` tag where it would not have before (such as creating new entries).
 
 This will also prevent the “Deleting stale template caches” background task from running each time an element is saved.
 
@@ -857,7 +857,7 @@ This will also prevent the “Deleting stale template caches” background task 
 
 **Since**: Craft 1.1
 
-The template file extensions Craft will look for when matching a template path to a file on the front end. (Also see [`indexTemplateFilenames`](#indexTemplateFilenames).)
+The template file extensions Craft will look for when matching a template path to a file on the front end. (Also see [indexTemplateFilenames](#indexTemplateFilenames).)
 
 ```php
 'defaultTemplateExtensions' => array('html', 'htm', 'xhtml'),
@@ -871,7 +871,7 @@ The template file extensions Craft will look for when matching a template path t
 
 **Since**: Craft 2.4
 
-Whether template caching via the [`{% cache %}` tag](templating/cache.md) should be enabled.
+Whether template caching via the [cache](templating/cache.md) tag should be enabled.
 
 ```php
 'enableTemplateCaching' => false,
@@ -899,7 +899,7 @@ The path prefix to HTTP error code templates, like 404.html.
 
 **Since**: Craft 1.1
 
-The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end. (Also see [`defaultTemplateExtensions`](#defaultTemplateExtensions).)
+The template filenames Craft will look for within a directory to represent the directory’s “index” template when matching a template path to a file on the front end. (Also see [defaultTemplateExtensions](#defaultTemplateExtensions).)
 
 ```php
 'indexTemplateFilenames' => array('index', 'default'),
@@ -1329,7 +1329,7 @@ The amount of time a user verification code can be used before expiring.
 
 **Since**: Craft 1.0
 
-A list of file extensions that Craft will allow when a user is uploading files. Note that if you only want to add additional file extensions, without overriding the default extensions, you can use [`extraAllowedFileExtensions`](#extraAllowedFileExtensions) instead.
+A list of file extensions that Craft will allow when a user is uploading files. Note that if you only want to add additional file extensions, without overriding the default extensions, you can use [extraAllowedFileExtensions](#extraAllowedFileExtensions) instead.
 
 ```php
 'allowedFileExtensions' => 'jpg, jpeg, png, gif',
@@ -1371,7 +1371,7 @@ The default quality Craft will use when creating [image transforms](image-transf
 
 **Since**: Craft 2.0
 
-A list of additional file extensions that Craft will allow when a user is uploading files, which will get appended to the list specified by [`allowedFileExtensions`](#allowedFileExtensions).
+A list of additional file extensions that Craft will allow when a user is uploading files, which will get appended to the list specified by [allowedFileExtensions](#allowedFileExtensions).
 
 ```php
 'extraAllowedFileExtensions' => 'log',
@@ -1399,7 +1399,7 @@ The string that should replace spaces in filenames after a file has been uploade
 
 **Since**: Craft 2.1
 
-Configures Craft to generate new image transforms right when [`getUrl()`](templating/assetfilemodel.md#getUrl) is called, rather than when the browser first requests the image.
+Configures Craft to generate new image transforms right when [getUrl()](templating/assetfilemodel.md#getUrl) is called, rather than when the browser first requests the image.
 
 ```php
 'generateTransformsBeforePageLoad' => true,

@@ -47,7 +47,7 @@ Raised right before an email is sent.
 - `variables` – Any variables that are going to be available to the email template.
 
 ::: tip
-Event handlers can prevent the email from getting sent by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the email from getting sent by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### email.onSendEmail
@@ -105,7 +105,7 @@ Raised right before a locale is deleted.
 - `transferContentTo` – The ID of the locale that the deleted locale’s content should be transferred to, if any.
 
 ::: tip
-Event handlers can prevent the locale from getting deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the locale from getting deleted by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### localization.onDeleteLocale
@@ -183,7 +183,7 @@ Raised before Craft builds out an elements query, enabling plugins to modify the
 - `query` – The <api:Craft\DbCommand> object that is being built out.
 
 ::: tip
-Event handlers can prevent the element query from being executed by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the element query from being executed by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### elements.onBuildElementsQuery
@@ -239,7 +239,7 @@ Raised right before an element is moved within a structure.
 - `element` – A <api:Craft\BaseElementModel> object representing the element that is about to be moved.
 
 ::: tip
-Event handlers can prevent the element from getting moved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the element from getting moved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### structures.onMoveElement
@@ -269,7 +269,7 @@ Raised before a batch element action gets triggered.
 - `criteria` – The <api:Craft\ElementCriteriaModel> object that defines which element(s.html) the user has chosen to perform the action on.
 
 ::: tip
-Event handlers can prevent the element action from being triggered by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the element action from being triggered by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### elements.onPerformAction
@@ -325,7 +325,7 @@ Raised right before an element is saved.
 - `isNewElement` – A boolean indicating whether this is a brand new element.
 
 ::: tip
-Event handlers can prevent the element from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the element from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### elements.onSaveElement
@@ -369,7 +369,7 @@ Raised right before an entry is saved.
 - `isNewEntry` – A boolean indicating whether this is a brand new entry.
 
 ::: tip
-Event handlers can prevent the entry from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the entry from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### entries.onSaveEntry
@@ -398,7 +398,7 @@ Raised right before an entry is deleted.
 - `entry` – An <api:Craft\EntryModel> object representing the entry that is about to be deleted.
 
 ::: tip
-Event handlers can prevent the entry from being deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the entry from being deleted by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### entries.onDeleteEntry
@@ -451,7 +451,7 @@ Raised right before a draft is deleted.
 - `draft` – An <api:Craft\EntryDraftModel> object representing the draft that is able to be deleted.
 
 ::: tip
-Event handlers can prevent the draft from getting deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the draft from getting deleted by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### entryRevisions.onDeleteDraft
@@ -479,7 +479,7 @@ Raised right before a section is deleted.
 - `sectionId` – The ID of the section that is about to be deleted.
 
 ::: tip
-Event handlers can prevent the section from being deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the section from being deleted by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### sections.onDeleteSection
@@ -508,7 +508,7 @@ Raised right before an entry type is saved.
 - `isNewEntryType` – A boolean indicating whether this is a brand new entry type.
 
 ::: tip
-Event handlers can prevent the entry type from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the entry type from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### sections.onSaveEntryType
@@ -538,7 +538,7 @@ Raised right before a section is saved.
 - `isNewSection` – A boolean indicating whether this is a brand new section.
 
 ::: tip
-Event handlers can prevent the section from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the section from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### sections.onSaveSection
@@ -570,7 +570,7 @@ Raised before any category is saved.
 - `isNewCategory` – A boolean indicating whether this is a new category.
 
 ::: tip
-Event handlers can prevent the category from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the category from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### categories.onSaveCategory
@@ -623,7 +623,7 @@ Raised before a category group is deleted.
 - `groupId` – The ID of the category group that’s about to be deleted.
 
 ::: tip
-Event handlers can prevent the category group from being deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the category group from being deleted by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### categories.onDeleteGroup
@@ -654,7 +654,7 @@ Raised when a tag is able to be saved.
 - `isNewTag` – A boolean indicating whether this is a brand new tag.
 
 ::: tip
-Event handlers can prevent the tag from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the tag from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### tags.onSaveTag
@@ -709,7 +709,7 @@ Raised right before an asset’s file is replaced.
 - `asset` – An <api:Craft\AssetFileModel> object representing the asset whose file is about to be replaced.
 
 ::: tip
-Event handlers can prevent the file from getting replaced by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the file from getting replaced by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### assets.onReplaceFile
@@ -738,7 +738,7 @@ Raised right before an asset is saved.
 - `isNewAsset` – A boolean indicating whether this is a new asset.
 
 ::: tip
-Event handlers can prevent the asset from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the asset from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### assets.onSaveAsset
@@ -769,7 +769,7 @@ Raised right before an asset is uploaded to its source.
 - `filename` – The filename of the file.
 
 ::: tip
-Event handlers can prevent the asset from getting uploaded by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the asset from getting uploaded by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ## Global Set API Events
@@ -787,7 +787,7 @@ Raised right before a Global Set’s content is saved.
 - `globalSet` – A <api:Craft\GlobalSetModel> object representing the Global Set whose content is about to be saved.
 
 ::: tip
-Event handlers can prevent the global set from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the global set from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### globals.onSaveGlobalContent
@@ -817,7 +817,7 @@ Raised right before a user is logged in.
 - `username` – A string of the username that is about to log in.
 
 ::: tip
-Event handlers can prevent the user from getting logged in by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting logged in by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### userSession.onLogin
@@ -845,7 +845,7 @@ Raised right before a user is logged out.
 - `user` – A <api:Craft\UserModel> object representing the user that is getting logged out.
 
 ::: tip
-Event handlers can prevent the user from getting logged out by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting logged out by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### userSession.onLogout
@@ -869,7 +869,7 @@ Raised right before a user is activated.
 - `user` – A <api:Craft\UserModel> object representing the user that’s about to be activated.
 
 ::: tip
-Event handlers can prevent the user from getting activated by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting activated by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onActivateUser
@@ -898,7 +898,7 @@ Raised right before a user’s group assignments are updated. Note that this cou
 - `groupIds` – The user’s new group IDs (if any).
 
 ::: tip
-Event handlers can prevent the user’s new group assignments from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user’s new group assignments from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### userGroups.onAssignUserToGroups
@@ -928,7 +928,7 @@ Raised right before a user is deleted.
 - `transferContentTo` – A <api:Craft\UserModel> object representing the user that the deleted user’s content should be transferred to, if any.
 
 ::: tip
-Event handlers can prevent the user from getting deleted by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting deleted by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onDeleteUser
@@ -958,7 +958,7 @@ Raised right before a user is saved.
 - `isNewUser` – A boolean indicating whether this is a brand new user account.
 
 ::: tip
-Event handlers can prevent the user from getting saved by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting saved by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onSaveUser
@@ -988,7 +988,7 @@ Raised right before a user’s password is changed.
 - **password** – The user’s new password.
 
 ::: tip
-Event handlers can prevent the user’s password from getting changed by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user’s password from getting changed by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onSetPassword
@@ -1016,7 +1016,7 @@ Raised right before a user is suspended.
 - `user` – A <api:Craft\UserModel> object representing the user that’s about to be suspended.
 
 ::: tip
-Event handlers can prevent the user from getting suspended by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting suspended by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onSuspendUser
@@ -1056,7 +1056,7 @@ Raised right before a user is unlocked.
 - `user` – A <api:Craft\UserModel> object representing the user that’s about to be unlocked.
 
 ::: tip
-Event handlers can prevent the user from getting unlocked by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting unlocked by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onUnlockUser
@@ -1084,7 +1084,7 @@ Raised right before a user is unsuspended.
 - `user` – A <api:Craft\UserModel> object representing the user that’s about to be unsuspended.
 
 ::: tip
-Event handlers can prevent the user from getting unsuspended by setting [`$event->performAction`](api:Craft\Event::performAction) to `false`.
+Event handlers can prevent the user from getting unsuspended by setting [$event->performAction](api:Craft\Event::performAction) to `false`.
 :::
 
 ### users.onUnsuspendUser

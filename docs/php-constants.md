@@ -33,7 +33,7 @@ define('CRAFT_LOCALE', 'nl');
 
 ### `CRAFT_SITE_URL`
 
-Overrides the Site URL setting in Settings → General. That can be useful in combination with [`CRAFT_LOCALE`](#craft-locale) for creating a locale-specific version of your site.
+Overrides the Site URL setting in Settings → General. That can be useful in combination with [CRAFT_LOCALE](#craft-locale) for creating a locale-specific version of your site.
 
 ```php
 define('CRAFT_SITE_URL', "http://example.com/nl/");
