@@ -23,6 +23,7 @@
 - Fixed a bug where cloning models and queries would lose any associated behaviors. ([#2857](https://github.com/craftcms/cms/issues/2857))
 - Fixed a bug where custom field params were getting forgotten when calling `getNext()` and `getPrev()`, if an element query object was passed in. ([#3019](https://github.com/craftcms/cms/issues/3019))
 - Fixed a bug where datepickers were getting scrollbars.
+- Fixed a bug where volumes’ field layouts weren’t getting deleted when volumes were deleted. ([#3022](https://github.com/craftcms/cms/pull/3022))
 
 ## 3.0.12 - 2018-06-18
 
