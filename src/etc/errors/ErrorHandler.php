@@ -12,8 +12,8 @@ namespace Craft;
  * * development templates, named as `exception.php`;
  * * production templates, named as `error<StatusCode>.php`;
  *
- * where <StatusCode> stands for the HTTP error code (e.g. error500.php). Localized templates are named similarly but
- * located under a subdirectory whose name is the language code (e.g. zh_cn/error500.php).
+ * where `<StatusCode>` stands for the HTTP error code (e.g. `error500.php`). Localized templates are named similarly but
+ * located under a subdirectory whose name is the language code (e.g. `zh_cn/error500.php`).
  *
  * Development templates are displayed when the application is in dev mode (i.e. craft()->config->get('devMode') = true).
  * Detailed error information with source code are displayed in these templates. Production templates are meant to be
