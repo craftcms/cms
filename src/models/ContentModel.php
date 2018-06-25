@@ -86,6 +86,11 @@ class ContentModel extends BaseModel
 	 */
 	public function validate($attributes = null, $clearErrors = true)
 	{
+		if ($this->title)
+		{
+			$this->title = trim($this->title);
+		}
+
 		$validates = parent::validate($attributes, $clearErrors);
 
 		foreach (craft()->fields->getAllFields() as $field)

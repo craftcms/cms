@@ -632,7 +632,7 @@ class AssetElementType extends BaseElementType
 			'label'     => $folder->parentId ? $folder->name : Craft::t($folder->name),
 			'hasThumbs' => true,
 			'criteria'  => array('folderId' => $folder->id),
-			'data'      => array('upload' => is_null($folder->sourceId) ? true : craft()->assets->canUserPerformAction($folder->id, 'uploadToAssetSource'))
+			'data'      => array('upload' => is_null($folder->sourceId) ? true : (craft()->isConsole() ? true : craft()->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')))
 		);
 
 		if ($includeNestedFolders)

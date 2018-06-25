@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.23
+ * @version   0.1.24
  * @license   MIT
  */
 (function($){
@@ -5723,6 +5723,10 @@ Garnish.Select = Garnish.Base.extend(
 
             $.removeData(item, 'select');
             $.removeData(item, 'select-handle');
+
+            if (this.$focusedItem && this.$focusedItem[0] === item) {
+                this.$focusedItem = null;
+            }
         }
     },
     {

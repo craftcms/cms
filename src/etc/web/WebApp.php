@@ -51,6 +51,7 @@ namespace Craft;
  * @property UserPermissionsService  $userPermissions  The {@link UserPermissionsService user permission service}.
  * @property UserSessionService      $userSession      The {@link UserSessionService user session service}.
  * @property UsersService            $users            The {@link UsersService users service}.
+ * @mixin AppBehavior
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

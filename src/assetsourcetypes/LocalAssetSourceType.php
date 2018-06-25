@@ -407,9 +407,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	protected function getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
 	{
 		$path = is_null($sourceType) ? $this->getBasePath() : $sourceType->getBasePath();
-		$path = IOHelper::getRealPath($path);
+		$realPath = IOHelper::getRealPath($path);
 
-		return $path;
+		// Attempt to recover in a spectacular manner
+		if (!$realPath) {
+			IOHelper::ensureFolderExists($path);
+			$realPath = IOHelper::getRealPath($path);
+		}
+
+		return $realPath;
 	}
 
 	/**
