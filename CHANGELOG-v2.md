@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.6.3018 - 2018-06-25
+
 ### Changed
 - Updated  Garnish to 0.1.24.
 - From now on the root folder for Local Asset Sources will be created, if it doesn't exist.
