@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
@@ -30,9 +31,12 @@ class UrlManager extends \yii\web\UrlManager
      * @event RegisterUrlRulesEvent The event that is triggered when registering
      * URL rules for the Control Panel.
      *
+     * ::: warning
      * This event gets called during class initialization, so you should always
      * use a class-level event handler.
+     * :::
      *
+     * ---
      * ```php
      * use craft\events\RegisterUrlRulesEvent;
      * use craft\web\UrlManager;
@@ -48,9 +52,12 @@ class UrlManager extends \yii\web\UrlManager
      * @event RegisterUrlRulesEvent The event that is triggered when registering
      * URL rules for the front-end site.
      *
+     * ::: warning
      * This event gets called during class initialization, so you should always
      * use a class-level event handler.
+     * :::
      *
+     * ---
      * ```php
      * use craft\events\RegisterUrlRulesEvent;
      * use craft\web\UrlManager;
@@ -130,6 +137,11 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function createUrl($params)
     {
+        if (!Craft::$app->getIsInitialized()) {
+            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
+                "Stack trace:\n" . App::backtrace(), __METHOD__);
+        }
+
         $params = (array)$params;
         unset($params[$this->routeParam]);
 
@@ -144,6 +156,11 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function createAbsoluteUrl($params, $scheme = null)
     {
+        if (!Craft::$app->getIsInitialized()) {
+            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
+                "Stack trace:\n" . App::backtrace(), __METHOD__);
+        }
+
         $params = (array)$params;
         unset($params[$this->routeParam]);
 
@@ -179,10 +196,30 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns the element that was matched by the URI.
      *
+     * ::: warning
+     * This should only be called once the application has been fully initialized.
+     * Otherwise some plugins may be unable to register [[EVENT_REGISTER_CP_URL_RULES]]
+     * and [[EVENT_REGISTER_SITE_URL_RULES]] event handlers successfully.
+     * :::
+     *
+     * ---
+     * ```php
+     * use craft\web\Application;
+     *
+     * Craft::$app->on(Application::EVENT_INIT, function() {
+     *     $element = Craft::$app->urlManager->getMatchedElement();
+     * }
+     * ```
+     *
      * @return ElementInterface|false
      */
     public function getMatchedElement()
     {
+        if (!Craft::$app->getIsInitialized()) {
+            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
+                "Stack trace:\n" . App::backtrace(), __METHOD__);
+        }
+
         if ($this->_matchedElement !== null) {
             return $this->_matchedElement;
         }

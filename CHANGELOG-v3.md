@@ -16,6 +16,7 @@
 - Web-based queue workers now call `craft\helpers\App::maxPowerCaptain()` before running the queue. ([#3011](https://github.com/craftcms/cms/issues/3011))
 - The PHP Info utility no longer displays the original values for settings and only the current environment value. ([#2990](https://github.com/craftcms/cms/issues/2990))
 - Loosened up most of Craft’s Composer dependency constraints.
+- `craft\web\UrlManager::createUrl()`, `createAbsoluteUrl()`, and `getMatchedElement()` now log warnings if they’re called before Craft has been fully initialized. ([#3028](https://github.com/craftcms/cms/issues/3028))
 
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
