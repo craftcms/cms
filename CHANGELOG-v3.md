@@ -19,6 +19,7 @@
 - Loosened up most of Craft’s Composer dependency constraints.
 - Craft no longer publishes asset thumbnails to the `cpresources/` folder.
 - `attributes`, `error`, `errors`, and `scenario` are now reserved field handles. ([#3032](https://github.com/craftcms/cms/issues/3032))
+- Improved the look of Control Panel tabs.
 - `craft\web\UrlManager::createUrl()`, `createAbsoluteUrl()`, and `getMatchedElement()` now log warnings if they’re called before Craft has been fully initialized. ([#3028](https://github.com/craftcms/cms/issues/3028))
 
 ### Deprecated
