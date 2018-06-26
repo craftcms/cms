@@ -619,21 +619,12 @@ class Assets extends Component
             }
         }
 
-        $path = $this->getThumbPath($asset, $width, $height, $generate, $fallbackToIcon);
-
-        if ($path === false) {
-            return UrlHelper::actionUrl('assets/generate-thumb', [
-                'uid' => $asset->uid,
-                'width' => $width,
-                'height' => $height,
-                'v' => $asset->dateModified->getTimestamp(),
-            ]);
-        }
-
-        // Publish the thumb directory (if necessary) and return the thumb's published URL
-        $dir = dirname($path);
-        $name = pathinfo($path, PATHINFO_BASENAME);
-        return Craft::$app->getAssetManager()->getPublishedUrl($dir, true, $name);
+        return UrlHelper::actionUrl('assets/thumb', [
+            'uid' => $asset->uid,
+            'width' => $width,
+            'height' => $height,
+            'v' => $asset->dateModified->getTimestamp(),
+        ]);
     }
 
     /**
@@ -702,7 +693,6 @@ class Assets extends Component
                     ->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
-
                 return $this->getIconPath($asset);
             }
         }

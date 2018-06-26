@@ -6,6 +6,7 @@
 - `|date`, `|time`, and `|datetime` filters now support a `locale` argument, for specifying which locale’s formatter should be doing the date/time formatting. ([#3006](https://github.com/craftcms/cms/issues/3006))
 - Added `craft\base\ApplicationTrait::getIsInitialized()`.
 - Added `craft\base\ClonefixTrait`.
+- Added `craft\controllers\AssetsController::actionThumb()`.
 - Added `craft\helpers\App::backtrace()`.
 - Added `craft\queue\jobs\PropagateElements`.
 - Added `craft\services\Elements::propagateElement()`.
@@ -16,7 +17,11 @@
 - Web-based queue workers now call `craft\helpers\App::maxPowerCaptain()` before running the queue. ([#3011](https://github.com/craftcms/cms/issues/3011))
 - The PHP Info utility no longer displays the original values for settings and only the current environment value. ([#2990](https://github.com/craftcms/cms/issues/2990))
 - Loosened up most of Craft’s Composer dependency constraints.
+- Craft no longer publishes asset thumbnails to the `cpresources/` folder.
 - `craft\web\UrlManager::createUrl()`, `createAbsoluteUrl()`, and `getMatchedElement()` now log warnings if they’re called before Craft has been fully initialized. ([#3028](https://github.com/craftcms/cms/issues/3028))
+
+### Deprecated
+- Deprecated `craft\controllers\AssetsController::actionGenerateThumb()`.
 
 ### Fixed
 - Fixed a bug where sidebar meta info on Edit User pages was bleeding over the edge of the page’s content area.
@@ -30,6 +35,7 @@
 - Fixed a bug where volumes’ field layouts weren’t getting deleted when volumes were deleted. ([#3022](https://github.com/craftcms/cms/pull/3022))
 - Fixed a bug where deleting a section or an entry type wouldn’t delete any associated entries that didn’t exist in the primary site. ([#3023](https://github.com/craftcms/cms/issues/3023))
 - Fixed a bug where the `svg()` Twig function could convert `id` attributes within the SVG contents to invalid IDs. ([#3025](https://github.com/craftcms/cms/issues/3025))
+- Fixed a bug where asset thumbnails wouldn’t load reliably in the Control Panel on load-balanced environments. ([#3026](https://github.com/craftcms/cms/issues/3026))
 
 ## 3.0.12 - 2018-06-18
 
