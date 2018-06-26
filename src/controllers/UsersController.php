@@ -10,9 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
+use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
+use craft\events\DefineUserContentSummaryEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
@@ -61,6 +63,22 @@ class UsersController extends Controller
      * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
      */
     const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
+
+    /**
+     * @event DefineUserContentSummaryEvent The event that is triggered when defining a summary of content owned by a user(s), before they are deleted
+     *
+     * ---
+     * ```php
+     * use craft\controllers\UsersController;
+     * use craft\events\DefineUserContentSummaryEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY, function(DefineUserContentSummaryEvent $e) {
+     *     $e->contentSummary[] = 'A pair of sneakers';
+     * });
+     * ```
+     */
+    const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
     // Properties
     // =========================================================================
@@ -1348,6 +1366,38 @@ class UsersController extends Controller
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
 
         return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Returns a summary of the content that is owned by a given user ID(s).
+     *
+     * @return Response|null
+     */
+    public function actionUserContentSummary(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requirePermission('deleteUsers');
+
+        $userIds = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $summary = [];
+
+        $entryCount = (new Query())
+            ->from(['{{%entries}}'])
+            ->where(['authorId' => $userIds])
+            ->count();
+
+        if ($entryCount) {
+//            $summary[] = $entryCount == 1 ? Craft::t('app', '1 entry') : Craft::t('app', '{num} entries', ['num' => $entryCount]);
+        }
+
+        // Fire a 'defineUserContentSummary' event
+        $event = new DefineUserContentSummaryEvent([
+            'contentSummary' => $summary,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+
+        return $this->asJson($event->contentSummary);
     }
 
     /**

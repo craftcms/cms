@@ -1119,6 +1119,7 @@ body.ltr #loginmodal .inputcontainer .spinner, body.ltr #elevatedsessionmodal .i
 body.rtl #loginmodal .inputcontainer .spinner, body.rtl #elevatedsessionmodal .inputcontainer .spinner { left: -24px; }
 
 /* delete user modal */
+.deleteusermodal .content-summary { margin: -24px -24px 24px; padding: 24px; background: #fbfcfd; }
 .deleteusermodal .options label { display: inline-block; line-height: 30px; }
 .deleteusermodal .elementselect { display: inline-block; vertical-align: middle; }
 body.ltr .deleteusermodal .elementselect { margin-left: 10px; }

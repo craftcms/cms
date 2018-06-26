@@ -3,10 +3,13 @@
 ## Unreleased
 
 ### Added
+- Craft now includes a summary of the content that will be transferred/deleted in Delete User modals. ([#875](https://github.com/craftcms/cms/issues/875))
 - `|date`, `|time`, and `|datetime` filters now support a `locale` argument, for specifying which locale’s formatter should be doing the date/time formatting. ([#3006](https://github.com/craftcms/cms/issues/3006))
 - Added `craft\base\ApplicationTrait::getIsInitialized()`.
 - Added `craft\base\ClonefixTrait`.
 - Added `craft\controllers\AssetsController::actionThumb()`.
+- Added `craft\controllers\UsersController::actionUserContentSummary()`.
+- Added `craft\controllers\UsersController::EVENT_DEFINE_CONTENT_SUMMARY`.
 - Added `craft\helpers\App::backtrace()`.
 - Added `craft\queue\jobs\PropagateElements`.
 - Added `craft\services\Elements::propagateElement()`.
