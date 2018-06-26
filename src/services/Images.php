@@ -107,7 +107,7 @@ class Images extends Component
 
         $version = App::extensionVersion('imagick');
         try {
-            $version .= ' (ImageMagick '.$this->getImageMagickApiVersion().')';
+            $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
         } catch (\Throwable $e) {
         }
         return $version;
@@ -311,7 +311,7 @@ class Images extends Component
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
         } catch (\Throwable $e) {
-            Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), __METHOD__);
+            Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
         }
 
         // Image has already been cleaned if it had exif/orientation data

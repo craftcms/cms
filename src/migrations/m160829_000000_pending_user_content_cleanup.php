@@ -30,7 +30,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ->column($this->db);
 
         if (!empty($ids)) {
-            echo '    > Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids)."\n";
+            echo '    > Found ' . count($ids) . ' orphaned element IDs in the elements table: ' . implode(', ', $ids) . "\n";
 
             // Delete 'em
             $this->delete('{{%elements}}', ['id' => $ids]);

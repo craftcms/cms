@@ -47,7 +47,7 @@ class Localization
         $allLanguages = array_combine($lcLanguages, $allLanguages);
 
         if (!isset($allLanguages[$language])) {
-            throw new InvalidArgumentException('Invalid language: '.$language);
+            throw new InvalidArgumentException('Invalid language: ' . $language);
         }
 
         return $allLanguages[$language];
@@ -93,8 +93,8 @@ class Localization
         $data = null;
 
         // Load the locale data
-        $appDataPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
+        $appDataPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
+        $customDataPath = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
 
         if (is_file($appDataPath)) {
             $data = require $appDataPath;
@@ -160,7 +160,7 @@ class Localization
         $frameworkMessagePath = FileHelper::normalizePath(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
-            $path = $frameworkMessagePath.DIRECTORY_SEPARATOR.$translationFile.DIRECTORY_SEPARATOR.'yii.php';
+            $path = $frameworkMessagePath . DIRECTORY_SEPARATOR . $translationFile . DIRECTORY_SEPARATOR . 'yii.php';
 
             if (is_file($path)) {
                 // Load it up.

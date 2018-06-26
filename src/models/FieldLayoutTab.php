@@ -87,7 +87,7 @@ class FieldLayoutTab extends Model
         }
 
         if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
-            throw new InvalidConfigException('Invalid layout ID: '.$this->layoutId);
+            throw new InvalidConfigException('Invalid layout ID: ' . $this->layoutId);
         }
 
         return $this->_layout;
@@ -145,6 +145,6 @@ class FieldLayoutTab extends Model
      */
     public function getHtmlId(): string
     {
-        return 'tab-'.StringHelper::toKebabCase($this->name);
+        return 'tab-' . StringHelper::toKebabCase($this->name);
     }
 }

@@ -27,7 +27,7 @@ class HeaderNode extends \Twig_Node
             ->write('$_headerParts = array_map(\'trim\', explode(\':\', ')
             ->subcompile($this->getNode('header'))
             ->raw(", 2));\n")
-            ->write(\Craft::class."::\$app->getResponse()->getHeaders()->set(\$_headerParts[0], \$_headerParts[1] ?? '');\n")
+            ->write(\Craft::class . "::\$app->getResponse()->getHeaders()->set(\$_headerParts[0], \$_headerParts[1] ?? '');\n")
             ->write("unset(\$_headerParts);\n");
     }
 }

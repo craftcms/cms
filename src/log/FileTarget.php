@@ -30,7 +30,7 @@ class FileTarget extends \yii\log\FileTarget
 
         foreach ($context as $key => $value) {
             $value = $security->redactIfSensitive($key, $value);
-            $result[] = "\${$key} = ".VarDumper::dumpAsString($value);
+            $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
         }
 
         return implode("\n\n", $result);

@@ -47,7 +47,7 @@ class CpAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             D3Asset::class,
@@ -71,7 +71,7 @@ class CpAsset extends AssetBundle
             'css/charts.css',
         ];
 
-        $this->js[] = 'js/Craft'.$this->dotJs();
+        $this->js[] = 'js/Craft' . $this->dotJs();
 
         parent::init();
     }
@@ -314,7 +314,7 @@ JS;
         $sections = [];
 
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:'.$section->id)) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:' . $section->id)) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,

@@ -70,9 +70,9 @@ class Response extends \yii\web\Response
     {
         $cacheTime = 31536000; // 1 year
         $this->getHeaders()
-            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
+            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
             ->set('Pragma', 'cache')
-            ->set('Cache-Control', 'max-age='.$cacheTime);
+            ->set('Cache-Control', 'max-age=' . $cacheTime);
 
         return $this;
     }
@@ -88,7 +88,7 @@ class Response extends \yii\web\Response
         $modifiedTime = filemtime($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT');
         }
 
         return $this;
@@ -151,7 +151,7 @@ class Response extends \yii\web\Response
             $obContent = @ob_get_clean();
 
             if ($obContent !== false) {
-                $this->content = $obContent.$this->content;
+                $this->content = $obContent . $this->content;
             } else {
                 break;
             }

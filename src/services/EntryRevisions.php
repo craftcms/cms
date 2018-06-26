@@ -163,7 +163,7 @@ class EntryRevisions extends Component
             foreach ($allDrafts as $draft) {
                 if (
                     ($draft->creatorId && $draft->creatorId == $user->id) ||
-                    $user->can('editPeerEntryDrafts:'.$draft->sectionId)
+                    $user->can('editPeerEntryDrafts:' . $draft->sectionId)
                 ) {
                     $editableDrafts[] = $draft;
                 }
@@ -518,7 +518,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new EntryDraftNotFoundException('Invalid entry draft ID: '.$draft->draftId);
+                throw new EntryDraftNotFoundException('Invalid entry draft ID: ' . $draft->draftId);
             }
         } else {
             $draftRecord = new EntryDraftRecord();

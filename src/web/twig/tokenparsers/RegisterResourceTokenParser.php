@@ -165,7 +165,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     public function decideBlockEnd(\Twig_Token $token): bool
     {
-        return $token->test('end'.strtolower($this->tag));
+        return $token->test('end' . strtolower($this->tag));
     }
 
     // Private Methods

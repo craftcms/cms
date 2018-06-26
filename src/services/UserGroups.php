@@ -98,7 +98,7 @@ class UserGroups extends Component
             if (
                 ($currentUser !== null && (
                         $currentUser->isInGroup($group) ||
-                        $currentUser->can('assignUserGroup:'.$group->id)
+                        $currentUser->can('assignUserGroup:' . $group->id)
                     )) ||
                 ($user !== null && $user->isInGroup($group))
             ) {

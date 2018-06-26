@@ -216,13 +216,13 @@ class Db
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL."({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type."({$length})";
+                return $type . "({$length})";
             }
         }
 
@@ -592,7 +592,7 @@ class Db
             // Assume that date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, true);
 
-            $normalizedValues[] = $operator.static::prepareDateForDb($val);
+            $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues);

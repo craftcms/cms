@@ -60,7 +60,7 @@ class SingleSectionUriValidator extends Validator
             $site = Craft::$app->getSites()->getSiteById($model->siteId);
 
             if (!$site) {
-                throw new Exception('Invalid site ID: '.$model->siteId);
+                throw new Exception('Invalid site ID: ' . $model->siteId);
             }
 
             if ($model->uriFormat === '__home__') {

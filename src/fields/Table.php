@@ -197,12 +197,12 @@ class Table extends Field
 
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
-        $view->registerJs('new Craft.TableFieldSettings('.
-            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($this->columns, JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE).', '.
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
+        $view->registerJs('new Craft.TableFieldSettings(' .
+            Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
             ');');
 
         $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -359,11 +359,11 @@ class Table extends Field
                 $value = strtolower($value);
 
                 if ($value[0] !== '#') {
-                    $value = '#'.$value;
+                    $value = '#' . $value;
                 }
 
                 if (strlen($value) === 4) {
-                    $value = '#'.$value[1].$value[1].$value[2].$value[2].$value[3].$value[3];
+                    $value = '#' . $value[1] . $value[1] . $value[2] . $value[2] . $value[3] . $value[3];
                 }
 
                 return new ColorData($value);

@@ -121,7 +121,7 @@ class FindAndReplace extends BaseJob
             'string',
             'char'
         ], true)) {
-            $this->_textColumns[] = [$table, $fieldColumnPrefix.$field->handle];
+            $this->_textColumns[] = [$table, $fieldColumnPrefix . $field->handle];
         }
     }
 
@@ -142,7 +142,7 @@ class FindAndReplace extends BaseJob
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
 
         foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+            $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
             foreach ($blockType->getFields() as $field) {
                 $this->_checkField($field, $table, $fieldColumnPrefix);

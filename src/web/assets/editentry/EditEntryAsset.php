@@ -20,7 +20,7 @@ class EditEntryAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,8 +31,8 @@ class EditEntryAsset extends AssetBundle
         ];
 
         $this->js = [
-            'EntryDraftEditor'.$this->dotJs(),
-            'EntryTypeSwitcher'.$this->dotJs(),
+            'EntryDraftEditor' . $this->dotJs(),
+            'EntryTypeSwitcher' . $this->dotJs(),
         ];
 
         parent::init();

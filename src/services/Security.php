@@ -194,7 +194,7 @@ class Security extends \yii\base\Security
             }
         } else if (
             is_string($value) &&
-            preg_match('/\b('.implode('|', $this->sensitiveKeywords).')\b/', Inflector::camel2words($name, false))
+            preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Inflector::camel2words($name, false))
         ) {
             $value = str_repeat('•', strlen($value));
         }

@@ -193,7 +193,7 @@ class Section extends Model
     public function addSiteSettingsErrors(array $errors, int $siteId)
     {
         foreach ($errors as $attribute => $siteErrors) {
-            $key = $attribute.'-'.$siteId;
+            $key = $attribute . '-' . $siteId;
             foreach ($siteErrors as $error) {
                 $this->addError($key, $error);
             }

@@ -48,7 +48,7 @@ class QueueController extends Controller
 
         // Make sure the queue uses our interface
         if (!Craft::$app->getQueue() instanceof QueueInterface) {
-            throw new ServerErrorHttpException('The queue class '.get_class(Craft::$app->getQueue()).' doesn’t support web-based runners.');
+            throw new ServerErrorHttpException('The queue class ' . get_class(Craft::$app->getQueue()) . ' doesn’t support web-based runners.');
         }
 
         return true;

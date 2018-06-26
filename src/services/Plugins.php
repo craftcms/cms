@@ -144,7 +144,7 @@ class Plugins extends Component
     {
         $this->_composerPluginInfo = [];
 
-        $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
+        $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
 
         if (file_exists($path)) {
             /** @var array $plugins */
@@ -308,14 +308,14 @@ class Plugins extends Component
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = FileHelper::normalizePath(dirname((new \ReflectionClass($class))->getFileName())).DIRECTORY_SEPARATOR;
+            $classPath = FileHelper::normalizePath(dirname((new \ReflectionClass($class))->getFileName())) . DIRECTORY_SEPARATOR;
         } catch (\ReflectionException $e) {
             return $this->_classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
         foreach ($this->_composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && strpos($classPath, $info['basePath'].DIRECTORY_SEPARATOR) === 0) {
+            if (isset($info['basePath']) && strpos($classPath, $info['basePath'] . DIRECTORY_SEPARATOR) === 0) {
                 return $this->_classPluginHandles[$class] = $handle;
             }
         }
@@ -921,7 +921,7 @@ class Plugins extends Component
             }
         }
 
-        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'icon.svg' : false;
+        $iconPath = ($basePath !== false) ? $basePath . DIRECTORY_SEPARATOR . 'icon.svg' : false;
 
         if ($iconPath === false || !is_file($iconPath) || !FileHelper::isSvg($iconPath)) {
             $iconPath = Craft::getAlias('@app/icons/default-plugin.svg');
@@ -1111,8 +1111,8 @@ class Plugins extends Component
             'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,
             'pluginId' => $id,
-            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
-            'migrationPath' => $plugin->getBasePath().DIRECTORY_SEPARATOR.'migrations',
+            'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
+            'migrationPath' => $plugin->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
         ]);
     }
 

@@ -58,8 +58,8 @@ class Stringy extends \Stringy\Stringy
     {
         static $charsArray;
         return $charsArray ?? $charsArray = array_merge(
-            parent::charsArray(),
-            Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings
-        );
+                parent::charsArray(),
+                Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings
+            );
     }
 }

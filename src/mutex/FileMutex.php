@@ -41,6 +41,6 @@ class FileMutex extends \yii\mutex\FileMutex
      */
     protected function getLockFilePath($name)
     {
-        return $this->mutexPath.DIRECTORY_SEPARATOR.md5($name).'.lock';
+        return $this->mutexPath . DIRECTORY_SEPARATOR . md5($name) . '.lock';
     }
 }

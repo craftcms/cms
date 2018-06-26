@@ -397,7 +397,7 @@ class Sites extends Component
         if (!$this->_currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                throw new InvalidArgumentException('Invalid site: '.$site);
+                throw new InvalidArgumentException('Invalid site: ' . $site);
             }
             return;
         }
@@ -439,7 +439,7 @@ class Sites extends Component
         $this->_editableSiteIds = [];
 
         foreach ($this->getAllSiteIds() as $siteId) {
-            if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
+            if (Craft::$app->getUser()->checkPermission('editSite:' . $siteId)) {
                 $this->_editableSiteIds[] = $siteId;
             }
         }
@@ -1089,7 +1089,7 @@ class Sites extends Component
             $record = SiteGroupRecord::findOne($group->id);
 
             if (!$record) {
-                throw new SiteGroupNotFoundException('Invalid site group ID: '.$group->id);
+                throw new SiteGroupNotFoundException('Invalid site group ID: ' . $group->id);
             }
         } else {
             $record = new SiteGroupRecord();

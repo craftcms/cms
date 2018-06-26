@@ -401,7 +401,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
 
-        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName());
+        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@' . $request->getHostName());
     }
 
     /**
@@ -502,13 +502,13 @@ trait ApplicationTrait
 
             switch ($row['track']) {
                 case 'dev':
-                    $version .= '.0-alpha.'.$row['build'];
+                    $version .= '.0-alpha.' . $row['build'];
                     break;
                 case 'beta':
-                    $version .= '.0-beta.'.$row['build'];
+                    $version .= '.0-beta.' . $row['build'];
                     break;
                 default:
-                    $version .= '.'.$row['build'];
+                    $version .= '.' . $row['build'];
                     break;
             }
 

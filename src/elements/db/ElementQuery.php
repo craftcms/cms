@@ -633,7 +633,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $site = Craft::$app->getSites()->getSiteByHandle($value);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$value);
+                throw new Exception('Invalid site handle: ' . $value);
             }
 
             $this->siteId = $site->id;
@@ -1491,11 +1491,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _joinContentTable(string $class)
     {
         // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable.' content', '[[content.elementId]] = [[elements.id]]');
+        $this->subQuery->innerJoin($this->contentTable . ' content', '[[content.elementId]] = [[elements.id]]');
         $this->subQuery->addSelect(['contentId' => 'content.id']);
         $this->subQuery->andWhere(['content.siteId' => $this->siteId]);
 
-        $this->query->innerJoin($this->contentTable.' content', '[[content.id]] = [[subquery.contentId]]');
+        $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
 
         // Select the content table columns on the main query
         $this->query->addSelect(['contentId' => 'content.id']);
@@ -1512,7 +1512,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             foreach ($this->customFields as $field) {
                 /** @var Field $field */
                 if ($field->hasContentColumn()) {
-                    $this->query->addSelect(['content.'.$this->_getFieldContentColumnName($field)]);
+                    $this->query->addSelect(['content.' . $this->_getFieldContentColumnName($field)]);
                 }
 
                 $handle = $field->handle;
@@ -1567,7 +1567,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $statusCondition = $this->statusCondition($status);
 
             if ($statusCondition === false) {
-                throw new QueryAbortedException('Unsupported status: '.$status);
+                throw new QueryAbortedException('Unsupported status: ' . $status);
             }
 
             if ($statusCondition !== null) {
@@ -1933,7 +1933,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Add the field column prefixes
             foreach ($this->customFields as $field) {
                 if ($field::hasContentColumn()) {
-                    $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
+                    $orderColumnMap[$field->handle] = 'content.' . $this->_getFieldContentColumnName($field);
                 }
             }
         }
@@ -2030,7 +2030,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _getFieldContentColumnName(FieldInterface $field): string
     {
         /** @var Field $field */
-        return ($field->columnPrefix ?: 'field_').$field->handle;
+        return ($field->columnPrefix ?: 'field_') . $field->handle;
     }
 
     /**

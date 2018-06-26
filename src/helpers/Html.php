@@ -30,7 +30,7 @@ class Html extends \yii\helpers\Html
 
         if (is_array($variables)) {
             foreach ($variables as $key => $value) {
-                $key = '{'.trim($key, '{}').'}';
+                $key = '{' . trim($key, '{}') . '}';
                 $normalizedVariables[$key] = static::encode($value);
             }
 

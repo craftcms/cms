@@ -93,12 +93,12 @@ abstract class Model extends \yii\base\Model
     public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
     {
         if ($attrPrefix !== '') {
-            $attrPrefix = rtrim($attrPrefix, '.').'.';
+            $attrPrefix = rtrim($attrPrefix, '.') . '.';
         }
 
         foreach ($model->getErrors() as $attribute => $errors) {
             foreach ($errors as $error) {
-                $this->addError($attrPrefix.$attribute, $error);
+                $this->addError($attrPrefix . $attribute, $error);
             }
         }
     }

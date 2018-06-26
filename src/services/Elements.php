@@ -396,7 +396,7 @@ class Elements extends Component
 
         // Validate
         if ($runValidation && !$element->validate()) {
-            Craft::info('Element not saved due to validation error: '.print_r($element->errors, true), __METHOD__);
+            Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
 
             return false;
         }
@@ -571,7 +571,7 @@ class Elements extends Component
             $mainClone->contentId = null;
 
             if (!$this->saveElement($mainClone, true, false)) {
-                throw new InvalidElementException($mainClone, 'Element '.$element->id.' could not be duplicated for site '.$element->siteId);
+                throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
             $mainClone->setScenario($element->getScenario());
@@ -580,7 +580,7 @@ class Elements extends Component
                     $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
 
                     if ($siteElement === null) {
-                        throw new Exception('Element '.$element->id.' doesn’t exist in the site '.$siteInfo['siteId']);
+                        throw new Exception('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
                     }
 
                     /** @var Element $siteClone */
@@ -591,7 +591,7 @@ class Elements extends Component
                     $siteClone->contentId = null;
 
                     if (!$this->saveElement($siteClone, true, false)) {
-                        throw new InvalidElementException($siteClone, 'Element '.$element->id.' could not be duplicated for site '.$siteInfo['siteId']);
+                        throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);
                     }
                 }
             }
@@ -825,14 +825,14 @@ class Elements extends Component
 
                 $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
-                    'find' => $refTagPrefix.$mergedElementId.':',
-                    'replace' => $refTagPrefix.$prevailingElementId.':',
+                    'find' => $refTagPrefix . $mergedElementId . ':',
+                    'replace' => $refTagPrefix . $prevailingElementId . ':',
                 ]));
 
                 $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
-                    'find' => $refTagPrefix.$mergedElementId.'}',
-                    'replace' => $refTagPrefix.$prevailingElementId.'}',
+                    'find' => $refTagPrefix . $mergedElementId . '}',
+                    'replace' => $refTagPrefix . $prevailingElementId . '}',
                 ]));
             }
 
@@ -1075,7 +1075,7 @@ class Elements extends Component
                 return $matches[0];
             }
             $refType = is_numeric($matches[2]) ? 'id' : 'ref';
-            $token = '{'.StringHelper::randomString(9).'}';
+            $token = '{' . StringHelper::randomString(9) . '}';
             $allRefTagTokens[$elementType][$refType][$matches[2]][] = [$token, $matches];
 
             return $token;
@@ -1185,7 +1185,7 @@ class Elements extends Component
             // ['foo.bar'] or ['foo.bar', criteria]
             if (is_array($path)) {
                 if (!empty($path[1])) {
-                    $pathCriterias['__root__.'.$path[0]] = $path[1];
+                    $pathCriterias['__root__.' . $path[0]] = $path[1];
                 }
 
                 $paths[] = $path[0];
@@ -1203,7 +1203,7 @@ class Elements extends Component
             $sourcePath = '__root__';
 
             foreach ($pathSegments as $segment) {
-                $targetPath = $sourcePath.'.'.$segment;
+                $targetPath = $sourcePath . '.' . $segment;
 
                 // Figure out the path mapping wants a custom order
                 $useCustomOrder = !empty($pathCriterias[$targetPath]['order']);
@@ -1389,7 +1389,7 @@ class Elements extends Component
             // Log the errors
             $error = 'Couldn’t propagate element to other site due to validation errors:';
             foreach ($siteElement->getFirstErrors() as $attributeError) {
-                $error .= "\n- ".$attributeError;
+                $error .= "\n- " . $attributeError;
             }
             Craft::error($error);
             throw new Exception('Couldn’t propagate element to other site.');
@@ -1420,13 +1420,13 @@ class Elements extends Component
             $value = $element->{$matches[3]};
 
             if (is_object($value) && !method_exists($value, '__toString')) {
-                throw new Exception('Object of class '.get_class($value).' could not be converted to string');
+                throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');
             }
 
             return $this->parseRefs((string)$value);
         } catch (\Throwable $e) {
             // Log it
-            Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
+            Craft::error('An exception was thrown when parsing the ref tag "' . $matches[0] . "\":\n" . $e->getMessage(), __METHOD__);
 
             // Replace the token with the original ref tag
             return $matches[0];

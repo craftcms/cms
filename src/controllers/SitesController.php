@@ -54,7 +54,7 @@ class SitesController extends Controller
 
         if ($groupId) {
             if (($group = $sitesService->getGroupById($groupId)) === null) {
-                throw new NotFoundHttpException('Invalid site group ID: '.$groupId);
+                throw new NotFoundHttpException('Invalid site group ID: ' . $groupId);
             }
             $sites = $sitesService->getSitesByGroupId($groupId);
         } else {

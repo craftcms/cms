@@ -84,7 +84,7 @@ class Paginate
                         $path .= '/';
                     }
 
-                    $path .= $pageTrigger.$page;
+                    $path .= $pageTrigger . $page;
                 }
             }
 

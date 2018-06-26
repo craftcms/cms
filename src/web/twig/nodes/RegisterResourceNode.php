@@ -73,7 +73,7 @@ class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterf
                     $positionPhp = View::POS_LOAD;
                     break;
                 default:
-                    throw new NotSupportedException($position.' is not a valid position');
+                    throw new NotSupportedException($position . ' is not a valid position');
             }
         }
 

@@ -163,7 +163,7 @@ class UsersController extends Controller
         if (!$userService->loginByUserId($userId)) {
             $session->remove(User::IMPERSONATE_KEY);
             $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
-            Craft::error($userService->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', __METHOD__);
+            Craft::error($userService->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
 
             return null;
         }
@@ -721,9 +721,9 @@ class UsersController extends Controller
                     }
                 }
 
-                $tabs['profile'.$index] = [
+                $tabs['profile' . $index] = [
                     'label' => Craft::t('site', $tab->name),
-                    'url' => '#profile-'.$tab->getHtmlId(),
+                    'url' => '#profile-' . $tab->getHtmlId(),
                     'class' => $hasErrors ? 'error' : null
                 ];
             }
@@ -820,7 +820,7 @@ class UsersController extends Controller
         $settingsJs = Json::encode([
             'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
-        $this->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
+        $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
 
         return $this->renderTemplate('users/_edit', compact(
             'user',
@@ -963,7 +963,7 @@ class UsersController extends Controller
             (!empty($newEmail) || $user->newPassword !== null) &&
             !$this->_verifyElevatedSession()
         ) {
-            Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', __METHOD__);
+            Craft::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', __METHOD__);
             $user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
         }
 
@@ -1192,7 +1192,7 @@ class UsersController extends Controller
                 FileHelper::unlink($fileLocation);
             }
 
-            Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
+            Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);
 
             return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
                 'error' => $exception->getMessage()
@@ -1792,7 +1792,7 @@ class UsersController extends Controller
                         // Make sure the current user is in the group or has permission to assign it
                         if (
                             !$currentUser->isInGroup($groupId) &&
-                            !$currentUser->can('assignUserGroup:'.$groupId)
+                            !$currentUser->can('assignUserGroup:' . $groupId)
                         ) {
                             throw new ForbiddenHttpException("Your account doesn't have permission to assign user group {$groupId} to a user.");
                         }

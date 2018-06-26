@@ -111,7 +111,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
             // Make sure they have permission to be doing this
-            $this->requirePermission('editPeerEntryDrafts:'.$draft->sectionId);
+            $this->requirePermission('editPeerEntryDrafts:' . $draft->sectionId);
         }
 
         $draft->name = $name;
@@ -142,7 +142,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
-            $this->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
+            $this->requirePermission('deletePeerEntryDrafts:' . $draft->sectionId);
         }
 
         Craft::$app->getEntryRevisions()->deleteDraft($draft);
@@ -186,12 +186,12 @@ class EntryRevisionsController extends BaseEntriesController
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->sectionId);
         }
 
         // Is this another user's draft?
         if (!$draft->creatorId || $draft->creatorId != $userId) {
-            $this->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntryDrafts:' . $entry->sectionId);
         }
 
         // Populate the main draft attributes
@@ -199,7 +199,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Even more permission enforcement
         if ($draft->enabled) {
-            $this->requirePermission('publishEntries:'.$entry->sectionId);
+            $this->requirePermission('publishEntries:' . $entry->sectionId);
         }
 
         // Populate the field content
@@ -259,11 +259,11 @@ class EntryRevisionsController extends BaseEntriesController
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->sectionId);
         }
 
         if ($entry->enabled) {
-            $this->requirePermission('publishEntries:'.$entry->sectionId);
+            $this->requirePermission('publishEntries:' . $entry->sectionId);
         }
 
         // Revert to the version

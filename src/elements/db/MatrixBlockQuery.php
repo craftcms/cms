@@ -153,7 +153,7 @@ class MatrixBlockQuery extends ElementQuery
             $site = Craft::$app->getSites()->getSiteByHandle($value);
 
             if (!$site) {
-                throw new Exception('Invalid site hadle: '.$value);
+                throw new Exception('Invalid site hadle: ' . $value);
             }
 
             $this->ownerSiteId($site->id);
@@ -246,7 +246,7 @@ class MatrixBlockQuery extends ElementQuery
                 ->where(Db::parseParam('id', $this->id))
                 ->column();
 
-            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] :  $fieldIds;
+            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] : $fieldIds;
         }
 
         if ($this->fieldId && is_numeric($this->fieldId)) {

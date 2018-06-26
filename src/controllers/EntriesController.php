@@ -88,7 +88,7 @@ class EntriesController extends BaseEntriesController
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$variables['site']) {
-                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+                throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
             }
         }
 
@@ -108,7 +108,7 @@ class EntriesController extends BaseEntriesController
 
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        $variables['permissionSuffix'] = ':'.$entry->sectionId;
+        $variables['permissionSuffix'] = ':' . $entry->sectionId;
 
         if (Craft::$app->getEdition() === Craft::Pro && $section->type !== Section::TYPE_SINGLE) {
             // Author selector variables
@@ -116,7 +116,7 @@ class EntriesController extends BaseEntriesController
 
             $variables['userElementType'] = User::class;
 
-            $authorPermission = 'editEntries'.$variables['permissionSuffix'];
+            $authorPermission = 'editEntries' . $variables['permissionSuffix'];
 
             $variables['authorOptionCriteria'] = [
                 'can' => $authorPermission,
@@ -150,7 +150,7 @@ class EntriesController extends BaseEntriesController
             ];
 
             if ($section->maxLevels) {
-                $variables['parentOptionCriteria']['level'] = '< '.$section->maxLevels;
+                $variables['parentOptionCriteria']['level'] = '< ' . $section->maxLevels;
             }
 
             if ($entry->id !== null) {
@@ -219,7 +219,7 @@ class EntriesController extends BaseEntriesController
         );
 
         if ($variables['showSites']) {
-            $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name).' – ';
+            $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name) . ' – ';
         } else {
             $variables['revisionLabel'] = '';
         }
@@ -242,7 +242,7 @@ class EntriesController extends BaseEntriesController
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
             if (get_class($entry) !== Entry::class) {
-                $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
+                $variables['docTitle'] .= ' (' . $variables['revisionLabel'] . ')';
             }
         }
 
@@ -262,7 +262,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::url('entries/'.$section->handle)
+                'url' => UrlHelper::url('entries/' . $section->handle)
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
@@ -296,7 +296,7 @@ class EntriesController extends BaseEntriesController
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
-            $this->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
+            $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
@@ -307,7 +307,7 @@ class EntriesController extends BaseEntriesController
                         'siteId' => $entry->siteId,
                         'versionId' => $entry instanceof EntryVersion ? $entry->versionId : null,
                     ]
-                ]).');');
+                ]) . ');');
 
             $variables['showPreviewBtn'] = true;
 
@@ -352,8 +352,8 @@ class EntriesController extends BaseEntriesController
         // Set the "Continue Editing" URL
         /** @noinspection PhpUnhandledExceptionInspection */
         $siteSegment = (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? "/{$site->handle}" : '');
-        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
-            (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
+        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
+            (isset($variables['draftId']) ? '/drafts/' . $variables['draftId'] : '') .
             $siteSegment;
 
         // Set the "Save and add another" URL
@@ -364,8 +364,8 @@ class EntriesController extends BaseEntriesController
             get_class($entry) === Entry::class &&
             $entry->id !== null &&
             (
-                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
-                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
+                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
+                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
             )
         );
 
@@ -482,7 +482,7 @@ class EntriesController extends BaseEntriesController
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->sectionId);
         }
 
         // If we're duplicating the entry, swap $entry with the duplicate
@@ -520,8 +520,8 @@ class EntriesController extends BaseEntriesController
         // Even more permission enforcement
         if ($entry->enabled) {
             if ($entry->id) {
-                $this->requirePermission('publishEntries:'.$entry->sectionId);
-            } else if (!$currentUser->can('publishEntries:'.$entry->sectionId)) {
+                $this->requirePermission('publishEntries:' . $entry->sectionId);
+            } else if (!$currentUser->can('publishEntries:' . $entry->sectionId)) {
                 $entry->enabled = false;
             }
         }
@@ -531,7 +531,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
             $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
             $currentEntry->revisionCreatorId = $entry->authorId;
-            $currentEntry->revisionNotes = 'Revision from '.Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
+            $currentEntry->revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
             $revisionsService->saveVersion($currentEntry);
         }
 
@@ -611,9 +611,9 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($entry->authorId == $currentUser->id) {
-            $this->requirePermission('deleteEntries:'.$entry->sectionId);
+            $this->requirePermission('deleteEntries:' . $entry->sectionId);
         } else {
-            $this->requirePermission('deletePeerEntries:'.$entry->sectionId);
+            $this->requirePermission('deletePeerEntries:' . $entry->sectionId);
         }
 
         if (!Craft::$app->getElements()->deleteElement($entry)) {
@@ -893,7 +893,7 @@ class EntriesController extends BaseEntriesController
 
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#'.$tab->getHtmlId(),
+                'url' => '#' . $tab->getHtmlId(),
                 'class' => $hasErrors ? 'error' : null
             ];
         }
@@ -993,13 +993,13 @@ class EntriesController extends BaseEntriesController
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
-            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn’t have a URL for the site '.$entry->siteId.'.');
+            throw new ServerErrorHttpException('The entry ' . $entry->id . ' doesn’t have a URL for the site ' . $entry->siteId . '.');
         }
 
         $site = Craft::$app->getSites()->getSiteById($entry->siteId);
 
         if (!$site) {
-            throw new ServerErrorHttpException('Invalid site ID: '.$entry->siteId);
+            throw new ServerErrorHttpException('Invalid site ID: ' . $entry->siteId);
         }
 
         Craft::$app->language = $site->language;

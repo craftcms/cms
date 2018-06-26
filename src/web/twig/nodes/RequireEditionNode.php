@@ -32,7 +32,7 @@ class RequireEditionNode extends \Twig_Node
             ->raw(")\n")
             ->write("{\n")
             ->indent()
-            ->write('throw new '.NotFoundHttpException::class.";\n")
+            ->write('throw new ' . NotFoundHttpException::class . ";\n")
             ->outdent()
             ->write("}\n");
     }
