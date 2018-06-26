@@ -37,6 +37,7 @@
 - Fixed a bug where deleting a section or an entry type wouldn’t delete any associated entries that didn’t exist in the primary site. ([#3023](https://github.com/craftcms/cms/issues/3023))
 - Fixed a bug where the `svg()` Twig function could convert `id` attributes within the SVG contents to invalid IDs. ([#3025](https://github.com/craftcms/cms/issues/3025))
 - Fixed a bug where asset thumbnails wouldn’t load reliably in the Control Panel on load-balanced environments. ([#3026](https://github.com/craftcms/cms/issues/3026))
+- Fixed a PHP error that could occur when validating Assets fields if a file was uploaded but no longer exists at the temp location. ([#3033](https://github.com/craftcms/cms/pull/3033))
 
 ## 3.0.12 - 2018-06-18
 
