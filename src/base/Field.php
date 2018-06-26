@@ -172,12 +172,15 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'reservedWords' => [
                     'archived',
                     'attributeLabel',
+                    'attributes',
                     'children',
                     'contentTable',
                     'dateCreated',
                     'dateUpdated',
                     'enabled',
                     'enabledForSite',
+                    'error',
+                    'errors',
                     'fieldValue',
                     'id',
                     'level',
@@ -193,6 +196,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'ref',
                     'rgt',
                     'root',
+                    'scenario',
                     'searchScore',
                     'siblings',
                     'site',
@@ -388,7 +392,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
+            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
         }
 
         return null;
@@ -513,7 +517,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
-        return ($namespace ? $namespace.'.' : '').$this->handle;
+        return ($namespace ? $namespace . '.' : '') . $this->handle;
     }
 
     /**

@@ -118,7 +118,7 @@ class Utilities extends Component
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
-        return Craft::$app->getUser()->checkPermission('utility:'.$class::id());
+        return Craft::$app->getUser()->checkPermission('utility:' . $class::id());
     }
 
     /**

@@ -20,7 +20,7 @@ class UserPermissionsAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,7 +31,7 @@ class UserPermissionsAsset extends AssetBundle
         ];
 
         $this->js = [
-            'UserPermissions'.$this->dotJs(),
+            'UserPermissions' . $this->dotJs(),
         ];
 
         parent::init();

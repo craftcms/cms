@@ -27,7 +27,7 @@ class RedirectNode extends \Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('\Craft::$app->getResponse()->redirect('.UrlHelper::class.'::url(')
+            ->write('\Craft::$app->getResponse()->redirect(' . UrlHelper::class . '::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))

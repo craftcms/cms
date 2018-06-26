@@ -93,8 +93,8 @@ class I18N extends \yii\i18n\I18N
             if ($this->getIsIntlLoaded()) {
                 $this->_allLocaleIds = ResourceBundle::getLocales(null);
             } else {
-                $appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
-                $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
+                $appLocalesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales';
+                $customLocalesPath = Craft::$app->getPath()->getConfigPath() . '/locales';
 
                 $localeFiles = FileHelper::findFiles($appLocalesPath, [
                     'only' => ['*.php'],
@@ -170,7 +170,7 @@ class I18N extends \yii\i18n\I18N
             if ($subDir === '.' || $subDir === '..' || $subDir === Craft::$app->sourceLanguage) {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            $path = $dir . DIRECTORY_SEPARATOR . $subDir;
             if (is_file($path)) {
                 continue;
             }
@@ -273,7 +273,7 @@ class I18N extends \yii\i18n\I18N
             $editableLocales = [];
 
             foreach ($locales as $locale) {
-                if (Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id)) {
+                if (Craft::$app->getUser()->checkPermission('editLocale:' . $locale->id)) {
                     $editableLocales[] = $locale;
                 }
             }
@@ -320,7 +320,7 @@ class I18N extends \yii\i18n\I18N
                     $char = '%';
             }
 
-            $translation = $char.$translation.$char;
+            $translation = $char . $translation . $char;
         }
 
         return $translation;

@@ -3075,6 +3075,12 @@ ul.tree,
 
 /* delete user modal */
 .deleteusermodal {
+  .content-summary {
+    margin: -24px -24px 24px;
+    padding: 24px;
+    background: $lightBgColor;
+  }
+
   .options {
     label {
       display: inline-block;
@@ -3886,7 +3892,7 @@ body .selectize-dropdown .active {
   @include margin-left(1px);
   -padding: 10px;
   width: 210px;
-  height: 240px;
+  height: 242px;
   z-index: 101 !important;
 }
 

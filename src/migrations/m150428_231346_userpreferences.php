@@ -119,7 +119,6 @@ class m150428_231346_userpreferences extends Migration
                     } catch (InvalidArgumentException $e) {
                         // Do nothing.
                     }
-
                 }
 
                 if ($user['weekStartDay'] != 0) {

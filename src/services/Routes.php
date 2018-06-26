@@ -58,7 +58,7 @@ class Routes extends Component
      */
     public function getConfigFileRoutes(): array
     {
-        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
+        $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'routes.php';
 
         if (!file_exists($path)) {
             return [];

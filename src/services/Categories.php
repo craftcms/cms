@@ -119,7 +119,7 @@ class Categories extends Component
         $this->_editableGroupIds = [];
 
         foreach ($this->getAllGroupIds() as $groupId) {
-            if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId)) {
+            if (Craft::$app->getUser()->checkPermission('editCategories:' . $groupId)) {
                 $this->_editableGroupIds[] = $groupId;
             }
         }

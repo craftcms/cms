@@ -424,7 +424,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return '';
         }
 
-        $string = array_shift($words).implode('', array_map([
+        $string = array_shift($words) . implode('', array_map([
                 static::class,
                 'upperCaseFirst'
             ], $words));
@@ -477,7 +477,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function split(string $string, string $delimiter = ','): array
     {
-        return preg_split('/\s*'.preg_quote($delimiter, '/').'\s*/', $string, -1, PREG_SPLIT_NO_EMPTY);
+        return preg_split('/\s*' . preg_quote($delimiter, '/') . '\s*/', $string, -1, PREG_SPLIT_NO_EMPTY);
     }
 
     /**
@@ -900,7 +900,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encenc(string $str): string
     {
-        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str));
+        return 'base64:' . base64_encode('crypt:' . Craft::$app->getSecurity()->encryptByKey($str));
     }
 
     /**
@@ -1008,7 +1008,7 @@ class StringHelper extends \yii\helpers\StringHelper
                     // get the correct hex encoding.
                     $unpacked = unpack('H*', mb_convert_encoding($match[0], 'UTF-32', 'UTF-8'));
 
-                    return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
+                    return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
                 }
 
                 return $match[0];

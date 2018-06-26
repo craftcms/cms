@@ -164,16 +164,16 @@ class Assets extends BaseRelationField
         try {
             return parent::getInputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
-            return '<p class="warning">'.
-                '<span data-icon="alert"></span> '.
+            return '<p class="warning">' .
+                '<span data-icon="alert"></span> ' .
                 Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                    'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
-                ]).
+                    'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
+                ]) .
                 '</p>';
         } catch (InvalidVolumeException $e) {
-            return '<p class="warning">'.
-                '<span data-icon="alert"></span> '.
-                $e->getMessage().
+            return '<p class="warning">' .
+                '<span data-icon="alert"></span> ' .
+                $e->getMessage() .
                 '</p>';
         }
     }
@@ -250,7 +250,7 @@ class Assets extends BaseRelationField
                     $filenames[] = $file['filename'];
                 }
             } else {
-                if (filesize($file['location']) > $maxSize) {
+                if (file_exists($file['location']) && (filesize($file['location']) > $maxSize)) {
                     $filenames[] = $file['filename'];
                 }
             }
@@ -331,7 +331,7 @@ class Assets extends BaseRelationField
             $uploadedFiles = $this->_getUploadedFiles($element);
 
             $query = $element->getFieldValue($this->handle);
-            
+
             if (!empty($uploadedFiles)) {
                 $targetFolderId = $this->_determineUploadFolderId($element);
 
@@ -364,9 +364,9 @@ class Assets extends BaseRelationField
                 if (\is_array($query->id)) {
                     $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
                 } else {
-                    $query = $this->normalizeValue($assetIds, $element);    
+                    $query = $this->normalizeValue($assetIds, $element);
                 }
-                
+
                 $element->setFieldValue($this->handle, $query);
 
                 // Make sure that all traces of processed files are removed.
@@ -432,16 +432,16 @@ class Assets extends BaseRelationField
     protected function inputSources(ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false);
-        Craft::$app->getSession()->authorize('saveAssetInVolume:'.$folderId);
+        Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
 
         if ($this->useSingleFolder) {
-            $folderPath = 'folder:'.$folderId;
+            $folderPath = 'folder:' . $folderId;
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
 
             // Construct the path
             while ($folder->parentId && $folder->volumeId !== null) {
                 $parent = $folder->getParent();
-                $folderPath = 'folder:'.$parent->id.'/'.$folderPath;
+                $folderPath = 'folder:' . $parent->id . '/' . $folderPath;
                 $folder = $parent;
             }
 
@@ -524,7 +524,7 @@ class Assets extends BaseRelationField
                             continue;
                         }
 
-                        $filename = 'Uploaded_file.'.reset($extensions);
+                        $filename = 'Uploaded_file.' . reset($extensions);
                     }
 
                     $uploadedFiles[] = [
@@ -611,7 +611,7 @@ class Assets extends BaseRelationField
 
             $folder = $assetsService->findFolder([
                 'volumeId' => $volumeId,
-                'path' => $subpath.'/'
+                'path' => $subpath . '/'
             ]);
 
             // Ensure that the folder exists

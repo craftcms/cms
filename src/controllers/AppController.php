@@ -175,7 +175,7 @@ class AppController extends Controller
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
             } else if (isset($restoreException)) {
-                $error .= ' The database could not be restored due to a separate error: '.$restoreException->getMessage();
+                $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
             }
@@ -280,7 +280,7 @@ class AppController extends Controller
                 $edition = Craft::Pro;
                 break;
             default:
-                throw new BadRequestHttpException('Invalid Craft edition: '.$edition);
+                throw new BadRequestHttpException('Invalid Craft edition: ' . $edition);
         }
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
@@ -429,7 +429,7 @@ class AppController extends Controller
         } else {
             if ($update->status === Update::STATUS_BREAKPOINT) {
                 $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
-                    'update' => $name.' '.($update->getLatest()->version ?? '')
+                    'update' => $name . ' ' . ($update->getLatest()->version ?? '')
                 ]);
             }
 

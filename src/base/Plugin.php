@@ -64,11 +64,11 @@ class Plugin extends Module implements PluginInterface
         // Translation category
         $i18n = Craft::$app->getI18n();
         /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory.'*'])) {
+        if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory . '*'])) {
             $i18n->translations[$this->t9nCategory] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => $this->getBasePath().DIRECTORY_SEPARATOR.'translations',
+                'basePath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'translations',
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ];
@@ -76,7 +76,7 @@ class Plugin extends Module implements PluginInterface
 
         // Base template directory
         Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $e) {
-            if (is_dir($baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates')) {
+            if (is_dir($baseDir = $this->getBasePath() . DIRECTORY_SEPARATOR . 'templates')) {
                 $e->roots[$this->id] = $baseDir;
             }
         });
@@ -88,9 +88,9 @@ class Plugin extends Module implements PluginInterface
         if ($this->controllerNamespace === null && ($pos = strrpos(static::class, '\\')) !== false) {
             $namespace = substr(static::class, 0, $pos);
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                $this->controllerNamespace = $namespace.'\\console\\controllers';
+                $this->controllerNamespace = $namespace . '\\console\\controllers';
             } else {
-                $this->controllerNamespace = $namespace.'\\controllers';
+                $this->controllerNamespace = $namespace . '\\controllers';
             }
         }
 
@@ -241,14 +241,14 @@ class Plugin extends Module implements PluginInterface
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.DIRECTORY_SEPARATOR.'Install.php';
+        $path = $migrator->migrationPath . DIRECTORY_SEPARATOR . 'Install.php';
 
         if (!is_file($path)) {
             return null;
         }
 
         require_once $path;
-        $class = $migrator->migrationNamespace.'\\Install';
+        $class = $migrator->migrationNamespace . '\\Install';
 
         return new $class;
     }
@@ -315,7 +315,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function cpNavIconPath()
     {
-        $path = $this->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
+        $path = $this->getBasePath() . DIRECTORY_SEPARATOR . 'icon-mask.svg';
 
         return is_file($path) ? $path : null;
     }

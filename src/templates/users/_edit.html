@@ -267,7 +267,7 @@
                                         <ul>
                                             {% for actionItem in actionList %}
                                                 <li><a
-                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% if actionItem.id == 'delete-btn' %} class="error"{% endif %}{% endif %}
                                                         {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
                                                     >{{ actionItem.label }}</a>
                                                 </li>

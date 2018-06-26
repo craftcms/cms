@@ -17,25 +17,30 @@ use craft\queue\BaseJob;
 use yii\base\Exception;
 
 /**
- * ResaveElements job
+ * PropagateElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ResaveElements extends BaseJob
+class PropagateElements extends BaseJob
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string|ElementInterface|null The element type that should be resaved
+     * @var string|ElementInterface The element type that should be propagated
      */
     public $elementType;
 
     /**
-     * @var array|null The element criteria that determines which elements should be resaved
+     * @var array|null The element criteria that determines which elements should be propagated
      */
     public $criteria;
+
+    /**
+     * @var int|int[] The site ID(s) that the elements should be propagated to
+     */
+    public $siteId;
 
     // Public Methods
     // =========================================================================
@@ -70,8 +75,8 @@ class ResaveElements extends BaseJob
 
                 /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!Craft::$app->getElements()->saveElement($element)) {
-                    throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ') due to validation errors.');
+                foreach ((array)$this->siteId as $siteId) {
+                    Craft::$app->getElements()->propagateElement($element, $siteId);
                 }
             }
         } catch (QueryAbortedException $e) {
@@ -87,7 +92,7 @@ class ResaveElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('app', 'Resaving {class} elements', [
+        return Craft::t('app', 'Propagating {class} elements', [
             'class' => App::humanizeClass($this->elementType)
         ]);
     }

@@ -165,7 +165,7 @@ class Sections extends Component
         $this->_editableSectionIds = [];
 
         foreach ($this->getAllSectionIds() as $sectionId) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:' . $sectionId)) {
                 $this->_editableSectionIds[] = $sectionId;
             }
         }
@@ -773,14 +773,16 @@ class Sections extends Component
             }
 
             // Delete the entries
-            $entries = Entry::find()
+            // (loop through all the sites in case there are any lingering entries from unsupported sites)
+            $entryQuery = Entry::find()
                 ->status(null)
                 ->enabledForSite(false)
-                ->sectionId($section->id)
-                ->all();
-
-            foreach ($entries as $entry) {
-                Craft::$app->getElements()->deleteElement($entry);
+                ->sectionId($section->id);
+            $elementsService = Craft::$app->getElements();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                    $elementsService->deleteElement($entry);
+                }
             }
 
             // Delete the structure, if there is one
@@ -1148,14 +1150,16 @@ class Sections extends Component
             }
 
             // Delete the entries
-            $entries = Entry::find()
+            // (loop through all the sites in case there are any lingering entries from unsupported sites)
+            $entryQuery = Entry::find()
                 ->status(null)
                 ->enabledForSite(false)
-                ->typeId($entryType->id)
-                ->all();
-
-            foreach ($entries as $entry) {
-                Craft::$app->getElements()->deleteElement($entry);
+                ->typeId($entryType->id);
+            $elementsService = Craft::$app->getElements();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                    $elementsService->deleteElement($entry);
+                }
             }
 
             // Delete the entry type.
@@ -1247,7 +1251,7 @@ class Sections extends Component
         $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
 
         if (empty($entryTypes)) {
-            throw new Exception('Couldn’t find any entry types for the section: '.$section->id);
+            throw new Exception('Couldn’t find any entry types for the section: ' . $section->id);
         }
 
         // Get/save the entry

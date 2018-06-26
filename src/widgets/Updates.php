@@ -73,7 +73,7 @@ class Updates extends Widget
 
         if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
-            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+            $view->registerJs('new Craft.UpdatesWidget(' . $this->id . ', ' . ($cached ? 'true' : 'false') . ');');
         }
 
         if ($cached) {
@@ -83,6 +83,6 @@ class Updates extends Widget
                 ]);
         }
 
-        return '<p class="centeralign">'.Craft::t('app', 'Checking for updates…').'</p>';
+        return '<p class="centeralign">' . Craft::t('app', 'Checking for updates…') . '</p>';
     }
 }

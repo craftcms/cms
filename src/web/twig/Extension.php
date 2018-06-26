@@ -449,9 +449,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
+    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         if ($date instanceof \DateInterval) {
             return \twig_date_format_filter($env, $date, $format, $timezone);
@@ -467,9 +468,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $formatter = Craft::$app->getFormatter();
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
-        $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
@@ -508,9 +509,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
+    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -522,9 +524,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $formatter = Craft::$app->getFormatter();
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
-        $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
@@ -537,9 +539,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null)
+    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -551,9 +554,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $formatter = Craft::$app->getFormatter();
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
-        $formatter->timeZone = $timezone ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime($date, $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
@@ -591,7 +594,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         $groups = [];
 
-        $template = '{'.$item.'}';
+        $template = '{' . $item . '}';
 
         foreach ($arr as $key => $object) {
             $value = Craft::$app->getView()->renderObjectTemplate($template, $object);
@@ -737,7 +740,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if ($generalConfig->enableCsrfProtection === true) {
-            return TemplateHelper::raw('<input type="hidden" name="'.$generalConfig->csrfTokenName.'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+            return TemplateHelper::raw('<input type="hidden" name="' . $generalConfig->csrfTokenName . '" value="' . Craft::$app->getRequest()->getCsrfToken() . '">');
         }
 
         return null;
@@ -762,7 +765,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function redirectInputFunction(string $url): \Twig_Markup
     {
-        return TemplateHelper::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+        return TemplateHelper::raw('<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData($url) . '">');
     }
 
     /**
@@ -847,7 +850,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         // Namespace any IDs
         if (strpos($svg, 'id=') !== false) {
-            $namespace = StringHelper::randomString(10).'-';
+            $namespace = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];
             $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$ids) {
                 $ids[] = $matches[2];

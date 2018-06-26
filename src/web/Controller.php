@@ -144,11 +144,11 @@ abstract class Controller extends \yii\web\Controller
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null) {
+            if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
                 $mimeType = 'text/html';
             }
 
-            $headers->set('content-type', $mimeType.'; charset='.$response->charset);
+            $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }
 
         // Render and return the template

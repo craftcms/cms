@@ -74,7 +74,7 @@ class NewUsers extends Widget
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
 
             if ($userGroup) {
-                return Craft::t('app', 'New Users').' – '.Craft::t('app', $userGroup->name);
+                return Craft::t('app', 'New Users') . ' – ' . Craft::t('app', $userGroup->name);
             }
         }
 
@@ -95,7 +95,7 @@ class NewUsers extends Widget
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(NewUsersAsset::class);
-        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        $view->registerJs('new Craft.NewUsersWidget(' . $this->id . ', ' . Json::encode($options) . ');');
 
         return '';
     }

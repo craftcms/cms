@@ -46,12 +46,12 @@ return [
             'class' => craft\web\Response::class,
         ],
         'session' => function() {
-            $stateKeyPrefix = md5('Craft.'.craft\web\Session::class.'.'.Craft::$app->id);
+            $stateKeyPrefix = md5('Craft.' . craft\web\Session::class . '.' . Craft::$app->id);
 
             return Craft::createObject([
                 'class' => craft\web\Session::class,
-                'flashParam' => $stateKeyPrefix.'__flash',
-                'authAccessParam' => $stateKeyPrefix.'__auth_access',
+                'flashParam' => $stateKeyPrefix . '__flash',
+                'authAccessParam' => $stateKeyPrefix . '__auth_access',
                 'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
                 'cookieParams' => Craft::cookieConfig(),
             ]);
@@ -72,7 +72,7 @@ return [
                 $loginUrl = craft\helpers\UrlHelper::cpUrl('login');
             }
 
-            $stateKeyPrefix = md5('Craft.'.craft\web\User::class.'.'.Craft::$app->id);
+            $stateKeyPrefix = md5('Craft.' . craft\web\User::class . '.' . Craft::$app->id);
 
             return Craft::createObject([
                 'class' => craft\web\User::class,
@@ -81,12 +81,12 @@ return [
                 'autoRenewCookie' => true,
                 'loginUrl' => $loginUrl,
                 'authTimeout' => $generalConfig->userSessionDuration ?: null,
-                'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']),
-                'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']),
-                'idParam' => $stateKeyPrefix.'__id',
-                'authTimeoutParam' => $stateKeyPrefix.'__expire',
-                'absoluteAuthTimeoutParam' => $stateKeyPrefix.'__absoluteExpire',
-                'returnUrlParam' => $stateKeyPrefix.'__returnUrl',
+                'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
+                'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
+                'idParam' => $stateKeyPrefix . '__id',
+                'authTimeoutParam' => $stateKeyPrefix . '__expire',
+                'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
+                'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
             ]);
         },
         'errorHandler' => [

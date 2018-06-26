@@ -182,7 +182,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($groups as $group) {
                     $sources[] = [
-                        'key' => 'group:'.$group->id,
+                        'key' => 'group:' . $group->id,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true
@@ -1072,7 +1072,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            return UrlHelper::cpUrl('users/'.$this->id);
+            return UrlHelper::cpUrl('users/' . $this->id);
         }
 
         return null;
@@ -1166,7 +1166,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (($this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId)) === null) {
-            throw new InvalidConfigException('Invalid photo ID: '.$this->photoId);
+            throw new InvalidConfigException('Invalid photo ID: ' . $this->photoId);
         }
 
         return $this->_photo;
@@ -1233,7 +1233,7 @@ class User extends Element implements IdentityInterface
             $record = UserRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid user ID: '.$this->id);
+                throw new Exception('Invalid user ID: ' . $this->id);
             }
 
             if ($this->locked != $record->locked) {
@@ -1407,7 +1407,7 @@ class User extends Element implements IdentityInterface
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
             if ($userAgent !== $requestUserAgent) {
-                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').', __METHOD__);
+                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
 
                 return false;
             }

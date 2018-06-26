@@ -130,9 +130,9 @@ abstract class BaseUpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->install($this->data['requirements'], $io);
-            Craft::info("Updated Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
         } catch (\Throwable $e) {
-            Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to install the updates.'), $e, $io);
         }
@@ -152,10 +152,10 @@ abstract class BaseUpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->uninstall($packages, $io);
-            Craft::info("Updated Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['removed'] = true;
         } catch (\Throwable $e) {
-            Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io);
         }
@@ -175,9 +175,9 @@ abstract class BaseUpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->optimize($io);
-            Craft::info("Optimized the Composer autoloader.\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::info("Optimized the Composer autoloader.\nOutput: " . $io->getOutput(), __METHOD__);
         } catch (\Throwable $e) {
-            Craft::error('Error optimizing the Composer autoloader: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::error('Error optimizing the Composer autoloader: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             $continueOption = $this->postComposerInstallState();
             $continueOption['label'] = Craft::t('app', 'Continue');
@@ -400,7 +400,7 @@ abstract class BaseUpdaterController extends Controller
             case self::ACTION_FINISH:
                 return Craft::t('app', 'Finishing up…');
             default:
-                throw new Exception('Invalid action: '.$action);
+                throw new Exception('Invalid action: ' . $action);
         }
     }
 
@@ -444,11 +444,11 @@ abstract class BaseUpdaterController extends Controller
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
-                $error = get_class($migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
+                $error = get_class($migration) . ' migration failed' . ($previous ? ': ' . $previous->getMessage() : '.');
                 $e = $previous ?? $e;
             } else {
                 $migration = $output = null;
-                $error = 'Migration failed: '.$e->getMessage();
+                $error = 'Migration failed: ' . $e->getMessage();
             }
 
             Craft::error($error, __METHOD__);
@@ -475,16 +475,16 @@ abstract class BaseUpdaterController extends Controller
                 'label' => Craft::t('app', 'Send for help'),
                 'submit' => true,
                 'email' => $email,
-                'subject' => $ownerName.' update failure',
+                'subject' => $ownerName . ' update failure',
             ];
 
             $eName = $e instanceof Exception ? $e->getName() : get_class($e);
 
             return $this->send([
                 'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
-                'errorDetails' => $eName.': '.$e->getMessage().
-                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
-                    ($output ? "\n\nOutput:\n\n".$output : ''),
+                'errorDetails' => $eName . ': ' . $e->getMessage() .
+                    ($migration ? "\n\nMigration: " . get_class($migration) : '') .
+                    ($output ? "\n\nOutput:\n\n" . $output : ''),
                 'options' => $options,
             ]);
         }
@@ -514,7 +514,7 @@ abstract class BaseUpdaterController extends Controller
      */
     private function _composerErrorDetails(\Throwable $e, BufferIO $io): string
     {
-        return Craft::t('app', 'Error:').' '.$e->getMessage()."\n\n".
-            Craft::t('app', 'Output:').' '.strip_tags($io->getOutput());
+        return Craft::t('app', 'Error:') . ' ' . $e->getMessage() . "\n\n" .
+            Craft::t('app', 'Output:') . ' ' . strip_tags($io->getOutput());
     }
 }

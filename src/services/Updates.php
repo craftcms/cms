@@ -234,7 +234,7 @@ class Updates extends Component
         } catch (InvalidArgumentException $e) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
-            Craft::error('Could not delete compiled templates: '.$e->getMessage());
+            Craft::error('Could not delete compiled templates: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
         }
     }

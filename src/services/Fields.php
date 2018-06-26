@@ -767,8 +767,8 @@ class Fields extends Component
 
             // Create/alter the content table column
             $contentTable = Craft::$app->getContent()->contentTable;
-            $oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
-            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix.$field->handle;
+            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
 
             if ($field::hasContentColumn()) {
                 $columnType = $field->getContentColumnType();
@@ -922,9 +922,9 @@ class Fields extends Component
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
-            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle)) {
+            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix . $field->handle)) {
                 Craft::$app->getDb()->createCommand()
-                    ->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)
+                    ->dropColumn($contentTable, $fieldColumnPrefix . $field->handle)
                     ->execute();
             }
 
@@ -1097,14 +1097,14 @@ class Fields extends Component
      */
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
-        $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
+        $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
         $request = Craft::$app->getRequest();
 
-        $postedFieldLayout = $request->getBodyParam($paramPrefix.'fieldLayout', []);
-        $requiredFields = $request->getBodyParam($paramPrefix.'requiredFields', []);
+        $postedFieldLayout = $request->getBodyParam($paramPrefix . 'fieldLayout', []);
+        $requiredFields = $request->getBodyParam($paramPrefix . 'requiredFields', []);
 
         $fieldLayout = $this->assembleLayout($postedFieldLayout, $requiredFields);
-        $fieldLayout->id = $request->getBodyParam($paramPrefix.'fieldLayoutId');
+        $fieldLayout->id = $request->getBodyParam($paramPrefix . 'fieldLayoutId');
 
         return $fieldLayout;
     }
@@ -1214,7 +1214,7 @@ class Fields extends Component
 
             // Get the current layout
             if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
-                throw new Exception('Invalid field layout ID: '.$layout->id);
+                throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
         } else {
             $layoutRecord = new FieldLayoutRecord();
@@ -1473,7 +1473,7 @@ class Fields extends Component
         }
 
         if (($this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id)) === null) {
-            throw new FieldNotFoundException('Invalid field ID: '.$field->id);
+            throw new FieldNotFoundException('Invalid field ID: ' . $field->id);
         }
 
         return $this->_fieldRecordsById[$field->id];

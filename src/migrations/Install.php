@@ -883,10 +883,10 @@ class Install extends Migration
 
             $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-            $sql = 'CREATE FULLTEXT INDEX '.
-                $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
-                $this->db->quoteTableName('{{%searchindex}}').' '.
-                '('.$this->db->quoteColumnName('keywords').')';
+            $sql = 'CREATE FULLTEXT INDEX ' .
+                $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')) . ' ON ' .
+                $this->db->quoteTableName('{{%searchindex}}') . ' ' .
+                '(' . $this->db->quoteColumnName('keywords') . ')';
 
             $this->db->createCommand($sql)->execute();
         } else {
@@ -901,10 +901,10 @@ class Install extends Migration
 
             $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-            $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')).' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
+            $sql = 'CREATE INDEX ' . $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')) . ' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
             $this->db->createCommand($sql)->execute();
 
-            $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING btree(keywords)';
+            $sql = 'CREATE INDEX ' . $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')) . ' ON {{%searchindex}} USING btree(keywords)';
             $this->db->createCommand($sql)->execute();
         }
     }

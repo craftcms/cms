@@ -23,7 +23,7 @@ use craft\events\SiteGroupEvent;
 use craft\helpers\App;
 use craft\models\Site;
 use craft\models\SiteGroup;
-use craft\queue\jobs\ResaveElements;
+use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
 use yii\base\Component;
@@ -397,7 +397,7 @@ class Sites extends Component
         if (!$this->_currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                throw new InvalidArgumentException('Invalid site: '.$site);
+                throw new InvalidArgumentException('Invalid site: ' . $site);
             }
             return;
         }
@@ -439,7 +439,7 @@ class Sites extends Component
         $this->_editableSiteIds = [];
 
         foreach ($this->getAllSiteIds() as $siteId) {
-            if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
+            if (Craft::$app->getUser()->checkPermission('editSite:' . $siteId)) {
                 $this->_editableSiteIds[] = $siteId;
             }
         }
@@ -676,13 +676,14 @@ class Sites extends Component
                 ];
 
                 foreach ($elementTypes as $elementType) {
-                    $queue->push(new ResaveElements([
+                    $queue->push(new PropagateElements([
                         'elementType' => $elementType,
                         'criteria' => [
                             'siteId' => $oldPrimarySiteId,
                             'status' => null,
                             'enabledForSite' => false
-                        ]
+                        ],
+                        'siteId' => $site->id,
                     ]));
                 }
             }
@@ -1088,7 +1089,7 @@ class Sites extends Component
             $record = SiteGroupRecord::findOne($group->id);
 
             if (!$record) {
-                throw new SiteGroupNotFoundException('Invalid site group ID: '.$group->id);
+                throw new SiteGroupNotFoundException('Invalid site group ID: ' . $group->id);
             }
         } else {
             $record = new SiteGroupRecord();

@@ -808,7 +808,7 @@ class GeneralConfig extends BaseObject
             }
 
             if (!in_array($this->defaultCpLanguage, Craft::$app->getI18n()->getAppLocaleIds())) {
-                throw new InvalidConfigException('Unsupported language: '.$this->defaultCpLanguage);
+                throw new InvalidConfigException('Unsupported language: ' . $this->defaultCpLanguage);
             }
         }
     }

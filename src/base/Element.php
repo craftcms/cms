@@ -403,7 +403,7 @@ abstract class Element extends Component implements ElementInterface
                     $variables['structureEditable'] = true;
 
                     // Let StructuresController know that this user can make changes to the structure
-                    Craft::$app->getSession()->authorize('editStructure:'.$variables['structure']->id);
+                    Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
                 }
             } else {
                 unset($viewState['order']);
@@ -427,7 +427,7 @@ abstract class Element extends Component implements ElementInterface
 
         $variables['elements'] = $elementQuery->all();
 
-        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
+        $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
         return Craft::$app->getView()->renderTemplate($template, $variables);
     }
@@ -572,7 +572,7 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 $condition[] = $thisElementCondition;
-                $sourceSelectSql .= ' WHEN '.
+                $sourceSelectSql .= ' WHEN ' .
                     $qb->buildCondition(
                         [
                             'and',
@@ -580,9 +580,9 @@ abstract class Element extends Component implements ElementInterface
                             ['>', 'lft', $elementStructureData['lft']],
                             ['<', 'rgt', $elementStructureData['rgt']]
                         ],
-                        $query->params).
+                        $query->params) .
                     " THEN :sourceId{$i}";
-                $query->params[':sourceId'.$i] = $elementStructureData['elementId'];
+                $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
             }
 
             $sourceSelectSql .= ' END) as source';
@@ -970,8 +970,8 @@ abstract class Element extends Component implements ElementInterface
 
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                $attribute = 'field:'.$field->handle;
-                $isEmpty = [$this, 'isFieldEmpty:'.$field->handle];
+                $attribute = 'field:' . $field->handle;
+                $isEmpty = [$this, 'isFieldEmpty:' . $field->handle];
 
                 if ($field->required) {
                     // Only validate required custom fields on the LIVE scenario
@@ -992,7 +992,7 @@ abstract class Element extends Component implements ElementInterface
                         }
 
                         if (!is_array($rule) || !isset($rule[0])) {
-                            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                            throw new InvalidConfigException('Invalid validation rule for custom field "' . $field->handle . '".');
                         }
 
                         if (isset($rule[1])) {
@@ -1222,7 +1222,7 @@ abstract class Element extends Component implements ElementInterface
         $url = $this->getUrl();
 
         if ($url !== null) {
-            $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
+            $link = '<a href="' . $url . '">' . Html::encode($this->__toString()) . '</a>';
 
             return Template::raw($link);
         }
@@ -1640,7 +1640,7 @@ abstract class Element extends Component implements ElementInterface
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix.'.'.$field->handle)) {
+            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix . '.' . $field->handle)) {
                 // A file was uploaded for this field
                 $value = null;
             } else {
@@ -1802,7 +1802,7 @@ abstract class Element extends Component implements ElementInterface
 
             Craft::$app->getView()->setNamespace($originalNamespace);
 
-            $html .= '<input type="hidden" name="fieldLayoutId" value="'.$fieldLayout->id.'">';
+            $html .= '<input type="hidden" name="fieldLayoutId" value="' . $fieldLayout->id . '">';
         }
 
         return $html;
@@ -1931,7 +1931,7 @@ abstract class Element extends Component implements ElementInterface
         $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
-            throw new Exception('Invalid field handle: '.$fieldHandle);
+            throw new Exception('Invalid field handle: ' . $fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');
@@ -2022,7 +2022,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if (empty($site)) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
         return $site;
@@ -2042,7 +2042,7 @@ abstract class Element extends Component implements ElementInterface
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                    return '<a href="' . $url . '" target="_blank" data-icon="world" title="' . Craft::t('app', 'Visit webpage') . '"></a>';
                 }
 
                 return '';
@@ -2054,7 +2054,7 @@ abstract class Element extends Component implements ElementInterface
                     $value = $this->uri;
 
                     if ($value === '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                        $value = '<span data-icon="home" title="' . Craft::t('app', 'Homepage') . '"></span>';
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line
                         $find = ['/'];
@@ -2064,13 +2064,13 @@ abstract class Element extends Component implements ElementInterface
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
+                            $replace[] = $wordSeparator . '<wbr>';
                         }
 
                         $value = str_replace($find, $replace, $value);
                     }
 
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                    return '<a href="' . $url . '" target="_blank" class="go" title="' . Craft::t('app', 'Visit webpage') . '"><span dir="ltr">' . $value . '</span></a>';
                 }
 
                 return '';
@@ -2108,7 +2108,7 @@ abstract class Element extends Component implements ElementInterface
                 if ($value instanceof DateTime) {
                     $formatter = Craft::$app->getFormatter();
 
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                    return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
                 }
 
                 return Html::encode($value);
@@ -2155,6 +2155,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($criteria instanceof ElementQueryInterface) {
+            /** @var ElementQuery $criteria */
             $query = clone $criteria;
         } else {
             $query = static::find()

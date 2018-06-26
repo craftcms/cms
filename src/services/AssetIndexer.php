@@ -73,7 +73,7 @@ class AssetIndexer extends Component
             $this->storeIndexList($fileList, $sessionId, $volumeId);
 
             foreach ($skippedItems as &$skippedItem) {
-                $skippedItem = $volume->name.'/'.$skippedItem;
+                $skippedItem = $volume->name . '/' . $skippedItem;
             }
 
             unset($skippedItem);
@@ -84,7 +84,7 @@ class AssetIndexer extends Component
             // Ensure folders are in the DB
             $assets = Craft::$app->getAssets();
             foreach ($foldersFound as $fullPath) {
-                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/').'/', $volume);
+                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/') . '/', $volume);
                 $indexedFolderIds[$folderId] = true;
             }
 
@@ -98,7 +98,7 @@ class AssetIndexer extends Component
 
             foreach ($allFolders as $folderModel) {
                 if (!isset($indexedFolderIds[$folderModel->id])) {
-                    $missingFolders[$folderModel->id] = $volume->name.'/'.$folderModel->path;
+                    $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
                 }
             }
 
@@ -206,7 +206,7 @@ class AssetIndexer extends Component
         $values = [];
 
         foreach ($indexList as $entry) {
-            $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@'.$entry['timestamp'])), false, false];
+            $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@' . $entry['timestamp'])), false, false];
         }
 
         Craft::$app->getDb()->createCommand()
@@ -344,7 +344,7 @@ class AssetIndexer extends Component
 
         foreach ($assets as $asset) {
             if (!isset($processedFiles[$asset['assetId']])) {
-                $output[$asset['assetId']] = $asset['volumeName'].'/'.$asset['path'].$asset['filename'];
+                $output[$asset['assetId']] = $asset['volumeName'] . '/' . $asset['path'] . $asset['filename'];
             }
         }
 
@@ -366,7 +366,7 @@ class AssetIndexer extends Component
 
         $fileInfo = $volume->getFileMetadata($path);
 
-        Craft::$app->getAssets()->ensureFolderByFullPathAndVolume(dirname($path).'/', $volume);
+        Craft::$app->getAssets()->ensureFolderByFullPathAndVolume(dirname($path) . '/', $volume);
 
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
@@ -412,7 +412,7 @@ class AssetIndexer extends Component
             $path = '';
         } else {
             $parentId = false;
-            $path = $dirname.'/';
+            $path = $dirname . '/';
         }
 
         $assets = Craft::$app->getAssets();

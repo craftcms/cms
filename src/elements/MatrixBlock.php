@@ -112,7 +112,7 @@ class MatrixBlock extends Element
         // Set the field context
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
+        $contentService->fieldContext = 'matrixBlockType:' . $blockType->id;
 
         $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
@@ -241,7 +241,7 @@ class MatrixBlock extends Element
         $blockType = Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
 
         if (!$blockType) {
-            throw new InvalidConfigException('Invalid Matrix block ID: '.$this->typeId);
+            throw new InvalidConfigException('Invalid Matrix block ID: ' . $this->typeId);
         }
 
         return $blockType;
@@ -296,7 +296,7 @@ class MatrixBlock extends Element
      */
     public function getFieldColumnPrefix(): string
     {
-        return 'field_'.$this->getType()->handle.'_';
+        return 'field_' . $this->getType()->handle . '_';
     }
 
     /**
@@ -306,7 +306,7 @@ class MatrixBlock extends Element
      */
     public function getFieldContext(): string
     {
-        return 'matrixBlockType:'.$this->typeId;
+        return 'matrixBlockType:' . $this->typeId;
     }
 
     /**
@@ -315,7 +315,7 @@ class MatrixBlock extends Element
     public function hasEagerLoadedElements(string $handle): bool
     {
         // See if we have this stored with a block type-specific handle
-        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+        $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
             return true;
@@ -330,7 +330,7 @@ class MatrixBlock extends Element
     public function getEagerLoadedElements(string $handle)
     {
         // See if we have this stored with a block type-specific handle
-        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+        $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
             return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
@@ -345,7 +345,7 @@ class MatrixBlock extends Element
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         // See if this was eager-loaded with a block type-specific handle
-        $blockTypeHandlePrefix = $this->getType()->handle.':';
+        $blockTypeHandlePrefix = $this->getType()->handle . ':';
         if (strpos($handle, $blockTypeHandlePrefix) === 0) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
@@ -378,7 +378,7 @@ class MatrixBlock extends Element
             $record = MatrixBlockRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid Matrix block ID: '.$this->id);
+                throw new Exception('Invalid Matrix block ID: ' . $this->id);
             }
         } else {
             $record = new MatrixBlockRecord();
@@ -404,7 +404,7 @@ class MatrixBlock extends Element
             // Tell the browser to forget about this block
             $session = Craft::$app->getSession();
             $session->addAssetBundleFlash(MatrixAsset::class);
-            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
+            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId(' . $this->id . ');');
         }
 
         parent::afterDelete();

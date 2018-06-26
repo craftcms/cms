@@ -221,7 +221,7 @@ class Users extends Component
             $userRecord->verificationCode = null;
             $userRecord->save();
 
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' is expired.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', __METHOD__);
             return false;
         }
 
@@ -232,7 +232,7 @@ class Users extends Component
         }
 
         if (!$valid) {
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' does not match the hash in the database.', __METHOD__);
             return false;
         }
 
@@ -1058,7 +1058,7 @@ class Users extends Component
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger.'/users/'.$action;
+        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1073,7 +1073,7 @@ class Users extends Component
                 return UrlHelper::cpUrl($path, $params, $scheme);
             }
 
-            $path = $generalConfig->cpTrigger.'/'.$path;
+            $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
         // todo: should we factor in the user's preferred language (as we did in v2)?

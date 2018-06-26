@@ -72,7 +72,7 @@ class App
      */
     public static function phpVersion(): string
     {
-        return PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
     }
 
     /**
@@ -188,5 +188,29 @@ class App
         }
 
         return $licenseKey;
+    }
+
+    /**
+     * Returns the backtrace as a string (omitting the final frame where this method was called).
+     *
+     * @param int $limit The max number of stack frames to be included (0 means no limit)
+     */
+    public static function backtrace(int $limit = 0): string
+    {
+        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit ? $limit + 1 : 0);
+        array_shift($frames);
+        $trace = '';
+
+        foreach ($frames as $i => $frame) {
+            $trace .= ($i !== 0 ? "\n" : '') .
+                '#' . $i . ' ' .
+                ($frame['class'] ?? '') .
+                ($frame['type'] ?? '') .
+                ($frame['function'] ?? '') . '()' .
+                (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' :  '');
+
+        }
+
+        return $trace;
     }
 }
