@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.13.1 - 2018-06-26
+
+### Fixed
+- Fixed a bug where Delete User modals weren’t showing the total number of entries that will be transferred/deleted.
+
 ## 3.0.13 - 2018-06-26
 
 ### Added
