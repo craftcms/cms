@@ -250,7 +250,7 @@ class Assets extends BaseRelationField
                     $filenames[] = $file['filename'];
                 }
             } else {
-                if (filesize($file['location']) > $maxSize) {
+                if (file_exists($file['location']) && (filesize($file['location']) > $maxSize)) {
                     $filenames[] = $file['filename'];
                 }
             }
