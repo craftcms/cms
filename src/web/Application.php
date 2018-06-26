@@ -65,7 +65,16 @@ class Application extends \yii\web\Application
     // =========================================================================
 
     /**
-     * @event \yii\base\Event The event that is triggered after the application has been initialized
+     * @event \yii\base\Event The event that is triggered after the application has been fully initialized
+     *
+     * ---
+     * ```php
+     * use craft\web\Application;
+     *
+     * Craft::$app->on(Application::EVENT_INIT, function() {
+     *     // ...
+     * });
+     * ```
      */
     const EVENT_INIT = 'init';
 
