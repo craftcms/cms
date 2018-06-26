@@ -84,9 +84,9 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
  * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
  * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
+ * @property-read bool $isInMaintenanceMode Whether someone is currently performing a system update
+ * @property-read bool $isMultiSite Whether this site has multiple sites
  * @property-read bool $isSystemOn Whether the front end is accepting HTTP requests
- * @property-read bool $sInMaintenanceMode Whether someone is currently performing a system update
- * @property-read bool $sMultiSite Whether this site has multiple sites
  * @property-read Connection $db The database connection component
  * @property-read Formatter $formatter The formatter component
  * @property-read I18N $i18n The internationalization (i18n) component
