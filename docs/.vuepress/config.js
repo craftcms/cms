@@ -9,7 +9,7 @@ module.exports = {
         },
         '/ja/': {
             lang: 'ja',
-            title: 'Craft 3 Documentation', // todo: translate
+            title: 'Craft 3 ドキュメント',
         }
     },
     themeConfig: {

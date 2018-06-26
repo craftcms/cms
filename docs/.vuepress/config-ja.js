@@ -1,7 +1,7 @@
 module.exports = {
-    selectText: 'Language', // todo: translate
-    label: 'Japanese', // todo: translate
-    editLinkText: 'Edit this page on GitHub', // todo: translate
+    selectText: '言語',
+    label: '日本語',
+    editLinkText: 'このページを GitHub で編集',
     // algolia: {
     //     apiKey: '1014b55e7f916b20c5d6834bf7666dc3',
     //     indexName: 'craftcms',
