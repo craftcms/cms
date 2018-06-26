@@ -671,7 +671,7 @@ That base class does most of the grunt work for you, so you can get your field u
 <?php
 namespace ns\prefix\fields;
 
-use craft\fileds\BaseRelationsField;
+use craft\fields\BaseRelationsField;
 use ns\prefix\elements\Product;
 
 class Products extends BaseRelationField
