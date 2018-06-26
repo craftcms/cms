@@ -1388,7 +1388,7 @@ class UsersController extends Controller
             ->count();
 
         if ($entryCount) {
-//            $summary[] = $entryCount == 1 ? Craft::t('app', '1 entry') : Craft::t('app', '{num} entries', ['num' => $entryCount]);
+            $summary[] = $entryCount == 1 ? Craft::t('app', '1 entry') : Craft::t('app', '{num} entries', ['num' => $entryCount]);
         }
 
         // Fire a 'defineUserContentSummary' event
