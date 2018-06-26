@@ -80,7 +80,7 @@ class SystemSettingsController extends Controller
                 $format = sprintf('%+d', $hour);
 
                 if ($minutes) {
-                    $format .= ':'.sprintf('%02u', $minutes);
+                    $format .= ':' . sprintf('%02u', $minutes);
                 }
             } else {
                 $format = '';
@@ -90,7 +90,7 @@ class SystemSettingsController extends Controller
             $timezoneIds[] = $timezoneId;
             $timezoneOptions[] = [
                 'value' => $timezoneId,
-                'label' => 'UTC'.$format.($abbr !== 'UTC' ? " ({$abbr})" : '').($timezoneId !== 'UTC' ? ' – '.$timezoneId : '')
+                'label' => 'UTC' . $format . ($abbr !== 'UTC' ? " ({$abbr})" : '') . ($timezoneId !== 'UTC' ? ' – ' . $timezoneId : '')
             ];
         }
 
@@ -260,11 +260,11 @@ class SystemSettingsController extends Controller
 
             foreach (['fromEmail', 'fromName', 'template'] as $name) {
                 if (!empty($settings->$name)) {
-                    $settingsList .= '- **'.$settings->getAttributeLabel($name).':** '.$settings->$name."\n";
+                    $settingsList .= '- **' . $settings->getAttributeLabel($name) . ':** ' . $settings->$name . "\n";
                 }
             }
 
-            $settingsList .= '- **'.Craft::t('app', 'Transport Type').':** '.$adapter::displayName()."\n";
+            $settingsList .= '- **' . Craft::t('app', 'Transport Type') . ':** ' . $adapter::displayName() . "\n";
 
             $security = Craft::$app->getSecurity();
 
@@ -383,7 +383,7 @@ class SystemSettingsController extends Controller
         $settings->fromName = $request->getBodyParam('fromName');
         $settings->template = $request->getBodyParam('template');
         $settings->transportType = $request->getBodyParam('transportType');
-        $settings->transportSettings = $request->getBodyParam('transportTypes.'.$settings->transportType);
+        $settings->transportSettings = $request->getBodyParam('transportTypes.' . $settings->transportType);
 
         return $settings;
     }

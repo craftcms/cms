@@ -58,7 +58,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // If it is UNC, add those slashes back in front
         if ($isUnc) {
-            $path = $ds.$ds.ltrim($path, $ds);
+            $path = $ds . $ds . ltrim($path, $ds);
         }
 
         return $path;
@@ -172,7 +172,7 @@ class FileHelper extends \yii\helpers\FileHelper
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
         if ($separator !== null) {
-            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/u', $separator, $filename);
+            $filename = preg_replace('/(\s|' . preg_quote($separator, '/') . ')+/u', $separator, $filename);
         }
 
         // Nuke any trailing or leading .-_
@@ -208,7 +208,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$file;
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
             if (is_file($path) || !static::isDirectoryEmpty($path)) {
                 $empty = false;
                 break;
@@ -231,7 +231,7 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         // If it's a directory, test on a temp sub file
         if (is_dir($path)) {
-            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid('test_writable', true).'.tmp');
+            return static::isWritable($path . DIRECTORY_SEPARATOR . uniqid('test_writable', true) . '.tmp');
         }
 
         // Remember whether the file already existed
@@ -401,7 +401,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$file;
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
             if (static::filterPath($path, $options)) {
                 if (is_dir($path)) {
                     static::removeDirectory($path, $options);
@@ -466,8 +466,8 @@ class FileHelper extends \yii\helpers\FileHelper
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$file;
-            $refPath = $ref.DIRECTORY_SEPARATOR.$file;
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            $refPath = $ref . DIRECTORY_SEPARATOR . $file;
             if (is_dir($path)) {
                 if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
                     return true;
@@ -516,7 +516,7 @@ class FileHelper extends \yii\helpers\FileHelper
             }
             self::$_useFileLocks = true;
         } catch (\Throwable $e) {
-            Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
+            Craft::warning('Write lock test failed: ' . $e->getMessage(), __METHOD__);
         }
 
         // Cache for two months

@@ -163,7 +163,7 @@ class AssetTransformsController extends Controller
 
         $transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getAssetTransforms()->deleteTransform($transformId);
+        Craft::$app->getAssetTransforms()->deleteTransformById($transformId);
 
         return $this->asJson(['success' => true]);
     }

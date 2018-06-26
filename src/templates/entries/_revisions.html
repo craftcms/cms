@@ -64,7 +64,7 @@
         {% endif %}
 
         {% if section.enableVersioning %}
-            {% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId) %}
+            {% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId, 10) %}
             {% if versions %}
                 <h6>{{ "Recent Versions"|t('app') }}</h6>
                 <ul class="padded">

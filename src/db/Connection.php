@@ -220,10 +220,10 @@ class Connection extends \yii\db\Connection
     public function backup(): string
     {
         // Determine the backup file path
-        $currentVersion = 'v'.Craft::$app->getVersion();
+        $currentVersion = 'v' . Craft::$app->getVersion();
         $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
-        $filename = ($systemName ? $systemName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
-        $file = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
+        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
+        $file = Craft::$app->getPath()->getDbBackupPath() . '/' . StringHelper::toLowerCase($filename);
 
         $this->backupTo($file);
 
@@ -380,7 +380,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_pk';
 
         return $this->trimObjectName($name);
     }
@@ -398,7 +398,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_fk';
 
         return $this->trimObjectName($name);
     }
@@ -419,7 +419,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').($foreignKey ? '_fk' : '_idx');
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . ($unique ? '_unq' : '') . ($foreignKey ? '_fk' : '_idx');
 
         return $this->trimObjectName($name);
     }

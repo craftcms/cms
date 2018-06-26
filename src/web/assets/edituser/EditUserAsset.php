@@ -21,7 +21,7 @@ class EditUserAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -33,8 +33,8 @@ class EditUserAsset extends AssetBundle
         ];
 
         $this->js = [
-            'AccountSettingsForm'.$this->dotJs(),
-            'profile'.$this->dotJs(),
+            'AccountSettingsForm' . $this->dotJs(),
+            'profile' . $this->dotJs(),
         ];
 
         parent::init();

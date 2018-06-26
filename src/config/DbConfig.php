@@ -119,13 +119,13 @@ class DbConfig extends BaseObject
         // If the DSN is already set, parse it
         if ($this->dsn) {
             if (($pos = strpos($this->dsn, ':')) === false) {
-                throw new InvalidConfigException('Invalid DSN: '.$this->dsn);
+                throw new InvalidConfigException('Invalid DSN: ' . $this->dsn);
             }
             $this->driver = substr($this->dsn, 0, $pos);
             $params = substr($this->dsn, $pos + 1);
             foreach (explode(';', $params) as $param) {
                 if (($pos = strpos($param, '=')) === false) {
-                    throw new InvalidConfigException('Invalid DSN param: '.$param);
+                    throw new InvalidConfigException('Invalid DSN param: ' . $param);
                 }
                 $paramName = substr($param, 0, $pos);
                 $paramValue = substr($params, $pos + 1);
@@ -152,7 +152,7 @@ class DbConfig extends BaseObject
                         $this->password = $paramValue;
                         break;
                     default:
-                        throw new InvalidConfigException('Unsupported DSN param: '.$paramName);
+                        throw new InvalidConfigException('Unsupported DSN param: ' . $paramName);
                 }
             }
         }
@@ -187,14 +187,14 @@ class DbConfig extends BaseObject
 
         // Validate driver
         if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
-            throw new InvalidConfigException('Unsupported DB driver value: '.$this->driver);
+            throw new InvalidConfigException('Unsupported DB driver value: ' . $this->driver);
         }
 
         // Validate tablePrefix
         if ($this->tablePrefix) {
             $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
             if (strlen($this->tablePrefix) > 6) {
-                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
+                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: ' . $this->tablePrefix);
             }
         }
 

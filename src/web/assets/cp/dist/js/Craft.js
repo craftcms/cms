@@ -1,4 +1,4 @@
-/*!   - 2018-06-05 */
+/*!   - 2018-06-26 */
 (function($){
 
 /** global: Craft */
@@ -1879,6 +1879,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
             else if (this.settings.criteria && this.settings.criteria.siteId) {
                 this._setSite(this.settings.criteria.siteId);
+            } else {
+                this._setSite(Craft.siteId);
             }
 
             // Initialize the search input
@@ -7688,9 +7690,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     var $a = this._folderDrag.$draggee.eq(i).children('a'),
                         folderId = $a.data('folder-id');
 
-                    // Make sure it's not already in the target folder
+                    // Make sure it's not already in the target folder and use this single folder Id.
                     if (folderId != targetFolderId) {
                         folderIds.push(folderId);
+                        break;
                     }
                 }
 

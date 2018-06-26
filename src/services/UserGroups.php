@@ -99,7 +99,7 @@ class UserGroups extends Component
             if (
                 ($currentUser !== null && (
                         $currentUser->isInGroup($group) ||
-                        $currentUser->can('assignUserGroup:'.$group->id)
+                        $currentUser->can('assignUserGroup:' . $group->id)
                     )) ||
                 ($user !== null && $user->isInGroup($group))
             ) {
@@ -219,8 +219,8 @@ class UserGroups extends Component
     /**
      * Deletes a user group by its ID.
      *
-     * @param int $groupId
-     * @return bool
+     * @param int $groupId The user group's ID
+     * @return bool Whether the user group was deleted successfully
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
     public function deleteGroupById(int $groupId): bool
@@ -233,6 +233,20 @@ class UserGroups extends Component
             return false;
         }
 
+        return $this->deleteGroup($group);
+    }
+
+    /**
+     * Deletes a user group.
+     *
+     * @param UserGroup $group The user group
+     * @return bool Whether the user group was deleted successfully
+     * @throws WrongEditionException if this is called from Craft Solo edition
+     */
+    public function deleteGroup(UserGroup $group): bool
+    {
+        Craft::$app->requireEdition(Craft::Pro);
+
         // Fire a 'beforeDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
@@ -241,7 +255,7 @@ class UserGroups extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%usergroups}}', ['id' => $groupId])
+            ->delete('{{%usergroups}}', ['id' => $group->id])
             ->execute();
 
         // Fire an 'afterDeleteUserGroup' event

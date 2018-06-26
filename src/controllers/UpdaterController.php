@@ -75,7 +75,7 @@ class UpdaterController extends BaseUpdaterController
         try {
             $this->data['dbBackupPath'] = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
-            Craft::error('Error backing up the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('Error backing up the database: ' . $e->getMessage(), __METHOD__);
             if (!empty($this->data['install'])) {
                 $firstAction = $this->actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
             } else {
@@ -107,7 +107,7 @@ class UpdaterController extends BaseUpdaterController
         try {
             Craft::$app->getDb()->restore($this->data['dbBackupPath']);
         } catch (\Throwable $e) {
-            Craft::error('Error restoring up the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('Error restoring up the database: ' . $e->getMessage(), __METHOD__);
             return $this->send([
                 'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
                 'options' => [
@@ -138,10 +138,10 @@ class UpdaterController extends BaseUpdaterController
 
         try {
             Craft::$app->getComposer()->install($this->data['current'], $io);
-            Craft::info("Reverted Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::info("Reverted Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['reverted'] = true;
         } catch (\Throwable $e) {
-            Craft::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::error('Error reverting Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io);
         }
 
@@ -169,9 +169,9 @@ class UpdaterController extends BaseUpdaterController
         }
 
         if (!empty($errors)) {
-            Craft::warning("The server doesn't meet Craft's new requirements:\n - ".implode("\n - ", $errors), __METHOD__);
+            Craft::warning("The server doesn't meet Craft's new requirements:\n - " . implode("\n - ", $errors), __METHOD__);
             return $this->send([
-                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:').' '.implode(', ', $errors),
+                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:') . ' ' . implode(', ', $errors),
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Revert update'), self::ACTION_REVERT),
                     $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_SERVER_CHECK),
@@ -406,7 +406,7 @@ class UpdaterController extends BaseUpdaterController
         } else {
             /** @var Plugin|null $plugin */
             if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                throw new BadRequestHttpException('Invalid update handle: '.$handle);
+                throw new BadRequestHttpException('Invalid update handle: ' . $handle);
             }
             $fromVersion = $plugin->getVersion();
         }

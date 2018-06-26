@@ -186,7 +186,7 @@ class VolumesController extends Controller
             'handle' => $request->getBodyParam('handle'),
             'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
             'url' => $request->getBodyParam('url'),
-            'settings' => $request->getBodyParam('types.'.$type)
+            'settings' => $request->getBodyParam('types.' . $type)
         ]);
 
         // Set the field layout

@@ -147,7 +147,7 @@ class RecentEntries extends Widget
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(RecentEntriesAsset::class);
-        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
+        $js = 'new Craft.RecentEntriesWidget(' . $this->id . ', ' . Json::encode($params) . ');';
         $view->registerJs($js);
 
         $entries = $this->_getEntries();

@@ -165,7 +165,7 @@ class Sections extends Component
         $this->_editableSectionIds = [];
 
         foreach ($this->getAllSectionIds() as $sectionId) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:' . $sectionId)) {
                 $this->_editableSectionIds[] = $sectionId;
             }
         }
@@ -1248,7 +1248,7 @@ class Sections extends Component
         $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
 
         if (empty($entryTypes)) {
-            throw new Exception('Couldn’t find any entry types for the section: '.$section->id);
+            throw new Exception('Couldn’t find any entry types for the section: ' . $section->id);
         }
 
         // Get/save the entry

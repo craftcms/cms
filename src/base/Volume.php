@@ -94,6 +94,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             return false;
         }
 
-        return rtrim(Craft::getAlias($this->url), '/').'/';
+        return rtrim(Craft::getAlias($this->url), '/') . '/';
     }
 }

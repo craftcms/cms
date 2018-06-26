@@ -112,7 +112,7 @@ class Categories extends BaseRelationField
         }
 
         if (empty($source)) {
-            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
+            return '<p class="error">' . Craft::t('app', 'This field is not set to a valid category group.') . '</p>';
         }
 
         return parent::getInputHtml($value, $element);

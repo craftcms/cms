@@ -192,6 +192,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
             else if (this.settings.criteria && this.settings.criteria.siteId) {
                 this._setSite(this.settings.criteria.siteId);
+            } else {
+                this._setSite(Craft.siteId);
             }
 
             // Initialize the search input

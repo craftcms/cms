@@ -86,7 +86,7 @@ class InstallController extends Controller
     public function actionCraft()
     {
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout('Craft is already installed!'.PHP_EOL, Console::FG_YELLOW);
+            $this->stdout('Craft is already installed!' . PHP_EOL, Console::FG_YELLOW);
             return;
         }
 
@@ -112,7 +112,7 @@ class InstallController extends Controller
         }
 
         if (!empty($errors)) {
-            $this->stderr('Invalid arguments:'.PHP_EOL.'    - '.implode(PHP_EOL.'    - ', $errors).PHP_EOL);
+            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL);
             return;
         }
 
@@ -139,18 +139,18 @@ class InstallController extends Controller
         ]);
 
         // Run the install migration
-        $this->stdout('*** installing Craft'.PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
         $migrator = Craft::$app->getMigrator();
         $result = $migrator->migrateUp($migration);
 
         if ($result === false) {
-            $this->stdout('*** failed to install Craft'.PHP_EOL.PHP_EOL, Console::FG_RED);
+            $this->stdout('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
             return;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** installed Craft successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** installed Craft successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         // Mark all existing migrations as applied
         foreach ($migrator->getNewMigrations() as $name) {
@@ -165,18 +165,18 @@ class InstallController extends Controller
      */
     public function actionPlugin(string $handle)
     {
-        $this->stdout("*** installing {$handle}".PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
             Craft::$app->plugins->installPlugin($handle);
         } catch (\Throwable $e) {
-            $this->stdout("*** failed to install {$handle}: {$e->getMessage()}".PHP_EOL.PHP_EOL, Console::FG_RED);
+            $this->stdout("*** failed to install {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
             return;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** installed {$handle} successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** installed {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -271,7 +271,7 @@ class InstallController extends Controller
         top:
         $this->stdout('Password: ');
         if (($password = CliPrompt::hiddenPrompt(true)) === '') {
-            $this->stdout('Invalid input.'.PHP_EOL);
+            $this->stdout('Invalid input.' . PHP_EOL);
             goto top;
         }
         if (!$this->validatePassword($password, $error)) {
@@ -280,7 +280,7 @@ class InstallController extends Controller
         }
         $this->stdout('Confirm: ');
         if (!($matched = ($password === CliPrompt::hiddenPrompt(true)))) {
-            $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL, Console::FG_RED);
+            $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
             goto top;
         }
         return $password;

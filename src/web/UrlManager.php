@@ -151,7 +151,7 @@ class UrlManager extends \yii\web\UrlManager
         unset($params[0]);
 
         // Create the action URL manually here, so it doesn't get treated as a CP request
-        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/'.$route;
+        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . $route;
 
         return UrlHelper::siteUrl($path, $params, $scheme);
     }
@@ -254,12 +254,12 @@ class UrlManager extends \yii\web\UrlManager
 
         // Load the config file rules
         if ($request->getIsCpRequest()) {
-            $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
+            $baseCpRoutesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'cproutes';
             /** @var array $rules */
-            $rules = require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php';
+            $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
             if (Craft::$app->getEdition() === Craft::Pro) {
-                $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
+                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
             }
 
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;
@@ -343,7 +343,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (YII_DEBUG) {
             Craft::trace([
-                'rule' => 'Element URI: '.$path,
+                'rule' => 'Element URI: ' . $path,
                 'match' => isset($element, $route),
                 'parent' => null
             ], __METHOD__);
@@ -368,7 +368,7 @@ class UrlManager extends \yii\web\UrlManager
 
             if (YII_DEBUG) {
                 Craft::trace([
-                    'rule' => 'URL Rule: '.(method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
+                    'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
                     'parent' => null
                 ], __METHOD__);
@@ -426,7 +426,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (YII_DEBUG) {
             Craft::trace([
-                'rule' => 'Template: '.$path,
+                'rule' => 'Template: ' . $path,
                 'match' => $matches,
                 'parent' => null
             ], __METHOD__);
@@ -451,7 +451,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (YII_DEBUG) {
             Craft::trace([
-                'rule' => 'Token'.($token !== null ? ': '.$token : ''),
+                'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,
                 'parent' => null
             ], __METHOD__);

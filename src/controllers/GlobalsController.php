@@ -43,7 +43,7 @@ class GlobalsController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit any global content');
         }
 
-        return $this->redirect('globals/'.$editableSets[0]->handle);
+        return $this->redirect('globals/' . $editableSets[0]->handle);
     }
 
     /**
@@ -138,7 +138,7 @@ class GlobalsController extends Controller
                 $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
                 if (!$site) {
-                    throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+                    throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
                 }
 
                 // Make sure the user has permission to edit that site
@@ -169,7 +169,7 @@ class GlobalsController extends Controller
             ->all();
 
         foreach ($globalSets as $thisGlobalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$thisGlobalSet->id)) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $thisGlobalSet->id)) {
                 $editableGlobalSets[$thisGlobalSet->handle] = $thisGlobalSet;
             }
         }
@@ -202,7 +202,7 @@ class GlobalsController extends Controller
 
             $tabs[] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#'.$tab->getHtmlId(),
+                'url' => '#' . $tab->getHtmlId(),
                 'class' => $hasErrors ? 'error' : null
             ];
         }
@@ -229,10 +229,10 @@ class GlobalsController extends Controller
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
         // Make sure the user is allowed to edit this global set and site
-        $this->requirePermission('editGlobalSet:'.$globalSetId);
+        $this->requirePermission('editGlobalSet:' . $globalSetId);
 
         if (Craft::$app->getIsMultiSite()) {
-            $this->requirePermission('editSite:'.$siteId);
+            $this->requirePermission('editSite:' . $siteId);
         }
 
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);

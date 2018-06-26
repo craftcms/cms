@@ -35,7 +35,7 @@ class m151002_095935_volume_cache_settings extends Migration
             $settings = Json::decode($volume['settings']);
 
             if (!empty($settings['expires']) && preg_match('/(\d+)([a-z]+)/', $settings['expires'], $matches)) {
-                $settings['expires'] = $matches[1].' '.$matches[2];
+                $settings['expires'] = $matches[1] . ' ' . $matches[2];
 
                 Craft::$app->getDb()->createCommand()
                     ->update(

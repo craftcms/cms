@@ -160,7 +160,7 @@ class Mailer extends \yii\swiftmailer\Mailer
         try {
             return parent::send($message);
         } catch (Swift_TransportException $e) {
-            Craft::error('Error sending email: '.$e->getMessage());
+            Craft::error('Error sending email: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
             return false;
         }

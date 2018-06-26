@@ -20,14 +20,14 @@ class FieldsAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'fields'.$this->dotJs(),
+            'fields' . $this->dotJs(),
         ];
 
         parent::init();

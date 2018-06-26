@@ -106,12 +106,12 @@ class SetupController extends Controller
         $this->run('db-creds');
 
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout("It looks like Craft is already installed, so we're done here.".PHP_EOL, Console::FG_YELLOW);
+            $this->stdout("It looks like Craft is already installed, so we're done here." . PHP_EOL, Console::FG_YELLOW);
             return;
         }
 
-        if (!$this->confirm(PHP_EOL.'Install Craft now?', true)) {
-            $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:".PHP_EOL);
+        if (!$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
+            $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:" . PHP_EOL);
             $this->_outputCommand('install');
             return;
         }
@@ -149,7 +149,7 @@ EOD;
 
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
         $this->run('security-key');
-        $this->stdout(PHP_EOL.'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:'.PHP_EOL);
+        $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
         $this->_outputCommand('setup');
     }
 
@@ -158,11 +158,11 @@ EOD;
      */
     public function actionSecurityKey()
     {
-        $this->stdout(PHP_EOL.'Generating a security key... ', Console::FG_YELLOW);
+        $this->stdout(PHP_EOL . 'Generating a security key... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if ($this->_setEnvVar('SECURITY_KEY', $key)) {
             Craft::$app->getConfig()->getGeneral()->securityKey = $key;
-            $this->stdout("done ({$key})".PHP_EOL, Console::FG_YELLOW);
+            $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
         }
     }
 
@@ -184,7 +184,7 @@ EOD;
         // driver
         if ($this->driver) {
             if (!in_array($this->driver, [DbConfig::DRIVER_MYSQL, DbConfig::DRIVER_PGSQL], true)) {
-                $this->stderr('--driver must be either "'.DbConfig::DRIVER_MYSQL.'" or "'.DbConfig::DRIVER_PGSQL.'".'.PHP_EOL);
+                $this->stderr('--driver must be either "' . DbConfig::DRIVER_MYSQL . '" or "' . DbConfig::DRIVER_PGSQL . '".' . PHP_EOL);
                 return;
             }
             $dbConfig->driver = $this->driver;
@@ -250,7 +250,7 @@ EOD;
                 'default' => $dbConfig->database,
             ]);
         } else {
-            $this->stderr('The --database option must be set.'.PHP_EOL);
+            $this->stderr('The --database option must be set.' . PHP_EOL);
             return;
         }
 
@@ -270,11 +270,11 @@ EOD;
         if ($this->tablePrefix) {
             $tablePrefix = $this->tablePrefix;
         } else {
-            $tablePrefix = $this->prompt('Database table prefix'.($dbConfig->tablePrefix ? ' (type "none" for none)' : '').':', [
+            $tablePrefix = $this->prompt('Database table prefix' . ($dbConfig->tablePrefix ? ' (type "none" for none)' : '') . ':', [
                 'default' => $dbConfig->tablePrefix,
                 'validator' => function(string $input): bool {
                     if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
-                        Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.'.PHP_EOL, Console::FG_RED));
+                        Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));
                         return false;
                     }
                     return true;
@@ -305,7 +305,7 @@ EOD;
             // 2002: Connection timed out (server)
             /** @var \PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
-            $this->stderr('failed: '.$pdoException->getMessage().PHP_EOL, Console::FG_RED);
+            $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
             //$this->stdout(VarDumper::dumpAsString($e->getPrevious()));
             $firstTime = false;
 
@@ -319,7 +319,7 @@ EOD;
         Craft::$app->set('db', $db);
         Craft::$app->setIsInstalled(null);
 
-        $this->stdout('success!'.PHP_EOL, Console::FG_GREEN);
+        $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
         $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
 
         if (
@@ -332,7 +332,7 @@ EOD;
             $this->_setEnvVar('DB_SCHEMA', $dbConfig->schema) &&
             $this->_setEnvVar('DB_TABLE_PREFIX', $tablePrefix)
         ) {
-            $this->stdout('done'.PHP_EOL, Console::FG_YELLOW);
+            $this->stdout('done' . PHP_EOL, Console::FG_YELLOW);
         }
     }
 
@@ -357,11 +357,11 @@ EOD;
         $script = FileHelper::normalizePath(Craft::$app->getRequest()->getScriptFile());
         if (!Platform::isWindows() && ($home = getenv('HOME')) !== false) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home.DIRECTORY_SEPARATOR) === 0) {
-                $script = '~'.substr($script, strlen($home));
+            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+                $script = '~' . substr($script, strlen($home));
             }
         }
-        $this->stdout(PHP_EOL.'    '.$script.' '.$command.PHP_EOL.PHP_EOL);
+        $this->stdout(PHP_EOL . '    ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
     }
 
     /**
@@ -377,11 +377,11 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL."A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
                 FileHelper::writeToFile($path, '');
-                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect.".PHP_EOL, Console::FG_YELLOW);
+                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
             } else {
-                $this->stdout(PHP_EOL.'Action aborted.'.PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(PHP_EOL . 'Action aborted.' . PHP_EOL, Console::FG_YELLOW);
                 return false;
             }
         }
