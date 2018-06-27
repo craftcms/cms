@@ -83,7 +83,7 @@ class DeleteUsers extends ElementAction
             Craft.postActionRequest('users/user-content-summary', {userId: ids}, function(response, textStatus) {
                 Craft.elementIndex.setIndexAvailable();
                 if (textStatus === 'success') {
-                    new Craft.DeleteUserModal(ids, {
+                    var modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response,
                         onSubmit: function()
                         {
