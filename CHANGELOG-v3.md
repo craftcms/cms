@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.13.2 - 2018-06-27
 
 ### Fixed
 - Fixed an error that occurred when deleting users from the Users index page.
