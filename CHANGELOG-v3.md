@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Account verification and password reset emails will now no longer include underscores in the tokens in the URL because some email clients interpreted them as Markdown italics.
+
 ## 3.0.13.2 - 2018-06-27
 
 ### Fixed
