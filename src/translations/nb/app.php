@@ -319,7 +319,7 @@ return [
     'Date Uploaded' => 'Dato lastet opp',
     'Date/Time' => 'Dato/tid',
     'Days' => 'Dager',
-    'Decimal Points' => 'Antall desimaltall',
+    'Decimal Points' => 'Antall siffer etter komma',
     'Default Color' => 'Standardfarge',
     'Default Focal Point' => 'Standard brennpunkt',
     'Default Status' => 'Standardstatus',
