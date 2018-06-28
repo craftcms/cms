@@ -7,6 +7,7 @@
 
 # Fixed
 - Fixed a bug where user verification links could get mangled when emails were parsed as Markdown, if the verification code contained two or more underscores.
+- Fixed a bug where Craft was misinterpreting `X-Forwarded-For` headers as the user’s IP instead of the server’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 
 ## 3.0.13.2 - 2018-06-27
 
