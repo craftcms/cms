@@ -1016,8 +1016,7 @@ class Users extends Component
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
 
-        // Strip underscores because eventually this token will end up in an email client that will interpret it
-        // as italics in Markdown.
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
         $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
 
         $hashedCode = $securityService->hashPassword($unhashedCode);
