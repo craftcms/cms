@@ -30,21 +30,23 @@ With Craft 3 downloaded and prepped, follow these steps to complete the upgrade:
 
 3. Copy your old `craft/config/license.key` file into your new project’s `config/` folder.
 
-4. Copy your old custom login page logo and site icon files from `craft/storage/rebrand/` over to your new project’s `storage/rebrand/` directory.
+4. Copy your old custom Redactor config files from `craft/config/redactor/` over to your new project’s `config/redactor/` directory.
 
-5. Copy your old user photos from `craft/storage/userphotos/` over to your new project’s `storage/userphotos/` directory.
+5. Copy your old custom login page logo and site icon files from `craft/storage/rebrand/` over to your new project’s `storage/rebrand/` directory.
 
-6. Copy your old templates from `craft/templates/` over to your new project’s `templates/` directory.
+6. Copy your old user photos from `craft/storage/userphotos/` over to your new project’s `storage/userphotos/` directory.
 
-7. If you had made any changes to your `public/index.php` file, copy them to your new project’s `web/index.php` file.
+7. Copy your old templates from `craft/templates/` over to your new project’s `templates/` directory.
 
-8. Copy any other files in your old `public/` directory into your new project’s `web/` directory.
+8. If you had made any changes to your `public/index.php` file, copy them to your new project’s `web/index.php` file.
 
-9. Update your web server to point to your new project’s `web/` directory.
+9. Copy any other files in your old `public/` directory into your new project’s `web/` directory.
 
-10. Point your browser to your Control Panel URL (e.g. `http://example.dev/admin`). If you see the update prompt, you did everything right! Go ahead and click “Finish up” to update your database.
+10. Update your web server to point to your new project’s `web/` directory.
 
-11. If you had any plugins installed, you’ll need to install their Craft 3 counterparts from the “Plugin Store” section in the Control Panel. (See the plugins’ documentation for any additional upgrade instructions.)
+11. Point your browser to your Control Panel URL (e.g. `http://example.dev/admin`). If you see the update prompt, you did everything right! Go ahead and click “Finish up” to update your database.
+
+12. If you had any plugins installed, you’ll need to install their Craft 3 counterparts from the “Plugin Store” section in the Control Panel. (See the plugins’ documentation for any additional upgrade instructions.)
 
 Now that you have successfully upgraded your Craft 2 project to Craft 3, please take some time to review the [changes in Craft 3](changes-in-craft-3.md).
 
