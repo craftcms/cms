@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-### Changed
-- Account verification and password reset emails will now no longer include underscores in the tokens in the URL because some email clients interpreted them as Markdown italics.
+# Fixed
+- Fixed a bug where user verification links could get mangled when emails were parsed as Markdown, if the verification code contained two or more underscores.
 
 ## 3.0.13.2 - 2018-06-27
 
