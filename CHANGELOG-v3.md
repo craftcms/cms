@@ -9,6 +9,7 @@
 - Fixed a bug where user verification links could get mangled when emails were parsed as Markdown, if the verification code contained two or more underscores.
 - Fixed a bug where Craft was misinterpreting `X-Forwarded-For` headers as the user’s IP instead of the server’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 - Fixed a bug where Craft wasn’t auto-scrolling the content container when dragging items near a window edge. ([#2340](https://github.com/craftcms/cms/issues/2340))
+- Fixed a PHP error that occurred when loading a Debug Toolbar panel on a page that contained serialized Checkboxes or Multi-Select field data. ([#3034](https://github.com/craftcms/cms/issues/3034))
 
 ## 3.0.13.2 - 2018-06-27
 

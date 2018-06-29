@@ -197,6 +197,23 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        if ($value instanceof MultiOptionsFieldData) {
+            $serialized = [];
+            foreach ($value as $selectedValue) {
+                /** @var OptionData $selectedValue */
+                $serialized[] = $selectedValue->value;
+            }
+            return Json::encode($serialized);
+        }
+
+        return parent::serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementValidationRules(): array
     {
         // Get all of the acceptable values
