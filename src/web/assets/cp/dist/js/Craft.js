@@ -1,4 +1,4 @@
-/*!   - 2018-06-26 */
+/*!   - 2018-06-28 */
 (function($){
 
 /** global: Craft */
@@ -11398,7 +11398,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
-Garnish.$scrollContainer = $('#content-container');
+Garnish.$scrollContainer = $('#content');
 Craft.cp = new Craft.CP();
 
 
