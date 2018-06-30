@@ -1,6 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
 ## Unreleased
+
+## 2.6.3019 - 2018-06-29
+
+### Fixed
 - Fixed a bug where dropdowns in the Control Panel weren’t pre-selecting the correct value.
 
 ## 2.6.3018 - 2018-06-25
