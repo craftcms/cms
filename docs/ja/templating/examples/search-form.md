@@ -15,7 +15,7 @@
 <h1>Search Results</h1>
 
 {% set query = craft.app.request.getParam('q') %}
-{% set entries = craft.entries.search(query).order('score').all() %}
+{% set entries = craft.entries.search(query).orderBy('score').all() %}
 
 {% if entries|length %}
  <p>{{ entries|length }} results:</p>
