@@ -4,13 +4,15 @@
 
 ### Changed
 - `craft\events\SiteEvent` now has a `$oldPrimarySiteId` property, which will be set to the previous primary site ID (which may stil be the current site ID, if it didn’t just change).
-- The installer will now only show if Craft thinks it is not installed _and_ Dev Mode is enabled.
 
-# Fixed
+### Fixed
 - Fixed a bug where user verification links could get mangled when emails were parsed as Markdown, if the verification code contained two or more underscores.
 - Fixed a bug where Craft was misinterpreting `X-Forwarded-For` headers as the user’s IP instead of the server’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 - Fixed a bug where Craft wasn’t auto-scrolling the content container when dragging items near a window edge. ([#3048](https://github.com/craftcms/cms/issues/3048))
 - Fixed a PHP error that occurred when loading a Debug Toolbar panel on a page that contained serialized Checkboxes or Multi-Select field data. ([#3034](https://github.com/craftcms/cms/issues/3034))
+
+### Security
+- Craft no longer shows the installer when it can’t establish a database connection if Dev Mode isn’t enabled.
 
 ## 3.0.13.2 - 2018-06-27
 
