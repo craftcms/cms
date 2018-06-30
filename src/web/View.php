@@ -29,7 +29,18 @@ use yii\web\AssetBundle as YiiAssetBundle;
 
 /**
  * @inheritdoc
- * @property Environment $twig the Twig environment
+ * @property string $templateMode the current template mode (either `site` or `cp`)
+ * @property string $templatesPath the base path that templates should be found in
+ * @property string|null $namespace the active namespace
+ * @property-read array $cpTemplateRoots any registered CP template roots
+ * @property-read array $siteTemplateRoots any registered site template roots
+ * @property-read bool $isRenderingPageTemplate whether a page template is currently being rendered
+ * @property-read bool $isRenderingTemplate whether a template is currently being rendered
+ * @property-read Environment $twig the Twig environment
+ * @property-read string $bodyHtml the content to be inserted at the end of the body section
+ * @property-read string $headHtml the content to be inserted in the head section
+ * @property-write string[] $registeredAssetBundles the asset bundle names that should be marked as already registered
+ * @property-write string[] $registeredJsFiles the JS files that should be marked as already registered
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -186,6 +197,20 @@ class View extends \yii\web\View
      * @var
      */
     private $_isRenderingPageTemplate = false;
+
+    /**
+     * @var string[]
+     * @see registerAssetFiles()
+     * @see setRegisteredAssetBundles()
+     */
+    private $_registeredAssetBundles = [];
+
+    /**
+     * @var string[]
+     * @see registerJsFile()
+     * @see setRegisteredJsfiles()
+     */
+    private $_registeredJsFiles = [];
 
     // Public Methods
     // =========================================================================
@@ -380,7 +405,7 @@ class View extends \yii\web\View
         $this->_renderingTemplate = $template;
 
         try {
-            $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
+            $output = call_user_func_array([$twigTemplate, 'macro_' . $macro], $args);
         } catch (\RuntimeException $e) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
@@ -406,7 +431,7 @@ class View extends \yii\web\View
         $twig = $this->getTwig();
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = 'string:'.$template;
+        $this->_renderingTemplate = 'string:' . $template;
         $result = $twig->createTemplate($template)->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
         $twig->setDefaultEscaperStrategy();
@@ -414,9 +439,15 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a micro template for accessing properties of a single object.
-     * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
-     * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
+     * Renders an object template.
+     *
+     * The passed-in `$object` will be available to the template as an `object` variable.
+     *
+     * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
+     * full Twig output tags (e.g. `{{ object.foo|raw }}`.
+     *
+     * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
+     * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
      *
      * @param string $template the source template string
      * @param mixed $object the object that should be passed into the template
@@ -466,11 +497,12 @@ class View extends \yii\web\View
             }
 
             $variables['object'] = $object;
+            $variables['_variables'] = $variables;
 
             // Render it!
             $twig->setDefaultEscaperStrategy(false);
             $lastRenderingTemplate = $this->_renderingTemplate;
-            $this->_renderingTemplate = 'string:'.$template;
+            $this->_renderingTemplate = 'string:' . $template;
             /** @var Template $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
@@ -504,7 +536,7 @@ class View extends \yii\web\View
         $tokens = [];
         while (true) {
             $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
-                $token = 'tok_'.StringHelper::randomString(10);
+                $token = 'tok_' . StringHelper::randomString(10);
                 $tokens[$token] = $matches[0];
                 return $token;
             }, $template, -1, $count);
@@ -514,7 +546,7 @@ class View extends \yii\web\View
         }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace('/(?<!\{)\{(\s*\w[^\{]*?)\}/', '{{object.$1|raw}}', $template);
+        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ (_variables.$1 ?? object.$1)$2|raw }}', $template);
 
         // Bring the objects back
         foreach (array_reverse($tokens) as $token => $value) {
@@ -526,6 +558,7 @@ class View extends \yii\web\View
 
     /**
      * Returns whether a template exists.
+     *
      * Internally, this will just call [[resolveTemplate()]] with the given template name, and return whether that
      * method found anything.
      *
@@ -544,6 +577,7 @@ class View extends \yii\web\View
 
     /**
      * Finds a template on the file system and returns its path.
+     *
      * All of the following files will be searched for, in this order:
      *
      * - TemplateName
@@ -553,8 +587,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
-     * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
+     * [[\craft\config\GeneralConfig::defaultTemplateExtensions|defaultTemplateExtensions]] and
+     * [[\craft\config\GeneralConfig::indexTemplateFilenames|indexTemplateFilenames]] config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -616,7 +650,7 @@ class View extends \yii\web\View
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
 
-        $key = $this->_templatesPath.':'.$name;
+        $key = $this->_templatesPath . ':' . $name;
 
         // Is this template path already cached?
         if (isset($this->_templatePaths[$key])) {
@@ -632,7 +666,7 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->getCurrentSite()->handle;
+            $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Craft::$app->getSites()->getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
@@ -659,7 +693,7 @@ class View extends \yii\web\View
             foreach ($roots as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
-                if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
+                if (strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
                     $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1);
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
@@ -707,12 +741,12 @@ class View extends \yii\web\View
     {
         Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
 
-        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
-            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".
-            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n".
-            "only screen and (        min-device-pixel-ratio: 1.5),\n".
-            "only screen and (        min-resolution: 1.5dppx){\n".
-            $css."\n".
+        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
+            "only screen and (        min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (        min-resolution: 1.5dppx){\n" .
+            $css . "\n" .
             '}';
 
         $this->registerCss($css, $options, $key);
@@ -730,6 +764,7 @@ class View extends \yii\web\View
 
     /**
      * Starts a JavaScript buffer.
+     *
      * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
      * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
@@ -759,7 +794,7 @@ class View extends \yii\web\View
 
         foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
             if (!empty($this->js[$pos])) {
-                $js .= implode("\n", $this->js[$pos])."\n";
+                $js .= implode("\n", $this->js[$pos]) . "\n";
             }
         }
 
@@ -771,6 +806,24 @@ class View extends \yii\web\View
         }
 
         return $js;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerJsFile($url, $options = [], $key = null)
+    {
+        // If 'depends' is specified, ignore it  for now because the file will
+        // get registered as an asset bundle
+        if (empty($options['depends'])) {
+            $key = $key ?: $url;
+            if (isset($this->_registeredJsFiles[$key])) {
+                return;
+            }
+            $this->_registeredJsFiles[$key] = true;
+        }
+
+        parent::registerJsFile($url, $options, $key);
     }
 
     /**
@@ -796,54 +849,6 @@ class View extends \yii\web\View
     /**
      * @inheritdoc
      */
-    protected function renderHeadHtml()
-    {
-        $lines = [];
-        if (!empty($this->title)) {
-            $lines[] = '<title>'.Html::encode($this->title).'</title>';
-        }
-        if (!empty($this->_scripts[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
-        }
-
-        $html = parent::renderHeadHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderBodyBeginHtml()
-    {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
-        }
-
-        $html = parent::renderBodyBeginHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function renderBodyEndHtml($ajaxMode)
-    {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_END])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
-        }
-
-        $html = parent::renderBodyEndHtml($ajaxMode);
-
-        return empty($lines) ? $html : implode("\n", $lines).$html;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function endBody()
     {
         $this->registerAssetFlashes();
@@ -852,6 +857,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the content to be inserted in the head section.
+     *
      * This includes:
      * - Meta tags registered using [[registerMetaTag()]]
      * - Link tags registered with [[registerLinkTag()]]
@@ -883,6 +889,7 @@ class View extends \yii\web\View
 
     /**
      * Returns the content to be inserted at the end of the body section.
+     *
      * This includes:
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
@@ -896,7 +903,7 @@ class View extends \yii\web\View
         $this->registerAllAssetFiles();
 
         // Get the rendered body begin+end HTML
-        $html = $this->renderBodyBeginHtml().
+        $html = $this->renderBodyBeginHtml() .
             $this->renderBodyEndHtml(true);
 
         // Clear out the queued up files
@@ -912,41 +919,6 @@ class View extends \yii\web\View
         }
 
         return $html;
-    }
-
-    /**
-     * Registers any asset bundles and JS code that were queued-up in the session flash data.
-     *
-     * @throws Exception if any of the registered asset bundles are not actually asset bundles
-     */
-    protected function registerAssetFlashes()
-    {
-        $session = Craft::$app->getSession();
-
-        if ($session->getIsActive()) {
-            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
-                if (!is_subclass_of($name, YiiAssetBundle::class)) {
-                    throw new Exception("$name is not an asset bundle");
-                }
-
-                $this->registerAssetBundle($name, $position);
-            }
-
-            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
-                $this->registerJs($js, $position, $key);
-            }
-        }
-    }
-
-    /**
-     * Registers all files provided by all registered asset bundles, including depending bundles files.
-     * Removes a bundle from [[assetBundles]] once files are registered.
-     */
-    protected function registerAllAssetFiles()
-    {
-        foreach ($this->assetBundles as $bundleName => $bundle) {
-            $this->registerAssetFiles($bundleName);
-        }
     }
 
     /**
@@ -969,7 +941,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? "\n" : '')."Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? "\n" : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
             }
         }
 
@@ -989,6 +961,7 @@ JS;
 
     /**
      * Returns the active namespace.
+     *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
@@ -1001,6 +974,7 @@ JS;
 
     /**
      * Sets the active namespace.
+     *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
@@ -1012,9 +986,9 @@ JS;
     }
 
     /**
-     * Returns the current template mode (either 'site' or 'cp').
+     * Returns the current template mode (either `site` or `cp`).
      *
-     * @return string Either 'site' or 'cp'.
+     * @return string Either `site` or `cp`.
      */
     public function getTemplateMode(): string
     {
@@ -1023,6 +997,7 @@ JS;
 
     /**
      * Sets the current template mode.
+     *
      * The template mode defines:
      * - the base path that templates should be looked for in
      * - the default template file extensions that should be automatically added when looking for templates
@@ -1039,7 +1014,7 @@ JS;
             self::TEMPLATE_MODE_SITE
         ], true)
         ) {
-            throw new Exception('"'.$templateMode.'" is not a valid template mode');
+            throw new Exception('"' . $templateMode . '" is not a valid template mode');
         }
 
         // Set the new template mode
@@ -1080,6 +1055,7 @@ JS;
 
     /**
      * Renames HTML input names so they belong to a namespace.
+     *
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
      * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
@@ -1134,12 +1110,12 @@ JS;
                 [$this, '_createTextareaMarker'], $html);
 
             // name= attributes
-            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
+            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
 
             // id= and for= attributes
             if ($otherAttributes) {
                 $idNamespace = $this->formatInputId($namespace);
-                $html = preg_replace('/(?<![\w\-])((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', '$1'.$idNamespace.'-$4$3', $html);
+                $html = preg_replace('/(?<![\w\-])((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', '$1' . $idNamespace . '-$4$3', $html);
             }
 
             // Bring back the textarea content
@@ -1151,6 +1127,7 @@ JS;
 
     /**
      * Namespaces an input name.
+     *
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
@@ -1165,7 +1142,7 @@ JS;
         }
 
         if ($namespace !== null) {
-            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
+            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
         }
 
         return $inputName;
@@ -1173,6 +1150,7 @@ JS;
 
     /**
      * Namespaces an input ID.
+     *
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
@@ -1187,7 +1165,7 @@ JS;
         }
 
         if ($namespace !== null) {
-            $inputId = $this->formatInputId($namespace).'-'.$inputId;
+            $inputId = $this->formatInputId($namespace) . '-' . $inputId;
         }
 
         return $inputId;
@@ -1195,6 +1173,7 @@ JS;
 
     /**
      * Formats an ID out of an input name.
+     *
      * This method takes a given input name and returns a valid ID based on it.
      * For example, if given the following input name:
      *     foo[bar][title]
@@ -1211,6 +1190,7 @@ JS;
 
     /**
      * Queues up a method to be called by a given template hook.
+     *
      * For example, if you place this in your plugin’s [[BasePlugin::init()|init()]] method:
      *
      * ```php
@@ -1241,7 +1221,8 @@ JS;
 
     /**
      * Invokes a template hook.
-     * This is called by [[HookNode|<code>{% hook %}</code> tags]].
+     *
+     * This is called by [[HookNode|`{% hook %}` tags]].
      *
      * @param string $hook The hook name.
      * @param array &$context The current template context.
@@ -1258,6 +1239,39 @@ JS;
         }
 
         return $return;
+    }
+
+    /**
+     * Sets the JS files that should be marked as already registered.
+     *
+     * @param string[] $keys
+     */
+    public function setRegisteredJsFiles(array $keys)
+    {
+        $this->_registeredJsFiles = array_flip($keys);
+    }
+
+    /**
+     * Sets the asset bundle names that should be marked as already registered.
+     *
+     * @param string[] $names Asset bundle names
+     */
+    public function setRegisteredAssetBundles(array $names)
+    {
+        $this->_registeredAssetBundles = array_flip($names);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function endPage($ajaxMode = false)
+    {
+        if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_registeredJs('registeredJsFiles', $this->_registeredJsFiles);
+            $this->_registeredJs('registeredAssetBundles', $this->_registeredAssetBundles);
+        }
+
+        parent::endPage($ajaxMode);
     }
 
     // Events
@@ -1343,6 +1357,106 @@ JS;
         }
     }
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderHeadHtml()
+    {
+        $lines = [];
+        if (!empty($this->title)) {
+            $lines[] = '<title>' . Html::encode($this->title) . '</title>';
+        }
+        if (!empty($this->_scripts[self::POS_HEAD])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
+        }
+
+        $html = parent::renderHeadHtml();
+
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyBeginHtml()
+    {
+        $lines = [];
+        if (!empty($this->_scripts[self::POS_BEGIN])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
+        }
+
+        $html = parent::renderBodyBeginHtml();
+
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyEndHtml($ajaxMode)
+    {
+        $lines = [];
+        if (!empty($this->_scripts[self::POS_END])) {
+            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
+        }
+
+        $html = parent::renderBodyEndHtml($ajaxMode);
+
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
+    }
+
+    /**
+     * Registers any asset bundles and JS code that were queued-up in the session flash data.
+     *
+     * @throws Exception if any of the registered asset bundles are not actually asset bundles
+     */
+    protected function registerAssetFlashes()
+    {
+        $session = Craft::$app->getSession();
+
+        if ($session->getIsActive()) {
+            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+                if (!is_subclass_of($name, YiiAssetBundle::class)) {
+                    throw new Exception("$name is not an asset bundle");
+                }
+
+                $this->registerAssetBundle($name, $position);
+            }
+
+            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+                $this->registerJs($js, $position, $key);
+            }
+        }
+    }
+
+    /**
+     * Registers all files provided by all registered asset bundles, including depending bundles files.
+     *
+     * Removes a bundle from [[assetBundles]] once files are registered.
+     */
+    protected function registerAllAssetFiles()
+    {
+        foreach ($this->assetBundles as $bundleName => $bundle) {
+            $this->registerAssetFiles($bundleName);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function registerAssetFiles($name)
+    {
+        // Don't re-register bundles
+        if (isset($this->_registeredAssetBundles[$name])) {
+            return;
+        }
+        $this->_registeredAssetBundles[$name] = true;
+        parent::registerAssetFiles($name);
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -1360,7 +1474,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            Craft::error('Someone tried to load a template outside the templates folder: '.$name);
+            Craft::error('Someone tried to load a template outside the templates folder: ' . $name);
             throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }
@@ -1381,14 +1495,14 @@ JS;
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name) {
             // Maybe $name is already the full file path
-            $testPath = $basePath.DIRECTORY_SEPARATOR.$name;
+            $testPath = $basePath . DIRECTORY_SEPARATOR . $name;
 
             if (is_file($testPath)) {
                 return $testPath;
             }
 
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath.DIRECTORY_SEPARATOR.$name.'.'.$extension;
+                $testPath = $basePath . DIRECTORY_SEPARATOR . $name . '.' . $extension;
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -1398,7 +1512,7 @@ JS;
 
         foreach ($this->_indexTemplateFilenames as $filename) {
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath.($name ? DIRECTORY_SEPARATOR.$name : '').DIRECTORY_SEPARATOR.$filename.'.'.$extension;
+                $testPath = $basePath . ($name ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -1477,10 +1591,27 @@ JS;
      */
     private function _createTextareaMarker(array $matches): string
     {
-        $marker = '{marker:'.StringHelper::randomString().'}';
+        $marker = '{marker:' . StringHelper::randomString() . '}';
         $this->_textareaMarkers[$marker] = $matches[2];
 
-        return $matches[1].$marker.$matches[3];
+        return $matches[1] . $marker . $matches[3];
+    }
+
+    private function _registeredJs($property, $names)
+    {
+        if (empty($names)) {
+            return;
+        }
+
+        $js = "if (typeof Craft !== 'undefined') {\n";
+        foreach (array_keys($names) as $name) {
+            if ($name) {
+                $jsName = Json::encode($name);
+                $js .= "  Craft.{$property}[{$jsName}] = true;\n";
+            }
+        }
+        $js .= '}';
+        $this->registerJs($js, self::POS_HEAD);
     }
 
     /**
@@ -1526,10 +1657,10 @@ JS;
                     $srcset = $element->getThumbUrl($size);
                 }
 
-                $srcsets[] = $srcset.' '.$size.'w';
+                $srcsets[] = $srcset . ' ' . $size . 'w';
             }
 
-            $sizesHtml = ($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px';
+            $sizesHtml = ($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]) . 'px';
             $srcsetHtml = implode(', ', $srcsets);
             $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
         } else {
@@ -1539,7 +1670,7 @@ JS;
         $htmlAttributes = array_merge(
             $element->getHtmlAttributes($context['context']),
             [
-                'class' => 'element '.$elementSize,
+                'class' => 'element ' . $elementSize,
                 'data-type' => get_class($element),
                 'data-id' => $element->id,
                 'data-site-id' => $element->siteId,
@@ -1564,7 +1695,7 @@ JS;
         $html = '<div';
 
         foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' '.$attribute.($value !== null ? '="'.HtmlHelper::encode($value).'"' : '');
+            $html .= ' ' . $attribute . ($value !== null ? '="' . HtmlHelper::encode($value) . '"' : '');
         }
 
         if (ElementHelper::isElementEditable($element)) {
@@ -1574,14 +1705,14 @@ JS;
         $html .= '>';
 
         if ($context['context'] === 'field' && isset($context['name'])) {
-            $html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$element->id.'">';
-            $html .= '<a class="delete icon" title="'.Craft::t('app', 'Remove').'"></a> ';
+            $html .= '<input type="hidden" name="' . $context['name'] . '[]" value="' . $element->id . '">';
+            $html .= '<a class="delete icon" title="' . Craft::t('app', 'Remove') . '"></a> ';
         }
 
         if ($element::hasStatuses()) {
             $status = $element->getStatus();
-            $statusClasses = $status.' '.($element::statuses()[$status]['color'] ?? '');
-            $html .= '<span class="status '.$statusClasses.'"></span>';
+            $statusClasses = $status . ' ' . ($element::statuses()[$status]['color'] ?? '');
+            $html .= '<span class="status ' . $statusClasses . '"></span>';
         }
 
         $html .= $imgHtml;

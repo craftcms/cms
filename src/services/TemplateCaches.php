@@ -24,7 +24,7 @@ use yii\web\Response;
 
 /**
  * Template Caches service.
- * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|<code>Craft::$app->templateCaches</code>]].
+ * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -286,7 +286,7 @@ class TemplateCaches extends Component
         }
 
         if (!$global && (strlen($path = $this->_getPath()) > 255)) {
-            Craft::warning('Skipped adding '.$key.' to template cache table because the path is > 255 characters: '.$path, __METHOD__);
+            Craft::warning('Skipped adding ' . $key . ' to template cache table because the path is > 255 characters: ' . $path, __METHOD__);
 
             return;
         }
@@ -310,7 +310,7 @@ class TemplateCaches extends Component
 
             $cacheDuration += time();
 
-            $expiration = new DateTime('@'.$cacheDuration);
+            $expiration = new DateTime('@' . $cacheDuration);
         }
 
         // Save it
@@ -681,7 +681,7 @@ class TemplateCaches extends Component
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/'.Craft::$app->getConfig()->getGeneral()->pageTrigger.$pageNum;
+            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->pageTrigger . $pageNum;
         }
 
         return $this->_path;

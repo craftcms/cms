@@ -47,7 +47,7 @@ class m171107_000000_assign_group_permissions extends Migration
         $permissionIds[] = $this->db->getLastInsertID('{{%userpermissions}}');
 
         foreach ($allGroupIds as $groupId) {
-            $this->insert('{{%userpermissions}}', ['name' => 'assignusergroup:'.$groupId]);
+            $this->insert('{{%userpermissions}}', ['name' => 'assignusergroup:' . $groupId]);
             $permissionIds[] = $this->db->getLastInsertID('{{%userpermissions}}');
         }
 

@@ -79,7 +79,7 @@ class CategoryGroup_SiteSettings extends Model
         }
 
         if (($this->_group = Craft::$app->getCategories()->getGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid group ID: '.$this->groupId);
+            throw new InvalidConfigException('Invalid group ID: ' . $this->groupId);
         }
 
         return $this->_group;
@@ -108,7 +108,7 @@ class CategoryGroup_SiteSettings extends Model
         }
 
         if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
         return $site;

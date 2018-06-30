@@ -26,7 +26,7 @@ class GetAttrNode extends \Twig_Node_Expression
     public function compile(\Twig_Compiler $compiler)
     {
         // This is the only line that should be different from Twig_Node_Expression_GetAttr::compile()
-        $compiler->raw(Template::class.'::attribute($this->env, $this->getSourceContext(), ');
+        $compiler->raw(Template::class . '::attribute($this->env, $this->getSourceContext(), ');
 
         if ($this->getAttribute('ignore_strict_check')) {
             $this->getNode('node')->setAttribute('ignore_strict_check', true);

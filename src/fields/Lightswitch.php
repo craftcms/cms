@@ -77,7 +77,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch',
             [
                 'id' => $id,
-                'labelId' => $id.'-label',
+                'labelId' => $id . '-label',
                 'name' => $this->handle,
                 'on' => (bool)$value,
             ]);
@@ -89,10 +89,10 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value) {
-            return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';
+            return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
         }
 
-        return '<div class="status" title="'.Craft::t('app', 'Not enabled').'"></div>';
+        return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
     }
 
     /**

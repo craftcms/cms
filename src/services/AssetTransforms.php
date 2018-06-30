@@ -35,10 +35,11 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Asset Transforms service.
- * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|<code>Craft::$app->assetTransforms</code>]].
+ * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|`Craft::$app->assetTransforms`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -223,7 +224,7 @@ class AssetTransforms extends Component
         $interlaceChanged = $transformRecord->interlace !== $transform->interlace;
 
         if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-            $transformRecord->dimensionChangeTime = new DateTime('@'.time());
+            $transformRecord->dimensionChangeTime = new DateTime('@' . time());
         }
 
         $transformRecord->mode = $transform->mode;
@@ -253,15 +254,42 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Deletes an asset transform by its id.
+     * Deletes an asset transform by its ID.
      *
-     * @param int $transformId
-     * @return bool
+     * @param int $transformId The transform's ID
+     * @return bool Whether the transform was deleted.
      * @throws \yii\db\Exception on DB error
      */
-    public function deleteTransform(int $transformId): bool
+    public function deleteTransformById(int $transformId): bool
     {
         $transform = $this->getTransformById($transformId);
+
+        if (!$transform) {
+            return false;
+        }
+
+        return $this->deleteTransform($transform);
+    }
+
+    /**
+     * Deletes an asset transform.
+     *
+     * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
+     *
+     * @param int|AssetTransform $transform The transform
+     * @return bool Whether the transform was deleted
+     * @throws \yii\db\Exception on DB error
+     */
+    public function deleteTransform($transform): bool
+    {
+        // todo: remove this code in 3.0 & hardcode the $transform type
+        if (is_int($transform)) {
+            Craft::$app->getDeprecator()->log(self::class . '::deleteTransform(id)', self::class . '::deleteTransform() should only be called with a ' . AssetTransform::class . ' reference. Use ' . self::class . '::deleteTransformById() to get a transform by its ID.');
+            return $this->deleteTransformById($transform);
+        }
+        if (!$transform instanceof AssetTransform) {
+            throw new InvalidArgumentException('$transform must be a ' . AssetTransform::class . ' object.');
+        }
 
         // Fire a 'beforeDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
@@ -273,7 +301,7 @@ class AssetTransforms extends Component
         Craft::$app->getDb()->createCommand()
             ->delete(
                 '{{%assettransforms}}',
-                ['id' => $transformId])
+                ['id' => $transform->id])
             ->execute();
 
         // Fire an 'afterDeleteAssetTransform' event
@@ -320,7 +348,7 @@ class AssetTransforms extends Component
                     $transformCondition[] = ['format' => null];
                 } else {
                     $transformCondition[] = ['format' => $transform->format];
-                    $fingerprint .= ':'.$transform->format;
+                    $fingerprint .= ':' . $transform->format;
                 }
 
                 $indexCondition[] = $transformCondition;
@@ -345,7 +373,7 @@ class AssetTransforms extends Component
             $transformFingerprint = $result['location'];
 
             if ($result['format']) {
-                $transformFingerprint .= ':'.$result['format'];
+                $transformFingerprint .= ':' . $result['format'];
             }
 
             // Is it still valid?
@@ -353,7 +381,7 @@ class AssetTransforms extends Component
             $asset = $assetsById[$result['assetId']];
 
             if ($this->validateTransformIndexResult($result, $transform, $asset)) {
-                $indexFingerprint = $result['assetId'].':'.$transformFingerprint;
+                $indexFingerprint = $result['assetId'] . ':' . $transformFingerprint;
                 $this->_eagerLoadedTransformIndexes[$indexFingerprint] = $result;
             } else {
                 $invalidIndexIds[] = $result['id'];
@@ -389,7 +417,7 @@ class AssetTransforms extends Component
         $transformLocation = $this->_getTransformFolderName($transform);
 
         // Was it eager-loaded?
-        $fingerprint = $asset->id.':'.$transformLocation.($transform->format === null ? '' : ':'.$transform->format);
+        $fingerprint = $asset->id . ':' . $transformLocation . ($transform->format === null ? '' : ':' . $transform->format);
 
         if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->_eagerLoadedTransformIndexes[$fingerprint];
@@ -425,7 +453,7 @@ class AssetTransforms extends Component
                 ->execute();
 
             // And the file.
-            $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($result));
+            $transformUri = $asset->getFolder()->path . $this->getTransformSubpath($asset, new AssetTransformIndex($result));
             $asset->getVolume()->deleteFile($transformUri);
         }
 
@@ -553,7 +581,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
 
-        $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME).'.'.$index->detectedFormat;
+        $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME) . '.' . $index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = false;
@@ -592,8 +620,8 @@ class AssetTransforms extends Component
         // If we have a match, copy the file.
         if ($matchFound) {
             /** @var array $matchFound */
-            $from = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
-            $to = $asset->getFolder()->path.$this->getTransformSubpath($asset, $index);
+            $from = $asset->getFolder()->path . $this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
+            $to = $asset->getFolder()->path . $this->getTransformSubpath($asset, $index);
 
             // Sanity check
             if ($volume->fileExists($to)) {
@@ -605,7 +633,7 @@ class AssetTransforms extends Component
             $this->_createTransformForAsset($asset, $index);
         }
 
-        return $volume->fileExists($asset->getFolder()->path.$this->getTransformSubpath($asset, $index));
+        return $volume->fileExists($asset->getFolder()->path . $this->getTransformSubpath($asset, $index));
     }
 
     /**
@@ -732,7 +760,7 @@ class AssetTransforms extends Component
         $result = $this->_createTransformIndexQuery()
             ->where([
                 'assetId' => $assetId,
-                'location' => '_'.$transformHandle
+                'location' => '_' . $transformHandle
             ])
             ->one();
 
@@ -768,7 +796,7 @@ class AssetTransforms extends Component
         $baseUrl = $volume->getRootUrl();
         $appendix = AssetsHelper::urlAppendix($volume, $asset);
 
-        return $baseUrl.$asset->getFolder()->path.$this->getTransformUri($asset, $transformIndexModel).$appendix;
+        return $baseUrl . $asset->getFolder()->path . $this->getTransformUri($asset, $transformIndexModel) . $appendix;
     }
 
     /**
@@ -817,11 +845,11 @@ class AssetTransforms extends Component
                     try {
                         FileHelper::unlink($imageSourcePath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage(), __METHOD__);
+                        Craft::warning("Unable to delete the file \"{$imageSourcePath}\": " . $e->getMessage(), __METHOD__);
                     }
 
-                    $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
-                    $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                    $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
+                    $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
 
                     $volume->saveFileLocally($asset->getPath(), $tempPath);
 
@@ -829,7 +857,7 @@ class AssetTransforms extends Component
                         try {
                             FileHelper::unlink($tempPath);
                         } catch (ErrorException $e) {
-                            Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
+                            Craft::warning("Unable to delete the file \"{$tempPath}\": " . $e->getMessage(), __METHOD__);
                         }
                         throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                             ['file' => $asset->filename]));
@@ -842,7 +870,7 @@ class AssetTransforms extends Component
                     try {
                         FileHelper::unlink($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": " . $e->getMessage(), __METHOD__);
                     }
                 }
             }
@@ -951,8 +979,8 @@ class AssetTransforms extends Component
 
             $volume = $asset->getVolume();
 
-            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
-            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
+            $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
             $volume->saveFileLocally($asset->getPath(), $tempPath);
 
             $image = $images->loadImage($tempPath);
@@ -991,7 +1019,7 @@ class AssetTransforms extends Component
         $path = $index->location;
 
         if (!empty($index->filename) && $index->filename !== $asset->filename) {
-            $path .= DIRECTORY_SEPARATOR.$asset->id;
+            $path .= DIRECTORY_SEPARATOR . $asset->id;
         }
 
         return $path;
@@ -1022,7 +1050,7 @@ class AssetTransforms extends Component
      */
     public function getTransformSubpath(Asset $asset, AssetTransformIndex $index): string
     {
-        return $this->getTransformSubfolder($asset, $index).DIRECTORY_SEPARATOR.$this->getTransformFilename($asset, $index);
+        return $this->getTransformSubfolder($asset, $index) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $index);
     }
 
     /**
@@ -1054,12 +1082,12 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        $file = Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION);
+        $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->filename, PATHINFO_EXTENSION);
 
         try {
             FileHelper::unlink($file);
         } catch (ErrorException $e) {
-            Craft::warning("Unable to delete the file \"{$file}\": ".$e->getMessage(), __METHOD__);
+            Craft::warning("Unable to delete the file \"{$file}\": " . $e->getMessage(), __METHOD__);
         }
     }
 
@@ -1072,16 +1100,16 @@ class AssetTransforms extends Component
     {
         $dirs = [
             Craft::$app->getPath()->getAssetThumbsPath(),
-            Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id
+            Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id
         ];
 
         foreach ($dirs as $dir) {
-            $files = glob($dir.'/[0-9]*/'.$asset->id.'.[a-z]*');
+            $files = glob($dir . '/[0-9]*/' . $asset->id . '.[a-z]*');
             foreach ($files as $path) {
                 try {
                     FileHelper::unlink($path);
                 } catch (ErrorException $e) {
-                    Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
+                    Craft::warning('Unable to delete asset thumbnails: ' . $e->getMessage(), __METHOD__);
                 }
             }
         }
@@ -1108,7 +1136,7 @@ class AssetTransforms extends Component
                 ]));
             }
 
-            $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset, $transformIndex));
+            $volume->deleteFile($asset->getFolder()->path . $this->getTransformSubpath($asset, $transformIndex));
 
             // Fire an 'afterDeleteTransforms' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TRANSFORMS)) {
@@ -1231,7 +1259,7 @@ class AssetTransforms extends Component
      */
     private function _getNamedTransformFolderName(AssetTransform $transform): string
     {
-        return '_'.$transform->handle;
+        return '_' . $transform->handle;
     }
 
     /**
@@ -1242,11 +1270,11 @@ class AssetTransforms extends Component
      */
     private function _getUnnamedTransformFolderName(AssetTransform $transform): string
     {
-        return '_'.($transform->width ?: 'AUTO').'x'.($transform->height ?: 'AUTO').
-            '_'.$transform->mode.
-            '_'.$transform->position.
-            ($transform->quality ? '_'.$transform->quality : '').
-            '_'.$transform->interlace;
+        return '_' . ($transform->width ?: 'AUTO') . 'x' . ($transform->height ?: 'AUTO') .
+            '_' . $transform->mode .
+            '_' . $transform->position .
+            ($transform->quality ? '_' . $transform->quality : '') .
+            '_' . $transform->interlace;
     }
 
     /**
@@ -1269,7 +1297,7 @@ class AssetTransforms extends Component
         }
 
         $volume = $asset->getVolume();
-        $transformPath = $asset->getFolder()->path.$this->getTransformSubpath($asset, $index);
+        $transformPath = $asset->getFolder()->path . $this->getTransformSubpath($asset, $index);
 
         // Already created. Relax, grasshopper!
         if ($volume->fileExists($transformPath)) {
@@ -1326,8 +1354,8 @@ class AssetTransforms extends Component
         if ($event->tempPath !== null) {
             $tempPath = $event->tempPath;
         } else {
-            $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.$index->detectedFormat;
-            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true) . '.' . $index->detectedFormat;
+            $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
             $image->saveAs($tempPath);
         }
 

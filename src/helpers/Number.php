@@ -61,7 +61,7 @@ class Number
 
         while ($num >= 0) {
             $ascii = ($num % 26) + 65;
-            $alpha = chr($ascii).$alpha;
+            $alpha = chr($ascii) . $alpha;
 
             $num = (int)($num / 26) - 1;
         }
@@ -133,6 +133,7 @@ class Number
 
     /**
      * Returns the numeric value of a variable.
+     *
      * If the variable is an object with a __toString() method, the numeric value of its string representation will be
      * returned.
      *

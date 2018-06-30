@@ -115,7 +115,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -173,16 +172,20 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'reservedWords' => [
                     'archived',
                     'attributeLabel',
+                    'attributes',
                     'children',
                     'contentTable',
                     'dateCreated',
                     'dateUpdated',
                     'enabled',
+                    'enabledForSite',
+                    'error',
+                    'errors',
+                    'fieldValue',
                     'id',
                     'level',
                     'lft',
                     'link',
-                    'enabledForSite',
                     'name', // global set-specific
                     'next',
                     'next',
@@ -193,6 +196,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'ref',
                     'rgt',
                     'root',
+                    'scenario',
                     'searchScore',
                     'siblings',
                     'site',
@@ -321,7 +325,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @param mixed $value
      * @return bool
-     * @deprecated in 3.0.0-RC15. Use isEmpty() instead.
+     * @deprecated in 3.0.0-RC15. Use [[isValueEmpty()]] instead.
      */
     public function isEmpty($value): bool
     {
@@ -388,10 +392,20 @@ abstract class Field extends SavableComponent implements FieldInterface
 
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
+            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    {
+        if ($this instanceof EagerLoadingFieldInterface) {
+            $query->andWith($this->handle);
+        }
     }
 
     /**
@@ -503,7 +517,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
-        return ($namespace ? $namespace.'.' : '').$this->handle;
+        return ($namespace ? $namespace . '.' : '') . $this->handle;
     }
 
     /**

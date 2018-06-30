@@ -41,9 +41,9 @@ class D3Asset extends AssetBundle
 
         // Add locale definition JS variables
         $libPath = Craft::getAlias('@lib');
-        $js = 'window.d3FormatLocaleDefinition = '.$this->formatDef($libPath.'/d3-format').';';
-        $js .= 'window.d3TimeFormatLocaleDefinition = '.$this->formatDef($libPath.'/d3-time-format').';';
-        $js .= 'window.d3Formats = '.Json::encode(ChartHelper::formats()).';';
+        $js = 'window.d3FormatLocaleDefinition = ' . $this->formatDef($libPath . '/d3-format') . ';';
+        $js .= 'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef($libPath . '/d3-time-format') . ';';
+        $js .= 'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
 
         $view->registerJs($js, View::POS_BEGIN);
     }
@@ -83,7 +83,7 @@ class D3Asset extends AssetBundle
      */
     private function _def(string $dir, string $file)
     {
-        $path = $dir.DIRECTORY_SEPARATOR.$file.'.json';
+        $path = $dir . DIRECTORY_SEPARATOR . $file . '.json';
         return file_exists($path) ? file_get_contents($path) : null;
     }
 }

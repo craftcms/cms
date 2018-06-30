@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -38,6 +39,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
 use craft\fields\Users as UsersField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -55,7 +57,7 @@ use yii\base\Exception;
 
 /**
  * Fields service.
- * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|<code>Craft::$app->fields</code>]].
+ * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -67,6 +69,23 @@ class Fields extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
+     *
+     * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
+     *
+     * See [Field Types](https://docs.craftcms.com/v3/field-types.html) for documentation on creating field types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Fields;
+     * use yii\base\Event;
+     *
+     * Event::on(Fields::class,
+     *     Fields::EVENT_REGISTER_FIELD_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyFieldType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
@@ -189,10 +208,10 @@ class Fields extends Component
     private $_layoutsByType;
 
     /**
-     * @var bool Whether we’re listening for the request end, to update the field version
-     * @see updateFieldVersionAfterRequest()
+     * @var bool Whether we've already updated the field version in this request
+     * @see updateFieldVersion()
      */
-    private $_listeningForRequestEnd = false;
+    private $_updatedFieldVersion = false;
 
     // Public Methods
     // =========================================================================
@@ -598,6 +617,16 @@ class Fields extends Component
     /**
      * Returns a field by its handle.
      *
+     * ---
+     *
+     * ```php
+     * $body = Craft::$app->fields->getFieldByHandle('body');
+     * ```
+     * ```twig
+     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {{ body.instructions }}
+     * ```
+     *
      * @param string $handle The field’s handle
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
@@ -738,8 +767,8 @@ class Fields extends Component
 
             // Create/alter the content table column
             $contentTable = Craft::$app->getContent()->contentTable;
-            $oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
-            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix.$field->handle;
+            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
 
             if ($field::hasContentColumn()) {
                 $columnType = $field->getContentColumnType();
@@ -836,7 +865,7 @@ class Fields extends Component
         ContentBehavior::$fieldHandles[$field->handle] = true;
 
         // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
+        $this->updateFieldVersion();
 
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
@@ -893,9 +922,9 @@ class Fields extends Component
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
-            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle)) {
+            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix . $field->handle)) {
                 Craft::$app->getDb()->createCommand()
-                    ->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)
+                    ->dropColumn($contentTable, $fieldColumnPrefix . $field->handle)
                     ->execute();
             }
 
@@ -903,6 +932,18 @@ class Fields extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%fields}}', ['id' => $field->id])
                 ->execute();
+
+            // Clear caches
+            unset(
+                $this->_fieldsById[$field->id],
+                $this->_fieldsByContextAndHandle[$field->context][$field->handle],
+                $this->_allFieldsInContext[$field->context],
+                $this->_fieldsWithContent[$field->context]
+            );
+
+            if (isset($this->_allFieldHandlesByContext[$field->context])) {
+                ArrayHelper::removeValue($this->_allFieldHandlesByContext[$field->context], $field->handle);
+            }
 
             $field->afterDelete();
 
@@ -914,7 +955,7 @@ class Fields extends Component
         }
 
         // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
+        $this->updateFieldVersion();
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -1056,14 +1097,14 @@ class Fields extends Component
      */
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
-        $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
+        $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
         $request = Craft::$app->getRequest();
 
-        $postedFieldLayout = $request->getBodyParam($paramPrefix.'fieldLayout', []);
-        $requiredFields = $request->getBodyParam($paramPrefix.'requiredFields', []);
+        $postedFieldLayout = $request->getBodyParam($paramPrefix . 'fieldLayout', []);
+        $requiredFields = $request->getBodyParam($paramPrefix . 'requiredFields', []);
 
         $fieldLayout = $this->assembleLayout($postedFieldLayout, $requiredFields);
-        $fieldLayout->id = $request->getBodyParam($paramPrefix.'fieldLayoutId');
+        $fieldLayout->id = $request->getBodyParam($paramPrefix . 'fieldLayoutId');
 
         return $fieldLayout;
     }
@@ -1173,7 +1214,7 @@ class Fields extends Component
 
             // Get the current layout
             if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
-                throw new Exception('Invalid field layout ID: '.$layout->id);
+                throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
         } else {
             $layoutRecord = new FieldLayoutRecord();
@@ -1290,26 +1331,27 @@ class Fields extends Component
     }
 
     /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
-     */
-    public function updateFieldVersionAfterRequest()
-    {
-        if ($this->_listeningForRequestEnd) {
-            return;
-        }
-
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateFieldVersion']);
-        $this->_listeningForRequestEnd = true;
-    }
-
-    /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
+     * will get regenerated on the next request.
+     *
+     * This will only have an effect once per request. Subsequent calls will be ignored.
      */
     public function updateFieldVersion()
     {
+        if ($this->_updatedFieldVersion) {
+            return;
+        }
+
+        // Make sure that ContentBehavior and ElementQueryBehavior have already been loaded,
+        // so the field version change won't be detected until the next request
+        class_exists(ContentBehavior::class);
+        class_exists(ElementQueryBehavior::class);
+
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
         Craft::$app->saveInfo($info);
+
+        $this->_updatedFieldVersion = true;
     }
 
     // Private Methods
@@ -1354,7 +1396,7 @@ class Fields extends Component
                 'fields.settings'
             ])
             ->from(['{{%fields}} fields'])
-            ->orderBy(['fields.name' => SORT_ASC]);
+            ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
     /**
@@ -1431,7 +1473,7 @@ class Fields extends Component
         }
 
         if (($this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id)) === null) {
-            throw new FieldNotFoundException('Invalid field ID: '.$field->id);
+            throw new FieldNotFoundException('Invalid field ID: ' . $field->id);
         }
 
         return $this->_fieldRecordsById[$field->id];

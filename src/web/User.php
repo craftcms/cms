@@ -18,7 +18,8 @@ use yii\web\Cookie;
 
 /**
  * The User component provides APIs for managing the user authentication status.
- * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|<code>Craft::$app->user</code>]].
+ *
+ * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|`Craft::$app->user`]].
  *
  * @property bool $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity The logged-in user.
@@ -49,7 +50,7 @@ class User extends \yii\web\User
     // -------------------------------------------------------------------------
 
     /**
-     * Logs in a user by their ID
+     * Logs in a user by their ID.
      *
      * @param int $userId The user’s ID
      * @param int $duration The number of seconds that the user can remain in logged-in status.
@@ -71,6 +72,7 @@ class User extends \yii\web\User
 
     /**
      * Sends a username cookie.
+     *
      * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
      * so that login forms can remember the initial Username value on login forms.
      *
@@ -130,11 +132,55 @@ class User extends \yii\web\User
     /**
      * Returns the username of the account that the browser was last logged in as.
      *
+     * ---
+     *
+     * ```php
+     * $username = Craft::$app->user->rememberedUsername;
+     * ```
+     * ```twig{5}
+     * <form method="post" action="" accept-charset="UTF-8">
+     *     {{ csrfInput() }}
+     *     <input type="hidden" name="action" value="users/login">
+     *
+     *     {% set username = craft.app.user.rememberedUsername %}
+     *     <input type="text" name="loginName" value="{{ username }}">
+     *
+     *     <input type="password" name="password">
+     *
+     *     <input type="submit" value="Login">
+     * </form>
+     * ```
+     *
      * @return string|null
      */
     public function getRememberedUsername()
     {
         return Craft::$app->getRequest()->getCookies()->getValue($this->usernameCookie['name']);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * ---
+     *
+     * ```php{1}
+     * $isGuest = Craft::$app->user->isGuest;
+     * ```
+     * ```twig
+     * {% if craft.app.user.isGuest %}
+     *     <a href="{{ url(craft.app.config.general.getLoginPath()) }}">
+     *         Login
+     *     </a>
+     * {% else %}
+     *     <a href="{{ url(craft.app.config.general.getLogoutPath()) }}">
+     *         Logout
+     *     </a>
+     * {% endif %}
+     * ```
+     */
+    public function getIsGuest()
+    {
+        return parent::getIsGuest();
     }
 
     /**
@@ -469,7 +515,7 @@ class User extends \yii\web\User
                     Craft::$app->getDb()->createCommand()
                         ->update(
                             '{{%sessions}}',
-                            [],
+                            ['dateUpdated' => Db::prepareDateForDb(new \DateTime())],
                             [
                                 'userId' => $this->getId(),
                                 'uid' => $tokenUid

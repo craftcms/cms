@@ -38,7 +38,7 @@ class AppTest extends \Codeception\TestCase\Test
         $this->assertTrue(App::isValidEdition(0));
         $this->assertFalse(App::isValidEdition(4));
         $this->assertTrue(App::isValidEdition(1));
-        $this->assertTrue(App::isValidEdition(2));
+        $this->assertFalse(App::isValidEdition(2));
         $this->assertFalse(App::isValidEdition(3));
     }
 }

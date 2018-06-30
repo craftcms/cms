@@ -150,10 +150,10 @@ class GlobalSet extends Element
     public function getCpEditUrl()
     {
         if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
-            return UrlHelper::cpUrl('globals/'.$this->getSite()->handle.'/'.$this->handle);
+            return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);
         }
 
-        return UrlHelper::cpUrl('globals/'.$this->handle);
+        return UrlHelper::cpUrl('globals/' . $this->handle);
     }
 
     // Events

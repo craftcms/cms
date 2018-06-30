@@ -25,7 +25,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      */
     public function dropTableIfExists(string $table): string
     {
-        return 'DROP TABLE IF EXISTS '.$this->db->quoteTableName($table);
+        return 'DROP TABLE IF EXISTS ' . $this->db->quoteTableName($table);
     }
 
     /**
@@ -37,7 +37,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      */
     public function renameSequence(string $oldName, string $newName): string
     {
-        return 'ALTER SEQUENCE '.$this->db->quoteTableName($oldName).' RENAME TO '.$this->db->quoteTableName($newName);
+        return 'ALTER SEQUENCE ' . $this->db->quoteTableName($oldName) . ' RENAME TO ' . $this->db->quoteTableName($newName);
     }
 
     /**
@@ -57,22 +57,23 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     {
         $column = $this->db->quoteColumnName($column);
 
-        $findPhName = self::PARAM_PREFIX.count($params);
+        $findPhName = self::PARAM_PREFIX . count($params);
         $params[$findPhName] = $find;
 
-        $replacePhName = self::PARAM_PREFIX.count($params);
+        $replacePhName = self::PARAM_PREFIX . count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = 'UPDATE '.$table.
+        $sql = 'UPDATE ' . $table .
             " SET $column = REPLACE($column, $findPhName, $replacePhName)";
 
         $where = $this->buildWhere($condition, $params);
 
-        return $where === '' ? $sql : $sql.' '.$where;
+        return $where === '' ? $sql : $sql . ' ' . $where;
     }
 
     /**
      * Builds the SQL expression used to return a DB result in a fixed order.
+     *
      * http://stackoverflow.com/a/1310188/684
      *
      * @param string $column The column name that contains the values.
@@ -86,10 +87,10 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $key = -1;
 
         foreach ($values as $key => $value) {
-            $sql .= ' WHEN '.$schema->quoteColumnName($column).'='.$schema->quoteValue($value).' THEN '.$schema->quoteValue($key);
+            $sql .= ' WHEN ' . $schema->quoteColumnName($column) . '=' . $schema->quoteValue($value) . ' THEN ' . $schema->quoteValue($key);
         }
 
-        $sql .= ' ELSE '.$schema->quoteValue($key + 1).' END';
+        $sql .= ' ELSE ' . $schema->quoteValue($key + 1) . ' END';
 
         return $sql;
     }

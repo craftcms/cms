@@ -67,7 +67,7 @@ class TemplatesController extends Controller
     {
         // Does that template exist?
         if (!$this->getView()->doesTemplateExist($template)) {
-            throw new NotFoundHttpException('Template not found: '.$template);
+            throw new NotFoundHttpException('Template not found: ' . $template);
         }
 
         // Merge any additional route params
@@ -128,7 +128,7 @@ class TemplatesController extends Controller
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
                     if ($req['error'] === true) {
-                        $message .= $req['memo'].'<br />';
+                        $message .= $req['memo'] . '<br />';
                     }
                 }
 
@@ -172,12 +172,12 @@ class TemplatesController extends Controller
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
-            if ($this->getView()->doesTemplateExist($prefix.$statusCode)) {
-                $template = $prefix.$statusCode;
-            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix.'offline')) {
-                $template = $prefix.'offline';
-            } else if ($this->getView()->doesTemplateExist($prefix.'error')) {
-                $template = $prefix.'error';
+            if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
+                $template = $prefix . $statusCode;
+            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix . 'offline')) {
+                $template = $prefix . 'offline';
+            } else if ($this->getView()->doesTemplateExist($prefix . 'error')) {
+                $template = $prefix . 'error';
             }
         }
 

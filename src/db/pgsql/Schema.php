@@ -33,6 +33,7 @@ class Schema extends \yii\db\pgsql\Schema
 
     /**
      * Creates a query builder for the database.
+     *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
      *
      * @return QueryBuilder query builder instance
@@ -52,7 +53,7 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function quoteDatabaseName(string $name): string
     {
-        return '"'.$name.'"';
+        return '"' . $name . '"';
     }
 
     /**
@@ -69,7 +70,7 @@ class Schema extends \yii\db\pgsql\Schema
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
             if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -89,7 +90,7 @@ class Schema extends \yii\db\pgsql\Schema
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
             if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -103,7 +104,7 @@ class Schema extends \yii\db\pgsql\Schema
     {
         if ($sequenceName !== '') {
             if (strpos($sequenceName, '.') === false) {
-                $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName);
+                $sequenceName = $this->defaultSchema . '.' . $this->getRawTableName($sequenceName);
             }
             $sequenceName .= '_id_seq';
         }
@@ -131,19 +132,19 @@ class Schema extends \yii\db\pgsql\Schema
         $dbSchema = Craft::$app->getDb()->getSchema();
 
         foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
-            $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
+            $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}." . $dbSchema->getRawTableName($ignoreTable) . "'";
         }
 
-        return $this->_pgpasswordCommand().
-            'pg_dump'.
-            ' --dbname={database}'.
-            ' --host={server}'.
-            ' --port={port}'.
-            ' --username={user}'.
-            ' --if-exists'.
-            ' --clean'.
-            ' --file="{file}"'.
-            ' --schema={schema}'.
+        return $this->_pgpasswordCommand() .
+            'pg_dump' .
+            ' --dbname={database}' .
+            ' --host={server}' .
+            ' --port={port}' .
+            ' --username={user}' .
+            ' --if-exists' .
+            ' --clean' .
+            ' --file="{file}"' .
+            ' --schema={schema}' .
             implode('', $defaultTableIgnoreList);
     }
 
@@ -154,13 +155,13 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return $this->_pgpasswordCommand().
-            'psql'.
-            ' --dbname={database}'.
-            ' --host={server}'.
-            ' --port={port}'.
-            ' --username={user}'.
-            ' --no-password'.
+        return $this->_pgpasswordCommand() .
+            'psql' .
+            ' --dbname={database}' .
+            ' --host={server}' .
+            ' --port={port}' .
+            ' --username={user}' .
+            ' --no-password' .
             ' < "{file}"';
     }
 

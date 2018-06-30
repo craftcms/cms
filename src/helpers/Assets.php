@@ -60,10 +60,10 @@ class Assets
     public static function tempFilePath(string $extension = 'tmp'): string
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
-        $filename = uniqid('assets', true).'.'.$extension;
-        $path = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename;
+        $filename = uniqid('assets', true) . '.' . $extension;
+        $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename;
         if (($handle = fopen($path, 'wb')) === false) {
-            throw new Exception('Could not create temp file: '.$path);
+            throw new Exception('Could not create temp file: ' . $path);
         }
         fclose($handle);
 
@@ -84,7 +84,7 @@ class Assets
         $filename = $file->filename;
         $appendix = static::urlAppendix($volume, $file);
 
-        return $baseUrl.$folderPath.$filename.$appendix;
+        return $baseUrl . $folderPath . $filename . $appendix;
     }
 
     /**
@@ -100,7 +100,7 @@ class Assets
 
         /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
-            $appendix = '?mtime='.$file->dateModified->format('YmdHis');
+            $appendix = '?mtime=' . $file->dateModified->format('YmdHis');
         }
 
         return $appendix;
@@ -119,7 +119,7 @@ class Assets
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
-            $extension = '.'.pathinfo($name, PATHINFO_EXTENSION);
+            $extension = '.' . pathinfo($name, PATHINFO_EXTENSION);
         } else {
             $baseName = $name;
             $extension = '';
@@ -149,7 +149,7 @@ class Assets
             $baseName = '-';
         }
 
-        return $baseName.$extension;
+        return $baseName . $extension;
     }
 
     /**
@@ -191,7 +191,7 @@ class Assets
                 $folder = new VolumeFolder();
                 $folder->name = $sourceFolder->name;
                 $folder->volumeId = $destinationFolder->volumeId;
-                $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
+                $folder->path = ltrim(rtrim($destinationFolder->path, '/') . '/' . $relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
@@ -320,7 +320,7 @@ class Assets
     public static function parseFileLocation($location)
     {
         if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
-            throw new Exception('Invalid file location format: '.$location);
+            throw new Exception('Invalid file location format: ' . $location);
         }
 
         list(, $folderId, $filename) = $matches;
@@ -582,9 +582,9 @@ class Assets
         $volume = $asset->getVolume();
 
         $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
-        $assetSourcesDirectory = $imagePath.'/'.$assetId;
-        $targetSizedPath = $assetSourcesDirectory.'/'.$size;
-        $targetFilePath = $targetSizedPath.'/'.$assetId.'.'.$asset->getExtension();
+        $assetSourcesDirectory = $imagePath . '/' . $assetId;
+        $targetSizedPath = $assetSourcesDirectory . '/' . $size;
+        $targetFilePath = $targetSizedPath . '/' . $assetId . '.' . $asset->getExtension();
         FileHelper::createDirectory($targetSizedPath);
 
         // You never know.
@@ -605,7 +605,7 @@ class Assets
                     continue;
                 }
                 $existingSize = $subDir;
-                $existingAsset = $assetSourcesDirectory.DIRECTORY_SEPARATOR.$subDir.'/'.$assetId.'.'.$asset->getExtension();
+                $existingAsset = $assetSourcesDirectory . DIRECTORY_SEPARATOR . $subDir . '/' . $assetId . '.' . $asset->getExtension();
                 if ($existingSize >= $size && is_file($existingAsset)) {
                     Craft::$app->getImages()->loadImage($existingAsset)
                         ->scaleToFit($size, $size, false)
@@ -639,7 +639,7 @@ class Assets
     /**
      * Returns the maximum allowed upload size in bytes per all config settings combined.
      *
-     * @return mixed
+     * @return int|float
      */
     public static function getMaxUploadSize()
     {

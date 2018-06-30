@@ -94,7 +94,7 @@ class Tag extends Element
 
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
             $sources[] = [
-                'key' => 'taggroup:'.$tagGroup->id,
+                'key' => 'taggroup:' . $tagGroup->id,
                 'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];
@@ -164,7 +164,7 @@ class Tag extends Element
         }
 
         if (($group = Craft::$app->getTags()->getTagGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid tag group ID: '.$this->groupId);
+            throw new InvalidConfigException('Invalid tag group ID: ' . $this->groupId);
         }
 
         return $group;
@@ -211,7 +211,7 @@ class Tag extends Element
             $record = TagRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid tag ID: '.$this->id);
+                throw new Exception('Invalid tag ID: ' . $this->id);
             }
         } else {
             $record = new TagRecord();

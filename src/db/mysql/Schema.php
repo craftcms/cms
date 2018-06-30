@@ -32,6 +32,11 @@ class Schema extends \yii\db\mysql\Schema
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public $columnSchemaClass = ColumnSchema::class;
+
+    /**
      * @var int The maximum length that objects' names can be.
      */
     public $maxObjectNameLength = 64;
@@ -54,6 +59,7 @@ class Schema extends \yii\db\mysql\Schema
 
     /**
      * Creates a query builder for the database.
+     *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
      *
      * @return QueryBuilder query builder instance
@@ -73,7 +79,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function quoteDatabaseName(string $name): string
     {
-        return '`'.$name.'`';
+        return '`' . $name . '`';
     }
 
     /**
@@ -89,7 +95,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -109,7 +115,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -117,7 +123,13 @@ class Schema extends \yii\db\mysql\Schema
     }
 
     /**
-     * @inheritdoc
+     * Create a column schema builder instance giving the type and value precision.
+     *
+     * This method may be overridden by child classes to create a DBMS-specific column schema builder.
+     *
+     * @param string $type type of the column. See [[ColumnSchemaBuilder::$type]].
+     * @param int|string|array $length length or precision of the column. See [[ColumnSchemaBuilder::$length]].
+     * @return ColumnSchemaBuilder column schema builder instance
      */
     public function createColumnSchemaBuilder($type, $length = null)
     {
@@ -146,35 +158,35 @@ class Schema extends \yii\db\mysql\Schema
         $dbSchema = Craft::$app->getDb()->getSchema();
 
         foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
-            $defaultTableIgnoreList[$key] = ' --ignore-table={database}.'.$dbSchema->getRawTableName($ignoreTable);
+            $defaultTableIgnoreList[$key] = ' --ignore-table={database}.' . $dbSchema->getRawTableName($ignoreTable);
         }
 
         $defaultArgs =
-            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
-            ' --add-drop-table'.
-            ' --comments'.
-            ' --create-options'.
-            ' --dump-date'.
-            ' --no-autocommit'.
-            ' --routines'.
-            ' --set-charset'.
+            ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
+            ' --add-drop-table' .
+            ' --comments' .
+            ' --create-options' .
+            ' --dump-date' .
+            ' --no-autocommit' .
+            ' --routines' .
+            ' --set-charset' .
             ' --triggers';
 
-        $schemaDump = 'mysqldump'.
-            $defaultArgs.
-            ' --single-transaction'.
-            ' --no-data'.
-            ' --result-file="{file}"'.
+        $schemaDump = 'mysqldump' .
+            $defaultArgs .
+            ' --single-transaction' .
+            ' --no-data' .
+            ' --result-file="{file}"' .
             ' {database}';
 
-        $dataDump = 'mysqldump'.
-            $defaultArgs.
-            ' --no-create-info'.
-            implode('', $defaultTableIgnoreList).
-            ' {database}'.
+        $dataDump = 'mysqldump' .
+            $defaultArgs .
+            ' --no-create-info' .
+            implode('', $defaultTableIgnoreList) .
+            ' {database}' .
             ' >> "{file}"';
 
-        return $schemaDump.' && '.$dataDump;
+        return $schemaDump . ' && ' . $dataDump;
     }
 
     /**
@@ -185,9 +197,9 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'mysql'.
-            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
-            ' {database}'.
+        return 'mysql' .
+            ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
+            ' {database}' .
             ' < "{file}"';
     }
 
@@ -302,17 +314,17 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
+        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'my.cnf';
 
         $dbConfig = Craft::$app->getConfig()->getDb();
-        $contents = '[client]'.PHP_EOL.
-            'user='.$dbConfig->user.PHP_EOL.
-            'password="'.addslashes($dbConfig->password).'"'.PHP_EOL.
-            'host='.$dbConfig->server.PHP_EOL.
-            'port='.$dbConfig->port;
+        $contents = '[client]' . PHP_EOL .
+            'user=' . $dbConfig->user . PHP_EOL .
+            'password="' . addslashes($dbConfig->password) . '"' . PHP_EOL .
+            'host=' . $dbConfig->server . PHP_EOL .
+            'port=' . $dbConfig->port;
 
         if ($dbConfig->unixSocket) {
-            $contents .= PHP_EOL.'socket='.$dbConfig->unixSocket;
+            $contents .= PHP_EOL . 'socket=' . $dbConfig->unixSocket;
         }
 
         FileHelper::writeToFile($filePath, $contents);

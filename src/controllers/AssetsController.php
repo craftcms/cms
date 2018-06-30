@@ -123,7 +123,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', 'Failed to save the Asset:').implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', 'Failed to save the Asset:') . implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -143,7 +143,7 @@ class AssetsController extends Controller
                 'assetId' => $asset->id
             ]);
         } catch (\Throwable $e) {
-            Craft::error('An error occurred when saving an asset: '.$e->getMessage(), __METHOD__);
+            Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asErrorJson($e->getMessage());
         }
@@ -206,7 +206,7 @@ class AssetsController extends Controller
                 if (empty($assetToReplace)) {
                     // Make sure the extension didn't change
                     if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
-                        throw new Exception($targetFilename.' doesn\'t have the original file extension.');
+                        throw new Exception($targetFilename . ' doesn\'t have the original file extension.');
                     }
 
                     $assetToReplace = Asset::find()
@@ -224,7 +224,7 @@ class AssetsController extends Controller
                 } else {
                     // If all we have is the filename, then make sure that the destination is empty and go for it.
                     $volume = $sourceAsset->getVolume();
-                    $volume->deleteFile(rtrim($sourceAsset->folderPath, '/').'/'.$targetFilename);
+                    $volume->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
                     $sourceAsset->newFilename = $targetFilename;
                     // Don't validate required custom fields
                     Craft::$app->getElements()->saveElement($sourceAsset);
@@ -232,7 +232,7 @@ class AssetsController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            Craft::error('An error occurred when replacing an asset: '.$e->getMessage(), __METHOD__);
+            Craft::error('An error occurred when replacing an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asErrorJson($e->getMessage());
         }
@@ -271,7 +271,7 @@ class AssetsController extends Controller
             $folderModel->name = $folderName;
             $folderModel->parentId = $parentId;
             $folderModel->volumeId = $parentFolder->volumeId;
-            $folderModel->path = $parentFolder->path.$folderName.'/';
+            $folderModel->path = $parentFolder->path . $folderName . '/';
 
             $assets->createFolder($folderModel);
 
@@ -433,7 +433,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->deleteFile(rtrim($folder->path, '/').'/'.$asset->filename);
+                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->filename);
             }
         }
 
@@ -496,7 +496,7 @@ class AssetsController extends Controller
         ]);
 
         if (!$existingFolder) {
-            $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
+            $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
         }
 
         // If this a conflict and no force or merge flags were passed in then STOP RIGHT THERE!
@@ -543,7 +543,7 @@ class AssetsController extends Controller
                     }
                 } else if ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                    $targetVolume->deleteDir(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
+                    $targetVolume->deleteDir(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 }
 
                 // Mirror the structure, passing along the exsting folder map
@@ -819,20 +819,42 @@ class AssetsController extends Controller
      * @param int $width The thumbnail width
      * @param int $height The thumbnail height
      * @return Response
+     * @deprecated in 3.0.13. Use [[actionThumb()]] instead.
      */
     public function actionGenerateThumb(string $uid, int $width, int $height): Response
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The assets/generate-thumb action has been deprecated. Use assets/thumb instead.');
+        return $this->actionThumb($uid, $width, $height);
+    }
+
+    /**
+     * Returns an asset’s thumbnail.
+     *
+     * @param string $uid The asset's UID
+     * @param int $width The thumbnail width
+     * @param int $height The thumbnail height
+     * @return Response
+     * @since 3.0.13
+     */
+    public function actionThumb(string $uid, int $width, int $height): Response
+    {
         $asset = Asset::find()->uid($uid)->one();
+
         if (!$asset) {
-            return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: '.$uid));
+            return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: ' . $uid));
         }
+
         try {
-            $url = Craft::$app->getAssets()->getThumbUrl($asset, $width, $height, true);
-        } catch (\Exception $e) {
+            $path = Craft::$app->getAssets()->getThumbPath($asset, $width, $height, true);
+        } catch (\Throwable $e) {
             return $this->_handleImageException($e);
         }
 
-        return $this->redirect($url);
+        return Craft::$app->getResponse()
+            ->setCacheHeaders()
+            ->sendFile($path, $asset->getFilename(), [
+                'inline' => true,
+            ]);
     }
 
     /**
@@ -894,7 +916,7 @@ class AssetsController extends Controller
 
 
         if (!$asset->getSupportsPreview()) {
-            $modalHtml = '<p class="nopreview centeralign" style="top: calc(50% - 10px) !important; position: relative;">'.Craft::t('app', 'Preview not available.').'</p>';
+            $modalHtml = '<p class="nopreview centeralign" style="top: calc(50% - 10px) !important; position: relative;">' . Craft::t('app', 'Preview not available.') . '</p>';
         } else {
             if ($asset->kind === 'image') {
                 /** @var Volume $volume */
@@ -914,7 +936,7 @@ class AssetsController extends Controller
                 $localCopy = $asset->getCopyOfFile();
                 $content = htmlspecialchars(file_get_contents($localCopy));
                 $language = $asset->kind === Asset::KIND_HTML ? 'markup' : $asset->kind;
-                $modalHtml = '<div class="highlight '.$asset->kind.'"><pre><code class="language-'.$language.'">'.$content.'</code></pre></div>';
+                $modalHtml = '<div class="highlight ' . $asset->kind . '"><pre><code class="language-' . $language . '">' . $content . '</code></pre></div>';
                 unlink($localCopy);
             }
         }
@@ -992,7 +1014,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
     {
-        $this->requirePermission($permissionName.':'.$volumeId);
+        $this->requirePermission($permissionName . ':' . $volumeId);
     }
 
     /**

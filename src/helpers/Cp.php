@@ -64,8 +64,8 @@ class Cp
                     $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
                             'licensedEdition' => Craft::$app->getLicensedEditionName()
-                        ]).
-                        ' <a class="go" href="'.UrlHelper::url('plugin-store/upgrade-craft').'">'.Craft::t('app', 'Resolve').'</a>';
+                        ]) .
+                        ' <a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
                 }
             }
 
@@ -74,27 +74,35 @@ class Cp
                 $user->can('utility:updates') &&
                 $updatesService->getIsCriticalUpdateAvailable()
             ) {
-                $alerts[] = Craft::t('app', 'A critical update is available.').
-                    ' <a class="go nowrap" href="'.UrlHelper::url('utilities/updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                $alerts[] = Craft::t('app', 'A critical update is available.') .
+                    ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
             }
 
             // Domain mismatch?
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
+                $domainLink = '<a href="http://' . $licensedDomain . '" target="_blank">' . $licensedDomain . '</a>';
 
-                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+                if (defined('CRAFT_LICENSE_KEY')) {
+                    $message = Craft::t('app', 'The license key in use belongs to {domain}', [
+                        'domain' => $domainLink
+                    ]);
+                } else {
+                    $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
 
-                // If the license key path starts with the root project path, trim the project path off
-                $rootPath = Craft::getAlias('@root');
-                if (strpos($keyPath, $rootPath.'/') === 0) {
-                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                    // If the license key path starts with the root project path, trim the project path off
+                    $rootPath = Craft::getAlias('@root');
+                    if (strpos($keyPath, $rootPath . '/') === 0) {
+                        $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                    }
+
+                    $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                        'file' => $keyPath,
+                        'domain' => $domainLink
+                    ]);
                 }
 
-                $alerts[] = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                        'file' => $keyPath,
-                        'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-                    ]).
-                    ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">'.Craft::t('app', 'Learn more').'</a>';
+                $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
             }
 
             // Any plugin issues?
@@ -119,7 +127,7 @@ class Cp
                     }
                     $message .= ' ';
                     if (Craft::$app->getUser()->getIsAdmin()) {
-                        $message .= '<a class="go" href="'.UrlHelper::cpUrl('settings/plugins').'">'.Craft::t('app', 'Resolve').'</a>';
+                        $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
                     } else {
                         $message .= Craft::t('app', 'Please notify one of your site’s admins.');
                     }

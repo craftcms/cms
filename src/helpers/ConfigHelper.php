@@ -20,6 +20,7 @@ class ConfigHelper
 {
     /**
      * Normalizes a time duration value into the number of seconds it represents.
+     *
      * Accepted formats:
      * - integer (the duration in seconds)
      * - string (a [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations))
@@ -53,6 +54,7 @@ class ConfigHelper
 
     /**
      * Normalizes a file size value into the number of bytes it represents.
+     *
      * Accepted formats;
      * - integer (the size in bytes)
      * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))

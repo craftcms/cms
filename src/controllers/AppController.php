@@ -48,6 +48,9 @@ class AppController extends Controller
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action)
     {
         if ($action->id === 'migrate') {
@@ -111,6 +114,7 @@ class AppController extends Controller
 
     /**
      * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
+     *
      * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
      * to minimize site downtime after a deployment.
      *
@@ -171,7 +175,7 @@ class AppController extends Controller
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
             } else if (isset($restoreException)) {
-                $error .= ' The database could not be restored due to a separate error: '.$restoreException->getMessage();
+                $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
             }
@@ -276,7 +280,7 @@ class AppController extends Controller
                 $edition = Craft::Pro;
                 break;
             default:
-                throw new BadRequestHttpException('Invalid Craft edition: '.$edition);
+                throw new BadRequestHttpException('Invalid Craft edition: ' . $edition);
         }
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
@@ -398,6 +402,7 @@ class AppController extends Controller
 
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
+     *
      * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
      *
      * @param bool $allowUpdates Whether updates are allowed
@@ -424,7 +429,7 @@ class AppController extends Controller
         } else {
             if ($update->status === Update::STATUS_BREAKPOINT) {
                 $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
-                    'update' => $name.' '.($update->getLatest()->version ?? '')
+                    'update' => $name . ' ' . ($update->getLatest()->version ?? '')
                 ]);
             }
 

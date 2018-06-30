@@ -18,6 +18,11 @@ use craft\helpers\DateTimeHelper;
  */
 abstract class Model extends \yii\base\Model
 {
+    // Traits
+    // =========================================================================
+
+    use ClonefixTrait;
+
     // Public Methods
     // =========================================================================
 
@@ -82,18 +87,18 @@ abstract class Model extends \yii\base\Model
     /**
      * Adds errors from another model, with a given attribute name prefix.
      *
-     * @param \yii\base\Model
-     * @param string $attrPrefix
+     * @param \yii\base\Model $model The other model
+     * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
      */
     public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
     {
         if ($attrPrefix !== '') {
-            $attrPrefix = rtrim($attrPrefix, '.').'.';
+            $attrPrefix = rtrim($attrPrefix, '.') . '.';
         }
 
         foreach ($model->getErrors() as $attribute => $errors) {
             foreach ($errors as $error) {
-                $this->addError($attrPrefix.$attribute, $error);
+                $this->addError($attrPrefix . $attribute, $error);
             }
         }
     }

@@ -169,7 +169,7 @@ class FieldsController extends Controller
                 $compatible = in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
-                    'label' => $class::displayName().($compatible ? '' : ' ⚠️'),
+                    'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
                 ];
             }
         }
@@ -219,7 +219,7 @@ class FieldsController extends Controller
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/'.$groupId)
+                'url' => UrlHelper::url('settings/fields/' . $groupId)
             ],
         ];
 
@@ -266,7 +266,7 @@ class FieldsController extends Controller
             'instructions' => $request->getBodyParam('instructions'),
             'translationMethod' => $request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
-            'settings' => $request->getBodyParam('types.'.$type),
+            'settings' => $request->getBodyParam('types.' . $type),
         ]);
 
         if (!$fieldsService->saveField($field)) {

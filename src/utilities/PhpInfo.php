@@ -63,7 +63,7 @@ class PhpInfo extends Utility
     private static function _phpInfo(): array
     {
         ob_start();
-        phpinfo(-1);
+        phpinfo(INFO_ALL);
         $phpInfoStr = ob_get_clean();
 
         $replacePairs = [
@@ -71,16 +71,16 @@ class PhpInfo extends Utility
             '#<h2>PHP License</h2>.*$#ms' => '',
             '#<h1>Configuration</h1>#' => '',
             "#\r?\n#" => '',
-            '#</(h1|h2|h3|tr)>#' => '</$1>'."\n",
+            '#</(h1|h2|h3|tr)>#' => '</$1>' . "\n",
             '# +<#' => '<',
             "#[ \t]+#" => ' ',
             '#&nbsp;#' => ' ',
             '#  +#' => ' ',
             '# class=".*?"#' => '',
             '%&#039;%' => ' ',
-            '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#' => '<h2>PHP Configuration</h2>'."\n".'<tr><td>PHP Version</td><td>$2</td></tr>'."\n".'<tr><td>PHP Egg</td><td>$1</td></tr>',
+            '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#' => '<h2>PHP Configuration</h2>' . "\n" . '<tr><td>PHP Version</td><td>$2</td></tr>' . "\n" . '<tr><td>PHP Egg</td><td>$1</td></tr>',
             '#<h1><a href="(?:.*?)\?=(.*?)">PHP Credits</a></h1>#' => '<tr><td>PHP Credits Egg</td><td>$1</td></tr>',
-            '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#' => '<tr><td>Zend Engine</td><td>$2</td></tr>'."\n".'<tr><td>Zend Egg</td><td>$1</td></tr>',
+            '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#' => '<tr><td>Zend Engine</td><td>$2</td></tr>' . "\n" . '<tr><td>Zend Egg</td><td>$1</td></tr>',
             '# +#' => ' ',
             '#<tr>#' => '%S%',
             '#</tr>#' => '%E%',
@@ -104,13 +104,9 @@ class PhpInfo extends Utility
                         continue;
                     }
 
-                    if (!isset($row[3]) || $row[2] === $row[3]) {
-                        $value = $row[2];
-                    } else {
-                        $value = array_slice($row, 2);
-                    }
-
+                    $value = $row[2];
                     $name = $row[1];
+
                     $phpInfo[$heading][$name] = $security->redactIfSensitive($name, $value);
                 }
             }

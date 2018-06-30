@@ -25,7 +25,7 @@ use yii\base\Exception;
 
 /**
  * Composer service.
- * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|<code>Craft::$app->composer</code>]].
+ * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|`Craft::$app->composer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -84,8 +84,8 @@ class Composer extends Component
         $jsonPath = $this->getJsonPath();
         // Logic based on \Composer\Factory::createComposer()
         $lockPath = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
-            ? substr($jsonPath, 0, -4).'lock'
-            : $jsonPath.'.lock';
+            ? substr($jsonPath, 0, -4) . 'lock'
+            : $jsonPath . '.lock';
         return file_exists($lockPath) ? $lockPath : null;
     }
 
@@ -153,7 +153,7 @@ class Composer extends Component
                 $contents .= "    '{$class}',\n";
             }
             $contents .= "];\n";
-            FileHelper::writeToFile(dirname(__DIR__).'/config/composer-classes.php', $contents);
+            FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
         }
 
         // Return composer.json to normal
@@ -211,7 +211,7 @@ class Composer extends Component
                 if (isset($composerConfig['require'][$package])) {
                     $jsonSource->removeLink('require', $composerConfig['require'][$package]);
                 } else {
-                    $io->writeError('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
+                    $io->writeError('<warning>' . $package . ' is not required in your composer.json and has not been removed</warning>');
                 }
             }
 
@@ -313,7 +313,7 @@ class Composer extends Component
         }
 
         // Just define one ourselves
-        $path = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'composer';
+        $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
         FileHelper::createDirectory($path);
         putenv("COMPOSER_HOME={$path}");
     }
@@ -380,7 +380,7 @@ class Composer extends Component
             $jsonParser->parse(file_get_contents($jsonPath), JsonParser::DETECT_KEY_CONFLICTS);
         } catch (DuplicateKeyException $e) {
             $details = $e->getDetails();
-            $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$jsonPath.' at line '.$details['line'].'</warning>');
+            $io->writeError('<warning>Key ' . $details['key'] . ' is a duplicate in ' . $jsonPath . ' at line ' . $details['line'] . '</warning>');
         }
         $config = $file->read();
 
@@ -442,8 +442,8 @@ class Composer extends Component
         $config = $this->composerConfig($io, $jsonPath, $swapPackagist);
         $composer = Factory::create($io, $config);
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
-            ? substr($jsonPath, 0, -4).'lock'
-            : $jsonPath.'.lock';
+            ? substr($jsonPath, 0, -4) . 'lock'
+            : $jsonPath . '.lock';
         $rm = $composer->getRepositoryManager();
         $im = $composer->getInstallationManager();
         $locker = new Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($jsonPath));
@@ -456,7 +456,7 @@ class Composer extends Component
      */
     protected function preloadComposerClasses()
     {
-        $classes = require dirname(__DIR__).'/config/composer-classes.php';
+        $classes = require dirname(__DIR__) . '/config/composer-classes.php';
 
         foreach ($classes as $class) {
             class_exists($class, true);

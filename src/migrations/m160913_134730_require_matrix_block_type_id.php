@@ -25,7 +25,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
 
         if (!empty($typelessBlockIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessBlockIds]);
-            echo "    > Deleted the following Matrix blocks, because they didn't have a block type: ".implode(',', $typelessBlockIds)."\n";
+            echo "    > Deleted the following Matrix blocks, because they didn't have a block type: " . implode(',', $typelessBlockIds) . "\n";
         }
 
         // Make typeId required

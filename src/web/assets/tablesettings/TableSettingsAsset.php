@@ -20,14 +20,14 @@ class TableSettingsAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'TableFieldSettings'.$this->dotJs(),
+            'TableFieldSettings' . $this->dotJs(),
         ];
 
         parent::init();

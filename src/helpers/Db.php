@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\Query;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -215,13 +216,13 @@ class Db
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL."({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type."({$length})";
+                return $type . "({$length})";
             }
         }
 
@@ -416,6 +417,7 @@ class Db
 
     /**
      * Parses a query param value and returns a [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.
@@ -456,6 +458,9 @@ class Db
         $condition = [$glue];
         $isMysql = Craft::$app->getDb()->getIsMysql();
 
+        $inVals = [];
+        $notInVals = [];
+
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator);
@@ -492,7 +497,10 @@ class Db
                         ];
                     }
                 }
-            } else if (is_string($val)) {
+                continue;
+            }
+
+            if (is_string($val)) {
                 // Trim any whitespace from the value
                 $val = trim($val);
 
@@ -514,12 +522,31 @@ class Db
                         $val,
                         false
                     ];
-                } else {
-                    $condition[] = [$operator, $column, $val];
+                    continue;
                 }
-            } else {
-                $condition[] = [$operator, $column, $val];
             }
+
+            // ['or', 1, 2, 3] => IN (1, 2, 3)
+            if ($glue == 'or' && $operator === '=') {
+                $inVals[] = $val;
+                continue;
+            }
+
+            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
+            if ($glue == 'and' && $operator === '!=') {
+                $notInVals[] = $val;
+                continue;
+            }
+
+            $condition[] = [$operator, $column, $val];
+        }
+
+        if (!empty($inVals)) {
+            $condition[] = ['in', $column, $inVals];
+        }
+
+        if (!empty($notInVals)) {
+            $condition[] = ['not in', $column, $notInVals];
         }
 
         return $condition;
@@ -565,7 +592,7 @@ class Db
             // Assume that date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, true);
 
-            $normalizedValues[] = $operator.static::prepareDateForDb($val);
+            $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues);
@@ -588,6 +615,37 @@ class Db
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
+    }
+
+    /**
+     * Executes a DELETE command, but only if there are any rows to delete.
+     *
+     * @param string $table the table where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     * @param Connection|null $db
+     * @return int number of rows affected by the execution.
+     * @throws \yii\db\Exception execution failed
+     */
+    public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
+        $exists = (new Query())
+            ->from($table)
+            ->where($condition, $params)
+            ->exists($db);
+
+        if (!$exists) {
+            return 0;
+        }
+
+        return $db->createCommand()
+            ->delete($table, $condition, $params)
+            ->execute();
     }
 
     // Private Methods

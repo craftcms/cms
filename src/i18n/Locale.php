@@ -306,6 +306,7 @@ class Locale extends BaseObject
 
     /**
      * Returns this locale’s script ID.
+     *
      * A script ID consists of only the last four characters after a dash in the locale ID.
      *
      * @return string|null The locale’s script ID, if it has one.
@@ -327,6 +328,7 @@ class Locale extends BaseObject
 
     /**
      * Returns this locale’s territory ID.
+     *
      * A territory ID consists of only the last two to three letter or digits after a dash in the locale ID.
      *
      * @return string|null The locale’s territory ID, if it has one.
@@ -534,7 +536,7 @@ class Locale extends BaseObject
                     break; // September
             }
 
-            return $formatter->format(new DateTime('1970-'.sprintf('%02d', $month).'-01'));
+            return $formatter->format(new DateTime('1970-' . sprintf('%02d', $month) . '-01'));
         }
 
         $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
@@ -614,7 +616,7 @@ class Locale extends BaseObject
             // 1970-01-08 => Thursday (4 + 4)
             // 1970-01-09 => Friday (5 + 4)
             // 1970-01-10 => Saturday (6 + 4)
-            return $formatter->format(new DateTime('1970-01-'.sprintf('%02d', $day + 4)));
+            return $formatter->format(new DateTime('1970-01-' . sprintf('%02d', $day + 4)));
         }
 
         $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
@@ -895,7 +897,7 @@ class Locale extends BaseObject
         $icuFormat = $this->_getDateTimeIcuFormat($length, $withDate, $withTime);
 
         if ($format !== self::FORMAT_ICU) {
-            $type = ($withDate ? 'date' : '').($withTime ? 'time' : '');
+            $type = ($withDate ? 'date' : '') . ($withTime ? 'time' : '');
 
             switch ($format) {
                 case self::FORMAT_PHP:
@@ -943,7 +945,7 @@ class Locale extends BaseObject
                     $length = IntlDateFormatter::SHORT;
                     break;
                 default:
-                    throw new Exception('Invalid date/time format length: '.$length);
+                    throw new Exception('Invalid date/time format length: ' . $length);
             }
 
             $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
@@ -963,7 +965,7 @@ class Locale extends BaseObject
             ]);
         }
 
-        $type = ($withDate ? 'date' : '').($withTime ? 'time' : '');
+        $type = ($withDate ? 'date' : '') . ($withTime ? 'time' : '');
 
         switch ($length) {
             case self::LENGTH_SHORT:

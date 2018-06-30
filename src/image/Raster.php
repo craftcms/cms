@@ -153,7 +153,7 @@ class Raster extends Image
         $imageService = Craft::$app->getImages();
 
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at '.$path.', but the file does not exist.', __METHOD__);
+            Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
@@ -463,7 +463,7 @@ class Raster extends Image
         $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
         $options = $this->_getSaveOptions(null, $extension);
-        $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
+        $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($targetPath, PATHINFO_FILENAME) . '.' . pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
@@ -475,7 +475,7 @@ class Raster extends Image
                 try {
                     rename($tempFile, $targetPath);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": ".$e->getMessage(), __METHOD__);
+                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": " . $e->getMessage(), __METHOD__);
                 }
             } else {
                 $this->_image->save($targetPath, $options);
@@ -501,7 +501,7 @@ class Raster extends Image
         } catch (RuntimeException $e) {
             try {
                 // Invalid SVG. Maybe it's missing its DTD?
-                $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svgContent;
+                $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $svgContent;
                 $this->_image = $this->_instance->load($svgContent);
             } catch (RuntimeException $e) {
                 throw new ImageException(Craft::t('app', 'Failed to load the SVG string.'), $e->getCode(), $e);
@@ -615,7 +615,7 @@ class Raster extends Image
     private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
         if ($step === 0) {
-            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
+            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($tempFileName, PATHINFO_FILENAME) . '-temp.' . $extension;
         }
 
         // Find our target quality by splitting the min and max qualities
@@ -702,7 +702,7 @@ class Raster extends Image
                     // a valid format: http://www.imagemagick.org/script/formats.php
                     // So 2 channel PNGs get converted to 4 channel.
                     if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                        $format = 'png'.(8 * $pngInfo['channels']);
+                        $format = 'png' . (8 * $pngInfo['channels']);
                     } else {
                         $format = 'png32';
                     }

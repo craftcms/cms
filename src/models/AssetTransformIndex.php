@@ -136,7 +136,7 @@ class AssetTransformIndex extends Model
         }
 
         if (($this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform(mb_substr($this->location, 1))) === null) {
-            throw new InvalidConfigException('Invalid transform location: '.$this->location);
+            throw new InvalidConfigException('Invalid transform location: ' . $this->location);
         }
 
         return $this->_transform;

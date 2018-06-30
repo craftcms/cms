@@ -12,6 +12,7 @@ use craft\base\ApplicationTrait;
 use craft\errors\MissingComponentException;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
@@ -20,7 +21,7 @@ use yii\console\Response;
 /**
  * Craft Console Application class
  *
- * An instance of the Console Application class is globally accessible to console requests in Craft via [[\Craft::$app|<code>Craft::$app</code>]].
+ * An instance of the Console Application class is globally accessible to console requests in Craft via [[\Craft::$app|`Craft::$app`]].
  *
  * @property Request $request The request component
  * @property User $user The user component
@@ -40,7 +41,11 @@ class Application extends \yii\console\Application
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Constructor.
+     *
+     * @param array $config name-value pairs that will be used to initialize the object properties.
+     * Note that the configuration must contain both [[id]] and [[basePath]].
+     * @throws InvalidConfigException if either [[id]] or [[basePath]] configuration is missing.
      */
     public function __construct($config = [])
     {
@@ -84,7 +89,7 @@ class Application extends \yii\console\Application
             try {
                 new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
             } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -123,7 +128,15 @@ class Application extends \yii\console\Application
     }
 
     /**
-     * @inheritdoc
+     * Returns the component instance with the specified ID.
+     *
+     * @param string $id component ID (e.g. `db`).
+     * @param bool $throwException whether to throw an exception if `$id` is not registered with the locator before.
+     * @return object|null the component of the specified ID. If `$throwException` is false and `$id`
+     * is not registered before, null will be returned.
+     * @throws InvalidConfigException if `$id` refers to a nonexistent component ID
+     * @see has()
+     * @see set()
      */
     public function get($id, $throwException = true)
     {
