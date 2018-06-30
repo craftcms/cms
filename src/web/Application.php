@@ -497,8 +497,8 @@ class Application extends \yii\web\Application
 
         // Should they be?
         if (!$isInstalled) {
-            // Give it to them if accessing the CP
-            if ($isCpRequest) {
+            // Give it to them if accessing the CP and devMode is enabled.
+            if ($isCpRequest && Craft::$app->getConfig()->getGeneral()->devMode) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
