@@ -338,7 +338,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Renders a micro template for accessing properties of a single object.
 	 *
 	 * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
-	 * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
+	 * full Twig output tags, i.e. `{{ object.variable }}`. Regular Twig tags are also supported.
 	 *
 	 * @param string $template The source template string.
 	 * @param mixed  $object   The object that should be passed into the template.
