@@ -5,6 +5,7 @@
 ### Changed
 - `craft\events\SiteEvent` now has a `$oldPrimarySiteId` property, which will be set to the previous primary site ID (which may stil be the current site ID, if it didn’t just change).
 - `craft\helpers\Search::normalizeKeywords()` now has a `$langage` argument, which can be set if the character mappings should be pulled from a different language than the current app language.
+- `craft\services\Sites::getEditableSiteIds()` and `getEditableSites()` now return the same things as `getAllSiteIds()` and `getAllSites()` when there’s only one site. ([#3049](https://github.com/craftcms/cms/issues/3049))
 
 ### Fixed
 - Fixed a bug where user verification links could get mangled when emails were parsed as Markdown, if the verification code contained two or more underscores.

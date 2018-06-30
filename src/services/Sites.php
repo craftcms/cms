@@ -432,6 +432,10 @@ class Sites extends Component
      */
     public function getEditableSiteIds(): array
     {
+        if (!Craft::$app->getIsMultiSite()) {
+            return $this->getAllSiteIds();
+        }
+
         if ($this->_editableSiteIds !== null) {
             return $this->_editableSiteIds;
         }
