@@ -13,6 +13,7 @@
 - Fixed a bug where Craft wasn’t auto-scrolling the content container when dragging items near a window edge. ([#3048](https://github.com/craftcms/cms/issues/3048))
 - Fixed a PHP error that occurred when loading a Debug Toolbar panel on a page that contained serialized Checkboxes or Multi-Select field data. ([#3034](https://github.com/craftcms/cms/issues/3034))
 - Fixed a bug where elements’ normalized search keywords weren’t always using the correct language-specific character mappings. ([#3046](https://github.com/craftcms/cms/issues/3046))
+- Fixed a bug where the `<html lang>` attribute was hard-set to `en-US` rather than the current application language. ([#3053](https://github.com/craftcms/cms/pull/3053))
 
 ### Security
 - Craft no longer shows the installer when it can’t establish a database connection if Dev Mode isn’t enabled.
@@ -119,7 +120,7 @@
 
 ### Changed
 - Improved the output of `craft\helpers\DateTimeHelper::humanDurationFromInterval()`.
-- Updated  Garnish to 0.1.24.
+- Updated Garnish to 0.1.24.
 
 ### Fixed
 - Fixed JavaScript errors that could occur in the Control Panel on pages with Ajax requests. ([#2966](https://github.com/craftcms/cms/issues/2966))
