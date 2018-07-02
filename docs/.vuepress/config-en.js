@@ -26,8 +26,76 @@ module.exports = {
                 ]
             }
         ],
+        '/extend/': [
+            {
+                title: 'Extending Craft',
+                collapsable: false,
+                children: [
+                    ['', 'Introduction'],
+                    'coding-guidelines',
+                ]
+            },
+            {
+                title: 'Module Development',
+                collapsable: false,
+                children: [
+                    'module-guide',
+                ]
+            },
+            {
+                title: 'Plugin Development',
+                collapsable: false,
+                children: [
+                    'plugin-guide',
+                    'updating-plugins',
+                    'plugin-settings',
+                    'plugin-migrations',
+                    'changelogs-and-updates',
+                    'plugin-store',
+                ]
+            },
+            {
+                title: 'Extending the Control Panel',
+                collapsable: false,
+                children: [
+                    'cp-section',
+                    // 'cp-components',
+                    // 'cp-controllers',
+                ]
+            },
+            {
+                title: 'System Components',
+                collapsable: false,
+                children: [
+                    'widget-types',
+                    'field-types',
+                    'volume-types',
+                    'utility-types',
+                    'element-types',
+                    'element-action-types',
+                ]
+            },
+            {
+                title: 'More',
+                collapsable: false,
+                children: [
+                    'asset-bundles',
+                    'services',
+                    // 'behaviors',
+                    'extending-twig',
+                    // 'front-end-controllers',
+                ]
+            }
+        ],
         '/templating/': [
-            ['../twig-primer', '← Twig Primer'],
+            {
+                title: 'Templating',
+                collapsable: false,
+                children: [
+                    ['', 'Introduction'],
+                    'twig-primer',
+                ]
+            },
             {
                 title: 'Tags',
                 collapsable: false,
@@ -123,17 +191,11 @@ module.exports = {
                 ]
             },
             {
-                title: 'Templating',
+                title: 'Front-End Development',
                 collapsable: false,
                 children: [
-                    'twig-primer',
-                    'templating/tags',
-                    'templating/filters',
-                    'templating/functions',
-                    'templating/global-variables',
-                    'templating/tests',
-                    'templating/elements',
-                    'templating/examples/'
+                    ['templating/', 'Templating'],
+                    // 'APIs'
                 ]
             },
             {
@@ -143,29 +205,7 @@ module.exports = {
                     'relations',
                     'reference-tags',
                     'eager-loading-elements',
-                ]
-            },
-            {
-                title: 'Plugin Development',
-                collapsable: false,
-                children: [
-                    'plugin-intro',
-                    'coding-guidelines',
-                    'updating-plugins',
-                    'changelogs-and-updates',
-                    'plugin-settings',
-                    'cp-section',
-                    'asset-bundles',
-                    'services',
-                    'extending-twig',
-                    'widget-types',
-                    'field-types',
-                    'volume-types',
-                    'utility-types',
-                    'element-types',
-                    'element-action-types',
-                    'plugin-migrations',
-                    'plugin-store'
+                    ['extend/', 'Extending Craft'],
                 ]
             }
         ]

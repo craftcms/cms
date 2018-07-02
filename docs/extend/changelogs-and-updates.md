@@ -88,7 +88,7 @@ class Plugin extends \craft\base\Plugin
 
 If everything is set up correctly, your plugins’ available updates should start appearing on the Utilities → Updates page.
 
-![The Utilities → Updates page in Craft’s Control Panel, with an available update for the “Foo” plugin.](./images/plugin-update.png)
+![The Utilities → Updates page in Craft’s Control Panel, with an available update for the “Foo” plugin.](../images/plugin-update.png)
 
 
 [keepachangelog.com]: http://keepachangelog.com/

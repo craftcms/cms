@@ -1,36 +1,17 @@
-# Intro to Plugin Dev
+# How to Build a Plugin
 
 [[toc]]
 
-## What are Plugins?
-
-Plugins are mini applications that run alongside Craft’s core code. They can be simple, serving a single purpose like providing a new Dashboard widget type, or they can be complex, introducing entirely new concepts to the system, like an e-commerce application. Craft’s plugin architecture provides a solid foundation for building just about anything.
-
-Technically, plugins are a superset of [Yii Modules], which means they can have [models], [active record classes], [controllers], [application components], and other things. It wouldn’t hurt to take some time to read up on those concepts if you are new to Yii.
-
-The main benefits of Craft Plugins over Yii Modules are:
-
-- Plugins can be installed and uninstalled.
-- Plugins can have their own migration track.
-
-## Getting Started
-
-::: tip
-Use [pluginfactory.io](https://pluginfactory.io/) to create your plugin’s scaffolding with just a few clicks.
-:::
-
-### Preparation
+## Preparation
 
 Before you begin working on a plugin, you need to decide on a few things:
 
 - **Package name** – Used to name your Composer package. It’s required even if you don’t want to distribute your plugin via Composer. (See Composer’s [documentation][package name] for details.) We recommend prefixing the second segment (after the `/`) with `craft-`, to help identify that this is a Craft plugin. For example, `pixelandtonic/craft-recipes`.
-- **Namespace prefix** – Your plugin’s class namespaces will begin with this. (See the [PSR-4] autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you, the developer.
+- **Namespace** – The root namespace that your plugin’s classes will live in. (See the [PSR-4] autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you (the developer).
 - **Plugin handle** – Something that uniquely identifies your plugin within the Craft ecosystem. (Plugin handles must begin with a letter and contain only lowercase letters, numbers, and dashes. They should be `kebab-cased`.)
 - **Plugin name** – What your plugin will be called within the Control Panel.
 
-Naming things is one of the [two hardest things] in computer science, so if you can make a decision on those things, the rest of the plugin should practically write itself.
-
-### Setting up the basic file structure
+## Setting up the basic file structure
 
 To create a plugin, create a new directory for it somewhere on your computer. A common approach is to store them in a `~/dev/` folder alongside your Craft projects:
 
@@ -43,11 +24,13 @@ To create a plugin, create a new directory for it somewhere on your computer. A 
       Plugin.php
 ```
 
-::: tip
 The name of your plugin directory doesn’t matter. Just choose something that is easy to identify.
+
+::: tip
+Use [pluginfactory.io](https://pluginfactory.io/) to create your plugin’s scaffolding with just a few clicks.
 :::
 
-### composer.json
+## composer.json
 
 Whether or not you wish to make your plugin available as a Composer dependency (you probably should), your plugin must have a `composer.json` file. Craft will check this file to get basic information about the plugin.
 
@@ -111,16 +94,16 @@ Here’s a full list of the properties that can go in that `extra` object:
 - `components` – Object defining any [component configs] that should be present on the plugin.
 
 ::: tip
-Don’t include `composer/installers` as a Composer dependency.
-:::
-
-::: tip
 While not strictly required by Composer, we recommend you explicitly set the `version` in your `composer.json` because it makes a couple things easier on your when developing the plugin. Don’t forget to keep it updated though!
 :::
 
-### Primary Plugin Class
+::: warning
+If you’re updating a Craft 2 plugin, make sure to remove the `composer/installers` dependency if it has one.  
+:::
 
-The `src/Plugin.php` file is your plugin’s primary class. It will get instantiated at the beginning of every request. Its `init()` method is the best place to register event listeners, and any other steps it needs to take to initialize itself.
+## The Plugin Class
+
+The `src/Plugin.php` file is your plugin’s entry point for the system. It will get instantiated at the beginning of every request. Its `init()` method is the best place to register event listeners, and any other steps it needs to take to initialize itself.
 
 Use this template as a starting point for your `Plugin.php` file:
 
@@ -141,11 +124,11 @@ class Plugin extends \craft\base\Plugin
 
 Replace `ns\prefix` with your plugin’s namespace prefix.
 
-### Loading your plugin into a Craft project
+## Loading your plugin into a Craft project
 
 To get Craft to see your plugin, you will need to install it as a Composer dependency of your Craft project. There are multiple ways to do that:
 
-#### Path Repository
+### Path Repository
 
 During development, the easiest way to work on your plugin is with a [path repository][path], which will tell Composer to symlink your plugin into the `vendor/` folder right alongside other dependencies.
 
@@ -195,7 +178,7 @@ One caveat of `path` Composer repositories is that Composer will ignore `path`-b
 ```
 :::
 
-#### Packagist
+### Packagist
 
 If you’re ready to publicly release your plugin, register it as a new Composer package on [Packagist](https://packagist.org/). Then you can install it like any other package, by just passing its package name to Composer’s `require` command.
 
@@ -208,7 +191,7 @@ If you’re ready to publicly release your plugin, register it as a new Composer
 
 Plugins can provide an icon, which will be visible on the Settings → Plugins page.
 
-![The Settings → Plugins page in Craft’s Control Panel.](./images/plugin-index.png)
+![The Settings → Plugins page in Craft’s Control Panel.](../images/plugin-index.png)
 
 Plugin icons must be square SVG files, saved as `icon.svg` at the root of your plugin’s source directory (e.g `src/`).
 

@@ -204,8 +204,8 @@ The following Twig template tags have been deprecated in Craft 3, and will be co
 | `{% includejs %}`               | `{% js %}`
 | `{% includecssfile url %}`      | `{% do view.registerCssFile(url) %}`
 | `{% includejsfile url %}`       | `{% do view.registerJsFile(url) %}`
-| `{% includecssresource path %}` | See [Asset Bundles](asset-bundles.md)
-| `{% includejsresource path %}`  | See [Asset Bundles](asset-bundles.md)
+| `{% includecssresource path %}` | See [Asset Bundles](extend/asset-bundles.md)
+| `{% includejsresource path %}`  | See [Asset Bundles](extend/asset-bundles.md)
 
 ## Template Functions
 
@@ -695,4 +695,4 @@ If you have changed that config setting, you will want to adjust the examples ac
 
 ## Plugins
 
-See [Updating Plugins for Craft 3](updating-plugins.md).
+See [Updating Plugins for Craft 3](extend/updating-plugins.md).
