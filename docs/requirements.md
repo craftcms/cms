@@ -15,8 +15,12 @@ Craft requires the following:
 * PHP 7.0+
 * MySQL 5.5+ (with InnoDB) or PostgreSQL 9.5+
 * A web server (Apache, Nginx, IIS)
-* A minimum of 256MB of memory allocated to PHP
+* A minimum of 128MB of memory allocated to PHP
 * A minimum of 200MB of free disk space
+
+:::warning
+If Craft CMS needs to process very large images or dump very large databases, you might need to bump PHP’s memory allocation up to 256MB.
+:::
 
 ## Required PHP Extensions
 
