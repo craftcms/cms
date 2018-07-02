@@ -34,7 +34,7 @@ Craft requires the following PHP extensions:
 * [SPL](http://php.net/manual/en/book.spl.php)
 * [Zip](https://secure.php.net/manual/en/book.zip.php)
 
-Additionally, the PHP [proc_*](https://secure.php.net/manual/en/ref.exec.php) methods must be enabled in order for Craft to be able to send emails.
+Additionally, the PHP [proc_*](https://secure.php.net/manual/en/ref.exec.php) methods must be enabled in order to utilize the Plugin Store and to be able to send emails.
 
 ## Optional PHP Extensions
 
