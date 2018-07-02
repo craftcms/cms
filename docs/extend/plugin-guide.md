@@ -157,9 +157,12 @@ Set the `url` value to the absolute or relative path to your plugin’s source d
 
 In your terminal, go to your Craft project and tell Composer to require your plugin. (Use the same package name you gave your plugin in its `composer.json` file.)
 
-```
-> cd ~/dev/my-craft-project
-> composer require package/name
+```bash
+# go to the project directory
+cd ~/dev/my-craft-project
+
+# require the plugin package
+composer require package/name
 ```
 
 Composer’s installation log should indicate that the package was installed via a symlink:
@@ -171,9 +174,14 @@ Composer’s installation log should indicate that the package was installed via
 ::: warning
 One caveat of `path` Composer repositories is that Composer will ignore `path`-based dependencies when you run `composer update`. So any time you change anything in `composer.json`, such as your plugin’s dependency requirements or its plugin information, you will need to completely remove and re-require your plugin in your project for those changes to take effect.
 
-```
-> cd ~/dev/my/craft-project
+```bash
+# go to the project directory
+cd ~/dev/my/craft-project
+
+# remove the plugin package
 > composer remove package/name
+
+# re-require the plugin package
 > composer require package/name
 ```
 :::
@@ -182,9 +190,12 @@ One caveat of `path` Composer repositories is that Composer will ignore `path`-b
 
 If you’re ready to publicly release your plugin, register it as a new Composer package on [Packagist](https://packagist.org/). Then you can install it like any other package, by just passing its package name to Composer’s `require` command.
 
-```
-> cd ~/dev/my-craft-project
-> composer require package/name
+```bash
+# go to the project directory
+cd ~/dev/my-craft-project
+
+# require the plugin package
+composer require package/name
 ```
 
 ## Plugin Icons

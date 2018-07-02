@@ -30,8 +30,11 @@ Craft 3 plugins should include a changelog named `CHANGELOG.md`, rather than a `
 
 If you have an existing `releases.json` file, you can quickly convert it to a changelog using the following command in your terminal:
 
-```
-> cd path/to/plugin
+```bash
+# go to the plugin directory
+cd path/to/plugin
+
+# create a CHANGELOG.md from its releases.json 
 > curl https://api.craftcms.com/v1/utils/releases-2-changelog --data-binary @releases.json > CHANGELOG.md
 ``` 
 
