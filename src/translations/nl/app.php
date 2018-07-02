@@ -668,7 +668,7 @@ return [
     'No blocks.' => 'Geen blokken.',
     'No category groups exist yet.' => 'Nog geen categorie groepen aanwezig.',
     'No content migrations.' => 'Geen migraties van content.',
-    'No deprecation errors to report!' => 'Geen deprectation-fouten te melden!',
+    'No deprecation errors to report!' => 'Geen deprecation-fouten te melden!',
     'No entries exist yet.' => 'Er bestaat nog geen inhoud.',
     'No entry types exist for this section.' => 'Er bestaat geen berichttype voor deze rubriek.',
     'No fields exist yet.' => 'Er bestaan nog geen velden.',
