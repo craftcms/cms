@@ -42,7 +42,7 @@ Craft の権限は次の通りです。
 | ↳&nbsp; ユーザー権限を割り当てる | `assignUserPermissions` |
 | ↳&nbsp; ユーザーを管理 | `administrateUsers` |
 | ユーザーを削除する | `deleteUsers` |
-| _「サイト名」_ を編集する | `editLocale:[LocaleID]` |
+| _「サイト名」_ を編集する | `editSite:[SiteID]` |
 | エントリを編集する | `editEntries:[SectionID]` |
 | ↳&nbsp; エントリを作る | `createEntries:[SectionID]` |
 | ↳&nbsp; ライブの変更を発表する | `publishEntries:[SectionID]` |

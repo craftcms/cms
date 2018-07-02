@@ -42,7 +42,7 @@ The permissions Craft comes with are:
 | ↳&nbsp; Assign permissions | `assignUserPermissions`
 | ↳&nbsp; Administrate users | `administrateUsers`
 | Delete users | `deleteUsers`
-| Edit _[Locale Name]_ | `editLocale:[LocaleID]`
+| Edit _[Site Name]_ | `editSite:[SiteID]`
 | Edit entries | `editEntries:[SectionID]`
 | ↳&nbsp; Create entries | `createEntries:[SectionID]`
 | ↳&nbsp; Publish entries | `publishEntries:[SectionID]`
