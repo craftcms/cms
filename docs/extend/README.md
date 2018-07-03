@@ -1,4 +1,4 @@
-# Introduction
+# Extending Craft
 
 Craft provides a complete toolkit for customizing its features and functionality – almost every aspect of Craft can be extended, hooked into, or completely replaced. If you know PHP, you can build anything you want with it.
 

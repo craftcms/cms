@@ -1,4 +1,4 @@
-# Introduction to Templating
+# Templating in Craft
 
 In Craft, you define your site’s HTML output with templates.
 

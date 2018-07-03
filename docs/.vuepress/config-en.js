@@ -89,7 +89,7 @@ module.exports = {
         ],
         '/templating/': [
             {
-                title: 'Templating',
+                title: 'Templating in Craft',
                 collapsable: false,
                 children: [
                     ['', 'Introduction'],
@@ -194,7 +194,7 @@ module.exports = {
                 title: 'Front-End Development',
                 collapsable: false,
                 children: [
-                    ['templating/', 'Templating'],
+                    'templating/',
                     // 'APIs'
                 ]
             },
@@ -205,7 +205,7 @@ module.exports = {
                     'relations',
                     'reference-tags',
                     'eager-loading-elements',
-                    ['extend/', 'Extending Craft'],
+                    'extend/',
                 ]
             }
         ]
