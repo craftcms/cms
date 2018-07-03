@@ -831,6 +831,7 @@ return [
     'Save and add another' => 'Bewaren en nog een toevoegen',
     'Save and continue editing' => 'Bewaren en bewerking voortzetten',
     'Save as a draft' => 'Opslaan als concept',
+    'Save as a new asset' => 'Opslaan als een nieuw bestand',
     'Save as a new category' => 'Opslaan als een nieuwe categorie',
     'Save as a new entry' => 'Opslaan als een nieuw item',
     'Save draft' => 'Opslaan concept',
