@@ -432,6 +432,10 @@ class Sites extends Component
      */
     public function getEditableSiteIds(): array
     {
+        if (!Craft::$app->getIsMultiSite()) {
+            return $this->getAllSiteIds();
+        }
+
         if ($this->_editableSiteIds !== null) {
             return $this->_editableSiteIds;
         }
@@ -554,11 +558,19 @@ class Sites extends Component
     {
         $isNewSite = !$site->id;
 
+        if (Craft::$app->getIsInstalled()) {
+            // Did the primary site just change?
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+        } else {
+            $oldPrimarySiteId = null;
+        }
+
         // Fire a 'beforeSaveSite' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
+                'oldPrimarySiteId' => $oldPrimarySiteId,
             ]));
         }
 
@@ -629,7 +641,6 @@ class Sites extends Component
 
         if (Craft::$app->getIsInstalled()) {
             // Did the primary site just change?
-            $oldPrimarySiteId = $this->getPrimarySite()->id;
             if ($site->primary && $site->id != $oldPrimarySiteId) {
                 $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
             }
@@ -697,6 +708,7 @@ class Sites extends Component
             $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
+                'oldPrimarySiteId' => $oldPrimarySiteId,
             ]));
         }
 

@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
@@ -1014,6 +1015,10 @@ class Users extends Component
     {
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
         $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
