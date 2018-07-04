@@ -1,4 +1,4 @@
-/*!   - 2018-06-28 */
+/*!   - 2018-07-05 */
 (function($){
 
 /** global: Craft */
@@ -3453,7 +3453,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             // Set up lazy-loading
             if (this.settings.batchSize) {
                 if (this.settings.context === 'index') {
-                    this.$scroller = Craft.cp.$contentContainer;
+                    this.$scroller = Garnish.$scrollContainer;
                 }
                 else {
                     this.$scroller = this.elementIndex.$main;

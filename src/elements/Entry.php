@@ -790,6 +790,7 @@ class Entry extends Element
     {
         return (
             Craft::$app->getUser()->checkPermission('publishEntries:' . $this->sectionId) && (
+                !$this->authorId ||
                 $this->authorId == Craft::$app->getUser()->getIdentity()->id ||
                 Craft::$app->getUser()->checkPermission('publishPeerEntries:' . $this->sectionId) ||
                 $this->getSection()->type == Section::TYPE_SINGLE

@@ -226,9 +226,8 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrimarySiteLocale(): Locale
     {
-        $locales = $this->getSiteLocales();
-
-        return $locales[0];
+        $site = Craft::$app->getSites()->getPrimarySite();
+        return new Locale($site->language);
     }
 
     /**
@@ -239,7 +238,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrimarySiteLocaleId(): string
     {
-        return $this->getPrimarySiteLocale()->id;
+        return Craft::$app->getSites()->getPrimarySite()->language;
     }
 
     /**
