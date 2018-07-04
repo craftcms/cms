@@ -5,7 +5,7 @@
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.i18n.getLocaleData().getOrientation() -%}
 
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ craft.locale }}">
 <head>
 	{% block head %}
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
