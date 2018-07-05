@@ -64,7 +64,7 @@ These are correct:
 Resources:
 
 * [Tags that come with Twig](http://twig.sensiolabs.org/doc/tags/index.html)
-* [Craft’s custom tags](templating/tags.md)
+* [Craft’s custom tags](tags.md)
 
 
 ### Comment Tags
@@ -91,10 +91,10 @@ You can assign your own variables using the `set` tag:
 {{ style }}
 ```
 
-Additionally, all of your Craft templates are pre-loaded with a few [global variables](templating/global-variables.md):
+Additionally, all of your Craft templates are pre-loaded with a few [global variables](global-variables.md):
 
-* Templates that are loaded as a result of a matching [route](routing.md#dynamic-routes) get pre-loaded with the variables defined by the route’s tokens
-* Templates that are loaded as the result of a matching [entry](sections-and-entries.md) URL get an `entry` variable (see [Routing](routing.md) for more details).
+* Templates that are loaded as a result of a matching [route](../routing.md#dynamic-routes) get pre-loaded with the variables defined by the route’s tokens
+* Templates that are loaded as the result of a matching [entry](../sections-and-entries.md) URL get an `entry` variable (see [Routing](../routing.md) for more details).
 
 
 ## Filters
@@ -114,7 +114,7 @@ Some filters accept parameters::
 Resources:
 
 * [Filters that come with Twig](http://twig.sensiolabs.org/doc/filters/index.html)
-* [Craft’s custom filters](templating/filters.md)
+* [Craft’s custom filters](filters.md)
 
 
 ## Functions
@@ -135,7 +135,7 @@ Twig and Craft provide several functions that you can use within your template t
 Resources:
 
 * [Functions that come with Twig](http://twig.sensiolabs.org/doc/functions/index.html)
-* [Craft’s custom functions](templating/functions.md)
+* [Craft’s custom functions](functions.md)
 
 
 ## Continued Reading
