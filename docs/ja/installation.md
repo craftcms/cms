@@ -40,18 +40,24 @@ macOS を使用している場合、そこにある不可視ファイル（`.env
 Craft のファイルが適切な場所にあれば、プロジェクトディレクトリは次のようなファイル構造になっているはずです。
 
 ```
-config/...
-storage/
-templates/
-vendor/...
-web/...
-.env
-.env.example
-composer.json
-craft
-craft.bat
-LICENSE.md
-README.md
+my-craft-project.dev/
+├── config/
+│   └── ...
+├── storage/
+│   └── ...
+├── templates/
+│   └── ...
+├── vendor/
+│   └── ...
+├── web/
+│   └── ...
+├── .env
+├── .env.example
+├── composer.json
+├── craft
+├── craft.bat
+├── LICENSE.md
+└── README.md
 ```
 
 これらのディレクトリやファイルに関する情報は[ディレクトリ構造](directory-structure.md)を見てください。

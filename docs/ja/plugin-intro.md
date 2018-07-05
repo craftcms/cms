@@ -36,11 +36,12 @@ Yii モジュール上の Craft プラグインの主なメリットは、次の
 
 ```
 ~/dev/
- my-craft-project.dev/
- my-plugin/
- composer.json
- src/
- Plugin.php
+├── my-craft-project.dev/
+│   └── ...
+└── my-plugin/
+    ├── composer.json
+    └── src/
+        └── Plugin.php
 ```
 
 ::: tip

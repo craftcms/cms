@@ -36,11 +36,12 @@ To create a plugin, create a new directory for it somewhere on your computer. A 
 
 ```
 ~/dev/
-  my-craft-project.dev/
-  my-plugin/
-    composer.json
-    src/
-      Plugin.php
+├── my-craft-project.dev/
+│   └── ...
+└── my-plugin/
+    ├── composer.json
+    └── src/
+        └── Plugin.php
 ```
 
 ::: tip

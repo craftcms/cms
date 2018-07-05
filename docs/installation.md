@@ -40,18 +40,24 @@ If you’re on macOS, be careful not to lose the hidden files in there (`.env`, 
 Once Craft’s files are in place, your project directory should have a file structure like this:
 
 ```
-config/...
-storage/
-templates/
-vendor/...
-web/...
-.env
-.env.example
-composer.json
-craft
-craft.bat
-LICENSE.md
-README.md
+my-craft-project.dev/
+├── config/
+│   └── ...
+├── storage/
+│   └── ...
+├── templates/
+│   └── ...
+├── vendor/
+│   └── ...
+├── web/
+│   └── ...
+├── .env
+├── .env.example
+├── composer.json
+├── craft
+├── craft.bat
+├── LICENSE.md
+└── README.md
 ```
 
 See [Directory Structure](directory-structure.md) for information on these directories and files.
