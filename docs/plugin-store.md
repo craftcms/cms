@@ -12,7 +12,7 @@ All plugins in the Plugin Store must have one of two licenses:
 Create a `LICENSE.md` file at the root of your plugin’s repository, and paste in the license text, beginning with a copyright notice.
 
 ```
-Copyright © <YOUR_NAME>
+Copyright © <YourName>
 ```
 
 ## Registering your Plugin
