@@ -12,9 +12,11 @@ To create a new migration, open up your terminal and go to your Craft project:
 cd /path/to/project
 ```
 
-Then run the following command to generate a new content migration file (replacing `MIGRATION_NAME` with your migration name):
+Then run the following command to generate a new content migration file (replacing `<MigrationName>` with your migration name):
 
-    ./craft migrate/create MIGRATION_NAME
+```bash
+./craft migrate/create <MigrationName>
+```
 
 ::: tip
 If your Craft install is running from a Vagrant box, you will need to SSH into the box to run this command.

@@ -12,9 +12,11 @@ Craft プロジェクトが複数の人々によって開発されている場�
 cd /path/to/project
 ```
 
-次のコマンドを実行し、新しいコンテンツマイグレーションファイルを生成します（`MIGRATION_NAME` を実際のマイグレーション名に置き換えます）。
+次のコマンドを実行し、新しいコンテンツマイグレーションファイルを生成します（`<MigrationName>` を実際のマイグレーション名に置き換えます）。
 
-    ./craft migrate/create MIGRATION_NAME
+```bash
+./craft migrate/create <MigrationName>
+```
 
 ::: tip
 Craft のインストールが Vagrant box から実行されている場合、このコマンドを実行するために box に SSH 接続する必要があります。
