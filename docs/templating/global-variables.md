@@ -10,8 +10,8 @@ A <api:craft\web\twig\variables\CraftVariable> object, which provides access poi
 
 A reference to the main <api:craft\web\Application> instance (the thing you get when you type `Craft::$app` in PHP code) is also available to templates via `craft.app`.
 
-::: danger
-Accessing things via `craft.app` is considered highly advanced. There are more security implications than other Twig-specific variables and functions, and your templates will be more susceptible to breaking changes during major Craft version bumps.
+::: warning
+Accessing things via `craft.app` is considered advanced. There are more security implications than other Twig-specific variables and functions, and your templates will be more susceptible to breaking changes during major Craft version bumps.
 :::
 
 ```twig
