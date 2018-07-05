@@ -95,6 +95,6 @@ If your Entries field is only meant to have a single entry selected, remember th
 ### See Also
 
 * [Element Queries](element-queries.md)
-* [Entry Query Params](element-query-params/entry-query-params.md)
+* [craft.entries()](templating/element-queries/entry-query.md)
 * <api:craft\elements\Entry>
 * [Relations](relations.md)

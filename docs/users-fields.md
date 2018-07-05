@@ -90,6 +90,6 @@ If your Users field is only meant to have a single user selected, remember that 
 ### See Also
 
 * [Element Queries](element-queries.md)
-* [User Query Params](element-query-params/user-query-params.md)
+* [craft.users()](templating/element-queries/user-query.md)
 * <api:craft\elements\User>
 * [Relations](relations.md)

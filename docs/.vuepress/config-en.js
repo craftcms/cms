@@ -11,21 +11,6 @@ module.exports = {
         }
     },
     sidebar: {
-        '/element-query-params/': [
-            ['../element-queries', '← Element Queries'],
-            {
-                title: 'Element Query Params',
-                collapsable: false,
-                children: [
-                    ['asset-query-params', 'Assets'],
-                    ['category-query-params', 'Categories'],
-                    ['entry-query-params', 'Entries'],
-                    ['matrix-block-query-params', 'Matrix Blocks'],
-                    ['tag-query-params', 'Tags'],
-                    ['user-query-params', 'Users'],
-                ]
-            }
-        ],
         '/extend/': [
             {
                 title: 'Extending Craft',
@@ -97,6 +82,16 @@ module.exports = {
                 ]
             },
             {
+                title: 'Twig Extensions',
+                collapsable: false,
+                children: [
+                    'filters',
+                    'functions',
+                    'global-variables',
+                    'tests',
+                ]
+            },
+            {
                 title: 'Tags',
                 collapsable: false,
                 children: [
@@ -113,11 +108,19 @@ module.exports = {
                     'tags/switch',
                 ]
             },
-            'filters',
-            'functions',
-            'global-variables',
-            'tests',
-            'elements',
+            {
+                title: 'Querying Elements',
+                collapsable: false,
+                children: [
+                    'element-queries/asset-query',
+                    'element-queries/category-query',
+                    'element-queries/entry-query',
+                    'element-queries/global-set-query',
+                    'element-queries/matrix-block-query',
+                    'element-queries/tag-query',
+                    'element-queries/user-query',
+                ]
+            },
             {
                 title: 'Examples',
                 collapsable: false,

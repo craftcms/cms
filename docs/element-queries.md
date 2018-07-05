@@ -19,14 +19,14 @@ You can create element queries in both PHP and Twig code. Here’s how:
 
 Once you’ve created an element query, you can set parameters on it.
 
-The available parameters varies by element type. Here are the lists of parameters supported by Craft’s built-in element types:
+The available parameters varies by element type. See the element query references for lists of parameters supported by Craft’s built-in element types:
 
-- [Assets](element-query-params/asset-query-params.md)
-- [Categories](element-query-params/category-query-params.md)
-- [Entries](element-query-params/entry-query-params.md)
-- [Matrix blocks](element-query-params/matrix-block-query-params.md)
-- [Tags](element-query-params/tag-query-params.md)
-- [Users](element-query-params/user-query-params.md)
+- [craft.assets()](templating/element-queries/asset-query.md)
+- [craft.categories()](templating/element-queries/category-query.md)
+- [craft.entries()](templating/element-queries/entry-query.md)
+- [craft.globalSets()](templating/element-queries/global-set-query.md)
+- [craft.matrixBlocks()](templating/element-queries/matrix-block-query.md)
+- [craft.users()](templating/element-queries/user-query.md)
 
 The parameters should be set with chained method calls, like so:
 
