@@ -51,7 +51,7 @@ Twig の [date](https://twig.symfony.com/doc/2.x/filters/date.html) フィルタ
 - `'long'`
 - `'full'`
 
-これらのフォーマットが使用されると、日付は <craft\i18n\Formatter::asDate()> でローカライズされた日付の書式にフォーマットされます。
+これらのフォーマットが使用されると、日付は <api:craft\i18n\Formatter::asDate()> でローカライズされた日付の書式にフォーマットされます。
 
 `translate` 引数も利用可能です。`true` を渡した場合、値を返す前にフォーマットされた日付へ <api:craft\helpers\DateTimeHelper::translateDate()> が実行されます。
 
@@ -328,7 +328,7 @@ RSS フィードに必要な形式（`D, d M Y H:i:s O`）で日付を出力し�
 
 ## `timestamp`
 
-<craft\i18n\Formatter::asTimestamp()> 経由で、人が読めるタイムスタンプとして日付をフォーマットします。
+<api:craft\i18n\Formatter::asTimestamp()> 経由で、人が読めるタイムスタンプとして日付をフォーマットします。
 
 ## `translate` または `t`
 
