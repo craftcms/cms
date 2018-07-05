@@ -634,10 +634,12 @@ The Edit Category page offers a relatively straightforward example of how it cou
 
 - URL Rules:
 
-        'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
-        'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>' => 'categories/edit-category',
-        'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>/<siteHandle:{handle}>' => 'categories/edit-category',
-        'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
+  ```php
+  'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
+  'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>' => 'categories/edit-category',
+  'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>/<siteHandle:{handle}>' => 'categories/edit-category',
+  'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
+  ```
 
 - Controller actions:
 
