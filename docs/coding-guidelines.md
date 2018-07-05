@@ -253,7 +253,7 @@ $this->requireAcceptsJson();
 - Use the `['col1' => SORT_ASC, 'col2' => SORT_DESC]` syntax with `orderBy()` instead of `'col1, col2 desc'`.
 
 ### Conditions
-- Always use Yii’s [declarative condition syntax](http://www.yiiframework.com/doc-2.0/yii-db-queryinterface.html#where()-detail) when possible, as it will automatically quote table/column names and values for you.
+- Always use Yii’s [declarative condition syntax](api:yii\db\QueryInterface::where()) when possible, as it will automatically quote table/column names and values for you.
 - For consistency, use:
   -  `['col' => $values]`  instead of `['in', 'col', $values]`
   - `['col' => $value]`  instead of `['=', 'col', $value]`
@@ -309,7 +309,7 @@ $entry->setAuthor($newAuthor);
 
 ### App Component Getters
 
-App components should have their own getter functions, which call the app component getter method [get()](http://www.yiiframework.com/doc-2.0/yii-di-servicelocator.html#get()-detail) directly:
+App components should have their own getter functions, which call the app component getter method [get()](api:yii\di\ServiceLocator::get()) directly:
 
 ```php
 /**

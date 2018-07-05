@@ -22,7 +22,7 @@ If you think something is missing, please [create an issue](https://github.com/c
 - The main application instance is available via `Craft::$app` now, rather than `craft()`.
 - Plugins must now have a `composer.json` file that defines some basic info about the plugin.
 - Plugins now get their own root namespace, rather than sharing a `Craft\` namespace with all of Craft and other plugins, and all Craft and plugin code must follow the [PSR-4](http://www.php-fig.org/psr/psr-4/) specification.
-- Plugins are now an extension of [Yii modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html).
+- Plugins are now an extension of [Yii modules](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules).
 
 ## Changelogs
 
@@ -40,25 +40,25 @@ cd path/to/plugin
 
 ## Yii 2
 
-Yii, the framework Craft is built on, was completely rewritten for 2.0. See its comprehensive [upgrade guide](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html) to learn about how things have changed under the hood.
+Yii, the framework Craft is built on, was completely rewritten for 2.0. See its comprehensive [upgrade guide](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1) to learn about how things have changed under the hood.
 
 Relevant sections:
 
-- [Namespace](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#namespace)
-- [Component and Object](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#component-and-object)
-- [Object Configuration](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#object-configuration)
-- [Events](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#events)
-- [Path Aliases](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#path-aliases)
-- [Models](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#models)
-- [Controllers](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#controllers)
-- [Console Applications](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#console-applications)
-- [I18N](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#i18n)
-- [Assets](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#assets)
-- [Helpers](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#helpers)
-- [Query Builder](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#query-builder)
-- [Active Record](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#active-record)
-- [Active Record Behaviors](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#active-record-behaviors)
-- [User and IdentityInterface](http://www.yiiframework.com/doc-2.0/guide-intro-upgrade-from-v1.html#user-and-identityinterface)
+- [Namespace](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#namespace)
+- [Component and Object](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#component-and-object)
+- [Object Configuration](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#object-configuration)
+- [Events](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#events)
+- [Path Aliases](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#path-aliases)
+- [Models](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#models)
+- [Controllers](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#controllers)
+- [Console Applications](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#console-applications)
+- [I18N](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#i18n)
+- [Assets](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#assets)
+- [Helpers](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#helpers)
+- [Query Builder](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#query-builder)
+- [Active Record](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#active-record)
+- [Active Record Behaviors](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#active-record-behaviors)
+- [User and IdentityInterface](https://www.yiiframework.com/doc/guide/2.0/en/intro-upgrade-from-v1#user-and-identityinterface)
 
 ## Service Names
 
@@ -209,7 +209,7 @@ Craft 2 also provided a `craft()->on()` method, which could be used to register 
 craft()->on('elements.beforeSaveElement', $callback);
 ```
 
-There is no direct equivalent in Craft 3, partly because `Craft::$app->on()` is already a thing (`yii\base\Component::on()`), and partly because Yii 2 already provides a nice solution for registering events on classes regardless of whether they’ve been instantiated yet, and it works for more than just services: [class-level event handlers](http://www.yiiframework.com/doc-2.0/guide-concept-events.html#class-level-event-handlers).
+There is no direct equivalent in Craft 3, partly because `Craft::$app->on()` is already a thing (`yii\base\Component::on()`), and partly because Yii 2 already provides a nice solution for registering events on classes regardless of whether they’ve been instantiated yet, and it works for more than just services: [class-level event handlers](https://www.yiiframework.com/doc/guide/2.0/en/concept-events#class-level-event-handlers).
 
 ```php
 use craft\services\Elements;

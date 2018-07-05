@@ -2,7 +2,7 @@
 
 If your Craft project is being developed by multiple people, or has been deployed in multiple environments, managing structural changes can become a little cumbersome, as you try to keep all environments in sync with each other.
 
-Enter content migrations. Content migrations are [migrations](http://www.yiiframework.com/doc-2.0/guide-db-migrations.html) that are written and managed for your Craft project, rather than for Craft the application, or for a plugin.
+Enter content migrations. Content migrations are [migrations](https://www.yiiframework.com/doc/guide/2.0/en/db-migrations) that are written and managed for your Craft project, rather than for Craft the application, or for a plugin.
 
 ## Creating Migrations
 
@@ -58,6 +58,6 @@ If your Craft install is running from a Vagrant box, you will need to SSH into t
 
 To execute migrations from the Migrations utility, go to Utilities → Migrations in the Control Panel and click the “Apply new migrations” button.
 
-[batchInsert()]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#batchInsert()-detail
-[insert()]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#insert()-detail
-[update()]: http://www.yiiframework.com/doc-2.0/yii-db-migration.html#update()-detail
+[batchInsert()]: api:yii\db\Migration::batchInsert()
+[insert()]: api:yii\db\Migration::insert()
+[update()]: api:yii\db\Migration::update()

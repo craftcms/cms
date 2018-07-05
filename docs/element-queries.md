@@ -1,6 +1,6 @@
 # Element Queries
 
-Element queries are [query builders](http://www.yiiframework.com/doc-2.0/guide-db-query-builder.html) that are tuned for fetching elements in Craft. They have several custom parameters, and they abstract away all the complexities of the actual SQL query needed to fetch the elements. Rather than raw data, they return element models.
+Element queries are [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder) that are tuned for fetching elements in Craft. They have several custom parameters, and they abstract away all the complexities of the actual SQL query needed to fetch the elements. Rather than raw data, they return element models.
 
 ## Creating Element Queries
 

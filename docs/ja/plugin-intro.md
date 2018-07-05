@@ -226,15 +226,15 @@ composer require package/name
 
 プラグインが [コントロールパネルのセクション](cp-section.md) を持つ場合は、プラグインのソースディレクトリのルートに `icon-mask.svg` ファイルを保存することによって、グローバルナビゲーション項目にカスタムアイコンを付けることもできます。このアイコンにはストロークを含めることができず、常に（アルファ透明度に関して）ソリッドカラーで表示されることに注意してください。
 
-[Yii Modules]: http://www.yiiframework.com/doc-2.0/guide-structure-modules.html
-[models]: http://www.yiiframework.com/doc-2.0/guide-structure-models.html
-[active record classes]: http://www.yiiframework.com/doc-2.0/guide-db-active-record.html
-[controllers]: http://www.yiiframework.com/doc-2.0/guide-structure-controllers.html
-[application components]: http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html
+[Yii Modules]: https://www.yiiframework.com/doc/guide/2.0/en/structure-modules
+[models]: https://www.yiiframework.com/doc/guide/2.0/en/structure-models
+[active record classes]: https://www.yiiframework.com/doc/guide/2.0/en/db-active-record
+[controllers]: https://www.yiiframework.com/doc/guide/2.0/en/structure-controllers
+[application components]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [package name]: https://getcomposer.org/doc/04-schema.md#name
 [two hardest things]: https://twitter.com/codinghorror/status/506010907021828096
 [PSR-4]: http://www.php-fig.org/psr/psr-4/
-[Yii alias]: http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html
-[component configs]: http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html
+[Yii alias]: https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases
+[component configs]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [path]: https://getcomposer.org/doc/05-repositories.md#path
 

@@ -64,7 +64,7 @@ The following config settings have been deprecated in Craft 3, and will be compl
 
 *<sup>2</sup> `defaultFileMode` is now `null` by default, meaning it will be determined by the current environment.*
 
-*<sup>3</sup> Settings that supported Environment Variables in Craft 2 now support [Aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html) in Craft 3. Site URL and Local volume settings will automatically be converted to the new Alias syntax when updating to Craft 3 (`@variable` instead of `{variable}`).
+*<sup>3</sup> Settings that supported Environment Variables in Craft 2 now support [Aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) in Craft 3. Site URL and Local volume settings will automatically be converted to the new Alias syntax when updating to Craft 3 (`@variable` instead of `{variable}`).
 
 *<sup>4</sup> `securityKey` is no longer optional. If you haven’t set it yet, set it to the value in `storage/runtime/validation.key` (if the file exists). The auto-generated `validation.key` file fallback will be removed in Craft 4.*
 
@@ -85,7 +85,7 @@ Similarly, the `usePathInfo` setting can no longer be set to `'auto'` either. If
 
 ## URL Rules
 
-If you have any URL rules saved in `config/routes.php`, you will need to update them to Yii 2’s [pattern-route syntax](http://www.yiiframework.com/doc-2.0/guide-runtime-routing.html#url-rules).
+If you have any URL rules saved in `config/routes.php`, you will need to update them to Yii 2’s [pattern-route syntax](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules).
 
 - Named parameters in the pattern should be defined using the format (`<ParamName:RegExp>`) rather than as a regular expression subpattern (`(?P<ParamName>RegExp)`).
 - Unnamed parameters are no longer allowed (e.g. `([^\/]+)`). They must also be converted to the new named parameter syntax (`<ParamName:RegExp>`).

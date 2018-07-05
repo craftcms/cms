@@ -35,7 +35,7 @@ Craft は、いくつかの[データベース設定](craft\config\DbConfig#publ
 
 ## データキャッシュ設定
 
-デフォルトでは、Craft は `storage/runtime/cache/` フォルダにデータキャッシュを格納します。`config/app.php` で `cache` アプリケーションコンポーネントを上書きすることによって代替の[キャッシュストレージ](http://www.yiiframework.com/doc-2.0/guide-caching-data.html#supported-cache-storage)を使うよう Craft を設定できます。
+デフォルトでは、Craft は `storage/runtime/cache/` フォルダにデータキャッシュを格納します。`config/app.php` で `cache` アプリケーションコンポーネントを上書きすることによって代替の[キャッシュストレージ](https://www.yiiframework.com/doc/guide/2.0/en/caching-data#supported-cache-storage)を使うよう Craft を設定できます。
 
 ```php
 <?php
@@ -129,7 +129,7 @@ return [
 
 ## エイリアス
 
-Craft のいくつかの設定やファンクションでは、基本ファイルシステムのパスや URL を代用する [Yii エイリアス](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html)をサポートしています。 これには次ものが含まれます。
+Craft のいくつかの設定やファンクションでは、基本ファイルシステムのパスや URL を代用する [Yii エイリアス](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases)をサポートしています。 これには次ものが含まれます。
 
 - サイトのベース URL 設定
 - ボリュームのベース URL 設定
@@ -205,7 +205,7 @@ return [
 
 ## URL ルール
 
-`config/routes.php` にコントロールパネルの「設定 > ルート」ページで定義したすべてのルートとマージされる、独自の [URL ルール](http://www.yiiframework.com/doc-2.0/guide-runtime-routing.html#url-rules) を定義できます。
+`config/routes.php` にコントロールパネルの「設定 > ルート」ページで定義したすべてのルートとマージされる、独自の [URL ルール](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) を定義できます。
 
 Craft はコントローラーアクションではなく、テンプレートをリクエストするルーティング向けに、独自の構文をサポートしています。
 
@@ -217,7 +217,7 @@ return [
 
 ## アプリケーション設定
 
-`config/app.php` から、Craft のすべての[アプリケーション設定](http://www.yiiframework.com/doc-2.0/guide-structure-applications.html#application-configurations)をカスタマイズできます。配列として返された項目は、 メインのアプリケーション設定の配列にマージされます。
+`config/app.php` から、Craft のすべての[アプリケーション設定](https://www.yiiframework.com/doc/guide/2.0/en/structure-applications#application-configurations)をカスタマイズできます。配列として返された項目は、 メインのアプリケーション設定の配列にマージされます。
 
 ### Mailer コンポーネント
 

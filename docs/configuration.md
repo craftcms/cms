@@ -35,7 +35,7 @@ Craft supports several [database configuration settings](craft\config\DbConfig#p
 
 ## Data Caching Config
 
-By default, Craft will store data caches in the `storage/runtime/cache/` folder. You can configure Craft to use an alternative [cache storage](http://www.yiiframework.com/doc-2.0/guide-caching-data.html#supported-cache-storage) by overriding the `cache` application component from `config/app.php`.
+By default, Craft will store data caches in the `storage/runtime/cache/` folder. You can configure Craft to use an alternative [cache storage](https://www.yiiframework.com/doc/guide/2.0/en/caching-data#supported-cache-storage) by overriding the `cache` application component from `config/app.php`.
 
 ```php
 <?php
@@ -129,7 +129,7 @@ The options defined here will be passed into new `GuzzleHttp\Client` instances. 
 
 ## Aliases
 
-Some settings and functions in Craft support [Yii aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html), which are basically placeholders for base file system paths and URLs. These include:
+Some settings and functions in Craft support [Yii aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases), which are basically placeholders for base file system paths and URLs. These include:
 
 - Sites’ Base URL settings
 - Volumes’ Base URL settings
@@ -205,7 +205,7 @@ return [
 
 ## URL Rules
 
-You can define custom [URL rules](http://www.yiiframework.com/doc-2.0/guide-runtime-routing.html#url-rules) in `config/routes.php`, which will get merged in with any routes you’ve defined on the Settings → Routes page in the Control Panel.
+You can define custom [URL rules](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) in `config/routes.php`, which will get merged in with any routes you’ve defined on the Settings → Routes page in the Control Panel.
 
 Craft supports a custom syntax for routing requests to a template, rather than a controller action:
 
@@ -217,7 +217,7 @@ return [
 
 ## Application Config
 
-You can customize Craft’s entire [application configuration](http://www.yiiframework.com/doc-2.0/guide-structure-applications.html#application-configurations) from `config/app.php`. Any items returned by that array will get merged into the main application configuration array.
+You can customize Craft’s entire [application configuration](https://www.yiiframework.com/doc/guide/2.0/en/structure-applications#application-configurations) from `config/app.php`. Any items returned by that array will get merged into the main application configuration array.
 
 ### Mailer Component
 

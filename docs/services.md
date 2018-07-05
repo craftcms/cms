@@ -4,7 +4,7 @@
 
 ## What are Services?
 
-Services are [singleton](https://en.wikipedia.org/wiki/Singleton_pattern) classes that get attached to your primary plugin class as [components](http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html) (e.g. `MyPlugin::getInstance()->serviceName`).
+Services are [singleton](https://en.wikipedia.org/wiki/Singleton_pattern) classes that get attached to your primary plugin class as [components](https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components) (e.g. `MyPlugin::getInstance()->serviceName`).
 
 They have two jobs:
 
@@ -31,7 +31,7 @@ class Foo extends Component
 }
 ```
 
-Once the service class exists, you can register it as a component on your primary plugin class by calling [setComponents()](api:yii\di\ServiceLocator::setComponents()) from its [init()](http://www.yiiframework.com/doc-2.0/yii-base-object.html#init()-detail) method:
+Once the service class exists, you can register it as a component on your primary plugin class by calling [setComponents()](api:yii\di\ServiceLocator::setComponents()) from its [init()](api:yii\base\BaseObject::init()) method:
 
 ```php
 public function init()

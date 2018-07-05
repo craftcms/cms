@@ -33,9 +33,9 @@
 
 最後の引数に `true` を渡すと、セントがゼロであれば「.00」が削除されます。
 
-利用可能な `numberOptions` は、[こちらのリスト](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterOptions-detail)を参照してください。
+利用可能な `numberOptions` は、[こちらのリスト](api:yii\i18n\Formatter::$numberFormatterOptions)を参照してください。
 
-利用可能な `textOptions` は、[こちらのリスト](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterTextOptions-detail) を参照してください。
+利用可能な `textOptions` は、[こちらのリスト](api:yii\i18n\Formatter::$numberFormatterTextOptions) を参照してください。
 
 ```twig
 {{ 1000000|currency('USD') }} => $1,000,000.00
