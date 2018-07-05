@@ -33,9 +33,9 @@
 
 最後の引数に `true` を渡すと、セントがゼロであれば「.00」が削除されます。
 
-利用可能な `numberOptions` は、[こちらのリスト](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterOptions-detail)を参照してください。
+利用可能な `numberOptions` は、[こちらのリスト](api:yii\i18n\Formatter::$numberFormatterOptions)を参照してください。
 
-利用可能な `textOptions` は、[こちらのリスト](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterTextOptions-detail) を参照してください。
+利用可能な `textOptions` は、[こちらのリスト](api:yii\i18n\Formatter::$numberFormatterTextOptions) を参照してください。
 
 ```twig
 {{ 1000000|currency('USD') }} => $1,000,000.00
@@ -51,7 +51,7 @@ Twig の [date](https://twig.symfony.com/doc/2.x/filters/date.html) フィルタ
 - `'long'`
 - `'full'`
 
-これらのフォーマットが使用されると、日付は <craft\i18n\Formatter::asDate()> でローカライズされた日付の書式にフォーマットされます。
+これらのフォーマットが使用されると、日付は <api:craft\i18n\Formatter::asDate()> でローカライズされた日付の書式にフォーマットされます。
 
 `translate` 引数も利用可能です。`true` を渡した場合、値を返す前にフォーマットされた日付へ <api:craft\helpers\DateTimeHelper::translateDate()> が実行されます。
 
@@ -328,7 +328,7 @@ RSS フィードに必要な形式（`D, d M Y H:i:s O`）で日付を出力し�
 
 ## `timestamp`
 
-<craft\i18n\Formatter::asTimestamp()> 経由で、人が読めるタイムスタンプとして日付をフォーマットします。
+<api:craft\i18n\Formatter::asTimestamp()> 経由で、人が読めるタイムスタンプとして日付をフォーマットします。
 
 ## `translate` または `t`
 

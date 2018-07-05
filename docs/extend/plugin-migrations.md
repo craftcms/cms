@@ -1,6 +1,6 @@
 # Plugin Migrations
 
-If your schema changes over the life of your plugin, you can write a [migration](http://www.yiiframework.com/doc-2.0/guide-db-migrations.html) to keep existing installations updated with the latest schema. Craft automatically checks for new migrations whenever a plugin’s schema version number changes.
+If your schema changes over the life of your plugin, you can write a [migration](https://www.yiiframework.com/doc/guide/2.0/en/db-migrations) to keep existing installations updated with the latest schema. Craft automatically checks for new migrations whenever a plugin’s schema version number changes.
 
 [[toc]]
 
@@ -12,10 +12,10 @@ To create a new migration, open up your terminal and go to a Craft project that 
 cd /path/to/project
 ```
 
-Then run the following command to generate a new migration file for your plugin (replacing `<migration_name>` and `<plugin-handle>` with your migration name and plugin handle, respectively):
+Then run the following command to generate a new migration file for your plugin (replacing `<MigrationName>` and `<PluginHandle>` with your migration name and plugin handle, respectively):
 
 ```bash
-./craft migrate/create <migration_name> --plugin=<plugin-handle>
+./craft migrate/create <MigrationName> --plugin=<PluginHandle>
 ```
 
 ::: tip
@@ -92,7 +92,7 @@ class Install extends Migration
 You can give your plugin an install migration with the `migrate/create` command if you pass the migration name “`install`”:
 
 ```bash
-./craft migrate/create install --plugin=<plugin-handle>
+./craft migrate/create install --plugin=<PluginHandle>
 ```
 
 When a plugin has an Install migration, its `safeUp()` method will be called when the plugin is installed, and its `safeDown()` method will be called when the plugin is uninstalled (invoked by <api:craft\base\Plugin::install()> and `uninstall()`).

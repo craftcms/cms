@@ -5,12 +5,12 @@ Reference tags can be used to create references to various elements in your site
 The syntax for reference tags looks like this:
 
 ```twig
-{<type>:<identifier>:<property>}
+{<Type>:<Identifier>:<Property>}
 ```
 
 As you can see, they are made up three segments:
 
-1.  `<type>` – The type of element you’re creating a reference to. This can be a fully-qualified element class name (e.g. `craft\elements\Entry`) or the element type’s “reference handle”.
+1.  `<Type>` – The type of element you’re creating a reference to. This can be a fully-qualified element class name (e.g. `craft\elements\Entry`) or the element type’s “reference handle”.
 
     Core element types have the following reference handles:
 
@@ -20,14 +20,14 @@ As you can see, they are made up three segments:
     - `user`
     - `globalset`
 
-2.  `<identifier>` – Either the element’s ID or a custom identifier supported by the element type.
+2.  `<Identifier>` – Either the element’s ID or a custom identifier supported by the element type.
 
     Entries support the following custom identifiers:
 
     - `entry-slug`
     - `sectionHandle/entry-slug`
 
-3.  `<property>` _(optional)_ – The element property that the reference tag should return. If omitted, the element’s URL will be returned.
+3.  `<Property>` _(optional)_ – The element property that the reference tag should return. If omitted, the element’s URL will be returned.
 
     You can refer to the element types’ class references for a list of available properties:
     

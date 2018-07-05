@@ -36,11 +36,12 @@ Yii モジュール上の Craft プラグインの主なメリットは、次の
 
 ```
 ~/dev/
- my-craft-project.dev/
- my-plugin/
- composer.json
- src/
- Plugin.php
+├── my-craft-project.dev/
+│   └── ...
+└── my-plugin/
+    ├── composer.json
+    └── src/
+        └── Plugin.php
 ```
 
 ::: tip
@@ -174,9 +175,12 @@ Craft にプラグインを表示するには、Craft プロジェクトの Comp
 
 ターミナル上で Craft プロジェクトへ移動し、Composer にプラグインの追加を伝えてください。（`composer.json` ファイルでプラグインに付けたパッケージ名と同じものを使用してください。）
 
-```
-> cd ~/dev/my-craft-project
-> composer require package/name
+```bash
+# go to the project directory
+cd ~/dev/my-craft-project
+
+# require the plugin package
+composer require package/name
 ```
 
 Composer のインストールログは、シンボリックリンク経由でパッケージがインストールされたことを表示するでしょう。
@@ -188,21 +192,28 @@ Composer のインストールログは、シンボリックリンク経由で�
 ::: warning
 `path` Composer リポジトリの難点の1つは、`composer update` を実行した際に Composer が `path` ベースの依存関係を無視することです。そのため、プラグインの依存要件やプラグインの情報のような `composer.json` 内の何かを変更するときはいつでも、それらの変化が効力を発揮するようプロジェクト内のあなたのプラグインを完全に削除して再要求する必要があります。
 
-```
-> cd ~/dev/my/craft-project
-> composer remove package/name
-> composer require package/name
-```
+```bash
+# go to the project directory
+cd ~/dev/my/craft-project
 
+# remove the plugin package
+composer remove package/name
+
+# re-require the plugin package
+composer require package/name
+```
 :::
 
 #### Packagist
 
 プラグインを一般公開する準備ができたら、新しい Composer パッケージを [Packagist](https://packagist.org/) に登録してください。そうすれば、Composer の `require` コマンドにパッケージ名を渡すだけで、他のパッケージと同様にインストールできます。
 
-```
-> cd ~/dev/my-craft-project
-> composer require package/name
+```bash
+# go to the project directory
+cd ~/dev/my-craft-project
+
+# require the plugin package
+composer require package/name
 ```
 
 ## プラグインアイコン
@@ -215,15 +226,15 @@ Composer のインストールログは、シンボリックリンク経由で�
 
 プラグインが [コントロールパネルのセクション](cp-section.md) を持つ場合は、プラグインのソースディレクトリのルートに `icon-mask.svg` ファイルを保存することによって、グローバルナビゲーション項目にカスタムアイコンを付けることもできます。このアイコンにはストロークを含めることができず、常に（アルファ透明度に関して）ソリッドカラーで表示されることに注意してください。
 
-[Yii Modules]: http://www.yiiframework.com/doc-2.0/guide-structure-modules.html
-[models]: http://www.yiiframework.com/doc-2.0/guide-structure-models.html
-[active record classes]: http://www.yiiframework.com/doc-2.0/guide-db-active-record.html
-[controllers]: http://www.yiiframework.com/doc-2.0/guide-structure-controllers.html
-[application components]: http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html
+[Yii Modules]: https://www.yiiframework.com/doc/guide/2.0/en/structure-modules
+[models]: https://www.yiiframework.com/doc/guide/2.0/en/structure-models
+[active record classes]: https://www.yiiframework.com/doc/guide/2.0/en/db-active-record
+[controllers]: https://www.yiiframework.com/doc/guide/2.0/en/structure-controllers
+[application components]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [package name]: https://getcomposer.org/doc/04-schema.md#name
 [two hardest things]: https://twitter.com/codinghorror/status/506010907021828096
 [PSR-4]: http://www.php-fig.org/psr/psr-4/
-[Yii alias]: http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html
-[component configs]: http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html
+[Yii alias]: https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases
+[component configs]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [path]: https://getcomposer.org/doc/05-repositories.md#path
 

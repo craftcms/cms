@@ -6,7 +6,7 @@
 
 Plugins that have global settings need to define a “settings model”, which is responsible for storing the setting values, and validating them.
 
-Settings models are just like any other [model](http://www.yiiframework.com/doc-2.0/guide-structure-models.html). To create it, create a `models/` directory within your plugin’s source directory, and create a `Settings.php` file within it:
+Settings models are just like any other [model](https://www.yiiframework.com/doc/guide/2.0/en/structure-models). To create it, create a `models/` directory within your plugin’s source directory, and create a `Settings.php` file within it:
 
 ```php
 <?php

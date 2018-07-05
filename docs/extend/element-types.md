@@ -112,7 +112,7 @@ public function afterSave(bool $isNew)
 
 ### Element Query Class
 
-All element types need a corresponding element query class. Element query classes are an extension of [query builders](http://www.yiiframework.com/doc-2.0/guide-db-query-builder.html), tuned for fetching elements.
+All element types need a corresponding element query class. Element query classes are an extension of [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder), tuned for fetching elements.
 
 All element query classes should extend <api:craft\elements\db\ElementQuery>, which provides the base functionality.
 
@@ -570,7 +570,7 @@ public function getUriFormat()
 }
 ```
 
-Whenever an element’s URL is requested, Craft will instantiate the element and call its `getRoute()` method, giving the element a chance to decide how the request should be [routed](http://www.yiiframework.com/doc-2.0/guide-runtime-routing.html).
+Whenever an element’s URL is requested, Craft will instantiate the element and call its `getRoute()` method, giving the element a chance to decide how the request should be [routed](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing).
 
 Internally, <api:craft\base\Element::getRoute()> will call a protected `route()` method, which is what you should override in your element class:
 
@@ -634,10 +634,12 @@ The Edit Category page offers a relatively straightforward example of how it cou
 
 - URL Rules:
 
-        'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
-        'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>' => 'categories/edit-category',
-        'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>/<siteHandle:{handle}>' => 'categories/edit-category',
-        'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
+  ```php
+  'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
+  'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>' => 'categories/edit-category',
+  'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>/<siteHandle:{handle}>' => 'categories/edit-category',
+  'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
+  ```
 
 - Controller actions:
 

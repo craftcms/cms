@@ -137,7 +137,7 @@ If you’re not using [MAMP](https://mamp.info) or another localhosting tool, yo
 - **macOS/Linux/Unix**: `/etc/hosts`
 - **Windows**: `\Windows\System32\drivers\etc\hosts`
 
-You can test whether you set everything up correctly by pointing your web browser to `http://<HOSTNAME>/index.php?p=admin` (substituting `<HOSTNAME>` with your web server’s host name). If Craft’s Setup Wizard is shown, the host name is correctly resolving to your Craft installation.
+You can test whether you set everything up correctly by pointing your web browser to `http://<Hostname>/index.php?p=admin` (substituting `<Hostname>` with your web server’s host name). If Craft’s Setup Wizard is shown, the host name is correctly resolving to your Craft installation.
 
 ## Step 6: Run the Setup Wizard
 
@@ -155,7 +155,7 @@ The command will ask you a few questions to learn how to connect to your databas
 
 ### Web Browser Setup
 
-In your web browser, go to `http://<HOSTNAME>/index.php?p=admin` (substituting `<HOSTNAME>` with your web server’s host name). If you’ve done everything right so far, you should be greeted by Craft’s Setup Wizard.
+In your web browser, go to `http://<Hostname>/index.php?p=admin` (substituting `<Hostname>` with your web server’s host name). If you’ve done everything right so far, you should be greeted by Craft’s Setup Wizard.
 
 ![Craft Installation Screen](./images/installation-step-0.png)
 

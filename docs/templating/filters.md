@@ -33,9 +33,9 @@ Formats a number with a given currency according to the user’s preferred langu
 
 If you pass `true` into the last argument, the “.00” will be stripped if there’s zero cents.
 
-See [here for a list](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterOptions-detail) of the possible `numberOptions`.
+See [here for a list](api:yii\i18n\Formatter::$numberFormatterOptions) of the possible `numberOptions`.
 
-See [here for a list](https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$numberFormatterTextOptions-detail) of the possible textOptions`.
+See [here for a list](api:yii\i18n\Formatter::$numberFormatterTextOptions) of the possible textOptions`.
 
 ```twig
 {{ 1000000|currency('USD') }} => $1,000,000.00
@@ -51,7 +51,7 @@ Like Twig’s core [date](https://twig.symfony.com/doc/2.x/filters/date.html) fi
 - `'long'`
 - `'full'`
 
-When one of those formats are used, the date will be formatted into a localized date format using <craft\i18n\Formatter::asDate()>.
+When one of those formats are used, the date will be formatted into a localized date format using <api:craft\i18n\Formatter::asDate()>.
 
 A `translate` argument is also available. If `true` is passed, the formatted date will be run through <api:craft\helpers\DateTimeHelper::translateDate()> before being returned.
 
@@ -329,7 +329,7 @@ Like the [time](#time) filter, but for times rather than dates.
 
 ## `timestamp`
 
-Formats a date as a human-readable timestamp, via <craft\i18n\Formatter::asTimestamp()>.
+Formats a date as a human-readable timestamp, via <api:craft\i18n\Formatter::asTimestamp()>.
 
 ## `translate` or `t`
 

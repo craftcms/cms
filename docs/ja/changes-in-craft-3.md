@@ -64,7 +64,7 @@ Amazon S3、Rackspace Cloud Files、および Google Cloud Storage のサポー�
 
 *<sup>2</sup> `defaultFileMode` はデフォルトで `null` になりました。これは、現在の環境によって決定されることを意味します。*
 
-*<sup>3</sup> Craft 2 で環境変数をサポートしていた設定は、Craft 3 の [エイリアス](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html) でサポートされるようになりました。Craft 3 にアップデートすると、サイト URL やローカルボリュームの設定は新しいエイリアス構文 （`{variable}` の代わりに `@variable`）へ自動的に変換されます。
+*<sup>3</sup> Craft 2 で環境変数をサポートしていた設定は、Craft 3 の [エイリアス](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) でサポートされるようになりました。Craft 3 にアップデートすると、サイト URL やローカルボリュームの設定は新しいエイリアス構文 （`{variable}` の代わりに `@variable`）へ自動的に変換されます。
 
 *<sup>4</sup> `securityKey` は、もはやオプションではありません。まだ設定していない場合、（ファイルが存在していれば）`storage/runtime/validation.key` に設定します。自動生成された `validation.key` ファイルのバックアップは、Craft 4 で削除されるでしょう。*
 
@@ -85,7 +85,7 @@ Amazon S3、Rackspace Cloud Files、および Google Cloud Storage のサポー�
 
 ## URL ルール
 
-`config/routes.php` に URL を保存しているならば、Yii 2 の [pattern-route 構文](http://www.yiiframework.com/doc-2.0/guide-runtime-routing.html#url-rules) にアップデートする必要があります。
+`config/routes.php` に URL を保存しているならば、Yii 2 の [pattern-route 構文](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) にアップデートする必要があります。
 
 - パターンの名前付けされたパラメータは、正規表現のサブパターン（`(?P<ParamName>RegExp)`）ではなく、フォーマット（`<ParamName:RegExp>`）を使用して定義する必要があります。
 - 名前付けされていないパラメータ（例：`([^\/]+)`）は、もはや許可されません。新しい名前付けされたパラメータ構文（`<ParamName:RegExp>`）に変換しなければなりません。
@@ -139,7 +139,7 @@ translations/
 
 ## ユーザーフォト
 
-ユーザーフォトはアセットとして保存されるようになりました。Craft 3 にアップグレードすると、Craft は（ `<username>/` サブフォルダを除く、Craft が事前にすべてのユーザー画像を格納している） `storage/userphotos/` を「User Photos」と呼ばれる新しいアセットボリュームとして自動的に作成します。しかしながら、このフォルダはウェブルートよりも上位階層にあるため、HTTP リクエストでアクセスできません。 そのため、このボリュームをアクセスできる状態にするまで、ユーサーフォトはフロントエンドで動作しません。
+ユーザーフォトはアセットとして保存されるようになりました。Craft 3 にアップグレードすると、Craft は（ `<Username>/` サブフォルダを除く、Craft が事前にすべてのユーザー画像を格納している） `storage/userphotos/` を「User Photos」と呼ばれる新しいアセットボリュームとして自動的に作成します。しかしながら、このフォルダはウェブルートよりも上位階層にあるため、HTTP リクエストでアクセスできません。 そのため、このボリュームをアクセスできる状態にするまで、ユーサーフォトはフロントエンドで動作しません。
 
 次の方法で解決してください。
 

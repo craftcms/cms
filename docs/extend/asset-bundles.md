@@ -2,7 +2,7 @@
 
 Plugins, like Craft, are supposed to be installed above the web root, which ensures that their files can’t be accessed directly via HTTP requests. Generally that’s a Very Good Thing, because it protects Craft sites from a whole host of security vulnerabilities.
 
-There’s one case where it would be nice if HTTP requests *could* access Craft/plugin files directly though: front-end resources, such as images, CSS, and JavaScript files. Thankfully, Yii has a concept called [Asset Bundles](http://www.yiiframework.com/doc-2.0/guide-structure-assets.html) to help with this.
+There’s one case where it would be nice if HTTP requests *could* access Craft/plugin files directly though: front-end resources, such as images, CSS, and JavaScript files. Thankfully, Yii has a concept called [Asset Bundles](https://www.yiiframework.com/doc/guide/2.0/en/structure-assets) to help with this.
 
 Asset Bundles do two things:
 
@@ -112,4 +112,4 @@ $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/icons', true, 'sh
 `@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.
 :::
 
-[Yii alias]: http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html
+[Yii alias]: https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases

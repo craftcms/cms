@@ -209,14 +209,14 @@ Plugin icons must be square SVG files, saved as `icon.svg` at the root of your p
 
 If your plugin has a [Control Panel section](cp-section.md), you can also give its global nav item a custom icon by saving an `icon-mask.svg` file in the root of your plugin’s source directory. Note that this icon cannot contain strokes, and will always be displayed in a solid color (respecting alpha transparency).
 
-[Yii Modules]: http://www.yiiframework.com/doc-2.0/guide-structure-modules.html
-[models]: http://www.yiiframework.com/doc-2.0/guide-structure-models.html
-[active record classes]: http://www.yiiframework.com/doc-2.0/guide-db-active-record.html
-[controllers]: http://www.yiiframework.com/doc-2.0/guide-structure-controllers.html
-[application components]: http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html
+[Yii Modules]: https://www.yiiframework.com/doc/guide/2.0/en/structure-modules
+[models]: https://www.yiiframework.com/doc/guide/2.0/en/structure-models
+[active record classes]: https://www.yiiframework.com/doc/guide/2.0/en/db-active-record
+[controllers]: https://www.yiiframework.com/doc/guide/2.0/en/structure-controllers
+[application components]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [package name]: https://getcomposer.org/doc/04-schema.md#name
 [two hardest things]: https://twitter.com/codinghorror/status/506010907021828096
 [PSR-4]: http://www.php-fig.org/psr/psr-4/
-[Yii alias]: http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html
-[component configs]: http://www.yiiframework.com/doc-2.0/guide-structure-application-components.html
+[Yii alias]: https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases
+[component configs]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [path]: https://getcomposer.org/doc/05-repositories.md#path
