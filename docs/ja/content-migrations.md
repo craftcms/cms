@@ -8,7 +8,9 @@ Craft プロジェクトが複数の人々によって開発されている場�
 
 新しいマイグレーションを作成するために、ターミナルを開き Craft プロジェクトに移動してください。
 
-    cd /path/to/project
+```bash
+cd /path/to/project
+```
 
 次のコマンドを実行し、新しいコンテンツマイグレーションファイルを生成します（`MIGRATION_NAME` を実際のマイグレーション名に置き換えます）。
 
@@ -46,7 +48,9 @@ Craft 3 は「audit」カラムのデータ（`dateCreated`、`dateUpdated`、 `
 
 ターミナルからマイグレーションを実行するには、Craft プロジェクトに移動して次のコマンドを実行します。
 
-    ./craft migrate/up
+```bash
+./craft migrate/up
+```
 
 ::: tip
 Craft のインストールが Vagrant box から実行されている場合、このコマンドを実行するために box に SSH 接続する必要があります。

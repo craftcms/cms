@@ -12,9 +12,11 @@ Craft は [Composer](#downloading-with-composer) でダウンロードするか�
 Composer 1.3.0 以降を稼働させるべきです。起動しているターミナル上で `composer -V` を実行することによって、インストールされている Composer のバージョンを確認できます。1.3.0 より前のバージョンであれば、Composer をアップデートするために `composer self-update` を実行します。
 :::
 
-新しい Craft プロジェクトを作成するため、次のコマンドを実行してください。（Composer が作成するプロジェクトのパスの代わりに`<PATH>` と記載しています。）
+新しい Craft プロジェクトを作成するため、次のコマンドを実行してください。（Composer が作成するプロジェクトのパスの代わりに`<Path>` と記載しています。）
 
-    composer create-project craftcms/craft <PATH>
+```bash
+composer create-project craftcms/craft <Path>
+```
 
 Composer がすべてをロードするのに、数分かかるでしょう。完了すると、成功メッセージが表示されます。
 
@@ -103,7 +105,9 @@ Craft のダウンロードに Composer を利用した場合、おそらく安�
 
 ターミナル上でプロジェクトのルートディレクトリへ移動し、次のコマンドを実行します。
 
-    ./craft setup/security-key
+```bash
+./craft setup/security-key
+```
 
 ## ステップ 4：データベースの作成
 
@@ -137,7 +141,9 @@ Craft プロジェクトをホストするための新しいウェブサーバ�
 
 ターミナル上でプロジェクトのルートディレクトリに移動し、次のコマンドを実行してセットアップウィザードを開始します。
 
-    ./craft setup
+```bash
+./craft setup
+```
 
 このコマンドは、データベースへの接続方法を学んだ上で Craft のインストーラーを開始するために、いくつかの質問をします。それが終われば、ウェブブラウザから新しい Craft サイトにアクセスできるはずです。
 

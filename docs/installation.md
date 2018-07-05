@@ -12,9 +12,11 @@ Craft can be downloaded with [Composer](#downloading-with-composer) or by [manua
 You should be running Composer 1.3.0 or later. You can find out your installed version of Composer by running `composer -V` from your terminal. If that outputs something lower than 1.3.0, run `composer self-update` to update your Composer installation.
 :::
 
-To create a new Craft project, run this command (substituting `<PATH>` with the path where Composer should create the project):
+To create a new Craft project, run this command (substituting `<Path>` with the path where Composer should create the project):
 
-    composer create-project craftcms/craft <PATH>
+```bash
+composer create-project craftcms/craft <Path>
+```
 
 Composer will take a couple minutes to load everything. Once it’s done you will be shown a success message:
 
@@ -103,7 +105,9 @@ Paste your security key inside the quotes and save the file.
 
 In your terminal, go to your project’s root directory and run the following command:
 
-    ./craft setup/security-key 
+```bash
+./craft setup/security-key
+``` 
 
 ## Step 4: Create a Database
 
@@ -137,7 +141,9 @@ Finally, it’s time to run Craft’s Setup Wizard. You can either run that from
 
 In your terminal, go to your project’s root directory and run the following command to kick off the Setup Wizard:
 
-    ./craft setup
+```bash
+./craft setup
+```
 
 The command will ask you a few questions to learn how to connect to your database, and then kick off Craft’s installer. Once it’s done, you should be able to access your new Craft site from your web browser.
 

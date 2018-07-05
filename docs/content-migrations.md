@@ -8,7 +8,9 @@ Enter content migrations. Content migrations are [migrations](http://www.yiifram
 
 To create a new migration, open up your terminal and go to your Craft project:
 
-    cd /path/to/project
+```bash
+cd /path/to/project
+```
 
 Then run the following command to generate a new content migration file (replacing `MIGRATION_NAME` with your migration name):
 
@@ -46,7 +48,9 @@ There are two ways to execute content migrations: from the terminal, and from th
 
 To execute migrations from the terminal, go to your Craft project and run this command:
 
-    ./craft migrate/up
+```bash
+./craft migrate/up
+```
 
 ::: tip
 If your Craft install is running from a Vagrant box, you will need to SSH into the box to run this command.
