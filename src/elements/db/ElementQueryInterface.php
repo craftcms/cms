@@ -27,7 +27,7 @@ use yii\db\QueryInterface;
 interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, Countable, IteratorAggregate
 {
     /**
-     * Sets the [[asArray]] property.
+     * Sets the [[$asArray]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -35,7 +35,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function asArray(bool $value = true);
 
     /**
-     * Sets the [[id]] property.
+     * Sets the [[$id]] property.
      *
      * @param int|int[]|false|null $value The property value
      * @return static self reference
@@ -43,7 +43,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function id($value);
 
     /**
-     * Sets the [[uid]] property.
+     * Sets the [[$uid]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -51,7 +51,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function uid($value);
 
     /**
-     * Sets the [[fixedOrder]] property.
+     * Sets the [[$fixedOrder]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -59,7 +59,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function fixedOrder(bool $value = true);
 
     /**
-     * Sets the [[status]] property.
+     * Sets the [[$status]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -67,7 +67,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function status($value);
 
     /**
-     * Sets the [[archived]] property.
+     * Sets the [[$archived]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -75,7 +75,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function archived(bool $value = true);
 
     /**
-     * Sets the [[dateCreated]] property.
+     * Sets the [[$dateCreated]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
@@ -83,7 +83,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function dateCreated($value);
 
     /**
-     * Sets the [[dateUpdated]] property.
+     * Sets the [[$dateUpdated]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
@@ -91,7 +91,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function dateUpdated($value);
 
     /**
-     * Sets the [[siteId]] property based on a given site’s handle.
+     * Sets the [[$siteId]] property based on a given site’s handle.
      *
      * @param string|Site $value The property value
      * @return static self reference
@@ -99,7 +99,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function site($value);
 
     /**
-     * Sets the [[siteId]] property.
+     * Sets the [[$siteId]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -107,7 +107,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function siteId(int $value = null);
 
     /**
-     * Sets the [[enabledForSite]] property.
+     * Sets the [[$enabledForSite]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -115,7 +115,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function enabledForSite(bool $value = true);
 
     /**
-     * Sets the [[relatedTo]] property.
+     * Sets the [[$relatedTo]] property.
      *
      * @param int|array|ElementInterface|null $value The property value
      * @return static self reference
@@ -123,7 +123,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function relatedTo($value);
 
     /**
-     * Sets the [[title]] property.
+     * Sets the [[$title]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -131,7 +131,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function title($value);
 
     /**
-     * Sets the [[slug]] property.
+     * Sets the [[$slug]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -139,7 +139,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function slug($value);
 
     /**
-     * Sets the [[uri]] property.
+     * Sets the [[$uri]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -147,7 +147,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function uri($value);
 
     /**
-     * Sets the [[search]] property.
+     * Sets the [[$search]] property.
      *
      * @param string|array|SearchQuery|null $value The property value
      * @return static self reference
@@ -155,7 +155,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function search($value);
 
     /**
-     * Sets the [[ref]] property.
+     * Sets the [[$ref]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -163,7 +163,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function ref($value);
 
     /**
-     * Sets the [[with]] property.
+     * Sets the [[$with]] property.
      *
      * @param string|array|null $value The property value
      * @return self The query object itself
@@ -179,7 +179,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function andWith($value);
 
     /**
-     * Sets the [[withStructure]] property.
+     * Sets the [[$withStructure]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -187,7 +187,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function withStructure(bool $value = true);
 
     /**
-     * Sets the [[structureId]] property.
+     * Sets the [[$structureId]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -195,7 +195,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function structureId(int $value = null);
 
     /**
-     * Sets the [[level]] property.
+     * Sets the [[$level]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
@@ -203,7 +203,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function level($value = null);
 
     /**
-     * Sets the [[hasDescendants]] property.
+     * Sets the [[$hasDescendants]] property.
      *
      * @param bool $value The property value
      * @return static self reference
@@ -211,7 +211,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function hasDescendants(bool $value = true);
 
     /**
-     * Sets the [[ancestorOf]] property.
+     * Sets the [[$ancestorOf]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
@@ -219,7 +219,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function ancestorOf($value);
 
     /**
-     * Sets the [[ancestorDist]] property.
+     * Sets the [[$ancestorDist]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -227,7 +227,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function ancestorDist(int $value = null);
 
     /**
-     * Sets the [[descendantOf]] property.
+     * Sets the [[$descendantOf]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
@@ -235,7 +235,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function descendantOf($value);
 
     /**
-     * Sets the [[descendantDist]] property.
+     * Sets the [[$descendantDist]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -243,7 +243,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function descendantDist(int $value = null);
 
     /**
-     * Sets the [[siblingOf]] property.
+     * Sets the [[$siblingOf]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
@@ -251,7 +251,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function siblingOf($value);
 
     /**
-     * Sets the [[prevSiblingOf]] property.
+     * Sets the [[$prevSiblingOf]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
@@ -259,7 +259,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function prevSiblingOf($value);
 
     /**
-     * Sets the [[nextSiblingOf]] property.
+     * Sets the [[$nextSiblingOf]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
@@ -267,7 +267,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function nextSiblingOf($value);
 
     /**
-     * Sets the [[positionedBefore]] property.
+     * Sets the [[$positionedBefore]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
@@ -275,7 +275,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function positionedBefore($value);
 
     /**
-     * Sets the [[positionedAfter]] property.
+     * Sets the [[$positionedAfter]] property.
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference

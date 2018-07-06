@@ -57,7 +57,7 @@ class GlobalSetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[editable]] property.
+     * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -69,7 +69,7 @@ class GlobalSetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[handle]] property.
+     * Sets the [[$handle]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference

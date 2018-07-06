@@ -96,7 +96,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[fieldId]] property.
+     * Sets the [[$fieldId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -108,7 +108,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerId]] property.
+     * Sets the [[$ownerId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -120,7 +120,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerSiteId]] and [[siteId]] properties.
+     * Sets the [[$ownerSiteId]] and [[siteId]] properties.
      *
      * @param int|string|null $value The property value
      * @return static self reference
@@ -139,7 +139,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerSiteId]] property based on a given site(s)’s handle(s).
+     * Sets the [[$ownerSiteId]] property based on a given site(s)’s handle(s).
      *
      * @param string|string[]|Site $value The property value
      * @return static self reference
@@ -163,7 +163,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerLocale]] property.
+     * Sets the [[$ownerLocale]] property.
      *
      * @param string|string[] $value The property value
      * @return static self reference
@@ -177,7 +177,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerId]] and [[ownerSiteId]] properties based on a given element.
+     * Sets the [[$ownerId]] and [[ownerSiteId]] properties based on a given element.
      *
      * @param ElementInterface $owner The owner element
      * @return static self reference
@@ -191,7 +191,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property based on a given block type(s)’s handle(s).
+     * Sets the [[$typeId]] property based on a given block type(s)’s handle(s).
      *
      * @param string|string[]|MatrixBlockType|null $value The property value
      * @return static self reference
@@ -214,7 +214,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property.
+     * Sets the [[$typeId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference

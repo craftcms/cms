@@ -65,7 +65,7 @@ class TagQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
+     * Sets the [[$groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|TagGroup|null $value The property value
      * @return static self reference
@@ -88,7 +88,7 @@ class TagQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property.
+     * Sets the [[$groupId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference

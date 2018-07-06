@@ -138,7 +138,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[editable]] property.
+     * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -150,7 +150,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[sectionId]] property based on a given section(s)’s handle(s).
+     * Sets the [[$sectionId]] property based on a given section(s)’s handle(s).
      *
      * @param string|string[]|Section|null $value The property value
      * @return static self reference
@@ -174,7 +174,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[sectionId]] property.
+     * Sets the [[$sectionId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -186,7 +186,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property based on a given entry type(s)’s handle(s).
+     * Sets the [[$typeId]] property based on a given entry type(s)’s handle(s).
      *
      * @param string|string[]|EntryType|null $value The property value
      * @return static self reference
@@ -209,7 +209,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property.
+     * Sets the [[$typeId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -221,7 +221,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[authorId]] property.
+     * Sets the [[$authorId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -233,7 +233,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[authorGroupId]] property based on a given user group(s)’s handle(s).
+     * Sets the [[$authorGroupId]] property based on a given user group(s)’s handle(s).
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -256,7 +256,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[authorGroupId]] property.
+     * Sets the [[$authorGroupId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -268,7 +268,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[postDate]] property.
+     * Sets the [[$postDate]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
@@ -280,7 +280,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[before]] property.
+     * Sets the [[$before]] property.
      *
      * @param string|array|\DateTime $value The property value
      * @return static self reference
@@ -292,7 +292,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[after]] property.
+     * Sets the [[$after]] property.
      *
      * @param string|array|\DateTime $value The property value
      * @return static self reference
@@ -304,7 +304,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[expiryDate]] property.
+     * Sets the [[$expiryDate]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
