@@ -99,7 +99,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
+     * Sets the [[$volumeId]] property based on a given volume(s)’s handle(s).
      *
      * @param string|string[]|Volume|null $value The property value
      * @return static self reference
@@ -122,7 +122,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
+     * Sets the [[$volumeId]] property based on a given volume(s)’s handle(s).
      *
      * @param string|string[]|Volume $value The property value
      * @return static self reference
@@ -136,7 +136,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[volumeId]] property.
+     * Sets the [[$volumeId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -148,7 +148,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[volumeId]] property.
+     * Sets the [[$volumeId]] property.
      *
      * @param int|int[] $value The property value
      * @return static self reference
@@ -162,7 +162,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[folderId]] property.
+     * Sets the [[$folderId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -174,7 +174,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[filename]] property.
+     * Sets the [[$filename]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -186,7 +186,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[kind]] property.
+     * Sets the [[$kind]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -198,7 +198,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[width]] property.
+     * Sets the [[$width]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -210,7 +210,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[height]] property.
+     * Sets the [[$height]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -222,7 +222,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[size]] property.
+     * Sets the [[$size]] property.
      *
      * @param int|null $value The property value
      * @return static self reference
@@ -234,7 +234,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[dateModified]] property.
+     * Sets the [[$dateModified]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
@@ -246,7 +246,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[includeSubfolders]] property.
+     * Sets the [[$includeSubfolders]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -258,7 +258,7 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[withTransforms]] property.
+     * Sets the [[$withTransforms]] property.
      *
      * @param string|array|null $value The transforms to include.
      * @return self The query object itself

@@ -72,7 +72,7 @@ class CategoryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[editable]] property.
+     * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -84,7 +84,7 @@ class CategoryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property based on a given category group(s)’s handle(s).
+     * Sets the [[$groupId]] property based on a given category group(s)’s handle(s).
      *
      * @param string|string[]|CategoryGroup|null $value The property value
      * @return static self reference
@@ -108,7 +108,7 @@ class CategoryQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property.
+     * Sets the [[$groupId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
