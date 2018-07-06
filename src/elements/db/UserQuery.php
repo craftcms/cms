@@ -34,9 +34,9 @@ class UserQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var bool Whether to only return users that are admins.
+     * @var bool|null Whether to only return users that are admins.
      */
-    public $admin = false;
+    public $admin;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
@@ -266,9 +266,11 @@ class UserQuery extends ElementQuery
             $this->query->addSelect(['users.hasDashboard']);
         }
 
-        if ($this->admin) {
-            $this->subQuery->andWhere(['users.admin' => true]);
-        } else {
+        if (is_bool($this->admin)) {
+            $this->subQuery->andWhere(['users.admin' => $this->admin]);
+        }
+
+        if ($this->admin !== true) {
             $this->_applyCanParam();
         }
 

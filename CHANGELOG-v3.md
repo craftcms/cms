@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- It’s now possible to fetch only non-admin users by setting `craft\elements\db\UserQuery::$admin` to `false`.
 - `Craft.EntryTypeSwitcher` now triggers a `typeChange` event after switching the entry type. ([#3067](https://github.com/craftcms/cms/pull/3067))
 
 ### Fixed
