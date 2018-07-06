@@ -48,7 +48,7 @@
 | `sectionId`           | `int|int[]|null`                     | The section ID(s) that the resulting entries must be in
 | `select`              | `array`                              | The columns being selected
 | `siblingOf`           | `int|ElementInterface|null`          | The element (or its ID) that the results must be a sibling of
-| `site`                | `string|Site`                        | Sets the `siteId` param based on a given site(s)’s handle
+| `site`                | `string|Site`                        | Sets the `siteId` param based on a given site’s handle
 | `siteId`              | `int|null`                           | The site ID that the elements should be returned in
 | `slug`                | `string|string[]|null`               | The slug that resulting elements must have
 | `status`              | `string|string[]|null`               | The status(es) that the resulting elements must have

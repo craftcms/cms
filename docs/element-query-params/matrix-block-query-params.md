@@ -34,7 +34,7 @@
 | `owner`               | `ElementInterface`                        | Sets the `ownerId` and `ownerSiteId` params based on a given element
 | `ownerId`             | `int|int[]|null`                          | The owner element ID(s) that the resulting Matrix blocks must belong to
 | `ownerLocale`         | `string|string[]`                         | Sets the `ownerLocale` param
-| `ownerSite`           | `string|string[]|Site`                    | Sets the `ownerSiteId` param based on a given site(s)’s handle(s)
+| `ownerSite`           | `string|string[]|Site`                    | Sets the `ownerSiteId` param based on a given site’s handle(s)
 | `ownerSiteId`         | `int|string|null`                         | The site ID that the resulting Matrix blocks must have been defined in, or ':empty:' to find blocks without an owner site ID
 | `positionedAfter`     | `int|ElementInterface|null`               | The element (or its ID) that the results must be positioned after
 | `positionedBefore`    | `int|ElementInterface|null`               | The element (or its ID) that the results must be positioned before
@@ -44,7 +44,7 @@
 | `search`              | `string|array|SearchQuery|null`           | The search term to filter the resulting elements by
 | `select`              | `array`                                   | The columns being selected
 | `siblingOf`           | `int|ElementInterface|null`               | The element (or its ID) that the results must be a sibling of
-| `site`                | `string|Site`                             | Sets the `siteId` param based on a given site(s)’s handle
+| `site`                | `string|Site`                             | Sets the `siteId` param based on a given site’s handle
 | `siteId`              | `int|null`                                | The site ID that the elements should be returned in
 | `slug`                | `string|string[]|null`                    | The slug that resulting elements must have
 | `status`              | `string|string[]|null`                    | The status(es) that the resulting elements must have
