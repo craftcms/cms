@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @method Category|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @supports-structure-params
  */
 class CategoryQuery extends ElementQuery
 {

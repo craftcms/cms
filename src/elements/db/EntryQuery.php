@@ -29,6 +29,7 @@ use yii\db\Connection;
  * @method Entry|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @supports-structure-params
  */
 class EntryQuery extends ElementQuery
 {
