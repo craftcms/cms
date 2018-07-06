@@ -515,8 +515,8 @@ class Assets extends BaseRelationField
                         continue;
                     }
 
-                    if (!empty($this->_uploadedDataFiles['filenames'][$index])) {
-                        $filename = $this->_uploadedDataFiles['filenames'][$index];
+                    if (!empty($this->_uploadedDataFiles['filename'][$index])) {
+                        $filename = $this->_uploadedDataFiles['filename'][$index];
                     } else {
                         $extensions = FileHelper::getExtensionsByMimeType($type);
 
