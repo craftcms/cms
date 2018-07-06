@@ -51,6 +51,7 @@ module.exports = {
             md
                 .use(replaceApiLinks)
                 .use(require('vuepress-theme-craftdocs/markup'))
+                .use(require('markdown-it-deflist'))
         }
     },
 }
