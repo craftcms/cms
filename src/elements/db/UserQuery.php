@@ -35,41 +35,99 @@ class UserQuery extends ElementQuery
 
     /**
      * @var bool|null Whether to only return users that are admins.
+     * ---
+     * ```php
+     * // fetch all the admins
+     * $admins = \craft\elements\User::find()
+     *     ->admin(true)
+     *     ->all();
+     *
+     * // fetch all the non-admins
+     * $nonAdmins = \craft\elements\User::find()
+     *     ->admin(false)
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all the admins #}
+     * {% set admins = craft.users()
+     *     .admin()
+     *     .all()%}
+     *
+     * {# fetch all the non-admins #}
+     * {% set nonAdmins = craft.users()
+     *     .admin(false)
+     *     .all() %}
+     * ```
+     * @used-by admin()
      */
     public $admin;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
+     * ---
+     * ```php
+     * // fetch users with CP access
+     * $admins = \craft\elements\User::find()
+     *     ->can('accessCp')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch users with CP access #}
+     * {% set admins = craft.users()
+     *     .can('accessCp')
+     *     .all() %}
+     * ```
+     * @used-by can()
      */
     public $can;
 
     /**
-     * @var int|int[]|null The tag group ID(s) that the resulting users must be in.
+     * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
+     * ---
+     * ```php
+     * // fetch the authors
+     * $admins = \craft\elements\User::find()
+     *     ->group('authors')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch the authors #}
+     * {% set admins = craft.users()
+     *     .group('authors')
+     *     .all() %}
+     * ```
+     * @used-by group()
+     * @used-by groupId()
      */
     public $groupId;
 
     /**
      * @var string|string[]|null The email address that the resulting users must have.
+     * @used-by email()
      */
     public $email;
 
     /**
      * @var string|string[]|null The username that the resulting users must have.
+     * @used-by username()
      */
     public $username;
 
     /**
      * @var string|string[]|null The first name that the resulting users must have.
+     * @used-by firstName()
      */
     public $firstName;
 
     /**
      * @var string|string[]|null The last name that the resulting users must have.
+     * @used-by lastName()
      */
     public $lastName;
 
     /**
      * @var mixed The date that the resulting users must have last logged in.
+     * @used-by lastLoginDate()
      */
     public $lastLoginDate;
 
@@ -111,6 +169,7 @@ class UserQuery extends ElementQuery
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $admin
      */
     public function admin(bool $value = true)
     {
@@ -123,6 +182,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|int|null $value The property value
      * @return static self reference
+     * @uses $can
      */
     public function can($value)
     {
@@ -135,6 +195,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|UserGroup|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function group($value)
     {
@@ -158,6 +219,7 @@ class UserQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function groupId($value)
     {
@@ -170,6 +232,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $email
      */
     public function email($value)
     {
@@ -182,6 +245,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $username
      */
     public function username($value)
     {
@@ -194,6 +258,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $firstName
      */
     public function firstName($value)
     {
@@ -206,6 +271,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $lastName
      */
     public function lastName($value)
     {
@@ -218,6 +284,7 @@ class UserQuery extends ElementQuery
      *
      * @param mixed $value The property value
      * @return static self reference
+     * @uses $lastLoginDate
      */
     public function lastLoginDate($value)
     {
