@@ -107,7 +107,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[admin]] property.
+     * Sets the [[$admin]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
@@ -119,7 +119,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[can]] property.
+     * Sets the [[$can]] property.
      *
      * @param string|int|null $value The property value
      * @return static self reference
@@ -131,7 +131,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
+     * Sets the [[$groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|UserGroup|null $value The property value
      * @return static self reference
@@ -154,7 +154,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property.
+     * Sets the [[$groupId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
@@ -166,7 +166,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[email]] property.
+     * Sets the [[$email]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -178,7 +178,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[username]] property.
+     * Sets the [[$username]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -190,7 +190,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[firstName]] property.
+     * Sets the [[$firstName]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -202,7 +202,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[lastName]] property.
+     * Sets the [[$lastName]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
@@ -214,7 +214,7 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[lastLoginDate]] property.
+     * Sets the [[$lastLoginDate]] property.
      *
      * @param mixed $value The property value
      * @return static self reference

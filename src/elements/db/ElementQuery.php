@@ -502,7 +502,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Sets the [[inReverse]] property.
+     * Sets the [[$inReverse]] property.
      *
      * @param bool $value The property value
      * @return static self reference
@@ -652,7 +652,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[site]] property.
+     * Sets the [[$site]] property.
      *
      * @param string $value The property value
      * @return static self reference
@@ -675,7 +675,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[enabledForSite]] property.
+     * Sets the [[$enabledForSite]] property.
      *
      * @param mixed $value The property value (defaults to true)
      * @return static self reference
@@ -689,7 +689,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[leaves]] property.
+     * Sets the [[$leaves]] property.
      *
      * @param bool $value The property value.
      * @return static self reference
@@ -1275,7 +1275,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Sets the [[orderBy]] property.
+     * Sets the [[$orderBy]] property.
      *
      * @param string $value The property value
      * @return static self reference
