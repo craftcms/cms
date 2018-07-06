@@ -44,7 +44,7 @@
 | `search`              | `string|array|SearchQuery|null`      | The search term to filter the resulting elements by
 | `select`              | `array`                              | The columns being selected
 | `siblingOf`           | `int|ElementInterface|null`          | The element (or its ID) that the results must be a sibling of
-| `site`                | `string|Site`                        | Sets the `siteId` param based on a given site(s)’s handle
+| `site`                | `string|Site`                        | Sets the `siteId` param based on a given site’s handle
 | `siteId`              | `int|null`                           | The site ID that the elements should be returned in
 | `size`                | `int|null`                           | The size (in bytes) that the resulting assets must have
 | `slug`                | `string|string[]|null`               | The slug that resulting elements must have
