@@ -113,12 +113,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|false|null The element ID(s). Prefix IDs with "not " to exclude them.
+     * @var int|int[]|false|null The element ID(s). Prefix IDs with `'not '` to exclude them.
      */
     public $id;
 
     /**
-     * @var string|string[]|null The element UID(s). Prefix UIDs with "not " to exclude them.
+     * @var string|string[]|null The element UID(s). Prefix UIDs with `'not '` to exclude them.
      */
     public $uid;
 
