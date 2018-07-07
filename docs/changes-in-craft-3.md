@@ -659,8 +659,6 @@ If you are using `memcache` for your <config:cacheMethod> config setting and you
 
 If you are using `db` for your <config:cacheMethod> config setting, you'll need to manually execute some SQL before attempting the Craft 3 update.
 
-*MySQL:*
-
 ```sql
 DROP TABLE IF EXISTS craft_cache;
 
@@ -674,24 +672,7 @@ CREATE TABLE craft_cache (
 );
 ```
 
-*PostgreSQL:*
-
-```sql
-DROP TABLE IF EXISTS craft_cache;
-
-CREATE TABLE craft_cache (
-    id char(128) NOT NULL PRIMARY KEY,
-    expire int4,
-    data BYTEA,
-    dateCreated timestamp NOT NULL,
-    dateUpdated timestamp NOT NULL,
-    uid char(36) NOT NULL DEFAULT '0'::bpchar
-);
-```
-
-Note that these examples use the default `craft/config/db.php` config setting of `craft`.
-
-If you have changed that config setting, you will want to adjust the examples accordingly.
+Note that these examples use Craft 2’s default `tablePrefix` DB config setting of `craft`. If you have changed that config setting, you will want to adjust the examples accordingly.
 
 ## Plugins
 
