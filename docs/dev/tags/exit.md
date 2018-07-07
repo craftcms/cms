@@ -1,4 +1,4 @@
-# `{% exit %}`
+# `{% exit %}` Tags
 
 This tag will prevent the rest of the template from executing, and end the request.
 

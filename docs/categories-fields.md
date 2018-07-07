@@ -27,7 +27,7 @@ If you have an element with a Categories field in your template, you can access 
 {% set categories = entry.categoriesFieldHandle %}
 ```
 
-That will give you an [element query](element-queries.md), prepped to output all of the selected categories for the given field. In other words, the line above is really just a shortcut for this:
+That will give you an [element query](dev/element-queries/README.md), prepped to output all of the selected categories for the given field. In other words, the line above is really just a shortcut for this:
 
 ```twig
 {% set categories = craft.categories({
@@ -90,7 +90,6 @@ If your Categories field is only meant to have a single category selected, remem
 
 ### See Also
 
-* [Element Queries](element-queries.md)
-* [craft.categories()](templating/element-queries/category-query.md)
+* [Category Queries](dev/element-queries/category-queries.md)
 * <api:craft\elements\Category>
 * [Relations](relations.md)

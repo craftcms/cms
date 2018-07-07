@@ -72,29 +72,23 @@ module.exports = {
                 ]
             }
         ],
-        '/templating/': [
+        '/dev/': [
             {
-                title: 'Templating in Craft',
+                title: 'Front-End Development',
                 collapsable: false,
                 children: [
                     ['', 'Introduction'],
-                    'twig-primer',
                 ]
             },
             {
-                title: 'Twig Extensions',
+                title: 'Templating',
                 collapsable: false,
                 children: [
+                    'twig-primer',
                     'filters',
                     'functions',
                     'global-variables',
                     'tests',
-                ]
-            },
-            {
-                title: 'Tags',
-                collapsable: false,
-                children: [
                     'tags/cache',
                     'tags/css',
                     'tags/exit',
@@ -112,17 +106,19 @@ module.exports = {
                 title: 'Querying Elements',
                 collapsable: false,
                 children: [
-                    'element-queries/asset-query',
-                    'element-queries/category-query',
-                    'element-queries/entry-query',
-                    'element-queries/global-set-query',
-                    'element-queries/matrix-block-query',
-                    'element-queries/tag-query',
-                    'element-queries/user-query',
+                    'element-queries/',
+                    'element-queries/asset-queries',
+                    'element-queries/category-queries',
+                    'element-queries/entry-queries',
+                    'element-queries/global-set-queries',
+                    'element-queries/matrix-block-queries',
+                    'element-queries/tag-queries',
+                    'element-queries/user-queries',
+                    'eager-loading-elements',
                 ]
             },
             {
-                title: 'Examples',
+                title: 'Templating Examples',
                 collapsable: false,
                 children: [
                     'examples/integrating-disqus',
@@ -185,32 +181,23 @@ module.exports = {
                     'globals',
                     'tags',
                     'routing',
+                    'relations',
                     'searching',
+                    'reference-tags',
                     'sites',
                     ['localization', 'Localization'],
-                    'element-queries',
                     'content-migrations',
                     'configuration'
                 ]
             },
             {
-                title: 'Front-End Development',
+                title: 'Development',
                 collapsable: false,
                 children: [
-                    'templating/',
-                    // 'APIs'
-                ]
-            },
-            {
-                title: 'Advanced Topics',
-                collapsable: false,
-                children: [
-                    'relations',
-                    'reference-tags',
-                    'eager-loading-elements',
+                    'dev/',
                     'extend/',
                 ]
-            }
+            },
         ]
     }
 };

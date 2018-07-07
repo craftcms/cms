@@ -1,4 +1,4 @@
-# `{% header %}`
+# `{% header %}` Tags
 
 This tag will set a new HTTP header on the response.
 

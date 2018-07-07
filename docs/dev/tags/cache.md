@@ -1,4 +1,4 @@
-# `{% cache %}`
+# `{% cache %}` Tags
 
 This tag will cache a portion of your template, which can improve performance for subsequent requests, as they will have less work to do.
 

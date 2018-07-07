@@ -1,4 +1,4 @@
-# `{% switch %}`
+# `{% switch %}` Tags
 
 “Switch statements” offer a clean way to compare a variable against multiple possible values, instead of using several repetitive `{% if %}` conditionals.
 

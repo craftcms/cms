@@ -151,7 +151,7 @@ $result = \Craft::$app->db->createCommand()
 
 ## Element Queries
 
-`ElementCriteriaModel` has been replaced with [Element Queries](../element-queries.md) in Craft 3:
+`ElementCriteriaModel` has been replaced with [Element Queries](../dev/element-queries/README.md) in Craft 3:
 
 ```php
 // Old:

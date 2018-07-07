@@ -1,4 +1,4 @@
-# `{% requirePermission %}`
+# `{% requirePermission %}` Tags
 
 This tag will ensure that the current user is logged in with an account that has a given permission.
 

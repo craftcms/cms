@@ -30,7 +30,7 @@ If you have an element with an Entries field in your template, you can access it
 {% set entries = entry.entriesFieldHandle %}
 ```
 
-That will give you an [element query](element-queries.md), prepped to output all of the selected entries for the given field. In other words, the line above is really just a shortcut for this:
+That will give you an [element query](dev/element-queries/README.md), prepped to output all of the selected entries for the given field. In other words, the line above is really just a shortcut for this:
 
 ```twig
 {% set entries = craft.entries({
@@ -94,7 +94,6 @@ If your Entries field is only meant to have a single entry selected, remember th
 
 ### See Also
 
-* [Element Queries](element-queries.md)
-* [craft.entries()](templating/element-queries/entry-query.md)
+* [Entry Queries](dev/element-queries/entry-queries.md)
 * <api:craft\elements\Entry>
 * [Relations](relations.md)

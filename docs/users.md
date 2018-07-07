@@ -66,4 +66,4 @@ Craft Pro has the option of allowing public user registration, which is disabled
 
 To enable public registration, go to Settings → Users → Settings, and check the “Allow public registration?” setting. With that checked, you will also have the ability to choose a default user group to which Craft will assign the publicly-registered users.
 
-Once you set up your site to allow public user registration, the last step is to create a [user registration form](templating/examples/user-registration-form.md) on your site’s front end.
+Once you set up your site to allow public user registration, the last step is to create a [user registration form](dev/examples/user-registration-form.md) on your site’s front end.

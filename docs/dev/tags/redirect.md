@@ -1,4 +1,4 @@
-# `{% redirect %}`
+# `{% redirect %}` Tags
 
 This tag will redirect the browser to a different URL.
 

@@ -1,24 +1,38 @@
-# `craft.tags()`
+# Global Set Queries
 
-You can access your site’s tags from your templates with `craft.tags()`. It returns a new [element query](../../element-queries.md) of type <api:craft\elements\db\TagQuery>.
+Global set queries are a type of [element query](README.md) used to fetch your project’s global sets.
 
-Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()](api:craft\elements\db\ElementQuery::one()), etc., will be of type <api:craft\elements\Tag>.
+They are implemented by <api:craft\elements\db\GlobalSetQuery>, and the elements returned by them will be of type <api:craft\elements\GlobalSet>.
 
+## Creating Global Set Queries
+
+You can create a new global set query from Twig by calling `craft.globalSets()`, or from PHP by calling <api:craft\elements\GlobalSet::find()>.
+
+::: code
 ```twig
-{% set tags = craft.tags()
-    .group('blogTags')
-    .all() %}
+{% set footerCopy = craft.globalSets()
+    .handle('footerCopy')
+    .siteId(1)
+    .one() %}
 
-<ul>
-    {% for tag in tags %}
-        <li><a href="{{ url('blog/tags/'~tag.id) }}">{{ tag.title }}</a></li>
-    {% endfor %}
-</ul>
+<p>{{ footerCopy.copyrightInfo }}</p>
 ```
+```php
+/** @var \craft\elements\GlobalSet $footerCopy */
+$footerCopy = \craft\elements\GlobalSet::find()
+    ->handle('footerCopy')
+    ->siteId(1)
+    ->one();
+```
+:::
+
+::: tip
+All global sets are already available as global variables to Twig templates. So you only need to fetch them through  `craft.globalSets()` if you need to access their content for a different site than the current site.
+:::
 
 ## Parameters
 
-Tag queries support the following parameters:
+Global set queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
@@ -99,6 +113,25 @@ Settable by
 When the resulting elements must have been last updated.
 
 
+### `editable`
+
+Allowed types
+
+:   [boolean](http://www.php.net/language.types.boolean)
+
+Defined by
+
+:   [$editable](api:craft\elements\db\GlobalSetQuery::$editable)
+
+Settable by
+
+:   [editable()](api:craft\elements\db\GlobalSetQuery::editable())
+
+
+
+Whether to only return global sets that the user has permission to edit.
+
+
 ### `enabledForSite`
 
 Allowed types
@@ -137,31 +170,24 @@ Settable by
 Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
 
 
-### `groupId`
+### `handle`
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [integer](http://www.php.net/language.types.integer)[], [null](http://www.php.net/language.types.null)
+:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
 
 Defined by
 
-:   [$groupId](api:craft\elements\db\TagQuery::$groupId)
+:   [$handle](api:craft\elements\db\GlobalSetQuery::$handle)
 
 Settable by
 
-:   [group()](api:craft\elements\db\TagQuery::group()), [groupId()](api:craft\elements\db\TagQuery::groupId())
+:   [handle()](api:craft\elements\db\GlobalSetQuery::handle())
 
 
 
-The tag group ID(s) that the resulting tags must be in.
+The handle(s) that the resulting global sets must have.
 
-
-```twig
-{# fetch tags in the Topics group #}
-{% set tags = craft.tags()
-    .group('topics')
-    .all() %}
-```
 
 ### `id`
 

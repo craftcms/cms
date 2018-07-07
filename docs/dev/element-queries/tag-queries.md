@@ -1,24 +1,36 @@
-# `craft.assets()`
+# Tag Queries
 
-You can access your site’s assets from your templates with `craft.assets()`. It returns a new [element query](../../element-queries.md) of type <api:craft\elements\db\AssetQuery>.
+Tag queries are a type of [element query](README.md) used to fetch your project’s tags.
 
-Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()](api:craft\elements\db\ElementQuery::one()), etc., will be of type <api:craft\elements\Asset>.
+They are implemented by <api:craft\elements\db\TagQuery>, and the elements returned by them will be of type <api:craft\elements\Tag>.
 
+## Creating Tag Queries
+
+You can create a new tag query from Twig by calling `craft.tags()`, or from PHP by calling <api:craft\elements\Tag::find()>.
+
+::: code
 ```twig
-{% set images = craft.assets()
-    .kind('image')
+{% set tags = craft.tags()
+    .group('blogTags')
     .all() %}
 
 <ul>
-    {% for image in images %}
-        <li><img src="{{ image.getUrl('thumb') }}" alt="{{ image.title }}"></li>
+    {% for tag in tags %}
+        <li><a href="{{ url('blog/tags/'~tag.id) }}">{{ tag.title }}</a></li>
     {% endfor %}
 </ul>
 ```
+```php
+/** @var \craft\elements\Tag[] $tags */
+$tags = \craft\elements\Tag::find()
+    ->group('blogTags')
+    ->all();
+```
+:::
 
 ## Parameters
 
-Asset queries support the following parameters:
+Tag queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
@@ -80,25 +92,6 @@ Settable by
 When the resulting elements must have been created.
 
 
-### `dateModified`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [$dateModified](api:craft\elements\db\AssetQuery::$dateModified)
-
-Settable by
-
-:   [dateModified()](api:craft\elements\db\AssetQuery::dateModified())
-
-
-
-The Date Modified that the resulting assets must have.
-
-
 ### `dateUpdated`
 
 Allowed types
@@ -137,25 +130,6 @@ Settable by
 Whether the elements must be enabled for the chosen site.
 
 
-### `filename`
-
-Allowed types
-
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$filename](api:craft\elements\db\AssetQuery::$filename)
-
-Settable by
-
-:   [filename()](api:craft\elements\db\AssetQuery::filename())
-
-
-
-The filename(s) that the resulting assets must have.
-
-
 ### `fixedOrder`
 
 Allowed types
@@ -175,7 +149,7 @@ Settable by
 Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
 
 
-### `folderId`
+### `groupId`
 
 Allowed types
 
@@ -183,44 +157,32 @@ Allowed types
 
 Defined by
 
-:   [$folderId](api:craft\elements\db\AssetQuery::$folderId)
+:   [$groupId](api:craft\elements\db\TagQuery::$groupId)
 
 Settable by
 
-:   [folderId()](api:craft\elements\db\AssetQuery::folderId())
+:   [group()](api:craft\elements\db\TagQuery::group()), [groupId()](api:craft\elements\db\TagQuery::groupId())
 
 
 
-The asset folder ID(s) that the resulting assets must be in.
+The tag group ID(s) that the resulting tags must be in.
 
 
-### `height`
-
-Allowed types
-
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$height](api:craft\elements\db\AssetQuery::$height)
-
-Settable by
-
-:   [height()](api:craft\elements\db\AssetQuery::height())
-
-
-
-The height (in pixels) that the resulting assets must have.
-
-
-```twig{4}
-{# fetch images that are at least 500 pixes high #}
-{% set logos = craft.assets()
-    .kind('image')
-    .height('>= 500')
+::: code
+```twig
+{# fetch tags in the Topics group #}
+{% set tags = craft.tags()
+    .group('topics')
     .all() %}
 ```
 
+```php
+// fetch tags in the Topics group
+$tags = \craft\elements\Tag::find()
+    ->group('topics')
+    ->all();
+```
+:::
 ### `id`
 
 Allowed types
@@ -258,73 +220,6 @@ Settable by
 
 Whether the results should be queried in reverse.
 
-
-### `includeSubfolders`
-
-Allowed types
-
-:   [boolean](http://www.php.net/language.types.boolean)
-
-Defined by
-
-:   [$includeSubfolders](api:craft\elements\db\AssetQuery::$includeSubfolders)
-
-Settable by
-
-:   [includeSubfolders()](api:craft\elements\db\AssetQuery::includeSubfolders())
-
-
-
-Whether the query should search the subfolders of [folderId()](https://docs.craftcms.com/api/v3/craft-elements-db-assetquery.html#method-folderid).
-
-
-### `kind`
-
-Allowed types
-
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$kind](api:craft\elements\db\AssetQuery::$kind)
-
-Settable by
-
-:   [kind()](api:craft\elements\db\AssetQuery::kind())
-
-
-
-The file kind(s) that the resulting assets must be.
-
-Supported file kinds:
-- access
-- audio
-- compressed
-- excel
-- flash
-- html
-- illustrator
-- image
-- javascript
-- json
-- pdf
-- photoshop
-- php
-- powerpoint
-- text
-- video
-- word
-- xml
-- unknown
-
-
-
-```twig
-{# fetch only images #}
-{% set logos = craft.assets()
-    .kind('image')
-    .all() %}
-```
 
 ### `ref`
 
@@ -406,25 +301,6 @@ Settable by
 
 
 The site ID that the elements should be returned in.
-
-
-### `size`
-
-Allowed types
-
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$size](api:craft\elements\db\AssetQuery::$size)
-
-Settable by
-
-:   [size()](api:craft\elements\db\AssetQuery::size())
-
-
-
-The size (in bytes) that the resulting assets must have.
 
 
 ### `slug`
@@ -522,59 +398,6 @@ Settable by
 The URI that the resulting element must have.
 
 
-### `volumeId`
-
-Allowed types
-
-:   [integer](http://www.php.net/language.types.integer), [integer](http://www.php.net/language.types.integer)[], [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$volumeId](api:craft\elements\db\AssetQuery::$volumeId)
-
-Settable by
-
-:   [volume()](api:craft\elements\db\AssetQuery::volume()), [volumeId()](api:craft\elements\db\AssetQuery::volumeId())
-
-
-
-The volume ID(s) that the resulting assets must be in.
-
-
-```twig
-{# fetch assets in the Logos volume #}
-{% set logos = craft.assets()
-    .volume('logos')
-    .all() %}
-```
-
-### `width`
-
-Allowed types
-
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$width](api:craft\elements\db\AssetQuery::$width)
-
-Settable by
-
-:   [width()](api:craft\elements\db\AssetQuery::width())
-
-
-
-The width (in pixels) that the resulting assets must have.
-
-
-```twig{4}
-{# fetch images that are at least 500 pixes wide #}
-{% set logos = craft.assets()
-    .kind('image')
-    .width('>= 500')
-    .all() %}
-```
-
 ### `with`
 
 Allowed types
@@ -595,33 +418,6 @@ The eager-loading declaration.
 
 See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
 
-
-### `withTransforms`
-
-Allowed types
-
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$withTransforms](api:craft\elements\db\AssetQuery::$withTransforms)
-
-Settable by
-
-:   [withTransforms()](api:craft\elements\db\AssetQuery::withTransforms())
-
-
-
-The asset transform indexes that should be eager-loaded, if they exist
-
-
-```twig{4}
-{# fetch images with their 'thumb' transforms preloaded #}
-{% set logos = craft.assets()
-    .kind('image')
-    .withTransforms(['thumb'])
-    .all() %}
-```
 
 
 <!-- END PARAMS -->

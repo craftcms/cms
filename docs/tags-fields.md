@@ -29,7 +29,7 @@ If you have an element with a Tags field in your template, you can access its se
 {% set tags = entry.tagsFieldHandle %}
 ```
 
-That will give you an [Element Query](element-queries.md), prepped to output all of the selected tags for the given field. In other words, the line above is really just a shortcut for this:
+That will give you an [Element Query](dev/element-queries/README.md), prepped to output all of the selected tags for the given field. In other words, the line above is really just a shortcut for this:
 
 ```twig
 {% set tags = craft.tags({
@@ -93,7 +93,6 @@ If your Tags field is only meant to have a single tag selected, remember that ca
 
 ### See Also
 
-* [Element Queries](element-queries.md)
-* [craft.tags()](templating/element-queries/tag-query.md)
+* [Tag Queries](dev/element-queries/tag-queries.md)
 * <api:craft\elements\Tag>
 * [Relations](relations.md)

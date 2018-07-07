@@ -1,57 +1,42 @@
-# `craft.users()`
+# Asset Queries
 
-You can access your site’s users from your templates with `craft.users()`. It returns a new [element query](../../element-queries.md) of type <api:craft\elements\db\UserQuery>.
+Asset queries are a type of [element query](README.md) used to fetch your project’s assets.
 
-Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()](api:craft\elements\db\ElementQuery::one()), etc., will be of type <api:craft\elements\User>.
+They are implemented by <api:craft\elements\db\AssetQuery>, and the elements returned by them will be of type <api:craft\elements\Asset>.
 
+## Creating Asset Queries
+
+You can create a new asset query from Twig by calling `craft.assets()`, or from PHP by calling <api:craft\elements\Asset::find()>.
+
+::: code
 ```twig
-{% set authors = craft.users()
-    .group('authors')
+{% set images = craft.assets()
+    .volume('photos')
+    .kind('image')
+    .withTransforms(['thumb'])
     .all() %}
 
 <ul>
-    {% for author in authors %}
-        <li><a href="{{ url('authors/'~author.id) }}">{{ author.name }}</a></li>
+    {% for image in images %}
+        <li><img src="{{ image.getUrl('thumb') }}" alt="{{ image.title }}"></li>
     {% endfor %}
 </ul>
 ```
+```php
+/** @var \craft\elements\Asset[] $images */
+$images = \craft\elements\Asset::find()
+    ->volume('photos')
+    ->kind('image')
+    ->withTransforms(['thumb'])
+    ->all();
+```
+:::
 
 ## Parameters
 
-User queries support the following parameters:
+Asset queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
-
-### `admin`
-
-Allowed types
-
-:   [boolean](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$admin](api:craft\elements\db\UserQuery::$admin)
-
-Settable by
-
-:   [admin()](api:craft\elements\db\UserQuery::admin())
-
-
-
-Whether to only return users that are admins.
-
-
-```twig
-{# fetch all the admins #}
-{% set admins = craft.users()
-    .admin()
-    .all()%}
-
-{# fetch all the non-admins #}
-{% set nonAdmins = craft.users()
-    .admin(false)
-    .all() %}
-```
 
 ### `archived`
 
@@ -92,32 +77,6 @@ Whether to return each element as an array. If false (default), an object
 of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-$elementtype) will be created to represent each element.
 
 
-### `can`
-
-Allowed types
-
-:   [string](http://www.php.net/language.types.string), [integer](http://www.php.net/language.types.integer), [false](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$can](api:craft\elements\db\UserQuery::$can)
-
-Settable by
-
-:   [can()](api:craft\elements\db\UserQuery::can())
-
-
-
-The permission that the resulting users must have.
-
-
-```twig
-{# fetch users with CP access #}
-{% set admins = craft.users()
-    .can('accessCp')
-    .all() %}
-```
-
 ### `dateCreated`
 
 Allowed types
@@ -135,6 +94,25 @@ Settable by
 
 
 When the resulting elements must have been created.
+
+
+### `dateModified`
+
+Allowed types
+
+:   `mixed`
+
+Defined by
+
+:   [$dateModified](api:craft\elements\db\AssetQuery::$dateModified)
+
+Settable by
+
+:   [dateModified()](api:craft\elements\db\AssetQuery::dateModified())
+
+
+
+The Date Modified that the resulting assets must have.
 
 
 ### `dateUpdated`
@@ -156,25 +134,6 @@ Settable by
 When the resulting elements must have been last updated.
 
 
-### `email`
-
-Allowed types
-
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
-
-Defined by
-
-:   [$email](api:craft\elements\db\UserQuery::$email)
-
-Settable by
-
-:   [email()](api:craft\elements\db\UserQuery::email())
-
-
-
-The email address that the resulting users must have.
-
-
 ### `enabledForSite`
 
 Allowed types
@@ -194,7 +153,7 @@ Settable by
 Whether the elements must be enabled for the chosen site.
 
 
-### `firstName`
+### `filename`
 
 Allowed types
 
@@ -202,15 +161,15 @@ Allowed types
 
 Defined by
 
-:   [$firstName](api:craft\elements\db\UserQuery::$firstName)
+:   [$filename](api:craft\elements\db\AssetQuery::$filename)
 
 Settable by
 
-:   [firstName()](api:craft\elements\db\UserQuery::firstName())
+:   [filename()](api:craft\elements\db\AssetQuery::filename())
 
 
 
-The first name that the resulting users must have.
+The filename(s) that the resulting assets must have.
 
 
 ### `fixedOrder`
@@ -232,7 +191,7 @@ Settable by
 Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
 
 
-### `groupId`
+### `folderId`
 
 Allowed types
 
@@ -240,24 +199,53 @@ Allowed types
 
 Defined by
 
-:   [$groupId](api:craft\elements\db\UserQuery::$groupId)
+:   [$folderId](api:craft\elements\db\AssetQuery::$folderId)
 
 Settable by
 
-:   [group()](api:craft\elements\db\UserQuery::group()), [groupId()](api:craft\elements\db\UserQuery::groupId())
+:   [folderId()](api:craft\elements\db\AssetQuery::folderId())
 
 
 
-The user group ID(s) that the resulting users must belong to.
+The asset folder ID(s) that the resulting assets must be in.
 
 
-```twig
-{# fetch the authors #}
-{% set admins = craft.users()
-    .group('authors')
+### `height`
+
+Allowed types
+
+:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+
+Defined by
+
+:   [$height](api:craft\elements\db\AssetQuery::$height)
+
+Settable by
+
+:   [height()](api:craft\elements\db\AssetQuery::height())
+
+
+
+The height (in pixels) that the resulting assets must have.
+
+
+::: code
+```twig{4}
+{# fetch images that are at least 500 pixes high #}
+{% set logos = craft.assets()
+    .kind('image')
+    .height('>= 500')
     .all() %}
 ```
 
+```php{4}
+// fetch images that are at least 500 pixels high
+$images = \craft\elements\Asset::find()
+    ->kind('image')
+    ->height('>= 500')
+    ->all();
+```
+:::
 ### `id`
 
 Allowed types
@@ -296,26 +284,26 @@ Settable by
 Whether the results should be queried in reverse.
 
 
-### `lastLoginDate`
+### `includeSubfolders`
 
 Allowed types
 
-:   `mixed`
+:   [boolean](http://www.php.net/language.types.boolean)
 
 Defined by
 
-:   [$lastLoginDate](api:craft\elements\db\UserQuery::$lastLoginDate)
+:   [$includeSubfolders](api:craft\elements\db\AssetQuery::$includeSubfolders)
 
 Settable by
 
-:   [lastLoginDate()](api:craft\elements\db\UserQuery::lastLoginDate())
+:   [includeSubfolders()](api:craft\elements\db\AssetQuery::includeSubfolders())
 
 
 
-The date that the resulting users must have last logged in.
+Whether the query should search the subfolders of [folderId()](https://docs.craftcms.com/api/v3/craft-elements-db-assetquery.html#method-folderid).
 
 
-### `lastName`
+### `kind`
 
 Allowed types
 
@@ -323,17 +311,54 @@ Allowed types
 
 Defined by
 
-:   [$lastName](api:craft\elements\db\UserQuery::$lastName)
+:   [$kind](api:craft\elements\db\AssetQuery::$kind)
 
 Settable by
 
-:   [lastName()](api:craft\elements\db\UserQuery::lastName())
+:   [kind()](api:craft\elements\db\AssetQuery::kind())
 
 
 
-The last name that the resulting users must have.
+The file kind(s) that the resulting assets must be.
+
+Supported file kinds:
+- access
+- audio
+- compressed
+- excel
+- flash
+- html
+- illustrator
+- image
+- javascript
+- json
+- pdf
+- photoshop
+- php
+- powerpoint
+- text
+- video
+- word
+- xml
+- unknown
 
 
+
+::: code
+```twig
+{# fetch only images #}
+{% set logos = craft.assets()
+    .kind('image')
+    .all() %}
+```
+
+```php
+// fetch only images
+$logos = \craft\elements\Asset::find()
+    ->kind('image')
+    ->all();
+```
+:::
 ### `ref`
 
 Allowed types
@@ -414,6 +439,25 @@ Settable by
 
 
 The site ID that the elements should be returned in.
+
+
+### `size`
+
+Allowed types
+
+:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+
+Defined by
+
+:   [$size](api:craft\elements\db\AssetQuery::$size)
+
+Settable by
+
+:   [size()](api:craft\elements\db\AssetQuery::size())
+
+
+
+The size (in bytes) that the resulting assets must have.
 
 
 ### `slug`
@@ -511,25 +555,76 @@ Settable by
 The URI that the resulting element must have.
 
 
-### `username`
+### `volumeId`
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [integer](http://www.php.net/language.types.integer)[], [null](http://www.php.net/language.types.null)
 
 Defined by
 
-:   [$username](api:craft\elements\db\UserQuery::$username)
+:   [$volumeId](api:craft\elements\db\AssetQuery::$volumeId)
 
 Settable by
 
-:   [username()](api:craft\elements\db\UserQuery::username())
+:   [volume()](api:craft\elements\db\AssetQuery::volume()), [volumeId()](api:craft\elements\db\AssetQuery::volumeId())
 
 
 
-The username that the resulting users must have.
+The volume ID(s) that the resulting assets must be in.
 
 
+::: code
+```twig
+{# fetch assets in the Logos volume #}
+{% set logos = craft.assets()
+    .volume('logos')
+    .all() %}
+```
+
+```php
+// fetch assets in the Logos volume
+$logos = \craft\elements\Asset::find()
+    ->volume('logos')
+    ->all();
+```
+:::
+### `width`
+
+Allowed types
+
+:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+
+Defined by
+
+:   [$width](api:craft\elements\db\AssetQuery::$width)
+
+Settable by
+
+:   [width()](api:craft\elements\db\AssetQuery::width())
+
+
+
+The width (in pixels) that the resulting assets must have.
+
+
+::: code
+```twig{4}
+{# fetch images that are at least 500 pixes wide #}
+{% set logos = craft.assets()
+    .kind('image')
+    .width('>= 500')
+    .all() %}
+```
+
+```php{4}
+// fetch images that are at least 500 pixels wide
+$images = \craft\elements\Asset::find()
+    ->kind('image')
+    ->width('>= 500')
+    ->all();
+```
+:::
 ### `with`
 
 Allowed types
@@ -551,5 +646,41 @@ The eager-loading declaration.
 See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
 
 
+### `withTransforms`
+
+Allowed types
+
+:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
+
+Defined by
+
+:   [$withTransforms](api:craft\elements\db\AssetQuery::$withTransforms)
+
+Settable by
+
+:   [withTransforms()](api:craft\elements\db\AssetQuery::withTransforms())
+
+
+
+The asset transform indexes that should be eager-loaded, if they exist
+
+
+::: code
+```twig{4}
+{# fetch images with their 'thumb' transforms preloaded #}
+{% set logos = craft.assets()
+    .kind('image')
+    .withTransforms(['thumb'])
+    .all() %}
+```
+
+```php{4}
+// fetch images with their 'thumb' transforms preloaded
+$images = \craft\elements\Asset::find()
+    ->kind('image')
+    ->withTransforms(['thumb'])
+    ->all();
+```
+:::
 
 <!-- END PARAMS -->

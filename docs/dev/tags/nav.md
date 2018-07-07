@@ -1,4 +1,4 @@
-# `{% nav %}`
+# `{% nav %}` Tags
 
 This tag helps create a hierarchical navigation menu for entries in a [Structure section](../../sections-and-entries.md#section-types) or a [Category Group](../../categories.md).
 

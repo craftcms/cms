@@ -69,7 +69,7 @@ Here’s an example of what the template might look like for a Matrix field with
 {% endfor %}
 ```
 
-> This code can be simplified using the [switch](templating/tags/switch.md) tag.
+> This code can be simplified using the [switch](dev/tags/switch.md) tag.
 
 ### Filtering by block type
 
@@ -120,5 +120,5 @@ You can get the total number of blocks using the [length filter](http://twig.sen
 
 ### See Also
 
-* [Element Queries](element-queries.md)
+* [Element Queries](dev/element-queries/README.md)
 * <api:craft\models\MatrixBlock>

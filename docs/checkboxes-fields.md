@@ -51,7 +51,7 @@ You can also tell if a particular option is selected outside the scope of loopin
 {% endif %}
 ```
 
-If you are including a Checkboxes field on a front-end [entry from](templating/examples/entry-form.md), make sure to include a hidden input before the checkboxes, so that an empty value is submitted if no checkboxes are checked.
+If you are including a Checkboxes field on a front-end [entry from](dev/examples/entry-form.md), make sure to include a hidden input before the checkboxes, so that an empty value is submitted if no checkboxes are checked.
 
 ```twig
 <input type="hidden" name="fields[checkboxFieldhandle]" value="">

@@ -6,14 +6,14 @@ Element queries are [query builders](https://www.yiiframework.com/doc/guide/2.0/
 
 You can create element queries in both PHP and Twig code. Here’s how:
 
-| Element Type  | PHP                                   | Twig
-| ------------- | ------------------------------------- | ----------------------
-| Assets        | `\craft\elements\Asset::find()`       | `craft.assets()`
-| Categories    | `\craft\elements\Category::find()`    | `craft.categories()`
-| Entries       | `\craft\elements\Entry::find()`       | `craft.entries()`
-| Matrix blocks | `\craft\elements\MatrixBlock::find()` | `craft.matrixBlocks()`
-| Tags          | `\craft\elements\Tag::find()`         | `craft.tags()`
-| Users         | `\craft\elements\User::find()`        | `craft.users()`
+| Element Type  | PHP                                      | Twig
+| ------------- | ---------------------------------------- | ----------------------
+| Assets        | <api:craft\elements\Asset::find()>       | `craft.assets()`
+| Categories    | <api:craft\elements\Category::find()>    | `craft.categories()`
+| Entries       | <api:craft\elements\Entry::find()>       | `craft.entries()`
+| Matrix blocks | <api:craft\elements\MatrixBlock::find()> | `craft.matrixBlocks()`
+| Tags          | <api:craft\elements\Tag::find()>         | `craft.tags()`
+| Users         | <api:craft\elements\User::find()>        | `craft.users()`
 
 ## Setting Parameters
 
@@ -21,12 +21,13 @@ Once you’ve created an element query, you can set parameters on it.
 
 The available parameters varies by element type. See the element query references for lists of parameters supported by Craft’s built-in element types:
 
-- [craft.assets()](templating/element-queries/asset-query.md)
-- [craft.categories()](templating/element-queries/category-query.md)
-- [craft.entries()](templating/element-queries/entry-query.md)
-- [craft.globalSets()](templating/element-queries/global-set-query.md)
-- [craft.matrixBlocks()](templating/element-queries/matrix-block-query.md)
-- [craft.users()](templating/element-queries/user-query.md)
+- [Asset Queries](asset-queries.md#parameters)
+- [Category Queries](category-queries.md#parameters)
+- [Entry Queries](entry-queries.md#parameters)
+- [Global Set Queries](global-set-queries.md#parameters)
+- [Matrix Block Queries](matrix-block-queries.md#parameters)
+- [Tag Queries](tag-queries.md#parameters)
+- [User Queries](user-queries.md#parameters)
 
 The parameters should be set with chained method calls, like so:
 

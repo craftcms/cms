@@ -56,7 +56,7 @@ If you have an element with an Assets field in your template, you can access its
 {% set assets = entry.assetsFieldHandle %}
 ```
 
-That will give you an [element query](element-queries.md), prepped to output all of the selected assets for the given field. In other words, the line above is really just a shortcut for this:
+That will give you an [element query](dev/element-queries/README.md), prepped to output all of the selected assets for the given field. In other words, the line above is really just a shortcut for this:
 
 ```twig
 {% set assets = craft.assets({
@@ -121,7 +121,7 @@ If your Assets field is only meant to have a single asset selected, remember tha
 
 ### Uploading Files from Front-end Entry Forms
 
-If you want to allow users to upload files to an Assets field from a front-end [entry form](templating/examples/entry-form.md), you just need to do two things.
+If you want to allow users to upload files to an Assets field from a front-end [entry form](dev/examples/entry-form.md), you just need to do two things.
 
 First, make sure your `<form>` tag has an `enctype="multipart/form-data"` attribute, so that it is capable of uploading files.
 * Add a file input to the form, in the same way you would add a textarea for a Plain Text field:
@@ -138,7 +138,6 @@ If you want your form to allow multiple files being uploaded at once, just add t
 
 ## See Also
 
-* [Element Queries](element-queries.md)
-* [craft.assets()](templating/element-queries/asset-query.md)
+* [Asset Queries](dev/element-queries/asset-queries.md)
 * <api:craft\elements\Asset>
 * [Relations](relations.md)

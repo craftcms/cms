@@ -1,10 +1,10 @@
-# Templating in Craft
+# Front-End Development
 
 In Craft, you define your site’s HTML output with templates.
 
 Templates are files that live within your craft/templates folder. The structure of your templates is completely up to you – you can put templates at the root of that folder, within subdirectories, or within subdirectories’ subdirectories (and on and on). Whatever works for your site’s needs.
 
-Craft uses [Twig](http://twig.sensiolabs.org/) to parse your templates. Twig is elegant, powerful, and blazing fast. If you’re new to Twig, be sure to read through our [documentation](twig-primer.md) to familiarize yourself with its syntax.
+Craft uses [Twig](http://twig.sensiolabs.org/) to parse your templates. Twig is elegant, powerful, and blazing fast. If you’re new to Twig, be sure to read the [Twig Primer](twig-primer.md) to familiarize yourself with its syntax.
 
 ::: tip
 PHP code isn’t allowed in your templates, but Craft provides various ways to [extend Twig](../extend/extending-twig.md) to suit your needs.

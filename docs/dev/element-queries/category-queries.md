@@ -1,9 +1,14 @@
-# `craft.categorie()`
+# Category Queries
 
-You can access your site’s categories from your templates with `craft.categories()`. It returns a new [element query](../../element-queries.md) of type <api:craft\elements\db\CategoryQuery>.
+Category queries are a type of [element query](README.md) used to fetch your project’s categories.
 
-Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()](api:craft\elements\db\ElementQuery::one()), etc., will be of type <api:craft\elements\Category>.
+They are implemented by <api:craft\elements\db\CategoryQuery>, and the elements returned by them will be of type <api:craft\elements\Category>.
 
+## Creating Category Queries
+
+You can create a new category query from Twig by calling `craft.categories()`, or from PHP by calling <api:craft\elements\Category::find()>.
+
+::: code
 ```twig
 {% set categories = craft.categories()
     .group('newsCategories')
@@ -22,6 +27,13 @@ Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()]
     {% endnav %}
 </ul>
 ```
+```php
+/** @var \craft\elements\Category[] $categories */
+$categories = \craft\elements\Category::find()
+    ->group('newsCategories')
+    ->all();
+```
+:::
 
 ## Parameters
 
@@ -258,6 +270,7 @@ Settable by
 The category group ID(s) that the resulting categories must be in.
 
 
+::: code
 ```twig
 {# fetch categories in the Topics group #}
 {% set categories = craft.categories()
@@ -265,6 +278,13 @@ The category group ID(s) that the resulting categories must be in.
     .all() %}
 ```
 
+```php
+// fetch categories in the Topics group
+$categories = \craft\elements\Category::find()
+    ->group('topics')
+    ->all();
+```
+:::
 ### `hasDescendants`
 
 Allowed types

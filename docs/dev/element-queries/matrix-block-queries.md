@@ -1,13 +1,14 @@
-# `craft.matrixBlocks()`
+# Matrix Block Queries
 
-You can access your site’s Matrix blocks from your templates with `craft.matrixBlocks()`. It returns a new [element query](../../element-queries.md) of type <api:craft\elements\db\MatrixBlockQuery>.
+Matrix block queries are a type of [element query](README.md) used to fetch your project’s Matrix blocks.
 
-Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()](api:craft\elements\db\ElementQuery::one()), etc., will be of type <api:craft\elements\MatrixBlock>.
+They are implemented by <api:craft\elements\db\MatrixBlockQuery>, and the elements returned by them will be of type <api:craft\elements\MatrixBlock>.
 
-::: warning
-In order for the returned Matrix block(s) to be populated with their custom field content, you will need to either set the [fieldId](#fieldid) or [id](#id) parameter.
-:::
+## Creating Matrix Block Queries
 
+You can create a new Matrix block query from Twig by calling `craft.matrixBlocks()`, or from PHP by calling <api:craft\elements\MatrixBlock::find()>.
+
+::: code
 ```twig
 {% set blocks = craft.matrixBlocks()
     .ownerId(100)
@@ -19,10 +20,23 @@ In order for the returned Matrix block(s) to be populated with their custom fiel
     <p>{{ block.text }}</p>
 {% endfor %}
 ```
+```php
+/** @var \craft\elements\MatrixBlock[] $blocks */
+$blocks = \craft\elements\MatrixBlock::find()
+    ->ownerId(100)
+    ->fieldId(10)
+    ->type('text')
+    ->all();
+```
+:::
+
+::: warning
+In order for the returned Matrix block(s) to be populated with their custom field content, you will need to either set the [fieldId](#fieldid) or [id](#id) parameter.
+:::
 
 ## Parameters
 
-Global set queries support the following parameters:
+Matrix block queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
@@ -394,6 +408,7 @@ Settable by
 The block type ID(s) that the resulting Matrix blocks must have.
 
 
+::: code
 ```twig
 {# fetch the entry's text blocks #}
 {% set blocks = entry.myMatrixField
@@ -401,6 +416,13 @@ The block type ID(s) that the resulting Matrix blocks must have.
     .all() %}
 ```
 
+```php
+// fetch the entry's text blocks
+$blocks = $entry->myMatrixField
+    ->type('text')
+    ->all();
+```
+:::
 ### `uid`
 
 Allowed types

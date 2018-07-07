@@ -1,4 +1,4 @@
-# `{% js %}`
+# `{% js %}` Tags
 
 The `{% js %}` tag can be used to register a `<script>` tag on the page.
 

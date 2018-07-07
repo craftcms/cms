@@ -109,7 +109,7 @@ You can also set the `orderBy` parameter to `'score'` if you want results ordere
 
 When you do this, each of the elements returned will have a `searchScore` attribute set, which reveals what their search score was.
 
-> See our [Search Form](templating/examples/search-form.md) tutorial for a complete example of listing dynamic search results.
+> See our [Search Form](dev/examples/search-form.md) tutorial for a complete example of listing dynamic search results.
 
 ## Rebuilding your Search Indexes
 

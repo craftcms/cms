@@ -1,4 +1,4 @@
-# `{% css %}`
+# `{% css %}` Tags
 
 The `{% css %}` tag can be used to register a `<style>` tag in the page’s `<head>`.
 

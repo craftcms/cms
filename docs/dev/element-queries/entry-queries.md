@@ -1,9 +1,14 @@
-# `craft.entries()`
+# Entry Queries
 
-You can access your site’s entries from your templates with `craft.entries()`. It returns a new [element query](../../element-queries.md) of type <api:craft\elements\db\EntryQuery>.
+Entry queries are a type of [element query](README.md) used to fetch your project’s entries.
 
-Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()](api:craft\elements\db\ElementQuery::one()), etc., will be of type <api:craft\elements\Entry>.
+They are implemented by <api:craft\elements\db\EntryQuery>, and the elements returned by them will be of type <api:craft\elements\Entry>.
 
+## Creating Entry Queries
+
+You can create a new entry query from Twig by calling `craft.entries()`, or from PHP by calling <api:craft\elements\Entry::find()>.
+
+::: code
 ```twig
 {% set entries = craft.entries()
     .section('news')
@@ -18,6 +23,14 @@ Elements returned by [all()](api:craft\elements\db\ElementQuery::all()), [one()]
     </article>
 {% endfor %}
 ```
+```php
+/** @var \craft\elements\Entry[] $entries */
+$entries = \craft\elements\Entry::find()
+    ->section('news')
+    ->limit(10)
+    ->all();
+```
+:::
 
 ## Parameters
 
@@ -44,6 +57,7 @@ Settable by
 The minimum Post Date that resulting entries can have.
 
 
+::: code
 ```twig
 {# fetch entries written in the last 7 days #}
 {% set entries = craft.entries()
@@ -51,6 +65,13 @@ The minimum Post Date that resulting entries can have.
     .all() %}
 ```
 
+```php
+// fetch entries written in the last 7 days
+$entries = \craft\elements\Entry::find()
+    ->after((new \DateTime())->modify('-7 days'))
+    ->all();
+```
+:::
 ### `ancestorDist`
 
 Allowed types
@@ -147,6 +168,7 @@ Settable by
 The user group ID(s) that the resulting entries’ authors must be in.
 
 
+::: code
 ```twig
 {# fetch entries authored by people in the Authors group #}
 {% set entries = craft.entries()
@@ -154,6 +176,13 @@ The user group ID(s) that the resulting entries’ authors must be in.
     .all() %}
 ```
 
+```php
+// fetch entries authored by people in the Authors group
+$entries = \craft\elements\Entry::find()
+    ->authorGroup('authors')
+    ->all();
+```
+:::
 ### `authorId`
 
 Allowed types
@@ -192,6 +221,7 @@ Settable by
 The maximum Post Date that resulting entries can have.
 
 
+::: code
 ```twig
 {# fetch entries written before 4/4/2018 #}
 {% set entries = craft.entries()
@@ -199,6 +229,13 @@ The maximum Post Date that resulting entries can have.
     .all() %}
 ```
 
+```php
+// fetch entries written before 4/4/2018
+$entries = \craft\elements\Entry::find()
+    ->before('2018-04-04')
+    ->all();
+```
+:::
 ### `dateCreated`
 
 Allowed types
@@ -522,6 +559,7 @@ Settable by
 The Post Date that the resulting entries must have.
 
 
+::: code
 ```twig
 {# fetch entries written in 2018 #}
 {% set entries = craft.entries()
@@ -529,6 +567,13 @@ The Post Date that the resulting entries must have.
     .all() %}
 ```
 
+```php
+// fetch entries written in 2018
+$entries = \craft\elements\Entry::find()
+    ->postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
+    ->all();
+```
+:::
 ### `prevSiblingOf`
 
 Allowed types
@@ -630,6 +675,7 @@ Settable by
 The section ID(s) that the resulting entries must be in.
 
 
+::: code
 ```twig
 {# fetch entries in the News section #}
 {% set entries = craft.entries()
@@ -637,6 +683,13 @@ The section ID(s) that the resulting entries must be in.
     .all() %}
 ```
 
+```php
+// fetch entries in the News section
+$entries = \craft\elements\Entry::find()
+    ->section('news')
+    ->all();
+```
+:::
 ### `siblingOf`
 
 Allowed types
@@ -770,6 +823,7 @@ Settable by
 The entry type ID(s) that the resulting entries must have.
 
 
+::: code
 ```twig{4}
 {# fetch entries in the News section #}
 {% set entries = craft.entries()
@@ -778,6 +832,14 @@ The entry type ID(s) that the resulting entries must have.
     .all() %}
 ```
 
+```php{4}
+// fetch Article entries in the News section
+$entries = \craft\elements\Entry::find()
+    ->section('news')
+    ->type('article')
+    ->all();
+```
+:::
 ### `uid`
 
 Allowed types

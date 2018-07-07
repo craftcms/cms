@@ -458,7 +458,7 @@ This behavior has changed in Craft 3, though. Now any time you call a parameter-
 
 Which means in the above code example, `totalEntries` will be set to the total _Article_ entries, as the `type` parameter will still be applied.
 
-If you have any templates that count on the Craft 2 behavior, you can fix them using the [clone()](templating/functions.md#clone-object) function.
+If you have any templates that count on the Craft 2 behavior, you can fix them using the [clone()](dev/functions.md#clone-object) function.
 
 ```twig
 {% set query = craft.entries.section('news') %}
