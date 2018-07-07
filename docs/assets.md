@@ -13,12 +13,17 @@ Local volumes have two important settings:
 
 If you want to use a relative file system path, note that it should be relative from the directory that holds your `index.php` file. So if your files are set up like this:
 
-    craft/
-	web/
-		index.php
-		images/
+```
+my-craft-project.dev/
+├── templates/
+├── ...
+└── web/
+    ├── index.php
+    └── images/
+        └── ... 
+```
 
-…then the correct relative path to `images/` would be `images/`.
+…then the correct relative path to `web/images/` would be `images/`.
 
 Note that Craft/PHP must be able to write to the directory you created.
 

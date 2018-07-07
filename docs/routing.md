@@ -86,13 +86,13 @@ The following tokens are available to the URI setting:
 
 ## Advanced Routing
 
-If you need to set up routes to controller actions, or you need to create a template route that matches a URI pattern that’s not covered by the available route tokens in Settings → Routes, you can set up your routes in `craft/config/routes.php` as well. 
+If you need to set up routes to controller actions, or you need to create a template route that matches a URI pattern that’s not covered by the available route tokens in Settings → Routes, you can set up your routes in `config/routes.php` as well. 
 
 When a request comes in, Craft checks this file first, and then the routes defined in Settings → Routes.
 
 ### Basic Syntax
 
-Routes in `craft/config/routes.php` generally follow this syntax:
+Routes in `config/routes.php` generally follow this syntax:
 
 ```php
 // routes "news/subscribe" to a "lists/subscribe/news" action:
