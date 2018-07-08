@@ -14,6 +14,7 @@
 - Fixed an error that occurred when users attempted to create new entries within entry selector modals, for a section they didn’t have permission to publish peer entries in. ([#3069](https://github.com/craftcms/cms/issues/3069))
 - Fixed a bug where the “Save as a new asset” button label wasn’t getting translated in the Image Editor. ([#3070](https://github.com/craftcms/cms/pull/3070))
 - Fixed a bug where it was impossible to set the filename of assets when uploading them as data strings. ([#2973](https://github.com/craftcms/cms/issues/2973))
+- Fixed a bug where the Field Type menu’s options within new Matrix block type settings weren’t getting sorted alphabetically. ([#3072](https://github.com/craftcms/cms/issues/3072))
 
 ## 3.0.14 - 2018-07-03
 
