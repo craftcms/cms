@@ -1848,7 +1848,9 @@ body.rtl #main-container #main #main-content #details .meta .ui-datepicker { mar
   #main-container #main #main-content #sidebar, #main-container #main #main-content #content-container, #main-container #main #main-content #details { overflow-y: visible; }
   #main-container #main #main-content #sidebar { -ms-flex-preferred-size: auto; flex-basis: auto; width: auto; -webkit-box-shadow: inset 0 -1px 0 #e3e5e8; box-shadow: inset 0 -1px 0 #e3e5e8; }
   body:not(.showing-sidebar) #main-container #main #main-content #sidebar { display: none; }
-  #main-container #main #main-content #details { -ms-flex-preferred-size: auto; flex-basis: auto; width: auto; -webkit-box-shadow: inset 0 1px 0 rgba(0, 0, 20, 0.1) !important; box-shadow: inset 0 1px 0 rgba(0, 0, 20, 0.1) !important; } }
+  #main-container #main #main-content #details { -ms-flex-preferred-size: auto; flex-basis: auto; width: auto; -webkit-box-shadow: inset 0 1px 0 rgba(0, 0, 20, 0.1) !important; box-shadow: inset 0 1px 0 rgba(0, 0, 20, 0.1) !important; padding-top: 0; } }
+@media only screen and (max-width: 767px) { #main-container #crumbs, #main-container #main #header, #main-container #main #main-content #content-container #tabs ul li a, #main-container #main #main-content #content-container #content, #main-container #main #main-content #details .meta { padding-left: 12px; padding-right: 12px; }
+  #main-container #main #main-content #content-container #tabs ul li a:after { width: 12px; } }
 #queue-hud { padding: 0; overflow: auto; }
 #queue-hud .job { overflow: hidden; }
 body.ltr #queue-hud .job { padding: 14px 138px 14px 24px; }
