@@ -3762,6 +3762,7 @@ input:-ms-input-placeholder {
 
 .select:not(.selectize) select {
   @include select-input-styles;
+  white-space: pre;
 
   option {
     background: #fff;
