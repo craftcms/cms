@@ -7,7 +7,7 @@ In addition to the template tags that [Twig comes with](http://twig.sensiolabs.o
 Returns whether an object is an instance of another object or class.
 
 ```twig
-{% if element is instance of ('craft\\elements\\Entry') %}
+{% if element is instance of('craft\\elements\\Entry') %}
     <h1>{{ entry.title }}</h1>
 {% endif %}
 ```
