@@ -625,7 +625,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       }
 
       #content-container {
-        flex: 1;
         display: flex;
         min-height: 0;
         flex-direction: column;
@@ -931,8 +930,27 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           flex-basis: auto;
           width: auto;
           box-shadow: inset 0 1px 0 $hairlineColorAlpha !important;
+          padding-top: 0;
         }
       }
+    }
+  }
+}
+
+// Tighten up the padding at < 768
+@media only screen and (max-width: 767px) {
+  #main-container {
+    #crumbs,
+    #main #header,
+    #main #main-content #content-container #tabs ul li a,
+    #main #main-content #content-container #content,
+    #main #main-content #details .meta {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    #main #main-content #content-container #tabs ul li a:after {
+      width: 12px;
     }
   }
 }

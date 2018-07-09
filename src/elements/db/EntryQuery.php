@@ -29,6 +29,7 @@ use yii\db\Connection;
  * @method Entry|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @supports-structure-params
  */
 class EntryQuery extends ElementQuery
 {
@@ -40,46 +41,138 @@ class EntryQuery extends ElementQuery
 
     /**
      * @var bool Whether to only return entries that the user has permission to edit.
+     * @used-by editable()
      */
     public $editable = false;
 
     /**
      * @var int|int[]|null The section ID(s) that the resulting entries must be in.
+     * ---
+     * ```php
+     * // fetch entries in the News section
+     * $entries = \craft\elements\Entry::find()
+     *     ->section('news')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch entries in the News section #}
+     * {% set entries = craft.entries()
+     *     .section('news')
+     *     .all() %}
+     * ```
+     * @used-by section()
+     * @used-by sectionId()
      */
     public $sectionId;
 
     /**
      * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
+     * ---
+     * ```php{4}
+     * // fetch Article entries in the News section
+     * $entries = \craft\elements\Entry::find()
+     *     ->section('news')
+     *     ->type('article')
+     *     ->all();
+     * ```
+     * ```twig{4}
+     * {# fetch entries in the News section #}
+     * {% set entries = craft.entries()
+     *     .section('news')
+     *     .type('article')
+     *     .all() %}
+     * ```
+     * @used-by EntryQuery::type()
+     * @used-by typeId()
      */
     public $typeId;
 
     /**
      * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
+     * @used-by authorId()
      */
     public $authorId;
 
     /**
      * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
+     * ---
+     * ```php
+     * // fetch entries authored by people in the Authors group
+     * $entries = \craft\elements\Entry::find()
+     *     ->authorGroup('authors')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch entries authored by people in the Authors group #}
+     * {% set entries = craft.entries()
+     *     .authorGroup('authors')
+     *     .all() %}
+     * ```
+     * @used-by authorGroup()
+     * @used-by authorGroupId()
      */
     public $authorGroupId;
 
     /**
      * @var mixed The Post Date that the resulting entries must have.
+     * ---
+     * ```php
+     * // fetch entries written in 2018
+     * $entries = \craft\elements\Entry::find()
+     *     ->postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch entries written in 2018 #}
+     * {% set entries = craft.entries()
+     *     .postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
+     *     .all() %}
+     * ```
+     * @used-by postDate()
      */
     public $postDate;
 
     /**
      * @var string|array|\DateTime The maximum Post Date that resulting entries can have.
+     * ---
+     * ```php
+     * // fetch entries written before 4/4/2018
+     * $entries = \craft\elements\Entry::find()
+     *     ->before('2018-04-04')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch entries written before 4/4/2018 #}
+     * {% set entries = craft.entries()
+     *     .before('2018-04-04')
+     *     .all() %}
+     * ```
+     * @used-by before()
      */
     public $before;
 
     /**
      * @var string|array|\DateTime The minimum Post Date that resulting entries can have.
+     * ---
+     * ```php
+     * // fetch entries written in the last 7 days
+     * $entries = \craft\elements\Entry::find()
+     *     ->after((new \DateTime())->modify('-7 days'))
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch entries written in the last 7 days #}
+     * {% set entries = craft.entries()
+     *     .after(now|date_modify('-7 days'))
+     *     .all() %}
+     * ```
+     * @used-by after()
      */
     public $after;
 
     /**
      * @var mixed The Expiry Date that the resulting entries must have.
+     * @used-by expiryDate()
      */
     public $expiryDate;
 
@@ -141,6 +234,7 @@ class EntryQuery extends ElementQuery
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $editable
      */
     public function editable(bool $value = true)
     {
@@ -153,6 +247,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|Section|null $value The property value
      * @return static self reference
+     * @uses $sectionId
      */
     public function section($value)
     {
@@ -177,6 +272,7 @@ class EntryQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $sectionId
      */
     public function sectionId($value)
     {
@@ -189,6 +285,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|EntryType|null $value The property value
      * @return static self reference
+     * @uses $typeId
      */
     public function type($value)
     {
@@ -212,6 +309,7 @@ class EntryQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $typeId
      */
     public function typeId($value)
     {
@@ -224,6 +322,7 @@ class EntryQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $authorId
      */
     public function authorId($value)
     {
@@ -236,6 +335,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $authorGroupId
      */
     public function authorGroup($value)
     {
@@ -259,6 +359,7 @@ class EntryQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $authorGroupId
      */
     public function authorGroupId($value)
     {
@@ -271,6 +372,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      * @return static self reference
+     * @uses $postDate
      */
     public function postDate($value)
     {
@@ -283,6 +385,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|array|\DateTime $value The property value
      * @return static self reference
+     * @uses $before
      */
     public function before($value)
     {
@@ -295,6 +398,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|array|\DateTime $value The property value
      * @return static self reference
+     * @uses $after
      */
     public function after($value)
     {
@@ -307,6 +411,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      * @return static self reference
+     * @uses $expiryDate
      */
     public function expiryDate($value)
     {

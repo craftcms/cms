@@ -32,11 +32,13 @@ class GlobalSetQuery extends ElementQuery
 
     /**
      * @var bool Whether to only return global sets that the user has permission to edit.
+     * @used-by editable()
      */
     public $editable = false;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
+     * @used-by handle()
      */
     public $handle;
 
@@ -61,6 +63,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $editable
      */
     public function editable(bool $value = true)
     {
@@ -73,6 +76,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $handle
      */
     public function handle($value)
     {

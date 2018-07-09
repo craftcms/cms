@@ -20,6 +20,7 @@ use craft\models\Info;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
+use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
@@ -283,6 +284,9 @@ class SystemSettingsController extends Controller
 
             try {
                 $emailSent = $message->send();
+            } catch (TemplateLoaderException $e) {
+                $settings->addError('template', $e->getMessage());
+                $emailSent = false;
             } catch (\Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $emailSent = false;

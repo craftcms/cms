@@ -1017,7 +1017,22 @@ class Sites extends Component
         }
 
         try {
-            $results = $this->_createSiteQuery()->all();
+            $results = (new Query())
+                ->select([
+                    's.id',
+                    's.groupId',
+                    's.name',
+                    's.handle',
+                    'language',
+                    's.primary',
+                    's.hasUrls',
+                    's.baseUrl',
+                    's.sortOrder',
+                ])
+                ->from(['{{%sites}} s'])
+                ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')
+                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
+                ->all();
         } catch (DbException $e) {
             // todo: remove this after the next breakpoint
             // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
@@ -1072,19 +1087,6 @@ class Sites extends Component
                 'name',
             ])
             ->from(['{{%sitegroups}}'])
-            ->orderBy(['name' => SORT_ASC]);
-    }
-
-    /**
-     * Returns a Query object prepped for retrieving sites.
-     *
-     * @return Query
-     */
-    private function _createSiteQuery(): Query
-    {
-        return (new Query())
-            ->select(['id', 'groupId', 'name', 'handle', 'language', 'primary', 'hasUrls', 'baseUrl', 'sortOrder'])
-            ->from(['{{%sites}}'])
             ->orderBy(['name' => SORT_ASC]);
     }
 

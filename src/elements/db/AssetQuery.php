@@ -35,51 +35,156 @@ class AssetQuery extends ElementQuery
 
     /**
      * @var int|int[]|null The volume ID(s) that the resulting assets must be in.
+     * ---
+     * ```php
+     * // fetch assets in the Logos volume
+     * $logos = \craft\elements\Asset::find()
+     *     ->volume('logos')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch assets in the Logos volume #}
+     * {% set logos = craft.assets()
+     *     .volume('logos')
+     *     .all() %}
+     * ```
+     * @used-by volume()
+     * @used-by volumeId()
      */
     public $volumeId;
 
     /**
      * @var int|int[]|null The asset folder ID(s) that the resulting assets must be in.
+     * @used-by folderId()
      */
     public $folderId;
 
     /**
      * @var string|string[]|null The filename(s) that the resulting assets must have.
+     * @used-by filename()
      */
     public $filename;
 
     /**
      * @var string|string[]|null The file kind(s) that the resulting assets must be.
+     *
+     * Supported file kinds:
+     * - access
+     * - audio
+     * - compressed
+     * - excel
+     * - flash
+     * - html
+     * - illustrator
+     * - image
+     * - javascript
+     * - json
+     * - pdf
+     * - photoshop
+     * - php
+     * - powerpoint
+     * - text
+     * - video
+     * - word
+     * - xml
+     * - unknown
+     *
+     * ---
+     *
+     * ```php
+     * // fetch only images
+     * $logos = \craft\elements\Asset::find()
+     *     ->kind('image')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch only images #}
+     * {% set logos = craft.assets()
+     *     .kind('image')
+     *     .all() %}
+     * ```
+     * @used-by kind()
      */
     public $kind;
 
     /**
      * @var int|null The width (in pixels) that the resulting assets must have.
+     * ---
+     * ```php{4}
+     * // fetch images that are at least 500 pixels wide
+     * $images = \craft\elements\Asset::find()
+     *     ->kind('image')
+     *     ->width('>= 500')
+     *     ->all();
+     * ```
+     * ```twig{4}
+     * {# fetch images that are at least 500 pixes wide #}
+     * {% set logos = craft.assets()
+     *     .kind('image')
+     *     .width('>= 500')
+     *     .all() %}
+     * ```
+     * @used-by width()
      */
     public $width;
 
     /**
      * @var int|null The height (in pixels) that the resulting assets must have.
+     * ---
+     * ```php{4}
+     * // fetch images that are at least 500 pixels high
+     * $images = \craft\elements\Asset::find()
+     *     ->kind('image')
+     *     ->height('>= 500')
+     *     ->all();
+     * ```
+     * ```twig{4}
+     * {# fetch images that are at least 500 pixes high #}
+     * {% set logos = craft.assets()
+     *     .kind('image')
+     *     .height('>= 500')
+     *     .all() %}
+     * ```
+     * @used-by height()
      */
     public $height;
 
     /**
      * @var int|null The size (in bytes) that the resulting assets must have.
+     * @used-by size()
      */
     public $size;
 
     /**
      * @var mixed The Date Modified that the resulting assets must have.
+     * @used-by dateModified()
      */
     public $dateModified;
 
     /**
      * @var bool Whether the query should search the subfolders of [[folderId]].
+     * @used-by includeSubfolders()
      */
     public $includeSubfolders = false;
 
     /**
      * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist
+     * ---
+     * ```php{4}
+     * // fetch images with their 'thumb' transforms preloaded
+     * $images = \craft\elements\Asset::find()
+     *     ->kind('image')
+     *     ->withTransforms(['thumb'])
+     *     ->all();
+     * ```
+     * ```twig{4}
+     * {# fetch images with their 'thumb' transforms preloaded #}
+     * {% set logos = craft.assets()
+     *     .kind('image')
+     *     .withTransforms(['thumb'])
+     *     .all() %}
+     * ```
+     * @used-by withTransforms()
      */
     public $withTransforms;
 
@@ -103,6 +208,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume|null $value The property value
      * @return static self reference
+     * @uses $volumeId
      */
     public function volume($value)
     {
@@ -140,6 +246,7 @@ class AssetQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $volumeId
      */
     public function volumeId($value)
     {
@@ -166,6 +273,7 @@ class AssetQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $folderId
      */
     public function folderId($value)
     {
@@ -178,6 +286,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $filename
      */
     public function filename($value)
     {
@@ -190,6 +299,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $kind
      */
     public function kind($value)
     {
@@ -202,6 +312,7 @@ class AssetQuery extends ElementQuery
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @uses $width
      */
     public function width(int $value = null)
     {
@@ -214,6 +325,7 @@ class AssetQuery extends ElementQuery
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @uses $height
      */
     public function height(int $value = null)
     {
@@ -226,6 +338,7 @@ class AssetQuery extends ElementQuery
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @uses $size
      */
     public function size(int $value = null)
     {
@@ -238,6 +351,7 @@ class AssetQuery extends ElementQuery
      *
      * @param mixed $value The property value
      * @return static self reference
+     * @uses $dateModified
      */
     public function dateModified($value)
     {
@@ -250,6 +364,7 @@ class AssetQuery extends ElementQuery
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $includeSubfolders
      */
     public function includeSubfolders(bool $value = true)
     {
@@ -262,6 +377,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|array|null $value The transforms to include.
      * @return self The query object itself
+     * @uses $withTransforms
      */
     public function withTransforms(array $value = null)
     {

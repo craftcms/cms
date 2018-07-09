@@ -10,6 +10,7 @@ namespace craft\mail;
 use Craft;
 use craft\elements\User;
 use craft\helpers\Template;
+use craft\web\twig\TemplateLoaderException;
 use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -122,18 +123,27 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $template = '_special/email';
             }
 
-            $htmlBody = $view->renderTemplate($template, array_merge($variables, [
-                'body' => Template::raw(Markdown::process($textBody)),
-            ]));
+            $e = null;
+            try {
+                $htmlBody = $view->renderTemplate($template, array_merge($variables, [
+                    'body' => Template::raw(Markdown::process($textBody)),
+                ]));
+            } catch (TemplateLoaderException $e) {
+                // Clean up before throwing
+            }
+
+            // Set things back to normal
+            Craft::$app->language = $language;
+            $view->setTemplateMode($templateMode);
+
+            if ($e !== null) {
+                throw $e;
+            }
 
             $message
                 ->setSubject($subject)
                 ->setHtmlBody($htmlBody)
                 ->setTextBody($textBody);
-
-            // Set things back to normal
-            Craft::$app->language = $language;
-            $view->setTemplateMode($templateMode);
         }
 
         // Set the default sender if there isn't one already

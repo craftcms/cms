@@ -175,6 +175,7 @@ JS;
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
             'Save',
+            'Save as a new asset',
             'Score',
             'Search in subfolders',
             'Select',

@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @method Category|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @supports-structure-params
  */
 class CategoryQuery extends ElementQuery
 {
@@ -36,11 +37,27 @@ class CategoryQuery extends ElementQuery
 
     /**
      * @var bool Whether to only return categories that the user has permission to edit.
+     * @used-by editable()
      */
     public $editable = false;
 
     /**
      * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
+     * ---
+     * ```php
+     * // fetch categories in the Topics group
+     * $categories = \craft\elements\Category::find()
+     *     ->group('topics')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch categories in the Topics group #}
+     * {% set categories = craft.categories()
+     *     .group('topics')
+     *     .all() %}
+     * ```
+     * @used-by group()
+     * @used-by groupId()
      */
     public $groupId;
 
@@ -76,6 +93,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $editable
      */
     public function editable(bool $value = true)
     {
@@ -88,6 +106,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param string|string[]|CategoryGroup|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function group($value)
     {
@@ -112,6 +131,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function groupId($value)
     {

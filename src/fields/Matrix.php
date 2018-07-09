@@ -709,6 +709,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ];
         }
 
+        // Sort them by name
+        ArrayHelper::multisort($fieldTypes, 'name');
+
         Craft::$app->getView()->setNamespace($originalNamespace);
 
         return $fieldTypes;

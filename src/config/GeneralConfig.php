@@ -679,10 +679,6 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
-     * @var bool Whether Craft should use XSendFile to serve files when possible.
-     */
-    public $useXSendFile = false;
-    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
