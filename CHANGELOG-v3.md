@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.15 - 2018-07-09
 
 ### Changed
 - It’s now possible to fetch only non-admin users by setting `craft\elements\db\UserQuery::$admin` to `false`.
