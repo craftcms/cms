@@ -22,4 +22,4 @@ Watch Nate Iler’s [How to Create a Full REST API](http://dotall.com/sessions/h
 
 ## Something Custom
 
-Modules and plugins can define custom front-end [controllers](https://www.yiiframework.com/doc/guide/2.0/en/structure-controllers)  that provide new HTTP endpoints. See [Extending Craft](../extend/README.md) to get started.
+Modules and plugins can define custom front-end [controllers](https://www.yiiframework.com/doc/guide/2.0/en/structure-controllers) that provide new HTTP endpoints. See [Extending Craft](../extend/README.md) to get started.
