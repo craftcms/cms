@@ -203,7 +203,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var string[] The template file extensions Craft will look for when matching a template path to a file on the front end.
      */
-    public $defaultTemplateExtensions = ['html', 'twig'];
+    public $defaultTemplateExtensions = ['html', 'twig', 'html.twig'];
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
      *
