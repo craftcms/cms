@@ -5,6 +5,7 @@
 ### Changed
 - Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
 - Removed the `showBetaUpdates` config setting as it’s no longer being used.
+- When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 
 ## 3.0.15 - 2018-07-09
 
