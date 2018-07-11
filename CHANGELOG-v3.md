@@ -4,10 +4,14 @@
 
 ### Added
 - Assets indexing progressbar now also displays the amount of files indexed and total to give a sense of progress. ([#2934](https://github.com/craftcms/cms/issues/2934))
+
 ### Changed
 - Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
 - Removed the `showBetaUpdates` config setting as it’s no longer being used.
 - When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
+
+### Fixed
+- Fixed a bug where you could get an error message sending emails in some environments that did not have the [intl](https://secure.php.net/manual/en/book.intl.php) extension installed.
 
 ## 3.0.15 - 2018-07-09
 
