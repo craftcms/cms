@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- Craft no longer relies on Imagick or GD to tell what image formats they support, when considering if it can manipulate an image. ([#2408](https://github.com/craftcms/cms/issues/2408))
+- Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
 - Removed the `showBetaUpdates` config setting as it’s no longer being used.
 
 ## 3.0.15 - 2018-07-09
