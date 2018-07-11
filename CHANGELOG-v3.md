@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Added
+- Assets indexing progressbar now also displays the amount of files indexed and total to give a sense of progress. ([#2934](https://github.com/craftcms/cms/issues/2934))
 ### Changed
 - Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
 - Removed the `showBetaUpdates` config setting as it’s no longer being used.
