@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft no longer relies on Imagick or GD to tell what image formats they support, when considering if it can manipulate an image. ([#2408](https://github.com/craftcms/cms/issues/2408))
+
 ## 3.0.15 - 2018-07-09
 
 ### Changed
