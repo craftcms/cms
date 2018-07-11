@@ -1,4 +1,4 @@
-# Configuration
+# Configuration Overview
 
 [[toc]]
 
@@ -21,7 +21,7 @@ Your `web/index.php` file can specify a few PHP constants, which Craft’s boots
 
 ## General Config
 
-Craft supports several [general configuration settings](craft\config\GeneralConfig#public-properties). You can override their default values in your `config/general.php` file.
+Craft supports several [general configuration settings](general-config-settings.md). You can override their default values in your `config/general.php` file.
 
 ```php
 return [
@@ -135,7 +135,7 @@ Some settings and functions in Craft support [Yii aliases](https://www.yiiframew
 - Volumes’ Base URL settings
 - Local volumes’ File System Path settings
 - The <config:resourceBasePath> and <config:resourceBaseUrl> config settings
-- The [svg()](dev/functions.md#svg-svg-sanitize) Twig function
+- The [svg()](../dev/functions.md#svg-svg-sanitize) Twig function
 
 The following aliases are available out of the box:
 

@@ -75,7 +75,7 @@ The following config settings have been removed entirely:
 | `db.php`      | `collation`
 | `db.php`      | `initSQLs`
 | `general.php` | `appId`
-| `general.php` | `cacheMethod` (see [Configuration → Data Caching Config](configuration.md#data-caching-config))
+| `general.php` | `cacheMethod` (see [Configuration → Data Caching Config](config/README.md#data-caching-config))
 
 ### `omitScriptNameInUrls` and `usePathInfo`
 

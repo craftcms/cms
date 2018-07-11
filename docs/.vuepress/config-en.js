@@ -171,6 +171,14 @@ module.exports = {
                 ]
             },
             {
+                title: 'Configuration',
+                collapsable: false,
+                children: [
+                    'config/',
+                    'config/general-config-settings',
+                ]
+            },
+            {
                 title: 'Core Concepts',
                 collapsable: false,
                 children: [
@@ -188,7 +196,6 @@ module.exports = {
                     'sites',
                     ['localization', 'Localization'],
                     'content-migrations',
-                    'configuration'
                 ]
             },
             {
