@@ -663,6 +663,10 @@ class Db
             return [];
         }
 
+        if ($value instanceof \DateTime) {
+            return [$value];
+        }
+
         if (is_string($value)) {
             // Split it on the non-escaped commas
             $value = preg_split('/(?<!\\\),/', $value);
