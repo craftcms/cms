@@ -19,9 +19,9 @@ Your `web/index.php` file can specify a few PHP constants, which Craft’s boots
 - `CRAFT_TRANSLATIONS_PATH` – The path to the `translations/` directory. (It is assumed to live within the base directory by default.)
 - `CRAFT_VENDOR_PATH` – The path to the `vendor/` directory. (It is assumed to live 4 directories up from the bootstrap script by default.)
 
-## Config Settings
+## General Config Settings
 
-Craft supports several [configuration settings](config-settings.md). You can override their default values in your `config/general.php` file.
+Craft supports several [general config settings](config-settings.md). You can override their default values in your `config/general.php` file.
 
 ```php
 return [

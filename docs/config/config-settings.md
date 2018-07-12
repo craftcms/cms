@@ -1,4 +1,4 @@
-# Config Settings
+# General Config Settings
 
 Craft supports several configuration settings that give you control over its behavior.
 
