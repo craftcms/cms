@@ -93,9 +93,9 @@ return [
 ];
 ```
 
-The actual environment names you go with are up to you. Craft will look for the key(s) with the same name as the `CRAFT_ENVIRONMENT` PHP constant, which should be defined by your `web/index.php` file.
+The actual environment names you go with are up to you. Craft will look for the key(s) with the same name as the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) PHP constant, which should be defined by your `web/index.php` file.
 
-By default, new Craft 3 projects will define the `CRAFT_ENVIRONMENT` constant using an environment variable called `ENVIRONMENT`, which is defined in the `.env` file:
+By default, new Craft 3 projects will define the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant using an environment variable called `ENVIRONMENT`, which is defined in the `.env` file:
 
 ```php
 // -- web/index.php --
@@ -110,5 +110,5 @@ ENVIRONMENT="dev"
 ```
 
 ::: tip
-If the `CRAFT_ENVIRONMENT` constant isn’t defined, Craft will define it for you based on the current server name (e.g. `example.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
+If the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant isn’t defined, Craft will define it for you based on the current server name (e.g. `example.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
 :::
