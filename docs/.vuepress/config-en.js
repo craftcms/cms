@@ -11,27 +11,85 @@ module.exports = {
         }
     },
     sidebar: {
-        '/element-query-params/': [
-            ['../element-queries', '← Element Queries'],
+        '/extend/': [
             {
-                title: 'Element Query Params',
+                title: 'Extending Craft',
                 collapsable: false,
                 children: [
-                    ['asset-query-params', 'Assets'],
-                    ['category-query-params', 'Categories'],
-                    ['entry-query-params', 'Entries'],
-                    ['matrix-block-query-params', 'Matrix Blocks'],
-                    ['tag-query-params', 'Tags'],
-                    ['user-query-params', 'Users'],
+                    ['', 'Introduction'],
+                    'coding-guidelines',
+                ]
+            },
+            {
+                title: 'Module Development',
+                collapsable: false,
+                children: [
+                    'module-guide',
+                ]
+            },
+            {
+                title: 'Plugin Development',
+                collapsable: false,
+                children: [
+                    'plugin-guide',
+                    'updating-plugins',
+                    'plugin-settings',
+                    'plugin-migrations',
+                    'changelogs-and-updates',
+                    'plugin-store',
+                ]
+            },
+            {
+                title: 'Extending the Control Panel',
+                collapsable: false,
+                children: [
+                    'cp-section',
+                    // 'cp-components',
+                    // 'cp-controllers',
+                ]
+            },
+            {
+                title: 'System Components',
+                collapsable: false,
+                children: [
+                    'widget-types',
+                    'field-types',
+                    'volume-types',
+                    'utility-types',
+                    'element-types',
+                    'element-action-types',
+                ]
+            },
+            {
+                title: 'More',
+                collapsable: false,
+                children: [
+                    'asset-bundles',
+                    'services',
+                    // 'behaviors',
+                    'extending-twig',
+                    // 'front-end-controllers',
                 ]
             }
         ],
-        '/templating/': [
-            ['../twig-primer', '← Twig Primer'],
+        '/dev/': [
             {
-                title: 'Tags',
+                title: 'Front-End Development',
                 collapsable: false,
                 children: [
+                    ['', 'Introduction'],
+                    'headless',
+                ]
+            },
+            {
+                title: 'Templating',
+                collapsable: false,
+                children: [
+                    'twig-primer',
+                    'filters',
+                    'functions',
+                    'global-variables',
+                    'tests',
                     'tags/cache',
                     'tags/css',
                     'tags/exit',
@@ -45,13 +103,23 @@ module.exports = {
                     'tags/switch',
                 ]
             },
-            'filters',
-            'functions',
-            'global-variables',
-            'tests',
-            'elements',
             {
-                title: 'Examples',
+                title: 'Querying Elements',
+                collapsable: false,
+                children: [
+                    'element-queries/',
+                    'element-queries/asset-queries',
+                    'element-queries/category-queries',
+                    'element-queries/entry-queries',
+                    'element-queries/global-set-queries',
+                    'element-queries/matrix-block-queries',
+                    'element-queries/tag-queries',
+                    'element-queries/user-queries',
+                    'eager-loading-elements',
+                ]
+            },
+            {
+                title: 'Templating Examples',
                 collapsable: false,
                 children: [
                     'examples/integrating-disqus',
@@ -103,6 +171,17 @@ module.exports = {
                 ]
             },
             {
+                title: 'Configuration',
+                collapsable: false,
+                children: [
+                    'config/',
+                    'config/config-settings',
+                    'config/db-settings',
+                    'config/environments',
+                    'config/php-constants',
+                ]
+            },
+            {
                 title: 'Core Concepts',
                 collapsable: false,
                 children: [
@@ -114,60 +193,22 @@ module.exports = {
                     'globals',
                     'tags',
                     'routing',
+                    'relations',
                     'searching',
+                    'reference-tags',
                     'sites',
                     ['localization', 'Localization'],
-                    'element-queries',
                     'content-migrations',
-                    'configuration'
                 ]
             },
             {
-                title: 'Templating',
+                title: 'Development',
                 collapsable: false,
                 children: [
-                    'twig-primer',
-                    'templating/tags',
-                    'templating/filters',
-                    'templating/functions',
-                    'templating/global-variables',
-                    'templating/tests',
-                    'templating/elements',
-                    'templating/examples/'
+                    'dev/',
+                    'extend/',
                 ]
             },
-            {
-                title: 'Advanced Topics',
-                collapsable: false,
-                children: [
-                    'relations',
-                    'reference-tags',
-                    'eager-loading-elements',
-                ]
-            },
-            {
-                title: 'Plugin Development',
-                collapsable: false,
-                children: [
-                    'plugin-intro',
-                    'coding-guidelines',
-                    'updating-plugins',
-                    'changelogs-and-updates',
-                    'plugin-settings',
-                    'cp-section',
-                    'asset-bundles',
-                    'services',
-                    'extending-twig',
-                    'widget-types',
-                    'field-types',
-                    'volume-types',
-                    'utility-types',
-                    'element-types',
-                    'element-action-types',
-                    'plugin-migrations',
-                    'plugin-store'
-                ]
-            }
         ]
     }
 };

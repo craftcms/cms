@@ -25,7 +25,7 @@ If you have an element with a Users field in your template, you can access its s
 {% set users = entry.usersFieldHandle %}
 ```
 
-That will give you an [element query](element-queries.md), prepped to output all of the selected users for the given field. In other words, the line above is really just a shortcut for this:
+That will give you an [element query](dev/element-queries/README.md), prepped to output all of the selected users for the given field. In other words, the line above is really just a shortcut for this:
 
 ```twig
 {% craft.users({
@@ -89,7 +89,6 @@ If your Users field is only meant to have a single user selected, remember that 
 
 ### See Also
 
-* [Element Queries](element-queries.md)
-* [User Query Params](element-query-params/user-query-params.md)
+* [User Queries](dev/element-queries/user-queries.md)
 * <api:craft\elements\User>
 * [Relations](relations.md)

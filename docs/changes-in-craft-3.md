@@ -75,7 +75,7 @@ The following config settings have been removed entirely:
 | `db.php`      | `collation`
 | `db.php`      | `initSQLs`
 | `general.php` | `appId`
-| `general.php` | `cacheMethod` (see [Configuration → Data Caching Config](configuration.md#data-caching-config))
+| `general.php` | `cacheMethod` (see [Configuration → Data Caching Config](config/README.md#data-caching-config))
 
 ### `omitScriptNameInUrls` and `usePathInfo`
 
@@ -112,8 +112,8 @@ The following PHP constants have been deprecated in Craft 3, and will no longer 
 
 | Old              | New
 | ---------------- | ----------------------------------------
-| `CRAFT_LOCALE`   | `CRAFT_SITE`
-| `CRAFT_SITE_URL` | Use the `siteUrl` config setting instead
+| `CRAFT_LOCALE`   | [CRAFT_SITE](config/php-constants.md#craft-site)
+| `CRAFT_SITE_URL` | Use the <config:siteUrl> config setting instead
 
 ## Static Translation Files
 
@@ -132,9 +132,9 @@ In Craft 3, your `translations/` folder might look something like this:
 
 ```
 translations/
-  en-US/
-    app.php
-    site.php
+└── en-US/
+    ├── app.php
+    └── site.php
 ```
 
 ## User Photos
@@ -204,8 +204,8 @@ The following Twig template tags have been deprecated in Craft 3, and will be co
 | `{% includejs %}`               | `{% js %}`
 | `{% includecssfile url %}`      | `{% do view.registerCssFile(url) %}`
 | `{% includejsfile url %}`       | `{% do view.registerJsFile(url) %}`
-| `{% includecssresource path %}` | See [Asset Bundles](asset-bundles.md)
-| `{% includejsresource path %}`  | See [Asset Bundles](asset-bundles.md)
+| `{% includecssresource path %}` | See [Asset Bundles](extend/asset-bundles.md)
+| `{% includejsresource path %}`  | See [Asset Bundles](extend/asset-bundles.md)
 
 ## Template Functions
 
@@ -458,7 +458,7 @@ This behavior has changed in Craft 3, though. Now any time you call a parameter-
 
 Which means in the above code example, `totalEntries` will be set to the total _Article_ entries, as the `type` parameter will still be applied.
 
-If you have any templates that count on the Craft 2 behavior, you can fix them using the [clone()](templating/functions.md#clone-object) function.
+If you have any templates that count on the Craft 2 behavior, you can fix them using the [clone()](dev/functions.md#clone-object) function.
 
 ```twig
 {% set query = craft.entries.section('news') %}
@@ -676,4 +676,4 @@ Note that these examples use Craft 2’s default `tablePrefix` DB config setting
 
 ## Plugins
 
-See [Updating Plugins for Craft 3](updating-plugins.md).
+See [Updating Plugins for Craft 3](extend/updating-plugins.md).

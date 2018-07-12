@@ -12,7 +12,7 @@ If you're new to Craft and want to get the bigger picture, start with [About Cra
 
 After reading those three items, you can continue on to installing Craft via the [Installation instructions](installation.md).
 
-While getting familiar with the Craft control panel, refer to the Core Concepts section for material on [Sections & Entries](sections-and-entries.md), [Fields](fields.md), and [Templates](templates.md). These will be the first three items you'll encounter in any new Craft-powered website build.
+While getting familiar with Craft’s Control Panel, refer to the Core Concepts section for material on [Sections & Entries](sections-and-entries.md) and [Fields](fields.md). These will be the first items you'll encounter in any new Craft-powered website build.
 
 ## I'm Moving from Craft 2 to Craft 3
 

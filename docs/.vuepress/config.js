@@ -51,6 +51,7 @@ module.exports = {
             md
                 .use(replaceApiLinks)
                 .use(require('vuepress-theme-craftdocs/markup'))
+                .use(require('markdown-it-deflist'))
         }
     },
 }
@@ -113,7 +114,7 @@ function replaceApiLink(link) {
         if (className.match(/^yii\\/) || className.match(/^Yii/)) {
             let url = 'https://www.yiiframework.com/doc/api/2.0/'+className.replace(/\\/g, '-').toLowerCase()
             if (subject) {
-                hash = subject+(isMethod ? '()' : '')+'-detail'
+                hash = (isMethod ? `${subject}()` : `\$${subject}`)+'-detail'
             }
             return url + (hash ? `#${hash}` : '');
         }
@@ -129,6 +130,6 @@ function replaceApiLink(link) {
 
     m = link.match(/^config:(.+)/)
     if (m) {
-        return replaceApiLink('craft\\config\\GeneralConfig::'+m[1])
+        return '/config/config-settings.md#'+m[1].toLowerCase()
     }
 }

@@ -131,7 +131,7 @@ You can use Twig filters in both syntaxes:
 {postDate|date('M j, Y')}
 ```
 
-Craft’s [global variables](templating/global-variables.md) are available to these templates as well:
+Craft’s [global variables](dev/global-variables.md) are available to these templates as well:
 
 ```twig
 {{ now|date('Y-m-d') }}

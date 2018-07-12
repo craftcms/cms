@@ -4,7 +4,7 @@ When you download a fresh copy of Craft 3, your project will have the following 
 
 #### `config/`
 
-Holds all of your Craft and plugin [configuration files](configuration.md), as well as your `license.key` file.
+Holds all of your Craft and plugin [configuration files](config/README.md), as well as your `license.key` file.
 
 #### `modules/`
 
