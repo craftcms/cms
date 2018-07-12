@@ -58,7 +58,7 @@ A `translate` argument is also available. If `true` is passed, the formatted dat
 ```twig
 {{ entry.postDate|date('short') }}
 ```
- 
+
 
 ## `datetime`
 

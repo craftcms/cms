@@ -132,9 +132,9 @@ In Craft 3, your `translations/` folder might look something like this:
 
 ```
 translations/
-  en-US/
-    app.php
-    site.php
+└── en-US/
+    ├── app.php
+    └── site.php
 ```
 
 ## User Photos

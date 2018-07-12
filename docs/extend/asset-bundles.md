@@ -19,12 +19,12 @@ Here’s what your plugin’s structure should look like:
 
 ```
 base_dir/
-  src/
-    FooBundle.php
-    resources/
-      script.js
-      styles.css
-      ...
+└── src/
+    ├── FooBundle.php
+    └── resources/
+        ├── script.js
+        ├── styles.css
+        └── ...
 ```
 
 Use this template as a starting point for your asset bundle class:
