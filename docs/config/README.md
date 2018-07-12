@@ -29,9 +29,9 @@ return [
 ];
 ```
 
-## Database Config
+## Database Connection Settings
 
-Craft supports several [database configuration settings](craft\config\DbConfig#public-properties). You can override their default values in your `config/db.php` file.
+Craft supports several [database connection settings](db-settings.md). You can override their default values in your `config/db.php` file.
 
 ## Data Caching Config
 

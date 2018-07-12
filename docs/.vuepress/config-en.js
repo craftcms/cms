@@ -176,6 +176,7 @@ module.exports = {
                 children: [
                     'config/',
                     'config/config-settings',
+                    'config/db-settings',
                 ]
             },
             {
