@@ -177,6 +177,7 @@ module.exports = {
                     'config/',
                     'config/config-settings',
                     'config/db-settings',
+                    'config/environments',
                 ]
             },
             {
