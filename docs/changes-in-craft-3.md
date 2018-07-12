@@ -112,8 +112,8 @@ The following PHP constants have been deprecated in Craft 3, and will no longer 
 
 | Old              | New
 | ---------------- | ----------------------------------------
-| `CRAFT_LOCALE`   | `CRAFT_SITE`
-| `CRAFT_SITE_URL` | Use the `siteUrl` config setting instead
+| `CRAFT_LOCALE`   | [CRAFT_SITE](config/php-constants.md#craft-site)
+| `CRAFT_SITE_URL` | Use the <config:siteUrl> config setting instead
 
 ## Static Translation Files
 

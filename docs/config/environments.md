@@ -2,7 +2,7 @@
 
 If your Craft project lives across more than one environment (e.g. Development, Staging, and Production), there are going to be things that should be configured differently for each environment.
 
-For example, each environment will likely need its own unique [database connection settings](db-settings.md), and [Dev Mode](config-settings.md#devmode) should be enabled for your local Development environment, but not for Production.
+For example, each environment will likely need its own unique [database connection settings](db-settings.md), and [Dev Mode](config:devMode) should be enabled for your local Development environment, but not for Production.
 
 There are two ways to achieve that in Craft: [environment variables](#environment-variables) and [multi-environment configs](#multi-environment-configs).
 

@@ -130,6 +130,6 @@ function replaceApiLink(link) {
 
     m = link.match(/^config:(.+)/)
     if (m) {
-        return replaceApiLink('craft\\config\\GeneralConfig::'+m[1])
+        return '/config/config-settings.md#'+m[1].toLowerCase()
     }
 }
