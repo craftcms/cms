@@ -32,7 +32,7 @@ Download the archive format you prefer to work with:
 Extract the archive wherever you want your new Craft project to live.
 
 ::: tip
-If you’re on macOS, be careful not to lose the hidden files in there (`.env`, `.env.example`, `.gitignore`, and `web/.htaccess`). You can toggle hidden file visibility in Finder by pressing Command + Shift + `.` (period).
+If you’re on macOS, be careful not to lose the hidden files in there (`.env`, `.env.example`, `.gitignore`, and `web/.htaccess`). You can press <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>.</kbd> to toggle hidden file visibility in Finder.
 :::
 
 ### Directory Structure
