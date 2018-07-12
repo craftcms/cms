@@ -112,3 +112,31 @@ ENVIRONMENT="dev"
 ::: tip
 If the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant isn’t defined, Craft will define it for you based on the current server name (e.g. `example.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
 :::
+
+## Aliases
+
+[Aliases](README.md#aliases) provide a way to define paths and URLs on a per-environment basis.
+
+For example, you might want to define `ASSET_BASE_PATH` and `ASSET_BASE_URL` environment variables that store the base path and URL to a `web/assets/` folder, where your asset volumes will live:
+
+```bash
+# -- .env --
+# Path to web/assets/ relative to index.php
+ASSET_BASE_PATH="./assets"
+
+# URL to web/assets/
+ASSET_BASE_URL="/assets"
+```
+
+You can pull these environment variables into custom aliases from your `config/general.php` file like so:
+
+```php
+'aliases' => [
+    '@assetBasePath' => getenv('ASSET_BASE_PATH'),
+    '@assetBaseUrl' => getenv('ASSET_BASE_URL'),
+],
+```
+
+With that in place, you can start referencing your new aliases from your asset volume settings:
+
+![A local asset volume’s Base URL, Volume Type, and File System Path settings](../images/volume-settings-with-aliases.png)
