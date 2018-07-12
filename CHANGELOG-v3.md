@@ -12,6 +12,7 @@
 
 ### Fixed
 - Fixed a bug where you could get an error message sending emails in some environments that did not have the [intl](https://secure.php.net/manual/en/book.intl.php) extension installed.
+- Fixed an exception that was thrown if the `securityKey` config setting was changed and Craft was set to use either the SMTP or Gmail mailer transport type. ([#3083](https://github.com/craftcms/cms/issues/3083))
 
 ## 3.0.15 - 2018-07-09
 
