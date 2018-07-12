@@ -44,7 +44,7 @@ Allowed types
 
 Defined by
 
-:   [$archived](api:craft\elements\db\ElementQuery::$archived)
+:   [ElementQuery::$archived](api:craft\elements\db\ElementQuery::$archived)
 
 Settable by
 
@@ -63,7 +63,7 @@ Allowed types
 
 Defined by
 
-:   [$asArray](api:craft\elements\db\ElementQuery::$asArray)
+:   [ElementQuery::$asArray](api:craft\elements\db\ElementQuery::$asArray)
 
 Settable by
 
@@ -83,7 +83,7 @@ Allowed types
 
 Defined by
 
-:   [$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
+:   [ElementQuery::$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
 
 Settable by
 
@@ -102,7 +102,7 @@ Allowed types
 
 Defined by
 
-:   [$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
+:   [ElementQuery::$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
 
 Settable by
 
@@ -121,7 +121,7 @@ Allowed types
 
 Defined by
 
-:   [$editable](api:craft\elements\db\GlobalSetQuery::$editable)
+:   [GlobalSetQuery::$editable](api:craft\elements\db\GlobalSetQuery::$editable)
 
 Settable by
 
@@ -140,7 +140,7 @@ Allowed types
 
 Defined by
 
-:   [$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
+:   [ElementQuery::$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
 
 Settable by
 
@@ -159,7 +159,7 @@ Allowed types
 
 Defined by
 
-:   [$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
+:   [ElementQuery::$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
 
 Settable by
 
@@ -178,7 +178,7 @@ Allowed types
 
 Defined by
 
-:   [$handle](api:craft\elements\db\GlobalSetQuery::$handle)
+:   [GlobalSetQuery::$handle](api:craft\elements\db\GlobalSetQuery::$handle)
 
 Settable by
 
@@ -197,7 +197,7 @@ Allowed types
 
 Defined by
 
-:   [$id](api:craft\elements\db\ElementQuery::$id)
+:   [ElementQuery::$id](api:craft\elements\db\ElementQuery::$id)
 
 Settable by
 
@@ -216,7 +216,7 @@ Allowed types
 
 Defined by
 
-:   [$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
+:   [ElementQuery::$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
 
 Settable by
 
@@ -235,7 +235,7 @@ Allowed types
 
 Defined by
 
-:   [$ref](api:craft\elements\db\ElementQuery::$ref)
+:   [ElementQuery::$ref](api:craft\elements\db\ElementQuery::$ref)
 
 Settable by
 
@@ -256,7 +256,7 @@ Allowed types
 
 Defined by
 
-:   [$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
+:   [ElementQuery::$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
 
 Settable by
 
@@ -277,7 +277,7 @@ Allowed types
 
 Defined by
 
-:   [$search](api:craft\elements\db\ElementQuery::$search)
+:   [ElementQuery::$search](api:craft\elements\db\ElementQuery::$search)
 
 Settable by
 
@@ -298,7 +298,7 @@ Allowed types
 
 Defined by
 
-:   [$siteId](api:craft\elements\db\ElementQuery::$siteId)
+:   [ElementQuery::$siteId](api:craft\elements\db\ElementQuery::$siteId)
 
 Settable by
 
@@ -317,7 +317,7 @@ Allowed types
 
 Defined by
 
-:   [$slug](api:craft\elements\db\ElementQuery::$slug)
+:   [ElementQuery::$slug](api:craft\elements\db\ElementQuery::$slug)
 
 Settable by
 
@@ -336,7 +336,7 @@ Allowed types
 
 Defined by
 
-:   [$status](api:craft\elements\db\ElementQuery::$status)
+:   [ElementQuery::$status](api:craft\elements\db\ElementQuery::$status)
 
 Settable by
 
@@ -355,7 +355,7 @@ Allowed types
 
 Defined by
 
-:   [$title](api:craft\elements\db\ElementQuery::$title)
+:   [ElementQuery::$title](api:craft\elements\db\ElementQuery::$title)
 
 Settable by
 
@@ -374,7 +374,7 @@ Allowed types
 
 Defined by
 
-:   [$uid](api:craft\elements\db\ElementQuery::$uid)
+:   [ElementQuery::$uid](api:craft\elements\db\ElementQuery::$uid)
 
 Settable by
 
@@ -393,7 +393,7 @@ Allowed types
 
 Defined by
 
-:   [$uri](api:craft\elements\db\ElementQuery::$uri)
+:   [ElementQuery::$uri](api:craft\elements\db\ElementQuery::$uri)
 
 Settable by
 
@@ -412,7 +412,7 @@ Allowed types
 
 Defined by
 
-:   [$with](api:craft\elements\db\ElementQuery::$with)
+:   [ElementQuery::$with](api:craft\elements\db\ElementQuery::$with)
 
 Settable by
 
