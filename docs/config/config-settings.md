@@ -1724,7 +1724,7 @@ Defined by
 
 
 A private, random, cryptographically-secure key that is used for hashing and encrypting
-data in [craft\services\Security](craft-services-security.md).
+data in [craft\services\Security](api:craft\services\Security).
 
 This value should be the same across all environments. Note that if this key ever changes, any data that
 was encrypted with it will be inaccessible.

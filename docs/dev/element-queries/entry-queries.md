@@ -95,7 +95,7 @@ The maximum number of levels that results may be separated from [ancestorOf()](h
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -297,7 +297,7 @@ The maximum number of levels that results may be separated from [descendantOf()]
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -487,7 +487,7 @@ The element’s level within the structure
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -506,7 +506,7 @@ The element (or its ID) that the result must be the next sibling of.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -525,7 +525,7 @@ The element (or its ID) that the results must be positioned after.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -578,7 +578,7 @@ $entries = \craft\elements\Entry::find()
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -618,7 +618,7 @@ This property is set when accessing elements via their reference tags, e.g. `{en
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [array](http://www.php.net/language.types.array), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [array](http://www.php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -639,7 +639,7 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for supported synta
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [craft\search\SearchQuery](<api:craft\search\SearchQuery>), [null](http://www.php.net/language.types.null)
+:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://www.php.net/language.types.null)
 
 Defined by
 
@@ -694,7 +694,7 @@ $entries = \craft\elements\Entry::find()
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](<api:craft\base\ElementInterface>), [null](http://www.php.net/language.types.null)
+:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
 
 Defined by
 
