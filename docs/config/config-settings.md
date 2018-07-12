@@ -1,6 +1,6 @@
-# General Config Settings
+# Config Settings
 
-Craft supports several config settings that give you control over its behavior.
+Craft supports several configuration settings that give you control over its behavior.
 
 To set a new config setting, open `config/general.php` and define it in one of the environment config arrays, depending on which environment(s) you want the setting to apply to.
 

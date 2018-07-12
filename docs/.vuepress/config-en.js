@@ -175,7 +175,7 @@ module.exports = {
                 collapsable: false,
                 children: [
                     'config/',
-                    'config/general-config-settings',
+                    'config/config-settings',
                 ]
             },
             {
