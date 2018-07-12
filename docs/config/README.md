@@ -168,7 +168,7 @@ With those in place, you could begin your asset volumes’ Base URL and File Sys
 
 If you’d like, you can set the alias values with environment variables, either from your `.env` file or somewhere in your environment’s configuration:
 
-```dotenv
+```bash
 ASSET_BASE_URL=http://example.com/assets
 ASSET_BASE_PATH=/path/to/web/assets
 ```

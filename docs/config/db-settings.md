@@ -6,7 +6,7 @@ Ultimately, database connection settings must be set from  `config/db.php`, but 
 
 For example, in a new Craft 3 project, your `.env` file should define these environment variables:
 
-```dotenv
+```bash
 ENVIRONMENT="dev"
 SECURITY_KEY=""
 DB_DRIVER="mysql"
