@@ -76,6 +76,7 @@ For Craft to run properly, PHP needs to be able to write to the following places
 - `config/license.key`
 - `storage/*`
 - `vendor/*`
+- `web/cpresources/*`
 
 The exact permissions you should be setting depends on the relationship between the system user that PHP is running as, and who owns the actual folders/files.
 
