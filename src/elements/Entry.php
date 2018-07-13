@@ -818,7 +818,7 @@ class Entry extends Element
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $url = UrlHelper::cpUrl('entries/' . $section->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
+        if (Craft::$app->getIsMultiSite()) {
             $url .= '/' . $this->getSite()->handle;
         }
 
