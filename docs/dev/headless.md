@@ -18,7 +18,7 @@ The first-party [Element API](https://github.com/craftcms/element-api) offers a 
 
 ## REST API
 
-Watch Nate Iler’s [How to Create a Full REST API](http://dotall.com/sessions/how-to-create-a-full-rest-api-with-craft-3) presentation from from Dot All 2018 for an in-depth look at how to create a REST API with Craft.
+Watch Nate Iler’s [How to Create a Full REST API](http://dotall.com/sessions/how-to-create-a-full-rest-api-with-craft-3) presentation from Dot All 2017 for an in-depth look at how to create a REST API with Craft.
 
 ## Something Custom
 
