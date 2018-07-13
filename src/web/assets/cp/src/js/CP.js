@@ -155,7 +155,13 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
-                if (Craft.forceConfirmUnload) {
+                if (
+                    Craft.forceConfirmUnload ||
+                    (
+                        typeof Craft.livePreview !== 'undefined' &&
+                        Craft.livePreview.inPreviewMode
+                    )
+                ) {
                     confirmUnload = true;
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
