@@ -11,6 +11,7 @@ use Craft;
 use Stringy\Stringy as BaseStringy;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\helpers\Inflector;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -1040,7 +1041,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         if ($lower) {
             // Make it lowercase
-            $string = static::toLowerCase($string);
+            $string = Inflector::camel2words($string, false);
         }
 
         if ($removePunctuation) {
