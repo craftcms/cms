@@ -344,7 +344,9 @@ Craft.Grid = Garnish.Base.extend(
             this.completeRefreshCols();
 
             // Resume container resize listening
-            this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
+            if ($.inArray(this.$container, this._listeners) === -1) {
+                this.addListener(this.$container, 'resize', this.handleContainerHeightProxy);
+            }
 
             this.onRefreshCols();
         },
