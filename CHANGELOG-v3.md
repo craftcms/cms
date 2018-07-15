@@ -10,6 +10,8 @@
 - Removed the `showBetaUpdates` config setting as it’s no longer being used.
 - When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 - `dateCreated`, `dateUpdated`, `postDate`, `expiryDate`, `after`, and  `before` element query params can new be set to `DateTime` objects.
+- Updated Garnish to 0.1.25.
+- Updated Selectize to 0.12.6.
 
 ### Fixed
 - Fixed a bug where you could get an error message sending emails in some environments that did not have the [intl](https://secure.php.net/manual/en/book.intl.php) extension installed.
@@ -17,6 +19,7 @@
 - Fixed a bug where Asset view was not being refreshed in some cases after using Image Editor. ([#3035](https://github.com/craftcms/cms/issues/3035))
 - Fixed a bug where Craft wouldn’t warn before leaving an edit page with unsaved changes, if Live Preview was active. ([#3092](https://github.com/craftcms/cms/issues/3092))
 - Fixed a bug where entries, categories, and global sets’ `getCpEditUrl()` methods could omit the site handle on multi-site installs. ([#3089](https://github.com/craftcms/cms/issues/3089))
+- Fixed a JavaScript error that occurred when closing Live Preview. ([#3098](https://github.com/craftcms/cms/issues/3098))
 
 ## 3.0.15 - 2018-07-09
 
