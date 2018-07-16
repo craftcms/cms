@@ -20,6 +20,7 @@
 - Fixed a bug where Craft wouldn’t warn before leaving an edit page with unsaved changes, if Live Preview was active. ([#3092](https://github.com/craftcms/cms/issues/3092))
 - Fixed a bug where entries, categories, and global sets’ `getCpEditUrl()` methods could omit the site handle on multi-site installs. ([#3089](https://github.com/craftcms/cms/issues/3089))
 - Fixed a JavaScript error that occurred when closing Live Preview. ([#3098](https://github.com/craftcms/cms/issues/3098))
+- Fixed a bug where Dashboard widgets could be spaced incorrectly if there was only one grid column. ([#3100](https://github.com/craftcms/cms/issues/3100))
 
 ## 3.0.15 - 2018-07-09
 

@@ -1,4 +1,4 @@
-/*!   - 2018-07-13 */
+/*!   - 2018-07-16 */
 (function($){
 
 /** global: Craft */
@@ -14822,7 +14822,11 @@ Craft.Grid = Garnish.Base.extend(
                     if (this.isSimpleLayout()) {
 
                         this.$container.height('auto');
-                        this.$items.css('position', 'relative');
+                        this.$items.css({
+                            position: 'relative',
+                            top: 0,
+                            'margin-bottom': this.settings.gutter+'px'
+                        });
                     }
                     else {
                         this.$items.css('position', 'absolute');
