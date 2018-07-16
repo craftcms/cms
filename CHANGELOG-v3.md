@@ -11,6 +11,7 @@
 - When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 - `dateCreated`, `dateUpdated`, `postDate`, `expiryDate`, `after`, and  `before` element query params can new be set to `DateTime` objects.
 - Matrix fields now auto-focus the first text input within newly-created Matrix blocks. ([#3104](https://github.com/craftcms/cms/issues/3104))
+- Updated Twig to 2.5.0.
 - Updated Garnish to 0.1.26.
 - Updated Selectize to 0.12.6.
 
