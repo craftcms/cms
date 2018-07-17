@@ -189,7 +189,7 @@ $tablePrefix = Craft::$app->config->db->tablePrefix;
 
 ## Events
 
-The traditional way of registering events in Craft 2/Yii 1 was:
+The traditional way of registering event handlers in Craft 2/Yii 1 was:
 
 ```php
 $component->onEventName = $callback;
@@ -203,13 +203,13 @@ In Craft 3/Yii 2, use <api:yii\base\Component::on()> instead:
 $component->on('eventName', $callback);
 ```
 
-Craft 2 also provided a `craft()->on()` method, which could be used to register events on a service class, without forcing the service to be instantiated if it wasn’t already:
+Craft 2 also provided a `craft()->on()` method, which could be used to register event handlers on a service:
 
 ```php
 craft()->on('elements.beforeSaveElement', $callback);
 ```
 
-There is no direct equivalent in Craft 3, partly because `Craft::$app->on()` is already a thing (`yii\base\Component::on()`), and partly because Yii 2 already provides a nice solution for registering events on classes regardless of whether they’ve been instantiated yet, and it works for more than just services: [class-level event handlers](https://www.yiiframework.com/doc/guide/2.0/en/concept-events#class-level-event-handlers).
+There is no direct equivalent in Craft 3, but generally event handlers that used `craft()->on()` in Craft 2 should use [class-level event handlers](https://www.yiiframework.com/doc/guide/2.0/en/concept-events#class-level-event-handlers) in Craft 3.
 
 ```php
 use craft\services\Elements;
