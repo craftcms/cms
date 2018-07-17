@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\helpers\StringHelper;
+use yii\base\Exception;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -58,7 +59,13 @@ class Gmail extends BaseTransportAdapter
         parent::init();
 
         if ($this->password) {
-            $this->password = StringHelper::decdec($this->password);
+            try {
+                $this->password = StringHelper::decdec($this->password);
+            } catch (Exception $e) {
+                Craft::error('Could not decode Gmail password: '.$e->getMessage());
+                Craft::$app->getErrorHandler()->logException($e);
+                $this->password = null;
+            }
         }
     }
 

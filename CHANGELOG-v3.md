@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.16 - 2018-07-17
+
+### Added
+- The progress bar on the Asset Indexes utility now shows how many files have been indexed, and how many there are in total. ([#2934](https://github.com/craftcms/cms/issues/2934))
+- Added `craft\base\PluginInterface::beforeSaveSettings()`.
+- Added `craft\base\PluginInterface::afterSaveSettings()`.
+- Added `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS`.
+- Added `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS`.
+
+### Changed
+- Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
+- Removed the `showBetaUpdates` config setting as it’s no longer being used.
+- When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
+- `dateCreated`, `dateUpdated`, `postDate`, `expiryDate`, `after`, and  `before` element query params can new be set to `DateTime` objects.
+- Matrix fields now auto-focus the first text input within newly-created Matrix blocks. ([#3104](https://github.com/craftcms/cms/issues/3104))
+- Updated Twig to 2.5.0.
+- Updated Garnish to 0.1.26.
+- Updated Selectize to 0.12.6.
+
+### Fixed
+- Fixed an error that could occur when sending emails to international domains if the Intl extension wasn’t enabled.
+- Fixed an exception that was thrown if the `securityKey` config setting was changed and Craft was set to use either the SMTP or Gmail mailer transport type. ([#3083](https://github.com/craftcms/cms/issues/3083))
+- Fixed a bug where Asset view was not being refreshed in some cases after using Image Editor. ([#3035](https://github.com/craftcms/cms/issues/3035))
+- Fixed a bug where Craft wouldn’t warn before leaving an edit page with unsaved changes, if Live Preview was active. ([#3092](https://github.com/craftcms/cms/issues/3092))
+- Fixed a bug where entries, categories, and global sets’ `getCpEditUrl()` methods could omit the site handle on multi-site installs. ([#3089](https://github.com/craftcms/cms/issues/3089))
+- Fixed a JavaScript error that occurred when closing Live Preview. ([#3098](https://github.com/craftcms/cms/issues/3098))
+- Fixed a bug where Dashboard widgets could be spaced incorrectly if there was only one grid column. ([#3100](https://github.com/craftcms/cms/issues/3100))
+- Fixed a bug where modal windows with Field Layout Designers could cause the browser to crash. ([#3096](https://github.com/craftcms/cms/pull/3096))
+- Fixed a bug where `craft\services\Fields::getAllGroups()` and `getGroupById()` could return incorrect results. ([#3102](https://github.com/craftcms/cms/issues/3102))
+
 ## 3.0.15 - 2018-07-09
 
 ### Changed
@@ -7,6 +37,7 @@
 - `Craft.EntryTypeSwitcher` now triggers a `typeChange` event after switching the entry type. ([#3067](https://github.com/craftcms/cms/pull/3067))
 - Reduced the left and right padding in the Control Panel for screens less than 768 pixels wide. ([#3073](https://github.com/craftcms/cms/issues/3073))
 - Removed the `useXSendFile` config setting as it’s no longer being used.
+- `craft\helpers\StringHelper::toKebabCase()`, `toCamelCase()`, `toPascalCase()`, and `toSnakeCase()` now treat camelCase’d and PascalCale’d strings as multiple words. ([#3090](https://github.com/craftcms/cms/issues/3090))
 
 ### Fixed
 - Fixed a bug where `craft\i18n\I18N::getPrimarySiteLocale()` and `getPrimarySiteLocaleId()` were returning locale info for the _first_ site, rather than the primary one. ([#3063](https://github.com/craftcms/cms/issues/3063))

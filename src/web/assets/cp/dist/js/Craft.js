@@ -1,4 +1,4 @@
-/*!   - 2018-07-05 */
+/*!   - 2018-07-16 */
 (function($){
 
 /** global: Craft */
@@ -1673,6 +1673,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             siteId: null,
             attributes: null,
             params: null,
+            elementIndex: null,
 
             onShowHud: $.noop,
             onHideHud: $.noop,
@@ -3669,7 +3670,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
 
         createElementEditor: function($element) {
-            Craft.createElementEditor(this.elementIndex.elementType, $element);
+            Craft.createElementEditor(this.elementIndex.elementType, $element, {
+                elementIndex: this.elementIndex
+            });
         },
 
         disable: function() {
@@ -4737,6 +4740,8 @@ Craft.AdminTable = Garnish.Base.extend(
  */
 Craft.AssetEditor = Craft.BaseElementEditor.extend(
     {
+        reloadIndex: false,
+
         updateForm: function(response) {
             this.base(response);
 
@@ -4753,11 +4758,21 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
         showImageEditor: function()
         {
             new Craft.AssetImageEditor(this.$element.data('id'), {
-                onSave: $.proxy(this, 'reloadForm'),
+                onSave: function () {
+                    this.reloadIndex = true;
+                    this.reloadForm();
+                }.bind(this),
                 allowDegreeFractions: Craft.isImagick
             });
-        }
+        },
 
+        onHideHud: function () {
+            if (this.reloadIndex && this.settings.elementIndex) {
+                this.settings.elementIndex.updateElements();
+            }
+
+            this.base();
+        }
     });
 
 // Register it!
@@ -8126,10 +8141,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }
                 else {
                     if (doReload) {
-                        this.updateElements();
+                        this._updateAfterUpload();
                     }
                 }
             }
+        },
+
+        /**
+         * Update the elements after an upload, setting sort to dateModified descending, if not using index.
+         * 
+         * @private
+         */
+        _updateAfterUpload: function () {
+            if (this.settings.context !== 'index') {
+                this.setSortAttribute('dateModified');
+                this.setSortDirection('desc');
+            }
+            this.updateElements();
         },
 
         /**
@@ -8147,7 +8175,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var finalCallback = function() {
                 this.setIndexAvailable();
                 this.progressBar.hideProgressBar();
-                this.updateElements();
+                this._updateAfterUpload();
             }.bind(this);
 
             this.progressBar.setItemCount(returnData.length);
@@ -10876,22 +10904,35 @@ Craft.CP = Garnish.Base.extend(
             }
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-                for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                    if (
-                        Craft.forceConfirmUnload ||
-                        this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
-                    ) {
-                        var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
-
-                        if (ev) {
-                            ev.originalEvent.returnValue = message;
+                var confirmUnload = false;
+                if (
+                    Craft.forceConfirmUnload ||
+                    (
+                        typeof Craft.livePreview !== 'undefined' &&
+                        Craft.livePreview.inPreviewMode
+                    )
+                ) {
+                    confirmUnload = true;
+                } else {
+                    for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                        if (this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()) {
+                            confirmUnload = true;
+                            break;
                         }
-                        else {
-                            window.event.returnValue = message;
-                        }
-
-                        return message;
                     }
+                }
+
+                if (confirmUnload) {
+                    var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
+
+                    if (ev) {
+                        ev.originalEvent.returnValue = message;
+                    }
+                    else {
+                        window.event.returnValue = message;
+                    }
+
+                    return message;
                 }
             });
         },
@@ -14781,7 +14822,11 @@ Craft.Grid = Garnish.Base.extend(
                     if (this.isSimpleLayout()) {
 
                         this.$container.height('auto');
-                        this.$items.css('position', 'relative');
+                        this.$items.css({
+                            position: 'relative',
+                            top: 0,
+                            'margin-bottom': this.settings.gutter+'px'
+                        });
                     }
                     else {
                         this.$items.css('position', 'absolute');
@@ -16262,13 +16307,20 @@ Craft.ProgressBar = Garnish.Base.extend(
     {
         $progressBar: null,
         $innerProgressBar: null,
+        $progressBarStatus: null,
 
         _itemCount: 0,
         _processedItemCount: 0,
+        _displaySteps: false,
 
-        init: function($element) {
+        init: function($element, displaySteps) {
+            if (displaySteps) {
+                this._displaySteps = true;
+            }
+
             this.$progressBar = $('<div class="progressbar pending hidden"/>').appendTo($element);
             this.$innerProgressBar = $('<div class="progressbar-inner"/>').appendTo(this.$progressBar);
+            this.$progressBarStatus = $('<div class="progressbar-status hidden" />').insertAfter(this.$progressBar);
 
             this.resetProgressBar();
         },
@@ -16285,6 +16337,11 @@ Craft.ProgressBar = Garnish.Base.extend(
             // Reset all the counters
             this.setItemCount(1);
             this.setProcessedItemCount(0);
+            this.$progressBarStatus.html('');
+
+            if (this._displaySteps) {
+                this.$progressBar.addClass('has-status');
+            }
         },
 
         /**
@@ -16298,6 +16355,7 @@ Craft.ProgressBar = Garnish.Base.extend(
 
         showProgressBar: function() {
             this.$progressBar.removeClass('hidden');
+            this.$progressBarStatus.removeClass('hidden');
         },
 
         setItemCount: function(count) {
@@ -16323,6 +16381,10 @@ Craft.ProgressBar = Garnish.Base.extend(
             var width = Math.min(100, Math.round(100 * this._processedItemCount / this._itemCount));
 
             this.setProgressPercentage(width);
+
+            if (this._displaySteps) {
+                this.$progressBarStatus.html(this._processedItemCount + ' / ' + this._itemCount);
+            }
         },
 
         setProgressPercentage: function(percentage, animate) {
@@ -18048,7 +18110,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     if (response.tableAttributes) {
                         this._updateTableAttributes($element, response.tableAttributes);
                     }
-                }, this)
+                }, this),
+                elementIndex: this.elementIndex
             });
         },
 

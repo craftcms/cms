@@ -594,12 +594,18 @@ class Plugins extends Component
             ]));
         }
 
+        if (!$plugin->beforeSaveSettings()) {
+            return false;
+        }
+
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
                 ['settings' => Json::encode($plugin->getSettings())],
                 ['handle' => $plugin->id])
             ->execute();
+
+        $plugin->afterSaveSettings();
 
         // Fire an 'afterSavePluginSettings' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS)) {

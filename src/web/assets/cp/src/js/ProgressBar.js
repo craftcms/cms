@@ -7,13 +7,20 @@ Craft.ProgressBar = Garnish.Base.extend(
     {
         $progressBar: null,
         $innerProgressBar: null,
+        $progressBarStatus: null,
 
         _itemCount: 0,
         _processedItemCount: 0,
+        _displaySteps: false,
 
-        init: function($element) {
+        init: function($element, displaySteps) {
+            if (displaySteps) {
+                this._displaySteps = true;
+            }
+
             this.$progressBar = $('<div class="progressbar pending hidden"/>').appendTo($element);
             this.$innerProgressBar = $('<div class="progressbar-inner"/>').appendTo(this.$progressBar);
+            this.$progressBarStatus = $('<div class="progressbar-status hidden" />').insertAfter(this.$progressBar);
 
             this.resetProgressBar();
         },
@@ -30,6 +37,11 @@ Craft.ProgressBar = Garnish.Base.extend(
             // Reset all the counters
             this.setItemCount(1);
             this.setProcessedItemCount(0);
+            this.$progressBarStatus.html('');
+
+            if (this._displaySteps) {
+                this.$progressBar.addClass('has-status');
+            }
         },
 
         /**
@@ -43,6 +55,7 @@ Craft.ProgressBar = Garnish.Base.extend(
 
         showProgressBar: function() {
             this.$progressBar.removeClass('hidden');
+            this.$progressBarStatus.removeClass('hidden');
         },
 
         setItemCount: function(count) {
@@ -68,6 +81,10 @@ Craft.ProgressBar = Garnish.Base.extend(
             var width = Math.min(100, Math.round(100 * this._processedItemCount / this._itemCount));
 
             this.setProgressPercentage(width);
+
+            if (this._displaySteps) {
+                this.$progressBarStatus.html(this._processedItemCount + ' / ' + this._itemCount);
+            }
         },
 
         setProgressPercentage: function(percentage, animate) {

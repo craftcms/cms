@@ -9,6 +9,9 @@ namespace craft\helpers;
 
 use Craft;
 use Stringy\Stringy as BaseStringy;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
+use yii\helpers\Inflector;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -896,6 +899,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str the string
      * @return string
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws Exception on OpenSSL error
      * @see decdec()
      */
     public static function encenc(string $str): string
@@ -908,6 +913,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string.
      * @return string
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws Exception on OpenSSL error
      */
     public static function decdec(string $str): string
     {
@@ -1034,7 +1041,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         if ($lower) {
             // Make it lowercase
-            $string = static::toLowerCase($string);
+            $string = Inflector::camel2words($string, false);
         }
 
         if ($removePunctuation) {

@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
+use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
 use craft\i18n\PhpMessageSource;
@@ -33,6 +34,21 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     use PluginTrait;
+
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
+     *
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the plugin’s settings from saving.
+     */
+    const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved
+     */
+    const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     // Properties
     // =========================================================================
@@ -227,6 +243,32 @@ class Plugin extends Module implements PluginInterface
         }
 
         return $ret;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSaveSettings(): bool
+    {
+        // Trigger a 'beforeSaveSettings' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_SAVE_SETTINGS, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSaveSettings()
+    {
+        // Trigger an 'afterSaveSettings' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SETTINGS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SETTINGS);
+        }
     }
 
     // Protected Methods
