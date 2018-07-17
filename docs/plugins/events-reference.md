@@ -3,7 +3,7 @@
 Craft provides several events that alert plugins when things are happening.
 
 ::: tip
-See [Hooks and Events](/v2/plugins/hooks-and-events.html) for an explanation of how events work in Craft, and how they differ from hooks.
+See [Hooks and Events](hooks-and-events.md) for an explanation of how events work in Craft, and how they differ from hooks.
 :::
 
 ## General Events
