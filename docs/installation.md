@@ -37,7 +37,7 @@ If you’re on macOS, be careful not to lose the hidden files in there (`.env`, 
 
 ### Directory Structure
 
-Once Craft’s files are in place, your project directory should have a file structure like this:
+Once Craft’s files are in place, your project directory should have a directory structure like this:
 
 ```
 my-craft-project.dev/
@@ -56,11 +56,11 @@ my-craft-project.dev/
 ├── composer.json
 ├── craft
 ├── craft.bat
-├── LICENSE.md
-└── README.md
 ```
 
-See [Directory Structure](directory-structure.md) for information on these directories and files.
+::: tip
+If you want to learn about what all these folders and files are for and how to customize them, visit the [Directory Structure](directory-structure.md) page.
+:::  
 
 ## Step 2: Set the File Permissions
 

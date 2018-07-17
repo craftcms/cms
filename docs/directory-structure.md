@@ -1,16 +1,20 @@
 # Directory Structure
 
-When you download a fresh copy of Craft 3, your project will have the following files and directories:
+When you download a fresh copy of Craft 3, your project will have the following folders and files in it:
 
-#### `config/`
+### `config/`
 
 Holds all of your Craft and plugin [configuration files](config/README.md), as well as your `license.key` file.
 
-#### `modules/`
+::: tip
+You can customize the name and location of this folder by setting the [CRAFT_CONFIG_PATH](config/php-constants.md#craft-config-path) PHP constant in `web/index.php`.
+:::
+
+### `modules/`
 
 Holds any [Yii modules](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules) your site might be using.
 
-#### `storage/`
+### `storage/`
 
 This is where Craft stores a bunch of files that get dynamically generated at runtime.
 
@@ -31,60 +35,58 @@ Some of the folders you might find in there include:
   - `temp/` – Stores temp files.
   - `validation.key` – A randomly-generated, cryptographically secure key that is used for hashing and validating data between requests.
 
-#### `templates/`
+::: tip
+You can customize the name and location of this folder by setting the [CRAFT_STORAGE_PATH](config/php-constants.md#craft-storage-path) PHP constant in `web/index.php`.
+:::
+
+### `templates/`
 
 Your front-end templates go in here.
 
-#### `vendor/`
+::: tip
+You can customize the name and location of this folder by setting the [CRAFT_TEMPLATES_PATH](config/php-constants.md#craft-templates-path) PHP constant in `web/index.php`.
+:::
+
+### `vendor/`
 
 This is where all of your Composer dependencies go, including Craft itself, and any plugins you’ve installed via Composer.
 
-#### `web/`
+::: tip
+You can customize the name and location of this folder by changing the [CRAFT_VENDOR_PATH](config/php-constants.md#craft-vendor-path) PHP constant in `web/index.php`.
+:::
 
-This directory represents your web root. (This can be renamed if needed.)
+### `web/`
 
-#### `.env`
+This directory represents your server’s webroot.
+
+::: tip
+You can customize the name and location of this folder. If you move it so it’s no longer living alongside the other Craft folders, make sure to update the [CRAFT_BASE_PATH](config/php-constants.md#craft-vendor-path) PHP constant in `<Webroot>/index.php`. 
+:::
+
+### `.env`
 
 This is your [PHP dotenv](https://github.com/vlucas/phpdotenv) `.env` configuration file. It defines sensitive or environment-specific config values that don’t make sense to commit to version control.
 
-#### `.env.example`
+### `.env.example`
 
 This is your [PHP dotenv](https://github.com/vlucas/phpdotenv) `.env` file template. It should be used as a starting point for any actual `.env` files, stored alongside it but out of version control on each of the environments your Craft project is running in.
 
-#### `.gitignore`
+### `.gitignore`
 
 Tells Git which files it should ignore when committing changes.
 
-#### `LICENSE.md`
+### `composer.json`
 
-Standard MIT license, which covers all the code in the `craftcms/craft` repo, but NOT any Composer-installed libraries in the `vendor/` folder. Feel free to delete this file.
+The starting point `composer.json` file that should be used for all Craft projects. See the [Composer documentation](https://getcomposer.org/doc/04-schema.md) for details on what can go in here.
 
-#### `README.md`
-
-Readme for the [craftcms/craft](https://github.com/craftcms/craft) repo. Feel free to delete this file, or replace its contents with something more relevant to your project.
-
-#### `composer.json`
-
-The starting point `composer.json` file that should be used for all Craft projects.
-
-By default, there will be some settings in here that can safely be changed or removed, including:
-
-- `name`
-- `description`
-- `keywords`
-- `license`
-- `homepage`
-- `type`
-- `support`
-
-#### `composer.lock`
+### `composer.lock`
 
 This is a Composer file that tells Composer exactly which dependencies and versions should be currently installed in `vendor/`.
 
-#### `craft`
+### `craft`
 
 This is a command line executable that will bootstrap a Craft console application.
 
-#### `craft.bat`
+### `craft.bat`
 
 This is a Windows Command Prompt wrapper for the `craft` executable.
