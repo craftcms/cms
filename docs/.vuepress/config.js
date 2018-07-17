@@ -211,8 +211,9 @@ module.exports = {
                         'relations',
                         'routing',
                         'searching',
+                        'reference-tags',
                         ['localization-guide', 'Localization'],
-                        'reference-tags'
+                        'static-translations',
                     ]
                 },
                 {
