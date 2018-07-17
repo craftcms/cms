@@ -19,7 +19,7 @@ After you create at least one category group, you will be able to create categor
 
 ## Category Field Layout
 
-Each Category Groups can have its own Field Layout, which allows you to customize the data that is associated with each category in the group. By default, every category will have a Title filed (the category name).
+Each Category Groups can have its own Field Layout, which allows you to customize the data that is associated with each category in the group. By default, every category will have a Title field (the category name).
 
 You can also add additional fields using all of the available field types in Craft. If a field doesn't yet exist, you must first create it via Settings → Fields. The new field will then be available to assign to the Field Layout of your Category Group.
 
