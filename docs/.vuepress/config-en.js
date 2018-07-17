@@ -198,6 +198,7 @@ module.exports = {
                     'reference-tags',
                     'sites',
                     ['localization', 'Localization'],
+                    'static-translations',
                     'content-migrations',
                     'plugins',
                 ]

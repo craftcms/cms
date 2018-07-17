@@ -117,7 +117,7 @@ The following PHP constants have been deprecated in Craft 3, and will no longer 
 
 ## Static Translation Files
 
-Craft 3 still supports [static translations](https://craftcms.com/support/static-translations), but the directory structure has changed. Now within your `translations/` folder, you should create subdirectories for each locale, and within them, PHP files for each **translation category**.
+Craft 3 still supports [static message translations](static-translations.md), but the directory structure has changed. Now within your `translations/` folder, you should create subdirectories for each locale, and within them, PHP files for each **translation category**.
 
 The acceptable translation categories are:
 
@@ -132,7 +132,7 @@ In Craft 3, your `translations/` folder might look something like this:
 
 ```
 translations/
-└── en-US/
+└── de/
     ├── app.php
     └── site.php
 ```

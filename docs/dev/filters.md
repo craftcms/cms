@@ -333,11 +333,21 @@ Formats a date as a human-readable timestamp, via <api:craft\i18n\Formatter::asT
 
 ## `translate` or `t`
 
-Translates a message with [Craft::t()](api:yii\BaseYii::t()). If no category is specified, it will default to `site`.
+Translates a message with [Craft::t()](api:yii\BaseYii::t()).
+
+```twig
+{{ "Hello world"|t('myCategory') }}
+```
+
+If no category is specified, it will default to `site`.
 
 ```twig
 {{ "Hello world"|t }}
-``` 
+```
+
+::: tip
+See [Static Message Translations](../static-translations.md) for a full explanation on how this works.
+:::
 
 ## `ucfirst`
 
