@@ -3,12 +3,11 @@
 ## Unreleased
 
 ### Added
-- Assets indexing progressbar now also displays the amount of files indexed and total to give a sense of progress. ([#2934](https://github.com/craftcms/cms/issues/2934))
+- The progress bar on the Asset Indexes utility now shows how many files have been indexed, and how many there are in total. ([#2934](https://github.com/craftcms/cms/issues/2934))
 - Added `craft\base\PluginInterface::beforeSaveSettings()`.
 - Added `craft\base\PluginInterface::afterSaveSettings()`.
 - Added `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS`.
 - Added `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS`.
-
 
 ### Changed
 - Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
@@ -21,7 +20,7 @@
 - Updated Selectize to 0.12.6.
 
 ### Fixed
-- Fixed a bug where you could get an error message sending emails in some environments that did not have the [intl](https://secure.php.net/manual/en/book.intl.php) extension installed.
+- Fixed an error that could occur when sending emails to international domains if the Intl extension wasn’t enabled.
 - Fixed an exception that was thrown if the `securityKey` config setting was changed and Craft was set to use either the SMTP or Gmail mailer transport type. ([#3083](https://github.com/craftcms/cms/issues/3083))
 - Fixed a bug where Asset view was not being refreshed in some cases after using Image Editor. ([#3035](https://github.com/craftcms/cms/issues/3035))
 - Fixed a bug where Craft wouldn’t warn before leaving an edit page with unsaved changes, if Live Preview was active. ([#3092](https://github.com/craftcms/cms/issues/3092))
