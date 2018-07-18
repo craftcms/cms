@@ -143,7 +143,7 @@ The `svg()` function has the following arguments:
 {# file contents #}
 {{ svg('<svg ... />') }}
 
-{# asset #]
+{# asset #}
 {{ svg(entry.myAssetsField.one()) }}
 ```
 
