@@ -1206,7 +1206,10 @@ class Elements extends Component
                 $targetPath = $sourcePath . '.' . $segment;
 
                 // Figure out the path mapping wants a custom order
-                $useCustomOrder = !empty($pathCriterias[$targetPath]['order']);
+                $useCustomOrder = (
+                    !empty($pathCriterias[$targetPath]['orderBy']) ||
+                    !empty($pathCriterias[$targetPath]['order'])
+                );
 
                 // Make sure we haven't already eager-loaded this target path
                 if (!isset($elementsByPath[$targetPath])) {
