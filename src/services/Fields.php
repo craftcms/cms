@@ -1567,7 +1567,7 @@ class Fields extends Component
     /**
      * Gets a field group record or creates a new one.
      *
-     * @param FieldGroup $group
+     * @param mixed $criteria ID or UID of the field group.
      * @return FieldGroupRecord
      */
     private function _getGroupRecord($criteria): FieldGroupRecord
