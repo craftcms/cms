@@ -136,6 +136,17 @@ The `svg()` function has the following arguments:
 - **`svg`** – The SVG file path, an SVG file’s contents, or an <api:craft\elements\Asset> object that represents an SVG file.
 - **`sanitize`** – Whether the SVG should be sanitized of any potentially malicious scripts (`true` by default).
 
+```twig
+{# file path #}
+{{ svg('@webroot/path/to/file.svg') }}
+
+{# file contents #}
+{{ svg('<svg ... />') }}
+
+{# asset #]
+{{ svg(entry.myAssetsField.one()) }}
+```
+
 ## `url( path, params, protocol, mustShowScriptName )`
 
 Returns a URL to a page on your site.
