@@ -267,7 +267,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType implements IPreviewabl
 
 		foreach ($this->getOptions() as $option)
 		{
-			$selected = in_array($option['value'], $selectedValues);
+			$selected = in_array($option['value'], $selectedValues, true);
 			$options[] = new OptionData($option['label'], $option['value'], $selected);
 		}
 
@@ -359,7 +359,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType implements IPreviewabl
 	{
 		foreach ($this->getOptions() as $option)
 		{
-			if ($option['value'] == $value)
+			if ((string)$option['value'] === (string)$value)
 			{
 				return $option['label'];
 			}
