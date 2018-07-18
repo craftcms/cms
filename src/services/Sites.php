@@ -17,10 +17,13 @@ use craft\elements\Tag;
 use craft\errors\SiteGroupNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
+use craft\events\ParseConfigEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\queue\jobs\ResaveElements;
@@ -105,6 +108,9 @@ class Sites extends Component
      * @event DeleteSiteEvent The event that is triggered after a site is deleted.
      */
     const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
+
+    const CONFIG_SITEGROUP_KEY = 'sites';
+    const CONFIG_SITES_KEY = 'sites';
 
     // Properties
     // =========================================================================
@@ -253,14 +259,27 @@ class Sites extends Component
             return false;
         }
 
-        $groupRecord = $this->_getGroupRecord($group);
-        $groupRecord->name = $group->name;
-        $groupRecord->save(false);
+        $projectConfig = Craft::$app->getProjectConfig();
+        $configData = [
+            'name' => $group->name
+        ];
+
+        if ($isNewGroup) {
+            $uid = StringHelper::UUID();
+        } else {
+            $groupRecord = $this->_getGroupRecord($group->id);
+            $uid = $groupRecord->uid;
+            $configData[self::CONFIG_SITES_KEY] = $projectConfig->get(self::CONFIG_SITEGROUP_KEY.'.'.$uid.'.'.self::CONFIG_SITES_KEY);
+        }
+
+        $projectConfig->save(self::CONFIG_SITEGROUP_KEY.'.'.$uid, $configData);
 
         // Now that we have an ID, save it on the model & models
         if ($isNewGroup) {
-            $group->id = $groupRecord->id;
+            $group->id = Db::idByUid('{{%sitegroups}}', $uid);
         }
+
+        $group->uid = $uid;
 
         // Fire an 'afterSaveSiteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
@@ -270,10 +289,55 @@ class Sites extends Component
             ]));
         }
 
-        $configPath = 'sites.'.$groupRecord->uid.'.name';
-        Craft::$app->getProjectConfig()->save($configPath, $group->name);
-
         return true;
+    }
+
+    /**
+     * Handle site group change
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleChangedGroup(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match a field group?
+        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $uid = $matches[1];
+
+            $groupRecord = $this->_getGroupRecord($uid);
+
+            // If this is a new group, set the UID we want.
+            if (!$groupRecord->id) {
+                $groupRecord->uid = $uid;
+            }
+
+            $groupRecord->name = $data['name'];
+            $groupRecord->save(false);
+        }
+    }
+
+    /**
+     * Handle site group getting deleted.
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleDeletedGroup(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match a field group?
+        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $uid = $matches[1];
+
+            $record = $this->_getGroupRecord($uid);
+
+            if ($record->id) {
+                $record->delete();
+
+                // Delete our cache of it
+                unset($this->_groupsById[$record->id]);
+            }
+        }
     }
 
     /**
@@ -322,9 +386,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%sitegroups}}', ['id' => $group->id])
-            ->execute();
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SITEGROUP_KEY.'.'.$group->uid, null);
 
         // Delete our cache of it
         unset($this->_groupsById[$group->id]);
@@ -591,134 +653,50 @@ class Sites extends Component
             return false;
         }
 
-        if (!$isNewSite) {
-            $siteRecord = SiteRecord::find()
-                ->where(['id' => $site->id])
-                ->one();
+        $groupRecord = $this->_getGroupRecord($site->groupId);
+        $groupUid = $groupRecord->uid;
 
-            if (!$siteRecord) {
-                throw new SiteNotFoundException("No site exists with the ID '{$site->id}'");
-            }
-        } else {
-            $siteRecord = new SiteRecord();
-            $maxSortOrder = false;
+        $projectConfig = Craft::$app->getProjectConfig();
+        $configData = [
+            'name' => $site->name,
+            'handle' => $site->handle,
+            'language' => $site->language,
+            'hasUrls' => $site->hasUrls,
+            'baseUrl' => $site->baseUrl,
+            'sortOrder' => $site->sortOrder,
+            'primary' => $site->primary,
 
-            if (Craft::$app->getIsInstalled()) {
-                // Get the next biggest sort order
-                $maxSortOrder = (new Query())
-                    ->from(['{{%sites}}'])
-                    ->max('[[sortOrder]]');
-            }
-
-            $siteRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
-        }
-
-        // Shared attributes
-        $siteRecord->groupId = $site->groupId;
-        $siteRecord->name = $site->name;
-        $siteRecord->handle = $site->handle;
-        $siteRecord->language = $site->language;
-        $siteRecord->hasUrls = $site->hasUrls;
-        $siteRecord->baseUrl = $site->baseUrl;
+        ];
 
         if ($isNewSite) {
-            if (!Craft::$app->getIsInstalled()) {
-                $siteRecord->primary = $site->primary = true;
-            } else {
-                // Even if this will be the new primary site, let _processNewPrimarySite() be the one to set this
-                $siteRecord->primary = false;
-            }
-        }
+            $uid = StringHelper::UUID();
+            $configData['sortOrder'] = ((int)(new Query())
+                ->from(['{{%sites}}'])
+                ->max('[[sortOrder]]')) + 1;
+        } else {
+            $uid = $site->uid;
+            $oldSiteRecord = $this->_getSiteRecord($uid);
+            $oldGroupRecord = $this->_getGroupRecord($oldSiteRecord->groupId);
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // Is the event giving us the go-ahead?
-            $siteRecord->save(false);
-
-            // Now that we have a site ID, save it on the model
-            if ($isNewSite) {
-                $site->id = $siteRecord->id;
+            // If moving between groups, discard old data.
+            if ($oldGroupRecord->uid != $groupRecord->uid) {
+                $projectConfig->delete(self::CONFIG_SITEGROUP_KEY.'.'.$oldGroupRecord->uid.'.'.self::CONFIG_SITES_KEY.'.'.$uid, true);
             }
 
-            // Update our cache of the site
-            $this->_sitesById[$site->id] = $site;
-            $this->_sitesByHandle[$site->handle] = $site;
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
         }
 
-        try {
-            if (Craft::$app->getIsInstalled()) {
-                // Did the primary site just change?
-                $oldPrimarySiteId = $this->getPrimarySite()->id;
-                if ($site->primary && $site->id != $oldPrimarySiteId) {
-                    $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
-                }
+        $configPath = self::CONFIG_SITEGROUP_KEY.'.'.$groupUid.'.'.self::CONFIG_SITES_KEY.'.'.$uid;
+        $projectConfig->save($configPath, $configData);
 
-                if ($isNewSite) {
-                    // TODO: Move this code into element/category modules
-                    // Create site settings for each of the category groups
-                    $allSiteSettings = (new Query())
-                        ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                        ->from(['{{%categorygroups_sites}}'])
-                        ->where(['siteId' => $this->getPrimarySite()->id])
-                        ->all();
-
-                    if (!empty($allSiteSettings)) {
-                        $newSiteSettings = [];
-
-                        foreach ($allSiteSettings as $siteSettings) {
-                            $newSiteSettings[] = [
-                                $siteSettings['groupId'],
-                                $site->id,
-                                $siteSettings['uriFormat'],
-                                $siteSettings['template'],
-                                $siteSettings['hasUrls']
-                            ];
-                        }
-
-                        Craft::$app->getDb()->createCommand()
-                            ->batchInsert(
-                                '{{%categorygroups_sites}}',
-                                ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
-                                $newSiteSettings)
-                            ->execute();
-                    }
-
-                    // Re-save most localizable element types
-                    // (skip entries because they only support specific sites)
-                    // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
-                    $queue = Craft::$app->getQueue();
-                    $elementTypes = [
-                        Asset::class,
-                        Category::class,
-                        GlobalSet::class,
-                        Tag::class,
-                    ];
-
-                    foreach ($elementTypes as $elementType) {
-                        $queue->push(new ResaveElements([
-                            'elementType' => $elementType,
-                            'criteria' => [
-                                'siteId' => $oldPrimarySiteId,
-                                'status' => null,
-                                'enabledForSite' => false
-                            ]
-                        ]));
-                    }
-                }
-            } else {
-                // This must be the primary site
-                $this->_primarySite = $site;
-            }
-        // If no primary site found, this is probably the first site and also the primary site.
-        } catch (SiteNotFoundException $exception) {
-            $this->_primarySite = $site;
+        // Now that we have a site ID, save it on the model
+        if ($isNewSite) {
+            $site->id = Db::idByUid('{{%sites}}', $uid);
+            $site->uid = $uid;
         }
+
+        // Update our cache of the site
+        $this->_sitesById[$site->id] = $site;
+        $this->_sitesByHandle[$site->handle] = $site;
 
         // Fire an 'afterSaveSite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
@@ -729,6 +707,133 @@ class Sites extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Handle site changes.
+     *
+     * @param ParseConfigEvent $event
+     * @throws \Throwable
+     */
+    public function handleChangedSite(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match a site?
+        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $groupUid = $matches[1];
+            $siteUid = $matches[2];
+
+            // Ensure we have the site group in place first
+            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY.'.'.$groupUid);
+
+            $data = Craft::$app->getProjectConfig()->get($path, true);
+
+
+            $transaction = Craft::$app->getDb()->beginTransaction();
+
+            try {
+                $siteRecord = $this->_getSiteRecord($siteUid);
+                $groupRecord = $this->_getGroupRecord($groupUid);
+
+                // Shared attributes
+                $siteRecord->uid = $siteUid;
+                $siteRecord->groupId = $groupRecord['id'];
+                $siteRecord->name = $data['name'];
+                $siteRecord->handle = $data['handle'];
+                $siteRecord->language = $data['language'];
+                $siteRecord->hasUrls = $data['hasUrls'];
+                $siteRecord->baseUrl = $data['baseUrl'];
+                $siteRecord->primary = $data['primary'];
+                $siteRecord->sortOrder = $data['sortOrder'];
+                $isNewSite = $siteRecord->isNewRecord;
+
+                if ($isNewSite) {
+                    try {
+                        // Even if this will be the new primary site, let _processNewPrimarySite() be the one to set this
+                        $primary = $this->getPrimarySite();
+                        $siteRecord->primary = false;
+                    } catch (SiteNotFoundException $exception) {
+                        // Unless there's no primary site.
+                        $siteRecord->primary = true;
+                    }
+                }
+
+                // Is the event giving us the go-ahead?
+                $siteRecord->save(false);
+
+                // Force a reload with the fresh data.
+                if ($siteRecord->primary && null === $this->_primarySite) {
+                    $this->_sitesById = null;
+                    $this->_loadAllSites();
+                }
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+
+                throw $e;
+            }
+
+            // Did the primary site just change?
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+
+            if ($data['primary'] && $siteRecord->id != $oldPrimarySiteId) {
+                $this->_processNewPrimarySite($oldPrimarySiteId, $siteRecord->id);
+            }
+
+            if ($isNewSite) {
+                // TODO: Move this code into element/category modules
+                // Create site settings for each of the category groups
+                $allSiteSettings = (new Query())
+                    ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
+                    ->from(['{{%categorygroups_sites}}'])
+                    ->where(['siteId' => $this->getPrimarySite()->id])
+                    ->all();
+
+                if (!empty($allSiteSettings)) {
+                    $newSiteSettings = [];
+
+                    foreach ($allSiteSettings as $siteSettings) {
+                        $newSiteSettings[] = [
+                            $siteSettings['groupId'],
+                            $site->id,
+                            $siteSettings['uriFormat'],
+                            $siteSettings['template'],
+                            $siteSettings['hasUrls']
+                        ];
+                    }
+
+                    Craft::$app->getDb()->createCommand()
+                        ->batchInsert(
+                            '{{%categorygroups_sites}}',
+                            ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
+                            $newSiteSettings)
+                        ->execute();
+                }
+
+                // Re-save most localizable element types
+                // (skip entries because they only support specific sites)
+                // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
+                $queue = Craft::$app->getQueue();
+                $elementTypes = [
+                    Asset::class,
+                    Category::class,
+                    GlobalSet::class,
+                    Tag::class,
+                ];
+
+                foreach ($elementTypes as $elementType) {
+                    $queue->push(new ResaveElements([
+                        'elementType' => $elementType,
+                        'criteria' => [
+                            'siteId' => $oldPrimarySiteId,
+                            'status' => null,
+                            'enabledForSite' => false
+                        ]
+                    ]));
+                }
+            }
+        }
     }
 
     /**
@@ -820,187 +925,8 @@ class Sites extends Component
             return false;
         }
 
-        // TODO: Move this code into entries module, etc.
-        // Get the section IDs that are enabled for this site
-        $sectionIds = (new Query())
-            ->select(['sectionId'])
-            ->from(['{{%sections_sites}}'])
-            ->where(['siteId' => $site->id])
-            ->column();
-
-        // Figure out which ones are *only* enabled for this site
-        $soloSectionIds = [];
-
-        foreach ($sectionIds as $sectionId) {
-            $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
-
-            if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
-                $soloSectionIds[] = $sectionId;
-            }
-        }
-
-        // Did we find any?
-        if (!empty($soloSectionIds)) {
-            // Should we enable those for a different site?
-            if ($transferContentTo !== null) {
-                Craft::$app->getDb()->createCommand()
-                    ->update(
-                        '{{%sections_sites}}',
-                        ['siteId' => $transferContentTo],
-                        ['sectionId' => $soloSectionIds])
-                    ->execute();
-
-                // Get all of the entry IDs in those sections
-                $entryIds = (new Query())
-                    ->select(['id'])
-                    ->from(['{{%entries}}'])
-                    ->where(['sectionId' => $soloSectionIds])
-                    ->column();
-
-                if (!empty($entryIds)) {
-                    // Delete their template caches
-                    Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
-
-                    // Update the entry tables
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%content}}',
-                            ['siteId' => $transferContentTo],
-                            ['elementId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%elements_sites}}',
-                            ['siteId' => $transferContentTo],
-                            ['elementId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%entrydrafts}}',
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%entryversions}}',
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%relations}}',
-                            ['sourceSiteId' => $transferContentTo],
-                            [
-                                'and',
-                                ['sourceId' => $entryIds],
-                                ['not', ['sourceSiteId' => null]]
-                            ])
-                        ->execute();
-
-                    // All the Matrix tables
-                    $blockIds = (new Query())
-                        ->select(['id'])
-                        ->from(['{{%matrixblocks}}'])
-                        ->where(['ownerId' => $entryIds])
-                        ->column();
-
-                    if (!empty($blockIds)) {
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%matrixblocks}}',
-                                ['ownerSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['id' => $blockIds],
-                                    ['not', ['ownerSiteId' => null]]
-                                ])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
-                            ->delete(
-                                '{{%elements_sites}}',
-                                [
-                                    'elementId' => $blockIds,
-                                    'siteId' => $transferContentTo
-                                ])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%elements_sites}}',
-                                ['siteId' => $transferContentTo],
-                                [
-                                    'elementId' => $blockIds,
-                                    'siteId' => $site->id
-                                ])
-                            ->execute();
-
-                        $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
-
-                        foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (strpos($tableName, $matrixTablePrefix) === 0) {
-                                $tableName = substr($tableName, $tablePrefixLength);
-
-                                Craft::$app->getDb()->createCommand()
-                                    ->delete(
-                                        $tableName,
-                                        [
-                                            'elementId' => $blockIds,
-                                            'siteId' => $transferContentTo
-                                        ])
-                                    ->execute();
-
-                                Craft::$app->getDb()->createCommand()
-                                    ->update(
-                                        $tableName,
-                                        ['siteId' => $transferContentTo],
-                                        [
-                                            'elementId' => $blockIds,
-                                            'siteId' => $site->id
-                                        ])
-                                    ->execute();
-                            }
-                        }
-
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%relations}}',
-                                ['sourceSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['sourceId' => $blockIds],
-                                    ['not', ['sourceSiteId' => null]]
-                                ])
-                            ->execute();
-                    }
-                }
-            } else {
-                // Delete those sections
-                foreach ($soloSectionIds as $sectionId) {
-                    Craft::$app->getSections()->deleteSectionById($sectionId);
-                }
-            }
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%sites}}', ['id' => $site->id])
-                ->execute();
-
-            $transaction->commit();
-
-            $success = (bool)$affectedRows;
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
+        $group = $site->getGroup();
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SITEGROUP_KEY.'.'.$group->uid.'.'.self::CONFIG_SITES_KEY.'.'.$site->uid, null);
 
         // Fire an 'afterDeleteSite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
@@ -1010,7 +936,208 @@ class Sites extends Component
             ]));
         }
 
-        return $success;
+        return true;
+    }
+
+    /**
+     * Handle a deleted Site.
+     *
+     * @param ParseConfigEvent $event
+     * @throws DbException
+     * @throws \Throwable
+     * @throws \yii\base\NotSupportedException
+     */
+    public function handleDeletedSite(ParseConfigEvent $event) {
+
+        $path = $event->configPath;
+
+        // Does it match a site?
+        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+
+            $site = $this->_getSiteRecord($matches[2]);
+
+            // TODO: Move this code into entries module, etc.
+            // Get the section IDs that are enabled for this site
+            $sectionIds = (new Query())
+                ->select(['sectionId'])
+                ->from(['{{%sections_sites}}'])
+                ->where(['siteId' => $site->id])
+                ->column();
+
+            // Figure out which ones are *only* enabled for this site
+            $soloSectionIds = [];
+
+            foreach ($sectionIds as $sectionId) {
+                $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
+
+                if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
+                    $soloSectionIds[] = $sectionId;
+                }
+            }
+
+            // Did we find any?
+            if (!empty($soloSectionIds)) {
+                // Should we enable those for a different site?
+                if ($transferContentTo !== null) {
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%sections_sites}}',
+                            ['siteId' => $transferContentTo],
+                            ['sectionId' => $soloSectionIds])
+                        ->execute();
+
+                    // Get all of the entry IDs in those sections
+                    $entryIds = (new Query())
+                        ->select(['id'])
+                        ->from(['{{%entries}}'])
+                        ->where(['sectionId' => $soloSectionIds])
+                        ->column();
+
+                    if (!empty($entryIds)) {
+                        // Delete their template caches
+                        Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+
+                        // Update the entry tables
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%content}}',
+                                ['siteId' => $transferContentTo],
+                                ['elementId' => $entryIds])
+                            ->execute();
+
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%elements_sites}}',
+                                ['siteId' => $transferContentTo],
+                                ['elementId' => $entryIds])
+                            ->execute();
+
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%entrydrafts}}',
+                                ['siteId' => $transferContentTo],
+                                ['entryId' => $entryIds])
+                            ->execute();
+
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%entryversions}}',
+                                ['siteId' => $transferContentTo],
+                                ['entryId' => $entryIds])
+                            ->execute();
+
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%relations}}',
+                                ['sourceSiteId' => $transferContentTo],
+                                [
+                                    'and',
+                                    ['sourceId' => $entryIds],
+                                    ['not', ['sourceSiteId' => null]]
+                                ])
+                            ->execute();
+
+                        // All the Matrix tables
+                        $blockIds = (new Query())
+                            ->select(['id'])
+                            ->from(['{{%matrixblocks}}'])
+                            ->where(['ownerId' => $entryIds])
+                            ->column();
+
+                        if (!empty($blockIds)) {
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%matrixblocks}}',
+                                    ['ownerSiteId' => $transferContentTo],
+                                    [
+                                        'and',
+                                        ['id' => $blockIds],
+                                        ['not', ['ownerSiteId' => null]]
+                                    ])
+                                ->execute();
+
+                            Craft::$app->getDb()->createCommand()
+                                ->delete(
+                                    '{{%elements_sites}}',
+                                    [
+                                        'elementId' => $blockIds,
+                                        'siteId' => $transferContentTo
+                                    ])
+                                ->execute();
+
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%elements_sites}}',
+                                    ['siteId' => $transferContentTo],
+                                    [
+                                        'elementId' => $blockIds,
+                                        'siteId' => $site->id
+                                    ])
+                                ->execute();
+
+                            $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
+                            $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
+
+                            foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
+                                if (strpos($tableName, $matrixTablePrefix) === 0) {
+                                    $tableName = substr($tableName, $tablePrefixLength);
+
+                                    Craft::$app->getDb()->createCommand()
+                                        ->delete(
+                                            $tableName,
+                                            [
+                                                'elementId' => $blockIds,
+                                                'siteId' => $transferContentTo
+                                            ])
+                                        ->execute();
+
+                                    Craft::$app->getDb()->createCommand()
+                                        ->update(
+                                            $tableName,
+                                            ['siteId' => $transferContentTo],
+                                            [
+                                                'elementId' => $blockIds,
+                                                'siteId' => $site->id
+                                            ])
+                                        ->execute();
+                                }
+                            }
+
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%relations}}',
+                                    ['sourceSiteId' => $transferContentTo],
+                                    [
+                                        'and',
+                                        ['sourceId' => $blockIds],
+                                        ['not', ['sourceSiteId' => null]]
+                                    ])
+                                ->execute();
+                        }
+                    }
+                } else {
+                    // Delete those sections
+                    foreach ($soloSectionIds as $sectionId) {
+                        Craft::$app->getSections()->deleteSectionById($sectionId);
+                    }
+                }
+            }
+
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                $affectedRows = Craft::$app->getDb()->createCommand()
+                    ->delete('{{%sites}}', ['id' => $site->id])
+                    ->execute();
+
+                $transaction->commit();
+
+                $success = (bool)$affectedRows;
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+
+                throw $e;
+            }
+        }
     }
 
     // Private Methods
@@ -1088,6 +1215,7 @@ class Sites extends Component
             ->select([
                 'id',
                 'name',
+                'uid',
             ])
             ->from(['{{%sitegroups}}'])
             ->orderBy(['name' => SORT_ASC]);
@@ -1109,23 +1237,35 @@ class Sites extends Component
     /**
      * Gets a site group record or creates a new one.
      *
-     * @param SiteGroup $group
+     * @param mixed $criteria ID or UID of the site group.
      * @return SiteGroupRecord
-     * @throws SiteGroupNotFoundException if $group->id is invalid
      */
-    private function _getGroupRecord(SiteGroup $group): SiteGroupRecord
+    private function _getGroupRecord($criteria): SiteGroupRecord
     {
-        if ($group->id) {
-            $record = SiteGroupRecord::findOne($group->id);
-
-            if (!$record) {
-                throw new SiteGroupNotFoundException('Invalid site group ID: '.$group->id);
-            }
-        } else {
-            $record = new SiteGroupRecord();
+        if (is_numeric($criteria)) {
+            $groupRecord = SiteGroupRecord::findOne($criteria);
+        } else if (\is_string($criteria)) {
+            $groupRecord = SiteGroupRecord::findOne(['uid' => $criteria]);
         }
 
-        return $record;
+        return $groupRecord ?? new SiteGroupRecord();
+    }
+
+    /**
+     * Gets a site record or creates a new one.
+     *
+     * @param mixed $criteria ID or UID of the site group.
+     * @return SiteGroupRecord
+     */
+    private function _getSiteRecord($criteria): SiteRecord
+    {
+        if (is_numeric($criteria)) {
+            $siteRecord = SiteRecord::findOne($criteria);
+        } else if (\is_string($criteria)) {
+            $siteRecord = SiteRecord::findOne(['uid' => $criteria]);
+        }
+
+        return $siteRecord ?? new SiteRecord();
     }
 
     /**
@@ -1202,10 +1342,9 @@ class Sites extends Component
             throw $e;
         }
 
-        // Set the new primary site
-        $this->_primarySite->primary = false;
-        $this->_primarySite = $this->getSiteById($newPrimarySiteId);
-        $this->_primarySite->primary = true;
+        // Set the new primary site by forcing a reload from the DB.
+        $this->_sitesById = null;
+        $this->_loadAllSites();
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {

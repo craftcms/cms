@@ -1258,5 +1258,15 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getVolumes(), 'handleDeletedVolume']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$this->getVolumes(), 'pruneDeletedField']);
 
+        // Site groups
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getSites(), 'handleChangedGroup']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getSites(), 'handleChangedGroup']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getSites(), 'handleDeletedGroup']);
+
+        // Sites
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getSites(), 'handleChangedSite']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getSites(), 'handleChangedSite']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getSites(), 'handleDeletedSite']);
+
     }
 }
