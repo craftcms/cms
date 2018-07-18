@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where the `orderBy` element query param wasn’t being respected when used in conjunction with a `with` param to eager-load elements in a specific order. ([#3109](https://github.com/craftcms/cms/issues/3109))
+- Fixed a bug where underscores were getting removed from slugs. ([#3111](https://github.com/craftcms/cms/issues/3111))
 
 ## 3.0.16 - 2018-07-17
 
