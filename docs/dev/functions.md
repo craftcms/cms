@@ -29,7 +29,7 @@ Outputs any scripts and styles that were registered for the “begin body” pos
 Rounds a number up.
 
 ```twig
-{{ ceil(42.1) }} => 43
+{{ ceil(42.1) }} → 43
 ```
 
 ## `className( object )`
@@ -74,7 +74,7 @@ Outputs any scripts and styles that were registered for the “end body” posit
 Rounds a number down.
 
 ```twig
-{{ floor(42.9) }} => 42
+{{ floor(42.9) }} → 42
 ```
 
 ## `getenv( name )`
@@ -105,8 +105,8 @@ Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}"
 Rounds off a number to the closest integer.
 
 ```twig
-{{ round(42.1) }} => 42
-{{ round(42.9) }} => 43
+{{ round(42.1) }} → 42
+{{ round(42.9) }} → 43
 ```
 
 ## `shuffle( array )`

@@ -244,8 +244,8 @@ Formats a number according to the user’s preferred language.
 You can optionally pass `false` to it if you want group symbols to be omitted (e.g. commas in English).
 
 ```twig
-{{ 1000000|number }} => 1,000,000
-{{ 1000000|number(false) }} => 1000000
+{{ 1000000|number }} → 1,000,000
+{{ 1000000|number(false) }} → 1000000
 ```
 
 ## `parseRefs`
