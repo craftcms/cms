@@ -35,37 +35,87 @@ If you pass `true` into the last argument, the “.00” will be stripped if the
 
 See [here for a list](api:yii\i18n\Formatter::$numberFormatterOptions) of the possible `numberOptions`.
 
-See [here for a list](api:yii\i18n\Formatter::$numberFormatterTextOptions) of the possible textOptions`.
+See [here for a list](api:yii\i18n\Formatter::$numberFormatterTextOptions) of the possible `textOptions`.
 
 ```twig
-{{ 1000000|currency('USD') }} => $1,000,000.00
-{{ 1000000|currency('USD', [], [], true) }} => $1,000,000
+{{ 1000000|currency('USD') }} → $1,000,000.00
+{{ 1000000|currency('USD', [], [], true) }} → $1,000,000
 ```
 
 ## `date`
 
-Like Twig’s core [date](https://twig.symfony.com/doc/2.x/filters/date.html) filter, but with additional support for the following `format` values:
-
-- `'short'`
-- `'medium'` (default)
-- `'long'`
-- `'full'`
-
-When one of those formats are used, the date will be formatted into a localized date format using <api:craft\i18n\Formatter::asDate()>.
-
-A `translate` argument is also available. If `true` is passed, the formatted date will be run through <api:craft\helpers\DateTimeHelper::translateDate()> before being returned.
+Outputs a formatted date for a timestamp or [DateTime](http://php.net/manual/en/class.datetime.php) object.
 
 ```twig
-{{ entry.postDate|date('short') }}
+{{ entry.postDate|date }} → Sep 26, 2018
 ```
 
+You can customize how much detail is provided by passing a value to the `format` param:
+
+```twig
+{{ entry.postDate|date('short') }} → 9/26/2018
+```
+
+Possible `format` values are:
+
+| Format               | Example                       |
+| -------------------- | ----------------------------- |
+| `short`              | 9/26/2018                     |
+| `medium` _(default)_ | Sep 26, 2018                  |
+| `long`               | September 26, 2018            |
+| `full`               | Wednesday, September 26, 2018 |
+
+The exact time formats that will be used depends on the current application locale. If you want to use a different locale’s time format, use the `locale` param:
+
+```twig
+{{ entry.postDate|date('short', locale='en-GB') }} → 26/9/2018
+```
+
+You can also pass a custom PHP date format using the same [formatting options](http://php.net/manual/en/function.date.php) supported by PHP’s `date()` function.
+
+```twig
+{{ entry.postDate|date('Y-m-d') }} → 2018-09-26
+```    
+
+You can customize the timezone the time is output in, using the `timezone` param:
+
+```twig
+{{ entry.postDate|date('short', timezone='UTC') }} → 9/27/2018
+```
 
 ## `datetime`
 
-Like the [date](#date) filter, but the result will also include a timestamp.
+Outputs a formatted date (including time of day) for a timestamp or [DateTime](http://php.net/manual/en/class.datetime.php) object.
 
 ```twig
-{{ entry.postDate|datetime('short') }}
+{{ entry.postDate|datetime }} → Sep 26, 2018, 5:00:00 PM
+```
+
+You can customize how much detail is provided by passing a value to the `format` param:
+
+```twig
+{{ entry.postDate|datetime('short') }} → 9/26/2018, 5:00 PM
+```
+
+Possible `format` values are:
+
+| Format               | Example                                         |
+| -------------------- | ----------------------------------------------- |
+| `short`              | 9/26/2018, 5:00 PM                              |
+| `medium` _(default)_ | Sep 26, 2018, 5:00:00 PM                        |
+| `long`               | September 26, 2018 at 5:00:00 PM PDT            |
+| `full`               | Wednesday, September 26, 2018 at 5:00:00 PM PDT |
+
+The exact time formats that will be used depends on the current application locale. If you want to use a different locale’s time format, use the `locale` param:
+
+```twig
+{{ entry.postDate|datetime('short', locale='en-GB') }} → 26/9/2018, 17:00
+```
+
+You can customize the timezone the time is output in, using the `timezone` param:
+
+```twig
+{{ entry.postDate|datetime('short', timezone='UTC') }} → 9/27/2018, 12:00 AM
 ```
 
 ## `duration`
@@ -321,10 +371,36 @@ Returns a string formatted in “snake_case”.
 
 ## `time`
 
-Like the [time](#time) filter, but for times rather than dates.
+Outputs the time of day for a timestamp or [DateTime](http://php.net/manual/en/class.datetime.php) object.
 
 ```twig
-{{ entry.postDate|time('short') }}
+{{ entry.postDate|time }} → 10:00:00 AM
+```
+
+You can customize how much detail is provided by passing a value to the `format` param:
+
+```twig
+{{ entry.postDate|time('short') }} → 10:00 AM
+```
+
+Possible `format` values are:
+
+| Format               | Example        |
+| -------------------- | -------------- |
+| `short`              | 5:00 PM        |
+| `medium` _(default)_ | 5:00:00 PM     |
+| `long`               | 5:00:00 PM PDT |
+
+The exact time formats that will be used depends on the current application locale. If you want to use a different locale’s time format, use the `locale` param:
+
+```twig
+{{ entry.postDate|time('short', locale='en-GB') }} → 17:00
+```
+
+You can customize the timezone the time is output in, using the `timezone` param:
+
+```twig
+{{ entry.postDate|time('short', timezone='UTC') }} → 12:00 AM
 ```
 
 ## `timestamp`
