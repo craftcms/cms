@@ -11,7 +11,11 @@ use Craft;
 use craft\db\Query;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
+use craft\events\ParseConfigEvent;
 use craft\events\TagGroupEvent;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
@@ -47,6 +51,8 @@ class Tags extends Component
      * @event TagGroupEvent The event that is triggered after a tag group is deleted.
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
+
+    const CONFIG_TAGGROUP_KEY = 'tagGroups';
 
     // Properties
     // =========================================================================
@@ -227,45 +233,43 @@ class Tags extends Component
             return false;
         }
 
-        if (!$isNewTagGroup) {
-            $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
-
-            if (!$tagGroupRecord) {
-                throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
-            }
+        if ($isNewTagGroup) {
+            $tagGroupUid = StringHelper::UUID();
         } else {
-            $tagGroupRecord = new TagGroupRecord();
+            $tagGroupUid = Db::uidById('{{%taggroups}}', $tagGroup->id);
         }
 
-        $tagGroupRecord->name = $tagGroup->name;
-        $tagGroupRecord->handle = $tagGroup->handle;
+        $projectConfig = Craft::$app->getProjectConfig();
+        $configData = [
+            'name' => $tagGroup->name,
+            'handle' => $tagGroup->handle,
+        ];
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $fieldLayout = $tagGroup->getFieldLayout();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
 
-        try {
-            // Save the field layout
-            $fieldLayout = $tagGroup->getFieldLayout();
-            Craft::$app->getFields()->saveLayout($fieldLayout);
-            $tagGroup->fieldLayoutId = $fieldLayout->id;
-            $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
-
-            // Save it!
-            $tagGroupRecord->save(false);
-
-            // Now that we have a tag group ID, save it on the model
-            if (!$tagGroup->id) {
-                $tagGroup->id = $tagGroupRecord->id;
+        if ($fieldLayoutConfig) {
+            if (empty($fieldLayout->id)) {
+                $layoutUid = StringHelper::UUID();
+                $fieldLayout->uid = $layoutUid;
+            } else {
+                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
             }
 
-            // Might as well update our cache of the tag group while we have it.
-            $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
+            $configData['fieldLayouts'] = [
+                $layoutUid => $fieldLayoutConfig
+            ];
         }
+
+        $configPath = self::CONFIG_TAGGROUP_KEY.'.'.$tagGroupUid;
+        $projectConfig->save($configPath, $configData);
+
+        if ($isNewTagGroup) {
+            $tagGroup->id = Db::idByUid('{{%taggroups}}', $tagGroupUid);
+        }
+
+        // Might as well update our cache of the tag group while we have it.
+        $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
 
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
@@ -276,6 +280,60 @@ class Tags extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Handle tag group change
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleChangedTagGroup(ParseConfigEvent $event)
+    {
+        $path = $event->configPath;
+
+        // Does it match a volume?
+        if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+
+            $tagGroupUid = $matches[1];
+            $data = Craft::$app->getProjectConfig()->get($path, true);
+
+            // Make sure fields are processed
+            Craft::$app->getProjectConfig()->applyPendingChanges(Fields::CONFIG_FIELDGROUP_KEY);
+
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                $tagGroupdRecord = $this->_getTagGroupRecord($tagGroupUid);
+
+                $tagGroupdRecord->name = $data['name'];
+                $tagGroupdRecord->handle = $data['handle'];
+                $tagGroupdRecord->uid = $tagGroupUid;
+
+                if (!empty($data['fieldLayouts'])) {
+                    $fields = Craft::$app->getFields();
+
+                    // Delete the field layout
+                    $fields->deleteLayoutById($tagGroupdRecord->fieldLayoutId);
+
+                    //Create the new layout
+                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout->type = Tag::class;
+                    $layout->uid = key($data['fieldLayouts']);
+                    $fields->saveLayout($layout);
+                    $tagGroupdRecord->fieldLayoutId = $layout->id;
+                } else {
+                    $tagGroupdRecord->fieldLayoutId = null;
+                }
+
+                // Save the volume
+                $tagGroupdRecord->save(false);
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -304,40 +362,7 @@ class Tags extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%taggroups}}'])
-                ->where(['id' => $tagGroupId])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
-            // Delete the tags
-            $tags = Tag::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->groupId($tagGroupId)
-                ->all();
-
-            foreach ($tags as $tag) {
-                Craft::$app->getElements()->deleteElement($tag);
-            }
-
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%taggroups}}', ['id' => $tagGroupId])
-                ->execute();
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
+        Craft::$app->getProjectConfig()->save(self::CONFIG_TAGGROUP_KEY.'.'.$tagGroup->uid, null);
 
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
@@ -347,6 +372,103 @@ class Tags extends Component
         }
 
         return true;
+    }
+
+
+    /**
+     * Handle Tag group getting deleted
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleDeletedTagGroup (ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match a field group?
+        if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $uid = $matches[1];
+
+            $tagGroup = $this->_getTagGroupRecord($uid);
+
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                // Delete the field layout
+                $fieldLayoutId = (new Query())
+                    ->select(['fieldLayoutId'])
+                    ->from(['{{%taggroups}}'])
+                    ->where(['id' => $tagGroup->id])
+                    ->scalar();
+
+                if ($fieldLayoutId) {
+                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                }
+
+                // Delete the tags
+                $tags = Tag::find()
+                    ->status(null)
+                    ->enabledForSite(false)
+                    ->groupId($tagGroup->id)
+                    ->all();
+
+                foreach ($tags as $tag) {
+                    Craft::$app->getElements()->deleteElement($tag);
+                }
+
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%taggroups}}', ['id' => $tagGroup->id])
+                    ->execute();
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+
+                throw $e;
+            }
+        }
+    }
+
+
+    /**
+     * Prune a deleted field from tag group layouts.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $fieldPruned = false;
+        $projectConfig = Craft::$app->getProjectConfig();
+        $tagGroups = $projectConfig->get(self::CONFIG_TAGGROUP_KEY);
+
+        // Loop through the volumes and see if the UID exists in the field layouts.
+        foreach ($tagGroups as &$tagGroup) {
+            if (!empty($tagGroup['fieldLayouts'])) {
+                foreach ($tagGroup['fieldLayouts'] as &$layout) {
+                    if (!empty($layout['tabs'])) {
+                        foreach ($layout['tabs'] as &$tab) {
+                            if (!empty($tab['fields'])) {
+                                // Remove the straggler.
+                                if (array_key_exists($fieldUid, $tab['fields'])) {
+                                    unset($tab['fields'][$fieldUid]);
+                                    $fieldPruned = true;
+                                    // If last field, just remove field layouts entry altogether.
+                                    if (empty($tab['fields'])) {
+                                        unset($tagGroup['fieldLayouts']);
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($fieldPruned) {
+            $projectConfig->save(self::CONFIG_TAGGROUP_KEY, $tagGroups, true);
+        }
     }
 
     // Tags
@@ -380,4 +502,16 @@ class Tags extends Component
             ])
             ->from(['{{%taggroups}}']);
     }
+
+    /**
+     * Gets a tag group's record by uid.
+     *
+     * @param string $uid
+     * @return TagGroupRecord
+     */
+    private function _getTagGroupRecord(string $uid): TagGroupRecord
+    {
+        return TagGroupRecord::findOne(['uid' => $uid]) ?? new TagGroupRecord();
+    }
+
 }
