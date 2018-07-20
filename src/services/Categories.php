@@ -431,7 +431,6 @@ class Categories extends Component
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($group->id)
-                    ->limit(null)
                     ->anyStatus()
                     ->ids();
 

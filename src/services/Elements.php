@@ -1094,7 +1094,6 @@ class Elements extends Component
                 $refNames = array_keys($tokensByName);
                 $elementQuery = $elementType::find()
                     ->siteId($siteId)
-                    ->limit(null);
                     ->anyStatus();
 
                 if ($refType === 'id') {

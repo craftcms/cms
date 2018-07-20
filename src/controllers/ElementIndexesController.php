@@ -314,7 +314,6 @@ class ElementIndexesController extends BaseElementsController
             $collapsedElements = $collapsedElementQuery
                 ->id($collapsedElementIds)
                 ->offset(0)
-                ->limit(null)
                 ->orderBy(['lft' => SORT_ASC])
                 ->positionedAfter(null)
                 ->positionedBefore(null)
@@ -326,7 +325,6 @@ class ElementIndexesController extends BaseElementsController
                 $descendantQuery = clone $query;
                 $descendantQuery
                     ->offset(0)
-                    ->limit(null)
                     ->orderBy(null)
                     ->positionedAfter(null)
                     ->positionedBefore(null);

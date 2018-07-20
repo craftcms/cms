@@ -834,7 +834,6 @@ class Matrix extends Component
             $blockQuery = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->ownerId($ownerId)
-                ->limit(null)
                 ->anyStatus()
                 ->siteId($ownerSiteId)
                 ->ownerSiteId(':empty:');
@@ -904,7 +903,6 @@ class Matrix extends Component
                     $blocks = MatrixBlock::find()
                         ->fieldId($field->id)
                         ->ownerId($ownerId)
-                        ->limit(null)
                         ->anyStatus()
                         ->siteId($siteId)
                         ->ownerSiteId($siteId)
