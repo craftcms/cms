@@ -282,6 +282,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      */
     public function positionedAfter($value);
 
+    /**
+     * Nulls-out any status-based element filter parameters.
+     *
+     * @return static self reference
+     */
+    public function anyStatus();
+
     // Query preparation/execution
     // -------------------------------------------------------------------------
 

@@ -624,8 +624,7 @@ class Volumes extends Component
         try {
             // Delete the assets
             $assets = Asset::find()
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->volumeId($volume->id)
                 ->all();
 

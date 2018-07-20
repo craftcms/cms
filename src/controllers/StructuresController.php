@@ -80,8 +80,7 @@ class StructuresController extends Controller
         $this->_element = $elementType::find()
             ->id($elementId)
             ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
+            ->anyStatus()
             ->structureId($structureId)
             ->one();
 

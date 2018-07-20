@@ -662,8 +662,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -792,6 +791,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     private function _all(ElementQueryInterface $query): ElementQueryInterface
     {
-        return (clone $query)->status(null)->enabledForSite(false);
+        return (clone $query)
+            ->anyStatus();
     }
 }

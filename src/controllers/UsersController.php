@@ -547,7 +547,7 @@ class UsersController extends Controller
                         /** @var User|null $user */
                         $user = User::find()
                             ->id($userId)
-                            ->status(null)
+                            ->anyStatus()
                             ->addSelect('users.passwordResetRequired')
                             ->one();
 
@@ -891,7 +891,7 @@ class UsersController extends Controller
         if ($userId) {
             $user = User::find()
                 ->id($userId)
-                ->status(null)
+                ->anyStatus()
                 ->addSelect(['users.password', 'users.passwordResetRequired'])
                 ->one();
 
@@ -1263,7 +1263,7 @@ class UsersController extends Controller
 
         $user = User::find()
             ->id($userId)
-            ->status(null)
+            ->anyStatus()
             ->addSelect(['users.password'])
             ->one();
 
@@ -1870,7 +1870,7 @@ class UsersController extends Controller
         /** @var User|null $userToProcess */
         $userToProcess = User::find()
             ->uid($uid)
-            ->status(null)
+            ->anyStatus()
             ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
 

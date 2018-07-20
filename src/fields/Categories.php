@@ -82,8 +82,7 @@ class Categories extends BaseRelationField
             /** @var Category[] $categories */
             $categories = Category::find()
                 ->id($value)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
 
             // Fill in any gaps
