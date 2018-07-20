@@ -1415,6 +1415,10 @@ JS;
      */
     protected function registerAssetFlashes()
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return;
+        }
+
         $session = Craft::$app->getSession();
 
         if ($session->getIsActive()) {
