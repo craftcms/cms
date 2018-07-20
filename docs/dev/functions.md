@@ -127,7 +127,15 @@ Randomizes the order of the elements within an array.
 
 ## `svg( svg, sanitize )`
 
-Returns the contents of a given SVG file.
+Outputs an SVG document, sanitized of potentially malicious scripts.
+
+::: tip
+Any `id` attributes within the SVG will automatically be namespaced, to prevent conflicts with other `id` attributes in the DOM. If that’s not desired, you can save your SVG file inside your `templates/` folder and load it with an [include](https://twig.symfony.com/doc/2.x/tags/include.html) tag instead.
+
+```twig
+{% include "_includes/sprites.svg" %}
+```
+:::
 
 ### Arguments
 
