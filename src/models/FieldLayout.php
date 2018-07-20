@@ -121,25 +121,30 @@ class FieldLayout extends Model
         $layout = new FieldLayout();
 
         // TODO this is horrible. Especially pretending to be a text field just to populate the tabs.
+        $tabs = [];
         foreach ($config['tabs'] as $tab) {
             $layoutTab = new FieldLayoutTab();
             $layoutTab->name = $tab['name'];
             $layoutTab->sortOrder = $tab['sortOrder'];
 
-            foreach ($tab['fields'] as $uid => $field) {
-                $layoutFields[] = Craft::$app->getFields()->createField([
-                    'type' => PlainText::class,
-                    'id' => Db::idByUid('{{%fields}}', $uid),
-                    'uid' => $uid,
-                    'sortOrder' => $field['sortOrder'],
-                    'required' => $field['required']
-                ]);
+            if (!empty($tab['fields'])) {
+                foreach ($tab['fields'] as $uid => $field) {
+                    $layoutFields[] = Craft::$app->getFields()->createField([
+                        'type' => PlainText::class,
+                        'id' => Db::idByUid('{{%fields}}', $uid),
+                        'uid' => $uid,
+                        'sortOrder' => $field['sortOrder'],
+                        'required' => $field['required']
+                    ]);
+                }
+                $layoutTab->setFields($layoutFields);
+                $tabs[] = $layoutTab;
             }
-            $layoutTab->setFields($layoutFields);
-            $tabs[] = $layoutTab;
         }
 
-        $layout->setTabs($tabs);
+        if (!empty($tabs)) {
+            $layout->setTabs($tabs);
+        }
 
         return $layout;
     }
