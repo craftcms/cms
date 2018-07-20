@@ -168,7 +168,7 @@
                     if (textStatus === 'success') {
                         if (response.success) {
                             // Only update the page if we're editing the current language's message
-                            if (data.language === Craft.language) {
+                            if (data.language === Craft.primarySiteLanguage) {
                                 this.message.updateHtmlFromModal();
                             }
 
