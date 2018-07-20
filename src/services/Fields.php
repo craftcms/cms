@@ -1088,6 +1088,9 @@ class Fields extends Component
                 throw $e;
             }
 
+            // Un-cache it.
+            unset($this->_allFieldsInContext[$field->context], $this->_fieldsWithContent[$field->context]);
+
             // Update the field version at the end of the request
             $this->updateFieldVersionAfterRequest();
         }
