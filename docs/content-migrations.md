@@ -70,6 +70,7 @@ $result = (new Query())
     // ...
     ->all();
 ```
+:::
 
 ### Logging
 
