@@ -28,7 +28,48 @@ Migration names must be valid PHP class names, though we recommend sticking with
 
 Enter `yes` at the prompt, and a new migration file will be created in a `migrations/` folder in your project root.
 
-The migration file contains a class with two methods: `safeUp()` and `safeDown()`. `safeUp()` is where you should put the main migration code. If you want to make it possible to revert your migration, `safeDown()` is where the reversion code goes.
+### What Goes Inside
+
+Migration classes contain methods: `safeUp()` and `safeDown()`. `safeUp()` is run when your migration is _applied_, and `safeDown()` is run when your migration is _reverted_.
+
+::: tip
+By default, `safeDown()` will just return `false`, meaning that reverting the migration isn’t supported. The choice to replace that with actual migration reversion code, or just leave it alone, is up to you.
+:::
+
+You can enter whatever logic you want into your migration’s `safeUp()` and `safeDown()` methods, depending on the purpose of the migration. You have full access to [Craft’s API](https://docs.craftcms.com/api/v3/), as well as any APIs provided by plugins and modules.
+
+::: tip
+Mike Hudson wrote an [excellent article](https://medium.com/@mikethehud/craft-cms-3-content-migration-examples-3a377f6420c3) about content migrations, with some examples of how to do common tasks, like create a new custom field.
+:::
+
+### Manipulating Database Data
+
+Your migration class extends <api:craft\db\Migration>, which provides several methods for working with the database. It’s better to use these than their <api:craft\db\Command> counterparts, because the migration methods are both simpler to use, and they’ll output a status message to the terminal for you.
+
+```php
+// Bad:
+$this->db->createCommand()
+    ->insert('{{%tablename}}', $rows)
+    ->execute();
+
+// Good:
+$this->insert('{{%tablename}}', $rows);
+```  
+
+::: warning
+The <api:api:yii\db\Migration::insert()>, [batchInsert()](api:craft\db\Migration::batchInsert()), and [update()](api:yii\db\Migration::update()) migration methods will automatically insert/update data in the `dateCreated`, `dateUpdated`, `uid` table columns in addition to whatever you specified in the `$columns` argument. If the table you’re working with does’t have those columns, make sure you pass `false` to the `$includeAuditColumns` argument so you don’t get a SQL error.
+:::
+
+::: tip
+<api:craft\db\Migration> doesn’t have a method for _selecting_ data, so you will still need to go through Yii’s [Query Builder](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder) for that.
+
+```php
+use craft\db\Query;
+
+$result = (new Query())
+    // ...
+    ->all();
+```
 
 ### Logging
 
@@ -39,10 +80,6 @@ echo "    > some note\n";
 ```
 
 If the migration is being run from a console request, this will ensure the message is seen by whoever is executing the migration, as the message will be output into the terminal. If it’s a web request, Craft will capture it and log it to `storage/logs/` just as if you had used `Craft::info()`.
-
-### Manipulating Database Data
-
-Craft 3 adds a `$includeAuditColumns` argument to the [batchInsert()], [insert()], and [update()] migration methods (set to `true` by default) that determines whether to insert/update data in the “audit” columns (`dateCreated`, `dateUpdated`, `uid`). If the table you are inserting into does not have all three of these columns, you must pass `false` to that argument so you don’t get a SQL error.
 
 ## Executing Migrations
 
@@ -59,7 +96,3 @@ If your Craft install is running from a Vagrant box, you will need to SSH into t
 :::
 
 To execute migrations from the Migrations utility, go to Utilities → Migrations in the Control Panel and click the “Apply new migrations” button.
-
-[batchInsert()]: api:yii\db\Migration::batchInsert()
-[insert()]: api:yii\db\Migration::insert()
-[update()]: api:yii\db\Migration::update()
