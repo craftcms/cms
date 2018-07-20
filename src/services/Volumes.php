@@ -427,8 +427,6 @@ class Volumes extends Component
             'sortOrder' => $volume->sortOrder,
         ];
 
-        $configData['sortOrder'] = $volume->sortOrder;
-
         $fieldLayout = $volume->getFieldLayout();
         $fieldLayoutConfig = $fieldLayout->getConfig();
 
@@ -448,12 +446,12 @@ class Volumes extends Component
 
         $configPath = self::CONFIG_VOLUME_KEY.'.'.$volumeUid;
         $projectConfig->save($configPath, $configData);
+
         if ($isNewVolume) {
             $volume->id = Db::idByUid('{{%volumes}}', $volumeUid);
         }
 
         $volume->afterSave($isNewVolume);
-
 
         // Update our caches
         $this->_volumesById[$volume->id] = $volume;
@@ -475,7 +473,7 @@ class Volumes extends Component
     }
 
     /**
-     * Handle volumechange
+     * Handle volume change
      *
      * @param ParseConfigEvent $event
      */
@@ -495,7 +493,6 @@ class Volumes extends Component
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 $volumeRecord = $this->_getVolumeRecord($volumeUid);
-                $isNewVolume = !$volumeRecord->id;
 
                 $volumeRecord->name = $data['name'];
                 $volumeRecord->handle = $data['handle'];
@@ -732,6 +729,17 @@ class Volumes extends Component
             $transaction = $db->beginTransaction();
 
             try {
+                // Delete the field layout
+                $fieldLayoutId = (new Query())
+                    ->select(['fieldLayoutId'])
+                    ->from(['{{%volumes}}'])
+                    ->where(['id' => $volume->id])
+                    ->scalar();
+
+                if ($fieldLayoutId) {
+                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                }
+
                 // Delete the assets
                 $assets = Asset::find()
                     ->status(null)
@@ -771,7 +779,7 @@ class Volumes extends Component
 
         $fieldPruned = false;
         $projectConfig = Craft::$app->getProjectConfig();
-        $volumes = $projectConfig->get('volumes');
+        $volumes = $projectConfig->get(self::CONFIG_VOLUME_KEY);
 
         // Loop through the volumes and see if the UID exists in the field layouts.
         foreach ($volumes as &$volume) {
@@ -798,7 +806,7 @@ class Volumes extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save('volumes', $volumes, true);
+            $projectConfig->save(self::CONFIG_VOLUME_KEY, $volumes, true);
         }
     }
 
