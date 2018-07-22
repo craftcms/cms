@@ -276,7 +276,7 @@ public function addTwigExtension()
 }
 
 // New:
-\Craft::$app->view->twig->addExtension(new MyExtension);
+\Craft::$app->view->registerTwigExtension($extension);
 ```
 
 #### `addUserAdministrationOptions`
