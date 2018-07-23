@@ -544,7 +544,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             if (isset($fieldLayouts[$group['fieldLayoutId']])) {
                 $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$group['fieldLayoutId']]['fieldLayoutId']['uid']);
+                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
                 $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
             }
 
@@ -607,7 +607,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($groupRows as $group) {
             if (isset($fieldLayouts[$group['fieldLayoutId']])) {
                 $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$group['fieldLayoutId']]['fieldLayoutId']['uid']);
+                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
                 $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
             }
 
