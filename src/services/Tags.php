@@ -239,6 +239,10 @@ class Tags extends Component
             $tagGroupUid = Db::uidById('{{%taggroups}}', $tagGroup->id);
         }
 
+        if (!$tagGroupUid) {
+            throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
+        }
+
         $projectConfig = Craft::$app->getProjectConfig();
         $configData = [
             'name' => $tagGroup->name,
@@ -291,7 +295,7 @@ class Tags extends Component
     {
         $path = $event->configPath;
 
-        // Does it match a volume?
+        // Does it match a tag group?
         if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $tagGroupUid = $matches[1];
