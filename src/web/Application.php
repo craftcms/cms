@@ -524,7 +524,7 @@ class Application extends \yii\web\Application
             $route = implode('/', $request->getActionSegments());
 
             try {
-                Craft::trace("Route requested: '$route'", __METHOD__);
+                Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
 
                 return $this->runAction($route, $_GET);
