@@ -1,96 +1,86 @@
 # Entries Fields
 
-Entries fields allow you to relate [entries](sections-and-entries.md) to the parent element.
+Entries fields allow you to relate [entries](sections-and-entries.md) to other elements.
 
 ## Settings
 
 Entries fields have the following settings:
 
-* **Sources** – The sections you want to relate entries from. (Default is “All”.)
-* **Target Locale** – Which locale entries should be related with (this setting only appears if you’re running Craft Pro with more than one site locale)
-* **Limit** – The maximum number of entries that can be related with the field at once. (Default is no limit.)
-* **Selection Label** – The label that should be used on the field’s selection button.
+- **Sources** – Which sections (or other entry index sources) the field should be able to relate entries from.
+- **Limit** – The maximum number of entries that can be related with the field at once. (Default is no limit.)
+- **Selection Label** – The label that should be used on the field’s selection button.
 
+### Multi-Site Settings
+
+On multi-site installs, the following settings will also be available (under “Advanced”):
+
+- **Relate entries from a specific site?** – Whether to only allow relations to entries from a specific site.
+
+  If enabled, a new setting will appear where you can choose which site.
+  
+  If disabled, related entries will always be pulled from the current site.
+
+- **Manage relations on a per-site basis** – Whether each site should get its own set of related entries.
 
 ## The Field
 
-Entries fields list all of the currently selected entries, with a button to select new ones:
+Entries fields list all of the currently-related entries, with a button to select new ones.
 
-Clicking the “Add an entry” button will bring up a modal window where you can find and select additional entries:
+Clicking the “Add an entry” button will bring up a modal window where you can find and select additional entries. You can create new entries from this modal as well, by clicking the “New entry” button.
 
-### Editing Entry Content
+### Inline Entry Editing
 
-Double-clicking on a selected entry will open a modal where you can edit the entry’s title and custom fields.
+When you double-click on a related entry, a HUD will appear where you can edit the entry’s title and custom fields.
 
 ## Templating
 
-If you have an element with an Entries field in your template, you can access its selected entries using your Entries field’s handle:
+If you have an element with an Entries field in your template, you can access its related entries using your Entries field’s handle:
 
 ```twig
-{% set entries = entry.entriesFieldHandle %}
+{% set relatedEntries = entry.<FieldHandle> %}
 ```
 
-That will give you an [element query](dev/element-queries/README.md), prepped to output all of the selected entries for the given field. In other words, the line above is really just a shortcut for this:
-
-```twig
-{% set entries = craft.entries({
-    relatedTo: { sourceElement: entry, field: "entriesFieldHandle" },
-    orderBy:     "sortOrder",
-    limit:     null
-}) %}
-```
-
-(See [Relations](relations.md) for more info on the `relatedTo` param.)
+That will give you an [entry query](dev/element-queries/entry-queries.md), prepped to output all of the related entries for the given field.
 
 ### Examples
 
-To check if your Entries field has any selected entries, you can use the `length` filter:
+To loop through all of the related entries, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
 ```twig
-{% if entry.entriesFieldHandle|length %}
-    ...
+{% set relatedEntries = entry.<FieldHandle>.all() %}
+{% if relatedEntries|length %}
+    <ul>
+        {% for rel in relatedEntries %}
+            <li><a href="{{ rel.url }}">{{ rel.title }}</a></li>
+        {% endfor %}
+    </ul>
 {% endif %}
 ```
 
-To loop through the selected entries:
+If you only want the first related entry, call [one()](api:craft\db\Query::one()) instead, and then make sure it returned something:
 
 ```twig
-{% for entry in entry.entriesFieldHandle.all() %}
-    ...
-{% endfor %}
-```
-
-Rather than typing “`entry.entriesFieldHandle`” every time, you can call it once and set it to another variable:
-
-```twig
-{% set entries = entry.entriesFieldHandle %}
-
-{% if entries|length %}
-
-    <h3>Some great entries</h3>
-    {% for entry in entries %}
-        ...
-    {% endfor %}
-
+{% set rel = entry.<FieldHandle>.one() %}
+{% if rel %}
+    <p><a href="{{ rel.url }}">{{ rel.title }}</a></p>
 {% endif %}
 ```
 
-You can add parameters to the ElementCriteriaModel object as well:
+If you just need to check if there are any related entries (but don’t need to fetch them), you can call [exists()](api:craft\db\Query::exists()):
 
 ```twig
-{% set newsEntries = entry.entriesFieldHandle.section('news') %}
-```
-
-If your Entries field is only meant to have a single entry selected, remember that calling your Entries field will still give you the same ElementCriteriaModel, not the selected entry. To get the first (and only) entry selected, use `one()`:
-
-```twig
-{% set entry = entry.myEntriesField.one() %}
-
-{% if entry %}
-    ...
+{% if entry.<FieldHandle>.exists() %}
+    <p>There are related entries!</p>
 {% endif %}
 ```
 
+You can set [parameters](dev/element-queries/entry-queries.md#parameters) on the entry query as well. For example, to only fetch entries in the `news` section, set the [sectionId](dev/element-queries/entry-queries.md#sectionid) param:
+
+```twig
+{% set relatedEntries = entry.<FieldHandle>
+    .section('news')
+    .all() %}
+```
 
 ### See Also
 

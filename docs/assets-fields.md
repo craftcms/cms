@@ -1,139 +1,139 @@
 # Assets Fields
 
-Assets fields allow you to select related [assets](assets.md).
+Assets fields allow you to relate [assets](assets.md) to other elements.
 
 ## Settings
 
 Assets fields have the following settings:
 
-* **Restrict uploads to a single folder?** – Whether file uploads/selections should be constrained to a single folder
-* **Volumes** – Which asset volumes the field should be able to select/upload files from
-* **Default Upload Location** – The default location that files dragged directly onto the field should be saved in
-* **Restrict allowed file types?** Whether the field should only be able to select/upload files of a certain type(s)
-* **Target Locale** – Which locale assets should be related with (this setting only appears if you’re running Craft Pro with more than one site locale)
-* **Limit** – The maximum number of assets that can be related with the field at once. (Default is no limit.)
-* **Selection Label** – The label that should be used on the field’s selection button.
+- **Restrict uploads to a single folder?** – Whether file uploads/relations should be constrained to a single folder.
 
-### Restricting Uploads to a Single Folder
+  If enabled, the following setting will be visible:
+  
+  - **Upload Location** – The location that files dragged directly onto the field should be saved in.
+  
+  If disabled, the following settings will be visible:
+  
+  - **Sources** – Which asset volumes (or other asset index sources) the field should be able to relate assets from.
+  - **Default Upload Location** – The default location that files dragged directly onto the field should be saved in.
 
-If the “Restrict uploads to a single folder?” setting is checked, the “Volumes” and “Default Upload Location” settings will be replaced with an “Upload Location” setting.
+- **Restrict allowed file types?** Whether the field should only be able to upload/relate files of a certain type(s).
+- **Limit** – The maximum number of assets that can be related with the field at once. (Default is no limit.)
+- **View Mode** – How the field should appear for authors.
+- **Selection Label** – The label that should be used on the field’s selection button.
 
-### Restricting Allowed File Types
+### Multi-Site Settings
 
-If the “Restrict allowed file types?” setting is checked, a list of file types will appear below it.
+On multi-site installs, the following settings will also be available (under “Advanced”):
+
+- **Relate assets from a specific site?** – Whether to only allow relations to assets from a specific site.
+
+  If enabled, a new setting will appear where you can choose which site.
+  
+  If disabled, related assets will always be pulled from the current site.
+
+- **Manage relations on a per-site basis** – Whether each site should get its own set of related assets.
 
 ### Dynamic Subfolder Paths
 
-The “Default Upload Location” setting, and the “Upload Location” setting that replaces it if “Restrict uploads to a single folder?” is checked, support dynamic subfolder paths.
+Subfolder paths defined by the “Upload Location” and “Default Upload Location” settings can optionally contain Twig tags (e.g. `news/{{ slug }}`).
 
-After an element is saved, the subfolder path will be parsed for any tags representing properties of the source element. For example, if you intend to use the field with [entries](sections-and-entries.md), then you can use any properties listed in the <api:craft\elements\entries> documentation, such as `{id}`, `{slug}`, or even nested object properties like `{author.username}`.
+Any properties supported by the source element (the element that has the Assets field) can be used here.
 
-Normal Twig tags are supported as well, in case you want to include `{% if %}` conditionals in your path, or access other objects besides the source element, such as `{{ now|date('Y-m-d') }}`  or `{{ currentUser.username }}`.
+::: tip
+If you are creating the Assets field within a [Matrix field](matrix-fields.md), the source element is going to be the Matrix block, _not_ the element that the Matrix field is being created on.
 
-If you are using normal Twig tags, you can still access the source element, via an “object” variable. For example, this would output the source element’s slug if it has one, otherwise its ID:
-
-```twig
-{{ object.slug ?: object.id }}
-```
-
-Note that if you are creating the Assets field within a [Matrix field](matrix-fields.md), the source element is going to be the actual Matrix block, _not_ the element that the Matrix field is being created on. So if your Matrix field is attached to an entry, and you want to output the entry ID in your dynamic subfolder path, you would type `{owner.id}` not just `{id}`.
+So if your Matrix field is attached to an entry, and you want to output the entry ID in your dynamic subfolder path, use `owner.id` rather than `id`.
+:::
 
 ## The Field
 
-Assets fields list all of the currently selected assets, with a button to select new ones:
+Assets fields list all of the currently-related assets, with a button to select new ones.
 
-Clicking the “Add an asset” button will bring up a modal window where you can find and select additional assets, as well as upload new ones:
+Clicking the “Add an asset” button will bring up a modal window where you can find and select additional assets, as well as upload new ones.
 
-### Editing Asset Content
+### Inline Asset Editing
 
-Double-clicking on a selected asset will open a modal where you can edit the file’s title and any fields you have associated with your assets from Settings → Assets → Fields.
+When you double-click on a related asset, a HUD will appear where you can edit the asset’s title and custom fields, and launch the Image Editor (if it’s an image).
+
+::: tip
+You can choose which custom fields should be available for your assets from Settings → Assets → [Volume Name] → Field Layout.
+:::
 
 ## Templating
 
-If you have an element with an Assets field in your template, you can access its selected assets using your Assets field’s handle:
+If you have an element with an Assets field in your template, you can access its related assets using your Assets field’s handle:
 
 ```twig
-{% set assets = entry.assetsFieldHandle %}
+{% set relatedAssets = entry.<FieldHandle> %}
 ```
 
-That will give you an [element query](dev/element-queries/README.md), prepped to output all of the selected assets for the given field. In other words, the line above is really just a shortcut for this:
-
-```twig
-{% set assets = craft.assets({
-    relatedTo: { sourceElement: entry, field: "assetsFieldHandle" },
-    order:     "sortOrder",
-    limit:     null
-}) %}
-```
-
-(See [Relations](relations.md) for more info on the `relatedTo` param.)
+That will give you an [asset query](dev/element-queries/asset-queries.md), prepped to output all of the related assets for the given field.
 
 ### Examples
 
-To check if your Assets field has any selected assets, you can use the `length` filter:
+To loop through all of the related assets, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
 ```twig
-{% if entry.assetsFieldHandle|length %}
-    {% for asset in entry.assetsFieldHandle %}
-        {{ asset.url }}
-    {% endfor %}
+{% set relatedAssets = entry.<FieldHandle>.all() %}
+{% if relatedAssets|length %}
+    <ul>
+        {% for rel in relatedAssets %}
+            <li><a href="{{ rel.url }}">{{ rel.filename }}</a></li>
+        {% endfor %}
+    </ul>
 {% endif %}
 ```
 
-To loop through the selected assets, you can treat the field like an array:
+If you only want the first related asset, call [one()](api:craft\db\Query::one()) instead, and then make sure it returned something:
 
 ```twig
-{% for asset in entry.assetsFieldHandle %}
-    {{ asset.url }}
-{% endfor %}
-```
-
-Rather than typing “`entry.assetsFieldHandle`” every time, you can call it once and set it to another variable:
-
-```twig
-{% set assets = entry.assetsFieldHandle %}
-
-{% if assets|length %}
-
-    <h3>Some great assets</h3>
-    {% for asset in assets %}
-        {{ asset.url }}
-    {% endfor %}
-
+{% set rel = entry.<FieldHandle>.one() %}
+{% if rel %}
+    <p><a href="{{ rel.url }}">{{ rel.filename }}</a></p>
 {% endif %}
 ```
 
-You can add parameters to the ElementCriteriaModel object as well:
+If you just need to check if there are any related assets (but don’t need to fetch them), you can call [exists()](api:craft\db\Query::exists()):
 
 ```twig
-{% set images = entry.assetsFieldHandle.kind('image') %}
-```
-
-If your Assets field is only meant to have a single asset selected, remember that calling your Assets field will still give you the same ElementCriteriaModel, not the selected asset. To get the first (and only) asset selected, use `one()`:
-
-```twig
-{% set asset = entry.myAssetsField.one() %}
-
-{% if asset %}
-    {{ asset.url }}
+{% if entry.<FieldHandle>.exists() %}
+    <p>There are related assets!</p>
 {% endif %}
 ```
 
-### Uploading Files from Front-end Entry Forms
+You can set [parameters](dev/element-queries/asset-queries.md#parameters) on the asset query as well. For example, to ensure that only images are returned, you can set the [kind](dev/element-queries/asset-queries.md#kind) param:
+
+```twig
+{% set relatedAssets = entry.<FieldHandle>
+    .kind('image')
+    .all() %}
+```
+
+### Uploading Files from Front-End Entry Forms
 
 If you want to allow users to upload files to an Assets field from a front-end [entry form](dev/examples/entry-form.md), you just need to do two things.
 
 First, make sure your `<form>` tag has an `enctype="multipart/form-data"` attribute, so that it is capable of uploading files.
-* Add a file input to the form, in the same way you would add a textarea for a Plain Text field:
 
 ```markup
-<input type="file" name="fields[assetsFieldHandle]">
+<form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
 ```
 
-If you want your form to allow multiple files being uploaded at once, just add the `multiple` attribute, make sure that the input name ends in “`[]`”:
+Then add a file input to the form:
 
 ```markup
-<input type="file" name="fields[assetsFieldHandle][]" multiple>
+<input type="file" name="fields[<FieldHandle>]">
+```
+
+::: tip
+Replace `<FieldHandle>` with you actual field handle. For example if you field handle is “heroImage”, the input name should be `fields[heroImage]`.
+:::
+
+If you want to allow multiple file uploads, add the `multiple` attribute and add `[]` to the end of the input name:
+
+```markup
+<input type="file" name="fields[<FieldHanlde>][]" multiple>
 ```
 
 ## See Also
