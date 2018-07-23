@@ -1893,6 +1893,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->id($this->$property)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
+                ->anyStatus()
                 ->one();
 
             if ($this->$property === null) {

@@ -13,6 +13,7 @@
 - Fixed a bug where system message modals on the Settings → Email → System Messages page would initially show messages in the current application language rather than the primary site’s language, even if the application language wasn’t in use by any sites. ([#3115](https://github.com/craftcms/cms/issues/3115))
 - Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called on a console request. ([#3124](https://github.com/craftcms/cms/issues/3124))
 - Fixed a PHP error that could occur if the PHP’s `set_time_limit()` was added to the php.ini `disable_functions` list.
+- Fixed a bug where expanding a disabled element within a structure index view in the Control Panel wouldn’t reveal any descendants. ([#3126](https://github.com/craftcms/cms/issues/3126))
 
 ## 3.0.16.1 - 2018-07-18
 
