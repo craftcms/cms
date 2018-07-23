@@ -535,7 +535,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         foreach ($groupRows as $group) {
             if (!empty($group['structure'])) {
-                $section['structure'] = [
+                $group['structure'] = [
                     'uid' => $group['structure'],
                     'maxLevels' => $group['structureMaxLevels']
                 ];
