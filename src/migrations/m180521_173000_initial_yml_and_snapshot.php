@@ -184,12 +184,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $sectionSiteRows = (new Query())
             ->select([
-                'sections_sites.uid',
                 'sections_sites.enabledByDefault',
                 'sections_sites.hasUrls',
                 'sections_sites.uriFormat',
                 'sections_sites.template',
-                'sites.uid AS site',
+                'sites.uid AS siteUid',
                 'sections.uid AS sectionUid',
             ])
             ->from('{{%sections_sites}} sections_sites')
@@ -199,9 +198,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         foreach ($sectionSiteRows as $sectionSiteRow) {
             $sectionUid = $sectionSiteRow['sectionUid'];
-            $uid = $sectionSiteRow['uid'];
-            unset($sectionSiteRow['sectionUid'], $sectionSiteRow['uid']);
-            $sectionData[$sectionUid]['siteSettings'][$uid] = $sectionSiteRow;
+            $siteUid = $sectionSiteRow['siteUid'];
+            unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
+            $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
         }
 
         $entryTypeRows = (new Query())
@@ -558,11 +557,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $groupSiteRows = (new Query())
             ->select([
-                'groups_sites.uid',
                 'groups_sites.hasUrls',
                 'groups_sites.uriFormat',
                 'groups_sites.template',
-                'sites.uid AS site',
+                'sites.uid AS siteUid',
                 'groups.uid AS groupUid',
             ])
             ->from('{{%categorygroups_sites}} groups_sites')
@@ -572,11 +570,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         foreach ($groupSiteRows as $groupSiteRow) {
             $groupUid = $groupSiteRow['groupUid'];
-            $uid = $groupSiteRow['uid'];
-            unset($groupSiteRow['uid'], $groupSiteRow['groupUid']);
-            $groupData[$groupUid]['siteSettings'][$uid] = $groupSiteRow;
+            $siteUid = $groupSiteRow['siteUid'];
+            unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
+            $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
         }
-
 
         return $groupData;
     }
