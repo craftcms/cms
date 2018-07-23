@@ -372,6 +372,10 @@ class UrlManager extends \yii\web\UrlManager
                 $route = $element->getRoute();
 
                 if ($route) {
+                    if (is_string($route)) {
+                        $route = [$route, []];
+                    }
+
                     $this->_matchedElement = $element;
                     $this->_matchedElementRoute = $route;
                 }
