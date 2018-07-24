@@ -481,13 +481,21 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
         }
 
-        // Are they requesting an installer template/action specifically?
-        if ($isCpRequest && $request->getSegment(1) === 'install' && !$isInstalled) {
-            $action = $request->getSegment(2) ?: 'index';
-
-            return $this->runAction('install/' . $action);
+        // Are they requesting the installer?
+        if ($isCpRequest && $request->getSegment(1) === 'install') {
+            // Is Craft already installed?
+            if ($isInstalled) {
+                // Redirect to the Dashboard
+                $this->getResponse()->redirect('dashboard');
+                $this->end();
+            } else {
+                // Show the installer
+                $action = $request->getSegment(2) ?: 'index';
+                return $this->runAction('install/' . $action);
+            }
         }
 
+        // Is this an installer action request?
         if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
@@ -495,7 +503,7 @@ class Application extends \yii\web\Application
             }
         }
 
-        // Should they be?
+        // Should they be accessing the installer?
         if (!$isInstalled) {
             // Give it to them if accessing the CP and devMode is enabled.
             if ($isCpRequest && Craft::$app->getConfig()->getGeneral()->devMode) {
@@ -524,7 +532,7 @@ class Application extends \yii\web\Application
             $route = implode('/', $request->getActionSegments());
 
             try {
-                Craft::trace("Route requested: '$route'", __METHOD__);
+                Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
 
                 return $this->runAction($route, $_GET);

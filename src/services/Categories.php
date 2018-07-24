@@ -431,8 +431,7 @@ class Categories extends Component
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($group->id)
-                    ->status(null)
-                    ->limit(null)
+                    ->anyStatus()
                     ->ids();
 
                 // Are there any sites left?
@@ -458,7 +457,7 @@ class Categories extends Component
                                 $category = Category::find()
                                     ->id($categoryId)
                                     ->siteId($siteId)
-                                    ->status(null)
+                                    ->anyStatus()
                                     ->one();
 
                                 if ($category) {
@@ -540,8 +539,7 @@ class Categories extends Component
 
             // Delete the categories
             $categories = Category::find()
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->groupId($group->id)
                 ->all();
 
@@ -636,9 +634,7 @@ class Categories extends Component
         $query->id($categoryId);
         $query->structureId($structureId);
         $query->siteId($siteId);
-        $query->status(null);
-        $query->enabledForSite(false);
-
+        $query->anyStatus();
         return $query->one();
     }
 
@@ -663,8 +659,7 @@ class Categories extends Component
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
                 $ancestorQuery = $category->getAncestors()
-                    ->status(null)
-                    ->enabledForSite(false);
+                    ->anyStatus();
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);

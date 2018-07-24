@@ -105,8 +105,7 @@ class UpdateElementSlugsAndUris extends BaseJob
 
         return $class::find()
             ->siteId($this->siteId)
-            ->status(null)
-            ->enabledForSite(false);
+            ->anyStatus();
     }
 
     /**

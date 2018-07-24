@@ -372,6 +372,10 @@ class UrlManager extends \yii\web\UrlManager
                 $route = $element->getRoute();
 
                 if ($route) {
+                    if (is_string($route)) {
+                        $route = [$route, []];
+                    }
+
                     $this->_matchedElement = $element;
                     $this->_matchedElementRoute = $route;
                 }
@@ -379,7 +383,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         if (YII_DEBUG) {
-            Craft::trace([
+            Craft::debug([
                 'rule' => 'Element URI: ' . $path,
                 'match' => isset($element, $route),
                 'parent' => null
@@ -404,7 +408,7 @@ class UrlManager extends \yii\web\UrlManager
             $route = $rule->parseRequest($this, $request);
 
             if (YII_DEBUG) {
-                Craft::trace([
+                Craft::debug([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
                     'parent' => null
@@ -462,7 +466,7 @@ class UrlManager extends \yii\web\UrlManager
         $matches = $this->_isPublicTemplatePath();
 
         if (YII_DEBUG) {
-            Craft::trace([
+            Craft::debug([
                 'rule' => 'Template: ' . $path,
                 'match' => $matches,
                 'parent' => null
@@ -487,7 +491,7 @@ class UrlManager extends \yii\web\UrlManager
         $token = $request->getToken();
 
         if (YII_DEBUG) {
-            Craft::trace([
+            Craft::debug([
                 'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,
                 'parent' => null

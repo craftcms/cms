@@ -171,7 +171,7 @@ class Users extends Component
                 ['email' => $usernameOrEmail]
             ])
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null)
+            ->anyStatus()
             ->one();
     }
 
@@ -189,8 +189,7 @@ class Users extends Component
     {
         return User::find()
             ->uid($uid)
-            ->status(null)
-            ->enabledForSite(false)
+            ->anyStatus()
             ->one();
     }
 

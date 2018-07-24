@@ -528,7 +528,7 @@ class UrlHelper
             if ($path) {
                 $url = rtrim($baseUrl, '/') . '/' . trim($path, '/');
 
-                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls) {
+                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls && !preg_match('/\.[^\/]+$/', $url)) {
                     $url .= '/';
                 }
             } else {

@@ -319,7 +319,7 @@ class View extends \yii\web\View
             return '';
         }
 
-        Craft::trace("Rendering template: $template", __METHOD__);
+        Craft::debug("Rendering template: $template", __METHOD__);
 
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
@@ -1415,6 +1415,10 @@ JS;
      */
     protected function registerAssetFlashes()
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return;
+        }
+
         $session = Craft::$app->getSession();
 
         if ($session->getIsActive()) {

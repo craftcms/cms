@@ -15,6 +15,12 @@ use yii\base\ErrorException;
 // see https://stackoverflow.com/a/21601349/1688568
 $lastError = error_get_last();
 
+// Some shared hosts add set_time_limit to PHP disable_functions list.
+// see: https://github.com/yiisoft/yii2/pull/15679#issuecomment-388757423
+if (!function_exists('set_time_limit')) {
+    function set_time_limit() {}
+}
+
 // Setup
 // -----------------------------------------------------------------------------
 

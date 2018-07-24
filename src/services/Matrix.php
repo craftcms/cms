@@ -643,8 +643,7 @@ class Matrix extends Component
 
         if (($blocks = $query->getCachedResult()) === null) {
             $query = clone $query;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $blocks = $query->all();
         }
 
@@ -694,8 +693,7 @@ class Matrix extends Component
 
                 // Delete any blocks that shouldn't be there anymore
                 $deleteBlocksQuery = MatrixBlock::find()
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->ownerId($owner->id)
                     ->fieldId($field->id)
                     ->where(['not', ['elements.id' => $blockIds]]);
@@ -836,9 +834,7 @@ class Matrix extends Component
             $blockQuery = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->ownerId($ownerId)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null)
+                ->anyStatus()
                 ->siteId($ownerSiteId)
                 ->ownerSiteId(':empty:');
             $blocks = $blockQuery->all();
@@ -907,9 +903,7 @@ class Matrix extends Component
                     $blocks = MatrixBlock::find()
                         ->fieldId($field->id)
                         ->ownerId($ownerId)
-                        ->status(null)
-                        ->enabledForSite(false)
-                        ->limit(null)
+                        ->anyStatus()
                         ->siteId($siteId)
                         ->ownerSiteId($siteId)
                         ->all();

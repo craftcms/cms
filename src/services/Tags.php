@@ -299,8 +299,7 @@ class Tags extends Component
 
             // Delete the tags
             $tags = Tag::find()
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->groupId($group->id)
                 ->all();
 

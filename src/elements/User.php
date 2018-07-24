@@ -350,7 +350,7 @@ class User extends Element implements IdentityInterface
     {
         $user = static::find()
             ->id($id)
-            ->status(null)
+            ->anyStatus()
             ->addSelect(['users.password'])
             ->one();
 
@@ -675,7 +675,7 @@ class User extends Element implements IdentityInterface
     {
         $query = self::find()
             ->where(['email' => $this->unverifiedEmail])
-            ->status(null);
+            ->anyStatus();
 
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);

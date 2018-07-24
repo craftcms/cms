@@ -775,8 +775,7 @@ class Sections extends Component
             // Delete the entries
             // (loop through all the sites in case there are any lingering entries from unsupported sites)
             $entryQuery = Entry::find()
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->sectionId($section->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -1152,8 +1151,7 @@ class Sections extends Component
             // Delete the entries
             // (loop through all the sites in case there are any lingering entries from unsupported sites)
             $entryQuery = Entry::find()
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->typeId($entryType->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -1265,8 +1263,7 @@ class Sections extends Component
                 $entry = Entry::find()
                     ->id($data['id'])
                     ->siteId($data['siteId'])
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->one();
                 break;
             }
@@ -1337,8 +1334,7 @@ class Sections extends Component
             /** @noinspection PhpUndefinedVariableInspection */
             $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
             $query->sectionId($section->id);
-            $query->status(null);
-            $query->enabledForSite(false);
+            $query->anyStatus();
             $query->orderBy('elements.id');
             $query->withStructure(false);
             /** @var Entry $entry */

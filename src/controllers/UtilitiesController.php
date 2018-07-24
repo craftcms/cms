@@ -296,8 +296,7 @@ class UtilitiesController extends Controller
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->id($params['deleteAsset'])
                     ->all();
 
@@ -509,8 +508,7 @@ class UtilitiesController extends Controller
 
         $query = $class::find()
             ->id($params['id'])
-            ->status(null)
-            ->enabledForSite(false);
+            ->anyStatus();
 
         foreach ($siteIds as $siteId) {
             $query->siteId($siteId);

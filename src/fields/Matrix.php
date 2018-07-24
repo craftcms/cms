@@ -356,9 +356,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if (is_array($value) || $value === '') {
-            $query->status = null;
-            $query->enabledForSite = false;
-            $query->limit = null;
+            $query->anyStatus();
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -450,8 +448,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         if ($value instanceof MatrixBlockQuery) {
             $value = $value
                 ->limit(null)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         }
 
@@ -655,8 +652,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $matrixBlocksQuery = MatrixBlock::find();
-            $matrixBlocksQuery->status(null);
-            $matrixBlocksQuery->enabledForSite(false);
+            $matrixBlocksQuery->anyStatus();
             $matrixBlocksQuery->siteId($siteId);
             $matrixBlocksQuery->owner($element);
 
@@ -816,9 +812,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $oldBlocksQuery->fieldId($this->id);
                 $oldBlocksQuery->ownerId($ownerId);
                 $oldBlocksQuery->id($ids);
-                $oldBlocksQuery->limit(null);
-                $oldBlocksQuery->status(null);
-                $oldBlocksQuery->enabledForSite(false);
+                $oldBlocksQuery->anyStatus();
                 $oldBlocksQuery->siteId($element->siteId);
                 $oldBlocksQuery->indexBy('id');
                 $oldBlocksById = $oldBlocksQuery->all();

@@ -978,6 +978,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function anyStatus()
+    {
+        $this->status = null;
+        $this->enabledForSite = false;
+        return $this;
+    }
+
     // Query preparation/execution
     // -------------------------------------------------------------------------
 
@@ -1883,6 +1893,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->id($this->$property)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
+                ->anyStatus()
                 ->one();
 
             if ($this->$property === null) {

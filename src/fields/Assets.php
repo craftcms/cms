@@ -287,8 +287,6 @@ class Assets extends BaseRelationField
 
                 if ($this->allowLimit === true && $this->limit) {
                     $query->limit($this->limit);
-                } else {
-                    $query->limit(null);
                 }
 
                 return $query;
