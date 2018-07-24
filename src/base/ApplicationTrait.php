@@ -1277,5 +1277,11 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getTags(), 'handleDeletedTagGroup']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$this->getTags(), 'pruneDeletedField']);
 
+        // Categories
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getCategories(), 'handleChangedCategoryGroup']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getCategories(), 'handleChangedCategoryGroup']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getCategories(), 'handleDeletedCategoryGroup']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$this->getCategories(), 'pruneDeletedField']);
+
     }
 }

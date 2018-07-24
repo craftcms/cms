@@ -67,9 +67,31 @@ class Structures extends Component
             ->select([
                 'id',
                 'maxLevels',
+                'uid'
             ])
             ->from(['{{%structures}}'])
             ->where(['id' => $structureId])
+            ->one();
+
+        return $result ? new Structure($result) : null;
+    }
+
+    /**
+     * Returns a structure by its UID.
+     *
+     * @param string $structureId
+     * @return Structure|null
+     */
+    public function getStructureByUid(string $structureUid)
+    {
+        $result = (new Query())
+            ->select([
+                'id',
+                'maxLevels',
+                'uid'
+            ])
+            ->from(['{{%structures}}'])
+            ->where(['uid' => $structureUid])
             ->one();
 
         return $result ? new Structure($result) : null;
@@ -95,6 +117,7 @@ class Structures extends Component
         }
 
         $structureRecord->maxLevels = $structure->maxLevels;
+        $structureRecord->uid = $structure->uid;
 
         $success = $structureRecord->save();
 
