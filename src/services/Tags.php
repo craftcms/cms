@@ -8,9 +8,11 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Field;
 use craft\db\Query;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
+use craft\events\FieldEvent;
 use craft\events\ParseConfigEvent;
 use craft\events\TagGroupEvent;
 use craft\helpers\Db;
@@ -316,7 +318,9 @@ class Tags extends Component
                     $fields = Craft::$app->getFields();
 
                     // Delete the field layout
-                    $fields->deleteLayoutById($tagGroupdRecord->fieldLayoutId);
+                    if ($tagGroupdRecord->fieldLayoutId) {
+                        $fields->deleteLayoutById($tagGroupdRecord->fieldLayoutId);
+                    }
 
                     //Create the new layout
                     $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
@@ -368,7 +372,7 @@ class Tags extends Component
 
         Craft::$app->getProjectConfig()->save(self::CONFIG_TAGGROUP_KEY.'.'.$tagGroup->uid, null);
 
-        // Fire an 'afterSaveGroup' event
+        // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
             $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
                 'tagGroup' => $tagGroup
@@ -377,7 +381,6 @@ class Tags extends Component
 
         return true;
     }
-
 
     /**
      * Handle Tag group getting deleted
@@ -517,5 +520,4 @@ class Tags extends Component
     {
         return TagGroupRecord::findOne(['uid' => $uid]) ?? new TagGroupRecord();
     }
-
 }

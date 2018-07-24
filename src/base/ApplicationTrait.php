@@ -1271,7 +1271,7 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getSites(), 'handleChangedSite']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getSites(), 'handleDeletedSite']);
 
-        // Volumes
+        // Tags
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getTags(), 'handleChangedTagGroup']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getTags(), 'handleChangedTagGroup']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getTags(), 'handleDeletedTagGroup']);
