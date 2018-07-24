@@ -729,7 +729,7 @@ body.rtl .elements .tableview td.checkbox-cell + td, body.rtl .elements .tablevi
 .elements .tableview .move { display: block; position: absolute; top: calc(50% - 9px); font-size: 11px; text-decoration: none; }
 body.ltr .elements .tableview .move { margin-left: -14px; }
 body.rtl .elements .tableview .move { margin-right: -14px; }
-.elements .tableview .toggle { display: block; position: absolute; top: 9px; }
+.elements .tableview .toggle { display: block; position: absolute; top: 13px; }
 body.ltr .elements .tableview .toggle { margin-left: -20px; }
 body.rtl .elements .tableview .toggle { margin-right: -20px; }
 body.ltr .elements .tableview .move + .toggle { margin-left: -34px; }
