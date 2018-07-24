@@ -1,4 +1,4 @@
-/*!   - 2018-07-16 */
+/*!   - 2018-07-23 */
 (function($){
 
 /** global: Craft */
@@ -18220,6 +18220,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                             }
 
                             $spinnerRow.replaceWith($newElements);
+                            this.thumbLoader.load($newElements);
 
                             if (this.elementIndex.actions || this.settings.selectable) {
                                 this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
