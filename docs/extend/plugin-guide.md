@@ -43,7 +43,6 @@ Use this template as a starting point for your `composer.json` file:
   "description": "Your plugin’s package description",
   "version": "1.0.0",
   "type": "craft-plugin",
-  "minimum-stability": "dev",
   "require": {
     "craftcms/cms": "^3.0.0"
   },
