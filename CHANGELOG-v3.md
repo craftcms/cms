@@ -1,9 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.17.1 - 2018-07-24
 
-### Changed
-- Revert “Fixed a PHP error that could occur if the PHP’s `set_time_limit()` was added to the php.ini `disable_functions` list” from 3.0.17.
+### Fixed
+- Really fixed a PHP error that could occur if the PHP’s `set_time_limit()` was added to the php.ini `disable_functions` list.
 
 ## 3.0.17 - 2018-07-24
 
