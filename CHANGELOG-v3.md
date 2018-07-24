@@ -19,6 +19,7 @@
 - Fixed a bug thumbnails weren’t loading for element index rows that were revealed after expanding a parent element.
 - Fixed an error that occurred if an element’s `getRoute()` method returned a string. ([#3128](https://github.com/craftcms/cms/issues/3128))
 - Fixed a bug where the `|without` filter wasn’t working if an object was passed in. ([#3137](https://github.com/craftcms/cms/issues/3137))
+- Fixed a bug where users’ Language preference would default to Deutsch if the current application language wasn’t one of the available language options. ([#3142](https://github.com/craftcms/cms/issues/3142))
 
 ## 3.0.16.1 - 2018-07-18
 
