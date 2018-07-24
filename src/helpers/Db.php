@@ -636,6 +636,22 @@ class Db
     }
 
     /**
+     * Return an array of IDs keyed by UIDs for a table.
+     *
+     * @param string $table
+     * @param array $uids
+     * @return array
+     */
+    public static function idsByUids($table, $uids)
+    {
+        return (new Query())
+            ->select(['uid', 'id'])
+            ->from($table)
+            ->where(['uid' => $uids])
+            ->pairs();
+    }
+
+    /**
      * Return UID by an ID for a table.
      *
      * @param string $table
