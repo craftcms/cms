@@ -1,35 +1,36 @@
 # Assets
 
-Assets are files managed by Craft. They live in Asset Volumes, which represent physical directories. 
+You can manage your project’s media and document files (“assets”) in Craft just like entries and other content types.
 
-The default installation of Craft only supports local volumes (directories on the same server on which Craft is running) but you can also set up remote Asset Volumes that live on [Amazon S3](), [Rackspace Cloud](), and [Google Cloud]() using one of the first-party plugins.
+## Volumes
 
-You can set up your asset volumes from Settings → Assets. 
+All of your assets live in “volumes”. Volumes are storage containers. A volume can be a directory on the web server, or a remote storage service like Amazon S3.
 
-Local volumes have two important settings:
+You can manage your project’s volumes from Settings → Assets.
 
-* The URL to the directory containing the files, assuming the files are meant to be publicly accessed
-* The file system path to the directory containing the files
+All volumes let you choose whether the assets within them should have public URLs, and if so, what their **Base URL** should be. The Base URL can begin with an [alias](config/README.md#aliases) such as `@web`, which represents the URL to the directory that contains the `index.php` file. For example, if your local volume directory is located at `web/assets/images/`, you could set the Base URL to `@web/assets/images`.
 
-If you want to use a relative file system path, note that it should be relative from the directory that holds your `index.php` file. So if your files are set up like this:
+### Local Volumes
 
-```
-my-craft-project.dev/
-├── templates/
-├── ...
-└── web/
-    ├── index.php
-    └── images/
-        └── ... 
-```
+Out of the box, you can create one type of volume, “Local”. Local volumes represent a directory on the local web server.
 
-…then the correct relative path to `web/images/` would be `images/`.
+Local volumes have one setting, **File System Path**. Use this setting to define the path to the volume’s root directory on the server. This path can begin with an [alias](config/README.md#aliases) such as `@webroot`, which represents the path to the directory that contains the `index.php` file. For example, if your local volume directory is located at `web/assets/images/`, you could set the File System Path to `@webroot/assets/images`.
 
 Note that Craft/PHP must be able to write to the directory you created.
 
 ::: tip
 You can override the Volume settings using the `config/volumes.php` configuration file. This file is not in the default Craft installation so you may have to create it. Learn more about what need to go in the `volumes.php` file in the [Overriding Volume Settings](config/README.md#overriding-volume-settings) section in the Configuration documentation.
 :::
+
+### Remote Volumes
+
+If you would prefer to store your assets on a remote storage service like Amazon S3, you can install a plugin that provides the integration.
+
+- [Amazon S3](https://github.com/craftcms/aws-s3) (first party)
+- [Google Cloud Storage](https://github.com/craftcms/google-cloud) (first party)
+- [Rackspace Cloud Files](https://github.com/craftcms/rackspace) (first party)
+- [DigitalOcean Spaces](https://github.com/vaersaagod/dospaces) (Værsågod)
+- [fortrabbit Object Storage](https://github.com/fortrabbit/craft-object-storage) (fortrabbit)
 
 ## Asset Meta Fields
 
