@@ -393,7 +393,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function withoutFilter(array $arr, $exclude): array
     {
         if (!is_array($exclude)) {
-            $exclude = (array)$exclude;
+            $exclude = [$exclude];
         }
 
         foreach ($exclude as $value) {

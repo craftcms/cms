@@ -17,6 +17,7 @@
 - Fixed a bug where expanding a disabled element within a structure index view in the Control Panel wouldn’t reveal any descendants. ([#3126](https://github.com/craftcms/cms/issues/3126))
 - Fixed a bug thumbnails weren’t loading for element index rows that were revealed after expanding a parent element.
 - Fixed an error that occurred if an element’s `getRoute()` method returned a string. ([#3128](https://github.com/craftcms/cms/issues/3128))
+- Fixed a bug where the `|without` filter wasn’t working if an object was passed in. ([#3137](https://github.com/craftcms/cms/issues/3137))
 
 ## 3.0.16.1 - 2018-07-18
 
