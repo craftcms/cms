@@ -8,7 +8,7 @@
 
 ### Changed
 - The `addTrailingSlashesToUrls` config setting no longer applies to URLs that end with a segment that has a dot (`.`). ([#3123](https://github.com/craftcms/cms/issues/3123))
-- Craft now redirects install requests back to the Dashboard if it’s already installed. ([#3129](https://github.com/craftcms/cms/issues/3129))
+- Craft now redirects install requests back to the Dashboard if it’s already installed. ([#3143](https://github.com/craftcms/cms/issues/3143))
 
 ### Fixed
 - Fixed a bug where the Settings → Email → System Messages page would show messages in the current application language rather than the primary site’s language.
