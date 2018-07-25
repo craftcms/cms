@@ -46,7 +46,7 @@ Craft requires the following PHP extensions:
 
 ## Optional PHP Methods
 
-Some shared hosting environments will disable some common PHP methods that some Craft features require.
+Some shared hosting environments will disable certain common PHP methods affect Craft features.
 
 * [allow_url_fopen](https://secure.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen) - Craft requires this for updating and installing plugins from the Plugin Store.
 * [proc_*](https://secure.php.net/manual/en/ref.exec.php) - The PHP `proc_` methods must be enabled in order to utilize the Plugin Store and to be able to send emails.
