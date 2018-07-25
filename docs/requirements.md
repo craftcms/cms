@@ -38,14 +38,18 @@ Craft requires the following PHP extensions:
 * [SPL](http://php.net/manual/en/book.spl.php)
 * [Zip](https://secure.php.net/manual/en/book.zip.php)
 
-Additionally, the PHP [proc_*](https://secure.php.net/manual/en/ref.exec.php) methods must be enabled in order to utilize the Plugin Store and to be able to send emails.
-
 ## Optional PHP Extensions
 
 * [iconv](http://us1.php.net/manual/en/book.iconv.php) – Adds support for more character encodings than PHP’s built-in [mb_convert_encoding()](http://php.net/manual/en/function.mb-convert-encoding.php) function, which Craft will take advantage of when converting strings to UTF-8.
 * [Intl](http://php.net/manual/en/book.intl.php) – Adds rich internationalization support.
 * [DOM](http://php.net/manual/en/book.dom.php) - Required for parsing XML feeds as well as <api:yii\web\XmlResponseFormatter>.
 
+## Optional PHP Methods
+
+Some shared hosting environments will disable some common PHP methods that some Craft features require.
+
+* [allow_url_fopen](https://secure.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen) - Craft requires this for updating and installing plugins from the Plugin Store.
+* [proc_*](https://secure.php.net/manual/en/ref.exec.php) - The PHP `proc_` methods must be enabled in order to utilize the Plugin Store and to be able to send emails.
 
 ## Required Database User Privileges
 
