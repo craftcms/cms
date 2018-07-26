@@ -1095,7 +1095,7 @@ return [
     'User registered.' => 'A felhasználó regisztrálva.',
     'User saved, but couldn’t send verification email. Check your email settings.' => 'A felhasználó elmentve, de nem sikerült a megerösítö email kiküldése. Ellenörizd az email beállításokat.',
     'User saved.' => 'Felhasználó elmentve.',
-    'User settings saved.' => 'FElhasználói beállítások mentve.',
+    'User settings saved.' => 'Felhasználói beállítások mentve.',
     'User suspended.' => 'Felhasználó felfüggesztve.',
     'User unsuspended.' => 'Felhasználó tiltás feloldva.',
     'Username' => 'Felhasználónév',
@@ -1194,7 +1194,7 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'A Craft {edition} {licensedEdition} lincensz.',
     'account_activation_body' => 'Hello {{user.friendlyName}},
 
-Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
+Köszönjük, hogy regisztráltál, a felhasználói fiókod aktiválásához kattints az alábbi linkre:
 
 {{link}}',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
