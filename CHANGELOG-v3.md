@@ -2,8 +2,25 @@
 
 ## Unreleased
 
+### Added
+Added `craft\helpers\App::assetManagerConfig()`.
+Added `craft\helpers\App::cacheConfig()`.
+Added `craft\helpers\App::dbConfig()`.
+Added `craft\helpers\App::mailerConfig()`.
+Added `craft\helpers\App::mutexConfig()`.
+Added `craft\helpers\App::logConfig()`.
+Added `craft\helpers\App::sessionConfig()`.
+Added `craft\helpers\App::userConfig()`.
+Added `craft\helpers\App::viewConfig()`.
+Added `craft\helpers\App::webRequestConfig()`.
+
 ### Changed
+- Dynamic app component configs are now defined by methods on `craft\helpers\App`, making it easier to modify them from `config/app.php`. ([#3152](https://github.com/craftcms/cms/issues/3152))
 - Structure operations now ensure that no other operations are being performed on the same structure, reducing the risk of corrupting the structure. ([#3148](https://github.com/craftcms/cms/issues/3148))
+
+### Deprecated
+- Deprecated `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` should be used instead.
+- Deprecated `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\App::mailerConfig()` should be used instead.
 
 ### Fixed
 - Fixed a bug where collapsing structure elements would only hide up to 50 of its descendants.

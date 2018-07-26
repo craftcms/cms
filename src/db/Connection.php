@@ -72,37 +72,12 @@ class Connection extends \yii\db\Connection
      *
      * @param DbConfig $config
      * @return static
+     * @deprecated in 3.0.18. Use [[App::dbConfig()]] instead.
      */
     public static function createFromConfig(DbConfig $config): Connection
     {
-        if ($config->driver === DbConfig::DRIVER_MYSQL) {
-            $schemaConfig = [
-                'class' => MysqlSchema::class,
-            ];
-        } else {
-            $schemaConfig = [
-                'class' => PgsqlSchema::class,
-                'defaultSchema' => $config->schema,
-            ];
-        }
-
-        return Craft::createObject([
-            'class' => static::class,
-            'driverName' => $config->driver,
-            'dsn' => $config->dsn,
-            'username' => $config->user,
-            'password' => $config->password,
-            'charset' => $config->charset,
-            'tablePrefix' => $config->tablePrefix,
-            'schemaMap' => [
-                $config->driver => $schemaConfig,
-            ],
-            'commandMap' => [
-                $config->driver => Command::class,
-            ],
-            'attributes' => $config->attributes,
-            'enableSchemaCache' => !YII_DEBUG,
-        ]);
+        $config = App::dbConfig($config);
+        return Craft::createObject($config);
     }
 
     // Properties

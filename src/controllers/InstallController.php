@@ -12,6 +12,7 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\Install;
@@ -145,7 +146,8 @@ class InstallController extends Controller
         if (empty($errors)) {
             // Test the connection
             $dbConfig->updateDsn();
-            $db = Connection::createFromConfig($dbConfig);
+            /** @var Connection $db */
+            $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {
                 $db->open();
@@ -251,7 +253,8 @@ class InstallController extends Controller
             $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
 
             // Update the db component based on new values
-            $db = Connection::createFromConfig($dbConfig);
+            /** @var Connection $db */
+            $db = Craft::createObject(App::dbConfig($dbConfig));
             Craft::$app->set('db', $db);
         }
 
