@@ -435,7 +435,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $layoutId = (new Query())
             ->select(['id'])
             ->from(['{{%fieldlayouts}}'])
-            ->where(['type' =>  'craft\\elements\\User'])
+            ->where(['type' => 'craft\\elements\\User'])
             ->scalar();
 
         if ($layoutId) {
