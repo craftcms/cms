@@ -428,8 +428,7 @@ class UsersController extends Controller
             return $this->redirect($url);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app',
-            'Couldn’t update password.'));
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
         $errors = $userToProcess->getErrors('newPassword');
 
