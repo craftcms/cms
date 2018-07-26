@@ -439,11 +439,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->scalar();
 
         if ($layoutId) {
-            $layout = $this->_generateFieldLayoutArray([$layoutId]);
-
-            if ($layout) {
-                $data['layouts'] = array_values($layout);
-            }
+            $layouts = array_values($this->_generateFieldLayoutArray([$layoutId]));
+            $layout = reset($layouts);
+            $uid = $layout['uid'];
+            unset($layout['uid']);
+            $data['fieldLayouts s'] = [$uid => $layout];
         }
 
         $groups = (new Query())
