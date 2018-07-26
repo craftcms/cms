@@ -397,7 +397,7 @@ class Categories extends Component
     {
         $path = $event->configPath;
 
-        // Does it match a tag group?
+        // Does it match a category group?
         if (preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $categoryGroupUid = $matches[1];
@@ -651,7 +651,7 @@ class Categories extends Component
     public function handleDeletedCategoryGroup (ParseConfigEvent $event) {
         $path = $event->configPath;
 
-        // Does it match a field group?
+        // Does it match a category group?
         if (preg_match('/'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
@@ -709,7 +709,7 @@ class Categories extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
 
-        // Loop through the volumes and see if the UID exists in the field layouts.
+        // Loop through the categories and see if the UID exists in the field layouts.
         foreach ($categoryGroups as &$categoryGroup) {
             if (!empty($categoryGroup['fieldLayouts'])) {
                 foreach ($categoryGroup['fieldLayouts'] as &$layout) {

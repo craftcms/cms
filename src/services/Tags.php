@@ -390,7 +390,7 @@ class Tags extends Component
     public function handleDeletedTagGroup (ParseConfigEvent $event) {
         $path = $event->configPath;
 
-        // Does it match a field group?
+        // Does it match a tag group?
         if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
@@ -449,7 +449,7 @@ class Tags extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $tagGroups = $projectConfig->get(self::CONFIG_TAGGROUP_KEY);
 
-        // Loop through the volumes and see if the UID exists in the field layouts.
+        // Loop through the tag groups and see if the UID exists in the field layouts.
         foreach ($tagGroups as &$tagGroup) {
             if (!empty($tagGroup['fieldLayouts'])) {
                 foreach ($tagGroup['fieldLayouts'] as &$layout) {
