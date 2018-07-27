@@ -17,6 +17,7 @@
 ### Changed
 - Dynamic app component configs are now defined by methods on `craft\helpers\App`, making it easier to modify them from `config/app.php`. ([#3152](https://github.com/craftcms/cms/issues/3152))
 - Structure operations now ensure that no other operations are being performed on the same structure, reducing the risk of corrupting the structure. ([#3148](https://github.com/craftcms/cms/issues/3148))
+- The `{% js %}` tag now supports the following position params: `at POS_HEAD`, `at POS_BEGIN`, `at POS_END`, `on POS_READY`, and `on POS_LOAD` (e.g. `{% js at POS_END %}`).
 
 ### Deprecated
 - Deprecated `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` should be used instead.
