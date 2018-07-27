@@ -353,7 +353,7 @@ return [
     'Descending' => 'Csökkenő',
     'Description' => 'Leírás',
     'Deselect All' => 'Minden kiválasztás visszavonása',
-    'Design your field layout' => 'Tervez meg a mező elrendezését',
+    'Design your field layout' => 'Tervezze meg a mező elrendezését',
     'Developer Support' => 'Fejlesztői támogatás',
     'Dimensions' => 'Méretek',
     'Disable' => 'Kikapcsol',
