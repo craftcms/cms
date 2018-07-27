@@ -1,4 +1,4 @@
-/*! Craft  - 2018-02-27 */
+/*! Craft  - 2018-07-27 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -5847,10 +5847,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				if (doReload)
 				{
-					this.updateElements();
+					this._updateAfterUpload();
 				}
 			}
 		}
+	},
+
+	/**
+	 * Update the elements after an upload, setting sort to dateModified descending, if not using index.
+	 *
+	 * @private
+	 */
+	_updateAfterUpload: function () {
+		if (this.settings.context !== 'index') {
+			this.setSortAttribute('dateModified');
+			this.setSortDirection('desc');
+		}
+		this.updateElements();
 	},
 
 	/**
@@ -5870,7 +5883,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			this.setIndexAvailable();
 			this.progressBar.hideProgressBar();
-			this.updateElements();
+            this._updateAfterUpload();
 		}, this);
 
 		this.progressBar.setItemCount(returnData.length);

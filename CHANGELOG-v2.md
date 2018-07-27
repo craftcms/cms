@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed a bug where Dropdown fields on an element index view could show an incorrect selected value in limited circumstances.
+- When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 
 ## 2.6.3019 - 2018-06-29
 
