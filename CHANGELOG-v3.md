@@ -3,16 +3,16 @@
 ## Unreleased
 
 ### Added
-Added `craft\helpers\App::assetManagerConfig()`.
-Added `craft\helpers\App::cacheConfig()`.
-Added `craft\helpers\App::dbConfig()`.
-Added `craft\helpers\App::mailerConfig()`.
-Added `craft\helpers\App::mutexConfig()`.
-Added `craft\helpers\App::logConfig()`.
-Added `craft\helpers\App::sessionConfig()`.
-Added `craft\helpers\App::userConfig()`.
-Added `craft\helpers\App::viewConfig()`.
-Added `craft\helpers\App::webRequestConfig()`.
+- Added `craft\helpers\App::assetManagerConfig()`.
+- Added `craft\helpers\App::cacheConfig()`.
+- Added `craft\helpers\App::dbConfig()`.
+- Added `craft\helpers\App::mailerConfig()`.
+- Added `craft\helpers\App::mutexConfig()`.
+- Added `craft\helpers\App::logConfig()`.
+- Added `craft\helpers\App::sessionConfig()`.
+- Added `craft\helpers\App::userConfig()`.
+- Added `craft\helpers\App::viewConfig()`.
+- Added `craft\helpers\App::webRequestConfig()`.
 
 ### Changed
 - Dynamic app component configs are now defined by methods on `craft\helpers\App`, making it easier to modify them from `config/app.php`. ([#3152](https://github.com/craftcms/cms/issues/3152))
