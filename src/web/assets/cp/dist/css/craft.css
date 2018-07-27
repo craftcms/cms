@@ -406,7 +406,7 @@ body.rtl .flex > *:not(:last-child) { margin-left: 7px !important; }
 .footer > .buttons { margin: 0; }
 
 .btn { display: inline-block; border-radius: 2px; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); color: #29323d; }
-.btn:focus { outline: none; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); }
+.btn:focus { outline: none; -webkit-box-shadow: inset 0 0 0 1px #0D99F2, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px #0D99F2, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); }
 .btn:active, .btn.active { -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1), inset 0 0.5px 1px rgba(0, 0, 0, 0.15); }
 .btn:not(.submit) { color: #29323d; background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#fafafa)); background-image: linear-gradient(#fff, #fafafa); }
 .btn:not(.submit):active, .btn:not(.submit).active { background-image: -webkit-gradient(linear, left top, left bottom, from(#e4e5e7), to(#eaebec)); background-image: linear-gradient(#e4e5e7, #eaebec); }
@@ -1275,7 +1275,7 @@ input.checkbox:checked:not(:indeterminate) + label:before, div.checkbox.checked:
 
 input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align: center; }
 
-input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.4); box-shadow: 0 0 0 1px rgba(0, 0, 20, 0.4); }
+input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none; -webkit-box-shadow: 0 0 0 1px #0D99F2; box-shadow: 0 0 0 1px #0D99F2; }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
 
@@ -1379,7 +1379,7 @@ body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px; }
 
 .select:not(.selectize).fullwidth select { min-width: 100%; }
 
-.select:not(.selectize) select:focus { outline: none; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); }
+.select:not(.selectize) select:focus { outline: none; -webkit-box-shadow: inset 0 0 0 1px #0D99F2, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px #0D99F2, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); }
 
 .select:not(.selectize).small:after { top: 9px; }
 
