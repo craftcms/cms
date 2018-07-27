@@ -78,7 +78,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'users' => $this->_getUserData(),
         ];
 
-        $data = array_merge($data, $this->_getSystemSettingData());
+        $data = array_merge_recursive($data, $this->_getSystemSettingData());
 
         return $data;
 
@@ -443,7 +443,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $layout = reset($layouts);
             $uid = $layout['uid'];
             unset($layout['uid']);
-            $data['fieldLayouts s'] = [$uid => $layout];
+            $data['fieldLayouts'] = [$uid => $layout];
         }
 
         $groups = (new Query())
