@@ -55,7 +55,7 @@ my-craft-project.dev/
 ├── .env.example
 ├── composer.json
 ├── craft
-├── craft.bat
+└── craft.bat
 ```
 
 ::: tip
