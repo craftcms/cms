@@ -32,10 +32,10 @@ If you have an existing `releases.json` file, you can quickly convert it to a ch
 
 ```bash
 # go to the plugin directory
-cd path/to/plugin
+cd /path/to/my-plugin
 
 # create a CHANGELOG.md from its releases.json 
-> curl https://api.craftcms.com/v1/utils/releases-2-changelog --data-binary @releases.json > CHANGELOG.md
+curl https://api.craftcms.com/v1/utils/releases-2-changelog --data-binary @releases.json > CHANGELOG.md
 ``` 
 
 ## Yii 2

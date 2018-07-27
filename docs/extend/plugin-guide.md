@@ -159,7 +159,7 @@ In your terminal, go to your Craft project and tell Composer to require your plu
 
 ```bash
 # go to the project directory
-cd ~/dev/my-craft-project
+cd /path/to/my-project.test
 
 # require the plugin package
 composer require package/name
@@ -176,13 +176,13 @@ One caveat of `path` Composer repositories is that Composer will ignore `path`-b
 
 ```bash
 # go to the project directory
-cd ~/dev/my/craft-project
+cd /path/to/my-project.test
 
 # remove the plugin package
-> composer remove package/name
+composer remove package/name
 
 # re-require the plugin package
-> composer require package/name
+composer require package/name
 ```
 :::
 
@@ -192,7 +192,7 @@ If you’re ready to publicly release your plugin, register it as a new Composer
 
 ```bash
 # go to the project directory
-cd ~/dev/my-craft-project
+cd /path/to/my-project.test
 
 # require the plugin package
 composer require package/name
