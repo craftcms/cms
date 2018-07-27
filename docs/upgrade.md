@@ -44,7 +44,7 @@ With Craft 3 downloaded and prepped, follow these steps to complete the upgrade:
 
 10. Update your web server to point to your new project’s `web/` directory.
 
-11. Point your browser to your Control Panel URL (e.g. `http://example.dev/admin`). If you see the update prompt, you did everything right! Go ahead and click “Finish up” to update your database.
+11. Point your browser to your Control Panel URL (e.g. `http://my-project.test/admin`). If you see the update prompt, you did everything right! Go ahead and click “Finish up” to update your database.
 
 12. If you had any plugins installed, you’ll need to install their Craft 3 counterparts from the “Plugin Store” section in the Control Panel. (See the plugins’ documentation for any additional upgrade instructions.)
 

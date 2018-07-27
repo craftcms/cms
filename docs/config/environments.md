@@ -20,7 +20,7 @@ To set a new environment variable, open up your `.env` file and add it like this
 
 ```bash
 # -- .env --
-SITE_URL="http://example.test"
+SITE_URL="http://my-project.test"
 ```
 
 ::: tip
@@ -110,7 +110,7 @@ ENVIRONMENT="dev"
 ```
 
 ::: tip
-If the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant isn’t defined, Craft will define it for you based on the current server name (e.g. `example.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
+If the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant isn’t defined, Craft will define it for you based on the current server name (e.g. `my-project.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
 :::
 
 ## Aliases

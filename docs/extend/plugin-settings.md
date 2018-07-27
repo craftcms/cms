@@ -94,7 +94,7 @@ return [
     '*' => [ 
         'foo' => 'defaultValue',
     ],
-    '.dev' => [
+    '.test' => [
         'foo' => 'devValue',
     ],
 ];

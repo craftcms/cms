@@ -17,7 +17,7 @@ To create a plugin, create a new directory for it somewhere on your computer. A 
 
 ```
 ~/dev/
-├── my-craft-project.dev/
+├── my-project.test/
 │   └── ...
 └── my-plugin/
     ├── composer.json
