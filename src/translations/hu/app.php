@@ -881,7 +881,7 @@ return [
     'Show sidebar' => 'Oldalsáv mutatása',
     'Show the Title field' => 'Cím mező mutatása',
     'Show the debug toolbar on the Control Panel' => 'A hibakereső eszköztár megjelenítése a Vezérlőpulton',
-    'Show the debug toolbar on the front end' => 'A hibakereső eszköztár megjelenítése az előtérben',
+    'Show the debug toolbar on the front end' => 'A hibakereső eszköztár megjelenítése a frontenden',
     'Show time' => 'Mutatja az időt',
     'Show/hide children' => 'Gyermekek megjelenításe/elrejtése',
     'Sign into Craft ID' => 'Bejelentkezés a Craft ID-be',
