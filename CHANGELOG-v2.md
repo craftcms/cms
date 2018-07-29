@@ -15,6 +15,7 @@
 
 ### Fixed
 - Fixed a bug where Dropdown fields on an element index view could show an incorrect selected value in limited circumstances.
+- Fixed a bug where `JsonHelper::sendJsonHeaders()` was overriding the `Cache-Control` header even if it had already ben explicitly set. ([craftcms/element-api#74](https://github.com/craftcms/element-api/issues/74))
 
 ## 2.6.3019 - 2018-06-29
 
