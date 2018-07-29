@@ -24,7 +24,7 @@
 - Deprecated `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\App::mailerConfig()` should be used instead.
 
 ### Fixed
-- Fixed a bug where collapsing structure elements would only hide up to 50 of its descendants.
+- Fixed a bug where collapsing structure elements would only hide up to 50 of their descendants.
 
 ## 3.0.17.1 - 2018-07-24
 
