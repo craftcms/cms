@@ -25,6 +25,7 @@
 
 ### Fixed
 - Fixed a bug where collapsing structure elements would only hide up to 50 of their descendants.
+- Fixed a bug where Date/Time fields could lose their value if they were used in an entry type’s Title Format, and the entry’s site’s language was different than the user’s preferred language. ([#3151](https://github.com/craftcms/cms/issues/3151))
 
 ## 3.0.17.1 - 2018-07-24
 
