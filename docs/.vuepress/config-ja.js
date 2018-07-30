@@ -2,13 +2,13 @@ module.exports = {
     selectText: '言語',
     label: '日本語',
     editLinkText: 'このページを GitHub で編集',
-    // algolia: {
-    //     apiKey: '1014b55e7f916b20c5d6834bf7666dc3',
-    //     indexName: 'craftcms',
-    //     algoliaOptions: {
-    //         facetFilters: ['version:v3', 'tags:doc']
-    //     }
-    // },
+    algolia: {
+        apiKey: '1014b55e7f916b20c5d6834bf7666dc3',
+        indexName: 'craftcms',
+        algoliaOptions: {
+            facetFilters: ['version:v3', 'tags:doc', 'tags:ja']
+        }
+    },
     sidebar: {
         '/ja/element-query-params/': [
             ['../element-queries', '← エレメントクエリ'],
