@@ -52,6 +52,7 @@ class Request extends \yii\web\Request
      */
     public $ipHeaders = [
         'Client-IP',
+        'X-Forwarded-For',
         'X-Forwarded',
         'X-Cluster-Client-IP',
         'Forwarded-For',
