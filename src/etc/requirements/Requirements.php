@@ -67,13 +67,7 @@ class Requirements
 				'<a href="http://craftcms.com">Craft CMS</a>',
 				'The PDO MySQL extension is required.'
 			),
-			new Requirement(
-				'Mcrypt extension',
-				extension_loaded('mcrypt'),
-				true,
-				'<a href="http://craftcms.com">Craft CMS</a>',
-				'The Mcrypt extension is required.'
-			),
+			new McryptRequirement(),
 			new Requirement(
 				'GD extension',
 				extension_loaded('gd'),
@@ -468,15 +462,51 @@ class PhpVersionRequirement extends Requirement
 }
 
 /**
+ * Mcrypt requirement class.
+ *
+ * @package craft.app.etc.requirements
+ */
+class McryptRequirement extends Requirement
+{
+    /**
+     * McryptRequirement constructor.
+     *
+     * @param null $name
+     * @param null $condition
+     * @param bool $required
+     * @param null $requiredBy
+     * @param null $notes
+     */
+    public function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
+    {
+        parent::__construct('Mcrypt extension', null, true, '<a href="http://craftcms.com">Craft CMS</a>', 'The Mcrypt extension is required.');
+    }
+
+    /**
+     * Calculates the result of this requirement.
+     *
+     * @return string
+     */
+    protected function calculateResult()
+    {
+        // If we're on at least PHP 5.6.1, we know our mcrypt_compat shim is in place.
+        if (version_compare(PHP_VERSION, '5.6.1', '>=')) {
+            return RequirementResult::Success;
+        }
+
+        if (!extension_loaded('mcrypt')) {
+            return RequirementResult::Failed;
+        }
+    }
+}
+
+/**
  * Iconv requirement class.
  *
  * @package craft.app.etc.requirements
  */
 class IconvRequirement extends Requirement
 {
-	// Protected Methods
-	// =========================================================================
-
 	/**
 	 * @return IconvRequirement
 	 */

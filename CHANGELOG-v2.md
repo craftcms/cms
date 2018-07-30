@@ -2,8 +2,18 @@
 
 ## Unreleased
 
+### Added
+- Added `phpseclib/mcrypt_compat` as a shim for Mcrypt compatibility for people running PHP 7.2+.
+
+### Updated
+- Updated Twig to 1.35.4.
+- Updated Yii to 1.1.20.
+- Updated `enshrined/svg-sanitize` to 0.9.0
+- Updated `elvanto/litemoji` to 1.4.1.
+
 ### Fixed
 - Fixed a bug where Dropdown fields on an element index view could show an incorrect selected value in limited circumstances.
+- When uploading a file to an Asset field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 
 ## 2.6.3019 - 2018-06-29
 
