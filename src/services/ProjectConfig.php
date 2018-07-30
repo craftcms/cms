@@ -413,7 +413,7 @@ class ProjectConfig extends Component
 
         $snapshot = $this->_getCurrentSnapshot();
         $arrayAccess = $this->_nodePathToArrayAccess($configPath);
-        eval('$snapshot'.$arrayAccess.' = $configData;');
+        eval('$snapshot'.$arrayAccess.' = $event->configData;');
 
         return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
     }
