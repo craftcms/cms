@@ -12,6 +12,7 @@ use craft\models\Site;
 use craft\services\Fields;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
+use craft\services\UserGroups;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -80,6 +81,7 @@ class ProjectConfig
             }
         }
     }
+
     /**
      * Ensure all site config changes are processed immediately in a safe manner.
      */
@@ -105,6 +107,29 @@ class ProjectConfig
                 // Ensure site is processed
                 $projectConfig->processConfigChanges($path.$groupUid.'.'.Sites::CONFIG_SITES_KEY.'.'.$siteUid);
             }
+        }
+    }
+
+    /**
+     * Ensure all site config changes are processed immediately in a safe manner.
+     */
+    public static function ensureAllUserGroupsProcessed()
+    {
+        static $alreadyProcessed = false;
+
+        if ($alreadyProcessed) {
+            return;
+        }
+
+        $alreadyProcessed = true;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $allGroups = $projectConfig->get(UserGroups::CONFIG_USERPGROUPS_KEY, true);
+
+        foreach ($allGroups as $groupUid => $groupData) {
+            $path = UserGroups::CONFIG_USERPGROUPS_KEY.'.';
+            // Ensure group is processed
+            $projectConfig->processConfigChanges($path.$groupUid);
         }
     }
 }
