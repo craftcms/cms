@@ -15,6 +15,7 @@ use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
+use craft\events\ParseConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\models\CategoryGroup;
 use craft\models\Section;
@@ -50,6 +51,9 @@ class UserPermissions extends Component
      * @var
      */
     private $_permissionsByUserId;
+
+    const CONFIG_USERPERMISSIONS_KEY = 'users.permissions';
+
 
     // Public Methods
     // =========================================================================
@@ -301,11 +305,6 @@ class UserPermissions extends Component
     {
         Craft::$app->requireEdition(Craft::Pro);
 
-        // Delete any existing group permissions
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])
-            ->execute();
-
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
 
@@ -313,20 +312,9 @@ class UserPermissions extends Component
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
         if (!empty($permissions)) {
-            $groupPermissionVals = [];
-
-            foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
-                $groupPermissionVals[] = [$permissionRecord->id, $groupId];
-            }
-
-            // Add the new group permissions
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    '{{%userpermissions_usergroups}}',
-                    ['permissionId', 'groupId'],
-                    $groupPermissionVals)
-                ->execute();
+            $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+            $path = UserGroups::CONFIG_USERPGROUPS_KEY.'.'.$group->id.'.permissions';
+            Craft::$app->getProjectConfig()->save($path, $permissions);
         }
 
         // Cache the new permissions
@@ -399,6 +387,7 @@ class UserPermissions extends Component
         if (!empty($permissions)) {
             $userPermissionVals = [];
 
+            $this->_ensurePermissionRecords($permissions);
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
                 $userPermissionVals[] = [$permissionRecord->id, $userId];
@@ -417,6 +406,81 @@ class UserPermissions extends Component
         $this->_permissionsByUserId[$userId] = $permissions;
 
         return true;
+    }
+
+    /**
+     * Handle any changed group permissions.
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleChangedGroupPermissions(ParseConfigEvent $event) {
+        $path = $event->configPath;
+
+        // Does it match user group permissions?
+        if (preg_match('/'.UserGroups::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.permissions$/i', $path, $matches)) {
+            $uid = $matches[1];
+            $permissions = Craft::$app->getProjectConfig()->get($path, true);
+            $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
+
+            // Delete any existing group permissions
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%userpermissions_usergroups}}', ['groupId' => $userGroup->id])
+                ->execute();
+
+            $groupPermissionVals = [];
+
+            $this->_ensurePermissionRecords($permissions);
+            foreach ($permissions as $permissionName) {
+                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
+            }
+
+            // Add the new group permissions
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_usergroups}}',
+                    ['permissionId', 'groupId'],
+                    $groupPermissionVals)
+                ->execute();
+        }
+    }
+
+    /**
+     * Handle any changed permissions.
+     *
+     * @param ParseConfigEvent $event
+     */
+    public function handleChangedPermissions(ParseConfigEvent $event)
+    {
+        $path = $event->configPath;
+
+        // Does it match permissions?
+        if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY.'$/i', $path, $matches)) {
+            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $records = UserPermissionRecord::find()
+                ->where(['name' => $data])
+                ->indexBy('name')
+                ->all();
+
+            if ($data) {
+                foreach ($data as $permissionName) {
+                    // If not in the record list, create a new record
+                    if (!isset($records[$permissionName])) {
+                        $permissionRecord = new UserPermissionRecord();
+                        $permissionRecord->name = $permissionName;
+                        $permissionRecord->save();
+                    } else {
+                        // If it exists, remove from the record list
+                        unset($records[$permissionName]);
+                    }
+                }
+
+                // Any records remaining in the list were not in the config data, so gets deleted.
+                foreach ($records as $record) {
+                    $record->delete();
+                }
+            }
+        }
     }
 
     // Private Methods
@@ -690,14 +754,11 @@ class UserPermissions extends Component
         // Permission names are always stored in lowercase
         $permissionName = strtolower($permissionName);
 
-        $permissionRecord = UserPermissionRecord::findOne([
-            'name' => $permissionName
-        ]);
+        $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
 
         if (!$permissionRecord) {
-            $permissionRecord = new UserPermissionRecord();
-            $permissionRecord->name = $permissionName;
-            $permissionRecord->save();
+            $this->_ensurePermissionRecords([$permissionName]);$
+            $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
         }
 
         return $permissionRecord;
@@ -711,5 +772,18 @@ class UserPermissions extends Component
         return (new Query())
             ->select(['p.name'])
             ->from(['{{%userpermissions}} p']);
+    }
+
+    /**
+     * Ensure that a list of permissions have a matching DB record.
+     *
+     * @param array $permissionNames
+     */
+    private function _ensurePermissionRecords(array $permissionNames)
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $permissionData = $projectConfig->get(self::CONFIG_USERPERMISSIONS_KEY, true);
+        $permissionData = array_unique(array_merge($permissionData, $permissionNames));
+        $projectConfig->save(self::CONFIG_USERPERMISSIONS_KEY, $permissionData);
     }
 }

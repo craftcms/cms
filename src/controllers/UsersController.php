@@ -1456,7 +1456,7 @@ class UsersController extends Controller
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
 
-        if (!Craft::$app->getFields()->saveLayout($fieldLayout)) {
+        if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
 
             return null;
