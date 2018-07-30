@@ -7,7 +7,11 @@
 
 namespace craft\helpers;
 
+use Craft;
+use craft\models\Site;
+use craft\services\Fields;
 use craft\services\ProjectConfig as ProjectConfigService;
+use craft\services\Sites;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -47,5 +51,60 @@ class ProjectConfig
         unset($nodes['imports']);
 
         return $nodes;
+    }
+
+    /**
+     * Ensure all field config changes are processed immediately in a safe manner.
+     */
+    public static function ensureAllFieldsProcessed()
+    {
+        static $alreadyProcessed = false;
+
+        if ($alreadyProcessed) {
+            return;
+        }
+
+        $alreadyProcessed = true;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true);
+
+        foreach ($allGroups as $groupUid => $groupData) {
+            $path = Fields::CONFIG_FIELDGROUP_KEY.'.';
+            // Ensure group is processed
+            $projectConfig->processConfigChanges($path.$groupUid);
+
+            foreach ($groupData[Fields::CONFIG_FIELDS_KEY] as $fieldUid => $fieldData) {
+                // Ensure field is processed
+                $projectConfig->processConfigChanges($path.$groupUid.'.'.Fields::CONFIG_FIELDS_KEY.'.'.$fieldUid);
+            }
+        }
+    }
+    /**
+     * Ensure all site config changes are processed immediately in a safe manner.
+     */
+    public static function ensureAllSitesProcessed()
+    {
+        static $alreadyProcessed = false;
+
+        if ($alreadyProcessed) {
+            return;
+        }
+
+        $alreadyProcessed = true;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true);
+
+        foreach ($allGroups as $groupUid => $groupData) {
+            $path = Sites::CONFIG_SITEGROUP_KEY.'.';
+            // Ensure group is processed
+            $projectConfig->processConfigChanges($path.$groupUid);
+
+            foreach ($groupData[Sites::CONFIG_SITES_KEY] as $siteUid => $siteData) {
+                // Ensure site is processed
+                $projectConfig->processConfigChanges($path.$groupUid.'.'.Sites::CONFIG_SITES_KEY.'.'.$siteUid);
+            }
+        }
     }
 }
