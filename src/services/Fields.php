@@ -335,7 +335,7 @@ class Fields extends Component
 
         // Does it match a field group?
         if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -347,6 +347,9 @@ class Fields extends Component
 
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
+
+            // Prevent field information from being saved. It's not what we're about, here.
+            $event->configData['fields'] = $event->snapshotData['fields'] ?? [];
         }
     }
 
