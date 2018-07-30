@@ -18,6 +18,7 @@ use craft\events\FieldEvent;
 use craft\events\ParseConfigEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
@@ -25,7 +26,6 @@ use craft\models\FieldLayout;
 use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
-use craft\records\Structure as StructureRecord;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -401,11 +401,11 @@ class Categories extends Component
         if (preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $categoryGroupUid = $matches[1];
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
 
             // Make sure fields and sites are processed
-            Craft::$app->getProjectConfig()->applyPendingChanges(Sites::CONFIG_SITEGROUP_KEY);
-            Craft::$app->getProjectConfig()->applyPendingChanges(Fields::CONFIG_FIELDGROUP_KEY);
+            ProjectConfigHelper::ensureAllSitesProcessed();
+            ProjectConfigHelper::ensureAllFieldsProcessed();
 
 
             $db = Craft::$app->getDb();

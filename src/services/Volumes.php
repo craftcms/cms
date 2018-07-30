@@ -15,6 +15,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\Volume as AssetVolumeRecord;
@@ -485,10 +486,10 @@ class Volumes extends Component
         if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $volumeUid = $matches[1];
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
 
             // Make sure fields are processed
-            Craft::$app->getProjectConfig()->applyPendingChanges(Fields::CONFIG_FIELDGROUP_KEY);
+            ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {

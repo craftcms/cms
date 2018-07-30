@@ -348,7 +348,7 @@ class Fields extends Component
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
 
-            // Prevent field information from being saved. It's not what we're about, here.
+            // Prevent field information from being saved.  Allowing it would prevent the appropriate event from firing.
             $event->configData['fields'] = $event->snapshotData['fields'] ?? [];
         }
     }
@@ -919,7 +919,7 @@ class Fields extends Component
             // Ensure we have the field group in place first
             Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
 
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {

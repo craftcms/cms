@@ -302,7 +302,7 @@ class Sites extends Component
 
         // Does it match a field group?
         if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -314,6 +314,10 @@ class Sites extends Component
 
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
+
+            // Prevent site information from being saved. Allowing it would prevent the appropriate event from firing.
+            $event->configData['sites'] = $event->snapshotData['sites'] ?? [];
+
         }
     }
 
@@ -726,8 +730,7 @@ class Sites extends Component
             // Ensure we have the site group in place first
             Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY.'.'.$groupUid);
 
-            $data = Craft::$app->getProjectConfig()->get($path, true);
-
+            $data = $event->configData;
 
             $transaction = Craft::$app->getDb()->beginTransaction();
 

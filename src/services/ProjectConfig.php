@@ -253,31 +253,21 @@ class ProjectConfig extends Component
             if (!empty($changes['newItems'])) {
                 Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
                 foreach ($changes['newItems'] as $itemPath) {
-                    $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
-                        'configPath' => $itemPath
-                    ]));
-                    $this->_parsedChanges[$itemPath] = true;
+                    $this->processConfigChanges($itemPath);
                 }
             }
 
             if (!empty($changes['changedItems'])) {
                 Craft::info('Parsing '.count($changes['changedItems']).' changed configuration objects', __METHOD__);
                 foreach ($changes['changedItems'] as $itemPath) {
-                    $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
-                        'configPath' => $itemPath
-                    ]));
-                    $this->_parsedChanges[$itemPath] = true;
+                    $this->processConfigChanges($itemPath);
                 }
             }
 
             if (!empty($changes['removedItems'])) {
                 Craft::info('Parsing '.count($changes['removedItems']).' removed configuration objects', __METHOD__);
-
                 foreach ($changes['removedItems'] as $itemPath) {
-                    $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
-                        'configPath' => $itemPath
-                    ]));
-                    $this->_parsedChanges[$itemPath] = true;
+                    $this->processConfigChanges($itemPath);
                 }
             }
 
@@ -384,10 +374,10 @@ class ProjectConfig extends Component
      */
     public function processConfigChanges($configPath): bool
     {
-
         if (!empty($this->_parsedChanges[$configPath])) {
             return true;
         }
+
         $this->_parsedChanges[$configPath] = true;
 
         $configData = $this->get($configPath, true);
@@ -404,6 +394,7 @@ class ProjectConfig extends Component
         } else {
             if (!$snapshotData) {
                 $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, $event);
+                // Might generate false positives, but is pretty fast.
             } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
                 $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, $event);
             } else {
@@ -529,7 +520,8 @@ class ProjectConfig extends Component
     private function _getCurrentSnapshot(): array
     {
         if (empty($this->_snapshot)) {
-            $this->_snapshot = unserialize(Craft::$app->getInfo()->configSnapshot, ['allowed_classes' => false]);
+            $snapshotData = Craft::$app->getInfo()->configSnapshot;
+            $this->_snapshot = $snapshotData ? unserialize($snapshotData, ['allowed_classes' => false]) : [];
         }
 
         return $this->_snapshot;

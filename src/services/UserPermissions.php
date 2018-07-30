@@ -419,7 +419,7 @@ class UserPermissions extends Component
         // Does it match user group permissions?
         if (preg_match('/'.UserGroups::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.permissions$/i', $path, $matches)) {
             $uid = $matches[1];
-            $permissions = Craft::$app->getProjectConfig()->get($path, true);
+            $permissions = $event->configData;
             $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
             // Delete any existing group permissions
@@ -456,7 +456,7 @@ class UserPermissions extends Component
 
         // Does it match permissions?
         if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY.'$/i', $path, $matches)) {
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
             $records = UserPermissionRecord::find()
                 ->where(['name' => $data])
                 ->indexBy('name')

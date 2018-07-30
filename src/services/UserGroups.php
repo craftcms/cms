@@ -260,7 +260,7 @@ class UserGroups extends Component
         // Does it match a user group?
         if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
 
             $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
             $groupRecord->name = $data['name'];
@@ -268,6 +268,9 @@ class UserGroups extends Component
             $groupRecord->uid = $uid;
 
             $groupRecord->save(false);
+
+            // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
+            $event->configData['permissions'] = $event->snapshotData['permissions'] ?? [];
         }
     }
 

@@ -16,6 +16,7 @@ use craft\events\FieldEvent;
 use craft\events\ParseConfigEvent;
 use craft\events\TagGroupEvent;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
@@ -301,10 +302,10 @@ class Tags extends Component
         if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $tagGroupUid = $matches[1];
-            $data = Craft::$app->getProjectConfig()->get($path, true);
+            $data = $event->configData;
 
             // Make sure fields are processed
-            Craft::$app->getProjectConfig()->applyPendingChanges(Fields::CONFIG_FIELDGROUP_KEY);
+            ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
