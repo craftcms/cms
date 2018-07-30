@@ -1288,6 +1288,11 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getUserPermissions(), 'handleChangedPermissions']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getUserPermissions(), 'handleChangedPermissions']);
 
+        // User group permissions
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getUserPermissions(), 'handleChangedGroupPermissions']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getUserPermissions(), 'handleChangedGroupPermissions']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getUserPermissions(), 'handleChangedGroupPermissions']);
+
         // User groups
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getUserGroups(), 'handleChangedUserGroup']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getUserGroups(), 'handleChangedUserGroup']);

@@ -17,6 +17,7 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ParseConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\records\UserPermission as UserPermissionRecord;
@@ -418,6 +419,9 @@ class UserPermissions extends Component
 
         // Does it match user group permissions?
         if (preg_match('/'.UserGroups::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.permissions$/i', $path, $matches)) {
+
+            // Ensure all user groups are ready to roll
+            ProjectConfigHelper::ensureAllUserGroupsProcessed();
             $uid = $matches[1];
             $permissions = $event->configData;
             $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
@@ -429,19 +433,21 @@ class UserPermissions extends Component
 
             $groupPermissionVals = [];
 
-            $this->_ensurePermissionRecords($permissions);
-            foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
-                $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
-            }
+            if ($permissions) {
+                $this->_ensurePermissionRecords($permissions);
+                foreach ($permissions as $permissionName) {
+                    $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                    $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
+                }
 
-            // Add the new group permissions
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    '{{%userpermissions_usergroups}}',
-                    ['permissionId', 'groupId'],
-                    $groupPermissionVals)
-                ->execute();
+                // Add the new group permissions
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%userpermissions_usergroups}}',
+                        ['permissionId', 'groupId'],
+                        $groupPermissionVals)
+                    ->execute();
+            }
         }
     }
 
