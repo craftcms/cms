@@ -226,8 +226,7 @@ class UserGroups extends Component
         // Save everything except permissions. Not ours to touch.
         $configData = [
             'name' => $group->name,
-            'handle' => $group->handle,
-            'permissions' => $isNewGroup ? [] : $projectConfig->get($configPath.'.permissions', true)
+            'handle' => $group->handle
         ];
 
         $projectConfig->save($configPath, $configData);
