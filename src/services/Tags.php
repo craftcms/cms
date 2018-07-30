@@ -309,18 +309,18 @@ class Tags extends Component
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
-                $tagGroupdRecord = $this->_getTagGroupRecord($tagGroupUid);
+                $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid);
 
-                $tagGroupdRecord->name = $data['name'];
-                $tagGroupdRecord->handle = $data['handle'];
-                $tagGroupdRecord->uid = $tagGroupUid;
+                $tagGroupRecord->name = $data['name'];
+                $tagGroupRecord->handle = $data['handle'];
+                $tagGroupRecord->uid = $tagGroupUid;
 
                 if (!empty($data['fieldLayouts'])) {
                     $fields = Craft::$app->getFields();
 
                     // Delete the field layout
-                    if ($tagGroupdRecord->fieldLayoutId) {
-                        $fields->deleteLayoutById($tagGroupdRecord->fieldLayoutId);
+                    if ($tagGroupRecord->fieldLayoutId) {
+                        $fields->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                     }
 
                     //Create the new layout
@@ -328,13 +328,13 @@ class Tags extends Component
                     $layout->type = Tag::class;
                     $layout->uid = key($data['fieldLayouts']);
                     $fields->saveLayout($layout);
-                    $tagGroupdRecord->fieldLayoutId = $layout->id;
+                    $tagGroupRecord->fieldLayoutId = $layout->id;
                 } else {
-                    $tagGroupdRecord->fieldLayoutId = null;
+                    $tagGroupRecord->fieldLayoutId = null;
                 }
 
                 // Save the volume
-                $tagGroupdRecord->save(false);
+                $tagGroupRecord->save(false);
 
                 $transaction->commit();
             } catch (\Throwable $e) {
