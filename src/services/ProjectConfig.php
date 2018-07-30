@@ -129,11 +129,6 @@ class ProjectConfig extends Component
     private $_config;
 
     /**
-     * @var array Current config map
-     */
-    private $_configMap;
-
-    /**
      * @var array A list of already parsed change paths
      */
     private $_parsedChanges = [];
@@ -243,6 +238,9 @@ class ProjectConfig extends Component
             $this->_parsedChanges[$key] = true;
         }
 
+        // Generate the config map first, so that we're looking in the right place.
+        $this->updateConfigMap();
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -338,12 +336,10 @@ class ProjectConfig extends Component
      */
     public function updateConfigMap(): bool
     {
-        if (!$this->_configMap) {
-            $this->_configMap = $this->_generateConfigMap();
-        }
+        $configMap = $this->_generateConfigMap();
 
         $info = Craft::$app->getInfo();
-        $info->configMap = Json::encode($this->_configMap);
+        $info->configMap = Json::encode($configMap);
         Craft::$app->saveInfo($info);
 
         $this->_updateLastParsedConfigCache();
@@ -640,7 +636,6 @@ class ProjectConfig extends Component
         $fileList = $this->_getConfigFileList();
 
         return ProjectConfigHelper::generateConfigMap($fileList);
-
     }
 
     /**
