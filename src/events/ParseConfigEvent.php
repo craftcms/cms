@@ -24,4 +24,14 @@ class ParseConfigEvent extends Event
      * @var string|null The config path being parsed
      */
     public $configPath;
+
+    /**
+     * @var array The config data found in the config data
+     */
+    public $configData = [];
+
+    /**
+     * @var array The config data found in the snapshot
+     */
+    public $snapshotData = [];
 }

@@ -390,19 +390,19 @@ class ProjectConfig extends Component
         $configData = $this->get($configPath, true);
         $snapshotData = $this->get($configPath);
 
+        $event = new ParseConfigEvent([
+            'configPath' => $configPath,
+            'configData' => $configData,
+            'snapshotData' => $snapshotData,
+        ]);
+
         if ($snapshotData && !$configData) {
-            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
-                'configPath' => $configPath
-            ]));
+            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, $event);
         } else {
             if (!$snapshotData) {
-                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
-                    'configPath' => $configPath
-                ]));
+                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, $event);
             } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
-                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
-                    'configPath' => $configPath
-                ]));
+                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, $event);
             } else {
                 return true;
             }
