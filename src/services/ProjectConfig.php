@@ -256,6 +256,7 @@ class ProjectConfig extends Component
                     $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, new ParseConfigEvent([
                         'configPath' => $itemPath
                     ]));
+                    $this->_parsedChanges[$itemPath] = true;
                 }
             }
 
@@ -265,6 +266,7 @@ class ProjectConfig extends Component
                     $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, new ParseConfigEvent([
                         'configPath' => $itemPath
                     ]));
+                    $this->_parsedChanges[$itemPath] = true;
                 }
             }
 
@@ -275,6 +277,7 @@ class ProjectConfig extends Component
                     $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, new ParseConfigEvent([
                         'configPath' => $itemPath
                     ]));
+                    $this->_parsedChanges[$itemPath] = true;
                 }
             }
 
