@@ -430,7 +430,7 @@ Defined by
 
 
 
-The name of CSRF token used for CSRF validation if [$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-$enablecsrfprotection) is set to `true`.
+The name of CSRF token used for CSRF validation if [$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) is set to `true`.
 
 
 ### `defaultCookieDomain`
@@ -713,7 +713,7 @@ Defined by
 
 
 
-Whether to use a cookie to persist the CSRF token if [$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-$enablecsrfprotection) is enabled. If false, the CSRF token
+Whether to use a cookie to persist the CSRF token if [$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) is enabled. If false, the CSRF token
 will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
 session increases security, it requires starting a session for every page that a CSRF token is need, which may
 degrade site performance.
@@ -795,7 +795,7 @@ Defined by
 
 
 
-List of file extensions that will be merged into the [$allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-$allowedfileextensions) config setting.
+List of file extensions that will be merged into the [$allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowedfileextensions) config setting.
 
 
 ### `filenameWordSeparator`
@@ -939,7 +939,7 @@ List of headers where proxies store the real client IP.
 
 See [yii\web\Request::$ipHeaders](https://www.yiiframework.com/doc/api/2.0/yii-web-request#$ipHeaders-detail) for more details.
 
-If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-$ipheaders) value will be used.
+If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-ipheaders) value will be used.
 
 
 ### `isSystemOn`
@@ -1832,7 +1832,7 @@ The base URL to the site(s). If set, it will take precedence over the Base URL s
 
 This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
 
-The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-$aliases).
+The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-aliases).
 
 ```php
 'siteUrl' => [
@@ -2086,7 +2086,7 @@ Defined by
 
 Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
 
-Note that this setting only takes effect if [$omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-$omitscriptnameinurls) is set to false.
+Note that this setting only takes effect if [$omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-omitscriptnameinurls) is set to false.
 
 
 ### `useSecureCookies`

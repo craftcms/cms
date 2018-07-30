@@ -70,7 +70,7 @@ Settable by
 
 
 Whether to return each element as an array. If false (default), an object
-of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-$elementtype) will be created to represent each element.
+of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-elementtype) will be created to represent each element.
 
 
 ### `dateCreated`
