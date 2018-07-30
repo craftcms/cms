@@ -495,6 +495,9 @@ class Tags extends Component
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 
+    // Private methods
+    // =========================================================================
+
     /**
      * @return Query
      */
