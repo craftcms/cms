@@ -126,10 +126,12 @@ class ProjectConfig
         $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(UserGroups::CONFIG_USERPGROUPS_KEY, true);
 
-        foreach ($allGroups as $groupUid => $groupData) {
-            $path = UserGroups::CONFIG_USERPGROUPS_KEY.'.';
-            // Ensure group is processed
-            $projectConfig->processConfigChanges($path.$groupUid);
+        if (is_array($allGroups)) {
+            foreach ($allGroups as $groupUid => $groupData) {
+                $path = UserGroups::CONFIG_USERPGROUPS_KEY.'.';
+                // Ensure group is processed
+                $projectConfig->processConfigChanges($path.$groupUid);
+            }
         }
     }
 }
