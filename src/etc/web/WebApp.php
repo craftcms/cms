@@ -28,7 +28,7 @@ namespace Craft;
  * @property HttpSessionService      $httpSession      The {@link HttpSessionService HTTP session service}.
  * @property ImagesService           $images           The {@link ImagesService images service}.
  * @property InstallService          $install          The {@link InstallService install service}.
- * @property LocalizationService     $localization     The {@link LocalizationService localization service}.
+ * @property LocalizationService     $i18n             The {@link LocalizationService localization service}.
  * @property MatrixService           $matrix           The {@link MatrixService matrix service}.
  * @property MigrationsService       $migrations       The {@link MigrationsService migrations service}.
  * @property PathService             $path             The {@link PathService path service}.

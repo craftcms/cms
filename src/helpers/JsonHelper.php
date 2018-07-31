@@ -25,7 +25,11 @@ class JsonHelper extends \CJSON
 	public static function sendJsonHeaders()
 	{
 		self::setJsonContentTypeHeader();
-		HeaderHelper::setNoCache();
+
+		if (!HeaderHelper::isHeaderSet('Cache-Control'))
+		{
+			HeaderHelper::setNoCache();
+		}
 	}
 
 	/**
