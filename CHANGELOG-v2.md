@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 2.7.0-beta.2 - 2018-07-31
+## 2.7.0 - 2018-07-31
 
 ### Added
 - Added PHP 7.2 compatibility.
