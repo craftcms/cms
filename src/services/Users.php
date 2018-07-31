@@ -1080,8 +1080,12 @@ class Users extends Component
             $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
-        // todo: should we factor in the user's preferred language (as we did in v2)?
-        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else {
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
         return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }
