@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.0-beta.2 - 2018-07-31
+
 ### Added
 - Added PHP 7.2 compatibility.
 - Added `phpseclib/mcrypt_compat` as a shim for Mcrypt compatibility for people running PHP 7.2+.
