@@ -58,18 +58,23 @@ class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterf
             // Figure out what the position's PHP value is
             switch ($position) {
                 case 'head':
+                case 'POS_HEAD':
                     $positionPhp = View::POS_HEAD;
                     break;
                 case 'beginBody':
+                case 'POS_BEGIN':
                     $positionPhp = View::POS_BEGIN;
                     break;
                 case 'endBody':
+                case 'POS_END':
                     $positionPhp = View::POS_END;
                     break;
                 case 'ready':
+                case 'POS_READY':
                     $positionPhp = View::POS_READY;
                     break;
                 case 'load':
+                case 'POS_LOAD':
                     $positionPhp = View::POS_LOAD;
                     break;
                 default:

@@ -12,6 +12,7 @@ use Craft;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -290,7 +291,8 @@ EOD;
         // Test the DB connection
         $this->stdout('Testing database credentials... ', Console::FG_YELLOW);
         $dbConfig->updateDsn();
-        $db = Connection::createFromConfig($dbConfig);
+        /** @var Connection $db */
+        $db = Craft::createObject(App::dbConfig($dbConfig));
 
         try {
             $db->open();

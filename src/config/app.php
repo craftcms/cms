@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.17.1',
+    'version' => '3.0.18',
     'schemaVersion' => '3.0.91',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -183,28 +183,18 @@ return [
         // -------------------------------------------------------------------------
 
         'cache' => function() {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            $config = [
-                'class' => \yii\caching\FileCache::class,
-                'cachePath' => Craft::$app->getPath()->getCachePath(),
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-                'defaultDuration' => $generalConfig->cacheDuration,
-            ];
-
+            $config = craft\helpers\App::cacheConfig();
             return Craft::createObject($config);
         },
 
         'db' => function() {
-            $dbConfig = Craft::$app->getConfig()->getDb();
-            return craft\db\Connection::createFromConfig($dbConfig);
+            $config = craft\helpers\App::dbConfig();
+            return Craft::createObject($config);
         },
 
         'mailer' => function() {
-            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
-
-            return craft\helpers\MailerHelper::createMailer($settings);
+            $config = craft\helpers\App::mailerConfig();
+            return Craft::createObject($config);
         },
 
         'locale' => function() {
@@ -212,14 +202,7 @@ return [
         },
 
         'mutex' => function() {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            $config = [
-                'class' => craft\mutex\FileMutex::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-            ];
-
+            $config = craft\helpers\App::mutexConfig();
             return Craft::createObject($config);
         },
 
@@ -228,51 +211,12 @@ return [
         },
 
         'log' => function() {
-            // Only log console requests and web requests that aren't getAuthTimeout requests
-            $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-            if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-                return null;
-            }
-
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            $target = [
-                'class' => craft\log\FileTarget::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-            ];
-
-            if ($isConsoleRequest) {
-                $target['logFile'] = '@storage/logs/console.log';
-            } else {
-                $target['logFile'] = '@storage/logs/web.log';
-
-                // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                    $target['levels'] = yii\log\Logger::LEVEL_ERROR | yii\log\Logger::LEVEL_WARNING;
-                }
-            }
-
-            return Craft::createObject([
-                'class' => yii\log\Dispatcher::class,
-                'targets' => [
-                    $target,
-                ]
-            ]);
+            $config = craft\helpers\App::logConfig();
+            return $config ? Craft::createObject($config) : null;
         },
 
         'view' => function() {
-            $config = [
-                'class' => craft\web\View::class,
-            ];
-
-            $request = Craft::$app->getRequest();
-            if ($request->getIsCpRequest()) {
-                $headers = $request->getHeaders();
-                $config['registeredAssetBundles'] = explode(',', $headers->get('X-Registered-Asset-Bundles', ''));
-                $config['registeredJsFiles'] = explode(',', $headers->get('X-Registered-Js-Files', ''));
-            }
-
+            $config = craft\helpers\App::viewConfig();
             return Craft::createObject($config);
         },
     ],

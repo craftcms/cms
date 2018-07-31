@@ -32,6 +32,11 @@ class StringValidator extends \yii\validators\StringValidator
      */
     public $containsMb4;
 
+    /**
+     * @var bool whether the string should be trimmed of whitespace
+     */
+    public $trim = false;
+
     // Public Methods
     // =========================================================================
 
@@ -61,6 +66,10 @@ class StringValidator extends \yii\validators\StringValidator
 
         if ($this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && StringHelper::containsMb4($value)) {
             $this->addError($model, $attribute, $this->containsMb4);
+        }
+
+        if ($this->trim) {
+            $model->$attribute = trim($value);
         }
     }
 

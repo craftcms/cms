@@ -308,26 +308,23 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            // Get the actual elements
-            $collapsedElementQuery = clone $query;
-            /** @var Element[] $collapsedElements */
-            $collapsedElements = $collapsedElementQuery
-                ->id($collapsedElementIds)
-                ->offset(0)
-                ->orderBy(['lft' => SORT_ASC])
+            $descendantQuery = (clone $query)
+                ->offset(null)
+                ->limit(null)
+                ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
+                ->anyStatus();
+
+            // Get the actual elements
+            /** @var Element[] $collapsedElements */
+            $collapsedElements = (clone $descendantQuery)
+                ->id($collapsedElementIds)
+                ->orderBy(['lft' => SORT_ASC])
                 ->all();
 
             if (!empty($collapsedElements)) {
                 $descendantIds = [];
-
-                $descendantQuery = clone $query;
-                $descendantQuery
-                    ->offset(0)
-                    ->orderBy(null)
-                    ->positionedAfter(null)
-                    ->positionedBefore(null);
 
                 foreach ($collapsedElements as $element) {
                     // Make sure we haven't already excluded this one, because its ancestor is collapsed as well
@@ -335,10 +332,11 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $descendantQuery->descendantOf($element);
-                    foreach ($descendantQuery->ids() as $id) {
-                        $descendantIds[] = $id;
-                    }
+                    $elementDescendantIds = (clone $descendantQuery)
+                        ->descendantOf($element)
+                        ->ids();
+
+                    $descendantIds = array_merge($descendantIds, $elementDescendantIds);
                 }
 
                 if (!empty($descendantIds)) {
