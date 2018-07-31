@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.18 - 2018-07-31
 
 ### Added
 - Added `craft\helpers\App::assetManagerConfig()`.
