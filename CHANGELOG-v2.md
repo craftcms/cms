@@ -13,7 +13,7 @@
 - Updated Twig to 1.35.4.
 - Updated Yii to 1.1.20.
 - Updated Garnish to 0.1.26.
-- Updated enshrined/svg-sanitize to 0.9.0
+- Updated enshrined/svg-sanitize to 0.9.0.
 - Updated LitEmoji to 1.4.1.
 
 ### Fixed
