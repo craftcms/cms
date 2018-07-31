@@ -9,7 +9,6 @@ namespace craft\queue;
 
 /**
  * QueueInterface defines the common interface to be implemented by queue classes.
- * A class implementing this interface should also use [[SavableComponentTrait]] and [[JobTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
