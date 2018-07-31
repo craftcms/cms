@@ -13,6 +13,7 @@
 - Added `craft\helpers\App::userConfig()`.
 - Added `craft\helpers\App::viewConfig()`.
 - Added `craft\helpers\App::webRequestConfig()`.
+- Added `craft\validators\StringValidator::$trim`, which will cause leading/trailing whitespace to be stripped from model attributes.
 
 ### Changed
 - User verification and password-reset emails now link them back to the same site they were on when the email was sent, if it was sent from a front-end request. ([#3029](https://github.com/craftcms/cms/issues/3029))
