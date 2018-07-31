@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 2.7.0-beta.2 - 2018-07-31
+## 2.7.0 - 2018-07-31
 
 ### Added
 - Added PHP 7.2 compatibility.
@@ -12,8 +12,9 @@
 - When uploading a file to an Assets field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 - Updated Twig to 1.35.4.
 - Updated Yii to 1.1.20.
-- Updated `enshrined/svg-sanitize` to 0.9.0
-- Updated `elvanto/litemoji` to 1.4.1.
+- Updated Garnish to 0.1.26.
+- Updated svg-sanitize to 0.9.0.
+- Updated LitEmoji to 1.4.1.
 
 ### Fixed
 - Fixed a bug where Dropdown fields on an element index view could show an incorrect selected value in limited circumstances.

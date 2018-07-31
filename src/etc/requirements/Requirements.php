@@ -479,7 +479,7 @@ class McryptRequirement extends Requirement
      */
     public function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
     {
-        parent::__construct('Mcrypt extension', null, true, '<a href="http://craftcms.com">Craft CMS</a>', 'The Mcrypt extension is required.');
+        parent::__construct('Mcrypt extension', null, true, '<a href="http://craftcms.com">Craft CMS</a>', 'The Mcrypt extension is required if running PHP 5.6.0 or earlier.');
     }
 
     /**
