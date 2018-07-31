@@ -1303,5 +1303,10 @@ trait ApplicationTrait
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getUsers(), 'handleChangedUserFieldLayout']);
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getUsers(), 'handleChangedUserFieldLayout']);
 
+        // Global sets
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, [$this->getGlobals(), 'handleChangedGlobalSet']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, [$this->getGlobals(), 'handleChangedGlobalSet']);
+        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, [$this->getGlobals(), 'handleDeletedGlobalSet']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$this->getGlobals(), 'pruneDeletedField']);
     }
 }

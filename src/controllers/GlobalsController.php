@@ -108,7 +108,7 @@ class GlobalsController extends Controller
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getElements()->deleteElementById($globalSetId, GlobalSet::class);
+        Craft::$app->getGlobals()->deleteGlobalSetById($globalSetId);
 
         return $this->asJson(['success' => true]);
     }
