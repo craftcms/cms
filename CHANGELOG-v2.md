@@ -12,6 +12,7 @@
 - When uploading a file to an Assets field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
 - Updated Twig to 1.35.4.
 - Updated Yii to 1.1.20.
+- Updated Garnish to 0.1.26.
 - Updated `enshrined/svg-sanitize` to 0.9.0
 - Updated `elvanto/litemoji` to 1.4.1.
 
