@@ -315,7 +315,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         if ($this->options) {
             foreach ($this->options as $option) {
-                if ($option['value'] == $value) {
+                if ((string)$option['value'] === $value) {
                     return $option['label'];
                 }
             }
