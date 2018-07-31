@@ -888,9 +888,6 @@ class Fields extends Component
 
         $field->afterSave($isNewField);
 
-        // Tell the current ContentBehavior class about the field
-        ContentBehavior::$fieldHandles[$field->handle] = true;
-
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
@@ -989,15 +986,18 @@ class Fields extends Component
                 $fieldRecord->save(false);
 
                 $transaction->commit();
+
+                // Update the field version at the end of the request
+                $this->updateFieldVersionAfterRequest();
+
+                // Tell the current ContentBehavior class about the field
+                ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
             } catch (\Throwable $e) {
                 $transaction->rollBack();
 
                 throw $e;
             }
         }
-
-        // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
     }
 
     /**
