@@ -28,33 +28,6 @@ class ProjectConfig
     // =========================================================================
 
     /**
-     * Generate the configuration map from an array of YAML files.
-     * This function will ignore any `import` directives.
-     *
-     * @param array $fileList
-     * @return array
-     */
-    public static function generateConfigMap(array $fileList): array
-    {
-        $nodes = [];
-
-        foreach ($fileList as $file) {
-            $config = Yaml::parseFile($file);
-
-            // Take record of top nodes
-            $topNodes = array_keys($config);
-            foreach ($topNodes as $topNode) {
-                $nodes[$topNode] = $file;
-            }
-
-        }
-
-        unset($nodes['imports']);
-
-        return $nodes;
-    }
-
-    /**
      * Ensure all field config changes are processed immediately in a safe manner.
      */
     public static function ensureAllFieldsProcessed()

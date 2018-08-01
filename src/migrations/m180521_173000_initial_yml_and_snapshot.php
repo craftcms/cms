@@ -36,7 +36,12 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $snapshot = serialize($data);
 
-        $configMap = ProjectConfigHelper::generateConfigMap([$destination]);
+        $nodes = array_keys($data);
+        $configMap = [];
+
+        foreach ($nodes as $node) {
+            $configMap[$node] = $destination;
+        }
 
         $this->update('{{%info}}', [
             'configSnapshot' => $snapshot,
