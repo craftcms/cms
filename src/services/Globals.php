@@ -403,6 +403,7 @@ class Globals extends Component
             $data = $event->configData;
 
             // Make sure fields are processed
+            ProjectConfigHelper::ensureAllSitesProcessed();
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $transaction = Craft::$app->getDb()->beginTransaction();
