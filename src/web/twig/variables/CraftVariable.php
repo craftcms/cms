@@ -228,7 +228,7 @@ class CraftVariable extends ServiceLocator
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a new AssetQuery instance.
+     * Returns a new [asset query](https://docs.craftcms.com/v3/dev/element-queries/asset-queries.html).
      *
      * @param array $criteria
      * @return AssetQuery
@@ -241,7 +241,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new CategoryQuery instance.
+     * Returns a new [category query](https://docs.craftcms.com/v3/dev/element-queries/category-queries.html).
      *
      * @param array $criteria
      * @return CategoryQuery
@@ -254,7 +254,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new EntryQuery instance.
+     * Returns a new [entry query](https://docs.craftcms.com/v3/dev/element-queries/entry-queries.html).
      *
      * @param array $criteria
      * @return EntryQuery
@@ -267,7 +267,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new GlobalSetQuery instance.
+     * Returns a new [global set query](https://docs.craftcms.com/v3/dev/element-queries/global-set-queries.html).
      *
      * @param array $criteria
      * @return GlobalSetQuery
@@ -280,7 +280,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new MatrixBlockQuery instance.
+     * Returns a new [Matrix block query](https://docs.craftcms.com/v3/dev/element-queries/matrix-block-queries.html).
      *
      * @param array $criteria
      * @return MatrixBlockQuery
@@ -293,7 +293,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new TagQuery instance.
+     * Returns a new [tag query](https://docs.craftcms.com/v3/dev/element-queries/tag-queries.html).
      *
      * @param array $criteria
      * @return TagQuery
@@ -306,7 +306,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new UserQuery instance
+     * Returns a new [user query](https://docs.craftcms.com/v3/dev/element-queries/user-queries.html).
      *
      * @param array $criteria
      * @return UserQuery
