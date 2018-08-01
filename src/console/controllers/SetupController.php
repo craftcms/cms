@@ -19,6 +19,7 @@ use craft\helpers\StringHelper;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
+use yii\console\ExitCode;
 
 /**
  * Craft CMS setup installer.
@@ -92,8 +93,10 @@ class SetupController extends Controller
 
     /**
      * Sets up all the things.
+     *
+     * @return int
      */
-    public function actionIndex()
+    public function actionIndex(): int
     {
         if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
             $this->run('security-key');
@@ -101,30 +104,32 @@ class SetupController extends Controller
         }
 
         if (!$this->interactive) {
-            return;
+            return ExitCode::OK;
         }
 
         $this->run('db-creds');
 
         if (Craft::$app->getIsInstalled()) {
             $this->stdout("It looks like Craft is already installed, so we're done here." . PHP_EOL, Console::FG_YELLOW);
-            return;
+            return ExitCode::OK;
         }
 
         if (!$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
-            $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:" . PHP_EOL);
+            $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:" . PHP_EOL, Console::FG_YELLOW);
             $this->_outputCommand('install');
-            return;
+            return ExitCode::OK;
         }
 
         $this->stdout(PHP_EOL);
-        $this->module->runAction('install');
+        return $this->module->runAction('install');
     }
 
     /**
      * Called from the post-create-project-cmd Composer hook.
+     *
+     * @return int
      */
-    public function actionWelcome()
+    public function actionWelcome(): int
     {
         $craft = <<<EOD
 
@@ -152,25 +157,33 @@ EOD;
         $this->run('security-key');
         $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
         $this->_outputCommand('setup');
+        return ExitCode::OK;
     }
 
     /**
      * Generates a new security key and saves it in the .env file.
+     *
+     * @return int
      */
-    public function actionSecurityKey()
+    public function actionSecurityKey(): int
     {
         $this->stdout(PHP_EOL . 'Generating a security key... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
-        if ($this->_setEnvVar('SECURITY_KEY', $key)) {
-            Craft::$app->getConfig()->getGeneral()->securityKey = $key;
-            $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        Craft::$app->getConfig()->getGeneral()->securityKey = $key;
+        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        return ExitCode::OK;
     }
 
     /**
      * Stores new DB connection settings to the .env file.
+     *
+     * @return int
      */
-    public function actionDbCreds()
+    public function actionDbCreds(): int
     {
         try {
             $dbConfig = Craft::$app->getConfig()->getDb();
@@ -185,8 +198,8 @@ EOD;
         // driver
         if ($this->driver) {
             if (!in_array($this->driver, [DbConfig::DRIVER_MYSQL, DbConfig::DRIVER_PGSQL], true)) {
-                $this->stderr('--driver must be either "' . DbConfig::DRIVER_MYSQL . '" or "' . DbConfig::DRIVER_PGSQL . '".' . PHP_EOL);
-                return;
+                $this->stderr('--driver must be either "' . DbConfig::DRIVER_MYSQL . '" or "' . DbConfig::DRIVER_PGSQL . '".' . PHP_EOL, Console::FG_RED);
+                return ExitCode::USAGE;
             }
             $dbConfig->driver = $this->driver;
         } else if ($this->interactive) {
@@ -251,8 +264,8 @@ EOD;
                 'default' => $dbConfig->database,
             ]);
         } else {
-            $this->stderr('The --database option must be set.' . PHP_EOL);
-            return;
+            $this->stderr('The --database option must be set.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
         }
 
         // schema
@@ -312,7 +325,7 @@ EOD;
             $firstTime = false;
 
             if (!$this->interactive) {
-                return;
+                return ExitCode::UNSPECIFIED_ERROR;
             }
 
             goto top;
@@ -325,23 +338,28 @@ EOD;
         $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
 
         if (
-            $this->_setEnvVar('DB_DRIVER', $dbConfig->driver) &&
-            $this->_setEnvVar('DB_SERVER', $dbConfig->server) &&
-            $this->_setEnvVar('DB_PORT', $dbConfig->port) &&
-            $this->_setEnvVar('DB_USER', $dbConfig->user) &&
-            $this->_setEnvVar('DB_PASSWORD', $dbConfig->password) &&
-            $this->_setEnvVar('DB_DATABASE', $dbConfig->database) &&
-            $this->_setEnvVar('DB_SCHEMA', $dbConfig->schema) &&
-            $this->_setEnvVar('DB_TABLE_PREFIX', $tablePrefix)
+            !$this->_setEnvVar('DB_DRIVER', $dbConfig->driver) ||
+            !$this->_setEnvVar('DB_SERVER', $dbConfig->server) ||
+            !$this->_setEnvVar('DB_PORT', $dbConfig->port) ||
+            !$this->_setEnvVar('DB_USER', $dbConfig->user) ||
+            !$this->_setEnvVar('DB_PASSWORD', $dbConfig->password) ||
+            !$this->_setEnvVar('DB_DATABASE', $dbConfig->database) ||
+            !$this->_setEnvVar('DB_SCHEMA', $dbConfig->schema) ||
+            !$this->_setEnvVar('DB_TABLE_PREFIX', $tablePrefix)
         ) {
-            $this->stdout('done' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_YELLOW);
+        return ExitCode::OK;
     }
 
     /**
      * Alias for setup/db-creds.
+     *
+     * @return int
      */
-    public function actionDb()
+    public function actionDb(): int
     {
         return $this->actionDbCreds();
     }
@@ -380,7 +398,13 @@ EOD;
 
         if (!file_exists($path)) {
             if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
-                FileHelper::writeToFile($path, '');
+                try {
+                    FileHelper::writeToFile($path, '');
+                } catch (\Throwable $e) {
+                    $this->stderr("Unable to create {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+                    return false;
+                }
+
                 $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
             } else {
                 $this->stdout(PHP_EOL . 'Action aborted.' . PHP_EOL, Console::FG_YELLOW);
@@ -388,7 +412,13 @@ EOD;
             }
         }
 
-        $configService->setDotEnvVar($name, $value);
+        try {
+            $configService->setDotEnvVar($name, $value);
+        } catch (\Throwable $e) {
+            $this->stderr("Unable to set {$name} on {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
         return true;
     }
 }
