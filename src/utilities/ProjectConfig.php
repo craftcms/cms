@@ -55,8 +55,7 @@ class ProjectConfig extends Utility
         $view = Craft::$app->getView();
 
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
-            'isUpdatePending' => $service->isUpdatePending(),
-            'isMapOutdated' => $service->isConfigMapOutdated(),
+            'isUpdatePending' => $service->isUpdatePending()
         ]);
     }
 

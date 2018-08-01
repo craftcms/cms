@@ -9,29 +9,7 @@
             <input type="hidden" name="action" value="project-config/apply-configuration-changes" />
             <input class="btn submit" type="submit" value="{{ 'Apply the changes to configuration'|t('app') }}" />
         </form>
-
-        <p>If you want to generate a new snapshot and adopt the new configuration schema, without actually applying the changes, click the button below.</p>
-        <p class="warning">This will effectively ignore you from applying this update again. Only press this if you know what you're doing.</p>
-
-        <form method="post" id="regenerate-snapshot">
-            {{ csrfInput() }}
-            <input type="hidden" name="action" value="project-config/regenerate-snapshot" />
-            <input class="btn submit" type="submit" value="{{ 'Create a new snapshot, but DO NOT apply the changes'|t('app') }}" />
-        </form>
-
     <hr />
-{% endif %}
-
-{% if isMapOutdated %}
-    <p>Configuration mapping might be changed due to changes in configuration file tree or file modify times.</p>
-
-    <form method="post" id="regenerate-map">
-        {{ csrfInput() }}
-        <input type="hidden" name="action" value="project-config/regenerate-config-mappings" />
-        <input class="btn submit" type="submit" value="{{ 'Regenerate mapping data'|t('app') }}" />
-    </form>
-
-<hr />
 {% endif %}
 
 <p>You can regenerate the configuration data using the current snapshot.</p>
@@ -42,9 +20,3 @@
         <input class="btn submit" type="submit" value="{{ 'Regenerate configuration data'|t('app') }}" />
     </form>
 
-{% js %}
-    new Craft.ElevatedSessionForm('#regenerate-config');
-    new Craft.ElevatedSessionForm('#regenerate-map');
-    new Craft.ElevatedSessionForm('#apply-changes');
-    new Craft.ElevatedSessionForm('#regenerate-snapshot');
-{% endjs %}
