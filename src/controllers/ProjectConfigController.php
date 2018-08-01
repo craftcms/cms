@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\App;
 use craft\models\UserGroup;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -31,10 +32,8 @@ class ProjectConfigController extends Controller
      */
     public function beforeAction($action)
     {
-        // All user settings actions require an admin
+        // All projet config actions require an admin
         $this->requireAdmin();
-        // TODO require elevated session
-//        $this->requireElevatedSession();
         $this->requirePostRequest();
 
         return parent::beforeAction($action);
@@ -48,6 +47,7 @@ class ProjectConfigController extends Controller
      */
     public function actionApplyConfigurationChanges(): Response
     {
+        App::maxPowerCaptain();
         Craft::$app->getProjectConfig()->applyPendingChanges();
 
         return $this->redirectToPostedUrl();
