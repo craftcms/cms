@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\AssetQuery;
@@ -224,7 +225,7 @@ class CraftVariable extends ServiceLocator
         return Craft::$app->getIsMultiSite();
     }
 
-    // Element queries
+    // Queries
     // -------------------------------------------------------------------------
 
     /**
@@ -290,6 +291,16 @@ class CraftVariable extends ServiceLocator
         $query = MatrixBlock::find();
         Craft::configure($query, $criteria);
         return $query;
+    }
+
+    /**
+     * Returns a new generic query.
+     *
+     * @return Query
+     */
+    public function query(): Query
+    {
+        return new Query();
     }
 
     /**
