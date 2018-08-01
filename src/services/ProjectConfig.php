@@ -15,6 +15,7 @@ use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use Symfony\Component\Yaml\Yaml;
+use yii\base\Application;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -133,6 +134,12 @@ class ProjectConfig extends Component
      */
     private $_parsedChanges = [];
 
+    /**
+     * @var bool Whether we’re listening for the request end, to update the YML caches.
+     * @see _updateLastParsedConfigCache()
+     */
+    private $_listeningForRequestEnd = false;
+
     // Public methods
     // =========================================================================
 
@@ -145,7 +152,6 @@ class ProjectConfig extends Component
      */
     public function get(string $path, $getFromConfig = false)
     {
-        // TODO if getting current config, check files currently stored in memory before grabbing the file from disk
         if ($getFromConfig) {
             $source = $this->_getCurrentConfig();
         } else {
@@ -188,7 +194,11 @@ class ProjectConfig extends Component
 
         // TODO store yaml file contents in memory during the request and batch save when request ends
         $this->_saveYaml($targetYaml, $targetFilePath);
-        $this->updateConfigMap();
+
+        // For new top nodes, update the map
+        if (empty($configMap[$topNode])) {
+            $this->updateConfigMap();
+        }
 
         if ($updateSilently) {
             return true;
@@ -220,7 +230,7 @@ class ProjectConfig extends Component
         $baseFile = $basePath.'/system.yml';
 
         $this->_saveYaml($snapshot, $baseFile);
-        $this->_updateLastParsedConfigCache();
+        $this->updateParsedConfigsAfterRequest();
     }
 
     /**
@@ -274,9 +284,8 @@ class ProjectConfig extends Component
 
             $transaction->commit();
 
-            $this->updateConfigMap();
             $this->regenerateSnapshotFromConfig();
-            $this->_updateLastParsedConfigCache();
+            $this->updateParsedConfigsAfterRequest();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
@@ -304,31 +313,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns true if config mapping might have changed due to changes in file config tree or modify times.
-     *
-     * @return bool
-     */
-    public function isConfigMapOutdated(): bool
-    {
-        $yamlTree = $this->_getConfigFileModifiedTimes();
-        $cachedTree = $this->_getCachedConfigFileModifiedTimes();
-
-        // Tree has changed
-        if (\count(array_diff_key($yamlTree, $cachedTree)) || \count(array_diff_key($cachedTree, $yamlTree))) {
-            return true;
-        }
-
-        // Date modified has changed
-        foreach ($yamlTree as $file => $dateModified) {
-            if ($dateModified !== $cachedTree[$file]) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Update the configuration mapping.
      *
      * @return bool
@@ -342,7 +326,7 @@ class ProjectConfig extends Component
         $info->configMap = Json::encode($configMap);
         Craft::$app->saveInfo($info);
 
-        $this->_updateLastParsedConfigCache();
+        $this->updateParsedConfigsAfterRequest();
 
         return true;
     }
@@ -402,7 +386,33 @@ class ProjectConfig extends Component
         $arrayAccess = $this->_nodePathToArrayAccess($configPath);
         eval('$snapshot'.$arrayAccess.' = $event->configData;');
 
-        return $this->_saveSnapshot($snapshot) && $this->_updateLastParsedConfigCache();
+        return $this->_saveSnapshot($snapshot) && $this->updateParsedConfigsAfterRequest();
+    }
+
+    /**
+     * Update cached config file modified times after the request ends.
+     *
+     * @return void
+     */
+    public function updateParsedConfigsAfterRequest()
+    {
+        if ($this->_listeningForRequestEnd) {
+            return;
+        }
+
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateParsedConfigs']);
+        $this->_listeningForRequestEnd = true;
+    }
+
+    /**
+     * Update cached config file modified times immediately.
+     *
+     * @return bool
+     */
+    public function updateParsedConfigs()
+    {
+        $fileList = $this->_getConfigFileModifiedTimes();
+        return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
     }
 
     // Private methods
@@ -423,40 +433,6 @@ class ProjectConfig extends Component
         Craft::$app->saveInfo($info);
 
         return true;
-    }
-
-    /**
-     * Get config file modified dates.
-     *
-     * @return array
-     */
-    private function _getCachedConfigFileModifiedTimes(): array
-    {
-        $cachedTimes = Craft::$app->getCache()->get(self::CACHE_KEY);
-
-        if (!$cachedTimes) {
-            return [];
-        }
-
-        $this->_updateLastParsedConfigCache($cachedTimes);
-
-        return $cachedTimes;
-    }
-
-    /**
-     * Update config file modified date cache. If no modified dates passed, the config file tree will be parsed
-     * to figure out the modified dates.
-     *
-     * @param array|null $fileList
-     * @return bool
-     */
-    private function _updateLastParsedConfigCache(array $fileList = null): bool
-    {
-        if (!$fileList) {
-            $fileList = $this->_getConfigFileModifiedTimes();
-        }
-
-        return Craft::$app->getCache()->set(self::CACHE_KEY, $fileList, self::CACHE_DURATION);
     }
 
     /**
