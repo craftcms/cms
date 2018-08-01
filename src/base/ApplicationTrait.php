@@ -244,12 +244,13 @@ trait ApplicationTrait
     /**
      * Returns whether this Craft install has multiple sites.
      *
+     * @param bool $refresh Whether to ignore the cached result and check again
      * @return bool
      */
-    public function getIsMultiSite(): bool
+    public function getIsMultiSite(bool $refresh = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isMultiSite !== null) {
+        if (!$refresh && $this->_isMultiSite !== null) {
             return $this->_isMultiSite;
         }
 
