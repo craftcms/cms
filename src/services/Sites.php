@@ -784,6 +784,9 @@ class Sites extends Component
                 $this->_processNewPrimarySite($oldPrimarySiteId, $siteRecord->id);
             }
 
+            // Refresh sites
+            $this->_refreshAllSites();
+
             if ($isNewSite) {
                 // TODO: Move this code into element/category modules
                 // Create site settings for each of the category groups
@@ -1134,7 +1137,8 @@ class Sites extends Component
 
                 $transaction->commit();
 
-                $success = (bool)$affectedRows;
+                // Refresh sites
+                $this->_refreshAllSites();
             } catch (\Throwable $e) {
                 $transaction->rollBack();
 
@@ -1145,6 +1149,18 @@ class Sites extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Refresh the status of all sites based on the DB data.
+     *
+     * @throws DbException
+     */
+    private function _refreshAllSites()
+    {
+        $this->_sitesById = null;
+        $this->_loadAllSites();
+        Craft::$app->getIsMultiSite(true);
+    }
 
     /**
      * Loads all the sites.
