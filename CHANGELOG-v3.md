@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added the `craft.app.query()` template function, for creating new database queries.
+- Added the `craft.query()` template function, for creating new database queries.
 
 ### Fixed
 - Craft’s console commands now return the correct exit codes. ([#3175](https://github.com/craftcms/cms/issues/3175))
