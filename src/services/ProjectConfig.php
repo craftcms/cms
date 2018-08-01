@@ -682,7 +682,20 @@ class ProjectConfig extends Component
     private function _generateConfigMap(): array
     {
         $fileList = $this->_getConfigFileList();
-        return ProjectConfigHelper::generateConfigMap($fileList);
+        $nodes = [];
+
+        foreach ($fileList as $file) {
+            $config = $this->_parseYamlFile($file);
+
+            // Take record of top nodes
+            $topNodes = array_keys($config);
+            foreach ($topNodes as $topNode) {
+                $nodes[$topNode] = $file;
+            }
+        }
+
+        unset($nodes['imports']);
+        return $nodes;
     }
 
     /**
