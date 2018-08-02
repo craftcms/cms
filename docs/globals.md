@@ -22,7 +22,7 @@ If you have a Global Set with the handle `companyInfo` and it has a field with t
 {{ companyInfo.yearEstablished }}
 ```
 
-For additional Global Set properties you can ise besides your custom fields see <api:craft\elements\GlobalSet> for a full reference.
+For additional Global Set properties you can use besides your custom fields see <api:craft\elements\GlobalSet> for a full reference.
 
 ## Global Sets with Multiple Sites
 
