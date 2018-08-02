@@ -397,8 +397,15 @@ class Globals extends Component
     {
         $path = $event->configPath;
 
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
+
         // Does it match a global set?
-        if (preg_match('/'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $globalSetUid = $matches[1];
             $data = $event->configData;
 
@@ -488,11 +495,19 @@ class Globals extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedGlobalSet (ParseConfigEvent $event) {
+    public function handleDeletedGlobalSet (ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
+
         // Does it match a global set?
-        if (preg_match('/'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $globalSet = $this->_getGlobalSetRecord($uid);
