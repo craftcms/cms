@@ -397,6 +397,13 @@ class Categories extends Component
     {
         $path = $event->configPath;
 
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
+
         // Does it match a category group?
         if (preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
@@ -650,6 +657,13 @@ class Categories extends Component
      */
     public function handleDeletedCategoryGroup (ParseConfigEvent $event) {
         $path = $event->configPath;
+
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
 
         // Does it match a category group?
         if (preg_match('/'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
