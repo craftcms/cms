@@ -128,6 +128,7 @@ class FieldLayout extends Model
             $layoutTab->sortOrder = $tab['sortOrder'];
 
             if (!empty($tab['fields'])) {
+                $layoutFields = [];
                 foreach ($tab['fields'] as $uid => $field) {
                     $layoutFields[] = Craft::$app->getFields()->createField([
                         'type' => PlainText::class,
