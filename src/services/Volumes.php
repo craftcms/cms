@@ -482,6 +482,13 @@ class Volumes extends Component
     {
         $path = $event->configPath;
 
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
+
         // Does it match a volume?
         if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
@@ -717,8 +724,16 @@ class Volumes extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedVolume (ParseConfigEvent $event) {
+    public function handleDeletedVolume (ParseConfigEvent $event)
+    {
         $path = $event->configPath;
+
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
 
         // Does it match a field group?
         if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
