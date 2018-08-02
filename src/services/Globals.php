@@ -437,17 +437,17 @@ class Globals extends Component
 
                 if (!$setId) {
                     $element = new GlobalSet();
-                    $element->name = $globalSetRecord->name;
-                    $element->handle = $globalSetRecord->handle;
-                    $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
-                    $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                    Craft::$app->getElements()->saveElement($element, false);
-                    $globalSetRecord->id = $element->id;
                 } else {
-                    $globalSetRecord->id = $setId;
+                    $element = GlobalSet::findOne($setId);
                 }
 
+                $element->name = $globalSetRecord->name;
+                $element->handle = $globalSetRecord->handle;
+                $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
+                Craft::$app->getElements()->saveElement($element, false);
+
                 // Save the volume
+                $globalSetRecord->id = $element->id;
                 $globalSetRecord->save(false);
 
                 $transaction->commit();
