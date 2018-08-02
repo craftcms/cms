@@ -298,6 +298,13 @@ class Tags extends Component
     {
         $path = $event->configPath;
 
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
+
         // Does it match a tag group?
         if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
@@ -388,8 +395,16 @@ class Tags extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedTagGroup (ParseConfigEvent $event) {
+    public function handleDeletedTagGroup (ParseConfigEvent $event)
+    {
         $path = $event->configPath;
+
+        // If anything changes inside, just process the main entity
+        if (preg_match('/^'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+            $parts = explode('.', $path);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            return;
+        }
 
         // Does it match a tag group?
         if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
