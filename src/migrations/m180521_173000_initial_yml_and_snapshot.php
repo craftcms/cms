@@ -81,9 +81,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'categoryGroups' => $this->_getCategoryGroupData(),
             'tagGroups' => $this->_getTagGroupData(),
             'users' => $this->_getUserData(),
+            'globalSets' => $this->_getGlobalSetData(),
         ];
 
-        $data = array_merge_recursive($data, $this->_getSystemSettingData());
+        //$data = array_merge_recursive($data, $this->_getSystemSettingData());
 
         return $data;
 
@@ -625,6 +626,48 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         return $groupData;
     }
 
+
+    /**
+     * Return global set data config array.
+     *
+     * @return array
+     */
+    private function _getGlobalSetData(): array {
+        $setRows = (new Query())
+            ->select([
+                'sets.name',
+                'sets.handle',
+                'sets.uid',
+                'sets.fieldLayoutId',
+            ])
+            ->from(['{{%globalsets}} sets'])
+            ->all();
+
+        $setData = [];
+
+        $layoutIds = [];
+
+        foreach ($setRows as $setRow) {
+            $layoutIds[] = $setRow['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($setRows as $setRow) {
+            if (isset($fieldLayouts[$setRow['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$setRow['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$setRow['fieldLayoutId']]['uid']);
+                $setRow['fieldLayouts'] = [$layoutUid => $fieldLayouts[$setRow['fieldLayoutId']]];
+            }
+
+            $uid = $setRow['uid'];
+            unset($setRow['uid'], $setRow['fieldLayoutId']);
+
+            $setData[$uid] = $setRow;
+        }
+
+        return $setData;
+    }
 
     /**
      * Generate field layout config data for a list of array ids
