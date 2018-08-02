@@ -28,7 +28,7 @@ For additional Global Set properties you can use besides your custom fields see 
 
 If you run multiple sites with Craft, Global Sets are available in all sites. However, you can set the values in those sets on a per site basis, even leaving some fields blank, if desired.
 
-Make sure the fields in the Global Set have their “Translation Method” setting set to “Translate for each site”.
+To do that, edit the global set’s fields, and make sure that their “Translation Method” settings are set to “Translate for each site”.
 
 To toggle between sites while viewing Global Sets, use the drop-down menu at the top left of the Global Sets page in the Control Panel.
 
