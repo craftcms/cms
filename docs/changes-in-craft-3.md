@@ -85,7 +85,7 @@ Similarly, the `usePathInfo` setting can no longer be set to `'auto'` either. If
 
 ## URL Rules
 
-If you have any URL rules saved in `config/routes.php`, you will need to update them to Yii 2’s [pattern-route syntax](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules).
+If you have any [URL rules](config/README.md#url-rules) saved in `config/routes.php`, you will need to update them to Yii 2’s [pattern-route syntax](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules).
 
 - Named parameters in the pattern should be defined using the format (`<ParamName:RegExp>`) rather than as a regular expression subpattern (`(?P<ParamName>RegExp)`).
 - Unnamed parameters are no longer allowed (e.g. `([^\/]+)`). They must also be converted to the new named parameter syntax (`<ParamName:RegExp>`).
