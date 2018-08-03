@@ -308,12 +308,8 @@ class Categories extends Component
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            $categoryGroupUid = Db::uidById('{{%categorygroups}}', $group->id);
+            $categoryGroupUid = $existingGroupRecord->uid;
             $structureUid = Db::uidById('{{%structures}}', $existingGroupRecord->structureId);
-        }
-
-        if (!$categoryGroupUid) {
-            throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
