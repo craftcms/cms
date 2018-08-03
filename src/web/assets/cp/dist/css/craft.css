@@ -2195,4 +2195,8 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 .menu.dark ul li a:not(.sel):not(.disabled):hover { color: #444; }
 
+_:-ms-lang(x), .elements .tableview td.checkbox-cell input.checkbox + label, .elements .tableview td.checkbox-cell div.checkbox { top: 16px; }
+
+_:-ms-lang(x), input.checkbox + label:empty, div:empty.checkbox { display: block; }
+
 /*# sourceMappingURL=craft.css.map */

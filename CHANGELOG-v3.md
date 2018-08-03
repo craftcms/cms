@@ -7,6 +7,7 @@
 
 ### Fixed
 - Craft’s console commands now return the correct exit codes. ([#3175](https://github.com/craftcms/cms/issues/3175))
+- Fixed the appearance of checkboxes in IE11 on element index pages. ([#3177](https://github.com/craftcms/cms/issues/3177))
 
 ## 3.0.18 - 2018-07-31
 
