@@ -348,7 +348,9 @@ class Fields extends Component
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
 
-            // Prevent field information from being saved.  Allowing it would prevent the appropriate event from firing.
+            // Override the field information with snapshot data. This is because that data will get saved to the snapshot.
+            // So, if those config settings have been processed, we're replacing it with the exact same data, but if it has not,
+            // then we're not storing un processed data to the snapshot. Doing so would prevent them from being processed.
             $event->configData['fields'] = $event->snapshotData['fields'] ?? [];
         }
     }
