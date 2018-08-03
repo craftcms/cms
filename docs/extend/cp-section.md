@@ -1,6 +1,61 @@
 # Control Panel Section
 
-Plugins can provide their own section in the Control Panel by adding a `hasCpSection` property to their plugin:
+Modules and plugins can add new sections to the Control Panel using the [EVENT_REGISTER_CP_NAV_ITEMS](api:craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS) event:
+
+```php
+use craft\events\RegisterCpNavItemsEvent;
+use craft\web\twig\variables\Cp;
+use yii\base\Event;
+
+public function init()
+{
+    parent::init();
+    
+    Event::on(
+        Cp::class,
+        Cp::EVENT_REGISTER_CP_NAV_ITEMS,
+        function(RegisterCpNavItemsEvent $event) {
+            $event->navItems[] = [
+                'url' => 'section-url',
+                'label' => 'Section Label',
+                'icon' => '@ns/prefix/path/to/icon.svg',
+            ];
+        }
+    );
+    
+    // ...
+}
+``` 
+
+Each item within the [navItems](api:craft\events\RegisterCpNavItemsEvent::$navItems) array can have the following keys:
+
+- `url` – The URL that the nav item should link to. (It will be run through <api:craft\helpers\UrlHelper::cpUrl()>.)
+- `label` – The user-facing nav item label.
+- `icon` – The path to the icon SVG that should be used. (It can begin with an alias.)
+- `badgeCount` _(optional)_ – The badge count that should be displayed in the nav item.
+- `subnav` _(optional)_ – An array of subnav items that should be visible when your section is accessed. (See [Subnavs](#subnavs).)
+
+## Subnavs
+
+If your section has a sub-navigation, each subnav item within your `subnav` array should be represented by a sub-array with `url` and `label` keys:
+
+```php
+'subnav' => [
+    'foo' => ['label' => 'Foo', 'url' => 'section-url/foo'],
+    'bar' => ['label' => 'Bar', 'url' => 'section-url/bar'],
+    'baz' => ['label' => 'Baz', 'url' => 'section-url/baz'],
+],
+```
+
+Your templates can specify which subnav item should be selected by setting a `selectedSubnavItem` variable to the key of the nav item:
+
+```twig
+{% set selectedSubnavItem = 'bar' %}
+```
+
+## Plugin Sections
+
+Plugins that only need to add one section can set a `$hasCpSection` property on their primary plugin class, rather than using the [EVENT_REGISTER_CP_NAV_ITEMS](api:craft\web\twig\variables\Cp::EVENT_REGISTER_CP_NAV_ITEMS) event:
 
 ```php
 <?php
@@ -15,57 +70,13 @@ class Plugin extends \craft\base\Plugin
 }
 ```
 
-::: tip
-Alternatively, you can set this from your plugin’s `composer.json` file, via `extra.hasCpSection`.
-
-```json
-{
-  "extra": {
-    // ...
-    "hasCpSection": true
-  }
-}
-```
-:::
-
-With that in place, Craft will add a new user permission for your plugin, and users that have it will get a new item in their global Control Panel nav, pointing to `/admin/plugin-handle`.
-
-By default, when someone goes to `/admin/plugin-handle`, Craft will look for an `index.html` or `index.twig` template within your plugin’s `templates/` directory (which should go in your plugin’s source directory).
-
-At a minimum, that template should extend Craft’s `_layouts/cp` layout template, set a `title` variable, and override the `content` block.
-
-```twig
-{% extends "_layouts/cp" %}
-{% set title = "Page Title"|t('app') %}
-
-{% block content %}
-    <p>Page content goes here</p>
-{% endblock %}
-```
-
-Alternatively, you can route requests to `/admin/plugin-handle` to a controller action (or a different template) by registering a Control Panel route from your plugin’s `init()` method:
-
-```php
-use craft\events\RegisterUrlRulesEvent;
-use craft\web\UrlManager;
-use yii\base\Event;
-
-public function init()
-{
-    Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-        $event->rules['plugin-handle'] = 'plugin-handle/foo/bar';
-    });
-}
-```
-
-## Giving Your Plugin Section a Subnav
-
-If your CP section needs a sub-navigation in the global sidebar, you can do that by overriding your plugin’s `getCpNavItem()` method:
+You can modify aspects of the plugin’s Control Panel nav item by overriding its [getCpNavItem()](api:craft\base\PluginInterface::getCpNavItem()) method:  
 
 ```php
 public function getCpNavItem()
 {
     $item = parent::getCpNavItem();
+    $item['badgeCount'] => 5;
     $item['subnav'] = [
         'foo' => ['label' => 'Foo', 'url' => 'plugin-handle/foo'],
         'bar' => ['label' => 'Bar', 'url' => 'plugin-handle/bar'],
@@ -75,8 +86,29 @@ public function getCpNavItem()
 }
 ```
 
-The CP templates that these subnav items resolve to can tell Craft’s `_layouts/cp.html` template which subnav item should be selected by setting the `selectedSubnavItem` variable:
+If you do this, Craft will automatically add a new [user permission](user-permissions.md) for your plugin, and only show the nav item for users that have it.
 
-```twig
-{% set selectedSubnavItem = 'bar' %}
+Clicking on a plugin’s section will take the user to `/admin/plugin-handle`, which will attempt to load an `index.html` or `index.twig` template within the plugin’s [template root](template-roots.md) (its `templates/` folder within its base source folder).
+
+::: tip
+See [Control Panel Templates](cp-templates.md) for more information about developing Control Panel templates.
+:::
+
+Alternatively, you can route `/admin/plugin-handle` requests to a controller action (or a different template) by registering a Control Panel route from your plugin’s `init()` method:
+
+```php
+use craft\events\RegisterUrlRulesEvent;
+use craft\web\UrlManager;
+use yii\base\Event;
+
+public function init()
+{
+    Event::on(
+        UrlManager::class,
+        UrlManager::EVENT_REGISTER_CP_URL_RULES,
+        function(RegisterUrlRulesEvent $event) {
+            $event->rules['plugin-handle'] = 'plugin-handle/foo/bar';
+        }
+    );
+}
 ```

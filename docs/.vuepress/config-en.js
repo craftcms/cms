@@ -44,6 +44,7 @@ module.exports = {
                 collapsable: false,
                 children: [
                     'cp-section',
+                    'cp-templates',
                     // 'cp-components',
                     // 'cp-controllers',
                 ]
@@ -64,9 +65,12 @@ module.exports = {
                 title: 'More',
                 collapsable: false,
                 children: [
+                    'user-permissions',
+                    'translation-categories',
                     'asset-bundles',
                     'services',
                     // 'behaviors',
+                    'template-roots',
                     'extending-twig',
                     // 'front-end-controllers',
                 ]
