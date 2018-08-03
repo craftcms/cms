@@ -44,98 +44,95 @@ Here is how Craft handles each request:
 
 In some cases you want a URL to load a template, but you don’t want the URI to match the template path.
 
-A good example of this is a yearly archive page, where you want the year to be one of the segments in the URL (e.g. `news/archive/2017`). It would be silly to create a new template for every year. Instead, you should set up a new Dynamic Route.
+A good example of this is a yearly archive page, where you want the year to be one of the segments in the URL (e.g. `blog/archive/2018`). It would be silly to create a new template for every year. Instead, you should set up a new **route**.
 
 ![Creating a New Route](./images/routing-creating-new-route.png)
 
 ### Creating Routes
 
-To create a new Route, go to Settings → Routes and click the New Route button. A modal window will appear where you can define the route settings.
+To create a new Route, go to Settings → Routes and click the “New Route” button. A modal window will appear where you can define the route settings.
 
 The modal has the following settings:
 
 * What should the URI look like?
 * Which template should get loaded?
 
-The first setting can contain “tokens”, which represent a range of possible matches, rather than a specific string. (The “year” token, for example, represents four consecutive digits.) When you click on a token, Craft inserts it into the URI setting wherever the cursor is.
+The first setting can contain “tokens”, which represent a range of possible matches, rather than a specific string. (The `year` token, for example, represents four consecutive digits.) When you click on a token, Craft inserts it into the URI setting wherever the cursor is.
 
-If you want to match URIs that look like `news/archive/2017`, you type `news/archive/` into the URI field, and then click on the “year” token.
+If you want to match URIs that look like `blog/archive/2018`, you type `blog/archive/` into the URI field, and then click on the `year` token.
 
-Note: Your URI should **not** begin with a slash (/).
+::: tip
+Route URIs should **not** begin with a slash (`/`).
+:::
 
-After defining your URI pattern and entering a template path, click the Save button. The modal will close, revealing your new route on the page. 
+After defining your URI pattern and entering a template path, click the “Save” button. The modal will close, revealing your new route on the page.
 
-When you point your browser to `http://example.com/news/archive/2017`, it will match your new route, and Craft will load the specified template. 
+When you point your browser to `http://my-project.test/blog/archive/2018`, it will match your new route, and Craft will load the specified template.
 
-The value of the "year" token will also be available to the template as a variable called `year`.
+The value of the `year` token will also be available to the template as a variable called `year`.
 
 
 ### Available Tokens
 
 The following tokens are available to the URI setting:
 
-* * – Any string of characters, except for a forward slash (/)
-* **day** – Day of a month (1-31 or 01-31)
-* **month** – Numeric representation of a month (1-12 or 01-12)
-* **number** – Any positive integer
-* **page** – Any positive integer
-* **slug** – Any string of characters, except for a forward slash (/)
-* **tag** – Any string of characters, except for a forward slash (/)
-* **year** – Four consecutive digits
+* `*` – Any string of characters, except for a forward slash (/)
+* `day` – Day of a month (1-31 or 01-31)
+* `month` – Numeric representation of a month (1-12 or 01-12)
+* `number` – Any positive integer
+* `page` – Any positive integer
+* `slug` – Any string of characters, except for a forward slash (/)
+* `tag` – Any string of characters, except for a forward slash (/)
+* `year` – Four consecutive digits
 
 
-## Advanced Routing
+## Advanced Routing with URL Rules
 
-If you need to set up routes to controller actions, or you need to create a template route that matches a URI pattern that’s not covered by the available route tokens in Settings → Routes, you can set up your routes in `config/routes.php` as well. 
-
-When a request comes in, Craft checks this file first, and then the routes defined in Settings → Routes.
-
-### Basic Syntax
-
-Routes in `config/routes.php` generally follow this syntax:
+In addition to routes, you can define [URL rules](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) in `config/routes.php`.
 
 ```php
-// routes "news/subscribe" to a "lists/subscribe/news" action:
-'news/subscribe' => 'lists/subscribe/news',
+return [
+    // Route blog/archive/YYYY to a controller action
+    'blog/archive/<year:\d{4}>' => 'controller/action/path',
 
-// routes "news/archive/2020" to a "news/_archive" template:
-'news/archive/<year:\d{4}>' => ['template' => 'news/_archive'],
+    // Route blog/archive/YYYY to a template
+    'blog/archive/<year:\d{4}>' => ['template' => 'blog/_archive'],
+];
 ```
 
-If your Craft installation has multiple sites, then you can target locale specific routes via:
+If your Craft installation has multiple sites, you can create site-specific URL rules by placing them in a sub-array, and set the key to the site’s handle. 
 
 ```php
-'news/archive/<year:\d{4}>' => 'news/_archive',
-
-'de' => array(
-    'nachrichten/archiv/<year:\d{4}>' => 'de/nachrichten/_archiv',
-),
+return [
+    'siteHandle' => [
+        'blog/archive/<year:\d{4}>' => 'controller/action/path',
+    ],
+];
 ```
 
-You can find a full specification for defining URL rules and routes at the [Yii documentation](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#using-pretty-urls). The only Craft-specific addition is support for template routes (`['template' => 'some/template']`).
+Craft also supports special tokens that you can use within the regular expression portion of your [named parameters](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#named-parameters):
 
-### Accessing Subpatterns in your Templates
-
-If you have a template route that contains subpatterns, Craft passes a `matches` array to the matched template containing them. For example, with this route:
+- `{handle}` – matches a field handle, volume handle, etc.
+- `{slug}` – matches an entry slug, category slug, etc.  
 
 ```php
-'news/(\d{4})/(\d{2})' => 'news/_archive',
+return [
+    'blog/<entrySlug:{slug}>' => 'controller/action/path',
+];
 ```
 
-If you access `http://example.com/news/2020/10`, your `news/_archive.html` template will get loaded with a `matches` variable set to this:
+### Accessing Named Parameters in your Templates
+
+URL rules that route to a template (`['template' => '<TemplatePath>']`) will pass any matched named parameters to the template as variables.
+
+For example, with this URL rule:
 
 ```php
-[
-    0 => 'news/2020/10',
-    1 => '2020',
-    2 => '10'
-]
+'blog/archive/<year:\d{4}>' => ['template' => 'blog/_archive'],
 ```
 
-If you specify any named subpatterns, then those matches will also get their own variables. For example, with this route:
+If you access `http://my-project.test/blog/archive/2018`, your `blog/_archive.html` template will get loaded a `year` variable set to `2018`.
 
-```php
-'news/<year:\d{4}>/<month:\d{2}>' => 'news/_archive',
+```twig
+<h1>Blog Entries from {{ year }}</h1>
 ```
-
-…if you access `http://example.com/news/2020/10`, your `news/_archive.html` template will get loaded with `year` and `month` variables set to `'2017'` and `'04'`.

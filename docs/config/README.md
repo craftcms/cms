@@ -192,28 +192,7 @@ return [
 
 ## URL Rules
 
-You can define custom [URL rules](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) in `config/routes.php`, which will get merged in with any routes you’ve defined on the Settings → Routes page in the Control Panel.
-
-```php
-return [
-    // Route blog/archive/YYYY to a controller action
-    'blog/archive/<year:\d{4}>' => 'controller/action/path',
-    
-    // Route blog/archive/YYYY to a template
-    'blog/archive/<year:\d{4}>' => ['template' => 'blog/_archive'],
-];
-```
-
-Craft also supports special tokens that you can use within the regular expression portion of your [named parameters](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#named-parameters):
-
-- `{handle}` – matches a field handle, volume handle, etc.
-- `{slug}` – matches an entry slug, category slug, etc.  
-
-```php
-return [
-    'blog/<entrySlug:{slug}>' => 'controller/action/path',
-];
-```
+You can define custom [URL rules](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) in `config/routes.php`. See [Routing](../routing.md) for more details.
 
 ## Application Config
 
