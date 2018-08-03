@@ -83,12 +83,12 @@ return [
     // Global settings
     '*' => [
         'omitScriptNameInUrls' => true,
-        'siteUrl' => 'https://examle.com',
+        'siteUrl' => 'https://my-project.com',
     ],
 
     // Dev environment settings
     'dev' => [
-        'siteUrl' => 'http://examle.test',
+        'siteUrl' => 'http://my-project.test',
     ],   
 ];
 ```

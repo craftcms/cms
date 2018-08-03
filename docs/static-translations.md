@@ -36,7 +36,7 @@ To do that, create a new folder in your project’s base directory called `trans
 For example, if you want to translate your site into German, this is what your project’s directory structure should look like:
 
 ```
-example.com/
+my-project.test/
 ├── config/
 ├── ...
 └── translations/

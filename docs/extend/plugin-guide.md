@@ -52,7 +52,7 @@ Use this template as a starting point for your `composer.json` file:
     }
   },
   "support": {
-    "email": "you@example.com"
+    "email": "you@my-project.com"
   },
   "extra": {
     "handle": "plugin-handle",
@@ -67,7 +67,7 @@ Replace:
 
 - `package/name` with your package name.
 - `ns\\prefix\\` with your namespace prefix. (Use double-backslashes because JSON, and note this must end with `\\`.)
-- `you@example.com` with your support email.
+- `you@my-project.com` with your support email.
 - `plugin-handle` with your plugin handle.
 - `Plugin Name` with your plugin name.
 - `Developer Name` with your name, or the organization name that the plugin should be attributed to.

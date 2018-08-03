@@ -146,7 +146,7 @@ You can define additional custom aliases using the <config:aliases> config setti
 
 ```php
 'aliases' => [
-    '@assetBaseUrl' => 'http://example.com/assets',
+    '@assetBaseUrl' => 'http://my-project.com/assets',
     '@assetBasePath' => '/path/to/web/assets',
 ],
 ```
@@ -156,7 +156,7 @@ With those in place, you could begin your asset volumes’ Base URL and File Sys
 If you’d like, you can set the alias values with environment variables, either from your `.env` file or somewhere in your environment’s configuration:
 
 ```bash
-ASSET_BASE_URL=http://example.com/assets
+ASSET_BASE_URL=http://my-project.com/assets
 ASSET_BASE_PATH=/path/to/web/assets
 ```
 

@@ -175,7 +175,7 @@ The `url()` function has the following arguments:
 ::: tip
 You can use the `url()` function for appending query string parameters and/or enforcing a protocol on an absolute URL:
 ```twig
-{{ url('http://example.com', 'foo=1', 'https') }}
-{# Outputs: "https://example.com?foo=1" #}
+{{ url('http://my-project.com', 'foo=1', 'https') }}
+{# Outputs: "https://my-project.com?foo=1" #}
 ```
 :::

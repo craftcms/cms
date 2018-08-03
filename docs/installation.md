@@ -40,7 +40,7 @@ If you’re on macOS, be careful not to lose the hidden files in there (`.env`, 
 Once Craft’s files are in place, your project directory should have a directory structure like this:
 
 ```
-my-craft-project.test/
+my-project.test/
 ├── config/
 │   └── ...
 ├── storage/
