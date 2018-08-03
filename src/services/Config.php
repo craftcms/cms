@@ -49,7 +49,7 @@ class Config extends Component
      * $env = Craft::$app->config->env;
      * ```
      * ```twig
-     * {% if craft.app.config.env == 'prod' %}
+     * {% if craft.app.config.env == 'production' %}
      *     {% include "_includes/ga" %}
      * {% endif %}
      * ```
