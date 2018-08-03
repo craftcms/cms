@@ -76,7 +76,7 @@ You can modify aspects of the plugin’s Control Panel nav item by overriding it
 public function getCpNavItem()
 {
     $item = parent::getCpNavItem();
-    $item['badgeCount'] => 5;
+    $item['badgeCount'] = 5;
     $item['subnav'] = [
         'foo' => ['label' => 'Foo', 'url' => 'plugin-handle/foo'],
         'bar' => ['label' => 'Bar', 'url' => 'plugin-handle/bar'],
