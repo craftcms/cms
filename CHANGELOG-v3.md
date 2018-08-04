@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `craft.query()` template function, for creating new database queries.
+- Added `craft\services\Structures::mutexTimeout`. ([#3148](https://github.com/craftcms/cms/issues/3148))
 
 ### Fixed
 - Craft’s console commands now return the correct exit codes. ([#3175](https://github.com/craftcms/cms/issues/3175))
