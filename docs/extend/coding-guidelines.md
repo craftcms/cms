@@ -14,7 +14,6 @@ Do your best to follow these guidelines when writing code for Craft and Craft pl
 - Strings that are concatenated across multiple lines should have the `.` operator at the ends of lines.
 - Don’t put a space after type typecasts (`(int)$foo`).
 - Don’t wrap `include`/`include_once`/`require`/`require_once` file paths in parentheses. They are not functions.
-- Put a blank line before `return` statements.
 
 ## Best Practices
 
@@ -27,7 +26,7 @@ Do your best to follow these guidelines when writing code for Craft and Craft pl
 - Use strict comparison operators (`===` and `!==`) whenever possible.
 - Use `$foo === null`/`$bar !== null` rather than `is_null($foo)`/`!is_null($bar)`.
 - Use `(int)$foo`/`(float)$bar` rather than `intval($foo)`/`floatval($bar)`.
-- Always pass `true`/`false` to the third argument of [in_array()](http://php.net/manual/en/function.in-array.php) to indicate whether the check should be type-script (and make it `true` whenever possible).
+- Always pass `true`/`false` to the third argument of [in_array()](http://php.net/manual/en/function.in-array.php) to indicate whether the check should be type-strict (and make it `true` whenever possible).
 - Use `$obj->property !== null` rather than `isset($obj->property)` in conditions that check if an object property is set.
 - Use `empty()`/`!empty()` in conditions that check if an array is/isn’t empty.
 - Refer to class names using the [::class](http://php.net/manual/en/language.oop5.basic.php#language.oop5.basic.class.class) keyword (`Foo::class`) rather than as a string (`'some\nmspace\Foo'`) or <api:yii\base\BaseObject::className()>.
