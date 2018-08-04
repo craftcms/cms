@@ -43,7 +43,7 @@ Here is how Craft handles each request:
 
 5. **404**
 
-   If none of the above checks are successful, Craft will throw a [NotFoundHttpException](https://www.yiiframework.com/doc/api/2.0/yii-web-notfoundhttpexception). If [Dev Mode](config:devMode) is enabled, an error report for the exception will be shown. Otherwise, a 404 error will be returned.
+   If none of the above checks are successful, Craft will throw a [NotFoundHttpException](api:yii\web\NotFoundHttpException). If [Dev Mode](config:devMode) is enabled, an error report for the exception will be shown. Otherwise, a 404 error will be returned.
 
    ::: tip
    You can customize your site’s 404 page by placing a `404.html` template at the root of your `templates/` directory. You can test this page even if [Dev Mode](config:devMode) is enabled by going to `http://my-project.test/404`. 
