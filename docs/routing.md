@@ -11,7 +11,7 @@ Here is how Craft handles each request:
 
    It’s important to keep in mind that Craft doesn’t actually get involved for *every* request that touches your server – only requests that go to your `index.php` file.
 
-   The `.htaccess` file that [comes with Craft](https://craftcms.com/support/remove-index.php) will redirect all would-be 404 requests over to `index.php` behind the scenes. Because of this Craft responds to URLs that don’t point to a valid directory or file in your web root. But if you point your browser directly at a file that *does* exist (such as an image URL), your web server will serve that file directly without Craft intervening.
+   The `.htaccess` file that [comes with Craft](https://github.com/craftcms/craft/blob/master/web/.htaccess) will redirect all requests that don’t match a directory or file on your web server over to `index.php` behind the scenes. But if you point your browser directly at a file that *does* exist (such as an image, CSS, or JavaScript file), your web server will serve that file directly without loading Craft.
 
 1. **Is it an action request?**
 
@@ -19,25 +19,35 @@ Here is how Craft handles each request:
 
    Craft routes action requests to a controller action that perform actions. Craft has system Controller actions for core actions, but plugins may also have Controllers that define their own custom actions.
 
-  The request doesn’t necessarily end after a controller call. The controller may allow it to keep going.
+   The request doesn’t necessarily end after a controller call. The controller may allow it to keep going.
 
-2. **Is it an entry/category request?**
+2. **Is it an element request?**
 
-   If the URI matches an [entry’s](sections-and-entries.md) or [category’s](categories.md) URI, Craft loads the section’s template or category group’s template. Craft makes the matched element available to the template via a pre-populated `entry` or `category` variable.
+   If the URI matches an element’s URI, Craft lets the element decide how to route the request. For example, if an [entry’s](sections-and-entries.md) URI is requested, then the entry will route the request to the template specified in its section’s settings, with an `entry` variable predefined, set to the requested entry.
 
-   (This step is not limited to entries and categories – plugins are also capable of adding their own types of elements, which can opt to have their own dedicated URLs.)
+   ::: tip
+   Modules and plugins can override element routes using the [EVENT_SET_ROUTE](https://docs.craftcms.com/api/v3/craft-base-element.html#events) event.
+   :::
 
-3. **Does the URI match any Dynamic Routes?**
+3. **Does the URI match a route or URI rule?**
 
-   If the URI matches any [dynamic routes](#dynamic-routes), the template specified by that route will get loaded. If the route contains any tokens, they will be available as variables to that template.
+   If the URI matches any [dynamic routes](#dynamic-routes) or [URI rules](#advanced-routing-with-url-rules), the template or controller action specified by it will get loaded.
 
 4. **Does the URI match a template?**
 
-   Finally, Craft will check if the URI is a valid [template path](dev/README.md#template-paths). If it is, Craft will return the matched template. Note: if any of the URI segments begin with an underscore (`_`), Craft will return a 404. Craft hides from direct access any template path segments that begin with an underscore.
+   Craft will check if the URI is a valid [template path](dev/README.md#template-paths). If it is, Craft will return the matched template.
+
+   ::: tip
+   If any of the URI segments begin with an underscore (e.g. `blog/_archive/index`), Craft will skip this step.
+   :::
 
 5. **404**
 
-   If none of the above checks are successful, Craft will return a 404. You can customize your site’s 404 page by placing a `404.html` template at the root of your `templates/` directory.
+   If none of the above checks are successful, Craft will throw a [NotFoundHttpException](https://www.yiiframework.com/doc/api/2.0/yii-web-notfoundhttpexception). If [Dev Mode](config:devMode) is enabled, an error report for the exception will be shown. Otherwise, a 404 error will be returned.
+
+   ::: tip
+   You can customize your site’s 404 page by placing a `404.html` template at the root of your `templates/` directory. You can test this page even if [Dev Mode](config:devMode) is enabled by going to `http://my-project.test/404`. 
+   :::
 
 
 ## Dynamic Routes
