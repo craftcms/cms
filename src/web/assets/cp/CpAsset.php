@@ -323,6 +323,7 @@ JS;
                     'name' => Craft::t('site', $section->name),
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
+                    'uid' => $section->uid,
                 ];
             }
         }
