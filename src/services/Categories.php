@@ -887,7 +887,6 @@ class Categories extends Component
         return $group;
     }
 
-
     /**
      * Gets a category group's record by uid.
      *
@@ -898,5 +897,4 @@ class Categories extends Component
     {
         return CategoryGroupRecord::findOne(['uid' => $uid]) ?? new CategoryGroupRecord();
     }
-
 }
