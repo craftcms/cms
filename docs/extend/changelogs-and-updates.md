@@ -91,5 +91,5 @@ If everything is set up correctly, your plugins’ available updates should star
 ![The Utilities → Updates page in Craft’s Control Panel, with an available update for the “Foo” plugin.](../images/plugin-update.png)
 
 
-[keepachangelog.com]: http://keepachangelog.com/
+[keepachangelog.com]: https://keepachangelog.com/
 [GitHub Flavored Markdown]: https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown

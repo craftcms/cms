@@ -45,7 +45,7 @@ Category queries support the following parameters:
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -64,7 +64,7 @@ The maximum number of levels that results may be separated from [ancestorOf()](h
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -83,7 +83,7 @@ The element (or its ID) that results must be an ancestor of.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -102,7 +102,7 @@ Whether to return only archived elements.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -160,7 +160,7 @@ When the resulting elements must have been last updated.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -179,7 +179,7 @@ The maximum number of levels that results may be separated from [descendantOf()]
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -198,7 +198,7 @@ The element (or its ID) that results must be a descendant of.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -217,7 +217,7 @@ Whether to only return categories that the user has permission to edit.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -236,7 +236,7 @@ Whether the elements must be enabled for the chosen site.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -255,7 +255,7 @@ Whether results should be returned in the order specified by [id()](https://docs
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [integer](http://www.php.net/language.types.integer)[], [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -289,7 +289,7 @@ $categories = \craft\elements\Category::find()
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -308,7 +308,7 @@ Whether the resulting elements must have descendants.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [integer](http://www.php.net/language.types.integer)[], [false](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -327,7 +327,7 @@ The element ID(s). Prefix IDs with `'not '` to exclude them.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -346,7 +346,7 @@ Whether the results should be queried in reverse.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -384,7 +384,7 @@ The element’s level within the structure
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -403,7 +403,7 @@ The element (or its ID) that the result must be the next sibling of.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -422,7 +422,7 @@ The element (or its ID) that the results must be positioned after.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -441,7 +441,7 @@ The element (or its ID) that the results must be positioned before.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -460,7 +460,7 @@ The element (or its ID) that the result must be the previous sibling of.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -481,7 +481,7 @@ This property is set when accessing elements via their reference tags, e.g. `{en
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [array](http://www.php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -502,7 +502,7 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for supported synta
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -523,7 +523,7 @@ See [Searching](https://docs.craftcms.com/v3/searching.html) for supported synta
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -542,7 +542,7 @@ The element (or its ID) that the results must be a sibling of.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -561,7 +561,7 @@ The site ID that the elements should be returned in.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -580,7 +580,7 @@ The slug that resulting elements must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -599,7 +599,7 @@ The status(es) that the resulting elements must have.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [false](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -618,7 +618,7 @@ The structure ID that should be used to join in the structureelements table.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -637,7 +637,7 @@ The title that resulting elements must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -656,7 +656,7 @@ The element UID(s). Prefix UIDs with `'not '` to exclude them.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -675,7 +675,7 @@ The URI that the resulting element must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -696,7 +696,7 @@ See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Defined by
 

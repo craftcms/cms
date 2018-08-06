@@ -50,7 +50,7 @@
 
 `{% paginate %}` タグは現在のページのエレメントを実際に出力するわけではありません。すなわち、現在のページにあるべき配列を与えるだけです（`as` パラメータで定義された変数によって参照されます）。
 
-`{% paginate %}` タグに続けて、[for](http://twig.sensiolabs.org/doc/tags/for.html) タグを使用することでこのページのエレメントをループする必要があります。
+`{% paginate %}` タグに続けて、[for](https://twig.sensiolabs.org/doc/tags/for.html) タグを使用することでこのページのエレメントをループする必要があります。
 
 ```twig
 {% paginate craft.entries.section('blog').limit(10) as pageEntries %}

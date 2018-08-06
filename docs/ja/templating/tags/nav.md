@@ -39,5 +39,5 @@
 
 エレメントが実際に子を持っているときだけ、子を取り囲む追加 HTML を表示したい場合、`{% children %}` タグを `{% ifchildren %}` と `{% endifchildren %}` タグで囲みます。
 
-ヒント：`{% nav %}` タグは、エレメントを階層的に表示したい、かつ、DOM で階層構造を表現したいとき_だけ_使用するべきです。エレメントを直線的にループしたい場合、代わりに Twig の [for](http://twig.sensiolabs.org/doc/tags/for.html) タグを使ってください。
+ヒント：`{% nav %}` タグは、エレメントを階層的に表示したい、かつ、DOM で階層構造を表現したいとき_だけ_使用するべきです。エレメントを直線的にループしたい場合、代わりに Twig の [for](https://twig.sensiolabs.org/doc/tags/for.html) タグを使ってください。
 

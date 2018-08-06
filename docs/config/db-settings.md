@@ -47,7 +47,7 @@ Here’s the full list of database connection settings that Craft supports:
 
 Allowed types
 
-:   [array](http://www.php.net/language.types.array)
+:   [array](http://php.net/language.types.array)
 
 Default value
 
@@ -61,7 +61,7 @@ Defined by
 
 An array of key => value pairs of PDO attributes to pass into the PDO constructor.
 
-For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
+For example, when using the MySQL PDO driver (http://php.net/manual/en/ref.pdo-mysql.php),
 if you wanted to enable a SSL database connection (assuming SSL is enabled in MySQL
 (https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'`
 can connect via SSL, you'd set these:
@@ -79,7 +79,7 @@ can connect via SSL, you'd set these:
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -98,7 +98,7 @@ The charset to use when creating tables.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -117,7 +117,7 @@ The name of the database to select.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -136,7 +136,7 @@ The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -150,8 +150,8 @@ Defined by
 
 If you want to manually specify your PDO DSN connection string you can do so here.
 
-- MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
-- PostgreSQL: https://secure.php.net/manual/en/ref.pdo-pgsql.connection.php
+- MySQL: http://php.net/manual/en/ref.pdo-mysql.connection.php
+- PostgreSQL: http://php.net/manual/en/ref.pdo-pgsql.connection.php
 If you set this, then the [$server](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-server), [$port](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-port), [$user](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-user), [$password](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-password), [$database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-database),
 [$driver](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-driver) and [$unixSocket](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-unixsocket) config settings will be ignored.
 
@@ -160,7 +160,7 @@ If you set this, then the [$server](https://docs.craftcms.com/api/v3/craft-confi
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -179,7 +179,7 @@ The database password to connect with.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -198,7 +198,7 @@ The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -217,7 +217,7 @@ The database schema to use (PostgreSQL only).
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -236,7 +236,7 @@ The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -258,7 +258,7 @@ characters, and must be all lowercase.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -279,7 +279,7 @@ specified, then 'server' and 'port' settings are ignored.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -301,7 +301,7 @@ will be extracted from it.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
