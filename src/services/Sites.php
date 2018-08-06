@@ -932,6 +932,174 @@ class Sites extends Component
         }
 
         $group = $site->getGroup();
+
+        // TODO: Move this code into entries module, etc.
+        // Get the section IDs that are enabled for this site
+        $sectionIds = (new Query())
+            ->select(['sectionId'])
+            ->from(['{{%sections_sites}}'])
+            ->where(['siteId' => $site->id])
+            ->column();
+
+        // Figure out which ones are *only* enabled for this site
+        $soloSectionIds = [];
+
+        foreach ($sectionIds as $sectionId) {
+            $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
+
+            if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
+                $soloSectionIds[] = $sectionId;
+            }
+        }
+
+        // Did we find any?
+        if (!empty($soloSectionIds)) {
+            // Should we enable those for a different site?
+            if ($transferContentTo !== null) {
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        '{{%sections_sites}}',
+                        ['siteId' => $transferContentTo],
+                        ['sectionId' => $soloSectionIds])
+                    ->execute();
+
+                // Get all of the entry IDs in those sections
+                $entryIds = (new Query())
+                    ->select(['id'])
+                    ->from(['{{%entries}}'])
+                    ->where(['sectionId' => $soloSectionIds])
+                    ->column();
+
+                if (!empty($entryIds)) {
+                    // Delete their template caches
+                    Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+
+                    // Update the entry tables
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%content}}',
+                            ['siteId' => $transferContentTo],
+                            ['elementId' => $entryIds])
+                        ->execute();
+
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%elements_sites}}',
+                            ['siteId' => $transferContentTo],
+                            ['elementId' => $entryIds])
+                        ->execute();
+
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%entrydrafts}}',
+                            ['siteId' => $transferContentTo],
+                            ['entryId' => $entryIds])
+                        ->execute();
+
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%entryversions}}',
+                            ['siteId' => $transferContentTo],
+                            ['entryId' => $entryIds])
+                        ->execute();
+
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%relations}}',
+                            ['sourceSiteId' => $transferContentTo],
+                            [
+                                'and',
+                                ['sourceId' => $entryIds],
+                                ['not', ['sourceSiteId' => null]]
+                            ])
+                        ->execute();
+
+                    // All the Matrix tables
+                    $blockIds = (new Query())
+                        ->select(['id'])
+                        ->from(['{{%matrixblocks}}'])
+                        ->where(['ownerId' => $entryIds])
+                        ->column();
+
+                    if (!empty($blockIds)) {
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%matrixblocks}}',
+                                ['ownerSiteId' => $transferContentTo],
+                                [
+                                    'and',
+                                    ['id' => $blockIds],
+                                    ['not', ['ownerSiteId' => null]]
+                                ])
+                            ->execute();
+
+                        Craft::$app->getDb()->createCommand()
+                            ->delete(
+                                '{{%elements_sites}}',
+                                [
+                                    'elementId' => $blockIds,
+                                    'siteId' => $transferContentTo
+                                ])
+                            ->execute();
+
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%elements_sites}}',
+                                ['siteId' => $transferContentTo],
+                                [
+                                    'elementId' => $blockIds,
+                                    'siteId' => $site->id
+                                ])
+                            ->execute();
+
+                        $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
+                        $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
+
+                        foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
+                            if (strpos($tableName, $matrixTablePrefix) === 0) {
+                                $tableName = substr($tableName, $tablePrefixLength);
+
+                                Craft::$app->getDb()->createCommand()
+                                    ->delete(
+                                        $tableName,
+                                        [
+                                            'elementId' => $blockIds,
+                                            'siteId' => $transferContentTo
+                                        ])
+                                    ->execute();
+
+                                Craft::$app->getDb()->createCommand()
+                                    ->update(
+                                        $tableName,
+                                        ['siteId' => $transferContentTo],
+                                        [
+                                            'elementId' => $blockIds,
+                                            'siteId' => $site->id
+                                        ])
+                                    ->execute();
+                            }
+                        }
+
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%relations}}',
+                                ['sourceSiteId' => $transferContentTo],
+                                [
+                                    'and',
+                                    ['sourceId' => $blockIds],
+                                    ['not', ['sourceSiteId' => null]]
+                                ])
+                            ->execute();
+                    }
+                }
+            } else {
+                // Delete those sections
+                foreach ($soloSectionIds as $sectionId) {
+                    Craft::$app->getSections()->deleteSectionById($sectionId);
+                }
+            }
+        }
+
         Craft::$app->getProjectConfig()->save(self::CONFIG_SITEGROUP_KEY.'.'.$group->uid.'.'.self::CONFIG_SITES_KEY.'.'.$site->uid, null);
 
         // Fire an 'afterDeleteSite' event
@@ -961,173 +1129,6 @@ class Sites extends Component
         if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $site = $this->_getSiteRecord($matches[2]);
-
-            // TODO: Move this code into entries module, etc.
-            // Get the section IDs that are enabled for this site
-            $sectionIds = (new Query())
-                ->select(['sectionId'])
-                ->from(['{{%sections_sites}}'])
-                ->where(['siteId' => $site->id])
-                ->column();
-
-            // Figure out which ones are *only* enabled for this site
-            $soloSectionIds = [];
-
-            foreach ($sectionIds as $sectionId) {
-                $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
-
-                if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
-                    $soloSectionIds[] = $sectionId;
-                }
-            }
-
-            // Did we find any?
-            if (!empty($soloSectionIds)) {
-                // Should we enable those for a different site?
-                if ($transferContentTo !== null) {
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%sections_sites}}',
-                            ['siteId' => $transferContentTo],
-                            ['sectionId' => $soloSectionIds])
-                        ->execute();
-
-                    // Get all of the entry IDs in those sections
-                    $entryIds = (new Query())
-                        ->select(['id'])
-                        ->from(['{{%entries}}'])
-                        ->where(['sectionId' => $soloSectionIds])
-                        ->column();
-
-                    if (!empty($entryIds)) {
-                        // Delete their template caches
-                        Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
-
-                        // Update the entry tables
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%content}}',
-                                ['siteId' => $transferContentTo],
-                                ['elementId' => $entryIds])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%elements_sites}}',
-                                ['siteId' => $transferContentTo],
-                                ['elementId' => $entryIds])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%entrydrafts}}',
-                                ['siteId' => $transferContentTo],
-                                ['entryId' => $entryIds])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%entryversions}}',
-                                ['siteId' => $transferContentTo],
-                                ['entryId' => $entryIds])
-                            ->execute();
-
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                '{{%relations}}',
-                                ['sourceSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['sourceId' => $entryIds],
-                                    ['not', ['sourceSiteId' => null]]
-                                ])
-                            ->execute();
-
-                        // All the Matrix tables
-                        $blockIds = (new Query())
-                            ->select(['id'])
-                            ->from(['{{%matrixblocks}}'])
-                            ->where(['ownerId' => $entryIds])
-                            ->column();
-
-                        if (!empty($blockIds)) {
-                            Craft::$app->getDb()->createCommand()
-                                ->update(
-                                    '{{%matrixblocks}}',
-                                    ['ownerSiteId' => $transferContentTo],
-                                    [
-                                        'and',
-                                        ['id' => $blockIds],
-                                        ['not', ['ownerSiteId' => null]]
-                                    ])
-                                ->execute();
-
-                            Craft::$app->getDb()->createCommand()
-                                ->delete(
-                                    '{{%elements_sites}}',
-                                    [
-                                        'elementId' => $blockIds,
-                                        'siteId' => $transferContentTo
-                                    ])
-                                ->execute();
-
-                            Craft::$app->getDb()->createCommand()
-                                ->update(
-                                    '{{%elements_sites}}',
-                                    ['siteId' => $transferContentTo],
-                                    [
-                                        'elementId' => $blockIds,
-                                        'siteId' => $site->id
-                                    ])
-                                ->execute();
-
-                            $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                            $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
-
-                            foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                                if (strpos($tableName, $matrixTablePrefix) === 0) {
-                                    $tableName = substr($tableName, $tablePrefixLength);
-
-                                    Craft::$app->getDb()->createCommand()
-                                        ->delete(
-                                            $tableName,
-                                            [
-                                                'elementId' => $blockIds,
-                                                'siteId' => $transferContentTo
-                                            ])
-                                        ->execute();
-
-                                    Craft::$app->getDb()->createCommand()
-                                        ->update(
-                                            $tableName,
-                                            ['siteId' => $transferContentTo],
-                                            [
-                                                'elementId' => $blockIds,
-                                                'siteId' => $site->id
-                                            ])
-                                        ->execute();
-                                }
-                            }
-
-                            Craft::$app->getDb()->createCommand()
-                                ->update(
-                                    '{{%relations}}',
-                                    ['sourceSiteId' => $transferContentTo],
-                                    [
-                                        'and',
-                                        ['sourceId' => $blockIds],
-                                        ['not', ['sourceSiteId' => null]]
-                                    ])
-                                ->execute();
-                        }
-                    }
-                } else {
-                    // Delete those sections
-                    foreach ($soloSectionIds as $sectionId) {
-                        Craft::$app->getSections()->deleteSectionById($sectionId);
-                    }
-                }
-            }
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
