@@ -104,7 +104,6 @@ class Composer extends Component
 
         // Get composer.json
         $jsonPath = $this->getJsonPath();
-        $backup = file_get_contents($jsonPath);
 
         // Set the working directory to the composer.json dir, in case there are any relative repo paths
         $wd = getcwd();
@@ -113,9 +112,8 @@ class Composer extends Component
         // Ensure there's a home var
         $this->_ensureHomeVar();
 
-        // Update composer.json with the new (optimized) requirements
-        $optimized = Craft::$app->getApi()->getOptimizedComposerRequirements($requirements, []);
-        $this->updateRequirements($jsonPath, $optimized, false);
+        // Update composer.json
+        $this->updateRequirements($io, $jsonPath, $requirements);
 
         if ($this->updateComposerClassMap) {
             // Start logging newly-autoloaded classes
@@ -126,12 +124,16 @@ class Composer extends Component
             $this->preloadComposerClasses();
         }
 
+        // Get the whitelist of packages to update
+        $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
+
         // Run the installer
         $composer = $this->createComposer($io, $jsonPath);
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
             ->setUpdate()
+            ->setUpdateWhitelist($whitelist)
             ->setDumpAutoloader()
             ->setOptimizeAutoloader(true);
 
@@ -156,16 +158,9 @@ class Composer extends Component
             FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
         }
 
-        // Return composer.json to normal
-        file_put_contents($jsonPath, $backup);
-
         if ($status !== 0) {
             throw $exception ?? new \Exception('An error occurred');
         }
-
-        // Update composer.json with the new (non-optimized) requirements
-        $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
-        $this->updateRequirements($jsonPath, $requirements, $sortPackages);
     }
 
     /**
@@ -321,11 +316,11 @@ class Composer extends Component
     /**
      * Updates the composer.json file with new requirements
      *
+     * @param IOInterface $io
      * @param string $jsonPath
      * @param array $requirements
-     * @param bool $sortPackages
      */
-    protected function updateRequirements(string $jsonPath, array $requirements, bool $sortPackages)
+    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements)
     {
         $requireKey = 'require';
         $removeKey = 'require-dev';
@@ -333,6 +328,7 @@ class Composer extends Component
         // First try using JsonManipulator
         $success = true;
         $manipulator = new JsonManipulator(file_get_contents($jsonPath));
+        $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
 
         foreach ($requirements as $package => $constraint) {
             if (
