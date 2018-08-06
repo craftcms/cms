@@ -38,5 +38,5 @@ See the following documentation pages for help installing Craft 3:
 - [CraftQuest](https://craftquest.io/) – Unlimited access to Craft training (and more) from Mijingo.
 - [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) – Video courses.
 - [nystudio107 Blog](http://straightupcraft.com/) – Articles about Craft and modern web development.
-- [pluginfactory.io](https://pluginfactory.io/) – Craft plugin scaffold generator.
+- [Craft Link List](http://craftlinklist.com/) – Bimonthly newsletter about the Craft ecosystem.
 - [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/) – Community-run Q&A for Craft developers.
