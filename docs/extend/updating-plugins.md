@@ -1,6 +1,6 @@
 # Updating Plugins for Craft 3
 
-Craft 3 is a complete rewrite of the CMS, built on Yii 2. Due to the scope of changes in Yii 2, there was no feasible way to port Craft to it without breaking every plugin in the process. So we took it as an [opportunity](http://www.urbandictionary.com/define.php?term=double%20transgression%20theory) to refactor several major areas of the system.
+Craft 3 is a complete rewrite of the CMS, built on Yii 2. Due to the scope of changes in Yii 2, there was no feasible way to port Craft to it without breaking every plugin in the process. So we took it as an [opportunity](https://www.urbandictionary.com/define.php?term=double%20transgression%20theory) to refactor several major areas of the system.
 
 The primary goals of the refactoring were:
 
@@ -21,7 +21,7 @@ If you think something is missing, please [create an issue](https://github.com/c
 - Craft is now built on Yii 2.
 - The main application instance is available via `Craft::$app` now, rather than `craft()`.
 - Plugins must now have a `composer.json` file that defines some basic info about the plugin.
-- Plugins now get their own root namespace, rather than sharing a `Craft\` namespace with all of Craft and other plugins, and all Craft and plugin code must follow the [PSR-4](http://www.php-fig.org/psr/psr-4/) specification.
+- Plugins now get their own root namespace, rather than sharing a `Craft\` namespace with all of Craft and other plugins, and all Craft and plugin code must follow the [PSR-4](https://www.php-fig.org/psr/psr-4/) specification.
 - Plugins are now an extension of [Yii modules](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules).
 
 ## Changelogs

@@ -1,6 +1,6 @@
 # Tests
 
-In addition to the template tags that [Twig comes with](http://twig.sensiolabs.org/doc/tests/index.html), Craft provides a few of its own.
+In addition to the template tags that [Twig comes with](https://twig.sensiolabs.org/doc/tests/index.html), Craft provides a few of its own.
 
 ## `instance of`
 

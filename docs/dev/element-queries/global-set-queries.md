@@ -40,7 +40,7 @@ Global set queries support the following parameters:
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -59,7 +59,7 @@ Whether to return only archived elements.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -117,7 +117,7 @@ When the resulting elements must have been last updated.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -136,7 +136,7 @@ Whether to only return global sets that the user has permission to edit.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -155,7 +155,7 @@ Whether the elements must be enabled for the chosen site.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -174,7 +174,7 @@ Whether results should be returned in the order specified by [id()](https://docs
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -193,7 +193,7 @@ The handle(s) that the resulting global sets must have.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [integer](http://www.php.net/language.types.integer)[], [false](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -212,7 +212,7 @@ The element ID(s). Prefix IDs with `'not '` to exclude them.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Defined by
 
@@ -231,7 +231,7 @@ Whether the results should be queried in reverse.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -252,7 +252,7 @@ This property is set when accessing elements via their reference tags, e.g. `{en
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [array](http://www.php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -273,7 +273,7 @@ See [Relations](https://docs.craftcms.com/v3/relations.html) for supported synta
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -294,7 +294,7 @@ See [Searching](https://docs.craftcms.com/v3/searching.html) for supported synta
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -313,7 +313,7 @@ The site ID that the elements should be returned in.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -332,7 +332,7 @@ The slug that resulting elements must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -351,7 +351,7 @@ The status(es) that the resulting elements must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -370,7 +370,7 @@ The title that resulting elements must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -389,7 +389,7 @@ The element UID(s). Prefix UIDs with `'not '` to exclude them.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Defined by
 
@@ -408,7 +408,7 @@ The URI that the resulting element must have.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
 
 Defined by
 

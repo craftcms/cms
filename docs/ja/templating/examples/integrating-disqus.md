@@ -1,6 +1,6 @@
 # Disqus の統合
 
-[Disqus](http://disqus.com/) のようなサードパーティのコメントサービスを利用して、Craft のエントリページに簡単にコメント機能を追加することができます。
+[Disqus](https://disqus.com/) のようなサードパーティのコメントサービスを利用して、Craft のエントリページに簡単にコメント機能を追加することができます。
 
 これを行うためには、コメントを許可する単一のエントリを表示するための出力設定が必要です。この例では、craft/templates/_entry.html にあるテンプレートを使用します。
 
@@ -33,14 +33,14 @@ var disqus_identifier = 'blog-{{ entry.id }}';
  /* * * DON'T EDIT BELOW THIS LINE * * */
  (function() {
  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
- dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+ dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
 
  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
  })();
  </script>
 
- <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
- <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+ <a href="https://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 {% endblock %}
 ```
 

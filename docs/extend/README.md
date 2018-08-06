@@ -6,7 +6,7 @@ Craft provides a complete toolkit for customizing its features and functionality
 
 Most customizations come in the form of a **module** or a **plugin**.
 
-As Yii’s documentation [puts it](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html), **modules** are _“self-contained software units that consist of models, views, controllers, and other supporting components”_. In other words, modules extend the system in various ways, without needing to change any of the core system code.
+As Yii’s documentation [puts it](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules), **modules** are _“self-contained software units that consist of models, views, controllers, and other supporting components”_. In other words, modules extend the system in various ways, without needing to change any of the core system code.
 
 Modules can be simple, serving a single purpose like providing a new [Dashboard widget type](widget-types.md), or they can be complex, introducing entirely new concepts to the system, like an e-commerce application.
 

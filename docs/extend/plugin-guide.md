@@ -215,7 +215,7 @@ If your plugin has a [Control Panel section](cp-section.md), you can also give i
 [application components]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [package name]: https://getcomposer.org/doc/04-schema.md#name
 [two hardest things]: https://twitter.com/codinghorror/status/506010907021828096
-[PSR-4]: http://www.php-fig.org/psr/psr-4/
+[PSR-4]: https://www.php-fig.org/psr/psr-4/
 [Yii alias]: https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases
 [component configs]: https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components
 [path]: https://getcomposer.org/doc/05-repositories.md#path

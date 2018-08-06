@@ -1,6 +1,6 @@
 # Filters
 
-In addition to the template filters that [Twig comes with](http://twig.sensiolabs.org/doc/filters/index.html), Craft provides a few of its own.
+In addition to the template filters that [Twig comes with](https://twig.sensiolabs.org/doc/filters/index.html), Craft provides a few of its own.
 
 ## `atom`
 
@@ -251,7 +251,7 @@ Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_e
 
 Returns a string formatted in “kebab-case”. 
 
-Tip: That’s a reference to [shish kebabs](http://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
+Tip: That’s a reference to [shish kebabs](https://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
 
 ```twig
 {{ "foo bar?"|kebab }}
@@ -268,7 +268,7 @@ Runs a string through <api:craft\helpers\Db::escapeParam>
 
 ## `markdown` or `md`
 
-Processes a string with [Markdown](http://daringfireball.net/projects/markdown/).
+Processes a string with [Markdown](https://daringfireball.net/projects/markdown/).
 
 ```twig
 {% set content %}
@@ -277,7 +277,7 @@ Processes a string with [Markdown](http://daringfireball.net/projects/markdown/)
 The only *real* computer keyboard ever made was famously
 the [Apple Extended Keyboard II] [1].
     
-    [1]: http://www.flickr.com/photos/gruber/sets/72157604797968156/
+    [1]: https://www.flickr.com/photos/gruber/sets/72157604797968156/
 {% endset %}
 
 {{ content|markdown }}

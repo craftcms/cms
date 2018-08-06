@@ -6,7 +6,7 @@
 
 Before you begin working on a module, you need to decide on a couple things:
 
-- **Namespace** – The root namespace that your module’s classes will live in. (See the [PSR-4](http://www.php-fig.org/psr/psr-4/) autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you (the developer), or the project.
+- **Namespace** – The root namespace that your module’s classes will live in. (See the [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you (the developer), or the project.
 - **Module ID** – Something that uniquely identifies your plugin within the your project. (Module IDs must begin with a letter and contain only lowercase letters, numbers, and dashes. They should be `kebab-cased`.)
 
 ::: warning
@@ -98,4 +98,4 @@ Replace `foo` with your module’s actual namespace.
 
 ## Further Reading
 
-To learn more about modules, see the [Yii documentation](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html).
+To learn more about modules, see the [Yii documentation](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules).

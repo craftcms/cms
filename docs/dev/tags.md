@@ -1,6 +1,6 @@
 # Tags
 
-In addition to the template tags that [Twig comes with](http://twig.sensiolabs.org/doc/tags/index.html), Craft provides a few of its own.
+In addition to the template tags that [Twig comes with](https://twig.sensiolabs.org/doc/tags/index.html), Craft provides a few of its own.
 
 - [cache](tags/cache.md)
 - [css](tags/css.md)
