@@ -678,7 +678,7 @@ class Sites extends Component
                 ->from(['{{%sites}}'])
                 ->max('[[sortOrder]]')) + 1;
         } else {
-            $uid = $site->uid;
+            $uid = Db::uidById('{{%sites}}', $site->id);
             $oldSiteRecord = $this->_getSiteRecord($uid);
             $oldGroupRecord = $this->_getGroupRecord($oldSiteRecord->groupId);
 
