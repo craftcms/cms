@@ -651,7 +651,7 @@ class Categories extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedCategoryGroup (ParseConfigEvent $event)
+    public function handleDeletedCategoryGroup(ParseConfigEvent $event)
     {
         $path = $event->configPath;
 
