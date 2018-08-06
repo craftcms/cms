@@ -25,6 +25,7 @@ use craft\models\MatrixBlockType;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
+use yii\base\UnknownPropertyException;
 
 /**
  * Matrix represents a Matrix field.
@@ -864,7 +865,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        $block->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (UnknownPropertyException $e) {
+                        // the field was probably deleted
+                    }
+                }
             }
 
             $sortOrder++;
