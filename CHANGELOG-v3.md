@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.19 - 2018-08-07
 
 ### Added
 - Added the `craft.query()` template function, for creating new database queries.
