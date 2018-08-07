@@ -203,8 +203,7 @@ class ProjectConfig extends Component
      * @param string $path
      * @param mixed $value
      * @param bool $updateSilently whether updates should be broadcast via updates. Defaults to true.
-     *
-     * @return bool
+     * @return void
      */
     public function save(string $path, $value, bool $updateSilently = false)
     {
