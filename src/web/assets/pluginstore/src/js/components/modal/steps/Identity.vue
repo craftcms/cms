@@ -115,7 +115,7 @@
                         })
                         .catch(() => {
                             this.loading = false
-                            this.$root.displayError("Couldn't save identity.")
+                            this.$root.displayError("Couldn’t save identity.")
                         })
                 } else {
                     this.loading = false
