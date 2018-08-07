@@ -40,7 +40,7 @@ Here’s the full list of config settings that Craft supports:
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -81,7 +81,7 @@ See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -100,7 +100,7 @@ Whether auto-generated URLs should have trailing slashes.
 
 Allowed types
 
-:   [array](http://www.php.net/language.types.array)
+:   [array](http://php.net/language.types.array)
 
 Default value
 
@@ -112,14 +112,14 @@ Defined by
 
 
 
-Any custom Yii [aliases](http://www.yiiframework.com/doc-2.0/guide-concept-aliases.html) that should be defined for every request.
+Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
 
 
 ### `allowSimilarTags`
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -138,7 +138,7 @@ Whether users should be allowed to create similarly-named tags.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -157,7 +157,7 @@ Whether Craft should allow system and plugin updates in the Control Panel, and p
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -176,7 +176,7 @@ Whether uppercase letters should be allowed in slugs.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)[]
+:   [string](http://php.net/language.types.string)[]
 
 Default value
 
@@ -195,7 +195,7 @@ The file extensions Craft should allow when a user is uploading files.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -214,7 +214,7 @@ Whether users should automatically be logged in after activating their account.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -247,7 +247,7 @@ This can also be set to `false` to disable database backups completely.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -266,7 +266,7 @@ Whether Craft should create a database backup before applying a new system updat
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -286,7 +286,7 @@ automatically if left blank.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -336,7 +336,7 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -355,7 +355,7 @@ Whether Craft should cache element queries that fall inside `{% cache %}` tags.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -398,7 +398,7 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -418,7 +418,7 @@ the front-end website.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -437,7 +437,7 @@ The name of CSRF token used for CSRF validation if [$enableCsrfProtection](https
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -458,7 +458,7 @@ for all subdomains, for example, you could set this to `'.domain.com'`.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -498,7 +498,7 @@ If set to `null`, the permission will be determined by the current environment.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [null](http://www.php.net/language.types.null)
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -519,7 +519,7 @@ If set to `null`, the permission will be determined by the current environment.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -539,7 +539,7 @@ The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (w
 
 Allowed types
 
-:   [array](http://www.php.net/language.types.array)
+:   [array](http://php.net/language.types.array)
 
 Default value
 
@@ -566,7 +566,7 @@ Options include:
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)[]
+:   [string](http://php.net/language.types.string)[]
 
 Default value
 
@@ -606,7 +606,7 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -635,7 +635,7 @@ This should be set to one of the following integers:
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -659,7 +659,7 @@ through your "forgot password" workflow.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -701,7 +701,7 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -723,7 +723,7 @@ degrade site performance.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -742,7 +742,7 @@ Whether to enable CSRF protection via hidden form inputs for all forms submitted
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -761,7 +761,7 @@ Whether to enable Craft's template `{% cache %}` tag on a global basis.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -783,7 +783,7 @@ If set to `'_'`, then your site’s 404 template would live at `templates/_404.h
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Default value
 
@@ -802,7 +802,7 @@ List of file extensions that will be merged into the [$allowedFileExtensions](ht
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [boolean](http://www.php.net/language.types.boolean)
+:   [string](http://php.net/language.types.string), [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -821,7 +821,7 @@ The string to use to separate words when uploading Assets. If set to `false`, sp
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -860,7 +860,7 @@ either `'imagick'` or `'gd'` here to override that behavior.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)[]
+:   [string](http://php.net/language.types.string)[]
 
 Default value
 
@@ -923,7 +923,7 @@ See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)[], [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
 
 Default value
 
@@ -946,7 +946,7 @@ If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.co
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -966,7 +966,7 @@ System Status setting in Settings → General.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1031,7 +1031,7 @@ See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -1051,7 +1051,7 @@ never cache them.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -1071,7 +1071,7 @@ locked.
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer)
+:   [integer](http://php.net/language.types.integer)
 
 Default value
 
@@ -1090,7 +1090,7 @@ The highest number Craft will tack onto a slug in order to make it unique before
 
 Allowed types
 
-:   [integer](http://www.php.net/language.types.integer), [string](http://www.php.net/language.types.string)
+:   [integer](http://php.net/language.types.integer), [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1111,7 +1111,7 @@ See [craft\helpers\ConfigHelper::sizeInBytes()](https://docs.craftcms.com/api/v3
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1140,7 +1140,7 @@ RewriteRule (.+) /index.php?p= [QSA,L]
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1160,7 +1160,7 @@ Whether Craft should optimize images for reduced file sizes without noticeably r
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1180,7 +1180,7 @@ particular page in a paginated list of pages.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1199,7 +1199,7 @@ The query string param that Craft will check when determining the request's path
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1221,7 +1221,7 @@ See http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes for a list o
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1309,7 +1309,7 @@ See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1331,7 +1331,7 @@ distortion in the image. This will only have effect if ImageMagick is in use.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1354,7 +1354,7 @@ This will only have effect if ImageMagick is in use.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1376,7 +1376,7 @@ an incorrect gamma value, which causes the images to become very dark. This will
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1398,7 +1398,7 @@ your email for further instructions. This can allow for username/email enumerati
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1491,7 +1491,7 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1510,7 +1510,7 @@ Whether Craft should require a matching user agent string when restoring a user 
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1530,7 +1530,7 @@ session.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1549,7 +1549,7 @@ The path to the root directory that should store published CP resources.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1568,7 +1568,7 @@ The URL to the root directory that should store published CP resources.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -1601,7 +1601,7 @@ This can also be set to `false` to disable database restores completely.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1620,7 +1620,7 @@ Whether Craft should rotate images according to their EXIF data on upload.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1644,7 +1644,7 @@ If disabled, an alternate queue runner *must* be set up separately.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1665,7 +1665,7 @@ This should definitely be enabled if you are accepting SVG uploads from untruste
 
 Allowed types
 
-:   [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
+:   [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -1688,7 +1688,7 @@ If not set, the default [yii\web\Request::$secureHeaders](https://www.yiiframewo
 
 Allowed types
 
-:   [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
+:   [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -1711,7 +1711,7 @@ If not set, the default [yii\web\Request::$secureProtocolHeaders](https://www.yi
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1734,7 +1734,7 @@ was encrypted with it will be inaccessible.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1795,7 +1795,7 @@ See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[]
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[]
 
 Default value
 
@@ -1816,7 +1816,7 @@ This can be set to a string, which will override the primary site’s name only,
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [string](http://www.php.net/language.types.string)[]
+:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[]
 
 Default value
 
@@ -1846,7 +1846,7 @@ The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1865,7 +1865,7 @@ The character(s) that should be used to separate words in slugs.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1886,7 +1886,7 @@ If it is set to `true`, the errors will still be logged to Craft’s log files.
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [array](http://www.php.net/language.types.array), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -1908,7 +1908,7 @@ By default the recipient name(s) will be “Test Recipient”, but you can custo
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string), [null](http://www.php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -1929,7 +1929,7 @@ This can be set to one of PHP’s [supported timezones](http://php.net/manual/en
 
 Allowed types
 
-:   [string](http://www.php.net/language.types.string)
+:   [string](http://php.net/language.types.string)
 
 Default value
 
@@ -1948,7 +1948,7 @@ The query string parameter name that tokens should be set to.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1967,7 +1967,7 @@ Whether GIF files should be cleansed/transformed.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -1987,7 +1987,7 @@ being run through `Craft::t()` or the `|translate` filter.
 
 Allowed types
 
-:   [array](http://www.php.net/language.types.array)
+:   [array](http://php.net/language.types.array)
 
 Default value
 
@@ -2010,7 +2010,7 @@ By default, all hosts are trusted.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -2029,7 +2029,7 @@ Whether Craft should use compressed JavaScript files whenever possible.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -2048,7 +2048,7 @@ Whether Craft should set users’ usernames to their email addresses, rather tha
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean), [null](http://www.php.net/language.types.null)
+:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Default value
 
@@ -2072,7 +2072,7 @@ locking and cache the results.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean)
+:   [boolean](http://php.net/language.types.boolean)
 
 Default value
 
@@ -2093,7 +2093,7 @@ Note that this setting only takes effect if [$omitScriptNameInUrls](https://docs
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean), [string](http://www.php.net/language.types.string)
+:   [boolean](http://php.net/language.types.boolean), [string](http://php.net/language.types.string)
 
 Default value
 
@@ -2116,7 +2116,7 @@ will never automatically set the flag.
 
 Allowed types
 
-:   [boolean](http://www.php.net/language.types.boolean), [string](http://www.php.net/language.types.string)
+:   [boolean](http://php.net/language.types.boolean), [string](http://php.net/language.types.string)
 
 Default value
 

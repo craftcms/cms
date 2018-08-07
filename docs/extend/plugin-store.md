@@ -1,6 +1,6 @@
 # Publishing to the Plugin Store
 
-If you want to make your plugin available in the in-app Plugin Store, and on [plugins.craftcms.com](http://plugins.craftcms.com), follow this guide.
+If you want to make your plugin available in the in-app Plugin Store, and on [plugins.craftcms.com](https://plugins.craftcms.com/), follow this guide.
 
 ## Choose a License
 
@@ -44,7 +44,7 @@ If you initially submit your plugin as free, you will not be able to change it t
 
 ### Submit for Approval
 
-Once you’re ready to submit the plugin, click the “Submit for approval” button. Once your plugin is approved, it will become visible on [plugins.craftcms.com](http://plugins.craftcms.com). It won’t necessarily be available in the in-app Plugin Store yet, though, unless your plugin already has at least one [release](#plugin-releases).
+Once you’re ready to submit the plugin, click the “Submit for approval” button. Once your plugin is approved, it will become visible on [plugins.craftcms.com](https://plugins.craftcms.com/). It won’t necessarily be available in the in-app Plugin Store yet, though, unless your plugin already has at least one [release](#plugin-releases).
 
 ::: tip
 You might want to register your plugin with [Packagist](https://packagist.org/) in addition to the Plugin Store, so that people can install and update your plugin from the command line. But Packagist isn’t a requirement for the Plugin Store.

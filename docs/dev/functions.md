@@ -1,6 +1,6 @@
 # Functions
 
-In addition to the template functions that [Twig comes with](http://twig.sensiolabs.org/doc/functions/index.html), Craft provides a few of its own:
+In addition to the template functions that [Twig comes with](https://twig.sensiolabs.org/doc/functions/index.html), Craft provides a few of its own:
 
 
 ## `alias( string )`

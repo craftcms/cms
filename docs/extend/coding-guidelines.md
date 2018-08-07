@@ -6,7 +6,7 @@ Do your best to follow these guidelines when writing code for Craft and Craft pl
 
 ## Code Style
 
-- Follow the [PSR-1](http://www.php-fig.org/psr/psr-1/) & [PSR-2](http://www.php-fig.org/psr/psr-2/) coding standards.
+- Follow the [PSR-1](https://www.php-fig.org/psr/psr-1/) & [PSR-2](https://www.php-fig.org/psr/psr-2/) coding standards.
 - Use the short array syntax (`['foo' => 'bar']`).
 - Don’t fret too much over line lengths. Focus on readability.
 - Chained method calls should each be placed on their own line, with the `->` operator at the beginning of each line.
@@ -64,7 +64,7 @@ The [Php Inspections (EA Extended)](https://plugins.jetbrains.com/idea/plugin/76
 
 ## Namespaces & Class Names
 
-- Follow the [PSR-4](http://www.php-fig.org/psr/psr-4/) specification, where a class’s file location can be inferred by its fully qualified name, given a known base namespace mapped to a base path.
+- Follow the [PSR-4](https://www.php-fig.org/psr/psr-4/) specification, where a class’s file location can be inferred by its fully qualified name, given a known base namespace mapped to a base path.
 - Namespaces should be all-lowercase.
 - Class names should be `StudlyCase`.
 - Only first party code should use the `craft\` and `pixelandtonic\` namespace roots. Third party plugins should use a namespace root that refers to the vendor name and plugin name (e.g. `acme\myplugin\`).

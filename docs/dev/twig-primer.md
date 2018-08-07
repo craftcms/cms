@@ -4,7 +4,7 @@ Here’s a rundown of the core concepts in Twig, the templating engine used by C
 
 This is only meant as a primer, not a comprehensive documentation of everything Twig can do. 
 
-To learn more, visit the Continued Reading section at the bottom of this page or refer directly to the [official Twig documentation](http://twig.sensiolabs.org/doc/templates.html) .
+To learn more, visit the Continued Reading section at the bottom of this page or refer directly to the [official Twig documentation](https://twig.sensiolabs.org/doc/templates.html) .
 
 ## Three Types of Twig Tags
 
@@ -63,7 +63,7 @@ These are correct:
 
 Resources:
 
-* [Tags that come with Twig](http://twig.sensiolabs.org/doc/tags/index.html)
+* [Tags that come with Twig](https://twig.sensiolabs.org/doc/tags/index.html)
 * [Craft’s custom tags](tags.md)
 
 
@@ -113,7 +113,7 @@ Some filters accept parameters::
 
 Resources:
 
-* [Filters that come with Twig](http://twig.sensiolabs.org/doc/filters/index.html)
+* [Filters that come with Twig](https://twig.sensiolabs.org/doc/filters/index.html)
 * [Craft’s custom filters](filters.md)
 
 
@@ -134,7 +134,7 @@ Twig and Craft provide several functions that you can use within your template t
 
 Resources:
 
-* [Functions that come with Twig](http://twig.sensiolabs.org/doc/functions/index.html)
+* [Functions that come with Twig](https://twig.sensiolabs.org/doc/functions/index.html)
 * [Craft’s custom functions](functions.md)
 
 
@@ -142,7 +142,7 @@ Resources:
 
 There are several learning resources available online for learning Twig:
 
-* [Twig for Template Designers](http://twig.sensiolabs.org/doc/templates.html) documents all of Twig’s features in detail. It can be overly technical at times, but we still recommend you read through it.
+* [Twig for Template Designers](https://twig.sensiolabs.org/doc/templates.html) documents all of Twig’s features in detail. It can be overly technical at times, but we still recommend you read through it.
 * [Twig Templates in Craft](https://mijingo.com/products/screencasts/twig-templates-in-craft/) is a video course by Mijingo that aims to get you comfortable with using Twig in Craft.
-* [Straight up Craft](http://straightupcraft.com/twig-templating) has some great articles on how to use Twig within Craft.
+* [Straight up Craft](https://straightupcraft.com/twig-templating) has some great articles on how to use Twig within Craft.
 * [Twig for Designers](https://github.com/brandonkelly/TwigForDesigners) is an in-progress eBook that aims to explain how Twig works to non-developers.

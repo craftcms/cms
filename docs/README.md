@@ -8,6 +8,6 @@ We made Craft for bespoke websites and mobile applications, where strong control
 
 ## General Tech Specs
 
-Craft is a self-hosted PHP application built on [Yii](http://www.yiiframework.com/). You don’t need to know PHP or Yii to use it unless you intend to write your own plugins. 
+Craft is a self-hosted PHP application built on [Yii](https://www.yiiframework.com/). You don’t need to know PHP or Yii to use it unless you intend to write your own plugins. 
 
 For more information on the technical requirements of Craft, [see the Requirements section](requirements.md).

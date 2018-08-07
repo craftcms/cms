@@ -4,7 +4,7 @@ Craft では、テンプレートを利用してサイトの HTML 出力を定�
 
 テンプレートは craft/templates フォルダ内に存在するファイルです。テンプレートの構造は、完全にあなた次第です。 – テンプレートは、フォルダのルート、サブディレクトリ内、またはサブディレクトリのサブディレクトリ内（さらに続く）などに置くことができます。サイトに必要なものは、何でも機能します。
 
-Craft はテンプレートを解析するために [Twig](http://twig.sensiolabs.org/) を利用します。Twig は、エレガントで、パワフルで、 かつ、とても高速です。Twig をはじめて使う方は、その構文に慣れ親しむために[ドキュメント](twig-primer.md)へ目を通してください。
+Craft はテンプレートを解析するために [Twig](https://twig.sensiolabs.org/) を利用します。Twig は、エレガントで、パワフルで、 かつ、とても高速です。Twig をはじめて使う方は、その構文に慣れ親しむために[ドキュメント](twig-primer.md)へ目を通してください。
 
 テンプレート内で PHP コードは使用できません。Craft や Twig でそのまますぐに使うことのできない何かが必要になった場合、新しい[Twig 拡張](https://twig.symfony.com/doc/2.x/advanced.html#creating-an-extension)を提供する[プラグイン](plugin-intro.md)を作成することができます。
 
@@ -14,7 +14,7 @@ Craft はテンプレートを解析するために [Twig](http://twig.sensiolab
 
 * [エントリ](sections-and-entries.md)や[カテゴリ](categories.md)で読み込む、テンプレートの URL を選択するとき
 * テンプレートを[ルート](routing.md#dynamic-routes)に割り当てるとき
-* Within [include](http://twig.sensiolabs.org/doc/tags/include.html), [extends](http://twig.sensiolabs.org/doc/tags/extends.html), and [embed](http://twig.sensiolabs.org/doc/tags/embed.html) template tags
+* Within [include](https://twig.sensiolabs.org/doc/tags/include.html), [extends](https://twig.sensiolabs.org/doc/tags/extends.html), and [embed](https://twig.sensiolabs.org/doc/tags/embed.html) template tags
 
 Craft には、これらのケース（ `craft/templates` ディレクトリからそのテンプレートファイルまでの相対的な Unix スタイルのファイルシステムのパス）それぞれに当てはまる、標準的なテンプレートパスのフォーマットがあります。
 

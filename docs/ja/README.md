@@ -8,7 +8,7 @@ Craft は開発者とコンテンツ管理者がお互いに楽しい生活を�
 
 ## 技術仕様
 
-Craft は [Yii](http://www.yiiframework.com/) をベースとするセルフホスティングの PHP アプリケーションです。独自のプラグインを作成するつもりがなければ、PHP や Yii の知識は必要ありません。
+Craft は [Yii](https://www.yiiframework.com/) をベースとするセルフホスティングの PHP アプリケーションです。独自のプラグインを作成するつもりがなければ、PHP や Yii の知識は必要ありません。
 
 Craft の技術要件に関するより詳しい情報は[必須要件のセクションを見てください](requirements.md)。
 

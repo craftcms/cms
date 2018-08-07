@@ -1,6 +1,6 @@
 # フィルタ
 
-[Twig に付随する](http://twig.sensiolabs.org/doc/filters/index.html)テンプレートフィルタに加えて、Craft がいくつか独自のものを提供します。
+[Twig に付随する](https://twig.sensiolabs.org/doc/filters/index.html)テンプレートフィルタに加えて、Craft がいくつか独自のものを提供します。
 
 ## `atom`
 
@@ -200,7 +200,7 @@ Twig の [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html
 
 「kebab-case」でフォーマットされた文字列を返します。
 
-ヒント：類推できない方のために、[シシカバブ](http://en.wikipedia.org/wiki/Kebab#Shish)の参照です。
+ヒント：類推できない方のために、[シシカバブ](https://en.wikipedia.org/wiki/Kebab#Shish)の参照です。
 
 ```twig
 {{ "foo bar?"|kebab }}
@@ -217,7 +217,7 @@ Twig の [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html
 
 ## `markdown` または `md`
 
-[Markdown](http://daringfireball.net/projects/markdown/) で文字列を処理します。
+[Markdown](https://daringfireball.net/projects/markdown/) で文字列を処理します。
 
 ```twig
 {% set content %}
@@ -226,7 +226,7 @@ Twig の [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html
 The only *real* computer keyboard ever made was famously
 the [Apple Extended Keyboard II] [1].
  
- [1]: http://www.flickr.com/photos/gruber/sets/72157604797968156/
+ [1]: https://www.flickr.com/photos/gruber/sets/72157604797968156/
 {% endset %}
 
 {{ content|markdown }}
