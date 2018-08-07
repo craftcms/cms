@@ -15,6 +15,7 @@
 - Fixed the appearance of checkboxes in IE11 on element index pages. ([#3177](https://github.com/craftcms/cms/issues/3177))
 - Fixed a bug where `composer.json` could end up with a bunch of extra dependencies in the `require` object after a failed update or plugin installation.
 - Fixed an error that could occur when viewing an entry revision, if it had a Matrix field and one of the sub-fields within the Matrix field had been deleted. ([#3183](https://github.com/craftcms/cms/issues/3183))
+- Fixed a bug where thumbnails weren’t loading in relational fields when viewing an entry version.
 
 ## 3.0.18 - 2018-07-31
 
