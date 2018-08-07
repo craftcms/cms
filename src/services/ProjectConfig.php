@@ -383,10 +383,10 @@ class ProjectConfig extends Component
         if ($snapshotData && !$configData) {
             $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, $event);
         } else {
-            if (!$snapshotData) {
+            if (!$snapshotData && $configData) {
                 $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, $event);
                 // Might generate false positives, but is pretty fast.
-            } else if (Json::encode($snapshotData) !== Json::encode($configData)) {
+            } else if (null !== $configData && null !== $snapshotData && Json::encode($snapshotData) !== Json::encode($configData)) {
                 $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, $event);
             } else {
                 return;
