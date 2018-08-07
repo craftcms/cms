@@ -45,6 +45,11 @@ class Structures extends Component
     // =========================================================================
 
     /**
+     * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
+     */
+    public $mutexTimeout = 0;
+
+    /**
      * @var
      */
     private $_rootElementRecordsByStructureId;
@@ -348,7 +353,7 @@ class Structures extends Component
         // Get a lock or bust
         $lockName = 'structure:' . $structureId;
         $mutex = Craft::$app->getMutex();
-        if (!$mutex->acquire($lockName)) {
+        if (!$mutex->acquire($lockName, $this->mutexTimeout)) {
             throw new Exception('Unable to acquire a lock for the structure ' . $structureId);
         }
 

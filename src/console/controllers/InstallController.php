@@ -13,6 +13,7 @@ use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
 use yii\console\Controller;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
@@ -82,12 +83,14 @@ class InstallController extends Controller
 
     /**
      * Runs the install migration
+     *
+     * @return int
      */
-    public function actionCraft()
+    public function actionCraft(): int
     {
         if (Craft::$app->getIsInstalled()) {
             $this->stdout('Craft is already installed!' . PHP_EOL, Console::FG_YELLOW);
-            return;
+            return ExitCode::OK;
         }
 
         // Validate the arguments
@@ -112,8 +115,8 @@ class InstallController extends Controller
         }
 
         if (!empty($errors)) {
-            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL);
-            return;
+            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
         }
 
         $username = $this->username ?: $this->prompt('Username:', ['validator' => [$this, 'validateUsername'], 'default' => 'admin']);
@@ -145,8 +148,8 @@ class InstallController extends Controller
         $result = $migrator->migrateUp($migration);
 
         if ($result === false) {
-            $this->stdout('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return;
+            $this->stderr('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
@@ -156,14 +159,17 @@ class InstallController extends Controller
         foreach ($migrator->getNewMigrations() as $name) {
             $migrator->addMigrationHistory($name);
         }
+
+        return ExitCode::OK;
     }
 
     /**
      * Installs a plugin
      *
      * @param string $handle
+     * @return int
      */
-    public function actionPlugin(string $handle)
+    public function actionPlugin(string $handle): int
     {
         $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
@@ -171,12 +177,13 @@ class InstallController extends Controller
         try {
             Craft::$app->plugins->installPlugin($handle);
         } catch (\Throwable $e) {
-            $this->stdout("*** failed to install {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return;
+            $this->stderr("*** failed to install {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
         $this->stdout("*** installed {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 
     /**

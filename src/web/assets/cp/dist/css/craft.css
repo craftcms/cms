@@ -861,7 +861,7 @@ table.editable tbody .datewrapper, table.editable tbody .timewrapper { width: 10
 body.ltr table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.ltr table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { left: 10px; }
 body.rtl table.editable tbody .datewrapper .text:placeholder-shown + div[data-icon], body.rtl table.editable tbody .timewrapper .text:placeholder-shown + div[data-icon] { right: 10px; }
 table.editable + .btn.add { display: block; border-radius: 0 0 2px 2px; border: 1px dashed rgba(0, 0, 20, 0.4); border-top-width: 0; background: none; -webkit-box-shadow: none; box-shadow: none; }
-table.editable + .btn.add:focus { border-style: solid; }
+table.editable + .btn.add:focus { border-style: solid; border-color: #0D99F2; }
 
 .border-box + .buttons, .shadow-box + .buttons { margin-top: 7px; }
 
@@ -2194,5 +2194,9 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 .menu.dark li a { color: #fff; }
 
 .menu.dark ul li a:not(.sel):not(.disabled):hover { color: #444; }
+
+_:-ms-lang(x), .elements .tableview td.checkbox-cell input.checkbox + label, .elements .tableview td.checkbox-cell div.checkbox { top: 16px; }
+
+_:-ms-lang(x), input.checkbox + label:empty, div:empty.checkbox { display: block; }
 
 /*# sourceMappingURL=craft.css.map */

@@ -179,60 +179,64 @@ class Api extends Component
     }
 
     /**
-     * Returns optimized Composer requirements based on what’s currently installed,
-     * and the package requirements that should be installed.
+     * Returns a list of package names that Composer should be allowed to update when installing/updating packages.
      *
      * @param array $install Package name/version pairs to be installed
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      * @throws Exception if composer.json can't be located
      */
-    public function getOptimizedComposerRequirements(array $install): array
+    public function getComposerWhitelist(array $install): array
     {
         $composerService = Craft::$app->getComposer();
 
-        // Get the currently-installed packages, if there's a composer.lock
+        // If there's no composer.lock or we can't decode it, then we're done
+        $lockPath = $composerService->getLockPath();
+        if ($lockPath === null) {
+            return array_keys($install);
+        }
+        $lockData = Json::decode(file_get_contents($lockPath));
+        if (empty($lockData) || empty($lockData['packages'])) {
+            return array_keys($install);
+        }
+
         $installed = [];
-        if (($lockPath = $composerService->getLockPath()) !== null) {
-            $lockData = Json::decode(file_get_contents($lockPath));
-            if (!empty($lockData['packages'])) {
-                // Get the installed package versions
-                $hashes = [];
-                foreach ($lockData['packages'] as $package) {
-                    $installed[$package['name']] = $package['version'];
 
-                    // Should we be including the hash as well?
-                    if (strpos($package['version'], 'dev-') === 0) {
-                        $hashes[$package['name']] = $package['dist']['reference'] ?? $package['source']['reference'];
-                    }
-                }
+        // Get the installed package versions
+        $hashes = [];
+        foreach ($lockData['packages'] as $package) {
+            $installed[$package['name']] = $package['version'];
 
-                // Check for aliases
-                $aliases = [];
-                if (!empty($lockData['aliases'])) {
-                    $versionParser = new VersionParser();
-                    foreach ($lockData['aliases'] as $alias) {
-                        // Make sure the package is installed, we haven't already assigned an alias to this package,
-                        // and the alias is for the same version as what's installed
-                        if (
-                            !isset($aliases[$alias['package']]) &&
-                            isset($installed[$alias['package']]) &&
-                            $alias['version'] === $versionParser->normalize($installed[$alias['package']])
-                        ) {
-                            $aliases[$alias['package']] = $alias['alias'];
-                        }
-                    }
-                }
+            // Should we be including the hash as well?
+            if (strpos($package['version'], 'dev-') === 0) {
+                $hashes[$package['name']] = $package['dist']['reference'] ?? $package['source']['reference'];
+            }
+        }
 
-                // Append the hashes and aliases
-                foreach ($hashes as $name => $hash) {
-                    $installed[$name] .= '#' . $hash;
-                }
-
-                foreach ($aliases as $name => $alias) {
-                    $installed[$name] .= ' as ' . $alias;
+        // Check for aliases
+        $aliases = [];
+        if (!empty($lockData['aliases'])) {
+            $versionParser = new VersionParser();
+            foreach ($lockData['aliases'] as $alias) {
+                // Make sure the package is installed, we haven't already assigned an alias to this package,
+                // and the alias is for the same version as what's installed
+                if (
+                    !isset($aliases[$alias['package']]) &&
+                    isset($installed[$alias['package']]) &&
+                    $alias['version'] === $versionParser->normalize($installed[$alias['package']])
+                ) {
+                    $aliases[$alias['package']] = $alias['alias'];
                 }
             }
+        }
+
+        // Append the hashes and aliases
+        foreach ($hashes as $name => $hash) {
+            $installed[$name] .= '#' . $hash;
+        }
+
+        foreach ($aliases as $name => $alias) {
+            $installed[$name] .= ' as ' . $alias;
         }
 
         $jsonPath = Craft::$app->getComposer()->getJsonPath();
@@ -244,17 +248,14 @@ class Api extends Component
 
         $requestBody = [
             'require' => $composerConfig['require'],
+            'installed' => $installed,
             'platform' => $this->platformVersions(true),
             'install' => $install,
             'minimum-stability' => $minStability,
             'prefer-stable' => (bool)($composerConfig['prefer-stable'] ?? false),
         ];
 
-        if (!empty($installed)) {
-            $requestBody['installed'] = $installed;
-        }
-
-        $response = $this->request('POST', 'optimize-composer-reqs', [
+        $response = $this->request('POST', 'composer-whitelist', [
             RequestOptions::BODY => Json::encode($requestBody),
         ]);
 
