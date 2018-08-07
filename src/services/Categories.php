@@ -668,39 +668,41 @@ class Categories extends Component
 
             $categoryGroup = $groupRecord = $this->_getCategoryGroupRecord($uid);
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select(['fieldLayoutId'])
-                    ->from(['{{%categorygroups}}'])
-                    ->where(['id' => $categoryGroup->id])
-                    ->scalar();
+            if ($categoryGroup->id) {
+                $transaction = Craft::$app->getDb()->beginTransaction();
+                try {
+                    // Delete the field layout
+                    $fieldLayoutId = (new Query())
+                        ->select(['fieldLayoutId'])
+                        ->from(['{{%categorygroups}}'])
+                        ->where(['id' => $categoryGroup->id])
+                        ->scalar();
 
-                if ($fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                    if ($fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                    }
+
+                    // Delete the tags
+                    $categories = Category::find()
+                        ->status(null)
+                        ->enabledForSite(false)
+                        ->groupId($categoryGroup->id)
+                        ->all();
+
+                    foreach ($categories as $category) {
+                        Craft::$app->getElements()->deleteElement($category);
+                    }
+
+                    Craft::$app->getDb()->createCommand()
+                        ->delete('{{%categorygroups}}', ['id' => $categoryGroup->id])
+                        ->execute();
+
+                    $transaction->commit();
+                } catch (\Throwable $e) {
+                    $transaction->rollBack();
+
+                    throw $e;
                 }
-
-                // Delete the tags
-                $categories = Category::find()
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->groupId($categoryGroup->id)
-                    ->all();
-
-                foreach ($categories as $category) {
-                    Craft::$app->getElements()->deleteElement($category);
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%categorygroups}}', ['id' => $categoryGroup->id])
-                    ->execute();
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
         }
     }
