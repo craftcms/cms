@@ -258,6 +258,10 @@ class UserGroups extends Component
 
         // Does it match a user group?
         if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            if (Craft::$app->getEdition() !== Craft::Pro) {
+                Craft::$app->setEdition(Craft::Pro);
+            }
+
             $uid = $matches[1];
             $data = $event->configData;
 
