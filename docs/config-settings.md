@@ -197,7 +197,7 @@ Overrides the “System Status” setting in Settings → General if set to `tru
 
 **Since**: Craft 2.3
 
-A callable or function which will be used to dump context information. This setting will get passed directly to [CLogFilter::$dumper](http://www.yiiframework.com/doc/api/1.1/CLogFilter#dumper-detail).
+A callable or function which will be used to dump context information. This setting will get passed directly to [CLogFilter::$dumper](https://www.yiiframework.com/doc/api/1.1/CLogFilter#dumper-detail).
 
 ```php
 'logDumpMethod' => 'print_r',
@@ -222,7 +222,7 @@ When set to `'auto'`, Craft will check the default session location to see if it
 ```
 
 ::: tip
-If you are saving PHP session files to a custom location using memcache (or something similar), you still need to [tell PHP about it](https://secure.php.net/manual/en/session.configuration.php#ini.session.save-handler) from Craft’s `index.php` in your public HTML folder.
+If you are saving PHP session files to a custom location using memcache (or something similar), you still need to [tell PHP about it](http://php.net/manual/en/session.configuration.php#ini.session.save-handler) from Craft’s `index.php` in your public HTML folder.
 
 ```php
 ini_set('session.save_handler', 'memcached');
@@ -231,7 +231,7 @@ ini_set('session.save_handler', 'memcached');
 
 ### `phpMaxMemoryLimit`
 
-**Accepts**: An integer setting the number of bytes, or a string set to a valid [PHP shorthand byte value](http://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes)
+**Accepts**: An integer setting the number of bytes, or a string set to a valid [PHP shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes)
 
 **Default**: `'256M'` (256 MB)
 
@@ -426,7 +426,7 @@ The name that Craft should give CSRF cookies, and which [getCsrfInput()](templat
 
 ### `defaultFilePermissions`
 
-**Accepts**: A valid [PHP file permission mode](http://www.php.net/manual/en/function.chmod.php)
+**Accepts**: A valid [PHP file permission mode](http://php.net/manual/en/function.chmod.php)
 
 **Default**: `0664`
 
@@ -440,7 +440,7 @@ The permissions Craft will use when creating a new file on the file system.
 
 ### `defaultFolderPermissions`
 
-**Accepts**: A valid [PHP file permission mode](http://www.php.net/manual/en/function.chmod.php)
+**Accepts**: A valid [PHP file permission mode](http://php.net/manual/en/function.chmod.php)
 
 **Default**: `0775`
 
@@ -454,7 +454,7 @@ The default permissions Craft will use when creating a new folder on the file sy
 
 ### `defaultTokenDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'P1D'` (one day)
 
@@ -1001,7 +1001,7 @@ The time taken to compute the hash doubles for every increment by one for this v
 
 ### `cooldownDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'PT5M'` (five minutes)
 
@@ -1045,7 +1045,7 @@ When set to `true`, public user registration forms will no longer need to includ
 
 ### `elevatedSessionDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php) or `false`
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php) or `false`
 
 **Default**: `'PT5M'` (Five minutes)
 
@@ -1057,7 +1057,7 @@ Elevated Sessions functionality can be disabled entirely by setting this to `fal
 
 ### `invalidLoginWindowDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'PT1H'` (one hour)
 
@@ -1159,7 +1159,7 @@ This setting will also come into effect if the user visits the site’s Login pa
 
 ### `purgePendingUsersDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php), or `false` to disable the feature
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php), or `false` to disable the feature
 
 **Default**: `false`
 
@@ -1173,7 +1173,7 @@ The amount of time to wait before Craft purges pending users from the system tha
 
 ### `rememberUsernameDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'P1Y'` (1 year)
 
@@ -1189,7 +1189,7 @@ Set to `false` to disable this feature altogether.
 
 ### `rememberedUserSessionDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'P2W'` (two weeks)
 
@@ -1295,7 +1295,7 @@ Removes “Username” fields in the control panel, and automatically saves user
 
 ### `userSessionDuration`
 
-**Accepts**: `false` or a string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: `false` or a string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'PT1H'` (one hour)
 
@@ -1307,7 +1307,7 @@ Set to `false` if you want users to stay logged in as long as their browser is o
 
 ### `verificationCodeDuration`
 
-**Accepts**: A string set to any valid [PHP interval specification](http://www.php.net/manual/en/dateinterval.construct.php)
+**Accepts**: A string set to any valid [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php)
 
 **Default**: `'P1D'` (one day)
 

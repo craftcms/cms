@@ -4,7 +4,7 @@ Craft provides two ways of interacting with the database: The [Query Builder](#q
 
 ## Query Builder
 
-Craft’s query builder is an extension of Yii’s. If you haven’t worked with Yii before, take a few minutes to read through their [Query Builder](http://www.yiiframework.com/doc/guide/1.1/en/database.query-builder) documentation, so you can get a grasp of how it works and what it’s capable of.
+Craft’s query builder is an extension of Yii’s. If you haven’t worked with Yii before, take a few minutes to read through their [Query Builder](https://www.yiiframework.com/doc/guide/1.1/en/database.query-builder) documentation, so you can get a grasp of how it works and what it’s capable of.
 
 In Craft, when you type:
 
@@ -12,7 +12,7 @@ In Craft, when you type:
 $query = craft()->db->createCommand();
 ```
 
-you’re going to get a “DbCommand” object back, which extends Yii’s [CDbCommand](http://www.yiiframework.com/doc/api/1.1/CDbCommand) class with a few enhancements. Let’s go over what those are.
+you’re going to get a “DbCommand” object back, which extends Yii’s [CDbCommand](https://www.yiiframework.com/doc/api/1.1/CDbCommand) class with a few enhancements. Let’s go over what those are.
 
 ### General DbCommand Enhancements
 
@@ -115,7 +115,7 @@ Adds a new column after another one.
 
 Active Record is Craft/Yii’s ORM feature. It allows you to define [models](models.md) that represent rows of data in a database table, and use those models to fetch, update, and delete the corresponding database rows.
 
-Craft calls these specialized models “records”. The class your records will extend is BaseRecord, which itself extends [CActiveRecord](http://www.yiiframework.com/doc/api/1.1/CActiveRecord).
+Craft calls these specialized models “records”. The class your records will extend is BaseRecord, which itself extends [CActiveRecord](https://www.yiiframework.com/doc/api/1.1/CActiveRecord).
 
 While Yii expects your database schema to already be established by the time the application is running, Craft’s BaseRecord is actually capable of _creating_ your database tables when your plugin is installed.
 
@@ -177,7 +177,7 @@ class CocktailRecipes_IngredientRecord extends BaseRecord
 }
 ```
 
-**`defineRelations()`** works basically the same as <api:CActiveRecord::relations()> (see Yii’s [Relational Active Record](http://www.yiiframework.com/doc/guide/1.1/en/database.arr) documentation), with two differences:
+**`defineRelations()`** works basically the same as <api:CActiveRecord::relations()> (see Yii’s [Relational Active Record](https://www.yiiframework.com/doc/guide/1.1/en/database.arr) documentation), with two differences:
 
 - You don’t need to specify the namespace of the related record class in the second argument (defaults to the Craft namespace)
 - You don’t need to specify the foreign key column name in `BELONGS_TO` relations (defaults to the relation name appended with “`Id`”)
@@ -206,7 +206,7 @@ class CocktailRecipes_IngredientRecord extends BaseRecord
 
 ### Further Reading
 
-BaseRecord is an instance of Yii’s [CActiveRecord](http://www.yiiframework.com/doc/api/1.1/CActiveRecord) class, so everything CActiveRecord can do, BaseRecord can do as well.
+BaseRecord is an instance of Yii’s [CActiveRecord](https://www.yiiframework.com/doc/api/1.1/CActiveRecord) class, so everything CActiveRecord can do, BaseRecord can do as well.
 
 ::: tip
 Records’ ability to modify the database means that they should never be used to transport data throughout the system. Their instances should be contained to [services](services.md) only, so that services remain the one and only place where system state changes ever occur.

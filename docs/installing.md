@@ -10,7 +10,7 @@ Before installing Craft, make sure that you’ve got everything you need:
 
 * The latest version of Craft from [craftcms.com](https://craftcms.com).
 * A web host meets Craft’s [minimum requirements](requirements.md).
-* An FTP client (we recommend [Transmit](http://panic.com/transmit/)).
+* An FTP client (we recommend [Transmit](https://panic.com/transmit/)).
 * MySQL access, either via a web-based tool like phpMyAdmin, or a standalone app like [Sequel Pro](http://www.sequelpro.com/).
 * Your favorite text editor
 * Your good looks
@@ -164,27 +164,27 @@ Guide by Matt Collins
 
 [Cloudways](https://www.cloudways.com/en/) installation guide by Ahmed Khan
 
-#### [Installing a fresh Craft CMS Installation on Laravel Forge](http://mattstauffer.co/blog/installing-a-fresh-craft-cms-installation-on-laravel-forge)
+#### [Installing a fresh Craft CMS Installation on Laravel Forge](https://mattstauffer.com/blog/installing-a-fresh-craft-cms-installation-on-laravel-forge/)
 
 Guide by Matt Stauffer
 
 #### [One-click Deploy: Craft CMS to DigitalOcean](http://blog.deploybot.com/blog/deploying-craft-cms-to-a-digitalocean-with-deploybot)
 
-[DeployBot](http://deploybot.com/) deployment guide by Eugene Fedorenko, [Wildbit](http://wildbit.com/)
+[DeployBot](http://deploybot.com/) deployment guide by Eugene Fedorenko, [Wildbit](https://wildbit.com/)
 
 #### [Craft on Heroku](https://medium.com/@aj1215/craft-cms-on-heroku-79b991665b0b)
 
 Guide by AJ Griem
 
-#### [Install Craft CMS 2 on fortrabbit](http://help.fortrabbit.com/install-craft-2)
+#### [Install Craft CMS 2 on fortrabbit](https://help.fortrabbit.com/install-craft-2)
 
-[fortrabbit](http://www.fortrabbit.com/) installation guide
+[fortrabbit](https://www.fortrabbit.com/) installation guide
 
 ### Utilities
 
 #### [Craft Deploy](https://github.com/Bluegg/craft-deploy/)
 
-Capistrano deployment utility by [Bluegg](http://bluegg.co.uk/)
+Capistrano deployment utility by [Bluegg](https://bluegg.co.uk/)
 
 #### [Craft Command Line Installer](https://github.com/themccallister/craft)
 

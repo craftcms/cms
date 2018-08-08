@@ -88,4 +88,4 @@ else
 
 ## Further Reading
 
-BaseModel is an instance of Yii’s [CModel](http://www.yiiframework.com/doc/api/1.1/CModel) class, so everything CModel can do, BaseModel can do as well.
+BaseModel is an instance of Yii’s [CModel](https://www.yiiframework.com/doc/api/1.1/CModel) class, so everything CModel can do, BaseModel can do as well.

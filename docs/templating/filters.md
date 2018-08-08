@@ -1,6 +1,6 @@
 # Filters
 
-On top of the template filters that [Twig comes with](http://twig.sensiolabs.org/doc/filters/index.html), Craft provides a few of its own.
+On top of the template filters that [Twig comes with](https://twig.symfony.com/doc/filters/index.html), Craft provides a few of its own.
 
 
 ## `camel`
@@ -120,7 +120,7 @@ Returns an array containing only the values that are also in a passed-in array.
 Returns a string formatted in “kebab-case”.
 
 ::: tip
-That’s a reference to [shish kebabs](http://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
+That’s a reference to [shish kebabs](https://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
 :::
 
 ```twig
@@ -134,7 +134,7 @@ Lowercases the first character of a string.
 
 ## `markdown` or `md`
 
-Processes a string with [Markdown](http://daringfireball.net/projects/markdown/).
+Processes a string with [Markdown](https://daringfireball.net/projects/markdown/).
 
 ```twig
 {% set content %}
@@ -143,7 +143,7 @@ Processes a string with [Markdown](http://daringfireball.net/projects/markdown/)
 The only *real* computer keyboard ever made was famously
 the [Apple Extended Keyboard II] [1].
 
-	[1]: http://www.flickr.com/photos/gruber/sets/72157604797968156/
+	[1]: https://www.flickr.com/photos/gruber/sets/72157604797968156/
 {% endset %}
 
 {{ content|markdown }}

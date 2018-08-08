@@ -45,7 +45,7 @@ You never place tags within other tags in Twig.
 
 Resources:
 
-* [Tags that come with Twig](http://twig.sensiolabs.org/doc/tags/index.html)
+* [Tags that come with Twig](https://twig.symfony.com/doc/tags/index.html)
 * [Craft’s custom tags](templating/tags.md)
 
 
@@ -83,7 +83,7 @@ Some filters accept parameters:
 
 Resources:
 
-* [Filters that come with Twig](http://twig.sensiolabs.org/doc/filters/index.html)
+* [Filters that come with Twig](https://twig.symfony.com/doc/filters/index.html)
 * [Craft’s custom filters](templating/filters.md)
 
 
@@ -104,7 +104,7 @@ Twig and Craft provide several functions that can be used within your template t
 
 Resources:
 
-* [Functions that come with Twig](http://twig.sensiolabs.org/doc/functions/index.html)
+* [Functions that come with Twig](https://twig.symfony.com/doc/functions/index.html)
 * [Craft’s custom functions](templating/functions.md)
 
 
@@ -112,6 +112,6 @@ Resources:
 
 There are several learning resources available online for learning Twig:
 
-* [Twig for Template Designers](http://twig.sensiolabs.org/doc/templates.html) documents all of Twig’s features in detail. It can be overly technical at times, but we still recommend you read through it.
-* [Straight up Craft](http://straightupcraft.com/twig-templating) has some great articles on how to use Twig within Craft.
+* [Twig for Template Designers](https://twig.symfony.com/doc/templates.html) documents all of Twig’s features in detail. It can be overly technical at times, but we still recommend you read through it.
+* [Straight up Craft](https://straightupcraft.com/twig-templating) has some great articles on how to use Twig within Craft.
 * [Twig for Designers](https://github.com/brandonkelly/TwigForDesigners) is an in-progress eBook that aims to explain how Twig works to non-developers.

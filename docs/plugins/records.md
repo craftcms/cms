@@ -68,7 +68,7 @@ class CocktailRecipes_IngredientRecord extends BaseRecord
 }
 ```
 
-**`defineRelations()`** works basically the same as [CActiveRecord’s](http://www.yiiframework.com/doc/api/1.1/CActiveRecord) [relations()](http://www.yiiframework.com/doc/api/1.1/CActiveRecord#relations-detail) method (see [Relational Active Record](http://www.yiiframework.com/doc/guide/1.1/en/database.arr) from the Yii docs), with two differences:
+**`defineRelations()`** works basically the same as [CActiveRecord’s](https://www.yiiframework.com/doc/api/1.1/CActiveRecord) [relations()](https://www.yiiframework.com/doc/api/1.1/CActiveRecord#relations-detail) method (see [Relational Active Record](https://www.yiiframework.com/doc/guide/1.1/en/database.arr) from the Yii docs), with two differences:
 
 - You don’t need to specify the namespace of the related record class in the second argument (defaults to the Craft namespace)
 - You don’t need to specify the foreign key column name in BELONGS_TO relations (defaults to the relation name appended with “Id”)
@@ -97,4 +97,4 @@ class CocktailRecipes_IngredientRecord extends BaseRecord
 
 ## Further Reading
 
-BaseRecord is an instance of Yii’s [CActiveRecord](http://www.yiiframework.com/doc/api/1.1/CActiveRecord) class, so everything CActiveRecord can do, BaseRecord can do as well.
+BaseRecord is an instance of Yii’s [CActiveRecord](https://www.yiiframework.com/doc/api/1.1/CActiveRecord) class, so everything CActiveRecord can do, BaseRecord can do as well.
