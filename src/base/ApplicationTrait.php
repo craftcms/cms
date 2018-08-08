@@ -56,6 +56,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Entries $entries The entries service
  * @property-read \craft\services\EntryRevisions $entryRevisions The entry revisions service
  * @property-read \craft\services\Fields $fields The fields service
+ * @property-read \craft\services\Gc $gc The garbage collection service
  * @property-read \craft\services\Globals $globals The globals service
  * @property-read \craft\services\Images $images The images service
  * @property-read \craft\services\Matrix $matrix The matrix service
@@ -826,6 +827,16 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the garbage collection service.
+     *
+     * @return \craft\services\Gc The garbage collection service
+     */
+    public function getGc()
+    {
+        return $this->get('gc');
+    }
+
+    /**
      * Returns the globals service.
      *
      * @return \craft\services\Globals The globals service
@@ -1153,6 +1164,9 @@ trait ApplicationTrait
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
         }
+
+        // Possibly run garbage collection
+        $this->getGc()->run();
     }
 
     /**

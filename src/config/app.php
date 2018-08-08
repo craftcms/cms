@@ -56,6 +56,9 @@ return [
         'fields' => [
             'class' => craft\services\Fields::class,
         ],
+        'gc' => [
+            'class' => craft\services\Gc::class,
+        ],
         'globals' => [
             'class' => craft\services\Globals::class,
         ],

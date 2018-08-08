@@ -374,9 +374,6 @@ class User extends \yii\web\User
         // Save the username cookie
         $this->sendUsernameCookie($identity);
 
-        // Delete any stale session rows
-        $this->_deleteStaleSessions();
-
         // Save the Debug preferences to the session
         $this->saveDebugPreferencesToSession();
 
@@ -494,8 +491,6 @@ class User extends \yii\web\User
 
     /**
      * Updates the dateUpdated column on the session's row, so it doesn't get stale.
-     *
-     * @see _deleteStaleSessions()
      */
     private function _updateSessionRow()
     {
@@ -524,19 +519,5 @@ class User extends \yii\web\User
                 }
             }
         }
-    }
-
-    /**
-     * Deletes any session rows that have gone stale.
-     */
-    private function _deleteStaleSessions()
-    {
-        $interval = new \DateInterval('P3M');
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
-
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
-            ->execute();
     }
 }

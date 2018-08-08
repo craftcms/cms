@@ -117,9 +117,6 @@ class UsersController extends Controller
             return null;
         }
 
-        // First, a little house-cleaning for expired, pending users.
-        Craft::$app->getUsers()->purgeExpiredPendingUsers();
-
         $loginName = Craft::$app->getRequest()->getBodyParam('loginName');
         $password = Craft::$app->getRequest()->getBodyParam('password');
         $rememberMe = (bool)Craft::$app->getRequest()->getBodyParam('rememberMe');
