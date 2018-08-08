@@ -34,42 +34,100 @@ class UserQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var bool Whether to only return users that are admins.
+     * @var bool|null Whether to only return users that are admins.
+     * ---
+     * ```php
+     * // fetch all the admins
+     * $admins = \craft\elements\User::find()
+     *     ->admin(true)
+     *     ->all();
+     *
+     * // fetch all the non-admins
+     * $nonAdmins = \craft\elements\User::find()
+     *     ->admin(false)
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all the admins #}
+     * {% set admins = craft.users()
+     *     .admin()
+     *     .all()%}
+     *
+     * {# fetch all the non-admins #}
+     * {% set nonAdmins = craft.users()
+     *     .admin(false)
+     *     .all() %}
+     * ```
+     * @used-by admin()
      */
-    public $admin = false;
+    public $admin;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
+     * ---
+     * ```php
+     * // fetch users with CP access
+     * $admins = \craft\elements\User::find()
+     *     ->can('accessCp')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch users with CP access #}
+     * {% set admins = craft.users()
+     *     .can('accessCp')
+     *     .all() %}
+     * ```
+     * @used-by can()
      */
     public $can;
 
     /**
-     * @var int|int[]|null The tag group ID(s) that the resulting users must be in.
+     * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
+     * ---
+     * ```php
+     * // fetch the authors
+     * $admins = \craft\elements\User::find()
+     *     ->group('authors')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch the authors #}
+     * {% set admins = craft.users()
+     *     .group('authors')
+     *     .all() %}
+     * ```
+     * @used-by group()
+     * @used-by groupId()
      */
     public $groupId;
 
     /**
      * @var string|string[]|null The email address that the resulting users must have.
+     * @used-by email()
      */
     public $email;
 
     /**
      * @var string|string[]|null The username that the resulting users must have.
+     * @used-by username()
      */
     public $username;
 
     /**
      * @var string|string[]|null The first name that the resulting users must have.
+     * @used-by firstName()
      */
     public $firstName;
 
     /**
      * @var string|string[]|null The last name that the resulting users must have.
+     * @used-by lastName()
      */
     public $lastName;
 
     /**
      * @var mixed The date that the resulting users must have last logged in.
+     * @used-by lastLoginDate()
      */
     public $lastLoginDate;
 
@@ -107,10 +165,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[admin]] property.
+     * Sets the [[$admin]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $admin
      */
     public function admin(bool $value = true)
     {
@@ -119,10 +178,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[can]] property.
+     * Sets the [[$can]] property.
      *
      * @param string|int|null $value The property value
      * @return static self reference
+     * @uses $can
      */
     public function can($value)
     {
@@ -131,10 +191,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
+     * Sets the [[$groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|UserGroup|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function group($value)
     {
@@ -154,10 +215,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property.
+     * Sets the [[$groupId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function groupId($value)
     {
@@ -166,10 +228,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[email]] property.
+     * Sets the [[$email]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $email
      */
     public function email($value)
     {
@@ -178,10 +241,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[username]] property.
+     * Sets the [[$username]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $username
      */
     public function username($value)
     {
@@ -190,10 +254,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[firstName]] property.
+     * Sets the [[$firstName]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $firstName
      */
     public function firstName($value)
     {
@@ -202,10 +267,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[lastName]] property.
+     * Sets the [[$lastName]] property.
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $lastName
      */
     public function lastName($value)
     {
@@ -214,10 +280,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[lastLoginDate]] property.
+     * Sets the [[$lastLoginDate]] property.
      *
      * @param mixed $value The property value
      * @return static self reference
+     * @uses $lastLoginDate
      */
     public function lastLoginDate($value)
     {
@@ -266,9 +333,11 @@ class UserQuery extends ElementQuery
             $this->query->addSelect(['users.hasDashboard']);
         }
 
-        if ($this->admin) {
-            $this->subQuery->andWhere(['users.admin' => true]);
-        } else {
+        if (is_bool($this->admin)) {
+            $this->subQuery->andWhere(['users.admin' => $this->admin]);
+        }
+
+        if ($this->admin !== true) {
             $this->_applyCanParam();
         }
 

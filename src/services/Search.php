@@ -276,19 +276,21 @@ class Search extends Component
         $attribute = StringHelper::toLowerCase($attribute);
         $driver = Craft::$app->getDb()->getDriverName();
 
-        if ($siteId === null) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if ($siteId !== null) {
+            $site = Craft::$app->getSites()->getSiteById($siteId);
+        } else {
+            $site = Craft::$app->getSites()->getPrimarySite();
         }
 
         // Clean 'em up
-        $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords);
+        $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords, [], true, $site->language);
 
         // Save 'em
         $keyColumns = [
             'elementId' => $elementId,
             'attribute' => $attribute,
             'fieldId' => $fieldId,
-            'siteId' => $siteId
+            'siteId' => $site->id,
         ];
 
         if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {

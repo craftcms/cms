@@ -398,7 +398,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
         }
 
-        $html = '<div class="elementselect"><div class="elements">';
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($this->handle);
+        $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
             $html .= Craft::$app->getView()->renderTemplate('_elements/element', [
@@ -407,6 +409,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         $html .= '</div></div>';
+
+        $nsId = $view->namespaceInputId($id);
+        $js = <<<JS
+(new Craft.ElementThumbLoader()).load($('#{$nsId}'));
+JS;
+        $view->registerJs($js);
 
         return $html;
     }
@@ -663,8 +671,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -797,6 +804,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     private function _all(ElementQueryInterface $query): ElementQueryInterface
     {
-        return (clone $query)->status(null)->enabledForSite(false);
+        return (clone $query)
+            ->anyStatus();
     }
 }

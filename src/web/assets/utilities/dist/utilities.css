@@ -11,6 +11,14 @@ form.utility .utility-status .progressbar { width: 100%; top: 14px; opacity: 0; 
 body.ltr form.utility .utility-status .progressbar { left: 0; }
 body.rtl form.utility .utility-status .progressbar { right: 0; }
 
+form.utility .utility-status .progressbar.has-status { top: 6px; }
+
+form.utility .utility-status .progressbar-status { margin-top: 16px; font-size: 10px; color: #8f98a3; text-align: center; }
+body.ltr form.utility .utility-status .progressbar-status { left: 0; }
+body.rtl form.utility .utility-status .progressbar-status { right: 0; }
+body.ltr form.utility .utility-status .progressbar-status { padding-left: 10px; }
+body.rtl form.utility .utility-status .progressbar-status { padding-right: 10px; }
+
 /* Asset Index */
 .confirmmodal .body { max-height: 200px; overflow: auto; }
 

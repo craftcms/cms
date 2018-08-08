@@ -299,6 +299,9 @@ class Fields extends Component
             $group->id = $groupRecord->id;
         }
 
+        // Update our cache of it
+        $this->_groupsById[$group->id] = $group;
+
         // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([

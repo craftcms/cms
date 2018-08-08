@@ -175,6 +175,7 @@ JS;
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
             'Save',
+            'Save as a new asset',
             'Score',
             'Search in subfolders',
             'Select',
@@ -225,6 +226,7 @@ JS;
         $orientation = $locale->getOrientation();
         $userService = Craft::$app->getUser();
         $currentUser = $userService->getIdentity();
+        $primarySite = $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite() : null;
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
@@ -248,7 +250,8 @@ JS;
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'path' => $request->getPathInfo(),
-            'primarySiteId' => $isInstalled && !$isMigrationNeeded ? (int)$sitesService->getPrimarySite()->id : null,
+            'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
+            'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
             'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object

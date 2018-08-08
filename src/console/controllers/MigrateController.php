@@ -210,7 +210,7 @@ class MigrateController extends BaseMigrateController
      * @return int
      * @throws MigrateException
      */
-    public function actionAll()
+    public function actionAll(): int
     {
         $updatesService = Craft::$app->getUpdates();
         $db = Craft::$app->getDb();
@@ -283,9 +283,9 @@ class MigrateController extends BaseMigrateController
      */
     public function actionUp($limit = 0)
     {
-        $res = parent::actionUp($limit);
+        $res = parent::actionUp($limit) ?? ExitCode::OK;
 
-        if (in_array($res, [ExitCode::OK, null], true) && empty($this->getNewMigrations())) {
+        if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.
             switch ($this->type) {
                 case MigrationManager::TYPE_APP:

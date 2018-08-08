@@ -25,6 +25,7 @@ use craft\models\MatrixBlockType;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
+use yii\base\UnknownPropertyException;
 
 /**
  * Matrix represents a Matrix field.
@@ -356,9 +357,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if (is_array($value) || $value === '') {
-            $query->status = null;
-            $query->enabledForSite = false;
-            $query->limit = null;
+            $query->anyStatus();
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -450,8 +449,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         if ($value instanceof MatrixBlockQuery) {
             $value = $value
                 ->limit(null)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         }
 
@@ -655,8 +653,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $matrixBlocksQuery = MatrixBlock::find();
-            $matrixBlocksQuery->status(null);
-            $matrixBlocksQuery->enabledForSite(false);
+            $matrixBlocksQuery->anyStatus();
             $matrixBlocksQuery->siteId($siteId);
             $matrixBlocksQuery->owner($element);
 
@@ -708,6 +705,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 'settingsFootHtml' => $settingsFootHtml,
             ];
         }
+
+        // Sort them by name
+        ArrayHelper::multisort($fieldTypes, 'name');
 
         Craft::$app->getView()->setNamespace($originalNamespace);
 
@@ -785,14 +785,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     private function _createBlocksFromSerializedData($value, ElementInterface $element = null): array
     {
+        if (!is_array($value)) {
+            return [];
+        }
+
         /** @var Element $element */
         // Get the possible block types for this field
         /** @var MatrixBlockType[] $blockTypes */
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id), 'handle');
-
-        if (!is_array($value)) {
-            return [];
-        }
 
         $oldBlocksById = [];
 
@@ -813,9 +813,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $oldBlocksQuery->fieldId($this->id);
                 $oldBlocksQuery->ownerId($ownerId);
                 $oldBlocksQuery->id($ids);
-                $oldBlocksQuery->limit(null);
-                $oldBlocksQuery->status(null);
-                $oldBlocksQuery->enabledForSite(false);
+                $oldBlocksQuery->anyStatus();
                 $oldBlocksQuery->siteId($element->siteId);
                 $oldBlocksQuery->indexBy('id');
                 $oldBlocksById = $oldBlocksQuery->all();
@@ -867,7 +865,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValues($blockData['fields']);
+                foreach ($blockData['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        $block->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (UnknownPropertyException $e) {
+                        // the field was probably deleted
+                    }
+                }
             }
 
             $sortOrder++;

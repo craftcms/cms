@@ -250,7 +250,7 @@ class Assets extends BaseRelationField
                     $filenames[] = $file['filename'];
                 }
             } else {
-                if (filesize($file['location']) > $maxSize) {
+                if (file_exists($file['location']) && (filesize($file['location']) > $maxSize)) {
                     $filenames[] = $file['filename'];
                 }
             }
@@ -287,8 +287,6 @@ class Assets extends BaseRelationField
 
                 if ($this->allowLimit === true && $this->limit) {
                     $query->limit($this->limit);
-                } else {
-                    $query->limit(null);
                 }
 
                 return $query;
@@ -515,8 +513,8 @@ class Assets extends BaseRelationField
                         continue;
                     }
 
-                    if (!empty($this->_uploadedDataFiles['filenames'][$index])) {
-                        $filename = $this->_uploadedDataFiles['filenames'][$index];
+                    if (!empty($this->_uploadedDataFiles['filename'][$index])) {
+                        $filename = $this->_uploadedDataFiles['filename'][$index];
                     } else {
                         $extensions = FileHelper::getExtensionsByMimeType($type);
 

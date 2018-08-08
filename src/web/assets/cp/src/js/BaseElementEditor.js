@@ -308,6 +308,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             siteId: null,
             attributes: null,
             params: null,
+            elementIndex: null,
 
             onShowHud: $.noop,
             onHideHud: $.noop,

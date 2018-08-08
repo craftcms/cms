@@ -44,6 +44,13 @@ class Images extends Component
     // =========================================================================
 
     /**
+     * Image formats that can be manipulated.
+     *
+     * @var array
+     */
+    public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
+
+    /**
      * Image driver.
      *
      * @var string
@@ -120,29 +127,7 @@ class Images extends Component
      */
     public function getSupportedImageFormats(): array
     {
-        if ($this->getIsImagick()) {
-            return array_map('strtolower', Imagick::queryFormats());
-        }
-
-        $output = [];
-        $map = [
-            IMG_JPG => ['jpg', 'jpeg'],
-            IMG_GIF => ['gif'],
-            IMG_PNG => ['png'],
-        ];
-
-        // IMG_WEBP was added in PHP 7.0.10
-        if (defined('IMG_WEBP')) {
-            $map[IMG_WEBP] = ['webp'];
-        }
-
-        foreach ($map as $key => $extensions) {
-            if (imagetypes() & $key) {
-                $output = array_merge($output, $extensions);
-            }
-        }
-
-        return $output;
+        return $this->supportedImageFormats;
     }
 
     /**

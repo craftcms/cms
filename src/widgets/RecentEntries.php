@@ -188,8 +188,7 @@ class RecentEntries extends Widget
         }
 
         $query = Entry::find();
-        $query->status(null);
-        $query->enabledForSite(false);
+        $query->anyStatus();
         $query->siteId($targetSiteId);
         $query->sectionId($targetSectionId);
         $query->editable(true);

@@ -157,8 +157,7 @@ class EntriesController extends BaseEntriesController
                 // Prevent the current entry, or any of its descendants, from being options
                 $excludeIds = Entry::find()
                     ->descendantOf($entry)
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->ids();
 
                 $excludeIds[] = $entry->id;
@@ -177,7 +176,9 @@ class EntriesController extends BaseEntriesController
                 if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
                 } else {
-                    $parentId = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+                    $parentId = $entry->getAncestors(1)
+                        ->anyStatus()
+                        ->ids();
                 }
             }
 

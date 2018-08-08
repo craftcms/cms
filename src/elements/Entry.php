@@ -790,6 +790,7 @@ class Entry extends Element
     {
         return (
             Craft::$app->getUser()->checkPermission('publishEntries:' . $this->sectionId) && (
+                !$this->authorId ||
                 $this->authorId == Craft::$app->getUser()->getIdentity()->id ||
                 Craft::$app->getUser()->checkPermission('publishPeerEntries:' . $this->sectionId) ||
                 $this->getSection()->type == Section::TYPE_SINGLE
@@ -817,7 +818,7 @@ class Entry extends Element
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $url = UrlHelper::cpUrl('entries/' . $section->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
+        if (Craft::$app->getIsMultiSite()) {
             $url .= '/' . $this->getSite()->handle;
         }
 
@@ -930,6 +931,8 @@ EOD;
     {
         $entryType = $this->getType();
         if (!$entryType->hasTitleField) {
+            // Make sure that the locale has been loaded in case the title format has any Date/Time fields
+            Craft::$app->getLocale();
             // Set Craft to the entry's site's language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
@@ -1115,9 +1118,8 @@ EOD;
         $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->status(null);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->anyStatus();
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

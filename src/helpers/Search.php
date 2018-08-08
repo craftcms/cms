@@ -17,6 +17,15 @@ use Craft;
  */
 class Search
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var array Character mappings
+     * @see _getCharMap()
+     */
+    private static $_charMaps = [];
+
     // Public Methods
     // =========================================================================
 
@@ -26,9 +35,10 @@ class Search
      * @param string[]|string $str The dirty keywords
      * @param array $ignore Ignore words to strip out
      * @param bool $processCharMap Whether to remove punctuation and diacritics (default is true)
+     * @param string|null The language that the character map should be based on, if `$processCharMap` is `true`.
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true): string
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true, string $language = null): string
     {
         // Flatten
         if (is_array($str)) {
@@ -49,13 +59,13 @@ class Search
 
         if ($processCharMap) {
             // Remove punctuation and diacritics
-            $str = strtr($str, self::_getCharMap());
+            $str = strtr($str, self::_getCharMap($language ?? Craft::$app->language));
         }
 
         // Remove ignore-words?
         if (is_array($ignore) && !empty($ignore)) {
             foreach ($ignore as $word) {
-                $word = preg_quote(static::normalizeKeywords($word), '/');
+                $word = preg_quote(static::normalizeKeywords($word, [], true, $language), '/');
                 $str = preg_replace("/\b{$word}\b/u", '', $str);
             }
         }
@@ -76,25 +86,24 @@ class Search
     /**
      * Get array of chars to be used for conversion.
      *
+     * @param string $language
      * @return array
      */
-    private static function _getCharMap(): array
+    private static function _getCharMap(string $language): array
     {
-        // Keep local copy
-        static $map;
-
-        if ($map === null) {
-            // This will replace accented chars with non-accented chars
-            $map = StringHelper::asciiCharMap(true, Craft::$app->language);
-
-            // Replace punctuation with a space
-            foreach (self::_getPunctuation() as $value) {
-                $map[$value] = ' ';
-            }
+        if (isset(self::$_charMaps[$language])) {
+            return self::$_charMaps[$language];
         }
 
-        // Return the char map
-        return $map;
+        // This will replace accented chars with non-accented chars
+        $map = StringHelper::asciiCharMap(true, $language);
+
+        // Replace punctuation with a space
+        foreach (self::_getPunctuation() as $value) {
+            $map[$value] = ' ';
+        }
+
+        return self::$_charMaps[$language] = $map;
     }
 
     /**

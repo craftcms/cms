@@ -295,8 +295,7 @@ class CategoriesController extends Controller
                 // Prevent the current category, or any of its descendants, from being options
                 $excludeIds = Category::find()
                     ->descendantOf($category)
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->ids();
 
                 $excludeIds[] = $category->id;
@@ -311,7 +310,9 @@ class CategoriesController extends Controller
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $category->id !== null) {
-                $parentId = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
+                $parentId = $category->getAncestors(1)
+                    ->anyStatus()
+                    ->ids();
             }
 
             if (is_array($parentId)) {

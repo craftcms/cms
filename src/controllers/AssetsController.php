@@ -824,20 +824,42 @@ class AssetsController extends Controller
      * @param int $width The thumbnail width
      * @param int $height The thumbnail height
      * @return Response
+     * @deprecated in 3.0.13. Use [[actionThumb()]] instead.
      */
     public function actionGenerateThumb(string $uid, int $width, int $height): Response
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The assets/generate-thumb action has been deprecated. Use assets/thumb instead.');
+        return $this->actionThumb($uid, $width, $height);
+    }
+
+    /**
+     * Returns an asset’s thumbnail.
+     *
+     * @param string $uid The asset's UID
+     * @param int $width The thumbnail width
+     * @param int $height The thumbnail height
+     * @return Response
+     * @since 3.0.13
+     */
+    public function actionThumb(string $uid, int $width, int $height): Response
+    {
         $asset = Asset::find()->uid($uid)->one();
+
         if (!$asset) {
             return $this->_handleImageException(new NotFoundHttpException('Invalid asset UID: ' . $uid));
         }
+
         try {
-            $url = Craft::$app->getAssets()->getThumbUrl($asset, $width, $height, true);
-        } catch (\Exception $e) {
+            $path = Craft::$app->getAssets()->getThumbPath($asset, $width, $height, true);
+        } catch (\Throwable $e) {
             return $this->_handleImageException($e);
         }
 
-        return $this->redirect($url);
+        return Craft::$app->getResponse()
+            ->setCacheHeaders()
+            ->sendFile($path, $asset->getFilename(), [
+                'inline' => true,
+            ]);
     }
 
     /**

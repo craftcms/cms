@@ -393,7 +393,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function withoutFilter(array $arr, $exclude): array
     {
         if (!is_array($exclude)) {
-            $exclude = (array)$exclude;
+            $exclude = [$exclude];
         }
 
         foreach ($exclude as $value) {
@@ -850,7 +850,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         // Namespace any IDs
         if (strpos($svg, 'id=') !== false) {
-            $namespace = StringHelper::randomString(10) . '-';
+            $namespace = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];
             $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$ids) {
                 $ids[] = $matches[2];

@@ -954,7 +954,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'trim' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
@@ -1333,8 +1333,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($this->_parent === null) {
             $this->_parent = $this->getAncestors(1)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->one();
 
             if ($this->_parent === null) {
@@ -1424,8 +1423,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $this->_prevSibling = $query->one();
 
             if ($this->_prevSibling === null) {
@@ -1447,8 +1445,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $this->_nextSibling = $query->one();
 
             if ($this->_nextSibling === null) {

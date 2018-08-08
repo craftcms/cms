@@ -38,6 +38,8 @@
                         if (typeof slugGenerator !== 'undefined') {
                             slugGenerator.setNewSource('#title');
                         }
+
+                        this.trigger('typeChange');
                     }
                 }, this));
             }

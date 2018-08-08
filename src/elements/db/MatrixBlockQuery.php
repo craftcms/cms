@@ -40,21 +40,41 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
+     * @used-by fieldId()
      */
     public $fieldId;
 
     /**
      * @var int|int[]|null The owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @used-by owner()
+     * @used-by ownerId()
      */
     public $ownerId;
 
     /**
      * @var int|string|null The site ID that the resulting Matrix blocks must have been defined in, or ':empty:' to find blocks without an owner site ID.
+     * @used-by ownerSite()
+     * @used-by ownerSiteId()
      */
     public $ownerSiteId;
 
     /**
      * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
+     * ---
+     * ```php
+     * // fetch the entry's text blocks
+     * $blocks = $entry->myMatrixField
+     *     ->type('text')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch the entry's text blocks #}
+     * {% set blocks = entry.myMatrixField
+     *     .type('text')
+     *     .all() %}
+     * ```
+     * @used-by MatrixBlockQuery::type()
+     * @used-by typeId()
      */
     public $typeId;
 
@@ -96,10 +116,11 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[fieldId]] property.
+     * Sets the [[$fieldId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $fieldId
      */
     public function fieldId($value)
     {
@@ -108,10 +129,11 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerId]] property.
+     * Sets the [[$ownerId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $ownerId
      */
     public function ownerId($value)
     {
@@ -120,10 +142,11 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerSiteId]] and [[siteId]] properties.
+     * Sets the [[$ownerSiteId]] and [[siteId]] properties.
      *
      * @param int|string|null $value The property value
      * @return static self reference
+     * @uses $ownerSiteId
      */
     public function ownerSiteId($value)
     {
@@ -139,11 +162,12 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerSiteId]] property based on a given site(s)’s handle(s).
+     * Sets the [[$ownerSiteId]] property based on a given site(s)’s handle(s).
      *
      * @param string|string[]|Site $value The property value
      * @return static self reference
      * @throws Exception if $value is an invalid site handle
+     * @uses $ownerSiteId
      */
     public function ownerSite($value)
     {
@@ -163,7 +187,7 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerLocale]] property.
+     * Sets the [[$ownerLocale]] property.
      *
      * @param string|string[] $value The property value
      * @return static self reference
@@ -177,10 +201,11 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerId]] and [[ownerSiteId]] properties based on a given element.
+     * Sets the [[$ownerId]] and [[ownerSiteId]] properties based on a given element.
      *
      * @param ElementInterface $owner The owner element
      * @return static self reference
+     * @uses $ownerId
      */
     public function owner(ElementInterface $owner)
     {
@@ -191,10 +216,11 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property based on a given block type(s)’s handle(s).
+     * Sets the [[$typeId]] property based on a given block type(s)’s handle(s).
      *
      * @param string|string[]|MatrixBlockType|null $value The property value
      * @return static self reference
+     * @uses $typeId
      */
     public function type($value)
     {
@@ -214,10 +240,11 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[typeId]] property.
+     * Sets the [[$typeId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $typeId
      */
     public function typeId($value)
     {

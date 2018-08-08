@@ -385,7 +385,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the sites this element is associated with.
      *
      * The function can either return an array of site IDs, or an array of sub-arrays,
-     * each with the keys 'siteId' (int) and 'enabledByDefault' (bool).
+     * each with the keys `siteId` (int) and `enabledByDefault` (boolean).
      *
      * @return int[]|array
      */

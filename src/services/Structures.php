@@ -45,6 +45,11 @@ class Structures extends Component
     // =========================================================================
 
     /**
+     * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
+     */
+    public $mutexTimeout = 0;
+
+    /**
      * @var
      */
     private $_rootElementRecordsByStructureId;
@@ -345,6 +350,13 @@ class Structures extends Component
      */
     private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode): bool
     {
+        // Get a lock or bust
+        $lockName = 'structure:' . $structureId;
+        $mutex = Craft::$app->getMutex();
+        if (!$mutex->acquire($lockName, $this->mutexTimeout)) {
+            throw new Exception('Unable to acquire a lock for the structure ' . $structureId);
+        }
+
         $elementRecord = null;
 
         /** @var Element $element */
@@ -376,6 +388,7 @@ class Structures extends Component
 
         // Tell the element about it
         if (!$element->beforeMoveInStructure($structureId)) {
+            $mutex->release($lockName);
             return false;
         }
 
@@ -383,7 +396,7 @@ class Structures extends Component
         try {
             if (!$elementRecord->$action($targetElementRecord)) {
                 $transaction->rollBack();
-
+                $mutex->release($lockName);
                 return false;
             }
 
@@ -409,9 +422,11 @@ class Structures extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
+            $mutex->release($lockName);
             throw $e;
         }
+
+        $mutex->release($lockName);
 
         if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
             // Fire an 'afterMoveElement' event

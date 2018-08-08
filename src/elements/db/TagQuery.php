@@ -33,6 +33,21 @@ class TagQuery extends ElementQuery
 
     /**
      * @var int|int[]|null The tag group ID(s) that the resulting tags must be in.
+     * ---
+     * ```php
+     * // fetch tags in the Topics group
+     * $tags = \craft\elements\Tag::find()
+     *     ->group('topics')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch tags in the Topics group #}
+     * {% set tags = craft.tags()
+     *     .group('topics')
+     *     .all() %}
+     * ```
+     * @used-by group()
+     * @used-by groupId()
      */
     public $groupId;
 
@@ -65,10 +80,11 @@ class TagQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
+     * Sets the [[$groupId]] property based on a given tag group(s)’s handle(s).
      *
      * @param string|string[]|TagGroup|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function group($value)
     {
@@ -88,10 +104,11 @@ class TagQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[groupId]] property.
+     * Sets the [[$groupId]] property.
      *
      * @param int|int[]|null $value The property value
      * @return static self reference
+     * @uses $groupId
      */
     public function groupId($value)
     {
