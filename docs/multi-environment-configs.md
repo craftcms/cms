@@ -164,5 +164,5 @@ There are only three settings within Craft that support environment variables. T
 * Site URL (in Settings → General)
 
 ::: tip
-It’s generally better to use the <config:siteUrl> config setting for setting your site URL, rather than placing an environment variable within the Site URL setting in Settings → General. (See [this answer](http://craftcms.stackexchange.com/a/921/9) on Craft’s Stack Exchange site for an explanation.)
+It’s generally better to use the <config:siteUrl> config setting for setting your site URL, rather than placing an environment variable within the Site URL setting in Settings → General. (See [this answer](https://craftcms.stackexchange.com/a/921/9) on Craft’s Stack Exchange site for an explanation.)
 :::

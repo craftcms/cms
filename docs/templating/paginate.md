@@ -56,7 +56,7 @@ Here’s what they get set to:
 
 The `{% paginate %}` tag won’t actually output the current page’s elements for you – it will only give you an array of the elements that should be on the current page (referenced by the variable you defined in the `as` parameter.)
 
-Following your `{% paginate %}` tag, you will need to loop through this page’s elements using a [for](http://twig.sensiolabs.org/doc/tags/for.html) tag.
+Following your `{% paginate %}` tag, you will need to loop through this page’s elements using a [for](https://twig.symfony.com/doc/tags/for.html) tag.
 
 ```twig
 {% paginate craft.entries.section('blog').limit(10) as pageEntries %}

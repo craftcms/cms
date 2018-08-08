@@ -44,7 +44,7 @@ See [hooks-reference](hooks-reference.md) for a list of available hooks.
 
 ## Events
 
-Craft uses [events](http://www.yiiframework.com/wiki/327/events-explained) to announce when certain things have taken place.
+Craft uses [events](https://www.yiiframework.com/wiki/327/events-explained) to announce when certain things have taken place.
 
 ### Listening for Events
 
@@ -52,7 +52,7 @@ Your plugin can register new event listeners anywhere it wants to, but the `init
 
 Listen for events with `craft()->on()`. That’s a wrapper for Yii’s internal event handler, with the added benefit of not initializing the target class if it hasn’t been loaded yet.
 
-For example, if your plugin were to attach an event in the [traditional way](http://www.yiiframework.com/wiki/327/events-explained):
+For example, if your plugin were to attach an event in the [traditional way](https://www.yiiframework.com/wiki/327/events-explained):
 
 ```php
 craft()->entries->onSaveEntry = function(Event $event) {

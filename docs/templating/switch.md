@@ -44,7 +44,7 @@ Since all of the conditionals are evaluating the same thing – `matrixBlock.typ
 {% endswitch %}
 ```
 
-If you’re using the `{% switch %}` tag inside of a `{% for %}` loop, you won’t be able to access Twig’s [loop variable](http://twig.sensiolabs.org/doc/tags/for.html#the-loop-variable) directly inside of the `{% switch %}` tag. Instead, you can access it like so:
+If you’re using the `{% switch %}` tag inside of a `{% for %}` loop, you won’t be able to access Twig’s [loop variable](https://twig.symfony.com/doc/tags/for.html#the-loop-variable) directly inside of the `{% switch %}` tag. Instead, you can access it like so:
 
 ```twig
 {% for matrixBlock in entry.matrixField %}

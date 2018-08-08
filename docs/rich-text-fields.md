@@ -14,7 +14,7 @@ Rich Text fields have the following settings:
 
 ## Redactor Configs
 
-Redactor configs are .json files stored in craft/config/redactor, which contain Javascript objects that define [Redactor config settings](http://imperavi.com/redactor/docs/settings/). Their contents get passed directly into the `redactor()` jQuery plugin, so you can paste the examples in there verbatim.
+Redactor configs are .json files stored in craft/config/redactor, which contain Javascript objects that define [Redactor config settings](https://imperavi.com/redactor/docs/settings/). Their contents get passed directly into the `redactor()` jQuery plugin, so you can paste the examples in there verbatim.
 
 Craft comes with two Redactor configs by default:
 

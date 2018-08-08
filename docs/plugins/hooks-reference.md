@@ -48,9 +48,9 @@ Called by
 
 Return
 
-:   A new [\Twig_Extension](http://twig.sensiolabs.org/api/master/Twig_Extension.html) object
+:   A new [\Twig_Extension](https://twig.symfony.com/api/master/Twig_Extension.html) object
 
-Gives plugins a chance to add a new [Twig extension](http://twig.sensiolabs.org/doc/api.html#using-extensions).
+Gives plugins a chance to add a new [Twig extension](https://twig.symfony.com/doc/api.html#using-extensions).
 
 ```php
 public function addTwigExtension()

@@ -118,7 +118,7 @@ This function will fetch all the matching elements and return them as an array. 
 {# `entries` is an array of EntryModel objects #}
 ```
 
-You don’t actually need to call `find()` yourself though: It will be called automatically as soon as the ElementCriteriaModel is treated like an array (that is, as soon as you check how many elements there are using the [length](http://twig.sensiolabs.org/doc/filters/length.html) filter, or start looping through the elements with a [for](http://twig.sensiolabs.org/doc/tags/for.html) loop).
+You don’t actually need to call `find()` yourself though: It will be called automatically as soon as the ElementCriteriaModel is treated like an array (that is, as soon as you check how many elements there are using the [length](https://twig.symfony.com/doc/filters/length.html) filter, or start looping through the elements with a [for](https://twig.symfony.com/doc/tags/for.html) loop).
 
 ```twig
 {% set entries = craft.entries.section('blog').limit(10) %}
@@ -196,7 +196,7 @@ The `offset` and `limit` parameters (which are shared among all element types) w
 :::
 
 ::: tip
-If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [length](http://twig.sensiolabs.org/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.
+If you are going to be looping through elements using the **exact** same parameters later on in the same template, use the [length](https://twig.symfony.com/doc/filters/length.html) filter rather than `total()`. You’ll save Craft from running an unnecessary database query.
 
 ```twig
 {% if entry.myAssetsField|length %}
