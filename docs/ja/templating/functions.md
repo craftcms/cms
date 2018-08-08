@@ -1,6 +1,6 @@
 # ファンクション
 
-[Twig に付随する](https://twig.sensiolabs.org/doc/functions/index.html)テンプレートファンクションに加えて、Craft がいくつか独自のものを提供します。
+[Twig に付随する](https://twig.symfony.com/doc/functions/index.html)テンプレートファンクションに加えて、Craft がいくつか独自のものを提供します。
 
 ## `alias( string )`
 

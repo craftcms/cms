@@ -42,7 +42,7 @@
 {% endswitch %}
 ```
 
-`{% for %}` ループ内で `{% switch %}` タグを使う場合、`{% switch %}` タグの内側で Twig の [ループ変数](https://twig.sensiolabs.org/doc/tags/for.html#the-loop-variable) に直接アクセスすることはできません。代わりに、次のようにアクセスできます。
+`{% for %}` ループ内で `{% switch %}` タグを使う場合、`{% switch %}` タグの内側で Twig の [ループ変数](https://twig.symfony.com/doc/tags/for.html#the-loop-variable) に直接アクセスすることはできません。代わりに、次のようにアクセスできます。
 
 ```twig
 {% for matrixBlock in entry.matrixField.all() %}

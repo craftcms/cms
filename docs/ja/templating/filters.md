@@ -1,6 +1,6 @@
 # フィルタ
 
-[Twig に付随する](https://twig.sensiolabs.org/doc/filters/index.html)テンプレートフィルタに加えて、Craft がいくつか独自のものを提供します。
+[Twig に付随する](https://twig.symfony.com/doc/filters/index.html)テンプレートフィルタに加えて、Craft がいくつか独自のものを提供します。
 
 ## `atom`
 

@@ -27,7 +27,7 @@
 
 ## テンプレート記法
 
-テンプレート内で行列フィールドを出力するには、行列フィールドに対して [for ループ](https://twig.sensiolabs.org/doc/tags/for.html) を使用します。
+テンプレート内で行列フィールドを出力するには、行列フィールドに対して [for ループ](https://twig.symfony.com/doc/tags/for.html) を使用します。
 
 ```twig
 {% for block in entry.myMatrixField.all() %}
@@ -109,7 +109,7 @@ for ループ内に記述されたすべてのコードは、 フィールドに
 
 ### ブロックの総数の取得
 
-[length フィルタ](https://twig.sensiolabs.org/doc/filters/length.html)を利用して、ブロックの総数を取得できます。
+[length フィルタ](https://twig.symfony.com/doc/filters/length.html)を利用して、ブロックの総数を取得できます。
 
 ```twig
 {{ entry.myMatrixField|length }}

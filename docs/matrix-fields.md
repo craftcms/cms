@@ -27,7 +27,7 @@ Blocks can also be reordered by dragging the “Move” icon at the end of the b
 
 ## Templating
 
-To output your Matrix blocks in a template, use a [for-loop](https://twig.sensiolabs.org/doc/tags/for.html) pointed at your Matrix field:
+To output your Matrix blocks in a template, use a [for-loop](https://twig.symfony.com/doc/tags/for.html) pointed at your Matrix field:
 
 ```twig
 {% for block in entry.myMatrixField.all() %}
@@ -111,7 +111,7 @@ If you think you might have more that 100 blocks, and you want all of them to be
 
 ### Getting the total number of blocks
 
-You can get the total number of blocks using the [length filter](https://twig.sensiolabs.org/doc/filters/length.html):
+You can get the total number of blocks using the [length filter](https://twig.symfony.com/doc/filters/length.html):
 
 ```twig
 {{ entry.myMatrixField|length }}

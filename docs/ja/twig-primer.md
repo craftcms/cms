@@ -4,7 +4,7 @@
 
 これはあくまで入門書であり、 Twig が行うことができるすべての包括的なドキュメントではありません。
 
-より詳しいことは、このページの下段にある「続きを読む」セクションを見るか、[Twig 公式ドキュメント](https://twig.sensiolabs.org/doc/templates.html)を直接参照してください。
+より詳しいことは、このページの下段にある「続きを読む」セクションを見るか、[Twig 公式ドキュメント](https://twig.symfony.com/doc/templates.html)を直接参照してください。
 
 ## 3種類の Twig タグ
 
@@ -63,7 +63,7 @@ Twig には3種類のタグがあります。
 
 リソース：
 
-* [Twig に付随するタグ](https://twig.sensiolabs.org/doc/tags/index.html)
+* [Twig に付随するタグ](https://twig.symfony.com/doc/tags/index.html)
 * [Craft の独自タグ](templating/tags.md)
 
 ### コメントタグ
@@ -111,7 +111,7 @@ Twig の変数は、JavaScript や他のプログラミング言語の変数に�
 
 リソース：
 
-* [Twig に付随するフィルタ](https://twig.sensiolabs.org/doc/filters/index.html)
+* [Twig に付随するフィルタ](https://twig.symfony.com/doc/filters/index.html)
 * [Craft の独自フィルタ](templating/filters.md)
 
 ## ファンクション
@@ -131,14 +131,14 @@ Twig と Craft は、テンプレートタグ内で利用できるいくつか�
 
 リソース：
 
-* [Twig に付随するファンクション](https://twig.sensiolabs.org/doc/functions/index.html)
+* [Twig に付随するファンクション](https://twig.symfony.com/doc/functions/index.html)
 * [Craft の独自ファンクション](templating/functions.md)
 
 ## 続きを読む
 
 Twig を学ぶためにオンラインで利用できるいくつかの学習リソースがあります。
 
-* [Twig for Template Designers](https://twig.sensiolabs.org/doc/templates.html) は、すべての Twig の機能を詳細なドキュメントです。時として過度に専門的なところもありますが、読んでおくことをお勧めします。
+* [Twig for Template Designers](https://twig.symfony.com/doc/templates.html) は、すべての Twig の機能を詳細なドキュメントです。時として過度に専門的なところもありますが、読んでおくことをお勧めします。
 * [Twig Templates in Craft](https://mijingo.com/products/screencasts/twig-templates-in-craft/) は、Craft の Twig を快適に使えるようになることを目的とした、Mijingo によるビデオコースです。
 * [Straight up Craft](https://straightupcraft.com/twig-templating) は、Craft での Twig の使い方に関する素晴らしい記事があります。
 * [Twig for Designers](https://github.com/brandonkelly/TwigForDesigners) は進行中の eBook で、非開発者が Twig をどのように使えるか説明することを目的としています。
