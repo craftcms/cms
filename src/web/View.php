@@ -24,6 +24,7 @@ use craft\web\twig\TemplateLoader;
 use Twig_ExtensionInterface;
 use yii\base\Arrayable;
 use yii\base\Exception;
+use yii\base\Model;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
 
@@ -482,6 +483,14 @@ class View extends \yii\web\View
             }
 
             // Get the variables to pass to the template
+            if ($object instanceof Model) {
+                foreach ($object->attributes() as $name) {
+                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                        $variables[$name] = $object->$name;
+                    }
+                }
+            }
+
             if ($object instanceof Arrayable) {
                 // See if we should be including any of the extra fields
                 $extra = [];

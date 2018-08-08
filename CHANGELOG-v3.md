@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where `DateTime` model attributes were getting converted to ISO-8601 date strings for `craft\web\View::renderObjectTemplate()`. ([#3185](https://github.com/craftcms/cms/issues/3185))
+
 ## 3.0.19 - 2018-08-07
 
 ### Added
