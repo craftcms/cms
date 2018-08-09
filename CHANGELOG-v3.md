@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where `DateTime` model attributes were getting converted to ISO-8601 date strings for `craft\web\View::renderObjectTemplate()`. ([#3185](https://github.com/craftcms/cms/issues/3185))
 - Fixed a bug where timepicker menus had a higher z-index than session expiration modal shades. ([#3186](https://github.com/craftcms/cms/issues/3186))
+- Fixed a bug where users could not log in after upgrading to Craft 3, if there was a custom field named `owner`.
 
 ## 3.0.19 - 2018-08-07
 

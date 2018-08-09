@@ -1610,7 +1610,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $handle = $field->handle;
 
                 // In theory all field handles will be accounted for on the ElementQueryBehavior, but just to be safe...
-                if (isset($fieldAttributes->$handle)) {
+                if ($handle !== 'owner' && isset($fieldAttributes->$handle)) {
                     $fieldAttributeValue = $fieldAttributes->$handle;
                 } else {
                     $fieldAttributeValue = null;
