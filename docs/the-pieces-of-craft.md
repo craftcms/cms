@@ -1,6 +1,6 @@
 # The Pieces of Craft
 
-Before you get started using Craft CMS to build your website, let's first talk about the pieces of Craft. These are a large components that you'll use to implement your website's content.
+Before you get started using Craft CMS to build your website, let's first talk about the pieces of Craft. These are the large components that you'll use to implement your website's content.
 
 ## Sections
 
