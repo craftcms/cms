@@ -11,6 +11,7 @@ use Craft;
 use craft\models\Site;
 use craft\services\Fields;
 use craft\services\ProjectConfig as ProjectConfigService;
+use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\UserGroups;
 use Symfony\Component\Yaml\Yaml;
@@ -84,7 +85,7 @@ class ProjectConfig
     }
 
     /**
-     * Ensure all site config changes are processed immediately in a safe manner.
+     * Ensure all user group config changes are processed immediately in a safe manner.
      */
     public static function ensureAllUserGroupsProcessed()
     {
