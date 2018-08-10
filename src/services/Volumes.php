@@ -490,7 +490,7 @@ class Volumes extends Component
         }
 
         // Does it match a volume?
-        if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $volumeUid = $matches[1];
             $data = $event->configData;
