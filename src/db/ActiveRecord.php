@@ -21,9 +21,6 @@ use craft\helpers\StringHelper;
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
-    // Static
-    // =========================================================================
-
     // Public Methods
     // =========================================================================
 
