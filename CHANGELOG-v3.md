@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Fields::refreshFields()`.
+
 ### Fixed
 - Fixed a bug where `DateTime` model attributes were getting converted to ISO-8601 date strings for `craft\web\View::renderObjectTemplate()`. ([#3185](https://github.com/craftcms/cms/issues/3185))
 - Fixed a bug where timepicker menus had a higher z-index than session expiration modal shades. ([#3186](https://github.com/craftcms/cms/issues/3186))

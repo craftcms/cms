@@ -970,6 +970,23 @@ class Fields extends Component
         return true;
     }
 
+    /**
+     * Refreshes the internal field cache.
+     *
+     * This should be called whenever a field is updated or deleted directly in
+     * the database, rather than going through this service.
+     */
+    public function refreshFields()
+    {
+        $this->_fieldRecordsById = null;
+        $this->_fieldsById = null;
+        $this->_allFieldHandlesByContext = null;
+        $this->_allFieldsInContext = null;
+        $this->_fieldsByContextAndHandle = null;
+        $this->_fieldsWithContent = null;
+        $this->updateFieldVersion();
+    }
+
     // Layouts
     // -------------------------------------------------------------------------
 
