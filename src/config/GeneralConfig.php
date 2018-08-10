@@ -620,6 +620,14 @@ class GeneralConfig extends BaseObject
      */
     public $secureProtocolHeaders;
     /**
+     * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
+     *
+     * Set to `0` if you don’t ever want to delete soft-deleted items.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $softDeleteDuration = 2592000;
+    /**
      * @var bool Whether Twig runtime errors should be suppressed.
      *
      * If it is set to `true`, the errors will still be logged to Craft’s log files.

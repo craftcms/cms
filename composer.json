@@ -43,6 +43,7 @@
     "seld/cli-prompt": "^1.0.3",
     "true/punycode": "^2.1.0",
     "twig/twig": "^2.5.0",
+    "yii2tech/ar-softdelete": "^1.2.0",
     "yiisoft/yii2": "~2.0.15.1",
     "yiisoft/yii2-debug": "^2.0.10",
     "yiisoft/yii2-swiftmailer": "^2.1.0",

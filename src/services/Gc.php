@@ -36,6 +36,13 @@ class Gc extends Component
     public $probability = 10;
 
     /**
+     * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
+     * rather than just the ones that were deleted long enough ago to be ready for hard-deletion
+     * per the [[\craft\config\GeneralConfig::softDeleteDuration]] config setting.
+     */
+    public $deleteAllTrashed = false;
+
+    /**
      * Possibly runs garbage collection.
      *
      * @param bool $force Whether garbage collection should be forced. If left as `false`, then
@@ -54,6 +61,33 @@ class Gc extends Component
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
             $this->trigger(self::EVENT_RUN);
         }
+    }
+
+    /**
+     * Hard-deletes any rows in the given table, that were soft-deleted long enough ago
+     * to be ready for hard-deletion.
+     *
+     * @param string $table The table to delete rows from. It must have a `dateDeleted` column.
+     */
+    public function hardDelete(string $table)
+    {
+        $condition = ['not', ['dateDeleted' => null]];
+
+        if (!$this->deleteAllTrashed) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
+            $expire = DateTimeHelper::currentUTCDateTime();
+            $pastTime = $expire->sub($interval);
+            $condition = [
+                'and',
+                $condition,
+                ['<', 'dateDeleted', Db::prepareDateForDb($pastTime)],
+            ];
+        }
+
+        Craft::$app->getDb()->createCommand()
+            ->delete($table, $condition)
+            ->execute();
     }
 
     /**
