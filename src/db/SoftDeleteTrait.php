@@ -21,7 +21,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * The database table should be created with a `dateDeleted` column (type `datetime null`).
  *
  * ```php
- * 'dateDeleted' => $this->date()->null()
+ * 'dateDeleted' => $this->dateTime()->null()
  * ```
  *
  * To fetch all rows, including soft-deleted ones, call [[findWithTrashed()]] instead of `find()`.
