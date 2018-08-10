@@ -28,7 +28,7 @@ class Gc extends Component
     const EVENT_RUN = 'run';
 
     /**
-     * @param int the probability (parts per million) that garbage collection (GC) should be performed
+     * @var int the probability (parts per million) that garbage collection (GC) should be performed
      * on a request. Defaults to 10, meaning 0.001% chance.
      *
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
@@ -41,7 +41,7 @@ class Gc extends Component
      * @param bool $force Whether garbage collection should be forced. If left as `false`, then
      * garbage collection will only run if a random condition passes, factoring in [[probability]].
      */
-    public function run($force = false)
+    public function run(bool $force = false)
     {
         if (!$force && mt_rand(0, 1000000) >= $this->probability) {
             return;
