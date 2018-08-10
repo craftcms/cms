@@ -753,7 +753,6 @@ class Sites extends Component
                 if ($isNewSite) {
                     try {
                         // Even if this will be the new primary site, let _processNewPrimarySite() be the one to set this
-                        $primary = $this->getPrimarySite();
                         $siteRecord->primary = false;
                     } catch (SiteNotFoundException $exception) {
                         // Unless there's no primary site.
