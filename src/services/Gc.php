@@ -72,12 +72,16 @@ class Gc extends Component
      */
     public function hardDelete(string $table)
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
+            return;
+        }
+
         $condition = ['not', ['dateDeleted' => null]];
 
         if (!$this->deleteAllTrashed) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
             $expire = DateTimeHelper::currentUTCDateTime();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
             $pastTime = $expire->sub($interval);
             $condition = [
                 'and',
