@@ -539,6 +539,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%sitegroups}}', [
@@ -829,7 +830,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%sessions}}', ['dateUpdated'], false);
         $this->createIndex(null, '{{%sessions}}', ['userId'], false);
         $this->createIndex(null, '{{%shunnedmessages}}', ['userId', 'message'], true);
-        $this->createIndex(null, '{{%sites}}', ['handle'], true);
+        $this->createIndex(null, '{{%sites}}', ['handle'], false);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
         $this->createIndex(null, '{{%structureelements}}', ['structureId', 'elementId'], true);

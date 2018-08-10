@@ -56,6 +56,7 @@ class Gc extends Component
 
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
+        $this->hardDelete('{{%sites}}');
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {

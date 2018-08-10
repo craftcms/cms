@@ -21,6 +21,7 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
@@ -616,6 +617,7 @@ class Sites extends Component
                 // Get the next biggest sort order
                 $maxSortOrder = (new Query())
                     ->from(['{{%sites}}'])
+                    ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]');
             }
 
@@ -995,7 +997,9 @@ class Sites extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%sites}}', ['id' => $site->id])
+                ->update('{{%sites}}', [
+                    'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
+                ], ['id' => $site->id], [], false)
                 ->execute();
 
             $transaction->commit();
@@ -1054,6 +1058,7 @@ class Sites extends Component
                 ])
                 ->from(['{{%sites}} s'])
                 ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')
+                ->where(['dateDeleted' => null])
                 ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
                 ->all();
         } catch (DbException $e) {
