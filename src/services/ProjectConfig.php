@@ -266,33 +266,23 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Apply any pending changes
-     *
-     * @param string $key The name of the key to process. If null (default) entire tree will be processed.
+     * Apply all pending changes
      */
-    public function applyPendingChanges($key = null)
+    public function applyPendingChanges()
     {
-        if ($key) {
-            if (!empty($this->_parsedChanges[$key])) {
-                return true;
-            }
-
-            $this->_parsedChanges[$key] = true;
-        }
-
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $changes = $this->_getPendingChanges($key);
+            $changes = $this->_getPendingChanges();
 
             Craft::info('Looking for pending changes', __METHOD__);
 
             // If we're parsing all the changes, we better work the actual config map.
             $this->_configMap = $this->_generateConfigMap();
 
-            if (!empty($changes['newItems'])) {
-                Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
-                foreach ($changes['newItems'] as $itemPath) {
+            if (!empty($changes['removedItems'])) {
+                Craft::info('Parsing '.count($changes['removedItems']).' removed configuration objects', __METHOD__);
+                foreach ($changes['removedItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
             }
@@ -304,9 +294,9 @@ class ProjectConfig extends Component
                 }
             }
 
-            if (!empty($changes['removedItems'])) {
-                Craft::info('Parsing '.count($changes['removedItems']).' removed configuration objects', __METHOD__);
-                foreach ($changes['removedItems'] as $itemPath) {
+            if (!empty($changes['newItems'])) {
+                Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
+                foreach ($changes['newItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
             }
@@ -587,11 +577,9 @@ class ProjectConfig extends Component
     /**
      * Return a nested array for pending config changes
      *
-     * @param string $key The name of the key to process. If null (default) entire tree will be processed.
-     *
      * @return array
      */
-    private function _getPendingChanges($key = null): array
+    private function _getPendingChanges(): array
     {
         $changes = [
             'newItems' => [],
@@ -605,12 +593,7 @@ class ProjectConfig extends Component
         $flatConfig = [];
         $flatCurrent = [];
 
-        if ($key) {
-            $configSnapshot = [$key => $configSnapshot[$key] ?? []];
-            $currentSnapshot = [$key => $currentSnapshot[$key] ?? []];
-        } else {
-            unset($configSnapshot['imports'], $currentSnapshot['imports']);
-        }
+        unset($configSnapshot['imports'], $currentSnapshot['imports']);
 
         // flatten both snapshots so we can compare them.
 
