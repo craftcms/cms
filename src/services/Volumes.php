@@ -735,49 +735,51 @@ class Volumes extends Component
             return;
         }
 
-        // Does it match a field group?
+        // Does it match a volume
         if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $volume = $this->_getVolumeRecord($uid);
 
-            $db = Craft::$app->getDb();
-            $transaction = $db->beginTransaction();
+            if ($volume) {
+                $db = Craft::$app->getDb();
+                $transaction = $db->beginTransaction();
 
-            try {
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select(['fieldLayoutId'])
-                    ->from(['{{%volumes}}'])
-                    ->where(['id' => $volume->id])
-                    ->scalar();
+                try {
+                    // Delete the field layout
+                    $fieldLayoutId = (new Query())
+                        ->select(['fieldLayoutId'])
+                        ->from(['{{%volumes}}'])
+                        ->where(['id' => $volume->id])
+                        ->scalar();
 
-                if ($fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                    if ($fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                    }
+
+                    // Delete the assets
+                    $assets = Asset::find()
+                        ->status(null)
+                        ->enabledForSite(false)
+                        ->volumeId($volume->id)
+                        ->all();
+
+                    foreach ($assets as $asset) {
+                        $asset->keepFileOnDelete = true;
+                        Craft::$app->getElements()->deleteElement($asset);
+                    }
+
+                    // Nuke the asset volume.
+                    $db->createCommand()
+                        ->delete('{{%volumes}}', ['id' => $volume->id])
+                        ->execute();
+
+                    $transaction->commit();
+                } catch (\Throwable $e) {
+                    $transaction->rollBack();
+
+                    throw $e;
                 }
-
-                // Delete the assets
-                $assets = Asset::find()
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->volumeId($volume->id)
-                    ->all();
-
-                foreach ($assets as $asset) {
-                    $asset->keepFileOnDelete = true;
-                    Craft::$app->getElements()->deleteElement($asset);
-                }
-
-                // Nuke the asset volume.
-                $db->createCommand()
-                    ->delete('{{%volumes}}', ['id' => $volume->id])
-                    ->execute();
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
         }
     }
