@@ -351,6 +351,7 @@ class Install extends Migration
             'type' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%fieldlayouttabs}}', [
@@ -790,6 +791,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['tabId'], false);
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['fieldId'], false);
+        $this->createIndex(null, '{{%fieldlayouts}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%fieldlayouts}}', ['type'], false);
         $this->createIndex(null, '{{%fieldlayouttabs}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%fieldlayouttabs}}', ['layoutId'], false);

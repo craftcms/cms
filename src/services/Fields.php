@@ -722,7 +722,10 @@ class Fields extends Component
         $results = $this->_createFieldQuery()
             ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin('{{%fieldlayouts}} fl', '[[fl.id]] = [[flf.layoutId]]')
-            ->where(['fl.type' => $elementType])
+            ->where([
+                'fl.type' => $elementType,
+                'fl.dateDeleted' => null,
+            ])
             ->all();
 
         $fields = [];
@@ -987,7 +990,7 @@ class Fields extends Component
         }
 
         $result = $this->_createLayoutQuery()
-            ->where(['id' => $layoutId])
+            ->andWhere(['id' => $layoutId])
             ->one();
 
         return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
@@ -1006,7 +1009,7 @@ class Fields extends Component
         }
 
         $result = $this->_createLayoutQuery()
-            ->where(['type' => $type])
+            ->andWhere(['type' => $type])
             ->one();
 
         if (!$result) {
@@ -1307,7 +1310,7 @@ class Fields extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%fieldlayouts}}', ['id' => $layout->id])
+            ->softDelete('{{%fieldlayouts}}', ['id' => $layout->id])
             ->execute();
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
@@ -1328,7 +1331,7 @@ class Fields extends Component
     public function deleteLayoutsByType(string $type): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete('{{%fieldlayouts}}', ['type' => $type])
+            ->softDelete('{{%fieldlayouts}}', ['type' => $type])
             ->execute();
 
         return (bool)$affectedRows;
@@ -1416,7 +1419,8 @@ class Fields extends Component
                 'id',
                 'type',
             ])
-            ->from(['{{%fieldlayouts}}']);
+            ->from(['{{%fieldlayouts}}'])
+            ->where(['dateDeleted' => null]);
     }
 
     /**

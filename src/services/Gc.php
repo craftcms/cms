@@ -56,7 +56,10 @@ class Gc extends Component
 
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
-        $this->hardDelete('{{%sites}}');
+        $this->hardDelete([
+            '{{%fieldlayouts}}',
+            '{{%sites}}',
+        ]);
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -65,12 +68,12 @@ class Gc extends Component
     }
 
     /**
-     * Hard-deletes any rows in the given table, that were soft-deleted long enough ago
+     * Hard-deletes any rows in the given table(s), that were soft-deleted long enough ago
      * to be ready for hard-deletion.
      *
-     * @param string $table The table to delete rows from. It must have a `dateDeleted` column.
+     * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete(string $table)
+    public function hardDelete($tables)
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
@@ -90,9 +93,15 @@ class Gc extends Component
             ];
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete($table, $condition)
-            ->execute();
+        if (!is_array($tables)) {
+            $tables = [$tables];
+        }
+
+        foreach ($tables as $table) {
+            Craft::$app->getDb()->createCommand()
+                ->delete($table, $condition)
+                ->execute();
+        }
     }
 
     /**
