@@ -997,9 +997,7 @@ class Sites extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $affectedRows = Craft::$app->getDb()->createCommand()
-                ->update('{{%sites}}', [
-                    'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
-                ], ['id' => $site->id], [], false)
+                ->softDelete('{{%sites}}', ['id' => $site->id])
                 ->execute();
 
             $transaction->commit();

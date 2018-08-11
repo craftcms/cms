@@ -399,4 +399,22 @@ abstract class Migration extends \yii\db\Migration
 
         return parent::createIndex($name, $table, $columns, $unique);
     }
+
+    /**
+     * Creates and executes a SQL statement for soft-deleting a row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     */
+    public function softDelete(string $table, $condition = '', array $params = [])
+    {
+        echo "    > soft delete from $table ...";
+        $time = microtime(true);
+        $this->db->createCommand()
+            ->softDelete($table, $condition, $params)
+            ->execute();
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+    }
 }
