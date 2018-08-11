@@ -830,6 +830,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%sessions}}', ['dateUpdated'], false);
         $this->createIndex(null, '{{%sessions}}', ['userId'], false);
         $this->createIndex(null, '{{%shunnedmessages}}', ['userId', 'message'], true);
+        $this->createIndex(null, '{{%sites}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%sites}}', ['handle'], false);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
