@@ -827,6 +827,7 @@ class GeneralConfig extends BaseObject
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
+        $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);
         $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
 
