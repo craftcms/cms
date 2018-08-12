@@ -57,6 +57,7 @@ class Gc extends Component
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
         $this->hardDelete([
+            '{{%elements}}',
             '{{%fieldlayouts}}',
             '{{%sites}}',
         ]);

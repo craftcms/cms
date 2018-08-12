@@ -1050,6 +1050,31 @@ EOD;
     /**
      * @inheritdoc
      */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        if ($this->structureId) {
+            // Remember the parent ID, in case the entry needs to be restored later
+            $parentId = $this->getAncestors(1)
+                ->anyStatus()
+                ->select(['elements.id'])
+                ->scalar();
+            if ($parentId) {
+                Craft::$app->getDb()->createCommand()
+                    ->update('{{%entries}}', ['parentId' => $parentId], ['id' => $this->id], [], false)
+                    ->execute();
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterMoveInStructure(int $structureId)
     {
         // Was the entry moved within its section's structure?

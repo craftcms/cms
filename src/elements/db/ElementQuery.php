@@ -145,6 +145,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $archived = false;
 
     /**
+     * @var bool|null Whether to return trashed (soft-deleted) elements.
+     * If this is set to `null`, then both trashed and non-trashed elements will be returned.
+     * @used-by trashed()
+     */
+    public $trashed = false;
+
+    /**
      * @var mixed When the resulting elements must have been created.
      * @used-by dateCreated()
      */
@@ -660,6 +667,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $trashed
+     */
+    public function trashed($value = true)
+    {
+        $this->trashed = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $dateCreated
      */
     public function dateCreated($value)
@@ -1085,6 +1102,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
+        }
+
+        if ($this->trashed === false) {
+            $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+        } else if ($this->trashed === true) {
+            $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
         }
 
         if ($this->dateCreated) {

@@ -216,12 +216,12 @@ class Elements extends Component
         }
 
         // First get the element ID and type
-
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
             ->from(['{{%elements}} elements'])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
+                'elements.dateDeleted' => null,
                 'elements_sites.uri' => $uri,
                 'elements_sites.siteId' => $siteId
             ]);
@@ -943,12 +943,12 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            // Delete the elements table rows, which will cascade across all other InnoDB tables
+            // Soft delete the elements table row
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%elements}}', ['id' => $element->id])
+                ->softDelete('{{%elements}}', ['id' => $element->id])
                 ->execute();
 
-            // The searchindex table is probably MyISAM, though
+            // Hard delete the search indexes
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%searchindex}}', ['elementId' => $element->id])
                 ->execute();
