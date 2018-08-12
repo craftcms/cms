@@ -630,6 +630,8 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
+        $elementsService = Craft::$app->getElements();
+
         /** @var Element $owner */
         /** @var MatrixBlockQuery $query */
         /** @var MatrixBlock[] $blocks */
@@ -661,7 +663,6 @@ class Matrix extends Component
                 $newQuery->ownerId = $owner->id;
                 if (!$newQuery->exists()) {
                     // Duplicate the blocks for the new owner
-                    $elementsService = Craft::$app->getElements();
                     foreach ($blocks as $block) {
                         $elementsService->duplicateElement($block, [
                             'ownerId' => $owner->id,
@@ -705,7 +706,7 @@ class Matrix extends Component
                 }
 
                 foreach ($deleteBlocksQuery->all() as $deleteBlock) {
-                    Craft::$app->getElements()->deleteElement($deleteBlock);
+                    $elementsService->deleteElement($deleteBlock);
                 }
             }
 
