@@ -125,6 +125,23 @@ Randomizes the order of the elements within an array.
 {% endfor %}
 ```
 
+## `siteUrl( path, params, scheme, siteId )`
+
+Similar to [url()](#url-path-params-protocol-mustshowscriptname), except _only_ for creating URLs to pages on your site.
+
+```twig
+<a href="{{ siteUrl('company/contact') }}">Contact Us</a>
+```
+
+### Arguments
+
+The `siteUrl()` function has the following arguments:
+
+* **`path`** – The path that the resulting URL should point to on your site. It will be appended to your base site URL.
+* **`params`** – Any query string parameters that should be appended to the URL. This can be either a string (e.g. `'foo=1&bar=2'`) or an object (e.g. `{foo:'1', bar:'2'}`).
+* **`scheme`** – Which scheme the URL should use (`'http'` or `'https'`). The default value depends on whether the current request is served over SSL or not. If not, then the scheme in your Site URL will be used; if so, then `https` will be used.
+* **`siteId`** – The ID of the site that the URL should point to. By default the current site will be used.
+
 ## `svg( svg, sanitize )`
 
 Outputs an SVG document, sanitized of potentially malicious scripts.
