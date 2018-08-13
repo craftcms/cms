@@ -596,7 +596,6 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -848,7 +847,6 @@ class Elements extends Component
             return $success;
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
     }
@@ -918,7 +916,6 @@ class Elements extends Component
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
@@ -958,10 +955,8 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
-
 
         // Fire an 'afterDeleteElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
