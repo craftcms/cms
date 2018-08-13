@@ -108,7 +108,7 @@ class AssetQuery extends ElementQuery
     public $kind;
 
     /**
-     * @var int|null The width (in pixels) that the resulting assets must have.
+     * @var mixed The width (in pixels) that the resulting assets must have.
      * ---
      * ```php{4}
      * // fetch images that are at least 500 pixels wide
@@ -129,7 +129,7 @@ class AssetQuery extends ElementQuery
     public $width;
 
     /**
-     * @var int|null The height (in pixels) that the resulting assets must have.
+     * @var mixed The height (in pixels) that the resulting assets must have.
      * ---
      * ```php{4}
      * // fetch images that are at least 500 pixels high
@@ -150,7 +150,7 @@ class AssetQuery extends ElementQuery
     public $height;
 
     /**
-     * @var int|null The size (in bytes) that the resulting assets must have.
+     * @var mixed The size (in bytes) that the resulting assets must have.
      * @used-by size()
      */
     public $size;
@@ -310,11 +310,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[$width]] property.
      *
-     * @param int|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $width
      */
-    public function width(int $value = null)
+    public function width($value)
     {
         $this->width = $value;
         return $this;
@@ -323,11 +323,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[$height]] property.
      *
-     * @param int|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $height
      */
-    public function height(int $value = null)
+    public function height($value)
     {
         $this->height = $value;
         return $this;
@@ -336,11 +336,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[$size]] property.
      *
-     * @param int|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $size
      */
-    public function size(int $value = null)
+    public function size($value)
     {
         $this->size = $value;
         return $this;
