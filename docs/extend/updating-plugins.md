@@ -323,7 +323,7 @@ public function getResourcePath($path)
 ```
 
 ::: warning NOTE
-There is no direct Craft 3 equivalent for this hook, which allowed plugins to handle resource requests, because the concept of resource requests has been removed in Craft 3. See [Asset Bundels](asset-bundles.md) to learn how plugins can serve resources in Craft 3.  
+There is no direct Craft 3 equivalent for this hook, which allowed plugins to handle resource requests, because the concept of resource requests has been removed in Craft 3. See [Asset Bundles](asset-bundles.md) to learn how plugins can serve resources in Craft 3.  
 :::
 
 #### `modifyCpNav`
