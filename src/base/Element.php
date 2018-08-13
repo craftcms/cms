@@ -920,6 +920,8 @@ abstract class Element extends Component implements ElementInterface
     public function attributeLabels()
     {
         $labels = [
+            'dateCreated' => Craft::t('app', 'Date Created'),
+            'dateUpdated' => Craft::t('app', 'Date Updated'),
             'id' => Craft::t('app', 'ID'),
             'slug' => Craft::t('app', 'Slug'),
             'title' => Craft::t('app', 'Title'),
