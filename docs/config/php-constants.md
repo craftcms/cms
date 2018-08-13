@@ -15,6 +15,10 @@ define('CRAFT_BASE_PATH', dirname(__DIR__, 2));
 
 The path to the [composer.json](../directory-structure.md#composer-json) file. (It is assumed to live within the base directory by default.)
 
+```php
+define('CRAFT_COMPOSER_PATH', 'path/to/composer.json');
+```
+
 ### `CRAFT_CONFIG_PATH`
 
 The path to the [config/](../directory-structure.md#config) folder. (It is assumed to live within the base directory by default.)
