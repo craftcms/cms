@@ -155,9 +155,9 @@ The `svg()` function has the following arguments:
 {{ svg(entry.myAssetsField.one()) }}
 ```
 
-## `url( path, params, protocol, mustShowScriptName )`
+## `url( path, params, scheme, mustShowScriptName )`
 
-Returns a URL to a page on your site.
+Returns a URL.
 
 ```twig
 <a href="{{ url('company/contact') }}">Contact Us</a>
@@ -169,11 +169,11 @@ The `url()` function has the following arguments:
 
 * **`path`** – The path that the resulting URL should point to on your site. It will be appended to your base site URL.
 * **`params`** – Any query string parameters that should be appended to the URL. This can be either a string (e.g. `'foo=1&bar=2'`) or an object (e.g. `{foo:'1', bar:'2'}`).
-* **`protocol`** – Which protocol the URL should use (`'http'` or `'https'`). The default value depends on whether the current request is served over SSL or not. If not, then the protocol in your Site URL will be used; if so, then `https` will be used.
+* **`scheme`** – Which scheme the URL should use (`'http'` or `'https'`). The default value depends on whether the current request is served over SSL or not. If not, then the scheme in your Site URL will be used; if so, then `https` will be used.
 * **`mustShowScriptName`** – If this is set to `true`, then the URL returned will include “index.php”, disregarding the <config:omitScriptNameInUrls> config setting. (This can be useful if the URL will be used by POST requests over Ajax, where the URL will not be shown in the browser’s address bar, and you want to avoid a possible collision with your site’s .htaccess file redirect.)
 
 ::: tip
-You can use the `url()` function for appending query string parameters and/or enforcing a protocol on an absolute URL:
+You can use the `url()` function for appending query string parameters and/or enforcing a scheme on an absolute URL:
 ```twig
 {{ url('http://my-project.com', 'foo=1', 'https') }}
 {# Outputs: "https://my-project.com?foo=1" #}
