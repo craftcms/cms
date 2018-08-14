@@ -28,6 +28,7 @@ Craft requires the following PHP extensions:
 
 * [cURL](http://php.net/manual/en/book.curl.php)
 * [GD](http://php.net/manual/en/book.image.php) or [ImageMagick](http://php.net/manual/en/book.imagick.php). ImageMagick is preferred.
+* [iconv](http://php.net/manual/en/book.iconv.php)
 * [JSON](http://php.net/manual/en/book.json.php)
 * [Multibyte String](http://php.net/manual/en/book.mbstring.php)
 * [OpenSSL](http://php.net/manual/en/book.openssl.php)
@@ -40,7 +41,6 @@ Craft requires the following PHP extensions:
 
 ## Optional PHP Extensions
 
-* [iconv](http://php.net/manual/en/book.iconv.php) – Adds support for more character encodings than PHP’s built-in [mb_convert_encoding()](http://php.net/manual/en/function.mb-convert-encoding.php) function, which Craft will take advantage of when converting strings to UTF-8.
 * [Intl](http://php.net/manual/en/book.intl.php) – Adds rich internationalization support.
 * [DOM](http://php.net/manual/en/book.dom.php) - Required for parsing XML feeds as well as <api:yii\web\XmlResponseFormatter>.
 
