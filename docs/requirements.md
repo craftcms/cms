@@ -26,14 +26,14 @@ If Craft CMS needs to process very large images or dump very large databases, yo
 
 Craft requires the following PHP extensions:
 
-* [PCRE](http://php.net/manual/en/book.pcre.php)
-* [PDO](http://php.net/manual/en/book.pdo.php)
-* [PDO MySQL Driver](http://php.net/manual/en/ref.pdo-mysql.php) or [PDO PostgreSQL Driver](http://php.net/manual/en/ref.pdo-pgsql.php)
-* [GD](http://php.net/manual/en/book.image.php) or [ImageMagick](http://php.net/manual/en/book.imagick.php). ImageMagick is preferred.
-* [OpenSSL](http://php.net/manual/en/book.openssl.php)
-* [Multibyte String](http://php.net/manual/en/book.mbstring.php)
-* [JSON](http://php.net/manual/en/book.json.php)
 * [cURL](http://php.net/manual/en/book.curl.php)
+* [GD](http://php.net/manual/en/book.image.php) or [ImageMagick](http://php.net/manual/en/book.imagick.php). ImageMagick is preferred.
+* [JSON](http://php.net/manual/en/book.json.php)
+* [Multibyte String](http://php.net/manual/en/book.mbstring.php)
+* [OpenSSL](http://php.net/manual/en/book.openssl.php)
+* [PCRE](http://php.net/manual/en/book.pcre.php)
+* [PDO MySQL Driver](http://php.net/manual/en/ref.pdo-mysql.php) or [PDO PostgreSQL Driver](http://php.net/manual/en/ref.pdo-pgsql.php)
+* [PDO](http://php.net/manual/en/book.pdo.php)
 * [Reflection](http://php.net/manual/en/class.reflectionextension.php)
 * [SPL](http://php.net/manual/en/book.spl.php)
 * [Zip](http://php.net/manual/en/book.zip.php)
