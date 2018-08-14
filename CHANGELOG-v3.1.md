@@ -19,7 +19,7 @@
 - Added `craft\db\Command::softDelete()`.
 - Added `craft\db\Migration::restore()`.
 - Added `craft\db\Migration::softDelete()`.
-- Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes. 
+- Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes.
 - Added `craft\elements\actions\Restore`, which can be included in elements’ `defineActions()` methods to opt into element restoration.
 - Added `craft\services\Categories::getGroupByUid()`.
 - Added `craft\services\Elements::restoreElement()`.
