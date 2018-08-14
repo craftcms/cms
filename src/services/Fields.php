@@ -148,7 +148,7 @@ class Fields extends Component
      */
     const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
 
-    const CONFIG_FIELDGROUP_KEY = 'fields';
+    const CONFIG_FIELDGROUP_KEY = 'fieldGroups';
     const CONFIG_FIELDS_KEY = 'fields';
 
     // Properties
@@ -303,7 +303,6 @@ class Fields extends Component
         } else {
             $groupRecord = $this->_getGroupRecord($group->id);
             $uid = $groupRecord->uid;
-            $configData[self::CONFIG_FIELDS_KEY] = $projectConfig->get(self::CONFIG_FIELDGROUP_KEY.'.'.$uid.'.'.self::CONFIG_FIELDS_KEY);
         }
 
         $projectConfig->save(self::CONFIG_FIELDGROUP_KEY.'.'.$uid, $configData);
@@ -347,11 +346,6 @@ class Fields extends Component
 
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
-
-            // Override the field information with snapshot data. This is because that data will get saved to the snapshot.
-            // So, if those config settings have been processed, we're replacing it with the exact same data, but if it has not,
-            // then we're not storing un processed data to the snapshot. Doing so would prevent them from being processed.
-            $event->configData['fields'] = $event->snapshotData['fields'] ?? [];
         }
     }
 
@@ -834,6 +828,7 @@ class Fields extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
         $configData = [
+            'fieldGroup' => $groupUid,
             'name' => $field->name,
             'handle' => $field->handle,
             'context' => $field->context,
@@ -850,15 +845,9 @@ class Fields extends Component
         } else {
             $uid = $field->uid;
             $oldFieldRecord = $this->_getFieldRecord($uid);
-            $oldGroupRecord = $this->_getGroupRecord($oldFieldRecord->groupId);
-
-            // If moving between groups, discard old data.
-            if ($oldGroupRecord->uid != $groupRecord->uid) {
-                $projectConfig->delete(self::CONFIG_FIELDGROUP_KEY.'.'.$oldGroupRecord->uid.'.'.self::CONFIG_FIELDS_KEY.'.'.$uid, true);
-            }
         }
 
-        $configPath = self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid.'.'.self::CONFIG_FIELDS_KEY.'.'.$uid;
+        $configPath = self::CONFIG_FIELDS_KEY.'.'.$uid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewField) {
@@ -911,16 +900,16 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field?
-        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
-            $groupUid = $matches[1];
-            $fieldUid = $matches[2];
+        if (preg_match('/^'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $data = $event->configData;
+            $groupUid = $data['fieldGroup'];
+            $fieldUid = $matches[1];
 
             // Ensure we have the field group in place first
             Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
 
-            $data = $event->configData;
-
             $transaction = Craft::$app->getDb()->beginTransaction();
+
             try {
                 $fieldRecord = $this->_getFieldRecord($fieldUid);
                 $groupRecord = $this->_getGroupRecord($groupUid);
@@ -1040,8 +1029,7 @@ class Fields extends Component
             return false;
         }
 
-        $group = $field->getGroup();
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY.'.'.$group->uid.'.'.self::CONFIG_FIELDS_KEY.'.'.$field->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDS_KEY.'.'.$field->uid, null);
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -1063,9 +1051,9 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field?
-        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
-            $field = $this->_getFieldRecord($matches[2]);
+            $field = $this->_getFieldRecord($matches[1]);
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
