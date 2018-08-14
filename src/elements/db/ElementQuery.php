@@ -2115,6 +2115,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
 
+            // If the query includes soft-deleted elements, include the date deleted
+            if ($this->trashed !== false) {
+                $select[] = 'elements.dateDeleted';
+            }
+
             // If the query already specifies any columns, merge those in too
             if (!empty($this->query->select)) {
                 $select = array_merge($select, $this->query->select);
@@ -2246,6 +2251,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
                 }
             }
+        }
+
+        if (array_key_exists('dateDeleted', $row)) {
+            $row['trashed'] = $row['dateDeleted'] !== null;
+            unset($row['dateDeleted']);
         }
 
         /** @var Element $element */
