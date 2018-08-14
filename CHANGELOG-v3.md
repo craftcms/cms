@@ -10,6 +10,7 @@
 - Fixed a bug where timepicker menus had a higher z-index than session expiration modal shades. ([#3186](https://github.com/craftcms/cms/issues/3186))
 - Fixed a bug where users could not log in after upgrading to Craft 3, if there was a custom field named `owner`.
 - Fixed a bug where it was not possible to set non-integer values on asset queries’ `width`, `height`, or `size` params. ([#3195](https://github.com/craftcms/cms/issues/3195))
+- Fixed a bug where all Asset folders were being initiated at once, resulting in performance issues.
 
 ## 3.0.19 - 2018-08-07
 

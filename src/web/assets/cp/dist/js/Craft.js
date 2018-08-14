@@ -1,4 +1,4 @@
-/*!   - 2018-08-08 */
+/*!   - 2018-08-14 */
 (function($){
 
 /** global: Craft */
@@ -1973,7 +1973,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.find('nav ul');
+            return this.$sidebar.find('nav>ul');
         },
 
         get $sources() {
