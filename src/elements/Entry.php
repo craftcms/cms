@@ -244,6 +244,7 @@ class Entry extends Element
 
         // Now figure out what we can do with these
         $actions = [];
+        $elementsService = Craft::$app->getElements();
 
         /** @var Section[] $sections */
         if (!empty($sections)) {
@@ -277,7 +278,7 @@ class Entry extends Element
 
             // Edit
             if ($canEdit) {
-                $actions[] = Craft::$app->getElements()->createAction([
+                $actions[] = $elementsService->createAction([
                     'type' => Edit::class,
                     'label' => Craft::t('app', 'Edit entry'),
                 ]);
@@ -299,7 +300,7 @@ class Entry extends Element
 
             if ($showViewAction) {
                 // View
-                $actions[] = Craft::$app->getElements()->createAction([
+                $actions[] = $elementsService->createAction([
                     'type' => View::class,
                     'label' => Craft::t('app', 'View entry'),
                 ]);
@@ -317,7 +318,7 @@ class Entry extends Element
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
                     if ($structure) {
-                        $actions[] = Craft::$app->getElements()->createAction([
+                        $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
@@ -331,7 +332,7 @@ class Entry extends Element
                     $userSessionService->checkPermission('deleteEntries:' . $section->id) &&
                     $userSessionService->checkPermission('deletePeerEntries:' . $section->id)
                 ) {
-                    $actions[] = Craft::$app->getElements()->createAction([
+                    $actions[] = $elementsService->createAction([
                         'type' => Delete::class,
                         'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
                         'successMessage' => Craft::t('app', 'Entries deleted.'),

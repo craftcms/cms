@@ -225,14 +225,13 @@ class Categories extends Component
             'handle' => $groupHandle
         ]);
 
-        if ($groupRecord) {
-            $group = $this->_createCategoryGroupFromRecord($groupRecord);
-            $this->_categoryGroupsById[$group->id] = $group;
-
-            return $group;
+        if (!$groupRecord) {
+            return null;
         }
 
-        return null;
+        $group = $this->_createCategoryGroupFromRecord($groupRecord);
+        $this->_categoryGroupsById[$group->id] = $group;
+        return $group;
     }
 
     /**

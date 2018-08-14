@@ -140,6 +140,7 @@ class Category extends Element
 
         // Now figure out what we can do with it
         $actions = [];
+        $elementsService = Craft::$app->getElements();
 
         if (!empty($group)) {
             // Set Status
@@ -151,7 +152,7 @@ class Category extends Element
             if ($controller instanceof ElementIndexesController) {
                 $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
                 if (isset($group->siteSettings[$siteId]) && $group->siteSettings[$siteId]->hasUrls) {
-                    $actions[] = Craft::$app->getElements()->createAction([
+                    $actions[] = $elementsService->createAction([
                         'type' => View::class,
                         'label' => Craft::t('app', 'View category'),
                     ]);
@@ -159,7 +160,7 @@ class Category extends Element
             }
 
             // Edit
-            $actions[] = Craft::$app->getElements()->createAction([
+            $actions[] = $elementsService->createAction([
                 'type' => Edit::class,
                 'label' => Craft::t('app', 'Edit category'),
             ]);
@@ -168,7 +169,7 @@ class Category extends Element
             $structure = Craft::$app->getStructures()->getStructureById($group->structureId);
 
             if ($structure) {
-                $actions[] = Craft::$app->getElements()->createAction([
+                $actions[] = $elementsService->createAction([
                     'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
                     'maxLevels' => $structure->maxLevels,
@@ -177,7 +178,7 @@ class Category extends Element
             }
 
             // Delete
-            $actions[] = Craft::$app->getElements()->createAction([
+            $actions[] = $elementsService->createAction([
                 'type' => Delete::class,
                 'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
                 'successMessage' => Craft::t('app', 'Categories deleted.'),
