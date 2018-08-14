@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.20 - 2018-08-14
 
 ### Added
 - Added `craft\services\Fields::refreshFields()`.
