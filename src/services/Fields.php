@@ -1338,6 +1338,21 @@ class Fields extends Component
     }
 
     /**
+     * Restores a field layout by its ID.
+     *
+     * @param int $id The field layout’s ID
+     * @return bool Whether the layout was restored successfully
+     */
+    public function restoreLayoutById(int $id): bool
+    {
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->restore('{{%fieldlayouts}}', ['id' => $id])
+            ->execute();
+
+        return (bool)$affectedRows;
+    }
+
+    /**
      * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
      * will get regenerated on the next request.
      *

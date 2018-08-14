@@ -1020,6 +1020,21 @@ class Sites extends Component
         return $success;
     }
 
+    /**
+     * Restores a site by its ID.
+     *
+     * @param int $id The site’s ID
+     * @return bool Whether the site was restored successfully
+     */
+    public function restoreSiteById(int $id): bool
+    {
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->restore('{{%sites}}', ['id' => $id])
+            ->execute();
+
+        return (bool)$affectedRows;
+    }
+
     // Private Methods
     // =========================================================================
 
