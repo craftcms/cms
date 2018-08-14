@@ -214,7 +214,7 @@ The asset folder ID(s) that the resulting assets must be in.
 
 Allowed types
 
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+:   `mixed`
 
 Defined by
 
@@ -445,7 +445,7 @@ The site ID that the elements should be returned in.
 
 Allowed types
 
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+:   `mixed`
 
 Defined by
 
@@ -593,7 +593,7 @@ $logos = \craft\elements\Asset::find()
 
 Allowed types
 
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+:   `mixed`
 
 Defined by
 
