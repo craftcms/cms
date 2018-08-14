@@ -1,49 +1,62 @@
 # Element Queries
 
-Element queries are [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder) that are tuned for fetching elements in Craft. They have several custom parameters, and they abstract away all the complexities of the actual SQL query needed to fetch the elements. Rather than raw data, they return element models.
+You can fetch elements in your templates or PHP code using **element queries**.
 
-## Creating Element Queries
-
-You can create element queries in both PHP and Twig code. Here’s how:
-
-| Element Type  | PHP                                      | Twig
-| ------------- | ---------------------------------------- | ----------------------
-| Assets        | <api:craft\elements\Asset::find()>       | `craft.assets()`
-| Categories    | <api:craft\elements\Category::find()>    | `craft.categories()`
-| Entries       | <api:craft\elements\Entry::find()>       | `craft.entries()`
-| Matrix blocks | <api:craft\elements\MatrixBlock::find()> | `craft.matrixBlocks()`
-| Tags          | <api:craft\elements\Tag::find()>         | `craft.tags()`
-| Users         | <api:craft\elements\User::find()>        | `craft.users()`
-
-## Setting Parameters
-
-Once you’ve created an element query, you can set parameters on it.
-
-The available parameters varies by element type. See the element query references for lists of parameters supported by Craft’s built-in element types:
-
-- [Asset Queries](asset-queries.md#parameters)
-- [Category Queries](category-queries.md#parameters)
-- [Entry Queries](entry-queries.md#parameters)
-- [Global Set Queries](global-set-queries.md#parameters)
-- [Matrix Block Queries](matrix-block-queries.md#parameters)
-- [Tag Queries](tag-queries.md#parameters)
-- [User Queries](user-queries.md#parameters)
-
-The parameters should be set with chained method calls, like so:
+To use them, call the function that maps to the element type you want to load (e.g. `craft.entries()`), [set some parameters](#setting-parameters) on it, and then [execute it](#executing-element-queries) by calling `all()`.
 
 ::: code
 ```twig
-{% set query = craft.entries()
+{% set entries = craft.entries()
     .section('news')
-    .limit(10) %}
+    .orderBy('postDate desc')
+    .limit(10)
+    .all()
+%}
 ```
-
 ```php
 use craft\elements\Entry;
 
-$query = Entry::find()
+$entries = Entry::find()
     ->section('news')
-    ->limit(10);
+    ->orderBy('postDate desc')
+    ->limit(10)
+    ->all();
+```
+:::
+
+Each element type has its own element query factory functions, and its own set of parameters, which are documented on the individual element query pages:
+
+- [Asset Queries](asset-queries.md)
+- [Category Queries](category-queries.md)
+- [Entry Queries](entry-queries.md)
+- [Global Set Queries](global-set-queries.md)
+- [Matrix Block Queries](matrix-block-queries.md)
+- [Tag Queries](tag-queries.md)
+- [User Queries](user-queries.md)
+
+::: tip
+Most custom fields support element query parameters as well, named after the field handles.
+:::
+
+## Setting Parameters
+
+Parameters should be set with chained function calls, like so:
+
+::: code
+```twig{2-3}
+{% set entries = craft.entries()
+    .section('news')
+    .limit(10)
+    .all()
+%}
+```
+```php{4-5}
+use craft\elements\Entry;
+
+$entries = Entry::find()
+    ->section('news')
+    ->limit(10)
+    ->all();
 ```
 :::
 
@@ -52,27 +65,35 @@ $query = Entry::find()
 You can also batch-set parameters like so:
 
 ::: code
-```twig
-{% set query = craft.entries({
-    section: 'news',
-    limit: 10
-}) %}
+```twig{2-6}
+{% set entries = craft.entries(
+    {
+        section: 'news',
+        orderBy: ['postDate' => SORT_DESC],
+        limit: 10
+    }
+).all() %}
 ```
-
 ```php
 use craft\elements\Entry;
 
 $query = Entry::find();
 \Craft::configure($query, [
     'section' => 'news',
+    'orderBy' => ['postDate' => SORT_DESC],
     'limit' => 10
 ]);
+$entries = $query->all();
 ```
+:::
+
+::: warning
+If you want to set the `orderBy` parameter like this, you must use the `['columnName' => SORT_ASC]` syntax rather than `'columnName asc'`.
 :::
 
 ### Param Value Syntax
 
-Most parameter values will get processed through <api:craft\helpers\Db::parseParam()> before being applied as a condition on the element query. That method makes things like the following possible:
+Most parameter values will get processed through <api:craft\helpers\Db::parseParam()> or [parseDateParam()](api:craft\helpers\Db::parseDateParam()) before being applied as a condition on the element query. That method makes things like the following possible:
 
 - `['and', 'value1', 'value2']`
 - `['or', 'value1', 'value2']`
@@ -89,76 +110,46 @@ Most parameter values will get processed through <api:craft\helpers\Db::parsePar
 - `'*value*'`
 - `'not *value*'`
 
-### Custom Field Parameters
+For example, if you want to load entries with a custom `eventDate` field set within a date range, you can do this:
 
-In addition to the core parameters, most custom fields support their own parameters as well.
-
-```twig
-{% set query = craft.entries()
-    .section('news')
-    .myCustomFieldHandle('param-value')
-    .all() %}
+::: code
+```twig{5}
+{% set start = date('first day of next month')|atom %}
+{% set end = date('last day of next month')|atom %}
+{% set entries = craft.entries()
+    .section('events')
+    .eventDate(['and', ">= #{start}", "<= #{end}"])
+    .all()
+%}
 ```
+```php{7}
+use craft\elements\Entry;
+
+$start = new \DateTime('first day of next month');
+$end = new \DateTime('last day of next month');
+$entries = Entry::find()
+    ->section('events')
+    ->eventDate(['and', ">= {$start}", "<= {$end}"])
+    ->all();
+```
+:::
 
 ## Executing Element Queries
 
-Once you’ve defined your parameters on the query, there are multiple methods available to execute it, depending on the data you need back.
-
-### `exists()`
-
-Returns whether any elements match the query.
-
-::: code
-```twig
-{% set exists = craft.entries()
-    .section('news')
-    .slug('hello-world')
-    .exists() %}
-```
-
-```php
-use craft\elements\Entry;
-
-$exists = Entry::find()
-    ->section('news')
-    ->slug('hello-world')
-    ->exists();
-```
-:::
-
-### `count()`
-
-Returns the total number of elements that are matched by the query.
-
-::: code
-```twig
-{% set count = craft.entries()
-    .section('news')
-    .count() %}
-```
-
-```php
-use craft\elements\Entry;
-
-$count = Entry::find()
-    ->section('news')
-    ->count();
-```
-:::
+Once you’ve defined your parameters on the query, there are multiple functions available to execute it, depending on what you need back.
 
 ### `all()`
 
-Returns all of the elements in an array.
+Most of the time, you just want to get the elements that you’re querying for. You do that with the `all()` function.
 
 ::: code
 ```twig
 {% set entries = craft.entries()
     .section('news')
     .limit(10)
-    .all() %}
+    .all()
+%}
 ```
-
-
 ```php
 use craft\elements\Entry;
 
@@ -171,16 +162,16 @@ $entries = Entry::find()
 
 ### `one()`
 
-Returns the first matching element, or `null` if there isn’t one.
+If you only need a single element, call `one()` instead of `all()`. It will either return the element or `null` if no matching element exists.
 
 ::: code
 ```twig
 {% set entry = craft.entries()
     .section('news')
     .slug('hello-world')
-    .one() %}
+    .one()
+%}
 ```
-
 ```php
 use craft\elements\Entry;
 
@@ -191,39 +182,63 @@ $entry = Entry::find()
 ```
 :::
 
-### `nth()`
+### `exists()`
 
-Returns the `n`th matching element, or `null` if there isn’t one. Note that `n` is 0-indexed, so `nth(0)` will give you the first element, `nth(1)` will give you the second, etc.
+If you just need to check if any elements exist that match the element query, you can call `exists()`, which will return either `true` or `false`.
 
 ::: code
-
 ```twig
-{% set entry = craft.entries()
+{% set exists = craft.entries()
     .section('news')
-    .nth(4) %}
+    .slug('hello-world')
+    .exists()
+%}
 ```
-
 ```php
 use craft\elements\Entry;
 
-$entry = Entry::find()
+$exists = Entry::find()
     ->section('news')
-    ->nth(4);
+    ->slug('hello-world')
+    ->exists();
 ```
+:::
+
+### `count()`
+
+If you want to know how many elements match your element query, you can call `count()`.
+
+::: code
+```twig
+{% set count = craft.entries()
+    .section('news')
+    .count()
+%}
+```
+```php
+use craft\elements\Entry;
+
+$count = Entry::find()
+    ->section('news')
+    ->count();
+```
+:::
+
+::: tip
+The `limit` and `offset` parameters will be ignored when you call `count()`.
 :::
 
 ### `ids()`
 
-Returns an array of the IDs of the matching elements.
+If you just a list of matching element IDs, you can call `ids()`.
 
 ::: code
-
 ```twig
 {% set entryIds = craft.entries()
     .section('news')
-    .ids() %}
+    .ids()
+%}
 ```
-
 ```php
 use craft\elements\Entry;
 
@@ -233,79 +248,49 @@ $entryIds = Entry::find()
 ```
 :::
 
-### `column()`
+## Advanced Element Queries
 
-Returns an array of all the first column’s values. By default that will be the elements’ IDs, but you can customize that with the `select()` param.
+Element queries are specialized [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder) under the hood, so they support most of the same methods provided by <api:craft\db\Query>.
 
-::: code
+### Selections
 
-```twig
-{% set uris = craft.entries()
-    .section('news')
-    .select('uri')
-    .column() %}
-```
+- [select()](api:yii\db\Query::select())
+- [addSelect()](api:yii\db\Query::addSelect())
+- [distinct()](api:yii\db\Query::distinct())
+- [groupBy()](api:yii\db\Query::groupBy())
 
-```php
-use craft\elements\Entry;
+### Joins
 
-$uris = Entry::find()
-    ->section('news')
-    ->select('uri')
-    ->column();
-```
-:::
+- [innerJoin()](api:yii\db\Query::innerJoin())
+- [leftJoin()](api:yii\db\Query::leftJoin())
+- [rightJoin()](api:yii\db\Query::rightJoin())
 
-### `scalar()`
+### Conditions
 
-Returns the first column’s value of the first matching element. By default that will be the element’s ID, but you can customize that with the `select()` param.
+- [where()](api:yii\db\QueryTrait::where())
+- [andWhere()](api:yii\db\QueryTrait::andWhere())
+- [orWhere()](api:yii\db\QueryTrait::orWhere())
+- [filterWhere()](api:yii\db\QueryTrait::filterWhere())
+- [andFilterWhere()](api:yii\db\QueryTrait::andFilterWhere())
+- [orFilterWhere()](api:yii\db\QueryTrait::orFilterWhere())
 
-::: code
-```twig
-{% set uri = craft.entries()
-    .section('news')
-    .slug('hello-world')
-    .select('uri')
-    .scalar() %}
-```
+### Query Execution
 
-```php
-use craft\elements\Entry;
+- [all()](api:yii\db\Query::all())
+- [one()](api:yii\db\Query::one())
+- [nth()](api:craft\db\Query::nth())
+- [exists()](api:yii\db\Query::exists())
+- [count()](api:yii\db\Query::count())
+- [column()](api:yii\db\Query::column())
+- [scalar()](api:yii\db\Query::scalar())
+- [sum()](api:yii\db\Query::sum())
+- [average()](api:yii\db\Query::average())
+- [min()](api:yii\db\Query::min())
+- [max()](api:yii\db\Query::max())
 
-$uri = Entry::find()
-    ->section('news')
-    ->slug('hello-world')
-    ->select('uri')
-    ->scalar();
-```
-:::
-
-### Aggregate Methods
-
-The following methods will run an aggregate method on the first column of matching elements, and return the result:
-
-- `sum()` – Returns the sum of all the values in the first column
-- `average()` – Returns the average number of all the values in the first column
-- `min()` – Returns the minimum number of all the values in the first column
-- `max()` – Returns the maximum number of all the values in the first column
-
-By default the first column will be the elements’ IDs, but you can customize that with the `select()` param.
-
-::: code
+::: tip
+When customizing an element query, you can call [getRawSql()](api:craft\db\Query::getRawSql()) to get the full SQL that is going to be executed by the query, so you have a better idea of what to modify.
 
 ```twig
-{% set sum = craft.entries()
-    .section('news')
-    .select('field_someNumberField')
-    .sum() %}
+{{ dump(query.getRawSql()) }}
 ```
-
-```php
-use craft\elements\Entry;
-
-$sum = Entry::find()
-    ->section('news')
-    ->select('field_someNumberField')
-    ->sum();
-```
-:::
