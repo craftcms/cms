@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
+use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
 use craft\elements\db\ElementQuery;
@@ -343,6 +344,14 @@ class Entry extends Element
                 }
             }
         }
+
+        // Restore
+        $actions[] = $elementsService->createAction([
+            'type' => Restore::class,
+            'successMessage' => Craft::t('app', 'Entries restored.'),
+            'partialSuccessMessage' => Craft::t('app', 'Some entries restored.'),
+            'failMessage' => Craft::t('app', 'Entries not restored.'),
+        ]);
 
         return $actions;
     }
@@ -1074,6 +1083,30 @@ EOD;
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore()
+    {
+        $section = $this->getSection();
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            // Add the entry back into its structure
+            $parent = self::find()
+                ->structureId($section->structureId)
+                ->innerJoin('{{%entries}} j', '[[j.parentId]] = [[elements.id]]')
+                ->andWhere(['j.id' => $this->id])
+                ->one();
+
+            if (!$parent) {
+                Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
+            } else {
+                Craft::$app->getStructures()->append($section->structureId, $this, $parent);
+            }
+        }
+
+        parent::afterRestore();
     }
 
     /**

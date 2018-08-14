@@ -19,6 +19,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
@@ -666,6 +667,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         return parent::beforeElementDelete($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementRestore(ElementInterface $element)
+    {
+        // Also restore any Matrix blocks for this element
+        $elementsService = Craft::$app->getElements();
+        foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
+            $blocks = MatrixBlock::find()
+                ->anyStatus()
+                ->siteId($siteInfo['siteId'])
+                ->ownerId($element->id)
+                ->trashed()
+                ->all();
+
+            foreach ($blocks as $block) {
+                $elementsService->restoreElement($block);
+            }
+        }
+
+        parent::afterElementRestore($element);
     }
 
     // Private Methods

@@ -191,6 +191,17 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_DELETE = 'afterDelete';
 
     /**
+     * @event ModelEvent The event that is triggered before the element is restored
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting restored.
+     */
+    const EVENT_BEFORE_RESTORE = 'beforeRestore';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is restored
+     */
+    const EVENT_AFTER_RESTORE = 'afterRestore';
+
+    /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
      *
      * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
@@ -1879,6 +1890,41 @@ abstract class Element extends Component implements ElementInterface
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeRestore(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementRestore($this)) {
+                return false;
+            }
+        }
+
+        // Trigger a 'beforeRestore' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore()
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementRestore($this);
+        }
+
+        // Trigger an 'afterRestore' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE)) {
+            $this->trigger(self::EVENT_AFTER_RESTORE);
         }
     }
 

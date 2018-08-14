@@ -1301,6 +1301,16 @@ class Asset extends Element
         parent::afterDelete();
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeRestore(): bool
+    {
+        // todo: maybe we can at least see if the file is still around first
+        // Assets can't be restored
+        return false;
+    }
+
     // Private Methods
     // =========================================================================
 

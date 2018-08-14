@@ -706,6 +706,13 @@ class Matrix extends Component
                 }
 
                 foreach ($deleteBlocksQuery->all() as $deleteBlock) {
+                    // Disable it first, in case the block ends up getting restored along with
+                    // its owner element after a soft delete, so at least it won’t be enabled.
+                    if ($deleteBlock->enabled) {
+                        $deleteBlock->enabled = false;
+                        $elementsService->saveElement($deleteBlock, false, false);
+                    }
+
                     $elementsService->deleteElement($deleteBlock);
                 }
             }

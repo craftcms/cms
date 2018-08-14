@@ -868,8 +868,8 @@ class Install extends Migration
         $this->createIndex(null, '{{%userpermissions_usergroups}}', ['groupId'], false);
         $this->createIndex(null, '{{%userpermissions_users}}', ['permissionId', 'userId'], true);
         $this->createIndex(null, '{{%userpermissions_users}}', ['userId'], false);
-        $this->createIndex(null, '{{%users}}', ['username'], true);
-        $this->createIndex(null, '{{%users}}', ['email'], true);
+        $this->createIndex(null, '{{%users}}', ['username'], false);
+        $this->createIndex(null, '{{%users}}', ['email'], false);
         $this->createIndex(null, '{{%users}}', ['uid'], false);
         $this->createIndex(null, '{{%users}}', ['verificationCode'], false);
         $this->createIndex(null, '{{%volumefolders}}', ['name', 'parentId', 'volumeId'], true);

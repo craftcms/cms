@@ -1734,6 +1734,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
+        if ($this->trashed) {
+            return;
+        }
+
         if (!$this->_shouldJoinStructureData()) {
             $structureParams = [
                 'hasDescendants',
