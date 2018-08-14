@@ -313,10 +313,6 @@ class Sites extends Component
 
             $groupRecord->name = $data['name'];
             $groupRecord->save(false);
-
-            // Prevent site information from being saved. Allowing it would prevent the appropriate event from firing.
-            $event->configData['sites'] = $event->snapshotData['sites'] ?? [];
-
         }
     }
 
@@ -921,8 +917,6 @@ class Sites extends Component
         if (!$event->isValid) {
             return false;
         }
-
-        $group = $site->getGroup();
 
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
