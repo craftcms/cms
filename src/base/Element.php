@@ -77,7 +77,6 @@ use yii\validators\Validator;
  * @property ElementQueryInterface $siblings All of the element’s siblings
  * @property Site $site Site the element is associated with
  * @property string|null $status The element’s status
- * @property int|null $structureId The ID of the structure that the element is associated with, if any
  * @property int[]|array $supportedSites The sites this element is associated with
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
@@ -921,6 +920,8 @@ abstract class Element extends Component implements ElementInterface
     public function attributeLabels()
     {
         $labels = [
+            'dateCreated' => Craft::t('app', 'Date Created'),
+            'dateUpdated' => Craft::t('app', 'Date Updated'),
             'id' => Craft::t('app', 'ID'),
             'slug' => Craft::t('app', 'Slug'),
             'title' => Craft::t('app', 'Title'),

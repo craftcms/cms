@@ -3054,10 +3054,20 @@ ul.tree,
 }
 
 /* logout warning/login/elevated session modals */
+.logoutwarningmodalshade,
+.loginmodalshade {
+  z-index: 101;
+}
+
 #logoutwarningmodal,
 #loginmodal,
 #elevatedsessionmodal {
   width: 500px;
+}
+
+#logoutwarningmodal,
+#loginmodal {
+  z-index: 101;
 }
 
 #loginmodal,
