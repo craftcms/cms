@@ -214,6 +214,27 @@ class Categories extends Component
     }
 
     /**
+     * Returns a group by its UID.
+     *
+     * @param string $uid
+     * @return CategoryGroup|null
+     */
+    public function getGroupByUid(string $uid)
+    {
+        $groupRecord = CategoryGroupRecord::findOne([
+            'uid' => $uid
+        ]);
+
+        if (!$groupRecord) {
+            return null;
+        }
+
+        $group = $this->_createCategoryGroupFromRecord($groupRecord);
+        $this->_categoryGroupsById[$group->id] = $group;
+        return $group;
+    }
+
+    /**
      * Returns a group by its handle.
      *
      * @param string $groupHandle

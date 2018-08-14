@@ -8,5 +8,7 @@
 - Added `craft\db\Command::softDelete()`.
 - Added `craft\db\Migration::softDelete()`.
 - Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes. 
+- Added `craft\services\Categories::getGroupByUid()`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
+- Added `craft\services\Sections::getSectionByUid()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.

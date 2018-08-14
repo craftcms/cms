@@ -344,6 +344,36 @@ class Sections extends Component
     }
 
     /**
+     * Gets a section by its UID.
+     *
+     * ---
+     *
+     * ```php
+     * $section = Craft::$app->sections->getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2');
+     * ```
+     * ```twig
+     * {% set section = craft.app.sections.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
+     * ```
+     *
+     * @param string $uid
+     * @return Section|null
+     */
+    public function getSectionByUid(string $uid)
+    {
+        $result = $this->_createSectionQuery()
+            ->where(['sections.uid' => $uid])
+            ->one();
+
+        if (!$result) {
+            return null;
+        }
+
+        $section = new Section($result);
+        $this->_sectionsById[$section->id] = $section;
+        return $section;
+    }
+
+    /**
      * Gets a section by its handle.
      *
      * ---
