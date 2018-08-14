@@ -113,6 +113,10 @@ ENVIRONMENT="dev"
 If the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant isn’t defined, Craft will define it for you based on the current server name (e.g. `my-project.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
 :::
 
+::: warning
+The `'*'` array is required to enable Craft’s multi-environment config support, even if it’s blank. Craft checks for it when determining whether a config is multi-environment or not.
+:::
+
 ## Aliases
 
 [Aliases](README.md#aliases) provide a way to define paths and URLs on a per-environment basis.
