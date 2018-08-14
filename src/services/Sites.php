@@ -109,7 +109,7 @@ class Sites extends Component
      */
     const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
-    const CONFIG_SITEGROUP_KEY = 'sites';
+    const CONFIG_SITEGROUP_KEY = 'siteGroups';
     const CONFIG_SITES_KEY = 'sites';
 
     // Properties
@@ -269,7 +269,6 @@ class Sites extends Component
         } else {
             $groupRecord = $this->_getGroupRecord($group->id);
             $uid = $groupRecord->uid;
-            $configData[self::CONFIG_SITES_KEY] = $projectConfig->get(self::CONFIG_SITEGROUP_KEY.'.'.$uid.'.'.self::CONFIG_SITES_KEY);
         }
 
         $projectConfig->save(self::CONFIG_SITEGROUP_KEY.'.'.$uid, $configData);
@@ -662,6 +661,7 @@ class Sites extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
         $configData = [
+            'siteGroup' => $groupUid,
             'name' => $site->name,
             'handle' => $site->handle,
             'language' => $site->language,
@@ -679,17 +679,9 @@ class Sites extends Component
                 ->max('[[sortOrder]]')) + 1;
         } else {
             $uid = Db::uidById('{{%sites}}', $site->id);
-            $oldSiteRecord = $this->_getSiteRecord($uid);
-            $oldGroupRecord = $this->_getGroupRecord($oldSiteRecord->groupId);
-
-            // If moving between groups, discard old data.
-            if ($oldGroupRecord->uid != $groupRecord->uid) {
-                $projectConfig->delete(self::CONFIG_SITEGROUP_KEY.'.'.$oldGroupRecord->uid.'.'.self::CONFIG_SITES_KEY.'.'.$uid, true);
-            }
-
         }
 
-        $configPath = self::CONFIG_SITEGROUP_KEY.'.'.$groupUid.'.'.self::CONFIG_SITES_KEY.'.'.$uid;
+        $configPath = self::CONFIG_SITES_KEY.'.'.$uid;
         $projectConfig->save($configPath, $configData);
 
         // Now that we have a site ID, save it on the model
@@ -723,18 +715,18 @@ class Sites extends Component
         $path = $event->configPath;
 
         // Does it match a site?
-        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
-            $groupUid = $matches[1];
-            $siteUid = $matches[2];
+        if (preg_match('/^'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $siteUid = $matches[1];
+            $data = $event->configData;
+            $groupUid = $data['siteGroup'];
 
             // Ensure we have the site group in place first
             Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY.'.'.$groupUid);
 
-            $data = $event->configData;
-
             $transaction = Craft::$app->getDb()->beginTransaction();
 
             try {
+
                 $siteRecord = $this->_getSiteRecord($siteUid);
                 $groupRecord = $this->_getGroupRecord($groupUid);
 
@@ -801,7 +793,7 @@ class Sites extends Component
                     foreach ($allSiteSettings as $siteSettings) {
                         $newSiteSettings[] = [
                             $siteSettings['groupId'],
-                            $site->id,
+                            $siteRecord->id,
                             $siteSettings['uriFormat'],
                             $siteSettings['template'],
                             $siteSettings['hasUrls']
@@ -1099,7 +1091,7 @@ class Sites extends Component
             }
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_SITEGROUP_KEY.'.'.$group->uid.'.'.self::CONFIG_SITES_KEY.'.'.$site->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SITES_KEY.'.'.$site->uid, null);
 
         // Fire an 'afterDeleteSite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
@@ -1125,9 +1117,9 @@ class Sites extends Component
         $path = $event->configPath;
 
         // Does it match a site?
-        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
-            $site = $this->_getSiteRecord($matches[2]);
+            $site = $this->_getSiteRecord($matches[1]);
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
