@@ -74,8 +74,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
     {
 
         $data = [
+            'siteGroups' => $this->_getSiteGroupData(),
             'sites' => $this->_getSiteData(),
             'sections' => $this->_getSectionData(),
+            'fieldGroups' => $this->_getFieldGroupData(),
             'fields' => $this->_getFieldData(),
             'volumes' => $this->_getVolumeData(),
             'categoryGroups' => $this->_getCategoryGroupData(),
@@ -84,10 +86,34 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'globalSets' => $this->_getGlobalSetData(),
         ];
 
-        //$data = array_merge_recursive($data, $this->_getSystemSettingData());
+        $data = array_merge_recursive($data, $this->_getSystemSettingData());
 
         return $data;
 
+    }
+
+    /**
+     * Return site data config array.
+     *
+     * @return array
+     */
+    private function _getSiteGroupData(): array
+    {
+        $data = [];
+
+        $siteGroups = (new Query())
+            ->select([
+                'uid',
+                'name',
+            ])
+            ->from('{{%sitegroups}}')
+            ->pairs();
+
+        foreach ($siteGroups as $uid => $name) {
+            $data[$uid] = ['name' => $name];
+        }
+
+        return $data;
     }
 
     /**
@@ -99,46 +125,29 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
     {
         $data = [];
 
-        $siteGroups = (new Query())
-            ->select([
-                'id',
-                'name',
-                'uid',
-            ])
-            ->from('{{%sitegroups}}')
-            ->all();
-
-        $siteGroupMap = [];
-        foreach ($siteGroups as $siteGroup) {
-            $siteGroup['sites'] = [];
-            $siteGroupMap[$siteGroup['id']] = $siteGroup['uid'];
-
-            $data[$siteGroupMap[$siteGroup['id']]] = $siteGroup;
-            unset($data[$siteGroupMap[$siteGroup['id']]]['id'], $data[$siteGroupMap[$siteGroup['id']]]['uid']);
-        }
-
         $sites = (new Query())
             ->select([
-                'name',
-                'handle',
-                'language',
-                'hasUrls',
-                'baseUrl',
-                'sortOrder',
-                'groupId',
-                'uid',
-                'primary'
+                'sites.name',
+                'sites.handle',
+                'sites.language',
+                'sites.hasUrls',
+                'sites.baseUrl',
+                'sites.sortOrder',
+                'sites.groupId',
+                'sites.uid',
+                'sites.primary',
+                'siteGroups.uid AS siteGroup'
             ])
-            ->from('{{%sites}}')
+            ->from('{{%sites}} sites')
+            ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
             ->all();
 
         foreach ($sites as $site) {
-            $target = $siteGroupMap[$site['groupId']];
             $uid = $site['uid'];
 
-            unset($site['groupId'], $site['uid']);
+            unset($site['uid']);
 
-            $data[$target]['sites'][$uid] = $site;
+            $data[$uid] = $site;
         }
 
         return $data;
@@ -252,53 +261,62 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      *
      * @return array
      */
-    private function _getFieldData(): array
+    private function _getFieldGroupData(): array
     {
         $data = [];
 
         $fieldGroups = (new Query())
             ->select([
-                'id',
-                'name',
                 'uid',
+                'name',
             ])
             ->from(['{{%fieldgroups}}'])
-            ->all();
+            ->pairs();
 
-        $fieldGroupMap = [];
 
-        foreach ($fieldGroups as $fieldGroup) {
-            $fieldGroup['fields'] = [];
-            $fieldGroupMap[$fieldGroup['id']] = $fieldGroup['uid'];
-            $data[$fieldGroupMap[$fieldGroup['id']]] = $fieldGroup;
-            unset($data[$fieldGroupMap[$fieldGroup['id']]]['id'], $data[$fieldGroupMap[$fieldGroup['id']]]['uid']);
+        foreach ($fieldGroups as $uid => $name) {
+            $data[$uid] = ['name' => $name];
         }
+
+        return $data;
+    }
+
+    /**
+     * Return field data config array.
+     *
+     * @return array
+     */
+    private function _getFieldData(): array
+    {
+        $data = [];
 
         $fieldRows= (new Query())
             ->select([
-                'id',
-                'groupId',
-                'name',
-                'handle',
-                'context',
-                'instructions',
-                'translationMethod',
-                'translationKeyFormat',
-                'type',
-                'settings',
-                'uid',
+                'fields.id',
+                'fields.name',
+                'fields.handle',
+                'fields.context',
+                'fields.instructions',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
+                'fields.type',
+                'fields.settings',
+                'fields.uid',
+                'fieldGroups.uid AS fieldGroup'
             ])
-            ->from('{{%fields}}')
+            ->from('{{%fields}} fields')
+            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
             ->all();
 
         $fields = [];
         $fieldService = Craft::$app->getFields();
 
-        // Index by UID
+        // Massage the data and index by UID
         foreach ($fieldRows as $fieldRow) {
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+            unset($fieldRow['id']);
             $fields[$fieldRow['uid']] = $fieldRow;
 
         }
@@ -328,35 +346,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
-        // Nest the field definitions inside Matrix block type definitions.
-        foreach ($matrixBlockTypes as $matrixBlockType) {
-            $fieldId = $matrixBlockType['fieldId'];
-            $layoutUid = $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['uid'];
-
-            foreach ($matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]['tabs'] as &$tab) {
-                $tabFields = [];
-
-                foreach ($tab['fields'] as $fieldUid => $field) {
-                    // Replace the dependency with actual definition
-                    $fieldDefinition = $fields[$fieldUid];
-
-                    unset($fieldDefinition['uid'], $fieldDefinition['id'], $fieldDefinition['groupId']);
-
-                    $tabFields[$fieldUid] = [
-                        'sortOrder' => $field['sortOrder'],
-                        'required' => $field['required'],
-                        'field' => $fieldDefinition
-                    ];
-                }
-
-                $tab['fields'] = $tabFields;
-            }
-
-            $blockTypeData[$fieldId][$matrixBlockType['uid']]['layouts'] = [$layoutUid => $matrixFieldLayouts[$matrixBlockType['fieldLayoutId']]];
-            unset($blockTypeData[$fieldId][$matrixBlockType['uid']]['fieldLayoutId'], $blockTypeData[$fieldId][$matrixBlockType['uid']]['layouts'][$layoutUid]['uid']);
-
-        }
-
         foreach ($blockTypeData as &$blockTypes) {
             foreach ($blockTypes as &$blockType) {
                 unset($blockType['uid']);
@@ -364,17 +353,12 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         }
 
         foreach ($fields as $field) {
-            if (empty($field['groupId'])) {
-                continue;
-            }
-
             if ($field['type'] === 'craft\fields\Matrix') {
                 $field['blockTypes'] = $blockTypeData[$field['id']];
             }
             $fieldUid = $field['uid'];
-            $groupId = $field['groupId'];
-            unset($field['id'], $field['uid'], $field['groupId']);
-            $data[$fieldGroupMap[$groupId]]['fields'][$fieldUid] = $field;
+            unset($field['id'], $field['uid']);
+            $data['fields'][$fieldUid] = $field;
         }
 
         return $data;
