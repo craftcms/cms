@@ -5,6 +5,7 @@
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `softDeleteDuration` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.
+- Added the `trashed` element query param, which can be used to query for elements that have been soft-deleted.
 - Added `craft\db\Command::softDelete()`.
 - Added `craft\db\Migration::softDelete()`.
 - Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes. 
