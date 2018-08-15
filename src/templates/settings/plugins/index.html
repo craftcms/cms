@@ -42,12 +42,12 @@
                                         <p class="links">
                                             {%- spaceless %}
                                             {#{% if config.developerUrl %}#}
-                                                {#<a href="{{ config.developerUrl }}" target="_blank">{{ config.developer ?: config.developerUrl }}</a>#}
+                                                {#<a href="{{ config.developerUrl }}" rel="noopener" target="_blank">{{ config.developer ?: config.developerUrl }}</a>#}
                                             {#{% elseif config.developer %}#}
                                                 {#{{ config.developer }}#}
                                             {#{% endif %}#}
                                             {% if config.documentationUrl %}
-                                                <a href="{{ config.documentationUrl }}" target="_blank">{{ "Documentation"|t('app') }}</a>
+                                                <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
                                             {% endif %}
                                             {% if config.hasCpSettings %}
                                                 <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>

@@ -2040,7 +2040,7 @@ abstract class Element extends Component implements ElementInterface
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return '<a href="' . $url . '" target="_blank" data-icon="world" title="' . Craft::t('app', 'Visit webpage') . '"></a>';
+                    return '<a href="' . $url . '" rel="noopener" target="_blank" data-icon="world" title="' . Craft::t('app', 'Visit webpage') . '"></a>';
                 }
 
                 return '';
@@ -2068,7 +2068,7 @@ abstract class Element extends Component implements ElementInterface
                         $value = str_replace($find, $replace, $value);
                     }
 
-                    return '<a href="' . $url . '" target="_blank" class="go" title="' . Craft::t('app', 'Visit webpage') . '"><span dir="ltr">' . $value . '</span></a>';
+                    return '<a href="' . $url . '" rel="noopener" target="_blank" class="go" title="' . Craft::t('app', 'Visit webpage') . '"><span dir="ltr">' . $value . '</span></a>';
                 }
 
                 return '';

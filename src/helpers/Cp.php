@@ -81,7 +81,7 @@ class Cp
             // Domain mismatch?
             if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
-                $domainLink = '<a href="http://' . $licensedDomain . '" target="_blank">' . $licensedDomain . '</a>';
+                $domainLink = '<a href="http://' . $licensedDomain . '" rel="noopener" target="_blank">' . $licensedDomain . '</a>';
 
                 if (defined('CRAFT_LICENSE_KEY')) {
                     $message = Craft::t('app', 'The license key in use belongs to {domain}', [
