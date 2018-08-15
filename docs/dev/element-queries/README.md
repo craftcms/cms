@@ -69,7 +69,7 @@ You can also batch-set parameters like so:
 {% set entries = craft.entries(
     {
         section: 'news',
-        orderBy: ['postDate' => SORT_DESC],
+        orderBy: {'postDate': SORT_DESC},
         limit: 10
     }
 ).all() %}
