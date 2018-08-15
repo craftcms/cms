@@ -1,4 +1,4 @@
-/*!   - 2018-08-14 */
+/*!   - 2018-08-15 */
 (function($){
 
 /** global: Craft */
@@ -10874,7 +10874,7 @@ Craft.CP = Garnish.Base.extend(
             // hat tip: https://stackoverflow.com/a/2911045/1688568
             $('a').each(function() {
                 if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
-                    $(this).attr('target', '_blank')
+                    $(this).attr('rel', 'noopener').attr('target', '_blank')
                 }
             });
         },
