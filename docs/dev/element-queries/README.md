@@ -69,7 +69,7 @@ You can also batch-set parameters like so:
 {% set entries = craft.entries(
     {
         section: 'news',
-        orderBy: ['postDate' => SORT_DESC],
+        orderBy: {'postDate': SORT_DESC},
         limit: 10
     }
 ).all() %}
@@ -88,7 +88,7 @@ $entries = $query->all();
 :::
 
 ::: warning
-If you want to set the `orderBy` parameter like this, you must use the `['columnName' => SORT_ASC]` syntax rather than `'columnName asc'`.
+If you want to set the `orderBy` parameter like this, you must use the `{'columnName': SORT_ASC}` syntax rather than `'columnName asc'`.
 :::
 
 ### Param Value Syntax
@@ -125,8 +125,8 @@ For example, if you want to load entries with a custom `eventDate` field set wit
 ```php{7}
 use craft\elements\Entry;
 
-$start = new \DateTime('first day of next month');
-$end = new \DateTime('last day of next month');
+$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('last day of next month')->format(\DateTime::ATOM);
 $entries = Entry::find()
     ->section('events')
     ->eventDate(['and', ">= {$start}", "<= {$end}"])
