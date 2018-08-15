@@ -226,6 +226,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'entrytypes.hasTitleField',
                 'entrytypes.titleLabel',
                 'entrytypes.titleFormat',
+                'entrytypes.sortOrder',
                 'entrytypes.uid',
                 'sections.uid AS sectionUid'
             ])
