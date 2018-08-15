@@ -124,9 +124,10 @@ For example, if you want to load entries with a custom `eventDate` field set wit
 ```
 ```php{7}
 use craft\elements\Entry;
+use craft\helpers\Db;
 
-$start = new \DateTime('first day of next month');
-$end = new \DateTime('last day of next month');
+$start =  Db::prepareDateForDb(new \DateTime('first day of next month'));
+$end =  Db::prepareDateForDb(new \DateTime('last day of next month'));
 $entries = Entry::find()
     ->section('events')
     ->eventDate(['and', ">= {$start}", "<= {$end}"])
