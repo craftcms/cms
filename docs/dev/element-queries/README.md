@@ -88,7 +88,7 @@ $entries = $query->all();
 :::
 
 ::: warning
-If you want to set the `orderBy` parameter like this, you must use the `['columnName' => SORT_ASC]` syntax rather than `'columnName asc'`.
+If you want to set the `orderBy` parameter like this, you must use the `{'columnName': SORT_ASC}` syntax rather than `'columnName asc'`.
 :::
 
 ### Param Value Syntax
@@ -126,7 +126,7 @@ For example, if you want to load entries with a custom `eventDate` field set wit
 use craft\elements\Entry;
 
 $start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end =  new \DateTime('last day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('last day of next month')->format(\DateTime::ATOM);
 $entries = Entry::find()
     ->section('events')
     ->eventDate(['and', ">= {$start}", "<= {$end}"])
