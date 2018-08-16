@@ -446,12 +446,10 @@ class m160807_144858_sites extends Migration
                 $settings = [];
             } else {
                 $settings = Json::decodeIfJson($field['settings']);
-            }
-
-
-            if (!is_array($settings)) {
-                echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
-                $settings = [];
+                if (!is_array($settings)) {
+                    echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
+                    $settings = [];
+                }
             }
 
             $localized = ($field['translationMethod'] === 'site');
