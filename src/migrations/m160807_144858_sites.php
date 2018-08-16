@@ -441,7 +441,13 @@ class m160807_144858_sites extends Migration
 
         foreach ($fields as $field) {
 
-            $settings = Json::decodeIfJson($field['settings']);
+            if ($field['settings'] === null) {
+                echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were null' . "\n";
+                $settings = [];
+            } else {
+                $settings = Json::decodeIfJson($field['settings']);
+            }
+
 
             if (!is_array($settings)) {
                 echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
