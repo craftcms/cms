@@ -11,6 +11,7 @@
 - Fixed a bug where password inputs’ jQuery data was getting erased when the “Show” button was clicked.
 - Fixed an error that could occur when upgrading to Craft 3. ([#3208](https://github.com/craftcms/cms/pull/3208))
 - Fixed a bug where non-image assets’ file extension icons could bleed out of the preview area within asset editor HUDs. ([#3209](https://github.com/craftcms/cms/issues/3209))
+- Fixed a bug where Craft wasn’t saving a new entry version when reverting an entry to a previous version. ([#3210](https://github.com/craftcms/cms/issues/3210))
 
 ### Security
 - External links in the Control Panel now set `rel="noopener"`. ([#3201](https://github.com/craftcms/cms/issues/3201))
