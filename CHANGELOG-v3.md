@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- The “New Password” input on the My Account page now has a “Show” button, like other password inputs in the Control Panel.
+
 ### Fixed
 - Fixed a SQL error that occurred when saving a user if a `craft\elements\User::EVENT_BEFORE_SAVE` event listener was setting `$event->isValid = false`. ([#3206](https://github.com/craftcms/cms/issues/3206))
 - Fixed a bug where password inputs’ jQuery data was getting erased when the “Show” button was clicked.

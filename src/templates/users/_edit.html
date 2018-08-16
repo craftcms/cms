@@ -105,6 +105,10 @@
                         type: 'password',
                         errors: user.getErrors('newPassword')
                     }) }}
+
+                    {% js %}
+                        new Craft.PasswordInput('#newPassword');
+                    {% endjs %}
                 {% endif %}
 
                 {% if currentUser.admin %}
