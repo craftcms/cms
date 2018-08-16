@@ -43,16 +43,16 @@ class ProjectConfig
 
         $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true);
+        $allFields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY, true);
 
         foreach ($allGroups as $groupUid => $groupData) {
-            $path = Fields::CONFIG_FIELDGROUP_KEY.'.';
             // Ensure group is processed
-            $projectConfig->processConfigChanges($path.$groupUid);
+            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
+        }
 
-            foreach ($groupData[Fields::CONFIG_FIELDS_KEY] as $fieldUid => $fieldData) {
-                // Ensure field is processed
-                $projectConfig->processConfigChanges($path.$groupUid.'.'.Fields::CONFIG_FIELDS_KEY.'.'.$fieldUid);
-            }
+        foreach ($allFields as $fieldUid => $fieldData) {
+            // Ensure field is processed
+            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY.'.'.$fieldUid);
         }
     }
 
@@ -71,17 +71,18 @@ class ProjectConfig
 
         $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true);
+        $allSites = $projectConfig->get(Sites::CONFIG_SITES_KEY, true);
 
         foreach ($allGroups as $groupUid => $groupData) {
-            $path = Sites::CONFIG_SITEGROUP_KEY.'.';
             // Ensure group is processed
-            $projectConfig->processConfigChanges($path.$groupUid);
-
-            foreach ($groupData[Sites::CONFIG_SITES_KEY] as $siteUid => $siteData) {
-                // Ensure site is processed
-                $projectConfig->processConfigChanges($path.$groupUid.'.'.Sites::CONFIG_SITES_KEY.'.'.$siteUid);
-            }
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY.'.'.$groupUid);
         }
+
+        foreach ($allSites as $siteUid => $siteData) {
+            // Ensure site is processed
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY.'.'.$siteUid);
+        }
+
     }
 
     /**
