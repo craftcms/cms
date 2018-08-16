@@ -738,9 +738,10 @@ class Sites extends Component
                 $siteRecord->sortOrder = $data['sortOrder'];
                 $isNewSite = $siteRecord->isNewRecord;
 
-                if ($isNewSite) {
+                if ($isNewSite && !empty($this->_sitesById)) {
                     try {
                         // Even if this will be the new primary site, let _processNewPrimarySite() be the one to set this
+                        // Except if that's the FIRST SITE EVER!
                         $siteRecord->primary = false;
                     } catch (SiteNotFoundException $exception) {
                         // Unless there's no primary site.
@@ -764,23 +765,25 @@ class Sites extends Component
                 throw $e;
             }
 
-            // Did the primary site just change?
-            $oldPrimarySiteId = $this->getPrimarySite()->id;
+            if (!empty($this->_sitesById)) {
+                // Did the primary site just change?
+                $oldPrimarySiteId = $this->getPrimarySite()->id;
 
-            if ($data['primary'] && $siteRecord->id != $oldPrimarySiteId) {
-                $this->_processNewPrimarySite($oldPrimarySiteId, $siteRecord->id);
+                if ($data['primary'] && $siteRecord->id != $oldPrimarySiteId) {
+                    $this->_processNewPrimarySite($oldPrimarySiteId, $siteRecord->id);
+                }
             }
 
             // Refresh sites
             $this->_refreshAllSites();
 
-            if ($isNewSite) {
+            if ($isNewSite && !empty($oldPrimarySiteId)) {
                 // TODO: Move this code into element/category modules
                 // Create site settings for each of the category groups
                 $allSiteSettings = (new Query())
                     ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
                     ->from(['{{%categorygroups_sites}}'])
-                    ->where(['siteId' => $this->getPrimarySite()->id])
+                    ->where(['siteId' => $oldPrimarySiteId])
                     ->all();
 
                 if (!empty($allSiteSettings)) {
@@ -1348,8 +1351,7 @@ class Sites extends Component
         }
 
         // Set the new primary site by forcing a reload from the DB.
-        $this->_sitesById = null;
-        $this->_loadAllSites();
+        $this->_refreshAllSites();
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
