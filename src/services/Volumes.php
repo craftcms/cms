@@ -418,6 +418,7 @@ class Volumes extends Component
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
+
         $configData = [
             'name' => $volume->name,
             'handle' => $volume->handle,
