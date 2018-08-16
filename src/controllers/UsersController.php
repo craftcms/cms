@@ -873,7 +873,6 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
-        $edition = Craft::$app->getEdition();
         $request = Craft::$app->getRequest();
         $userComponent = Craft::$app->getUser();
         $currentUser = $userComponent->getIdentity();
