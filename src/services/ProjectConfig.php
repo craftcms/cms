@@ -232,6 +232,9 @@ class ProjectConfig extends Component
             $this->_updateConfigMap = true;
         }
 
+        // Ensure that new data is processed
+        unset($this->_parsedChanges[$path]);
+        
         if ($updateSilently) {
             return true;
         }
