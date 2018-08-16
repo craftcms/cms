@@ -19,6 +19,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
@@ -192,6 +193,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $blockType->fieldId = $this->id;
                 $blockType->name = $config['name'];
                 $blockType->handle = $config['handle'];
+
+                if (is_numeric($key)) {
+                    $blockType->uid = Db::uidById('{{%matrixblocktypes}}', $key);
+                }
 
                 $fields = [];
 

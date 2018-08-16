@@ -234,7 +234,7 @@ class ProjectConfig extends Component
 
         // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
-        
+
         if ($updateSilently) {
             return true;
         }

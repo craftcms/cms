@@ -556,7 +556,7 @@ class Fields extends Component
             $config = ['type' => $config];
         }
 
-        if (!empty($config['id']) && empty($config['uid'])) {
+        if (!empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
             $uid = Db::uidById('{{%fields}}', $config['id']);
             $config['uid'] = $uid;
         }
@@ -906,7 +906,9 @@ class Fields extends Component
             $fieldUid = $matches[1];
 
             // Ensure we have the field group in place first
-            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
+            if ($groupUid) {
+                Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
+            }
 
             $transaction = Craft::$app->getDb()->beginTransaction();
 
