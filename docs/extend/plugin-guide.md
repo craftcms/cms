@@ -6,8 +6,8 @@
 
 Before you begin working on a plugin, you need to decide on a few things:
 
-- **Package name** – Used to name your Composer package. It’s required even if you don’t want to distribute your plugin via Composer. (See Composer’s [documentation][package name] for details.) We recommend prefixing the second segment (after the `/`) with `craft-`, to help identify that this is a Craft plugin. For example, `pixelandtonic/craft-recipes`.
-- **Namespace** – The root namespace that your plugin’s classes will live in. (See the [PSR-4] autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you (the developer).
+- **Package name** – Used to name your Composer package for the plugin. (See Composer’s [documentation][package name] for details.) We recommend prefixing the second segment (after the `/`) with `craft-`, to help identify that this is a Craft plugin. For example, `pixelandtonic/craft-recipes`.
+- **Namespace** – The root namespace that your plugin’s classes will live in. (See the [PSR-4] autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you, the developer.
 - **Plugin handle** – Something that uniquely identifies your plugin within the Craft ecosystem. (Plugin handles must begin with a letter and contain only lowercase letters, numbers, and dashes. They should be `kebab-cased`.)
 - **Plugin name** – What your plugin will be called within the Control Panel.
 
@@ -20,6 +20,9 @@ To create a plugin, create a new directory for it somewhere on your computer. A 
 ├── my-project.test/
 │   └── ...
 └── my-plugin/
+    ├── CHANGELOG.md
+    ├── LICENSE.md
+    ├── README.md
     ├── composer.json
     └── src/
         └── Plugin.php
@@ -33,9 +36,7 @@ Use [pluginfactory.io](https://pluginfactory.io/) to create your plugin’s scaf
 
 ## composer.json
 
-Whether or not you wish to make your plugin available as a Composer dependency (you probably should), your plugin must have a `composer.json` file. Craft will check this file to get basic information about the plugin.
-
-Use this template as a starting point for your `composer.json` file:
+Create a `composer.json` file at the root of your plugin directory, and use this template as a starting point:
 
 ```json
 {
@@ -43,22 +44,31 @@ Use this template as a starting point for your `composer.json` file:
   "description": "Your plugin’s package description",
   "version": "1.0.0",
   "type": "craft-plugin",
+  "keywords": ["some", "keywords", "here"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Developer Name",
+      "homepage": "https://developer-website.tld"
+    }
+  ],
+  "support": {
+    "email": "email@developer-website.tld",
+    "issues": "https://github.com/<Developer>/<Repo>/issues?state=open",
+    "source": "https://github.com/<Developer>/<Repo>",
+    "docs": "https://github.com/<Developer>/<Repo>"
+  },
   "require": {
     "craftcms/cms": "^3.0.0"
   },
   "autoload": {
     "psr-4": {
-      "ns\\prefix\\": "src/"
+      "namespace\\prefix\\": "src/"
     }
-  },
-  "support": {
-    "email": "you@my-project.com"
   },
   "extra": {
     "handle": "plugin-handle",
-    "name": "Plugin Name",
-    "developer": "Developer Name",
-    "developerUrl": "https://developer-url.com"
+    "name": "Plugin Name"
   }
 }
 ```
@@ -66,17 +76,19 @@ Use this template as a starting point for your `composer.json` file:
 Replace:
 
 - `package/name` with your package name.
-- `ns\\prefix\\` with your namespace prefix. (Use double-backslashes because JSON, and note this must end with `\\`.)
-- `you@my-project.com` with your support email.
+- `namespace\\prefix\\` with your namespace prefix. (Use double-backslashes because JSON, and note this must end with `\\`.)
+- `email@developer-website.tld` with your support email.
 - `plugin-handle` with your plugin handle.
 - `Plugin Name` with your plugin name.
 - `Developer Name` with your name, or the organization name that the plugin should be attributed to.
-- `https://developer-url.com` with the URL to the website the developer name should link to in the Control Panel.
+- `https://developer-website.tld` with the URL to the website the developer name should link to in the Control Panel.
+
+If you’d prefer to release your plugin with the [Craft license](https://craftcms.github.io/license/) rather than [MIT](https://opensource.org/licenses/MIT), change the `license` value to `"proprietary"`.
 
 Here’s a full list of the properties that can go in that `extra` object:
 
-- `handle` – The plugin handle (required).
-- `class` – The [primary Plugin class](#primary-plugin-class) name. If not set, the installer will look for a `Plugin.php` file at each of the `autoload` path roots.
+- `handle` – The plugin handle _(required)_.
+- `class` – The [Plugin class](#the-plugin-class) name. If not set, the installer will look for a `Plugin.php` file at each of the `autoload` path roots.
 - `basePath` – The base path to your plugin’s source files. This can begin with one of your `autoload` namespaces, formatted as a [Yii alias] (e.g. `@vendorname/foo`). If not set, the directory that contains your primary Plugin class will be used.
 - `name` – The plugin name. If not set, the package name (sans vendor prefix) will be used.
 - `version` - The plugin version. If not set, the current package version will be used.
@@ -170,7 +182,7 @@ Composer’s installation log should indicate that the package was installed via
 ```
 
 ::: warning
-One caveat of `path` Composer repositories is that Composer will ignore `path`-based dependencies when you run `composer update`. So any time you change anything in `composer.json`, such as your plugin’s dependency requirements or its plugin information, you will need to completely remove and re-require your plugin in your project for those changes to take effect.
+One caveat of `path` Composer repositories is that Composer may ignore `path`-based dependencies when you run `composer update`. So any time you change anything in `composer.json`, such as your plugin’s dependency requirements or its plugin information, you might need to completely remove and re-require your plugin in your project for those changes to take effect.
 
 ```bash
 # go to the project directory
