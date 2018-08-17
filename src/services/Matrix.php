@@ -320,16 +320,17 @@ class Matrix extends Component
             $fieldLayoutTab->sortOrder = 1;
             $fieldLayoutTab->setFields($fieldLayoutFields);
 
-            $fieldLayout = new FieldLayout();
-            $fieldLayout->setTabs([$fieldLayoutTab]);
-            $fieldLayout->setFields($fieldLayoutFields);
-
             if (isset($oldBlockType)) {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $oldBlockType->fieldLayoutId);
+                $fieldLayout = $oldBlockType->getFieldLayout();
+                $layoutUid = $fieldLayout->uid;
             } else {
+                $fieldLayout = new FieldLayout();
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             }
+
+            $fieldLayout->setTabs([$fieldLayoutTab]);
+            $fieldLayout->setFields($fieldLayoutFields);
 
             $fieldLayoutConfig = $fieldLayout->getConfig();
 
