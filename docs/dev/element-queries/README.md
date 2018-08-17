@@ -1,30 +1,41 @@
-# Element Queries
+# Introduction to Element Queries
 
-You can fetch elements in your templates or PHP code using **element queries**.
+You can fetch elements (entries, categories, assets, etc.) in your templates or PHP code using **element queries**.
 
-To use them, call the function that maps to the element type you want to load (e.g. `craft.entries()`), [set some parameters](#setting-parameters) on it, and then [execute it](#executing-element-queries) by calling `all()`.
+Working with element queries consists of three steps:
+
+1. **Create the element query.** You do this by calling a “factory function” that is named after the element type you are going to fetch. For example, if you want to fetch entries, you’d call `craft.entries()`, which returns a new [entry query](entry-queries.md).
+2. **Set some parameters.** By default, element queries will be configured to return all elements of the specified type. You can narrow that down to just the elements you care about by setting parameters on the query.
+3. **Execute the query.** Once you’ve specified the query parameters, you’re ready for Craft to fetch the elements and give you the results. You do that by calling `.all()` or `.one()`, depending on whether you need multiple elements, or just one.
+
+Here’s what a typical element query might look like:
 
 ::: code
 ```twig
-{% set entries = craft.entries()
+{# Create an entry query and set some parameters on it #}
+{% set entryQuery = craft.entries()
     .section('news')
     .orderBy('postDate desc')
-    .limit(10)
-    .all()
-%}
+    .limit(10) %}
+
+{# Execute the query and get the results #}
+{% set entries = entryQuery.all() %}
 ```
 ```php
 use craft\elements\Entry;
 
-$entries = Entry::find()
+// Create an entry query and set some parameters on it
+$entryQuery = Entry::find()
     ->section('news')
     ->orderBy('postDate desc')
-    ->limit(10)
-    ->all();
+    ->limit(10);
+    
+// Execute the query and get the results
+$entries = $entryQuery->all();
 ```
 :::
 
-Each element type has its own element query factory functions, and its own set of parameters, which are documented on the individual element query pages:
+Each type of element has its own function for creating element queries, and they each have their own parameters you can set. See the individual element query pages for more details on working with them:
 
 - [Asset Queries](asset-queries.md)
 - [Category Queries](category-queries.md)
@@ -38,101 +49,80 @@ Each element type has its own element query factory functions, and its own set o
 Most custom fields support element query parameters as well, named after the field handles.
 :::
 
-## Setting Parameters
+## Attribute Parameters
 
-Parameters should be set with chained function calls, like so:
+Many parameters correspond to a particular element attribute. For example, entry queries have a `postDate` parameter that allows you to limit the results to entries with a matching _Post Date_.
 
-::: code
-```twig{2-3}
+Attribute parameters generally support a variety of syntaxes:
+
+| Syntax | Find elements where the param’s attribute…
+| - | -
+| `param('X')` | is _X_.
+| `param('= X')` | is _X_.
+| `param('not X')` | is not _X_.
+| `param('!= X')` | is not _X_.
+| `param('<= X')` | is less than or equal to _X_.
+| `param('>= X')` | is greater than or equal to _X_.
+| `param('< X')` | is less than _X_.
+| `param('> X')` | is greater than _X_.
+| `param('*X*')` | contains _X_.
+| `param('not *X*')` | doesn’t contain _X_.
+| `param(':empty:)` | has no value.
+| `param(':notempty:')` | has any value.
+
+You can also specify multiple parameter values by setting the parameter to an array:
+
+| Syntax | Find elements where the param’s attribute…
+| - | -
+| `param(['X', 'Y']` | is either _X_ or _Y_.
+| `param(['or', 'X', 'Y'])` | is either _X_ or _Y_.
+| `param(['and', 'X', 'Y'])` | is both _X_ and _Y_.
+
+In these cases, _X_ and _Y_ can follow any of the supported parameter syntaxes.
+
+For example, let’s say you wanted to load entries that were posted sometime in the last month. 
+
+<code-toggle :languages="['twig', 'php']">
+<template slot="twig">
+
+```twig{7}
+{# Set the first and last dates that we want to fetch entries from #}
+{% set start = date('first day of last month')|atom %}
+{% set end = date('last day of last month')|atom %}
+
+{# Get all the entries that were posted between those dates #}
 {% set entries = craft.entries()
-    .section('news')
-    .limit(10)
-    .all()
-%}
+    .postDate(['and', ">= #{start}", "<= #{end}"])
+    .all() %}
 ```
-```php{4-5}
-use craft\elements\Entry;
+::: tip TWIG TIP
+We’re using [interpolation](https://twig.symfony.com/doc/2.x/templates.html#string-interpolation) to inject the `start` and `end` variables into the value strings, which felt a little cleaner than the `~` operator:
 
-$entries = Entry::find()
-    ->section('news')
-    ->limit(10)
-    ->all();
-```
-:::
-
-### Batch-Setting Parameters
-
-You can also batch-set parameters like so:
-
-::: code
-```twig{2-6}
-{% set entries = craft.entries(
-    {
-        section: 'news',
-        orderBy: {'postDate': SORT_DESC},
-        limit: 10
-    }
-).all() %}
-```
-```php
-use craft\elements\Entry;
-
-$query = Entry::find();
-\Craft::configure($query, [
-    'section' => 'news',
-    'orderBy' => ['postDate' => SORT_DESC],
-    'limit' => 10
-]);
-$entries = $query->all();
-```
-:::
-
-::: warning
-If you want to set the `orderBy` parameter like this, you must use the `{'columnName': SORT_ASC}` syntax rather than `'columnName asc'`.
-:::
-
-### Param Value Syntax
-
-Most parameter values will get processed through <api:craft\helpers\Db::parseParam()> or [parseDateParam()](api:craft\helpers\Db::parseDateParam()) before being applied as a condition on the element query. That method makes things like the following possible:
-
-- `['and', 'value1', 'value2']`
-- `['or', 'value1', 'value2']`
-- `['value1', 'value2']` _(implied `'or'`)_
-- `':empty:` _(checks for `null` or an empty string)_
-- `':notempty:'` _opposite of `':empty:'`)_
-- `'not value'`
-- `'!= value'`
-- `'<= value'`
-- `'>= value'`
-- `'< value'`
-- `'> value'`
-- `'= value'`
-- `'*value*'`
-- `'not *value*'`
-
-For example, if you want to load entries with a custom `eventDate` field set within a date range, you can do this:
-
-::: code
-```twig{5}
-{% set start = date('first day of next month')|atom %}
-{% set end = date('last day of next month')|atom %}
+```twig{2}
 {% set entries = craft.entries()
-    .section('events')
-    .eventDate(['and', ">= #{start}", "<= #{end}"])
-    .all()
-%}
+    .postDate(['and', '>= '~start, '<= '~end])
+    .all() %}
 ```
-```php{7}
+:::
+
+</template>
+<template slot="php">
+
+```php{9}
 use craft\elements\Entry;
 
+// Set the first and last dates that we want to fetch entries from
 $start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
 $end = new \DateTime('last day of next month')->format(\DateTime::ATOM);
+
+Get all the entries that were posted between those dates
 $entries = Entry::find()
-    ->section('events')
-    ->eventDate(['and', ">= {$start}", "<= {$end}"])
+    ->postDate(['and', ">= {$start}", "<= {$end}"])
     ->all();
 ```
-:::
+
+</template>
+</code-toggle>
 
 ## Executing Element Queries
 
