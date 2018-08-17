@@ -1351,6 +1351,7 @@ class Fields extends Component
             $layoutRecord->id = $layout->id;
         }
 
+        $layoutRecord->uid = $layout->uid;
         $layoutRecord->save(false);
 
         if ($isNewLayout) {
