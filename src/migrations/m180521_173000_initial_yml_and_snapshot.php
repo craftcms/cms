@@ -325,7 +325,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($fields as $field) {
             $fieldUid = $field['uid'];
             unset($field['id'], $field['uid']);
-            $data['fields'][$fieldUid] = $field;
+            $data[$fieldUid] = $field;
         }
 
         return $data;
