@@ -54,9 +54,9 @@ Create a `composer.json` file at the root of your plugin directory, and use this
   ],
   "support": {
     "email": "email@developer-website.tld",
-    "issues": "https://github.com/<Developer>/<Repo>/issues?state=open",
-    "source": "https://github.com/<Developer>/<Repo>",
-    "docs": "https://github.com/<Developer>/<Repo>"
+    "issues": "https://github.com/developer/repo/issues?state=open",
+    "source": "https://github.com/developer/repo",
+    "docs": "https://github.com/developer/repo"
   },
   "require": {
     "craftcms/cms": "^3.0.0"
@@ -76,12 +76,13 @@ Create a `composer.json` file at the root of your plugin directory, and use this
 Replace:
 
 - `package/name` with your package name.
-- `namespace\\prefix\\` with your namespace prefix. (Use double-backslashes because JSON, and note this must end with `\\`.)
-- `email@developer-website.tld` with your support email.
-- `plugin-handle` with your plugin handle.
-- `Plugin Name` with your plugin name.
 - `Developer Name` with your name, or the organization name that the plugin should be attributed to.
 - `https://developer-website.tld` with the URL to the website the developer name should link to in the Control Panel.
+- `email@developer-website.tld` with your support email.
+- `developer/repo` with the actual GitHub account and repository names where the plugin will live.
+- `namespace\\prefix\\` with your namespace prefix. (Use double-backslashes because this is JSON, and note this must end with `\\`.)
+- `plugin-handle` with your plugin handle.
+- `Plugin Name` with your plugin name.
 
 If you’d prefer to release your plugin with the [Craft license](https://craftcms.github.io/license/) rather than [MIT](https://opensource.org/licenses/MIT), change the `license` value to `"proprietary"`.
 
