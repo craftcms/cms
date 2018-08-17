@@ -79,6 +79,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'sections' => $this->_getSectionData(),
             'fieldGroups' => $this->_getFieldGroupData(),
             'fields' => $this->_getFieldData(),
+            'matrixBlockTypes' => $this->_getMatrixBlockTypeData(),
             'volumes' => $this->_getVolumeData(),
             'categoryGroups' => $this->_getCategoryGroupData(),
             'tagGroups' => $this->_getTagGroupData(),
@@ -317,21 +318,40 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
-            unset($fieldRow['id']);
             $fields[$fieldRow['uid']] = $fieldRow;
 
         }
 
+        foreach ($fields as $field) {
+            $fieldUid = $field['uid'];
+            unset($field['id'], $field['uid']);
+            $data['fields'][$fieldUid] = $field;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return matrix block type data config array.
+     *
+     * @return array
+     */
+    private function _getMatrixBlockTypeData(): array
+    {
+        $data = [];
+
         $matrixBlockTypes = (new Query())
             ->select([
-                'fieldId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'sortOrder',
-                'uid',
+                'bt.fieldId',
+                'bt.fieldLayoutId',
+                'bt.name',
+                'bt.handle',
+                'bt.sortOrder',
+                'bt.uid',
+                'f.uid AS field'
             ])
-            ->from('{{%matrixblocktypes}}')
+            ->from('{{%matrixblocktypes}} bt')
+            ->innerJoin('{{%fields}} f', '[[bt.fieldId]] = [[f.id]]')
             ->all();
 
         $layoutIds = [];
@@ -349,20 +369,16 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         foreach ($blockTypeData as &$blockTypes) {
             foreach ($blockTypes as &$blockType) {
-                unset($blockType['uid']);
+                $blockTypeUid = $blockType['uid'];
+                $layout = $matrixFieldLayouts[$blockType['fieldLayoutId']];
+                unset($blockType['uid'], $blockType['fieldLayoutId']);
+                $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
+                $data[$blockTypeUid] = $blockType;
             }
-        }
-
-        foreach ($fields as $field) {
-            if ($field['type'] === 'craft\fields\Matrix') {
-                $field['blockTypes'] = $blockTypeData[$field['id']];
-            }
-            $fieldUid = $field['uid'];
-            unset($field['id'], $field['uid']);
-            $data['fields'][$fieldUid] = $field;
         }
 
         return $data;
+
     }
 
     /**
