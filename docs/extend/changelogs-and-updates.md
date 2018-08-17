@@ -1,22 +1,28 @@
 # Changelogs and Updates
 
-Craft can parse plugin changelogs to learn about available updates, and include them on the Utilities → Updates page alongside the available CMS updates.
+When you [publish](plugin-store.md) your plugin in the Plugin Store, you will be able to specify a path to your plugin’s changelog within the repository.
+
+If this is set to a valid changelog path, then each time you release a new update for your plugin, the Plugin Store will re-download your changelog, and use it to display release notes for any available plugin updates on the Utilities → Updates page.
 
 ## Setting Up a Changelog
 
-Your changelog should be saved as `CHANGELOG.md` at the root of your plugin’s repo. (That’s not a technical requirement, but putting it there will make it easier to find for people viewing your plugin on GitHub or within their `vendor/` directory.) It should be a Markdown-formatted document that loosely follows the suggestions on [keepachangelog.com].
+Create a `CHANGELOG.md` file at the root of your plugin’s repo, where you can start documenting release notes for your plugin. Use something like this as a starting point:
 
-Within the changelog, releases must be listed in descending order (newest on top). Craft will stop parsing the changelog as soon as it hits a version that is older than or equal to the installed version.
+```markdown
+# Release Notes for <Plugin Name>
+```
 
-### Version Headings
+Within the changelog, releases must be listed in **descending order** (newest-to-oldest). (When displaying available plugin updates, the Plugin Store will stop parsing a plugin’s changelog as soon as it finds a version that is older than or equal to the user’s installed version.)
 
-Version headings in your changelog must follow the general format:
+## Version Headings
+
+Version headings in your changelog must follow this format:
 
 ```markdown
 ## X.Y.Z - YYYY-MM-DD
 ```
 
-The following deviations are supported as well:
+There’s a little wiggle room on that:
 
 - Other text can come before the version number, like the plugin’s name.
 - A 4th version number is allowed (e.g. `1.2.3.4`).
@@ -25,31 +31,29 @@ The following deviations are supported as well:
 - The version can be hyperlinked (e.g. `[1.2.3]`).
 - Dates can use dots as separators, rather than hyphens (e.g. `2017.01.21`).
 
-If an update should be marked as critical, you can append a `[CRITICAL]` flag to the end of the version heading:
+Any H2s that don’t follow this format will be ignored, including any content that follows them leading up to the next H2.
+
+## Release Notes
+
+All content that follows a version heading (up to the next H2) will be treated as the release notes for the update.
+
+When writing release notes, we recommend that you follow the guidelines at [keepachangelog.com](https://keepachangelog.com/), but all forms of [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown) are allowed. The only thing that is *not* allowed is actual HTML code, which will be escaped.
+
+### Tips and Warnings
+
+You can include tips, warnings, and other notes in your release notes using this syntax:
 
 ```markdown
-## 2.0.1 - 2017-01-21 [CRITICAL]
-### Fixed
-- Reverted change to `$potus` due to security vulnerabilities
-```
-
-Any H2s that don’t follow these rules will be ignored, including any content that follows them leading up to the next H2.
-
-### Release Notes
-
-All content that follows a version heading (up to the next H2) is considered the release notes.
-
-While you should generally follow the release note format suggested by [keepachangelog.com], all forms of [GitHub Flavored Markdown] are allowed. The only thing that is *not* allowed is actual HTML code, which will be escaped.
-
-You can also define **notes**, **warnings**, and **tips** using this syntax:
-
-```markdown
-> {note} A serious note.
+> {tip} A helpful tip.
 
 > {warning} A word of warning.
 
-> {tip} A helpful tip.
+> {note} A note.
 ```
+
+Any updates that contain one of these will be auto-expanded on the Utilities → Updates page. 
+
+### Links
 
 If you have any reference-style links in your release notes, you will need to define the URLs *before* the following version heading:
 
@@ -66,30 +70,14 @@ If you have any reference-style links in your release notes, you will need to de
 [superFoo]: https://docs.foo.com/config#superFoo
 ```
 
-## Configuring your Plugin
+## Critical Updates
 
-Once your plugin’s changelog is available publicly somewhere (like GitHub), you can configure your plugin with its URL by setting its `$changelogUrl` property.
+If an update contains a fix for a critical security vulnerability or other dangerous bug, you can alert your users about it by adding `[CRITICAL]` to the end of the version heading:
 
-::: tip
-The URL must begin with `https://`.
-:::
-
-While you’re at it, you may want to set a public download URL as well, for anyone who didn’t install your plugin via Composer. That can be done with the `$downloadUrl` property.
-
-```php
-class Plugin extends \craft\base\Plugin
-{
-    public $changelogUrl = 'https://raw.githubusercontent.com/pixelandtonic/foo/master/CHANGELOG.md';
-    public $downloadUrl = 'https://github.com/pixelandtonic/foo/archive/master.zip';
-
-    // ...
-}
+```markdown
+## 2.0.1 - 2017-01-21 [CRITICAL]
+### Fixed
+- Reverted change to `$potus` due to security vulnerabilities
 ```
 
-If everything is set up correctly, your plugins’ available updates should start appearing on the Utilities → Updates page.
-
-![The Utilities → Updates page in Craft’s Control Panel, with an available update for the “Foo” plugin.](../images/plugin-update.png)
-
-
-[keepachangelog.com]: https://keepachangelog.com/
-[GitHub Flavored Markdown]: https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown
+When Craft finds out that a critical update is available, it will post a message about it to the top of all Control Panel pages, and give the update special attention on the Utilities → Updates page.

@@ -86,8 +86,6 @@ Here’s a full list of the properties that can go in that `extra` object:
 - `developerUrl` – The developer URL. If not set, the `homepage` property will be used, or the first author’s `homepage` (via the `authors` property).
 - `developerEmail` – The support email. If not set, the `support.email` property will be used.
 - `documentationUrl` – The plugin’s documentation URL. If not set, the `support.docs` property will be used.
-- `changelogUrl` – The plugin’s changelog URL (used to show pending plugin updates and their release notes).
-- `downloadUrl` – The plugin’s download URL (used to update manual installations of the plugin).
 - `sourceLanguage` – The plugin’s source language (defaults to `en-US`).
 - `hasSettings` – Whether the plugin has settings (should be `true` or `false`).
 - `hasCpSection` – Whether the plugin has its own section in the Control Panel (should be `true` or `false`).
