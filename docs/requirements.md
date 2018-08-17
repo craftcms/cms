@@ -26,6 +26,7 @@ If Craft CMS needs to process very large images or dump very large databases, yo
 
 Craft requires the following PHP extensions:
 
+* [ctype](https://secure.php.net/manual/en/book.ctype.php)
 * [cURL](http://php.net/manual/en/book.curl.php)
 * [GD](http://php.net/manual/en/book.image.php) or [ImageMagick](http://php.net/manual/en/book.imagick.php). ImageMagick is preferred.
 * [iconv](http://php.net/manual/en/book.iconv.php)
