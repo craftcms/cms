@@ -436,8 +436,7 @@ class Db
      */
     public static function parseParam(string $column, $value, string $defaultOperator = '=')
     {
-        // Need to do a strict check here in case $value = true
-        if ($value === 'not ') {
+        if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
         }
 
