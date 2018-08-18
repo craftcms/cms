@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-### Changed
+### Added
+- Most element query parameters can now be set to `['not', 'X', 'Y']`, as a shortcut for `['and', 'not X', 'not Y']`.
 
+### Changed
 - The “New Password” input on the My Account page now has a “Show” button, like other password inputs in the Control Panel.
 
 ### Fixed
