@@ -267,7 +267,8 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Revert to the version
-        if (!Craft::$app->getEntryRevisions()->revertEntryToVersion($version)) {
+        $revisionsService = Craft::$app->getEntryRevisions();
+        if (!$revisionsService->revertEntryToVersion($version)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
 
             // Send the version back to the template
@@ -276,6 +277,11 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
 
             return null;
+        }
+
+        // Should we save a new version?
+        if ($version->getSection()->enableVersioning) {
+            $revisionsService->saveVersion($version);
         }
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));

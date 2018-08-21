@@ -717,7 +717,7 @@ class Matrix extends Component
         }
 
         // Tell the browser to collapse any new block IDs
-        if (!Craft::$app->getRequest()->getIsConsoleRequest() && !empty($collapsedBlockIds)) {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest() && !Craft::$app->getResponse()->isSent && !empty($collapsedBlockIds)) {
             Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
             foreach ($collapsedBlockIds as $blockId) {

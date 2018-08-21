@@ -22,7 +22,7 @@
     {%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
     {%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
     {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
+    {%- if autocomplete is defined %} autocomplete="{{ autocomplete is same as(true) ? 'on' : (autocomplete ?: 'off') }}"{% endif %}
     {%- if disabled is defined and disabled %} disabled {% endif %}
     {%- if readonly is defined and readonly %} readonly {% endif %}
     {%- if title is defined %} title="{{ title }}"{% endif %}

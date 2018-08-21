@@ -650,12 +650,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function beforeElementDelete(ElementInterface $element): bool
     {
+        /** @var Element $element */
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $matrixBlocksQuery = MatrixBlock::find();
             $matrixBlocksQuery->anyStatus();
             $matrixBlocksQuery->siteId($siteId);
-            $matrixBlocksQuery->owner($element);
+            $matrixBlocksQuery->ownerId($element->id);
 
             /** @var MatrixBlock[] $matrixBlocks */
             $matrixBlocks = $matrixBlocksQuery->all();

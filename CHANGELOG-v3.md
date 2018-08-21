@@ -1,5 +1,27 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.21 - 2018-08-21
+
+### Added
+- Most element query parameters can now be set to `['not', 'X', 'Y']`, as a shortcut for `['and', 'not X', 'not Y']`.
+
+### Changed
+- The “New Password” input on the My Account page now has a “Show” button, like other password inputs in the Control Panel.
+- Plugin settings pages now redirect to the Settings index page after save. ([#3216](https://github.com/craftcms/cms/issues/3216))
+- It’s now possible to set [autofill detail tokens](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill-detail-tokens) on the `autocomplete` variable when including the `_includes/forms/text.html` template (e.g. `'name'`).
+- Username and password inputs now have the correct `autocomplete` values, increasing the likelihood that tools like 1Password will handle the form correctly. ([#3207](https://github.com/craftcms/cms/issues/3207))
+
+### Fixed
+- Fixed a SQL error that occurred when saving a user if a `craft\elements\User::EVENT_BEFORE_SAVE` event listener was setting `$event->isValid = false`. ([#3206](https://github.com/craftcms/cms/issues/3206))
+- Fixed a bug where password inputs’ jQuery data was getting erased when the “Show” button was clicked.
+- Fixed an error that could occur when upgrading to Craft 3. ([#3208](https://github.com/craftcms/cms/pull/3208))
+- Fixed a bug where non-image assets’ file extension icons could bleed out of the preview area within asset editor HUDs. ([#3209](https://github.com/craftcms/cms/issues/3209))
+- Fixed a bug where Craft wasn’t saving a new entry version when reverting an entry to a previous version. ([#3210](https://github.com/craftcms/cms/issues/3210))
+- Fixed an error that could occur when a Matrix block was saved by a queue job. ([#3217](https://github.com/craftcms/cms/pull/3217))
+
+### Security
+- External links in the Control Panel now set `rel="noopener"`. ([#3201](https://github.com/craftcms/cms/issues/3201))
+
 ## 3.0.20 - 2018-08-14
 
 ### Added

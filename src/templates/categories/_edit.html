@@ -18,7 +18,7 @@
             <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
         {% endif %}
         {% if shareUrl is defined %}
-            <a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>
+            <a href="{{ shareUrl }}" class="btn sharebtn" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
         {% endif %}
         <div class="flex-grow"></div>
     {% endif %}

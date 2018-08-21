@@ -873,7 +873,6 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
-        $edition = Craft::$app->getEdition();
         $request = Craft::$app->getRequest();
         $userComponent = Craft::$app->getUser();
         $currentUser = $userComponent->getIdentity();
@@ -1035,7 +1034,11 @@ class UsersController extends Controller
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$user->validate(null, false)) {
+        // Manually validate the user so we can pass $clearErrors=false
+        if (
+            !$user->validate(null, false) ||
+            !Craft::$app->getElements()->saveElement($user, false)
+        ) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
             if ($thisIsPublicRegistration) {
@@ -1059,9 +1062,6 @@ class UsersController extends Controller
 
             return null;
         }
-
-        // Save the user (but no need to re-validate)
-        Craft::$app->getElements()->saveElement($user, false);
 
         // Save their preferences too
         $preferences = [

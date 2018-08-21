@@ -436,8 +436,7 @@ class Db
      */
     public static function parseParam(string $column, $value, string $defaultOperator = '=')
     {
-        // Need to do a strict check here in case $value = true
-        if ($value === 'not ') {
+        if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
         }
 
@@ -448,11 +447,21 @@ class Db
         }
 
         $firstVal = StringHelper::toLowerCase(reset($value));
+        $negate = false;
 
-        if ($firstVal === 'and' || $firstVal === 'or') {
-            $glue = array_shift($value);
-        } else {
-            $glue = 'or';
+        switch ($firstVal) {
+            case 'and':
+            case 'or':
+                $glue = $firstVal;
+                array_shift($value);
+                break;
+            case 'not':
+                $glue = 'and';
+                $negate = true;
+                array_shift($value);
+                break;
+            default:
+                $glue = 'or';
         }
 
         $condition = [$glue];
@@ -463,7 +472,7 @@ class Db
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
-            $operator = self::_parseParamOperator($val, $defaultOperator);
+            $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
             if (is_string($val) && StringHelper::toLowerCase($val) === ':empty:') {
                 if ($operator === '=') {
@@ -571,7 +580,7 @@ class Db
             return '';
         }
 
-        if ($value[0] === 'and' || $value[0] === 'or') {
+        if (in_array($value[0], ['and', 'or', 'not'], true)) {
             $normalizedValues[] = $value[0];
             array_shift($value);
         }
@@ -710,10 +719,13 @@ class Db
      *
      * @param mixed &$value Te param value.
      * @param string $default The default operator to use
-     * @return string The operator.
+     * @param bool $negate Whether to reverse whatever the selected operator is
+     * @return string The operator ('!=', '<=', '>=', '<', '>', or '=')
      */
-    private static function _parseParamOperator(&$value, string $default): string
+    private static function _parseParamOperator(&$value, string $default, bool $negate = false): string
     {
+        $op = null;
+
         if (is_string($value)) {
             $lcValue = strtolower($value);
             foreach (self::$_operators as $operator) {
@@ -721,11 +733,33 @@ class Db
                 // Does the value start with this operator?
                 if (strncmp($lcValue, $operator, $len) === 0) {
                     $value = mb_substr($value, $len);
-                    return $operator === 'not ' ? '!=' : $operator;
+                    $op = $operator === 'not ' ? '!=' : $operator;
+                    break;
                 }
             }
         }
 
-        return $default === 'not' || $default === 'not ' ? '!=' : $default;
+        if ($op === null) {
+            $op = $default === 'not' || $default === 'not ' ? '!=' : $default;
+        }
+
+        if ($negate) {
+            switch ($op) {
+                case '!=':
+                    return '=';
+                case '<=':
+                    return '>';
+                case '>=':
+                    return '<';
+                case '<':
+                    return '>=';
+                case '>':
+                    return '<=';
+                case '=':
+                    return '!=';
+            }
+        }
+
+        return $op;
     }
 }

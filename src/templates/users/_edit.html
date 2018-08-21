@@ -74,6 +74,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    autocomplete: false,
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -94,6 +95,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    autocomplete: false,
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -103,8 +105,13 @@
                         id: 'newPassword',
                         name: 'newPassword',
                         type: 'password',
+                        autocomplete: 'new-password',
                         errors: user.getErrors('newPassword')
                     }) }}
+
+                    {% js %}
+                        new Craft.PasswordInput('#newPassword');
+                    {% endjs %}
                 {% endif %}
 
                 {% if currentUser.admin %}

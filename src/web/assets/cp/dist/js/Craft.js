@@ -1,4 +1,4 @@
-/*!   - 2018-08-14 */
+/*!   - 2018-08-21 */
 (function($){
 
 /** global: Craft */
@@ -10874,7 +10874,7 @@ Craft.CP = Garnish.Base.extend(
             // hat tip: https://stackoverflow.com/a/2911045/1688568
             $('a').each(function() {
                 if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
-                    $(this).attr('target', '_blank')
+                    $(this).attr('rel', 'noopener').attr('target', '_blank')
                 }
             });
         },
@@ -13262,10 +13262,17 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             // Are we only interested in certain inputs?
             if (this.inputs) {
                 var inputsChanged = false;
+                var $input;
 
                 for (var i = 0; i < this.inputs.length; i++) {
+                    $input = this.inputs[i].input;
+                    // Is this a password input?
+                    if ($input.data('passwordInput')) {
+                        $input = $input.data('passwordInput').$currentInput;
+                    }
+
                     // Has this input's value changed?
-                    if (Garnish.getInputPostVal(this.inputs[i].input) !== this.inputs[i].val) {
+                    if (Garnish.getInputPostVal($input) !== this.inputs[i].val) {
                         inputsChanged = true;
                         break;
                     }
@@ -13344,7 +13351,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                     $buttonContainer= $('<td/>').appendTo($inputsFlexContainer),
                     $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
 
-                this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
+                this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '" autocomplete="current-password"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
                 this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Submit') + '" />').appendTo($buttonContainer);
                 this.$errorPara = $('<p class="error"/>').appendTo($body);
@@ -15946,7 +15953,8 @@ Craft.PasswordInput = Garnish.Base.extend(
             if (this.$currentInput) {
                 // Swap the inputs, while preventing the focus animation
                 $input.addClass('focus');
-                this.$currentInput.replaceWith($input);
+                $input.insertAfter(this.$currentInput);
+                this.$currentInput.detach();
                 $input.trigger('focus');
                 $input.removeClass('focus');
 
