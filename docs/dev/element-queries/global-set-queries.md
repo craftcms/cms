@@ -1,30 +1,45 @@
 # Global Set Queries
 
-Global set queries are a type of [element query](README.md) used to fetch your project’s global sets.
-
-They are implemented by <api:craft\elements\db\GlobalSetQuery>, and the elements returned by them will be of type <api:craft\elements\GlobalSet>.
-
-## Creating Global Set Queries
-
-You can create a new global set query from Twig by calling `craft.globalSets()`, or from PHP by calling <api:craft\elements\GlobalSet::find()>.
+You can fetch global sets in your templates or PHP code using **global set queries**.
 
 ::: code
 ```twig
-{% set footerCopy = craft.globalSets()
-    .handle('footerCopy')
-    .siteId(1)
-    .one() %}
-
-<p>{{ footerCopy.copyrightInfo }}</p>
+{# Create a new global set query #}
+{% set myGlobalSetQuery = craft.globalSets() %}
 ```
 ```php
-/** @var \craft\elements\GlobalSet $footerCopy */
-$footerCopy = \craft\elements\GlobalSet::find()
-    ->handle('footerCopy')
-    ->siteId(1)
-    ->one();
+// Create a new global set query
+$myGlobalSetQuery = \craft\elements\GlobalSet::find();
 ```
 :::
+
+Once you’ve created a global set query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [GlobalSet](api:craft\elements\GlobalSet) objects will be returned.
+
+::: tip
+See [Introduction to Element Queries](README.md) to learn about how element queries work.
+:::
+
+## Example
+
+We can load a global set from the primary site and display its content by doing the following:
+
+1. Create a global set query with `craft.globalSets()`.
+2. Set the [handle](#handle) and [siteId](#siteid) parameters on it.
+3. Fetch the global set with `.one()`.
+4. Output its content.
+
+```twig
+{# Create a global set query with the 'handle' and 'siteId' parameters #}
+{% set myGlobalSetQuery = craft.globalSets()
+    .handle('footerCopy')
+    .siteId(1) %}
+
+{# Fetch the global set #}
+{% set globalSet = myGlobalSetQuery.one() %}
+
+{# Display the content #}
+<p>{{ globalSet.copyrightInfo }}</p>
+```
 
 ::: tip
 All global sets are already available as global variables to Twig templates. So you only need to fetch them through  `craft.globalSets()` if you need to access their content for a different site than the current site.
@@ -36,393 +51,496 @@ Global set queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
-### `archived`
+### `anyStatus`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$archived](api:craft\elements\db\ElementQuery::$archived)
-
-Settable by
-
-:   [archived()](api:craft\elements\db\ElementQuery::archived())
+Clears out the [status()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-status) and [enabledForSite()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-enabledforsite) parameters.
 
 
 
-Whether to return only archived elements.
+
+
+::: code
+```twig
+{# Fetch all global sets, regardless of status #}
+{% set globalSets = craft.globalSets()
+    .anyStatus()
+    .all() %}
+```
+
+```php
+// Fetch all global sets, regardless of status
+$globalSets = \craft\elements\GlobalSet::find()
+    ->anyStatus()
+    ->all();
+```
+:::
 
 
 ### `asArray`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$asArray](api:craft\elements\db\ElementQuery::$asArray)
-
-Settable by
-
-:   [asArray()](api:craft\elements\db\ElementQuery::asArray())
+Causes the query to return matching global sets as arrays of data, rather than [GlobalSet](api:craft\elements\GlobalSet) objects.
 
 
 
-Whether to return each element as an array. If false (default), an object
-of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-elementtype) will be created to represent each element.
+
+
+::: code
+```twig
+{# Fetch global sets as arrays #}
+{% set globalSets = craft.globalSets()
+    .asArray()
+    .all() %}
+```
+
+```php
+// Fetch global sets as arrays
+$globalSets = \craft\elements\GlobalSet::find()
+    ->asArray()
+    ->all();
+```
+:::
 
 
 ### `dateCreated`
 
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
-
-Settable by
-
-:   [dateCreated()](api:craft\elements\db\ElementQuery::dateCreated())
+Narrows the query results based on the global sets’ creation dates.
 
 
 
-When the resulting elements must have been created.
+Possible values include:
+
+| Value | Fetches global sets…
+| - | -
+| `'>= 2018-04-01'` | that were created on or after 2018-04-01.
+| `'< 2018-05-01'` | that were created before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch global sets created last month #}
+{% set start = date('first day of last month')|atom %}
+{% set end = date('first day of this month')|atom %}
+
+{% set globalSets = craft.globalSets()
+    .dateCreated(['and', ">= #{start}", "< #{end}"])
+    .all() %}
+```
+
+```php
+// Fetch global sets created last month
+$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+
+$globalSets = \craft\elements\GlobalSet::find()
+    ->dateCreated(['and', ">= {$start}", "< {$end}"])
+    ->all();
+```
+:::
 
 
 ### `dateUpdated`
 
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
-
-Settable by
-
-:   [dateUpdated()](api:craft\elements\db\ElementQuery::dateUpdated())
+Narrows the query results based on the global sets’ last-updated dates.
 
 
 
-When the resulting elements must have been last updated.
+Possible values include:
 
-
-### `editable`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [GlobalSetQuery::$editable](api:craft\elements\db\GlobalSetQuery::$editable)
-
-Settable by
-
-:   [editable()](api:craft\elements\db\GlobalSetQuery::editable())
+| Value | Fetches global sets…
+| - | -
+| `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
+| `'< 2018-05-01'` | that were updated before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
 
 
 
-Whether to only return global sets that the user has permission to edit.
+::: code
+```twig
+{# Fetch global sets updated in the last week #}
+{% set lastWeek = date('1 week ago')|atom %}
 
+{% set globalSets = craft.globalSets()
+    .dateUpdated(">= #{lastWeek}")
+    .all() %}
+```
 
-### `enabledForSite`
+```php
+// Fetch global sets updated in the last week
+$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
-
-Settable by
-
-:   [enabledForSite()](api:craft\elements\db\ElementQuery::enabledForSite())
-
-
-
-Whether the elements must be enabled for the chosen site.
+$globalSets = \craft\elements\GlobalSet::find()
+    ->dateUpdated(">= {$lastWeek}")
+    ->all();
+```
+:::
 
 
 ### `fixedOrder`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
-
-Settable by
-
-:   [fixedOrder()](api:craft\elements\db\ElementQuery::fixedOrder())
+Causes the query results to be returned in the order specified by [id](#id).
 
 
 
-Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
+
+
+::: code
+```twig
+{# Fetch global sets in a specific order #}
+{% set globalSets = craft.globalSets()
+    .id([1, 2, 3, 4, 5])
+    .fixedOrder()
+    .all() %}
+```
+
+```php
+// Fetch global sets in a specific order
+$globalSets = \craft\elements\GlobalSet::find()
+    ->id([1, 2, 3, 4, 5])
+    ->fixedOrder()
+    ->all();
+```
+:::
 
 
 ### `handle`
 
-Allowed types
+Narrows the query results based on the global sets’ handles.
 
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+Possible values include:
 
-Defined by
-
-:   [GlobalSetQuery::$handle](api:craft\elements\db\GlobalSetQuery::$handle)
-
-Settable by
-
-:   [handle()](api:craft\elements\db\GlobalSetQuery::handle())
-
+| Value | Fetches global sets…
+| - | -
+| `'foo'` | with a handle of `foo`.
+| `'not foo'` | not with a handle of `foo`.
+| `['foo', 'bar']` | with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not with a handle of `foo` or `bar`.
 
 
-The handle(s) that the resulting global sets must have.
+
+::: code
+```twig
+{# Fetch the global set with a handle of 'foo' #}
+{% set globalSet = craft.globalSets()
+    .handle('foo')
+    .one() %}
+```
+
+```php
+// Fetch the global set with a handle of 'foo'
+$globalSet = \craft\elements\GlobalSet::find()
+    ->handle('foo')
+    ->one();
+```
+:::
 
 
 ### `id`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$id](api:craft\elements\db\ElementQuery::$id)
-
-Settable by
-
-:   [id()](api:craft\elements\db\ElementQuery::id())
+Narrows the query results based on the global sets’ IDs.
 
 
 
-The element ID(s). Prefix IDs with `'not '` to exclude them.
+Possible values include:
+
+| Value | Fetches global sets…
+| - | -
+| `1` | with an ID of 1.
+| `'not 1'` | not with an ID of 1.
+| `[1, 2]` | with an ID of 1 or 2.
+| `['not', 1, 2]` | not with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch the global set by its ID #}
+{% set globalSet = craft.globalSets()
+    .id(1)
+    .one() %}
+```
+
+```php
+// Fetch the global set by its ID
+$globalSet = \craft\elements\GlobalSet::find()
+    ->id(1)
+    ->one();
+```
+:::
+
+
+
+::: tip
+This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
+:::
 
 
 ### `inReverse`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
-
-Settable by
-
-:   [inReverse()](api:craft\elements\db\ElementQuery::inReverse())
+Causes the query results to be returned in reverse order.
 
 
 
-Whether the results should be queried in reverse.
 
 
-### `ref`
+::: code
+```twig
+{# Fetch global sets in reverse #}
+{% set globalSets = craft.globalSets()
+    .inReverse()
+    .all() %}
+```
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$ref](api:craft\elements\db\ElementQuery::$ref)
-
-Settable by
-
-:   [ref()](api:craft\elements\db\ElementQuery::ref())
+```php
+// Fetch global sets in reverse
+$globalSets = \craft\elements\GlobalSet::find()
+    ->inReverse()
+    ->all();
+```
+:::
 
 
+### `limit`
 
-The reference code(s) used to identify the element(s).
+Determines the number of global sets that should be returned.
 
-This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
+
+
+::: code
+```twig
+{# Fetch up to 10 global sets  #}
+{% set globalSets = craft.globalSets()
+    .limit(10)
+    .all() %}
+```
+
+```php
+// Fetch up to 10 global sets
+$globalSets = \craft\elements\GlobalSet::find()
+    ->limit(10)
+    ->all();
+```
+:::
+
+
+### `offset`
+
+Determines how many global sets should be skipped in the results.
+
+
+
+::: code
+```twig
+{# Fetch all global sets except for the first 3 #}
+{% set globalSets = craft.globalSets()
+    .offset(3)
+    .all() %}
+```
+
+```php
+// Fetch all global sets except for the first 3
+$globalSets = \craft\elements\GlobalSet::find()
+    ->offset(3)
+    ->all();
+```
+:::
+
+
+### `orderBy`
+
+Determines the order that the global sets should be returned in.
+
+
+
+::: code
+```twig
+{# Fetch all global sets in order of date created #}
+{% set globalSets = craft.globalSets()
+    .orderBy('elements.dateCreated asc')
+    .all() %}
+```
+
+```php
+// Fetch all global sets in order of date created
+$globalSets = \craft\elements\GlobalSet::find()
+    ->orderBy('elements.dateCreated asc')
+    ->all();
+```
+:::
 
 
 ### `relatedTo`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
-
-Settable by
-
-:   [relatedTo()](api:craft\elements\db\ElementQuery::relatedTo())
+Narrows the query results to only global sets that are related to certain other elements.
 
 
 
-The element relation criteria.
+See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
 
-See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch all global sets that are related to myCategory #}
+{% set globalSets = craft.globalSets()
+    .relatedTo(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch all global sets that are related to $myCategory
+$globalSets = \craft\elements\GlobalSet::find()
+    ->relatedTo($myCategory)
+    ->all();
+```
+:::
 
 
 ### `search`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$search](api:craft\elements\db\ElementQuery::$search)
-
-Settable by
-
-:   [search()](api:craft\elements\db\ElementQuery::search())
+Narrows the query results to only global sets that match a search query.
 
 
 
-The search term to filter the resulting elements by.
+See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
 
-See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Get the search query from the 'q' query string param #}
+{% set searchQuery = craft.request.getQueryParam('q') %}
+
+{# Fetch all global sets that match the search query #}
+{% set globalSets = craft.globalSets()
+    .search(searchQuery)
+    .all() %}
+```
+
+```php
+// Get the search query from the 'q' query string param
+$searchQuery = \Craft::$app->request->getQueryParam('q');
+
+// Fetch all global sets that match the search query
+$globalSets = \craft\elements\GlobalSet::find()
+    ->search($searchQuery)
+    ->all();
+```
+:::
+
+
+### `site`
+
+Determines which site the global sets should be queried in.
+
+
+
+The current site will be used by default.
+
+Possible values include:
+
+| Value | Fetches global sets…
+| - | -
+| `'foo'` | from the site with a handle of `foo`.
+| a `\craft\elements\db\Site` object | from the site represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch global sets from the Foo site #}
+{% set globalSets = craft.globalSets()
+    .site('foo')
+    .all() %}
+```
+
+```php
+// Fetch global sets from the Foo site
+$globalSets = \craft\elements\GlobalSet::find()
+    ->site('foo')
+    ->all();
+```
+:::
 
 
 ### `siteId`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$siteId](api:craft\elements\db\ElementQuery::$siteId)
-
-Settable by
-
-:   [site()](api:craft\elements\db\ElementQuery::site()), [siteId()](api:craft\elements\db\ElementQuery::siteId())
+Determines which site the global sets should be queried in, per the site’s ID.
 
 
 
-The site ID that the elements should be returned in.
-
-
-### `slug`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$slug](api:craft\elements\db\ElementQuery::$slug)
-
-Settable by
-
-:   [slug()](api:craft\elements\db\ElementQuery::slug())
+The current site will be used by default.
 
 
 
-The slug that resulting elements must have.
+::: code
+```twig
+{# Fetch global sets from the site with an ID of 1 #}
+{% set globalSets = craft.globalSets()
+    .siteId(1)
+    .all() %}
+```
 
-
-### `status`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$status](api:craft\elements\db\ElementQuery::$status)
-
-Settable by
-
-:   [status()](api:craft\elements\db\ElementQuery::status())
-
-
-
-The status(es) that the resulting elements must have.
-
-
-### `title`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$title](api:craft\elements\db\ElementQuery::$title)
-
-Settable by
-
-:   [title()](api:craft\elements\db\ElementQuery::title())
-
-
-
-The title that resulting elements must have.
+```php
+// Fetch global sets from the site with an ID of 1
+$globalSets = \craft\elements\GlobalSet::find()
+    ->siteId(1)
+    ->all();
+```
+:::
 
 
 ### `uid`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uid](api:craft\elements\db\ElementQuery::$uid)
-
-Settable by
-
-:   [uid()](api:craft\elements\db\ElementQuery::uid())
+Narrows the query results based on the global sets’ UIDs.
 
 
 
-The element UID(s). Prefix UIDs with `'not '` to exclude them.
 
 
-### `uri`
+::: code
+```twig
+{# Fetch the global set by its UID #}
+{% set globalSet = craft.globalSets()
+    .uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    .one() %}
+```
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uri](api:craft\elements\db\ElementQuery::$uri)
-
-Settable by
-
-:   [uri()](api:craft\elements\db\ElementQuery::uri())
-
-
-
-The URI that the resulting element must have.
+```php
+// Fetch the global set by its UID
+$globalSet = \craft\elements\GlobalSet::find()
+    ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    ->one();
+```
+:::
 
 
 ### `with`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$with](api:craft\elements\db\ElementQuery::$with)
-
-Settable by
-
-:   [with()](api:craft\elements\db\ElementQuery::with()), [andWith()](api:craft\elements\db\ElementQuery::andWith())
+Causes the query to return matching global sets eager-loaded with related elements.
 
 
 
-The eager-loading declaration.
+See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch global sets eager-loaded with the "Related" field’s relations #}
+{% set globalSets = craft.globalSets()
+    .with(['related'])
+    .all() %}
+```
+
+```php
+// Fetch global sets eager-loaded with the "Related" field’s relations
+$globalSets = \craft\elements\GlobalSet::find()
+    ->with(['related'])
+    ->all();
+```
+:::
 
 
 

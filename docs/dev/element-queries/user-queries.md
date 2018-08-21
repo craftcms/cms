@@ -1,32 +1,48 @@
 # User Queries
 
-User queries are a type of [element query](README.md) used to fetch your project’s users.
-
-They are implemented by <api:craft\elements\db\UserQuery>, and the elements returned by them will be of type <api:craft\elements\User>.
-
-## Creating User Queries
-
-You can create a new user query from Twig by calling `craft.users()`, or from PHP by calling <api:craft\elements\User::find()>.
+You can fetch userrs in your templates or PHP code using **user queries**.
 
 ::: code
 ```twig
-{% set authors = craft.users()
-    .group('authors')
-    .all() %}
+{# Create a new user query #}
+{% set myUserQuery = craft.users() %}
+```
+```php
+// Create a new user query
+$myUserQuery = \craft\elements\User::find();
+```
+:::
 
+Once you’ve created a user query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [User](api:craft\elements\User) objects will be returned.
+
+::: tip
+See [Introduction to Element Queries](README.md) to learn about how element queries work.
+:::
+
+## Example
+
+We can display a list of the users in an “Authors” user group by doing the following:
+
+1. Create a user query with `craft.users()`.
+2. Set the [group](#group) parameter on it.
+3. Fetch the users with `.all()`.
+4. Loop through the users using a [for](https://twig.symfony.com/doc/2.x/tags/for.html) tag to create the list HTML.
+
+```twig
+{# Create a user query with the 'group' parameter #}
+{% set myUserQuery = craft.users()
+    .group('authors') %}
+
+{# Fetch the users #}
+{% set users = myUserQuery.all() %}
+
+{# Display the list #}
 <ul>
-    {% for author in authors %}
-        <li><a href="{{ url('authors/'~author.id) }}">{{ author.name }}</a></li>
+    {% for user in users %}
+        <li><a href="{{ url('authors/'~user.username) }}">{{ user.name }}</a></li>
     {% endfor %}
 </ul>
 ```
-```php
-/** @var \craft\elements\User[] $authors */
-$authors = \craft\elements\User::find()
-    ->group('authors')
-    ->all();
-```
-:::
 
 ## Parameters
 
@@ -36,560 +52,709 @@ User queries support the following parameters:
 
 ### `admin`
 
-Allowed types
+Narrows the query results to only users that have admin accounts.
 
-:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [UserQuery::$admin](api:craft\elements\db\UserQuery::$admin)
-
-Settable by
-
-:   [admin()](api:craft\elements\db\UserQuery::admin())
-
-
-
-Whether to only return users that are admins.
 
 
 ::: code
 ```twig
-{# fetch all the admins #}
-{% set admins = craft.users()
+{# Fetch admins #}
+{% set elements = {twig-function}
     .admin()
-    .all()%}
-
-{# fetch all the non-admins #}
-{% set nonAdmins = craft.users()
-    .admin(false)
     .all() %}
 ```
 
 ```php
-// fetch all the admins
-$admins = \craft\elements\User::find()
-    ->admin(true)
-    ->all();
-
-// fetch all the non-admins
-$nonAdmins = \craft\elements\User::find()
-    ->admin(false)
+// Fetch admins
+$elements = ElementClass::find()
+    ->admin()
     ->all();
 ```
 :::
-### `archived`
 
-Allowed types
 
-:   [boolean](http://php.net/language.types.boolean)
+### `anyStatus`
 
-Defined by
-
-:   [ElementQuery::$archived](api:craft\elements\db\ElementQuery::$archived)
-
-Settable by
-
-:   [archived()](api:craft\elements\db\ElementQuery::archived())
+Clears out the [status](#status) and [enabledForSite()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-enabledforsite) parameters.
 
 
 
-Whether to return only archived elements.
-
-
-### `asArray`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$asArray](api:craft\elements\db\ElementQuery::$asArray)
-
-Settable by
-
-:   [asArray()](api:craft\elements\db\ElementQuery::asArray())
-
-
-
-Whether to return each element as an array. If false (default), an object
-of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-elementtype) will be created to represent each element.
-
-
-### `can`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [integer](http://php.net/language.types.integer), [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [UserQuery::$can](api:craft\elements\db\UserQuery::$can)
-
-Settable by
-
-:   [can()](api:craft\elements\db\UserQuery::can())
-
-
-
-The permission that the resulting users must have.
 
 
 ::: code
 ```twig
-{# fetch users with CP access #}
-{% set admins = craft.users()
+{# Fetch all elements, regardless of status #}
+{% set elements = craft.queryFunction()
+    .anyStatus()
+    .all() %}
+```
+
+```php
+// Fetch all elements, regardless of status
+$elements = ElementClass::find()
+    ->anyStatus()
+    ->all();
+```
+:::
+
+
+### `asArray`
+
+Causes the query to return matching elements as arrays of data, rather than ElementClass objects.
+
+
+
+
+
+::: code
+```twig
+{# Fetch elements as arrays #}
+{% set elements = craft.queryFunction()
+    .asArray()
+    .all() %}
+```
+
+```php
+// Fetch elements as arrays
+$elements = ElementClass::find()
+    ->asArray()
+    ->all();
+```
+:::
+
+
+### `can`
+
+Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
+
+See [Users](https://docs.craftcms.com/v3/users.html) for a full list of available user permissions defined by Craft.
+
+
+
+::: code
+```twig
+{# Fetch users that can access the Control Panel #}
+{% set elements = {twig-function}
     .can('accessCp')
     .all() %}
 ```
 
 ```php
-// fetch users with CP access
-$admins = \craft\elements\User::find()
+// Fetch users that can access the Control Panel
+$elements = ElementClass::find()
     ->can('accessCp')
     ->all();
 ```
 :::
+
+
 ### `dateCreated`
 
-Allowed types
+Narrows the query results based on the elements’ creation dates.
 
-:   `mixed`
 
-Defined by
 
-:   [ElementQuery::$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
+Possible values include:
 
-Settable by
+| Value | Fetches elements…
+| - | -
+| `'>= 2018-04-01'` | that were created on or after 2018-04-01.
+| `'< 2018-05-01'` | that were created before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
 
-:   [dateCreated()](api:craft\elements\db\ElementQuery::dateCreated())
-
-
-
-When the resulting elements must have been created.
-
-
-### `dateUpdated`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
-
-Settable by
-
-:   [dateUpdated()](api:craft\elements\db\ElementQuery::dateUpdated())
-
-
-
-When the resulting elements must have been last updated.
-
-
-### `email`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [UserQuery::$email](api:craft\elements\db\UserQuery::$email)
-
-Settable by
-
-:   [email()](api:craft\elements\db\UserQuery::email())
-
-
-
-The email address that the resulting users must have.
-
-
-### `enabledForSite`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
-
-Settable by
-
-:   [enabledForSite()](api:craft\elements\db\ElementQuery::enabledForSite())
-
-
-
-Whether the elements must be enabled for the chosen site.
-
-
-### `firstName`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [UserQuery::$firstName](api:craft\elements\db\UserQuery::$firstName)
-
-Settable by
-
-:   [firstName()](api:craft\elements\db\UserQuery::firstName())
-
-
-
-The first name that the resulting users must have.
-
-
-### `fixedOrder`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
-
-Settable by
-
-:   [fixedOrder()](api:craft\elements\db\ElementQuery::fixedOrder())
-
-
-
-Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
-
-
-### `groupId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [UserQuery::$groupId](api:craft\elements\db\UserQuery::$groupId)
-
-Settable by
-
-:   [group()](api:craft\elements\db\UserQuery::group()), [groupId()](api:craft\elements\db\UserQuery::groupId())
-
-
-
-The user group ID(s) that the resulting users must belong to.
 
 
 ::: code
 ```twig
-{# fetch the authors #}
-{% set admins = craft.users()
-    .group('authors')
+{# Fetch elements created last month #}
+{% set start = date('first day of last month')|atom %}
+{% set end = date('first day of this month')|atom %}
+
+{% set elements = craft.queryFunction()
+    .dateCreated(['and', ">= #{start}", "< #{end}"])
     .all() %}
 ```
 
 ```php
-// fetch the authors
-$admins = \craft\elements\User::find()
-    ->group('authors')
+// Fetch elements created last month
+$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+
+$elements = ElementClass::find()
+    ->dateCreated(['and', ">= {$start}", "< {$end}"])
     ->all();
 ```
 :::
+
+
+### `dateUpdated`
+
+Narrows the query results based on the elements’ last-updated dates.
+
+
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
+| `'< 2018-05-01'` | that were updated before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch elements updated in the last week #}
+{% set lastWeek = date('1 week ago')|atom %}
+
+{% set elements = craft.queryFunction()
+    .dateUpdated(">= #{lastWeek}")
+    .all() %}
+```
+
+```php
+// Fetch elements updated in the last week
+$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+
+$elements = ElementClass::find()
+    ->dateUpdated(">= {$lastWeek}")
+    ->all();
+```
+:::
+
+
+### `email`
+
+Narrows the query results based on the users’ email addresses.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `'foo@bar.baz'` | with an email of `foo@bar.baz`.
+| `'not foo@bar.baz'` | not with an email of `foo@bar.baz`.
+| `'*@bar.baz'` | with an email that ends with `@bar.baz`.
+
+
+
+::: code
+```twig
+{# Fetch users with a .co.uk domain on their email address #}
+{% set elements = craft.queryFunction()
+    .email('*.co.uk')
+    .all() %}
+```
+
+```php
+// Fetch users with a .co.uk domain on their email address
+$elements = ElementClass::find()
+    ->email('*.co.uk')
+    ->all();
+```
+:::
+
+
+### `firstName`
+
+Narrows the query results based on the users’ first names.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `'Jane'` | with a first name of `Jane`.
+| `'not Jane'` | not with a first name of `Jane`.
+
+
+
+::: code
+```twig
+{# Fetch all the Jane's #}
+{% set elements = craft.queryFunction()
+    .firstName('Jane')
+    .all() %}
+```
+
+```php
+// Fetch all the Jane's
+$elements = ElementClass::find()
+    ->firstName('Jane')
+    ->one();
+```
+:::
+
+
+### `fixedOrder`
+
+Causes the query results to be returned in the order specified by [id](#id).
+
+
+
+
+
+::: code
+```twig
+{# Fetch elements in a specific order #}
+{% set elements = craft.queryFunction()
+    .id([1, 2, 3, 4, 5])
+    .fixedOrder()
+    .all() %}
+```
+
+```php
+// Fetch elements in a specific order
+$elements = ElementClass::find()
+    ->id([1, 2, 3, 4, 5])
+    ->fixedOrder()
+    ->all();
+```
+:::
+
+
+### `group`
+
+Narrows the query results based on the user group the users belong to.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `'foo'` | in a group with a handle of `foo`.
+| `'not foo'` | not in a group with a handle of `foo`.
+| `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
+| a [UserGroup](api:craft\models\UserGroup) object | in a group represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch elements in the Foo user group #}
+{% set elements = craft.queryFunction()
+    .group('foo')
+    .all() %}
+```
+
+```php
+// Fetch elements in the Foo user group
+$elements = ElementClass::find()
+    ->group('foo')
+    ->all();
+```
+:::
+
+
+### `groupId`
+
+Narrows the query results based on the user group the users belong to, per the groups’ IDs.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `1` | in a group with an ID of 1.
+| `'not 1'` | not in a group with an ID of 1.
+| `[1, 2]` | in a group with an ID of 1 or 2.
+| `['not', 1, 2]` | not in a group with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch elements in a group with an ID of 1 #}
+{% set elements = craft.queryFunction()
+    .groupId(1)
+    .all() %}
+```
+
+```php
+// Fetch elements in a group with an ID of 1
+$elements = ElementClass::find()
+    ->groupId(1)
+    ->all();
+```
+:::
+
+
 ### `id`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$id](api:craft\elements\db\ElementQuery::$id)
-
-Settable by
-
-:   [id()](api:craft\elements\db\ElementQuery::id())
+Narrows the query results based on the elements’ IDs.
 
 
 
-The element ID(s). Prefix IDs with `'not '` to exclude them.
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `1` | with an ID of 1.
+| `'not 1'` | not with an ID of 1.
+| `[1, 2]` | with an ID of 1 or 2.
+| `['not', 1, 2]` | not with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch the element by its ID #}
+{% set element = craft.queryFunction()
+    .id(1)
+    .one() %}
+```
+
+```php
+// Fetch the element by its ID
+$element = ElementClass::find()
+    ->id(1)
+    ->one();
+```
+:::
+
+
+
+::: tip
+This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
+:::
 
 
 ### `inReverse`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
-
-Settable by
-
-:   [inReverse()](api:craft\elements\db\ElementQuery::inReverse())
+Causes the query results to be returned in reverse order.
 
 
 
-Whether the results should be queried in reverse.
+
+
+::: code
+```twig
+{# Fetch elements in reverse #}
+{% set elements = craft.queryFunction()
+    .inReverse()
+    .all() %}
+```
+
+```php
+// Fetch elements in reverse
+$elements = ElementClass::find()
+    ->inReverse()
+    ->all();
+```
+:::
 
 
 ### `lastLoginDate`
 
-Allowed types
+Narrows the query results based on the users’ last login dates.
 
-:   `mixed`
+Possible values include:
 
-Defined by
-
-:   [UserQuery::$lastLoginDate](api:craft\elements\db\UserQuery::$lastLoginDate)
-
-Settable by
-
-:   [lastLoginDate()](api:craft\elements\db\UserQuery::lastLoginDate())
+| Value | Fetches elements…
+| - | -
+| `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
+| `'< 2018-05-01'` | that last logged-in before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged-in between 2018-04-01 and 2018-05-01.
 
 
 
-The date that the resulting users must have last logged in.
+::: code
+```twig
+{# Fetch elements that logged in recently #}
+{% set aWeekAgo = date('7 days ago')|atom %}
+
+{% set elements = craft.queryFunction()
+    .lastLoginDate(">= #{aWeekAgo}")
+    .all() %}
+```
+
+```php
+// Fetch elements that logged in recently
+$aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+
+$elements = ElementClass::find()
+    ->lastLoginDate(">= {$aWeekAgo}")
+    ->all();
+```
+:::
 
 
 ### `lastName`
 
-Allowed types
+Narrows the query results based on the users’ last names.
 
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+Possible values include:
 
-Defined by
-
-:   [UserQuery::$lastName](api:craft\elements\db\UserQuery::$lastName)
-
-Settable by
-
-:   [lastName()](api:craft\elements\db\UserQuery::lastName())
+| Value | Fetches elements…
+| - | -
+| `'Doe'` | with a last name of `Doe`.
+| `'not Doe'` | not with a last name of `Doe`.
 
 
 
-The last name that the resulting users must have.
+::: code
+```twig
+{# Fetch all the Doe's #}
+{% set elements = craft.queryFunction()
+    .lastName('Doe')
+    .all() %}
+```
+
+```php
+// Fetch all the Doe's
+$elements = ElementClass::find()
+    ->lastName('Doe')
+    ->one();
+```
+:::
 
 
-### `ref`
+### `limit`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$ref](api:craft\elements\db\ElementQuery::$ref)
-
-Settable by
-
-:   [ref()](api:craft\elements\db\ElementQuery::ref())
+Determines the number of elements that should be returned.
 
 
 
-The reference code(s) used to identify the element(s).
+::: code
+```twig
+{# Fetch up to 10 elements  #}
+{% set elements = craft.queryFunction()
+    .limit(10)
+    .all() %}
+```
 
-This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
+```php
+// Fetch up to 10 elements
+$elements = ElementClass::find()
+    ->limit(10)
+    ->all();
+```
+:::
+
+
+### `offset`
+
+Determines how many elements should be skipped in the results.
+
+
+
+::: code
+```twig
+{# Fetch all elements except for the first 3 #}
+{% set elements = craft.queryFunction()
+    .offset(3)
+    .all() %}
+```
+
+```php
+// Fetch all elements except for the first 3
+$elements = ElementClass::find()
+    ->offset(3)
+    ->all();
+```
+:::
+
+
+### `orderBy`
+
+Determines the order that the elements should be returned in.
+
+
+
+::: code
+```twig
+{# Fetch all elements in order of date created #}
+{% set elements = craft.queryFunction()
+    .orderBy('elements.dateCreated asc')
+    .all() %}
+```
+
+```php
+// Fetch all elements in order of date created
+$elements = ElementClass::find()
+    ->orderBy('elements.dateCreated asc')
+    ->all();
+```
+:::
 
 
 ### `relatedTo`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
-
-Settable by
-
-:   [relatedTo()](api:craft\elements\db\ElementQuery::relatedTo())
+Narrows the query results to only elements that are related to certain other elements.
 
 
 
-The element relation criteria.
+See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
 
-See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch all elements that are related to myCategory #}
+{% set elements = craft.queryFunction()
+    .relatedTo(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch all elements that are related to $myCategory
+$elements = ElementClass::find()
+    ->relatedTo($myCategory)
+    ->all();
+```
+:::
 
 
 ### `search`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$search](api:craft\elements\db\ElementQuery::$search)
-
-Settable by
-
-:   [search()](api:craft\elements\db\ElementQuery::search())
+Narrows the query results to only elements that match a search query.
 
 
 
-The search term to filter the resulting elements by.
-
-See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
-
-
-### `siteId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$siteId](api:craft\elements\db\ElementQuery::$siteId)
-
-Settable by
-
-:   [site()](api:craft\elements\db\ElementQuery::site()), [siteId()](api:craft\elements\db\ElementQuery::siteId())
+See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
 
 
 
-The site ID that the elements should be returned in.
+::: code
+```twig
+{# Get the search query from the 'q' query string param #}
+{% set searchQuery = craft.request.getQueryParam('q') %}
 
+{# Fetch all elements that match the search query #}
+{% set elements = craft.queryFunction()
+    .search(searchQuery)
+    .all() %}
+```
 
-### `slug`
+```php
+// Get the search query from the 'q' query string param
+$searchQuery = \Craft::$app->request->getQueryParam('q');
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$slug](api:craft\elements\db\ElementQuery::$slug)
-
-Settable by
-
-:   [slug()](api:craft\elements\db\ElementQuery::slug())
-
-
-
-The slug that resulting elements must have.
+// Fetch all elements that match the search query
+$elements = ElementClass::find()
+    ->search($searchQuery)
+    ->all();
+```
+:::
 
 
 ### `status`
 
-Allowed types
+Narrows the query results based on the elements’ statuses.
 
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+Possible values include:
 
-Defined by
-
-:   [ElementQuery::$status](api:craft\elements\db\ElementQuery::$status)
-
-Settable by
-
-:   [status()](api:craft\elements\db\ElementQuery::status())
-
-
-
-The status(es) that the resulting elements must have.
-
-
-### `title`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$title](api:craft\elements\db\ElementQuery::$title)
-
-Settable by
-
-:   [title()](api:craft\elements\db\ElementQuery::title())
+| Value | Fetches elements…
+| - | -
+| `'active'` _(default)_ | with active accounts.
+| `'locked'` | with locked accounts.
+| `'suspended'` | with suspended accounts.
+| `'pending'` | with accounts that are still pending activation.
+| `['active', 'locked']` | with active or locked accounts.
 
 
 
-The title that resulting elements must have.
+::: code
+```twig
+{# Fetch active and locked elements #}
+{% set elements = {twig-function}
+    .status(['active', 'locked')
+    .all() %}
+```
+
+```php
+// Fetch active and locked elements
+$elements = ElementClass::find()
+    ->status(['active', 'locked'])
+    ->all();
+```
+:::
 
 
 ### `uid`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uid](api:craft\elements\db\ElementQuery::$uid)
-
-Settable by
-
-:   [uid()](api:craft\elements\db\ElementQuery::uid())
+Narrows the query results based on the elements’ UIDs.
 
 
 
-The element UID(s). Prefix UIDs with `'not '` to exclude them.
 
 
-### `uri`
+::: code
+```twig
+{# Fetch the element by its UID #}
+{% set element = craft.queryFunction()
+    .uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    .one() %}
+```
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uri](api:craft\elements\db\ElementQuery::$uri)
-
-Settable by
-
-:   [uri()](api:craft\elements\db\ElementQuery::uri())
-
-
-
-The URI that the resulting element must have.
+```php
+// Fetch the element by its UID
+$element = ElementClass::find()
+    ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    ->one();
+```
+:::
 
 
 ### `username`
 
-Allowed types
+Narrows the query results based on the users’ usernames.
 
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+Possible values include:
 
-Defined by
-
-:   [UserQuery::$username](api:craft\elements\db\UserQuery::$username)
-
-Settable by
-
-:   [username()](api:craft\elements\db\UserQuery::username())
+| Value | Fetches elements…
+| - | -
+| `'foo'` | with a username of `foo`.
+| `'not foo'` | not with a username of `foo`.
 
 
 
-The username that the resulting users must have.
+::: code
+```twig
+{# Get the requested username #}
+{% set requestedUsername = craft.app.request.getSegment(2) %}
+
+{# Fetch that user #}
+{% set element = craft.queryFunction()
+    .username(requestedUsername|literal)
+    .one() %}
+```
+
+```php
+// Get the requested username
+$requestedUsername = \Craft::$app->request->getSegment(2);
+
+// Fetch that user
+$element = ElementClass::find()
+    ->username(\craft\helpers\Db::escapeParam($requestedUsername))
+    ->one();
+```
+:::
 
 
 ### `with`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$with](api:craft\elements\db\ElementQuery::$with)
-
-Settable by
-
-:   [with()](api:craft\elements\db\ElementQuery::with()), [andWith()](api:craft\elements\db\ElementQuery::andWith())
+Causes the query to return matching elements eager-loaded with related elements.
 
 
 
-The eager-loading declaration.
+See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch elements eager-loaded with the "Related" field’s relations #}
+{% set elements = craft.queryFunction()
+    .with(['related'])
+    .all() %}
+```
+
+```php
+// Fetch elements eager-loaded with the "Related" field’s relations
+$elements = ElementClass::find()
+    ->with(['related'])
+    ->all();
+```
+:::
 
 
 

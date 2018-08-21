@@ -1,32 +1,48 @@
 # Tag Queries
 
-Tag queries are a type of [element query](README.md) used to fetch your project’s tags.
-
-They are implemented by <api:craft\elements\db\TagQuery>, and the elements returned by them will be of type <api:craft\elements\Tag>.
-
-## Creating Tag Queries
-
-You can create a new tag query from Twig by calling `craft.tags()`, or from PHP by calling <api:craft\elements\Tag::find()>.
+You can fetch tags in your templates or PHP code using **tag queries**.
 
 ::: code
 ```twig
-{% set tags = craft.tags()
-    .group('blogTags')
-    .all() %}
+{# Create a new tag query #}
+{% set myTagQuery = craft.tags() %}
+```
+```php
+// Create a new tag query
+$myTagQuery = \craft\elements\Tag::find();
+```
+:::
 
+Once you’ve created a tag query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [Tag](api:craft\elements\Tag) objects will be returned.
+
+::: tip
+See [Introduction to Element Queries](README.md) to learn about how element queries work.
+:::
+
+## Example
+
+We can display a list of the tags in a “Blog Tags” tag group by doing the following:
+
+1. Create a tag query with `craft.tags()`.
+2. Set the [group](#group) parameter on it.
+3. Fetch the tags with `.all()`.
+4. Loop through the tags using a [for](https://twig.symfony.com/doc/2.x/tags/for.html) tag to create the list HTML.
+
+```twig
+{# Create a tag query with the 'group' parameter #}
+{% set myTagQuery = craft.tags()
+    .group('blogTags') %}
+
+{# Fetch the tags #}
+{% set tags = myTagQuery.all() %}
+
+{# Display the tag list #}
 <ul>
     {% for tag in tags %}
         <li><a href="{{ url('blog/tags/'~tag.id) }}">{{ tag.title }}</a></li>
     {% endfor %}
 </ul>
 ```
-```php
-/** @var \craft\elements\Tag[] $tags */
-$tags = \craft\elements\Tag::find()
-    ->group('blogTags')
-    ->all();
-```
-:::
 
 ## Parameters
 
@@ -34,389 +50,609 @@ Tag queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
-### `archived`
+### `anyStatus`
 
-Allowed types
+Clears out the [status()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-status) and [enabledForSite()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-enabledforsite) parameters.
 
-:   [boolean](http://php.net/language.types.boolean)
 
-Defined by
 
-:   [ElementQuery::$archived](api:craft\elements\db\ElementQuery::$archived)
-
-Settable by
-
-:   [archived()](api:craft\elements\db\ElementQuery::archived())
-
-
-
-Whether to return only archived elements.
-
-
-### `asArray`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$asArray](api:craft\elements\db\ElementQuery::$asArray)
-
-Settable by
-
-:   [asArray()](api:craft\elements\db\ElementQuery::asArray())
-
-
-
-Whether to return each element as an array. If false (default), an object
-of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-elementtype) will be created to represent each element.
-
-
-### `dateCreated`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
-
-Settable by
-
-:   [dateCreated()](api:craft\elements\db\ElementQuery::dateCreated())
-
-
-
-When the resulting elements must have been created.
-
-
-### `dateUpdated`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
-
-Settable by
-
-:   [dateUpdated()](api:craft\elements\db\ElementQuery::dateUpdated())
-
-
-
-When the resulting elements must have been last updated.
-
-
-### `enabledForSite`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
-
-Settable by
-
-:   [enabledForSite()](api:craft\elements\db\ElementQuery::enabledForSite())
-
-
-
-Whether the elements must be enabled for the chosen site.
-
-
-### `fixedOrder`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
-
-Settable by
-
-:   [fixedOrder()](api:craft\elements\db\ElementQuery::fixedOrder())
-
-
-
-Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
-
-
-### `groupId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [TagQuery::$groupId](api:craft\elements\db\TagQuery::$groupId)
-
-Settable by
-
-:   [group()](api:craft\elements\db\TagQuery::group()), [groupId()](api:craft\elements\db\TagQuery::groupId())
-
-
-
-The tag group ID(s) that the resulting tags must be in.
 
 
 ::: code
 ```twig
-{# fetch tags in the Topics group #}
+{# Fetch all tags, regardless of status #}
 {% set tags = craft.tags()
-    .group('topics')
+    .anyStatus()
     .all() %}
 ```
 
 ```php
-// fetch tags in the Topics group
+// Fetch all tags, regardless of status
 $tags = \craft\elements\Tag::find()
-    ->group('topics')
+    ->anyStatus()
     ->all();
 ```
 :::
+
+
+### `asArray`
+
+Causes the query to return matching tags as arrays of data, rather than [Tag](api:craft\elements\Tag) objects.
+
+
+
+
+
+::: code
+```twig
+{# Fetch tags as arrays #}
+{% set tags = craft.tags()
+    .asArray()
+    .all() %}
+```
+
+```php
+// Fetch tags as arrays
+$tags = \craft\elements\Tag::find()
+    ->asArray()
+    ->all();
+```
+:::
+
+
+### `dateCreated`
+
+Narrows the query results based on the tags’ creation dates.
+
+
+
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `'>= 2018-04-01'` | that were created on or after 2018-04-01.
+| `'< 2018-05-01'` | that were created before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch tags created last month #}
+{% set start = date('first day of last month')|atom %}
+{% set end = date('first day of this month')|atom %}
+
+{% set tags = craft.tags()
+    .dateCreated(['and', ">= #{start}", "< #{end}"])
+    .all() %}
+```
+
+```php
+// Fetch tags created last month
+$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+
+$tags = \craft\elements\Tag::find()
+    ->dateCreated(['and', ">= {$start}", "< {$end}"])
+    ->all();
+```
+:::
+
+
+### `dateUpdated`
+
+Narrows the query results based on the tags’ last-updated dates.
+
+
+
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
+| `'< 2018-05-01'` | that were updated before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch tags updated in the last week #}
+{% set lastWeek = date('1 week ago')|atom %}
+
+{% set tags = craft.tags()
+    .dateUpdated(">= #{lastWeek}")
+    .all() %}
+```
+
+```php
+// Fetch tags updated in the last week
+$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+
+$tags = \craft\elements\Tag::find()
+    ->dateUpdated(">= {$lastWeek}")
+    ->all();
+```
+:::
+
+
+### `fixedOrder`
+
+Causes the query results to be returned in the order specified by [id](#id).
+
+
+
+
+
+::: code
+```twig
+{# Fetch tags in a specific order #}
+{% set tags = craft.tags()
+    .id([1, 2, 3, 4, 5])
+    .fixedOrder()
+    .all() %}
+```
+
+```php
+// Fetch tags in a specific order
+$tags = \craft\elements\Tag::find()
+    ->id([1, 2, 3, 4, 5])
+    ->fixedOrder()
+    ->all();
+```
+:::
+
+
+### `group`
+
+Narrows the query results based on the tag groups the tags belong to.
+
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `'foo'` | in a group with a handle of `foo`.
+| `'not foo'` | not in a group with a handle of `foo`.
+| `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
+| a [TagGroup](api:craft\models\TagGroup) object | in a group represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch tags in the Foo group #}
+{% set tags = craft.tags()
+    .group('foo')
+    .all() %}
+```
+
+```php
+// Fetch tags in the Foo group
+$tags = \craft\elements\Tag::find()
+    ->group('foo')
+    ->all();
+```
+:::
+
+
+### `groupId`
+
+Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.
+
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `1` | in a group with an ID of 1.
+| `'not 1'` | not in a group with an ID of 1.
+| `[1, 2]` | in a group with an ID of 1 or 2.
+| `['not', 1, 2]` | not in a group with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch tags in the group with an ID of 1 #}
+{% set tags = craft.tags()
+    .groupId(1)
+    .all() %}
+```
+
+```php
+// Fetch tags in the group with an ID of 1
+$tags = \craft\elements\Tag::find()
+    ->groupId(1)
+    ->all();
+```
+:::
+
+
 ### `id`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$id](api:craft\elements\db\ElementQuery::$id)
-
-Settable by
-
-:   [id()](api:craft\elements\db\ElementQuery::id())
+Narrows the query results based on the tags’ IDs.
 
 
 
-The element ID(s). Prefix IDs with `'not '` to exclude them.
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `1` | with an ID of 1.
+| `'not 1'` | not with an ID of 1.
+| `[1, 2]` | with an ID of 1 or 2.
+| `['not', 1, 2]` | not with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch the tag by its ID #}
+{% set tag = craft.tags()
+    .id(1)
+    .one() %}
+```
+
+```php
+// Fetch the tag by its ID
+$tag = \craft\elements\Tag::find()
+    ->id(1)
+    ->one();
+```
+:::
+
+
+
+::: tip
+This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
+:::
 
 
 ### `inReverse`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
-
-Settable by
-
-:   [inReverse()](api:craft\elements\db\ElementQuery::inReverse())
+Causes the query results to be returned in reverse order.
 
 
 
-Whether the results should be queried in reverse.
 
 
-### `ref`
+::: code
+```twig
+{# Fetch tags in reverse #}
+{% set tags = craft.tags()
+    .inReverse()
+    .all() %}
+```
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$ref](api:craft\elements\db\ElementQuery::$ref)
-
-Settable by
-
-:   [ref()](api:craft\elements\db\ElementQuery::ref())
+```php
+// Fetch tags in reverse
+$tags = \craft\elements\Tag::find()
+    ->inReverse()
+    ->all();
+```
+:::
 
 
+### `limit`
 
-The reference code(s) used to identify the element(s).
+Determines the number of tags that should be returned.
 
-This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
+
+
+::: code
+```twig
+{# Fetch up to 10 tags  #}
+{% set tags = craft.tags()
+    .limit(10)
+    .all() %}
+```
+
+```php
+// Fetch up to 10 tags
+$tags = \craft\elements\Tag::find()
+    ->limit(10)
+    ->all();
+```
+:::
+
+
+### `offset`
+
+Determines how many tags should be skipped in the results.
+
+
+
+::: code
+```twig
+{# Fetch all tags except for the first 3 #}
+{% set tags = craft.tags()
+    .offset(3)
+    .all() %}
+```
+
+```php
+// Fetch all tags except for the first 3
+$tags = \craft\elements\Tag::find()
+    ->offset(3)
+    ->all();
+```
+:::
+
+
+### `orderBy`
+
+Determines the order that the tags should be returned in.
+
+
+
+::: code
+```twig
+{# Fetch all tags in order of date created #}
+{% set tags = craft.tags()
+    .orderBy('elements.dateCreated asc')
+    .all() %}
+```
+
+```php
+// Fetch all tags in order of date created
+$tags = \craft\elements\Tag::find()
+    ->orderBy('elements.dateCreated asc')
+    ->all();
+```
+:::
 
 
 ### `relatedTo`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
-
-Settable by
-
-:   [relatedTo()](api:craft\elements\db\ElementQuery::relatedTo())
+Narrows the query results to only tags that are related to certain other elements.
 
 
 
-The element relation criteria.
+See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
 
-See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch all tags that are related to myCategory #}
+{% set tags = craft.tags()
+    .relatedTo(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch all tags that are related to $myCategory
+$tags = \craft\elements\Tag::find()
+    ->relatedTo($myCategory)
+    ->all();
+```
+:::
 
 
 ### `search`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$search](api:craft\elements\db\ElementQuery::$search)
-
-Settable by
-
-:   [search()](api:craft\elements\db\ElementQuery::search())
+Narrows the query results to only tags that match a search query.
 
 
 
-The search term to filter the resulting elements by.
+See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
 
-See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Get the search query from the 'q' query string param #}
+{% set searchQuery = craft.request.getQueryParam('q') %}
+
+{# Fetch all tags that match the search query #}
+{% set tags = craft.tags()
+    .search(searchQuery)
+    .all() %}
+```
+
+```php
+// Get the search query from the 'q' query string param
+$searchQuery = \Craft::$app->request->getQueryParam('q');
+
+// Fetch all tags that match the search query
+$tags = \craft\elements\Tag::find()
+    ->search($searchQuery)
+    ->all();
+```
+:::
+
+
+### `site`
+
+Determines which site the tags should be queried in.
+
+
+
+The current site will be used by default.
+
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `'foo'` | from the site with a handle of `foo`.
+| a `\craft\elements\db\Site` object | from the site represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch tags from the Foo site #}
+{% set tags = craft.tags()
+    .site('foo')
+    .all() %}
+```
+
+```php
+// Fetch tags from the Foo site
+$tags = \craft\elements\Tag::find()
+    ->site('foo')
+    ->all();
+```
+:::
 
 
 ### `siteId`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$siteId](api:craft\elements\db\ElementQuery::$siteId)
-
-Settable by
-
-:   [site()](api:craft\elements\db\ElementQuery::site()), [siteId()](api:craft\elements\db\ElementQuery::siteId())
+Determines which site the tags should be queried in, per the site’s ID.
 
 
 
-The site ID that the elements should be returned in.
-
-
-### `slug`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$slug](api:craft\elements\db\ElementQuery::$slug)
-
-Settable by
-
-:   [slug()](api:craft\elements\db\ElementQuery::slug())
+The current site will be used by default.
 
 
 
-The slug that resulting elements must have.
+::: code
+```twig
+{# Fetch tags from the site with an ID of 1 #}
+{% set tags = craft.tags()
+    .siteId(1)
+    .all() %}
+```
 
-
-### `status`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$status](api:craft\elements\db\ElementQuery::$status)
-
-Settable by
-
-:   [status()](api:craft\elements\db\ElementQuery::status())
-
-
-
-The status(es) that the resulting elements must have.
+```php
+// Fetch tags from the site with an ID of 1
+$tags = \craft\elements\Tag::find()
+    ->siteId(1)
+    ->all();
+```
+:::
 
 
 ### `title`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$title](api:craft\elements\db\ElementQuery::$title)
-
-Settable by
-
-:   [title()](api:craft\elements\db\ElementQuery::title())
+Narrows the query results based on the tags’ titles.
 
 
 
-The title that resulting elements must have.
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `'Foo'` | with a title of `Foo`.
+| `'Foo*'` | with a title that begins with `Foo`.
+| `'*Foo'` | with a title that ends with `Foo`.
+| `'*Foo*'` | with a title that contains `Foo`.
+| `'not *Foo*'` | with a title that doesn’t contain `Foo`.
+| `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+| `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
+
+
+
+::: code
+```twig
+{# Fetch tags with a title that contains "Foo" #}
+{% set tags = craft.tags()
+    .title('*Foo*')
+    .all() %}
+```
+
+```php
+// Fetch tags with a title that contains "Foo"
+$tags = \craft\elements\Tag::find()
+    ->title('*Foo*')
+    ->all();
+```
+:::
 
 
 ### `uid`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uid](api:craft\elements\db\ElementQuery::$uid)
-
-Settable by
-
-:   [uid()](api:craft\elements\db\ElementQuery::uid())
+Narrows the query results based on the tags’ UIDs.
 
 
 
-The element UID(s). Prefix UIDs with `'not '` to exclude them.
+
+
+::: code
+```twig
+{# Fetch the tag by its UID #}
+{% set tag = craft.tags()
+    .uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    .one() %}
+```
+
+```php
+// Fetch the tag by its UID
+$tag = \craft\elements\Tag::find()
+    ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    ->one();
+```
+:::
 
 
 ### `uri`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uri](api:craft\elements\db\ElementQuery::$uri)
-
-Settable by
-
-:   [uri()](api:craft\elements\db\ElementQuery::uri())
+Narrows the query results based on the tags’ URIs.
 
 
 
-The URI that the resulting element must have.
+Possible values include:
+
+| Value | Fetches tags…
+| - | -
+| `'foo'` | with a URI of `foo`.
+| `'foo*'` | with a URI that begins with `foo`.
+| `'*foo'` | with a URI that ends with `foo`.
+| `'*foo*'` | with a URI that contains `foo`.
+| `'not *foo*'` | with a URI that doesn’t contain `foo`.
+| `['*foo*', '*bar*'` | with a URI that contains `foo` or `bar`.
+| `['not', '*foo*', '*bar*']` | with a URI that doesn’t contain `foo` or `bar`.
+
+
+
+::: code
+```twig
+{# Get the requested URI #}
+{% set requestedUri = craft.app.request.getPathInfo() %}
+
+{# Fetch the tag with that URI #}
+{% set tag = craft.tags()
+    .uri(requestedUri|literal)
+    .one() %}
+```
+
+```php
+// Get the requested URI
+$requestedUri = \Craft::$app->request->getPathInfo();
+
+// Fetch the tag with that URI
+$tag = \craft\elements\Tag::find()
+    ->uri(\craft\helpers\Db::escapeParam($requestedUri))
+    ->one();
+```
+:::
 
 
 ### `with`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$with](api:craft\elements\db\ElementQuery::$with)
-
-Settable by
-
-:   [with()](api:craft\elements\db\ElementQuery::with()), [andWith()](api:craft\elements\db\ElementQuery::andWith())
+Causes the query to return matching tags eager-loaded with related elements.
 
 
 
-The eager-loading declaration.
+See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch tags eager-loaded with the "Related" field’s relations #}
+{% set tags = craft.tags()
+    .with(['related'])
+    .all() %}
+```
+
+```php
+// Fetch tags eager-loaded with the "Related" field’s relations
+$tags = \craft\elements\Tag::find()
+    ->with(['related'])
+    ->all();
+```
+:::
 
 
 

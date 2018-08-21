@@ -1,19 +1,42 @@
 # Category Queries
 
-Category queries are a type of [element query](README.md) used to fetch your project’s categories.
-
-They are implemented by <api:craft\elements\db\CategoryQuery>, and the elements returned by them will be of type <api:craft\elements\Category>.
-
-## Creating Category Queries
-
-You can create a new category query from Twig by calling `craft.categories()`, or from PHP by calling <api:craft\elements\Category::find()>.
+You can fetch categories in your templates or PHP code using **category queries**.
 
 ::: code
 ```twig
-{% set categories = craft.categories()
-    .group('newsCategories')
-    .all() %}
+{# Create a new category query #}
+{% set myCategoryQuery = craft.categories() %}
+```
+```php
+// Create a new category query
+$myCategoryQuery = \craft\elements\Category::find();
+```
+:::
 
+Once you’ve created a category query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [Category](api:craft\elements\Category) objects will be returned.
+
+::: tip
+See [Introduction to Element Queries](README.md) to learn about how element queries work.
+:::
+
+## Example
+
+We can display a navigation for all the categories in a category group called “Topics” by doing the following:
+
+1. Create a category query with `craft.categories()`.
+2. Set the [group](#group) parameter on it.
+3. Fetch the categories with `.all()`.
+4. Loop through the categories using a [nav](../tags/nav.md) tag to create the navigation HTML.
+
+```twig
+{# Create a category query with the 'group' parameter #}
+{% set myCategoryQuery = craft.categories()
+    .group('topics') %}
+
+{# Fetch the categories #}
+{% set categories = myCategoryQuery.all() %}
+
+{# Display the navigation #}
 <ul>
     {% nav category in categories %}
         <li>
@@ -27,13 +50,6 @@ You can create a new category query from Twig by calling `craft.categories()`, o
     {% endnav %}
 </ul>
 ```
-```php
-/** @var \craft\elements\Category[] $categories */
-$categories = \craft\elements\Category::find()
-    ->group('newsCategories')
-    ->all();
-```
-:::
 
 ## Parameters
 
@@ -43,672 +59,1093 @@ Category queries support the following parameters:
 
 ### `ancestorDist`
 
-Allowed types
+Narrows the query results to only categories that are up to a certain distance away from the category specified by [ancestorOf](#ancestorof).
 
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
 
-Defined by
 
-:   [ElementQuery::$ancestorDist](api:craft\elements\db\ElementQuery::$ancestorDist)
-
-Settable by
-
-:   [ancestorDist()](api:craft\elements\db\ElementQuery::ancestorDist())
-
-
-
-The maximum number of levels that results may be separated from [ancestorOf()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-ancestorof).
-
-
-### `ancestorOf`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$ancestorOf](api:craft\elements\db\ElementQuery::$ancestorOf)
-
-Settable by
-
-:   [ancestorOf()](api:craft\elements\db\ElementQuery::ancestorOf())
-
-
-
-The element (or its ID) that results must be an ancestor of.
-
-
-### `archived`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$archived](api:craft\elements\db\ElementQuery::$archived)
-
-Settable by
-
-:   [archived()](api:craft\elements\db\ElementQuery::archived())
-
-
-
-Whether to return only archived elements.
-
-
-### `asArray`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$asArray](api:craft\elements\db\ElementQuery::$asArray)
-
-Settable by
-
-:   [asArray()](api:craft\elements\db\ElementQuery::asArray())
-
-
-
-Whether to return each element as an array. If false (default), an object
-of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-elementtype) will be created to represent each element.
-
-
-### `dateCreated`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
-
-Settable by
-
-:   [dateCreated()](api:craft\elements\db\ElementQuery::dateCreated())
-
-
-
-When the resulting elements must have been created.
-
-
-### `dateUpdated`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
-
-Settable by
-
-:   [dateUpdated()](api:craft\elements\db\ElementQuery::dateUpdated())
-
-
-
-When the resulting elements must have been last updated.
-
-
-### `descendantDist`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$descendantDist](api:craft\elements\db\ElementQuery::$descendantDist)
-
-Settable by
-
-:   [descendantDist()](api:craft\elements\db\ElementQuery::descendantDist())
-
-
-
-The maximum number of levels that results may be separated from [descendantOf()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-descendantof).
-
-
-### `descendantOf`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$descendantOf](api:craft\elements\db\ElementQuery::$descendantOf)
-
-Settable by
-
-:   [descendantOf()](api:craft\elements\db\ElementQuery::descendantOf())
-
-
-
-The element (or its ID) that results must be a descendant of.
-
-
-### `editable`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [CategoryQuery::$editable](api:craft\elements\db\CategoryQuery::$editable)
-
-Settable by
-
-:   [editable()](api:craft\elements\db\CategoryQuery::editable())
-
-
-
-Whether to only return categories that the user has permission to edit.
-
-
-### `enabledForSite`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
-
-Settable by
-
-:   [enabledForSite()](api:craft\elements\db\ElementQuery::enabledForSite())
-
-
-
-Whether the elements must be enabled for the chosen site.
-
-
-### `fixedOrder`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
-
-Settable by
-
-:   [fixedOrder()](api:craft\elements\db\ElementQuery::fixedOrder())
-
-
-
-Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
-
-
-### `groupId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [CategoryQuery::$groupId](api:craft\elements\db\CategoryQuery::$groupId)
-
-Settable by
-
-:   [group()](api:craft\elements\db\CategoryQuery::group()), [groupId()](api:craft\elements\db\CategoryQuery::groupId())
-
-
-
-The category group ID(s) that the resulting categories must be in.
 
 
 ::: code
 ```twig
-{# fetch categories in the Topics group #}
+{# Fetch categories above this one #}
 {% set categories = craft.categories()
-    .group('topics')
+    .ancestorOf(myCategory)
+    .ancestorDist(3)
     .all() %}
 ```
 
 ```php
-// fetch categories in the Topics group
+// Fetch categories above this one
 $categories = \craft\elements\Category::find()
-    ->group('topics')
+    ->ancestorOf($myCategory)
+    ->ancestorDist(3)
     ->all();
 ```
 :::
+
+
+### `ancestorOf`
+
+Narrows the query results to only categories that are ancestors of another category.
+
+
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | above the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | above the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories above this one #}
+{% set categories = craft.categories()
+    .ancestorOf(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch categories above this one
+$categories = \craft\elements\Category::find()
+    ->ancestorOf($myCategory)
+    ->all();
+```
+:::
+
+
+
+::: tip
+This can be combined with [ancestorDist](#ancestordist) if you want to limit how far away the ancestor categories can be.
+:::
+
+
+### `anyStatus`
+
+Clears out the [status](#status) and [enabledForSite](#enabledforsite) parameters.
+
+
+
+
+
+::: code
+```twig
+{# Fetch all categories, regardless of status #}
+{% set categories = craft.categories()
+    .anyStatus()
+    .all() %}
+```
+
+```php
+// Fetch all categories, regardless of status
+$categories = \craft\elements\Category::find()
+    ->anyStatus()
+    ->all();
+```
+:::
+
+
+### `asArray`
+
+Causes the query to return matching categories as arrays of data, rather than [Category](api:craft\elements\Category) objects.
+
+
+
+
+
+::: code
+```twig
+{# Fetch categories as arrays #}
+{% set categories = craft.categories()
+    .asArray()
+    .all() %}
+```
+
+```php
+// Fetch categories as arrays
+$categories = \craft\elements\Category::find()
+    ->asArray()
+    ->all();
+```
+:::
+
+
+### `dateCreated`
+
+Narrows the query results based on the categories’ creation dates.
+
+
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'>= 2018-04-01'` | that were created on or after 2018-04-01.
+| `'< 2018-05-01'` | that were created before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch categories created last month #}
+{% set start = date('first day of last month')|atom %}
+{% set end = date('first day of this month')|atom %}
+
+{% set categories = craft.categories()
+    .dateCreated(['and', ">= #{start}", "< #{end}"])
+    .all() %}
+```
+
+```php
+// Fetch categories created last month
+$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+
+$categories = \craft\elements\Category::find()
+    ->dateCreated(['and', ">= {$start}", "< {$end}"])
+    ->all();
+```
+:::
+
+
+### `dateUpdated`
+
+Narrows the query results based on the categories’ last-updated dates.
+
+
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
+| `'< 2018-05-01'` | that were updated before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch categories updated in the last week #}
+{% set lastWeek = date('1 week ago')|atom %}
+
+{% set categories = craft.categories()
+    .dateUpdated(">= #{lastWeek}")
+    .all() %}
+```
+
+```php
+// Fetch categories updated in the last week
+$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+
+$categories = \craft\elements\Category::find()
+    ->dateUpdated(">= {$lastWeek}")
+    ->all();
+```
+:::
+
+
+### `descendantDist`
+
+Narrows the query results to only categories that are up to a certain distance away from the category specified by [descendantOf](#descendantof).
+
+
+
+
+
+::: code
+```twig
+{# Fetch categories below this one #}
+{% set categories = craft.categories()
+    .descendantOf(myCategory)
+    .descendantDist(3)
+    .all() %}
+```
+
+```php
+// Fetch categories below this one
+$categories = \craft\elements\Category::find()
+    ->descendantOf($myCategory)
+    ->descendantDist(3)
+    ->all();
+```
+:::
+
+
+### `descendantOf`
+
+Narrows the query results to only categories that are descendants of another category.
+
+
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | below the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | below the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories below this one #}
+{% set categories = craft.categories()
+    .descendantOf(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch categories below this one
+$categories = \craft\elements\Category::find()
+    ->descendantOf($myCategory)
+    ->all();
+```
+:::
+
+
+
+::: tip
+This can be combined with [descendantDist](#descendantdist) if you want to limit how far away the descendant categories can be.
+:::
+
+
+### `enabledForSite`
+
+Narrows the query results based on whether the categories are enabled in the site they’re being queried in, per the [site](#site) parameter.
+
+
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `true` _(default)_ | that are enabled in the site.
+| `false` | whether they are enabled or not in the site.
+
+
+
+::: code
+```twig
+{# Fetch all categories, including ones disabled for this site #}
+{% set categories = craft.categories()
+    .enabledForSite(false)
+    .all() %}
+```
+
+```php
+// Fetch all categories, including ones disabled for this site
+$categories = \craft\elements\Category::find()
+    ->enabledForSite(false)
+    ->all();
+```
+:::
+
+
+### `fixedOrder`
+
+Causes the query results to be returned in the order specified by [id](#id).
+
+
+
+
+
+::: code
+```twig
+{# Fetch categories in a specific order #}
+{% set categories = craft.categories()
+    .id([1, 2, 3, 4, 5])
+    .fixedOrder()
+    .all() %}
+```
+
+```php
+// Fetch categories in a specific order
+$categories = \craft\elements\Category::find()
+    ->id([1, 2, 3, 4, 5])
+    ->fixedOrder()
+    ->all();
+```
+:::
+
+
+### `group`
+
+Narrows the query results based on the category groups the categories belong to.
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'foo'` | in a group with a handle of `foo`.
+| `'not foo'` | not in a group with a handle of `foo`.
+| `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
+| a [CategoryGroup](api:craft\models\CategoryGroup) object | in a group represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories in the Foo group #}
+{% set categories = craft.categories()
+    .group('foo')
+    .all() %}
+```
+
+```php
+// Fetch categories in the Foo group
+$categories = \craft\elements\Category::find()
+    ->group('foo')
+    ->all();
+```
+:::
+
+
+### `groupId`
+
+Narrows the query results based on the category groups the categories belong to, per the groups’ IDs.
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | in a group with an ID of 1.
+| `'not 1'` | not in a group with an ID of 1.
+| `[1, 2]` | in a group with an ID of 1 or 2.
+| `['not', 1, 2]` | not in a group with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch categories in the group with an ID of 1 #}
+{% set categories = craft.categories()
+    .groupId(1)
+    .all() %}
+```
+
+```php
+// Fetch categories in the group with an ID of 1
+$categories = \craft\elements\Category::find()
+    ->groupId(1)
+    ->all();
+```
+:::
+
+
 ### `hasDescendants`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$hasDescendants](api:craft\elements\db\ElementQuery::$hasDescendants)
-
-Settable by
-
-:   [hasDescendants()](api:craft\elements\db\ElementQuery::hasDescendants())
+Narrows the query results based on whether the categories have any descendants.
 
 
 
-Whether the resulting elements must have descendants.
+(This has the opposite effect of calling [leaves](#leaves).)
+
+
+
+::: code
+```twig
+{# Fetch categories that have descendants #}
+{% set categories = craft.categories()
+    .hasDescendants()
+    .all() %}
+```
+
+```php
+// Fetch categories that have descendants
+$categories = \craft\elements\Category::find()
+    ->hasDescendants()
+    ->all();
+```
+:::
 
 
 ### `id`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$id](api:craft\elements\db\ElementQuery::$id)
-
-Settable by
-
-:   [id()](api:craft\elements\db\ElementQuery::id())
+Narrows the query results based on the categories’ IDs.
 
 
 
-The element ID(s). Prefix IDs with `'not '` to exclude them.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | with an ID of 1.
+| `'not 1'` | not with an ID of 1.
+| `[1, 2]` | with an ID of 1 or 2.
+| `['not', 1, 2]` | not with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch the category by its ID #}
+{% set category = craft.categories()
+    .id(1)
+    .one() %}
+```
+
+```php
+// Fetch the category by its ID
+$category = \craft\elements\Category::find()
+    ->id(1)
+    ->one();
+```
+:::
+
+
+
+::: tip
+This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
+:::
 
 
 ### `inReverse`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
-
-Settable by
-
-:   [inReverse()](api:craft\elements\db\ElementQuery::inReverse())
+Causes the query results to be returned in reverse order.
 
 
 
-Whether the results should be queried in reverse.
+
+
+::: code
+```twig
+{# Fetch categories in reverse #}
+{% set categories = craft.categories()
+    .inReverse()
+    .all() %}
+```
+
+```php
+// Fetch categories in reverse
+$categories = \craft\elements\Category::find()
+    ->inReverse()
+    ->all();
+```
+:::
 
 
 ### `leaves`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$leaves](api:craft\elements\db\ElementQuery::$leaves)
-
-Settable by
-
-:   [leaves()](api:craft\elements\db\ElementQuery::leaves())
+Narrows the query results based on whether the categories are “leaves” (categories with no descendants).
 
 
 
-Whether the elements must be “leaves” in the structure.
+(This has the opposite effect of calling [hasDescendants](#hasdescendants).)
+
+
+
+::: code
+```twig
+{# Fetch categories that have no descendants #}
+{% set categories = craft.categories()
+    .leaves()
+    .all() %}
+```
+
+```php
+// Fetch categories that have no descendants
+$categories = \craft\elements\Category::find()
+    ->leaves()
+    ->all();
+```
+:::
 
 
 ### `level`
 
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$level](api:craft\elements\db\ElementQuery::$level)
-
-Settable by
-
-:   [level()](api:craft\elements\db\ElementQuery::level())
+Narrows the query results based on the categories’ level within the structure.
 
 
 
-The element’s level within the structure
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | with a level of 1.
+| `'not 1'` | not with a level of 1.
+| `'>= 3'` | with a level greater than or equal to 3.
+| `[1, 2]` | with a level of 1 or 2
+| `['not', 1, 2]` | not with level of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch categories positioned at level 3 or above #}
+{% set categories = craft.categories()
+    .level('>= 3')
+    .all() %}
+```
+
+```php
+// Fetch categories positioned at level 3 or above
+$categories = \craft\elements\Category::find()
+    ->level('>= 3')
+    ->all();
+```
+:::
+
+
+### `limit`
+
+Determines the number of categories that should be returned.
+
+
+
+::: code
+```twig
+{# Fetch up to 10 categories  #}
+{% set categories = craft.categories()
+    .limit(10)
+    .all() %}
+```
+
+```php
+// Fetch up to 10 categories
+$categories = \craft\elements\Category::find()
+    ->limit(10)
+    ->all();
+```
+:::
 
 
 ### `nextSiblingOf`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$nextSiblingOf](api:craft\elements\db\ElementQuery::$nextSiblingOf)
-
-Settable by
-
-:   [nextSiblingOf()](api:craft\elements\db\ElementQuery::nextSiblingOf())
+Narrows the query results to only the category that comes immediately after another category.
 
 
 
-The element (or its ID) that the result must be the next sibling of.
+Possible values include:
+
+| Value | Fetches the category…
+| - | -
+| `1` | after the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | after the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch the next category #}
+{% set category = craft.categories()
+    .nextSiblingOf(myCategory)
+    .one() %}
+```
+
+```php
+// Fetch the next category
+$category = \craft\elements\Category::find()
+    ->nextSiblingOf($myCategory)
+    ->one();
+```
+:::
+
+
+### `offset`
+
+Determines how many categories should be skipped in the results.
+
+
+
+::: code
+```twig
+{# Fetch all categories except for the first 3 #}
+{% set categories = craft.categories()
+    .offset(3)
+    .all() %}
+```
+
+```php
+// Fetch all categories except for the first 3
+$categories = \craft\elements\Category::find()
+    ->offset(3)
+    ->all();
+```
+:::
+
+
+### `orderBy`
+
+Determines the order that the categories should be returned in.
+
+
+
+::: code
+```twig
+{# Fetch all categories in order of date created #}
+{% set categories = craft.categories()
+    .orderBy('elements.dateCreated asc')
+    .all() %}
+```
+
+```php
+// Fetch all categories in order of date created
+$categories = \craft\elements\Category::find()
+    ->orderBy('elements.dateCreated asc')
+    ->all();
+```
+:::
 
 
 ### `positionedAfter`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$positionedAfter](api:craft\elements\db\ElementQuery::$positionedAfter)
-
-Settable by
-
-:   [positionedAfter()](api:craft\elements\db\ElementQuery::positionedAfter())
+Narrows the query results to only categories that are positioned after another category.
 
 
 
-The element (or its ID) that the results must be positioned after.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | after the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | after the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories after this one #}
+{% set categories = craft.categories()
+    .positionedAfter(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch categories after this one
+$categories = \craft\elements\Category::find()
+    ->positionedAfter($myCategory)
+    ->all();
+```
+:::
 
 
 ### `positionedBefore`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$positionedBefore](api:craft\elements\db\ElementQuery::$positionedBefore)
-
-Settable by
-
-:   [positionedBefore()](api:craft\elements\db\ElementQuery::positionedBefore())
+Narrows the query results to only categories that are positioned before another category.
 
 
 
-The element (or its ID) that the results must be positioned before.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | before the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | before the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories before this one #}
+{% set categories = craft.categories()
+    .positionedBefore(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch categories before this one
+$categories = \craft\elements\Category::find()
+    ->positionedBefore($myCategory)
+    ->all();
+```
+:::
 
 
 ### `prevSiblingOf`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$prevSiblingOf](api:craft\elements\db\ElementQuery::$prevSiblingOf)
-
-Settable by
-
-:   [prevSiblingOf()](api:craft\elements\db\ElementQuery::prevSiblingOf())
+Narrows the query results to only the category that comes immediately before another category.
 
 
 
-The element (or its ID) that the result must be the previous sibling of.
+Possible values include:
 
-
-### `ref`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$ref](api:craft\elements\db\ElementQuery::$ref)
-
-Settable by
-
-:   [ref()](api:craft\elements\db\ElementQuery::ref())
+| Value | Fetches the category…
+| - | -
+| `1` | before the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | before the category represented by the object.
 
 
 
-The reference code(s) used to identify the element(s).
+::: code
+```twig
+{# Fetch the previous category #}
+{% set category = craft.categories()
+    .prevSiblingOf(myCategory)
+    .one() %}
+```
 
-This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
+```php
+// Fetch the previous category
+$category = \craft\elements\Category::find()
+    ->prevSiblingOf($myCategory)
+    ->one();
+```
+:::
 
 
 ### `relatedTo`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
-
-Settable by
-
-:   [relatedTo()](api:craft\elements\db\ElementQuery::relatedTo())
+Narrows the query results to only categories that are related to certain other elements.
 
 
 
-The element relation criteria.
+See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
 
-See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch all categories that are related to myCategory #}
+{% set categories = craft.categories()
+    .relatedTo(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch all categories that are related to $myCategory
+$categories = \craft\elements\Category::find()
+    ->relatedTo($myCategory)
+    ->all();
+```
+:::
 
 
 ### `search`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$search](api:craft\elements\db\ElementQuery::$search)
-
-Settable by
-
-:   [search()](api:craft\elements\db\ElementQuery::search())
+Narrows the query results to only categories that match a search query.
 
 
 
-The search term to filter the resulting elements by.
+See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
 
-See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Get the search query from the 'q' query string param #}
+{% set searchQuery = craft.request.getQueryParam('q') %}
+
+{# Fetch all categories that match the search query #}
+{% set categories = craft.categories()
+    .search(searchQuery)
+    .all() %}
+```
+
+```php
+// Get the search query from the 'q' query string param
+$searchQuery = \Craft::$app->request->getQueryParam('q');
+
+// Fetch all categories that match the search query
+$categories = \craft\elements\Category::find()
+    ->search($searchQuery)
+    ->all();
+```
+:::
 
 
 ### `siblingOf`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$siblingOf](api:craft\elements\db\ElementQuery::$siblingOf)
-
-Settable by
-
-:   [siblingOf()](api:craft\elements\db\ElementQuery::siblingOf())
+Narrows the query results to only categories that are siblings of another category.
 
 
 
-The element (or its ID) that the results must be a sibling of.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | beside the category with an ID of 1.
+| a [Category](api:craft\elements\Category) object | beside the category represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories beside this one #}
+{% set categories = craft.categories()
+    .siblingOf(myCategory)
+    .all() %}
+```
+
+```php
+// Fetch categories beside this one
+$categories = \craft\elements\Category::find()
+    ->siblingOf($myCategory)
+    ->all();
+```
+:::
+
+
+### `site`
+
+Determines which site the categories should be queried in.
+
+
+
+The current site will be used by default.
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'foo'` | from the site with a handle of `foo`.
+| a `\craft\elements\db\Site` object | from the site represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch categories from the Foo site #}
+{% set categories = craft.categories()
+    .site('foo')
+    .all() %}
+```
+
+```php
+// Fetch categories from the Foo site
+$categories = \craft\elements\Category::find()
+    ->site('foo')
+    ->all();
+```
+:::
 
 
 ### `siteId`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$siteId](api:craft\elements\db\ElementQuery::$siteId)
-
-Settable by
-
-:   [site()](api:craft\elements\db\ElementQuery::site()), [siteId()](api:craft\elements\db\ElementQuery::siteId())
+Determines which site the categories should be queried in, per the site’s ID.
 
 
 
-The site ID that the elements should be returned in.
+The current site will be used by default.
+
+
+
+::: code
+```twig
+{# Fetch categories from the site with an ID of 1 #}
+{% set categories = craft.categories()
+    .siteId(1)
+    .all() %}
+```
+
+```php
+// Fetch categories from the site with an ID of 1
+$categories = \craft\elements\Category::find()
+    ->siteId(1)
+    ->all();
+```
+:::
 
 
 ### `slug`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$slug](api:craft\elements\db\ElementQuery::$slug)
-
-Settable by
-
-:   [slug()](api:craft\elements\db\ElementQuery::slug())
+Narrows the query results based on the categories’ slugs.
 
 
 
-The slug that resulting elements must have.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'foo'` | with a slug of `foo`.
+| `'foo*'` | with a slug that begins with `foo`.
+| `'*foo'` | with a slug that ends with `foo`.
+| `'*foo*'` | with a slug that contains `foo`.
+| `'not *foo*'` | with a slug that doesn’t contain `foo`.
+| `['*foo*', '*bar*'` | with a slug that contains `foo` or `bar`.
+| `['not', '*foo*', '*bar*']` | with a slug that doesn’t contain `foo` or `bar`.
+
+
+
+::: code
+```twig
+{# Get the requested category slug from the URL #}
+{% set requestedSlug = craft.app.request.getSegment(3) %}
+
+{# Fetch the category with that slug #}
+{% set category = craft.categories()
+    .slug(requestedSlug|literal)
+    .one() %}
+```
+
+```php
+// Get the requested category slug from the URL
+$requestedSlug = \Craft::$app->request->getSegment(3);
+
+// Fetch the category with that slug
+$category = \craft\elements\Category::find()
+    ->slug(\craft\helpers\Db::escapeParam($requestedSlug))
+    ->one();
+```
+:::
 
 
 ### `status`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$status](api:craft\elements\db\ElementQuery::$status)
-
-Settable by
-
-:   [status()](api:craft\elements\db\ElementQuery::status())
+Narrows the query results based on the categories’ statuses.
 
 
 
-The status(es) that the resulting elements must have.
+Possible values include:
 
-
-### `structureId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$structureId](api:craft\elements\db\ElementQuery::$structureId)
-
-Settable by
-
-:   [structureId()](api:craft\elements\db\ElementQuery::structureId())
+| Value | Fetches categories…
+| - | -
+| `'enabled'`  _(default)_ | that are enabled.
+| `'disabled'` | that are disabled.
 
 
 
-The structure ID that should be used to join in the structureelements table.
+::: code
+```twig
+{# Fetch disabled categories #}
+{% set categories = craft.categories()
+    .status('disabled')
+    .all() %}
+```
+
+```php
+// Fetch disabled categories
+$categories = \craft\elements\Category::find()
+    ->status('disabled')
+    ->all();
+```
+:::
 
 
 ### `title`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$title](api:craft\elements\db\ElementQuery::$title)
-
-Settable by
-
-:   [title()](api:craft\elements\db\ElementQuery::title())
+Narrows the query results based on the categories’ titles.
 
 
 
-The title that resulting elements must have.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'Foo'` | with a title of `Foo`.
+| `'Foo*'` | with a title that begins with `Foo`.
+| `'*Foo'` | with a title that ends with `Foo`.
+| `'*Foo*'` | with a title that contains `Foo`.
+| `'not *Foo*'` | with a title that doesn’t contain `Foo`.
+| `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+| `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
+
+
+
+::: code
+```twig
+{# Fetch categories with a title that contains "Foo" #}
+{% set categories = craft.categories()
+    .title('*Foo*')
+    .all() %}
+```
+
+```php
+// Fetch categories with a title that contains "Foo"
+$categories = \craft\elements\Category::find()
+    ->title('*Foo*')
+    ->all();
+```
+:::
 
 
 ### `uid`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uid](api:craft\elements\db\ElementQuery::$uid)
-
-Settable by
-
-:   [uid()](api:craft\elements\db\ElementQuery::uid())
+Narrows the query results based on the categories’ UIDs.
 
 
 
-The element UID(s). Prefix UIDs with `'not '` to exclude them.
+
+
+::: code
+```twig
+{# Fetch the category by its UID #}
+{% set category = craft.categories()
+    .uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    .one() %}
+```
+
+```php
+// Fetch the category by its UID
+$category = \craft\elements\Category::find()
+    ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    ->one();
+```
+:::
 
 
 ### `uri`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uri](api:craft\elements\db\ElementQuery::$uri)
-
-Settable by
-
-:   [uri()](api:craft\elements\db\ElementQuery::uri())
+Narrows the query results based on the categories’ URIs.
 
 
 
-The URI that the resulting element must have.
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'foo'` | with a URI of `foo`.
+| `'foo*'` | with a URI that begins with `foo`.
+| `'*foo'` | with a URI that ends with `foo`.
+| `'*foo*'` | with a URI that contains `foo`.
+| `'not *foo*'` | with a URI that doesn’t contain `foo`.
+| `['*foo*', '*bar*'` | with a URI that contains `foo` or `bar`.
+| `['not', '*foo*', '*bar*']` | with a URI that doesn’t contain `foo` or `bar`.
+
+
+
+::: code
+```twig
+{# Get the requested URI #}
+{% set requestedUri = craft.app.request.getPathInfo() %}
+
+{# Fetch the category with that URI #}
+{% set category = craft.categories()
+    .uri(requestedUri|literal)
+    .one() %}
+```
+
+```php
+// Get the requested URI
+$requestedUri = \Craft::$app->request->getPathInfo();
+
+// Fetch the category with that URI
+$category = \craft\elements\Category::find()
+    ->uri(\craft\helpers\Db::escapeParam($requestedUri))
+    ->one();
+```
+:::
 
 
 ### `with`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$with](api:craft\elements\db\ElementQuery::$with)
-
-Settable by
-
-:   [with()](api:craft\elements\db\ElementQuery::with()), [andWith()](api:craft\elements\db\ElementQuery::andWith())
+Causes the query to return matching categories eager-loaded with related elements.
 
 
 
-The eager-loading declaration.
-
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
-
-
-### `withStructure`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$withStructure](api:craft\elements\db\ElementQuery::$withStructure)
-
-Settable by
-
-:   [withStructure()](api:craft\elements\db\ElementQuery::withStructure())
+See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
 
 
-Whether element structure data should automatically be left-joined into the query.
+::: code
+```twig
+{# Fetch categories eager-loaded with the "Related" field’s relations #}
+{% set categories = craft.categories()
+    .with(['related'])
+    .all() %}
+```
+
+```php
+// Fetch categories eager-loaded with the "Related" field’s relations
+$categories = \craft\elements\Category::find()
+    ->with(['related'])
+    ->all();
+```
+:::
 
 
 

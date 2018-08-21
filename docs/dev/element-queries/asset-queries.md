@@ -1,36 +1,49 @@
 # Asset Queries
 
-Asset queries are a type of [element query](README.md) used to fetch your project’s assets.
-
-They are implemented by <api:craft\elements\db\AssetQuery>, and the elements returned by them will be of type <api:craft\elements\Asset>.
-
-## Creating Asset Queries
-
-You can create a new asset query from Twig by calling `craft.assets()`, or from PHP by calling <api:craft\elements\Asset::find()>.
+You can fetch assets in your templates or PHP code using **asset queries**.
 
 ::: code
 ```twig
-{% set images = craft.assets()
-    .volume('photos')
-    .kind('image')
-    .withTransforms(['thumb'])
-    .all() %}
+{# Create a new asset query #}
+{% set myAssetQuery = craft.assets() %}
+```
+```php
+// Create a new asset query
+$myAssetQuery = \craft\elements\Asset::find();
+```
+:::
 
+Once you’ve created an asset query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [Asset](api:craft\elements\Asset) objects will be returned.
+
+::: tip
+See [Introduction to Element Queries](README.md) to learn about how element queries work.
+:::
+
+## Example
+
+We can display a list of thumbnails for images in a “Photos” volume by doing the following:
+
+1. Create an asset query with `craft.assets()`.
+2. Set the [volume](#volume) and [kind](#kind) parameters on it.
+3. Fetch the assets with `.all()`.
+4. Loop through the assets using a [for](https://twig.symfony.com/doc/2.x/tags/for.html) tag to create the thumbnail list HTML.
+
+```twig
+{# Create an asset query with the 'volume' and 'kind' parameters #}
+{% set myAssetQuery = craft.assets()
+    .volume('photos')
+    .kind('image') %}
+
+{# Fetch the assets #}
+{% set images = myAssetQuery.all() %}
+
+{# Display the thumbnail list #}
 <ul>
     {% for image in images %}
         <li><img src="{{ image.getUrl('thumb') }}" alt="{{ image.title }}"></li>
     {% endfor %}
 </ul>
 ```
-```php
-/** @var \craft\elements\Asset[] $images */
-$images = \craft\elements\Asset::find()
-    ->volume('photos')
-    ->kind('image')
-    ->withTransforms(['thumb'])
-    ->all();
-```
-:::
 
 ## Parameters
 
@@ -38,649 +51,880 @@ Asset queries support the following parameters:
 
 <!-- BEGIN PARAMS -->
 
-### `archived`
+### `anyStatus`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$archived](api:craft\elements\db\ElementQuery::$archived)
-
-Settable by
-
-:   [archived()](api:craft\elements\db\ElementQuery::archived())
+Clears out the [status()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-status) and [enabledForSite()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-enabledforsite) parameters.
 
 
 
-Whether to return only archived elements.
+
+
+::: code
+```twig
+{# Fetch all assets, regardless of status #}
+{% set assets = craft.assets()
+    .anyStatus()
+    .all() %}
+```
+
+```php
+// Fetch all assets, regardless of status
+$assets = \craft\elements\Asset::find()
+    ->anyStatus()
+    ->all();
+```
+:::
 
 
 ### `asArray`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$asArray](api:craft\elements\db\ElementQuery::$asArray)
-
-Settable by
-
-:   [asArray()](api:craft\elements\db\ElementQuery::asArray())
+Causes the query to return matching assets as arrays of data, rather than [Asset](api:craft\elements\Asset) objects.
 
 
 
-Whether to return each element as an array. If false (default), an object
-of [$elementType](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#property-elementtype) will be created to represent each element.
+
+
+::: code
+```twig
+{# Fetch assets as arrays #}
+{% set assets = craft.assets()
+    .asArray()
+    .all() %}
+```
+
+```php
+// Fetch assets as arrays
+$assets = \craft\elements\Asset::find()
+    ->asArray()
+    ->all();
+```
+:::
 
 
 ### `dateCreated`
 
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateCreated](api:craft\elements\db\ElementQuery::$dateCreated)
-
-Settable by
-
-:   [dateCreated()](api:craft\elements\db\ElementQuery::dateCreated())
+Narrows the query results based on the assets’ creation dates.
 
 
 
-When the resulting elements must have been created.
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `'>= 2018-04-01'` | that were created on or after 2018-04-01.
+| `'< 2018-05-01'` | that were created before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
+
+
+
+::: code
+```twig
+{# Fetch assets created last month #}
+{% set start = date('first day of last month')|atom %}
+{% set end = date('first day of this month')|atom %}
+
+{% set assets = craft.assets()
+    .dateCreated(['and', ">= #{start}", "< #{end}"])
+    .all() %}
+```
+
+```php
+// Fetch assets created last month
+$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+
+$assets = \craft\elements\Asset::find()
+    ->dateCreated(['and', ">= {$start}", "< {$end}"])
+    ->all();
+```
+:::
 
 
 ### `dateModified`
 
-Allowed types
+Narrows the query results based on the assets’ files’ last-modified dates.
 
-:   `mixed`
+Possible values include:
 
-Defined by
-
-:   [AssetQuery::$dateModified](api:craft\elements\db\AssetQuery::$dateModified)
-
-Settable by
-
-:   [dateModified()](api:craft\elements\db\AssetQuery::dateModified())
+| Value | Fetches assets…
+| - | -
+| `'>= 2018-04-01'` | that were modified on or after 2018-04-01.
+| `'< 2018-05-01'` | that were modified before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were modified between 2018-04-01 and 2018-05-01.
 
 
 
-The Date Modified that the resulting assets must have.
+::: code
+```twig
+{# Fetch assets modified in the last month #}
+{% set start = date('30 days ago')|atom %}
+
+{% set assets = craft.assets()
+    .dateModified(">= #{start}")
+    .all() %}
+```
+
+```php
+// Fetch assets modified in the last month
+$start = new \DateTime('30 days ago')->format(\DateTime::ATOM);
+
+$assets = \craft\elements\Asset::find()
+    ->dateModified(">= {$start}")
+    ->all();
+```
+:::
 
 
 ### `dateUpdated`
 
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [ElementQuery::$dateUpdated](api:craft\elements\db\ElementQuery::$dateUpdated)
-
-Settable by
-
-:   [dateUpdated()](api:craft\elements\db\ElementQuery::dateUpdated())
+Narrows the query results based on the assets’ last-updated dates.
 
 
 
-When the resulting elements must have been last updated.
+Possible values include:
 
-
-### `enabledForSite`
-
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$enabledForSite](api:craft\elements\db\ElementQuery::$enabledForSite)
-
-Settable by
-
-:   [enabledForSite()](api:craft\elements\db\ElementQuery::enabledForSite())
+| Value | Fetches assets…
+| - | -
+| `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
+| `'< 2018-05-01'` | that were updated before 2018-05-01
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
 
 
 
-Whether the elements must be enabled for the chosen site.
+::: code
+```twig
+{# Fetch assets updated in the last week #}
+{% set lastWeek = date('1 week ago')|atom %}
+
+{% set assets = craft.assets()
+    .dateUpdated(">= #{lastWeek}")
+    .all() %}
+```
+
+```php
+// Fetch assets updated in the last week
+$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+
+$assets = \craft\elements\Asset::find()
+    ->dateUpdated(">= {$lastWeek}")
+    ->all();
+```
+:::
 
 
 ### `filename`
 
-Allowed types
+Narrows the query results based on the assets’ filenames.
 
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+Possible values include:
 
-Defined by
+| Value | Fetches assets…
+| - | -
+| `'foo.jpg'` | with a filename of `foo.jpg`.
+| `'foo*'` | with a filename that begins with `foo`.
+| `'*.jpg'` | with a filename that ends with `.jpg`.
+| `'*foo*'` | with a filename that contains `foo`.
+| `'not *foo*'` | with a filename that doesn’t contain `foo`.
+| `['*foo*', '*bar*'` | with a filename that contains `foo` or `bar`.
+| `['not', '*foo*', '*bar*']` | with a filename that doesn’t contain `foo` or `bar`.
 
-:   [AssetQuery::$filename](api:craft\elements\db\AssetQuery::$filename)
-
-Settable by
-
-:   [filename()](api:craft\elements\db\AssetQuery::filename())
 
 
+::: code
+```twig
+{# Fetch all the hi-res images #}
+{% set assets = craft.assets()
+    .filename('*@2x*')
+    .all() %}
+```
 
-The filename(s) that the resulting assets must have.
+```php
+// Fetch all the hi-res images
+$assets = \craft\elements\Asset::find()
+    ->filename('*@2x*')
+    ->all();
+```
+:::
 
 
 ### `fixedOrder`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$fixedOrder](api:craft\elements\db\ElementQuery::$fixedOrder)
-
-Settable by
-
-:   [fixedOrder()](api:craft\elements\db\ElementQuery::fixedOrder())
+Causes the query results to be returned in the order specified by [id](#id).
 
 
 
-Whether results should be returned in the order specified by [id()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-id).
+
+
+::: code
+```twig
+{# Fetch assets in a specific order #}
+{% set assets = craft.assets()
+    .id([1, 2, 3, 4, 5])
+    .fixedOrder()
+    .all() %}
+```
+
+```php
+// Fetch assets in a specific order
+$assets = \craft\elements\Asset::find()
+    ->id([1, 2, 3, 4, 5])
+    ->fixedOrder()
+    ->all();
+```
+:::
 
 
 ### `folderId`
 
-Allowed types
+Narrows the query results based on the folders the assets belong to, per the folders’ IDs.
 
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [null](http://php.net/language.types.null)
+Possible values include:
 
-Defined by
+| Value | Fetches categories…
+| - | -
+| `1` | in a folder with an ID of 1.
+| `'not 1'` | not in a folder with an ID of 1.
+| `[1, 2]` | in a folder with an ID of 1 or 2.
+| `['not', 1, 2]` | not in a folder with an ID of 1 or 2.
 
-:   [AssetQuery::$folderId](api:craft\elements\db\AssetQuery::$folderId)
-
-Settable by
-
-:   [folderId()](api:craft\elements\db\AssetQuery::folderId())
-
-
-
-The asset folder ID(s) that the resulting assets must be in.
-
-
-### `height`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [AssetQuery::$height](api:craft\elements\db\AssetQuery::$height)
-
-Settable by
-
-:   [height()](api:craft\elements\db\AssetQuery::height())
-
-
-
-The height (in pixels) that the resulting assets must have.
 
 
 ::: code
-```twig{4}
-{# fetch images that are at least 500 pixes high #}
-{% set logos = craft.assets()
-    .kind('image')
-    .height('>= 500')
+```twig
+{# Fetch assets in the folder with an ID of 1 #}
+{% set assets = craft.assets()
+    .folderId(1)
     .all() %}
 ```
 
-```php{4}
-// fetch images that are at least 500 pixels high
-$images = \craft\elements\Asset::find()
-    ->kind('image')
-    ->height('>= 500')
+```php
+// Fetch categories in the folder with an ID of 1
+$assets = \craft\elements\Asset::find()
+    ->folderId(1)
     ->all();
 ```
 :::
+
+
+
+::: tip
+This can be combined with [includeSubfolders](#includesubfolders) if you want to include assets in all the subfolders of a certain folder.
+:::
+### `height`
+
+Narrows the query results based on the assets’ image heights.
+
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `100` | with a height of 100.
+| `'>= 100'` | with a height of at least 100.
+| `['>= 100', '<= 1000']` | with a height between 100 and 1,000.
+
+
+
+::: code
+```twig
+{# Fetch XL images #}
+{% set assets = craft.assets()
+    .kind('image')
+    .height('>= 1000')
+    .all() %}
+```
+
+```php
+// Fetch XL images
+$assets = \craft\elements\Asset::find()
+    ->kind('image')
+    ->height('>= 1000')
+    ->all();
+```
+:::
+
+
 ### `id`
 
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$id](api:craft\elements\db\ElementQuery::$id)
-
-Settable by
-
-:   [id()](api:craft\elements\db\ElementQuery::id())
+Narrows the query results based on the assets’ IDs.
 
 
 
-The element ID(s). Prefix IDs with `'not '` to exclude them.
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `1` | with an ID of 1.
+| `'not 1'` | not with an ID of 1.
+| `[1, 2]` | with an ID of 1 or 2.
+| `['not', 1, 2]` | not with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch the asset by its ID #}
+{% set asset = craft.assets()
+    .id(1)
+    .one() %}
+```
+
+```php
+// Fetch the asset by its ID
+$asset = \craft\elements\Asset::find()
+    ->id(1)
+    ->one();
+```
+:::
+
+
+
+::: tip
+This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
+:::
 
 
 ### `inReverse`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [ElementQuery::$inReverse](api:craft\elements\db\ElementQuery::$inReverse)
-
-Settable by
-
-:   [inReverse()](api:craft\elements\db\ElementQuery::inReverse())
+Causes the query results to be returned in reverse order.
 
 
 
-Whether the results should be queried in reverse.
+
+
+::: code
+```twig
+{# Fetch assets in reverse #}
+{% set assets = craft.assets()
+    .inReverse()
+    .all() %}
+```
+
+```php
+// Fetch assets in reverse
+$assets = \craft\elements\Asset::find()
+    ->inReverse()
+    ->all();
+```
+:::
 
 
 ### `includeSubfolders`
 
-Allowed types
-
-:   [boolean](http://php.net/language.types.boolean)
-
-Defined by
-
-:   [AssetQuery::$includeSubfolders](api:craft\elements\db\AssetQuery::$includeSubfolders)
-
-Settable by
-
-:   [includeSubfolders()](api:craft\elements\db\AssetQuery::includeSubfolders())
-
-
-
-Whether the query should search the subfolders of [folderId()](https://docs.craftcms.com/api/v3/craft-elements-db-assetquery.html#method-folderid).
-
-
-### `kind`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [AssetQuery::$kind](api:craft\elements\db\AssetQuery::$kind)
-
-Settable by
-
-:   [kind()](api:craft\elements\db\AssetQuery::kind())
-
-
-
-The file kind(s) that the resulting assets must be.
-
-Supported file kinds:
-- access
-- audio
-- compressed
-- excel
-- flash
-- html
-- illustrator
-- image
-- javascript
-- json
-- pdf
-- photoshop
-- php
-- powerpoint
-- text
-- video
-- word
-- xml
-- unknown
+Broadens the query results to include assets from any of the subfolders of the folder specified by [folderId](#folderid).
 
 
 
 ::: code
 ```twig
-{# fetch only images #}
-{% set logos = craft.assets()
+{# Fetch assets in the folder with an ID of 1 (including its subfolders) #}
+{% set assets = craft.assets()
+    .folderId(1)
+    .includeSubfolders()
+    .all() %}
+```
+
+```php
+// Fetch categories in the folder with an ID of 1 (including its subfolders)
+$assets = \craft\elements\Asset::find()
+    ->folderId(1)
+    ->includeSubfolders()
+    ->all();
+```
+:::
+
+
+
+::: warning
+This will only work if [folderId](#folderid) was set to a single folder ID.
+:::
+### `kind`
+
+Narrows the query results based on the assets’ file kinds.
+
+Supported file kinds:
+- `access`
+- `audio`
+- `compressed`
+- `excel`
+- `flash`
+- `html`
+- `illustrator`
+- `image`
+- `javascript`
+- `json`
+- `pdf`
+- `photoshop`
+- `php`
+- `powerpoint`
+- `text`
+- `video`
+- `word`
+- `xml`
+- `unknown`
+
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `'image'` | with a file kind of `image`.
+| `'not image'` | not with a file kind of `image`..
+| `['image', 'pdf']` | with a file kind of `image` or `pdf`.
+| `['not', 'image', 'pdf']` | not with a file kind of `image` or `pdf`.
+
+
+
+::: code
+```twig
+{# Fetch all the images #}
+{% set assets = craft.assets()
     .kind('image')
     .all() %}
 ```
 
 ```php
-// fetch only images
-$logos = \craft\elements\Asset::find()
+// Fetch all the images
+$assets = \craft\elements\Asset::find()
     ->kind('image')
     ->all();
 ```
 :::
-### `ref`
 
-Allowed types
 
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+### `limit`
 
-Defined by
-
-:   [ElementQuery::$ref](api:craft\elements\db\ElementQuery::$ref)
-
-Settable by
-
-:   [ref()](api:craft\elements\db\ElementQuery::ref())
+Determines the number of assets that should be returned.
 
 
 
-The reference code(s) used to identify the element(s).
+::: code
+```twig
+{# Fetch up to 10 assets  #}
+{% set assets = craft.assets()
+    .limit(10)
+    .all() %}
+```
 
-This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
+```php
+// Fetch up to 10 assets
+$assets = \craft\elements\Asset::find()
+    ->limit(10)
+    ->all();
+```
+:::
+
+
+### `offset`
+
+Determines how many assets should be skipped in the results.
+
+
+
+::: code
+```twig
+{# Fetch all assets except for the first 3 #}
+{% set assets = craft.assets()
+    .offset(3)
+    .all() %}
+```
+
+```php
+// Fetch all assets except for the first 3
+$assets = \craft\elements\Asset::find()
+    ->offset(3)
+    ->all();
+```
+:::
+
+
+### `orderBy`
+
+Determines the order that the assets should be returned in.
+
+
+
+::: code
+```twig
+{# Fetch all assets in order of date created #}
+{% set assets = craft.assets()
+    .orderBy('elements.dateCreated asc')
+    .all() %}
+```
+
+```php
+// Fetch all assets in order of date created
+$assets = \craft\elements\Asset::find()
+    ->orderBy('elements.dateCreated asc')
+    ->all();
+```
+:::
 
 
 ### `relatedTo`
 
-Allowed types
+Narrows the query results to only assets that are related to certain other elements.
 
-:   [integer](http://php.net/language.types.integer), [array](http://php.net/language.types.array), [craft\base\ElementInterface](api:craft\base\ElementInterface), [null](http://php.net/language.types.null)
 
-Defined by
 
-:   [ElementQuery::$relatedTo](api:craft\elements\db\ElementQuery::$relatedTo)
+See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
 
-Settable by
-
-:   [relatedTo()](api:craft\elements\db\ElementQuery::relatedTo())
-
-
-
-The element relation criteria.
-
-See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
-
-
-### `search`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [craft\search\SearchQuery](api:craft\search\SearchQuery), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$search](api:craft\elements\db\ElementQuery::$search)
-
-Settable by
-
-:   [search()](api:craft\elements\db\ElementQuery::search())
-
-
-
-The search term to filter the resulting elements by.
-
-See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
-
-
-### `siteId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$siteId](api:craft\elements\db\ElementQuery::$siteId)
-
-Settable by
-
-:   [site()](api:craft\elements\db\ElementQuery::site()), [siteId()](api:craft\elements\db\ElementQuery::siteId())
-
-
-
-The site ID that the elements should be returned in.
-
-
-### `size`
-
-Allowed types
-
-:   `mixed`
-
-Defined by
-
-:   [AssetQuery::$size](api:craft\elements\db\AssetQuery::$size)
-
-Settable by
-
-:   [size()](api:craft\elements\db\AssetQuery::size())
-
-
-
-The size (in bytes) that the resulting assets must have.
-
-
-### `slug`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$slug](api:craft\elements\db\ElementQuery::$slug)
-
-Settable by
-
-:   [slug()](api:craft\elements\db\ElementQuery::slug())
-
-
-
-The slug that resulting elements must have.
-
-
-### `status`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$status](api:craft\elements\db\ElementQuery::$status)
-
-Settable by
-
-:   [status()](api:craft\elements\db\ElementQuery::status())
-
-
-
-The status(es) that the resulting elements must have.
-
-
-### `title`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$title](api:craft\elements\db\ElementQuery::$title)
-
-Settable by
-
-:   [title()](api:craft\elements\db\ElementQuery::title())
-
-
-
-The title that resulting elements must have.
-
-
-### `uid`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uid](api:craft\elements\db\ElementQuery::$uid)
-
-Settable by
-
-:   [uid()](api:craft\elements\db\ElementQuery::uid())
-
-
-
-The element UID(s). Prefix UIDs with `'not '` to exclude them.
-
-
-### `uri`
-
-Allowed types
-
-:   [string](http://php.net/language.types.string), [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$uri](api:craft\elements\db\ElementQuery::$uri)
-
-Settable by
-
-:   [uri()](api:craft\elements\db\ElementQuery::uri())
-
-
-
-The URI that the resulting element must have.
-
-
-### `volumeId`
-
-Allowed types
-
-:   [integer](http://php.net/language.types.integer), [integer](http://php.net/language.types.integer)[], [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [AssetQuery::$volumeId](api:craft\elements\db\AssetQuery::$volumeId)
-
-Settable by
-
-:   [volume()](api:craft\elements\db\AssetQuery::volume()), [volumeId()](api:craft\elements\db\AssetQuery::volumeId())
-
-
-
-The volume ID(s) that the resulting assets must be in.
 
 
 ::: code
 ```twig
-{# fetch assets in the Logos volume #}
-{% set logos = craft.assets()
-    .volume('logos')
+{# Fetch all assets that are related to myCategory #}
+{% set assets = craft.assets()
+    .relatedTo(myCategory)
     .all() %}
 ```
 
 ```php
-// fetch assets in the Logos volume
-$logos = \craft\elements\Asset::find()
-    ->volume('logos')
+// Fetch all assets that are related to $myCategory
+$assets = \craft\elements\Asset::find()
+    ->relatedTo($myCategory)
     ->all();
 ```
 :::
-### `width`
 
-Allowed types
 
-:   `mixed`
+### `search`
 
-Defined by
-
-:   [AssetQuery::$width](api:craft\elements\db\AssetQuery::$width)
-
-Settable by
-
-:   [width()](api:craft\elements\db\AssetQuery::width())
+Narrows the query results to only assets that match a search query.
 
 
 
-The width (in pixels) that the resulting assets must have.
+See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
+
 
 
 ::: code
-```twig{4}
-{# fetch images that are at least 500 pixes wide #}
-{% set logos = craft.assets()
-    .kind('image')
-    .width('>= 500')
+```twig
+{# Get the search query from the 'q' query string param #}
+{% set searchQuery = craft.request.getQueryParam('q') %}
+
+{# Fetch all assets that match the search query #}
+{% set assets = craft.assets()
+    .search(searchQuery)
     .all() %}
 ```
 
-```php{4}
-// fetch images that are at least 500 pixels wide
-$images = \craft\elements\Asset::find()
-    ->kind('image')
-    ->width('>= 500')
+```php
+// Get the search query from the 'q' query string param
+$searchQuery = \Craft::$app->request->getQueryParam('q');
+
+// Fetch all assets that match the search query
+$assets = \craft\elements\Asset::find()
+    ->search($searchQuery)
     ->all();
 ```
 :::
+
+
+### `site`
+
+Determines which site the assets should be queried in.
+
+
+
+The current site will be used by default.
+
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `'foo'` | from the site with a handle of `foo`.
+| a `\craft\elements\db\Site` object | from the site represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch assets from the Foo site #}
+{% set assets = craft.assets()
+    .site('foo')
+    .all() %}
+```
+
+```php
+// Fetch assets from the Foo site
+$assets = \craft\elements\Asset::find()
+    ->site('foo')
+    ->all();
+```
+:::
+
+
+### `siteId`
+
+Determines which site the assets should be queried in, per the site’s ID.
+
+
+
+The current site will be used by default.
+
+
+
+::: code
+```twig
+{# Fetch assets from the site with an ID of 1 #}
+{% set assets = craft.assets()
+    .siteId(1)
+    .all() %}
+```
+
+```php
+// Fetch assets from the site with an ID of 1
+$assets = \craft\elements\Asset::find()
+    ->siteId(1)
+    ->all();
+```
+:::
+
+
+### `size`
+
+Narrows the query results based on the assets’ file sizes (in bytes).
+
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `1000` | with a size of 1,000 bytes (1KB).
+| `'< 1000000'` | with a size of less than 1,000,000 bytes (1MB).
+| `['>= 1000', '< 1000000']` | with a size between 1KB and 1MB.
+
+
+
+::: code
+```twig
+{# Fetch assets that are smaller than 1KB #}
+{% set assets = craft.assets()
+    .size('< 1000')
+    .all() %}
+```
+
+```php
+// Fetch assets that are smaller than 1KB
+$assets = \craft\elements\Asset::find()
+    ->size('< 1000')
+    ->all();
+```
+:::
+
+
+### `title`
+
+Narrows the query results based on the assets’ titles.
+
+
+
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `'Foo'` | with a title of `Foo`.
+| `'Foo*'` | with a title that begins with `Foo`.
+| `'*Foo'` | with a title that ends with `Foo`.
+| `'*Foo*'` | with a title that contains `Foo`.
+| `'not *Foo*'` | with a title that doesn’t contain `Foo`.
+| `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+| `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
+
+
+
+::: code
+```twig
+{# Fetch assets with a title that contains "Foo" #}
+{% set assets = craft.assets()
+    .title('*Foo*')
+    .all() %}
+```
+
+```php
+// Fetch assets with a title that contains "Foo"
+$assets = \craft\elements\Asset::find()
+    ->title('*Foo*')
+    ->all();
+```
+:::
+
+
+### `uid`
+
+Narrows the query results based on the assets’ UIDs.
+
+
+
+
+
+::: code
+```twig
+{# Fetch the asset by its UID #}
+{% set asset = craft.assets()
+    .uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    .one() %}
+```
+
+```php
+// Fetch the asset by its UID
+$asset = \craft\elements\Asset::find()
+    ->uid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+    ->one();
+```
+:::
+
+
+### `volume`
+
+Narrows the query results based on the volume the assets belong to.
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `'foo'` | in a volume with a handle of `foo`.
+| `'not foo'` | not in a volume with a handle of `foo`.
+| `['foo', 'bar']` | in a volume with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a volume with a handle of `foo` or `bar`.
+| a [Volume](api:craft\base\Volume) object | in a volume represented by the object.
+
+
+
+::: code
+```twig
+{# Fetch assets in the Foo volume #}
+{% set assets = craft.assets()
+    .volume('foo')
+    .all() %}
+```
+
+```php
+// Fetch assets in the Foo group
+$assets = \craft\elements\Asset::find()
+    ->volume('foo')
+    ->all();
+```
+:::
+
+
+### `volumeId`
+
+Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.
+
+Possible values include:
+
+| Value | Fetches categories…
+| - | -
+| `1` | in a volume with an ID of 1.
+| `'not 1'` | not in a volume with an ID of 1.
+| `[1, 2]` | in a volume with an ID of 1 or 2.
+| `['not', 1, 2]` | not in a volume with an ID of 1 or 2.
+
+
+
+::: code
+```twig
+{# Fetch assets in the volume with an ID of 1 #}
+{% set assets = craft.assets()
+    .volumeId(1)
+    .all() %}
+```
+
+```php
+// Fetch categories in the volume with an ID of 1
+$assets = \craft\elements\Asset::find()
+    ->volumeId(1)
+    ->all();
+```
+:::
+
+
+### `width`
+
+Narrows the query results based on the assets’ image widths.
+
+Possible values include:
+
+| Value | Fetches assets…
+| - | -
+| `100` | with a width of 100.
+| `'>= 100'` | with a width of at least 100.
+| `['>= 100', '<= 1000']` | with a width between 100 and 1,000.
+
+
+
+::: code
+```twig
+{# Fetch XL images #}
+{% set assets = craft.assets()
+    .kind('image')
+    .width('>= 1000')
+    .all() %}
+```
+
+```php
+// Fetch XL images
+$assets = \craft\elements\Asset::find()
+    ->kind('image')
+    ->width('>= 1000')
+    ->all();
+```
+:::
+
+
 ### `with`
 
-Allowed types
-
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
-
-Defined by
-
-:   [ElementQuery::$with](api:craft\elements\db\ElementQuery::$with)
-
-Settable by
-
-:   [with()](api:craft\elements\db\ElementQuery::with()), [andWith()](api:craft\elements\db\ElementQuery::andWith())
+Causes the query to return matching assets eager-loaded with related elements.
 
 
 
-The eager-loading declaration.
+See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
 
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
+
+
+::: code
+```twig
+{# Fetch assets eager-loaded with the "Related" field’s relations #}
+{% set assets = craft.assets()
+    .with(['related'])
+    .all() %}
+```
+
+```php
+// Fetch assets eager-loaded with the "Related" field’s relations
+$assets = \craft\elements\Asset::find()
+    ->with(['related'])
+    ->all();
+```
+:::
 
 
 ### `withTransforms`
 
-Allowed types
+Causes the query to return matching assets eager-loaded with image transform indexes.
 
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
+This can improve performance when displaying several image transforms at once, if the transforms
+have already been generated.
 
-Defined by
-
-:   [AssetQuery::$withTransforms](api:craft\elements\db\AssetQuery::$withTransforms)
-
-Settable by
-
-:   [withTransforms()](api:craft\elements\db\AssetQuery::withTransforms())
-
-
-
-The asset transform indexes that should be eager-loaded, if they exist
 
 
 ::: code
-```twig{4}
-{# fetch images with their 'thumb' transforms preloaded #}
-{% set logos = craft.assets()
+```twig
+{# Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded #}
+{% set assets = craft.assets()
     .kind('image')
-    .withTransforms(['thumb'])
+    .withTransforms(['thumbnail', 'hiResThumbnail'])
     .all() %}
 ```
 
-```php{4}
-// fetch images with their 'thumb' transforms preloaded
-$images = \craft\elements\Asset::find()
+```php
+// Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded
+$assets = \craft\elements\Asset::find()
     ->kind('image')
-    ->withTransforms(['thumb'])
+    ->withTransforms(['thumbnail', 'hiResThumbnail'])
     ->all();
 ```
 :::
+
+
 
 <!-- END PARAMS -->
