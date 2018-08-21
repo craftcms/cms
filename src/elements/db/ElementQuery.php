@@ -548,10 +548,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Sets the [[$inReverse]] property.
-     *
-     * @param bool $value The property value
-     * @return static self reference
+     * @inheritdoc
      * @uses $inReverse
      */
     public function inReverse(bool $value = true)
@@ -749,19 +746,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[$leaves]] property.
-     *
-     * @param bool $value The property value.
-     * @return static self reference
-     * @uses $leaves
-     */
-    public function leaves(bool $value = true)
-    {
-        $this->leaves = $value;
-        return $this;
-    }
-
-    /**
      * @inheritdoc
      * @uses $relatedTo
      */
@@ -885,6 +869,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function hasDescendants(bool $value = true)
     {
         $this->hasDescendants = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $leaves
+     */
+    public function leaves(bool $value = true)
+    {
+        $this->leaves = $value;
         return $this;
     }
 
