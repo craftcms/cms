@@ -593,7 +593,11 @@ class TemplateCaches extends Component
             ->column();
 
         $success = $this->deleteCacheById($cacheIds);
+
+        // Don't do it again for a while
+        Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
         $this->_deletedExpiredCaches = true;
+
         return $success;
     }
 
@@ -612,12 +616,10 @@ class TemplateCaches extends Component
         $lastCleanupDate = Craft::$app->getCache()->get('lastTemplateCacheCleanupDate');
 
         if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > self::$_lastCleanupDateCacheDuration) {
-            // Don't do it again for a while
-            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
-
             return $this->deleteExpiredCaches();
         }
 
+        // Save ourselves some trouble if this gets called again in this request
         $this->_deletedExpiredCaches = true;
 
         return false;
