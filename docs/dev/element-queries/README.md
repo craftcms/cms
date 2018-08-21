@@ -62,8 +62,7 @@ Most of the time, you just want to get the elements that you’re querying for. 
 {% set entries = craft.entries()
     .section('news')
     .limit(10)
-    .all()
-%}
+    .all() %}
 ```
 ```php
 use craft\elements\Entry;
@@ -84,8 +83,7 @@ If you only need a single element, call `one()` instead of `all()`. It will eith
 {% set entry = craft.entries()
     .section('news')
     .slug('hello-world')
-    .one()
-%}
+    .one() %}
 ```
 ```php
 use craft\elements\Entry;
@@ -106,8 +104,7 @@ If you just need to check if any elements exist that match the element query, yo
 {% set exists = craft.entries()
     .section('news')
     .slug('hello-world')
-    .exists()
-%}
+    .exists() %}
 ```
 ```php
 use craft\elements\Entry;
@@ -127,8 +124,7 @@ If you want to know how many elements match your element query, you can call `co
 ```twig
 {% set count = craft.entries()
     .section('news')
-    .count()
-%}
+    .count() %}
 ```
 ```php
 use craft\elements\Entry;
@@ -151,8 +147,7 @@ If you just a list of matching element IDs, you can call `ids()`.
 ```twig
 {% set entryIds = craft.entries()
     .section('news')
-    .ids()
-%}
+    .ids() %}
 ```
 ```php
 use craft\elements\Entry;
