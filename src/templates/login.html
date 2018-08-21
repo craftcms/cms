@@ -29,10 +29,10 @@
                 {%- endif %}>' +
             '{% if not hasLogo -%}<h1>{{ systemName }}</h1>{%- endif %}'+
             '{% set placeHolderText = (craft.app.config.general.useEmailAsUsername ? "Email"|t('app') : "Username or Email"|t('app')) %}' +
-            '{{ forms.textField({ id: "loginName", name: "username", placeholder: placeHolderText, value: username })|e("js") }}' +
+            "{{ forms.textField({ id: 'loginName', name: 'username', placeholder: placeHolderText, value: username, autocomplete: 'username' })|e('js') }}" +
 
             '<div id="login-fields" class="nested-fields">' +
-            '{{ forms.passwordField({ id: "password", name: "password", placeholder: "Password"|t('app') })|e("js") }}' +
+            "{{ forms.passwordField({ id: 'password', name: 'password', placeholder: 'Password'|t('app'), autocomplete: 'current-password' })|e('js') }}" +
             '<a id="forgot-password">{{ "Forgot your password?"|t('app') }}</a>' +
             {% if craft.app.config.general.rememberedUserSessionDuration %}
             '{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t('app') })|e("js") }}' +
