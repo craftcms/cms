@@ -18,10 +18,6 @@ Craft requires the following:
 * At least 256MB of memory allocated to PHP
 * At least 200MB of free disk space
 
-:::warning
-If Craft CMS needs to process very large images or dump very large databases, you might need to bump PHP’s memory allocation up to 256MB.
-:::
-
 ## Required PHP Extensions
 
 Craft requires the following PHP extensions:
