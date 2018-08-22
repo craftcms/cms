@@ -112,6 +112,9 @@ class Composer extends Component
         // Ensure there's a home var
         $this->_ensureHomeVar();
 
+        // Create a backup of composer.json in case something goes wrong
+        $backup = file_get_contents($jsonPath);
+
         // Update composer.json
         $this->updateRequirements($io, $jsonPath, $requirements);
 
@@ -159,6 +162,7 @@ class Composer extends Component
         }
 
         if ($status !== 0) {
+            file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
         }
     }

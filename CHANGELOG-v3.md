@@ -6,6 +6,9 @@
 - The “Deleting stale template caches” job now ensures all expired template caches have been deleted before it begins processing the caches.
 - Text inputs’ `autocomplete` attributes now get set to `off` by default, and they will only not be added if explicitly set to `null`.
 
+### Fixed
+- Fixed a bug where Craft wasn’t reverting `composer.json` to its original state if something went wrong when running a Composer update.
+
 ## 3.0.21 - 2018-08-21
 
 ### Added
