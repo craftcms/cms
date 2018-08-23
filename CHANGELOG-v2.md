@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 2.7.0.1 - 2018-08-23
+
+### Changed
+- Craft now throws an exception when validating a custom field that is missing its field type, rather than allowing a PHP error to occur.
+
+### Fixed
+- Fixed a PHP error that occurred when compiling templates with `{% cache %}` tags, on servers running PHP 7.2.
+
 ## 2.7.0 - 2018-07-31
 
 ### Added

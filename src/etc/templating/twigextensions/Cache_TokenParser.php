@@ -36,13 +36,7 @@ class Cache_TokenParser extends \Twig_TokenParser
 		$lineno = $token->getLine();
 		$stream = $this->parser->getStream();
 
-		$nodes = array(
-			'expiration' => null,
-			'conditions' => null,
-			'ignoreConditions' => null,
-			'key' => null,
-			'body' => null,
-		);
+		$nodes = array();
 
 		$attributes = array(
 			'global' => false,
