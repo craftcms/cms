@@ -35,6 +35,7 @@ class HandleValidator extends Validator
         'attributeLabels',
         'attributeNames',
         'attributes',
+        'author',
         'classHandle',
         'content',
         'dateCreated',
