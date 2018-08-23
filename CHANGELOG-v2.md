@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 2.7.0.1 - 2018-08-23
+## 2.7.1 - 2018-08-23
 
 ### Changed
 - Craft now throws an exception when validating a custom field that is missing its field type, rather than allowing a PHP error to occur.
