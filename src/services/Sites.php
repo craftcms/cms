@@ -835,38 +835,30 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param int[] $siteIds The site IDs in their new order
+     * @param string[] $siteUids The site UIDs in their new order
      * @return bool Whether the sites were reordered successfthe sites are reorderedy
      * @throws \Throwable if reasons
      */
-    public function reorderSites(array $siteIds): bool
+    public function reorderSites(array $siteUids): bool
     {
-        // Fire a 'beforeSaveSite' event
+        // Fire a 'beforeReorderSites' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REORDER_SITES)) {
             $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
-                'siteIds' => $siteIds,
+                'siteUids' => $siteUids,
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $projectConfig = Craft::$app->getProjectConfig();
 
-        try {
-            foreach ($siteIds as $sortOrder => $siteId) {
-                $siteRecord = SiteRecord::findOne($siteId);
-                $siteRecord->sortOrder = $sortOrder + 1;
-                $siteRecord->save();
-            }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
+        foreach ($siteUids as $sortOrder => $siteUid) {
+            $data = $projectConfig->get(self::CONFIG_SITES_KEY.'.'.$siteUid);
+            $data['sortOrder'] = $sortOrder + 1;
+            $projectConfig->save(self::CONFIG_SITES_KEY.'.'.$siteUid, $data);
         }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_REORDER_SITES)) {
             $this->trigger(self::EVENT_AFTER_REORDER_SITES, new ReorderSitesEvent([
-                'siteIds' => $siteIds,
+                'siteUids' => $siteUids,
             ]));
         }
 

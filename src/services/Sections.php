@@ -1240,27 +1240,30 @@ class Sections extends Component
     /**
      * Reorders entry types.
      *
-     * @param array $entryTypeIds
+     * @param array $entryTypeUids
      * @return bool Whether the entry types were reordered successfully
      * @throws \Throwable if reasons
      */
-    public function reorderEntryTypes(array $entryTypeIds): bool
+    public function reorderEntryTypes(array $entryTypeUids): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $projectConfig = Craft::$app->getProjectConfig();
 
-        try {
-            foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId) {
-                $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
-                $entryTypeRecord->sortOrder = $entryTypeOrder + 1;
-                $entryTypeRecord->save();
+        $sectionRecord = null;
+
+        foreach ($entryTypeUids as $entryTypeOrder => $entryTypeUid) {
+            $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid);
+
+            if (!$sectionRecord) {
+                $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
             }
 
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
+            $configPath = self::CONFIG_SECTIONS_KEY.'.'.$sectionRecord->uid.'.'.self::CONFIG_ENTRYTYPES_KEY.'.'.$entryTypeUid;
 
-            throw $e;
+            $data = $projectConfig->get($configPath);
+            $data['sortOrder'] = $entryTypeOrder + 1;
+            $projectConfig->save($configPath, $data);
         }
+
 
         return true;
     }

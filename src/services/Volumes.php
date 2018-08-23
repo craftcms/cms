@@ -564,23 +564,12 @@ class Volumes extends Component
      */
     public function reorderVolumes(array $volumeIds): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
         $projectConfig = Craft::$app->getProjectConfig();
 
-        try {
-            foreach ($volumeIds as $volumeOrder => $volumeUid) {
-                $volumeRecord = $this->_getVolumeRecord($volumeUid);
-                $volumeRecord->sortOrder = $volumeOrder + 1;
-                $volumeRecord->save();
-                $projectConfig->save(self::CONFIG_VOLUME_KEY.'.'.$volumeRecord->uid.'.sortOrder', $volumeOrder + 1, true);
-            }
-
-            $transaction->commit();
-
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
+        foreach ($volumeIds as $volumeOrder => $volumeUid) {
+            $data = $projectConfig->get(self::CONFIG_VOLUME_KEY.'.'.$volumeUid);
+            $data['sortOrder'] = $volumeOrder + 1;
+            $projectConfig->save(self::CONFIG_VOLUME_KEY.'.'.$volumeUid, $data);
         }
 
         return true;
