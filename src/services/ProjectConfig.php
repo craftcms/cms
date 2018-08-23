@@ -684,6 +684,33 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Return true if any of the config files have been modified since last we checked.
+     *
+     * @return bool
+     */
+    private function _areConfigFilesModified(): bool
+    {
+        $cachedModifiedTimes =  Craft::$app->getCache()->get(self::CACHE_KEY);
+
+        if (!is_array($cachedModifiedTimes) || empty($cachedModifiedTimes)) {
+            return true;
+        }
+
+        foreach ($cachedModifiedTimes as $file => $modified) {
+            if (FileHelper::lastModifiedTime($file) > $modified) {
+                return true;
+            }
+
+
+        }
+
+        // Re-cache
+        Craft::$app->getCache()->set(self::CACHE_KEY, $cachedModifiedTimes, self::CACHE_DURATION);
+
+        return false;
+    }
+
+    /**
      * Load the system.yml file and figure out all the files imported and used.
      *
      * @return array

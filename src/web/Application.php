@@ -227,6 +227,15 @@ class Application extends \yii\web\Application
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
+        // Check if project configuration wants to update
+        if ($this->getProjectConfig()->isUpdatePending()) {
+            if ($this->getConfig()->getGeneral()->applyProjectConfigChangesAutomatically && $request->getIsCpRequest()) {
+                $this->getProjectConfig()->applyPendingChanges();
+            } else {
+                return $this->_processUpdateLogic($request) ?: $this->getResponse();
+            }
+        }
+
         // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
         if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {
             $user = $this->getUser();
