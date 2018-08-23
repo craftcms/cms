@@ -410,41 +410,44 @@ class Tags extends Component
         if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
-            $tagGroup = $this->_getTagGroupRecord($uid);
+            $tagGroupRecord = $this->_getTagGroupRecord($uid);
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select(['fieldLayoutId'])
-                    ->from(['{{%taggroups}}'])
-                    ->where(['id' => $tagGroup->id])
-                    ->scalar();
+            if ($tagGroupRecord->id) {
+                $transaction = Craft::$app->getDb()->beginTransaction();
 
-                if ($fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                try {
+                    // Delete the field layout
+                    $fieldLayoutId = (new Query())
+                        ->select(['fieldLayoutId'])
+                        ->from(['{{%taggroups}}'])
+                        ->where(['id' => $tagGroupRecord->id])
+                        ->scalar();
+
+                    if ($fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                    }
+
+                    // Delete the tags
+                    $tags = Tag::find()
+                        ->status(null)
+                        ->enabledForSite(false)
+                        ->groupId($tagGroupRecord->id)
+                        ->all();
+
+                    foreach ($tags as $tag) {
+                        Craft::$app->getElements()->deleteElement($tag);
+                    }
+
+                    Craft::$app->getDb()->createCommand()
+                        ->delete('{{%taggroups}}', ['id' => $tagGroupRecord->id])
+                        ->execute();
+
+                    $transaction->commit();
+                } catch (\Throwable $e) {
+                    $transaction->rollBack();
+
+                    throw $e;
                 }
-
-                // Delete the tags
-                $tags = Tag::find()
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->groupId($tagGroup->id)
-                    ->all();
-
-                foreach ($tags as $tag) {
-                    Craft::$app->getElements()->deleteElement($tag);
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%taggroups}}', ['id' => $tagGroup->id])
-                    ->execute();
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
         }
     }

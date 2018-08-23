@@ -729,9 +729,9 @@ class Volumes extends Component
         if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
-            $volume = $this->_getVolumeRecord($uid);
+            $volumeRecord = $this->_getVolumeRecord($uid);
 
-            if ($volume) {
+            if ($volumeRecord) {
                 $db = Craft::$app->getDb();
                 $transaction = $db->beginTransaction();
 
@@ -740,7 +740,7 @@ class Volumes extends Component
                     $fieldLayoutId = (new Query())
                         ->select(['fieldLayoutId'])
                         ->from(['{{%volumes}}'])
-                        ->where(['id' => $volume->id])
+                        ->where(['id' => $volumeRecord->id])
                         ->scalar();
 
                     if ($fieldLayoutId) {
@@ -751,7 +751,7 @@ class Volumes extends Component
                     $assets = Asset::find()
                         ->status(null)
                         ->enabledForSite(false)
-                        ->volumeId($volume->id)
+                        ->volumeId($volumeRecord->id)
                         ->all();
 
                     foreach ($assets as $asset) {
@@ -761,7 +761,7 @@ class Volumes extends Component
 
                     // Nuke the asset volume.
                     $db->createCommand()
-                        ->delete('{{%volumes}}', ['id' => $volume->id])
+                        ->delete('{{%volumes}}', ['id' => $volumeRecord->id])
                         ->execute();
 
                     $transaction->commit();

@@ -492,10 +492,9 @@ class Matrix extends Component
         if (preg_match('/^'.self::CONFIG_BLOCKTYPE_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
             $blockTypeUid = $matches[1];
+            $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
-            $blockType = $this->_getBlockTypeRecord($blockTypeUid);
-
-            if ($blockType) {
+            if ($blockTypeRecord->id) {
                 $db = Craft::$app->getDb();
                 $transaction = $db->beginTransaction();
 
@@ -504,7 +503,7 @@ class Matrix extends Component
                     $fieldLayoutId = (new Query())
                         ->select(['fieldLayoutId'])
                         ->from(['{{%matrixblocktypes}}'])
-                        ->where(['id' => $blockType->id])
+                        ->where(['id' => $blockTypeRecord->id])
                         ->scalar();
 
                     // Delete the field layout
@@ -512,7 +511,7 @@ class Matrix extends Component
 
                     // Finally delete the actual block type
                     Craft::$app->getDb()->createCommand()
-                        ->delete('{{%matrixblocktypes}}', ['id' => $blockType->id])
+                        ->delete('{{%matrixblocktypes}}', ['id' => $blockTypeRecord->id])
                         ->execute();
                     $transaction->commit();
                 } catch (\Throwable $e) {

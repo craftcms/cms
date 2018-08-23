@@ -360,14 +360,13 @@ class Fields extends Component
         // Does it match a field group?
         if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
+            $groupRecord = $this->_getGroupRecord($uid);
 
-            $record = $this->_getGroupRecord($uid);
-
-            if ($record->id) {
-                $record->delete();
+            if ($groupRecord->id) {
+                $groupRecord->delete();
 
                 // Delete our cache of it
-                unset($this->_groupsById[$record->id]);
+                unset($this->_groupsById[$groupRecord->id]);
             }
         }
     }
@@ -1055,36 +1054,39 @@ class Fields extends Component
         // Does it match a field?
         if (preg_match('/^'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
 
-            $field = $this->_getFieldRecord($matches[1]);
+            $fieldRecord = $this->_getFieldRecord($matches[1]);
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // De we need to delete the content column?
-                $contentTable = Craft::$app->getContent()->contentTable;
-                $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
+            if ($fieldRecord->id) {
+                $transaction = Craft::$app->getDb()->beginTransaction();
 
-                if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle)) {
+                try {
+                    // De we need to delete the content column?
+                    $contentTable = Craft::$app->getContent()->contentTable;
+                    $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
+
+                    if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$fieldRecord->handle)) {
+                        Craft::$app->getDb()->createCommand()
+                            ->dropColumn($contentTable, $fieldColumnPrefix.$fieldRecord->handle)
+                            ->execute();
+                    }
+
+                    // Delete the row in fields
                     Craft::$app->getDb()->createCommand()
-                        ->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)
+                        ->delete('{{%fields}}', ['id' => $fieldRecord->id])
                         ->execute();
+
+                    $fieldRecord->afterDelete();
+
+                    $transaction->commit();
+                } catch (\Throwable $e) {
+                    $transaction->rollBack();
+
+                    throw $e;
                 }
-
-                // Delete the row in fields
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%fields}}', ['id' => $field->id])
-                    ->execute();
-
-                $field->afterDelete();
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
 
             // Un-cache it.
-            unset($this->_allFieldsInContext[$field->context], $this->_fieldsWithContent[$field->context]);
+            unset($this->_allFieldsInContext[$fieldRecord->context], $this->_fieldsWithContent[$fieldRecord->context]);
 
             // Update the field version at the end of the request
             $this->updateFieldVersionAfterRequest();

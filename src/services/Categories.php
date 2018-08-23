@@ -666,16 +666,16 @@ class Categories extends Component
         if (preg_match('/'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
-            $categoryGroup = $groupRecord = $this->_getCategoryGroupRecord($uid);
+            $categoryGroupRecord = $groupRecord = $this->_getCategoryGroupRecord($uid);
 
-            if ($categoryGroup->id) {
+            if ($categoryGroupRecord->id) {
                 $transaction = Craft::$app->getDb()->beginTransaction();
                 try {
                     // Delete the field layout
                     $fieldLayoutId = (new Query())
                         ->select(['fieldLayoutId'])
                         ->from(['{{%categorygroups}}'])
-                        ->where(['id' => $categoryGroup->id])
+                        ->where(['id' => $categoryGroupRecord->id])
                         ->scalar();
 
                     if ($fieldLayoutId) {
@@ -686,7 +686,7 @@ class Categories extends Component
                     $categories = Category::find()
                         ->status(null)
                         ->enabledForSite(false)
-                        ->groupId($categoryGroup->id)
+                        ->groupId($categoryGroupRecord->id)
                         ->all();
 
                     foreach ($categories as $category) {
@@ -694,7 +694,7 @@ class Categories extends Component
                     }
 
                     Craft::$app->getDb()->createCommand()
-                        ->delete('{{%categorygroups}}', ['id' => $categoryGroup->id])
+                        ->delete('{{%categorygroups}}', ['id' => $categoryGroupRecord->id])
                         ->execute();
 
                     $transaction->commit();

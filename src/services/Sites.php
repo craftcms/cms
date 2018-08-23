@@ -328,13 +328,13 @@ class Sites extends Component
         if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
-            $record = $this->_getGroupRecord($uid);
+            $groupRecord = $this->_getGroupRecord($uid);
 
-            if ($record->id) {
-                $record->delete();
+            if ($groupRecord->id) {
+                $groupRecord->delete();
 
                 // Delete our cache of it
-                unset($this->_groupsById[$record->id]);
+                unset($this->_groupsById[$groupRecord->id]);
             }
         }
     }
@@ -1107,23 +1107,25 @@ class Sites extends Component
 
         // Does it match a site?
         if (preg_match('/^'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+            $siteRecord = $this->_getSiteRecord($matches[1]);
 
-            $site = $this->_getSiteRecord($matches[1]);
+            if ($siteRecord->id) {
+                $transaction = Craft::$app->getDb()->beginTransaction();
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $affectedRows = Craft::$app->getDb()->createCommand()
-                    ->delete('{{%sites}}', ['id' => $site->id])
-                    ->execute();
+                try {
+                    $affectedRows = Craft::$app->getDb()->createCommand()
+                        ->delete('{{%sites}}', ['id' => $siteRecord->id])
+                        ->execute();
 
-                $transaction->commit();
+                    $transaction->commit();
 
-                // Refresh sites
-                $this->_refreshAllSites();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
+                    // Refresh sites
+                    $this->_refreshAllSites();
+                } catch (\Throwable $e) {
+                    $transaction->rollBack();
 
-                throw $e;
+                    throw $e;
+                }
             }
         }
     }

@@ -510,23 +510,24 @@ class Globals extends Component
         if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
             $uid = $matches[1];
 
-            $globalSet = $this->_getGlobalSetRecord($uid);
+            $globalSetRecord = $this->_getGlobalSetRecord($uid);
 
-            if ($globalSet->id) {
+            if ($globalSetRecord->id) {
                 $transaction = Craft::$app->getDb()->beginTransaction();
+                
                 try {
                     // Delete the field layout
                     $fieldLayoutId = (new Query())
                         ->select(['fieldLayoutId'])
                         ->from(['{{%globalsets}}'])
-                        ->where(['id' => $globalSet->id])
+                        ->where(['id' => $globalSetRecord->id])
                         ->scalar();
 
                     if ($fieldLayoutId) {
                         Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
                     }
 
-                    Craft::$app->getElements()->deleteElementById($globalSet->id);
+                    Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
                     $transaction->commit();
                 } catch (\Throwable $e) {

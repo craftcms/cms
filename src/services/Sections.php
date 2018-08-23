@@ -1344,33 +1344,37 @@ class Sections extends Component
             $uid = $matches[1];
 
             $entryTypeRecord = $this->_getEntryTypeRecord($uid);
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                if ($entryTypeRecord->fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+
+            if ($entryTypeRecord->id) {
+                $transaction = Craft::$app->getDb()->beginTransaction();
+
+                try {
+                    if ($entryTypeRecord->fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+                    }
+
+                    // Delete the entries
+                    $entries = Entry::find()
+                        ->status(null)
+                        ->enabledForSite(false)
+                        ->typeId($entryTypeRecord->id)
+                        ->all();
+
+                    foreach ($entries as $entry) {
+                        Craft::$app->getElements()->deleteElement($entry);
+                    }
+
+                    // Delete the entry type.
+                    Craft::$app->getDb()->createCommand()
+                        ->delete('{{%entrytypes}}', ['id' => $entryTypeRecord->id])
+                        ->execute();
+
+                    $transaction->commit();
+                } catch (\Throwable $e) {
+                    $transaction->rollBack();
+
+                    throw $e;
                 }
-
-                // Delete the entries
-                $entries = Entry::find()
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->typeId($entryTypeRecord->id)
-                    ->all();
-
-                foreach ($entries as $entry) {
-                    Craft::$app->getElements()->deleteElement($entry);
-                }
-
-                // Delete the entry type.
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%entrytypes}}', ['id' => $entryTypeRecord->id])
-                    ->execute();
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
         }
 
