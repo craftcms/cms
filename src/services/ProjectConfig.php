@@ -273,8 +273,6 @@ class ProjectConfig extends Component
      */
     public function applyPendingChanges()
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
             $changes = $this->_getPendingChanges();
 
@@ -307,12 +305,9 @@ class ProjectConfig extends Component
             Craft::info('Finalizing configuration parsing', __METHOD__);
             $this->trigger(self::EVENT_AFTER_PARSE_CONFIG, new ParseConfigEvent());
 
-            $transaction->commit();
-
             $this->updateParsedConfigTimesAfterRequest();
             $this->_updateConfigMap = true;
         } catch (\Throwable $e) {
-            $transaction->rollBack();
 
             throw $e;
         }
@@ -320,19 +315,24 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Whether there is an update pending based on config and snapshot.
+     * Whether there is an update pending based on config modified times and snapshot.
      *
      * @return bool
      */
     public function isUpdatePending(): bool
     {
-        $changes = $this->_getPendingChanges();
+        if ($this->_areConfigFilesModified()) {
+            $changes = $this->_getPendingChanges();
 
-        foreach ($changes as $changeType) {
-            if (!empty($changeType)) {
-                return true;
+            foreach ($changes as $changeType) {
+                if (!empty($changeType)) {
+                    return true;
+                }
             }
+
+            $this->updateParsedConfigTimes();
         }
+
 
         return false;
     }
