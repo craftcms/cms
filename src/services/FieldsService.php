@@ -498,6 +498,11 @@ class FieldsService extends BaseApplicationComponent
 		// Get the field type
 		$fieldType = $field->getFieldType();
 
+		if (!$fieldType)
+		{
+			throw new Exception("The field type doesn't exist for the field {$field->id}.");
+		}
+
 		// Give the field type a chance to prep the settings from post
 		$preppedSettings = $fieldType->prepSettings($field->settings);
 
