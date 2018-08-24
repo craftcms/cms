@@ -70,7 +70,7 @@ class PlainTextFieldType extends BaseFieldType implements IPreviewableFieldType
 	 */
 	public function prepValue($value)
 	{
-		if (PHP_VERSION_ID >= 50400)
+		if (PHP_VERSION_ID >= 50600)
 		{
 			$value = LitEmoji::shortcodeToUnicode($value);
 		}
@@ -104,7 +104,7 @@ class PlainTextFieldType extends BaseFieldType implements IPreviewableFieldType
 	 */
 	public function prepValueFromPost($value)
 	{
-		if (PHP_VERSION_ID >= 50400)
+		if (PHP_VERSION_ID >= 50600)
 		{
 			$value = LitEmoji::unicodeToShortcode($value);
 		}
@@ -123,7 +123,7 @@ class PlainTextFieldType extends BaseFieldType implements IPreviewableFieldType
 	{
 		$value = (string) $value;
 
-		if (PHP_VERSION_ID >= 50400)
+		if (PHP_VERSION_ID >= 50600)
 		{
 			$value = LitEmoji::unicodeToShortcode($value);
 		}

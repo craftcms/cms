@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 2.7.2 - 2018-08-24
+
+### Changed
+- Updated Garnish to 0.1.27.
+
+### Fixed
+- Fixed a PHP error that occurred on servers running PHP 5.4 - 5.5.
+
 ## 2.7.1 - 2018-08-23
 
 ### Changed

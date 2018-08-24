@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.26
+ * @version   0.1.27
  * @license   MIT
  */
 (function($){
@@ -2902,9 +2902,6 @@ Garnish.HUD = Garnish.Base.extend(
                 }
             }
 
-            // Prevent the browser from jumping
-            this.$hud.css('top', Garnish.$scrollContainer.scrollTop());
-
             // Move it to the end of <body> so it gets the highest sub-z-index
             this.$shade.appendTo(Garnish.$bod);
             this.$hud.appendTo(Garnish.$bod);
@@ -2918,7 +2915,12 @@ Garnish.HUD = Garnish.Base.extend(
             this.onShow();
             this.enable();
 
-            this.updateSizeAndPosition();
+            if (this.updateRecords()) {
+                // Prevent the browser from jumping
+                this.$hud.css('top', Garnish.$scrollContainer.scrollTop());
+
+                this.updateSizeAndPosition(true);
+            }
         },
 
         onShow: function() {
@@ -2936,8 +2938,8 @@ Garnish.HUD = Garnish.Base.extend(
             return changed;
         },
 
-        updateSizeAndPosition: function() {
-            if (this.updateRecords() && !this.updatingSizeAndPosition) {
+        updateSizeAndPosition: function(force) {
+            if (force === true || (this.updateRecords() && !this.updatingSizeAndPosition)) {
                 this.updatingSizeAndPosition = true;
                 Garnish.requestAnimationFrame($.proxy(this, 'updateSizeAndPositionInternal'));
             }
@@ -3187,7 +3189,14 @@ Garnish.HUD = Garnish.Base.extend(
 
             this.$hud.hide();
             this.$shade.hide();
+
             this.showing = false;
+            //this.windowWidth = null;
+            //this.windowHeight = null;
+            //this.scrollTop = null;
+            //this.scrollLeft = null;
+            //this.mainWidth = null;
+            //this.mainHeight = null;
 
             delete Garnish.HUD.activeHUDs[this._namespace];
 
