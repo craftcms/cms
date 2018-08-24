@@ -161,7 +161,7 @@ class App
     {
         $classParts = explode('\\', $class);
 
-        return StringHelper::toLowerCase(Inflector::camel2words(array_pop($classParts)));
+        return strtolower(Inflector::camel2words(array_pop($classParts)));
     }
 
     /**

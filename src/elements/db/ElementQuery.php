@@ -1649,7 +1649,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $condition = ['or'];
 
         foreach ($statuses as $status) {
-            $status = StringHelper::toLowerCase($status);
+            $status = strtolower($status);
             $statusCondition = $this->statusCondition($status);
 
             if ($statusCondition === false) {

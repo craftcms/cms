@@ -685,7 +685,7 @@ class AssetsController extends Controller
 
             // TODO Is this hacky? It seems hacky.
             // We're rasterizing SVG, we have to make sure that the filename change does not get lost
-            if (StringHelper::toLowerCase($asset->getExtension()) === 'svg') {
+            if (strtolower($asset->getExtension()) === 'svg') {
                 unlink($imageCopy);
                 $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
                 $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);

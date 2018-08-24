@@ -26,7 +26,6 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
@@ -1308,7 +1307,7 @@ class AssetTransforms extends Component
         $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
 
         $images = Craft::$app->getImages();
-        if (StringHelper::toLowerCase($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
+        if (strtolower($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
             $image = $images->loadImage($imageSource, true, max($transform->width, $transform->height));
         } else {
             $image = $images->loadImage($imageSource);

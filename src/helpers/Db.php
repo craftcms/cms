@@ -446,7 +446,7 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(reset($value));
+        $firstVal = strtolower(reset($value));
         $negate = false;
 
         switch ($firstVal) {
@@ -474,7 +474,7 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (is_string($val) && StringHelper::toLowerCase($val) === ':empty:') {
+            if (is_string($val) && strtolower($val) === ':empty:') {
                 if ($operator === '=') {
                     if ($isMysql) {
                         $condition[] = [
@@ -709,7 +709,7 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (is_string($value) && StringHelper::toLowerCase($value) === ':notempty:') {
+        } else if (is_string($value) && strtolower($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }

@@ -981,7 +981,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encoding(string $string): string
     {
-        return static::toLowerCase(mb_detect_encoding($string, mb_detect_order(), true));
+        return mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
     }
 
     /**
@@ -1043,7 +1043,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         if ($lower) {
             // Make it lowercase
-            $string = static::toLowerCase($string);
+            $string = mb_strtolower($string);
         }
 
         if ($removePunctuation) {

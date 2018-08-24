@@ -30,7 +30,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
@@ -761,8 +760,8 @@ class Assets extends Component
         $existingFiles = [];
 
         foreach ($fileList as $file) {
-            if (StringHelper::toLowerCase(rtrim($folder->path, '/')) === StringHelper::toLowerCase($file['dirname'])) {
-                $existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
+            if (mb_strtolower(rtrim($folder->path, '/')) === mb_strtolower($file['dirname'])) {
+                $existingFiles[mb_strtolower($file['basename'])] = true;
             }
         }
 
@@ -775,12 +774,12 @@ class Assets extends Component
 
         // Combine the indexed list and the actual file list to make the final potential conflict list.
         foreach ($fileList as $file) {
-            $existingFiles[StringHelper::toLowerCase($file)] = true;
+            $existingFiles[mb_strtolower($file)] = true;
         }
 
         // Shorthand.
         $canUse = function($filenameToTest) use ($existingFiles) {
-            return !isset($existingFiles[StringHelper::toLowerCase($filenameToTest)]);
+            return !isset($existingFiles[mb_strtolower($filenameToTest)]);
         };
 
         if ($canUse($originalFilename)) {

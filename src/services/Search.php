@@ -273,7 +273,7 @@ class Search extends Component
      */
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)
     {
-        $attribute = StringHelper::toLowerCase($attribute);
+        $attribute = strtolower($attribute);
         $driver = Craft::$app->getDb()->getDriverName();
 
         if ($siteId !== null) {
