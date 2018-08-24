@@ -74,6 +74,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -94,6 +95,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
