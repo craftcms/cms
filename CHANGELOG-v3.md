@@ -7,6 +7,7 @@
 - Text inputs’ `autocomplete` attributes now get set to `off` by default, and they will only not be added if explicitly set to `null`.
 - Improved the error response when Composer is unable to perform an update due to a dependency conflict.
 - Email fields in the Control Panel now have `type="email"`.
+- Updated Garnish to 0.1.27.
 
 ### Fixed
 - Fixed a bug where Craft wasn’t reverting `composer.json` to its original state if something went wrong when running a Composer update.
