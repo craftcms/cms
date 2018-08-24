@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.2 - 2018-08-24
+
 ### Changed
 - Updated Garnish to 0.1.27.
 
