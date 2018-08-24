@@ -204,34 +204,7 @@ class UpdaterController extends BaseUpdaterController
             $handles = array_merge($this->data['migrate']);
         }
 
-        $result = null;
-
-        if (!empty($handles)) {
-            $result = $this->runMigrations($handles, self::ACTION_RESTORE_DB);
-
-            // If anything failed, bail out.
-            if ($result) {
-                return $result;
-            }
-        }
-
-        // Proceed only if no migrations failed, if any existed
-        if (!empty($this->data['projectConfig'])) {
-            try {
-                Craft::$app->getProjectConfig()->applyPendingChanges();
-            } catch (\Throwable $exception) {
-                return $this->send([
-                    'error' => Craft::t('app', 'Failed to update project configuration.'),
-                    'errorDetails' => $exception->getMessage().
-                        "\n\nFile: ".$exception->getFile().
-                        "\n\nLine: ".$exception->getLine(),
-                    'options' => $options,
-                ]);
-            }
-        }
-
-        return $this->sendFinished();
-
+        return $this->runMigrations($handles, self::ACTION_RESTORE_DB) ?? $this->sendFinished();
     }
 
     // Protected Methods
@@ -279,7 +252,6 @@ class UpdaterController extends BaseUpdaterController
             // Figure out what needs to be updated, if any
             $data = [
                 'migrate' => Craft::$app->getUpdates()->getPendingMigrationHandles(),
-                'projectConfig' => Craft::$app->getProjectConfig()->isUpdatePending()
             ];
         }
 
@@ -300,7 +272,7 @@ class UpdaterController extends BaseUpdaterController
     protected function initialState(bool $force = false): array
     {
         // Is there anything to install/update?
-        if (empty($this->data['install']) && empty($this->data['migrate']) && empty($this->data['projectConfig'])) {
+        if (empty($this->data['install']) && empty($this->data['migrate'])) {
             return $this->finishedState([
                 'status' => Craft::t('app', 'Nothing to update.')
             ]);

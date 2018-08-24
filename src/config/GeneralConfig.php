@@ -73,10 +73,6 @@ class GeneralConfig extends BaseObject
      */
     public $allowUppercaseInSlug = false;
     /**
-     * @var bool Whether or not to appl any project configuration changes automatically.
-     */
-    public $applyProjectConfigChangesAutomatically = false;
-    /**
      * @var bool If set to true, will automatically log the user in after successful account activation.
      */
     public $autoLoginAfterAccountActivation = false;
