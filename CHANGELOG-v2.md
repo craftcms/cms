@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated Garnish to 0.1.27.
+
 ### Fixed
 - Fixed a PHP error that occurred on servers running PHP 5.4 - 5.5.
 
