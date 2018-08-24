@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
+    <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
         <input type="hidden" name="action" value="users/save-user">
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
@@ -74,7 +74,6 @@
                     name: 'email',
                     value: user.email,
                     required: true,
-                    autocomplete: false,
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -95,7 +94,6 @@
                     name: 'email',
                     value: user.email,
                     required: true,
-                    autocomplete: false,
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
