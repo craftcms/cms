@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a PHP error that occurred on servers running PHP 5.4 - 5.5.
+
 ## 2.7.1 - 2018-08-23
 
 ### Changed
