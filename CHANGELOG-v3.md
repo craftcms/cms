@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed a bug where Craft wasn’t reverting `composer.json` to its original state if something went wrong when running a Composer update.
+- Fixed a bug where string casing functions in `craft\helpers\StringHelper` were adding extra hyphens to strings that came in as `Upper-Kebab-Case`.
 
 ## 3.0.21 - 2018-08-21
 

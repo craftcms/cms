@@ -1039,7 +1039,7 @@ class StringHelper extends \yii\helpers\StringHelper
     private static function _prepStringForCasing(string $string, bool $lower = true, bool $removePunctuation = true): array
     {
         // Convert CamelCase to multiple words
-        $string = preg_replace('/(?<![A-Z])[A-Z]/u', ' \0', $string);
+        $string = preg_replace('/(?<=[a-z])[A-Z]/u', ' \0', $string);
 
         if ($lower) {
             // Make it lowercase
