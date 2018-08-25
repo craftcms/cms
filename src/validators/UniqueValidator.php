@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use Craft;
 use craft\helpers\StringHelper;
 use yii\base\Model;
 use yii\db\ActiveRecordInterface;
@@ -38,6 +39,11 @@ class UniqueValidator extends YiiUniqueValidator
      * @var Model|null The model that is being validated
      */
     protected $originalModel;
+
+    /**
+     * @var bool Whether a case-insensitive check should be performed.
+     */
+    public $caseInsensitive = false;
 
     // Protected Methods
     // =========================================================================
@@ -80,7 +86,29 @@ class UniqueValidator extends YiiUniqueValidator
             }
         }
 
+        $originalAttributes = [];
+        $originalTargetAttribute = $this->targetAttribute;
+
+        if ($this->caseInsensitive && Craft::$app->getDb()->getIsPgsql()) {
+            // Convert targetAttribute to an array of ['attribute' => 'lower([[column]])'] conditions
+            // and set the model attributes to lowercase
+            $targetAttributes = (array)($this->targetAttribute ?? $attribute);
+            $newTargetAttributes = [];
+            foreach ($targetAttributes as $k => $v) {
+                $a = is_int($k) ? $v : $k;
+                $originalAttributes[$a] = $model->$a;
+                $model->$a = mb_strtolower($model->$a);
+                $newTargetAttributes[$a] = "lower([[{$v}]])";
+            }
+            $this->targetAttribute = $newTargetAttributes;
+        }
+
         parent::validateAttribute($model, $attribute);
+
+        $this->targetAttribute = $originalTargetAttribute;
+        foreach ($originalAttributes as $k => $v) {
+            $model->$k = $v;
+        }
     }
 
     /**

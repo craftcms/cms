@@ -653,7 +653,8 @@ class User extends Element implements IdentityInterface
             $rules[] = [
                 ['username', 'email'],
                 UniqueValidator::class,
-                'targetClass' => UserRecord::class
+                'targetClass' => UserRecord::class,
+                'caseInsensitive' => true,
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
@@ -690,8 +691,18 @@ class User extends Element implements IdentityInterface
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
     {
         $query = self::find()
-            ->where(['email' => $this->unverifiedEmail])
             ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->where([
+                'email' => $this->unverifiedEmail,
+            ]);
+        } else {
+            // Postgres is case-sensitive
+            $query->where([
+                'lower([[email]])' => mb_strtolower($this->unverifiedEmail),
+            ]);
+        }
 
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);

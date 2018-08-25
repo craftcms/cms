@@ -7,11 +7,15 @@
 - Text inputs’ `autocomplete` attributes now get set to `off` by default, and they will only not be added if explicitly set to `null`.
 - Improved the error response when Composer is unable to perform an update due to a dependency conflict.
 - Email fields in the Control Panel now have `type="email"`.
+- `craft\helpers\Db::parseParam()` now has a `$caseInnensitive` argument, which can be set to `true` to force case-insensitive conditions on PostgreSQL installs.
+- `craft\validators\UniqueValidator` now has a `$caseInsensitive` property, which can be set to `true` to cause the unique validation to be case-insensitive on PostgreSQL installs.
 - Updated Garnish to 0.1.27.
 
 ### Fixed
 - Fixed a bug where Craft wasn’t reverting `composer.json` to its original state if something went wrong when running a Composer update.
 - Fixed a bug where string casing functions in `craft\helpers\StringHelper` were adding extra hyphens to strings that came in as `Upper-Kebab-Case`.
+- Fixed a bug where unique validation for element URIs, usernames, and user email address was not case-insensitive on PostgreSQL installs.
+- Fixed a bug where element queries’ `uri` params, and user queries’ `firstName`, `lastName`, `username`, and `email` params, were not case-insensitive on PostgreSQL installs.
 
 ## 3.0.21 - 2018-08-21
 
