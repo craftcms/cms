@@ -222,14 +222,14 @@ EOD;
 
         // port
         if ($this->port) {
-            $dbConfig->port = $this->port;
+            $dbConfig->port = (int)$this->port;
         } else {
             if ($firstTime) {
                 $defaultPort = $dbConfig->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
             } else {
                 $defaultPort = $dbConfig->port;
             }
-            $dbConfig->port = $this->prompt('Database port:', [
+            $dbConfig->port = (int)$this->prompt('Database port:', [
                 'required' => true,
                 'default' => $defaultPort,
                 'validator' => function(string $input): bool {
@@ -303,6 +303,12 @@ EOD;
 
         // Test the DB connection
         $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
+
+        $originalServer = $dbConfig->server;
+        $originalPort = $dbConfig->port;
+
+        test:
+
         $dbConfig->updateDsn();
         /** @var Connection $db */
         $db = Craft::createObject(App::dbConfig($dbConfig));
@@ -321,13 +327,34 @@ EOD;
             /** @var \PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
-            //$this->stdout(VarDumper::dumpAsString($e->getPrevious()));
-            $firstTime = false;
+
+            // Test some common issues
+            $message = $pdoException->getMessage();
+
+            if ($dbConfig->server === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
+                // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
+                // try 127.0.0.1 instead...
+                $this->stdout('Trying with 127.0.01 instead of localhost ... ', Console::FG_YELLOW);
+                $dbConfig->server = '127.0.0.1';
+                goto test;
+            }
+
+            if ($dbConfig->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
+                // try 8889 instead (default MAMP port)...
+                $this->stdout('Trying with port 8889 instead of 3306 ... ', Console::FG_YELLOW);
+                $dbConfig->port = 8889;
+                goto test;
+            }
 
             if (!$this->interactive) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
+            // Restore the original server/port values
+            $dbConfig->server = $originalServer;
+            $dbConfig->port = $originalPort;
+
+            $firstTime = false;
             goto top;
         }
 

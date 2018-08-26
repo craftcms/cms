@@ -9,6 +9,7 @@
 - Email fields in the Control Panel now have `type="email"`.
 - `craft\helpers\Db::parseParam()` now has a `$caseInnensitive` argument, which can be set to `true` to force case-insensitive conditions on PostgreSQL installs.
 - `craft\validators\UniqueValidator` now has a `$caseInsensitive` property, which can be set to `true` to cause the unique validation to be case-insensitive on PostgreSQL installs.
+- The CLI setup wizard now detects common database connection errors that occur with MAMP, and automatically retests with adjusted settings.
 - Updated Garnish to 0.1.27.
 
 ### Fixed
