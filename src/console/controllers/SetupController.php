@@ -215,7 +215,7 @@ EOD;
         } else {
             $server = $this->prompt('Database server name or IP address:', [
                 'required' => true,
-                'default' => $dbConfig->server,
+                'default' => $dbConfig->server ?: '127.0.0.1',
             ]);
         }
         $dbConfig->server = strtolower($server);
@@ -243,7 +243,7 @@ EOD;
             $dbConfig->user = $this->user;
         } else {
             $dbConfig->user = $this->prompt('Database username:', [
-                'default' => $dbConfig->user,
+                'default' => $dbConfig->user ?: null,
             ]);
         }
 
@@ -261,7 +261,7 @@ EOD;
         } else if ($this->interactive || $dbConfig->database) {
             $dbConfig->database = $this->prompt('Database name:', [
                 'required' => true,
-                'default' => $dbConfig->database,
+                'default' => $dbConfig->database ?: null,
             ]);
         } else {
             $this->stderr('The --database option must be set.' . PHP_EOL, Console::FG_RED);
@@ -275,7 +275,7 @@ EOD;
             } else {
                 $dbConfig->schema = $this->prompt('Database schema:', [
                     'required' => true,
-                    'default' => $dbConfig->schema,
+                    'default' => $dbConfig->schema ?: 'public',
                 ]);
             }
         }
@@ -285,7 +285,7 @@ EOD;
             $tablePrefix = $this->tablePrefix;
         } else {
             $tablePrefix = $this->prompt('Database table prefix' . ($dbConfig->tablePrefix ? ' (type "none" for none)' : '') . ':', [
-                'default' => $dbConfig->tablePrefix,
+                'default' => $dbConfig->tablePrefix ?: null,
                 'validator' => function(string $input): bool {
                     if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
                         Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));

@@ -16,6 +16,7 @@
 - Fixed a bug where string casing functions in `craft\helpers\StringHelper` were adding extra hyphens to strings that came in as `Upper-Kebab-Case`.
 - Fixed a bug where unique validation for element URIs, usernames, and user email address was not case-insensitive on PostgreSQL installs.
 - Fixed a bug where element queries’ `uri` params, and user queries’ `firstName`, `lastName`, `username`, and `email` params, were not case-insensitive on PostgreSQL installs.
+- Fixed a bug where the CLI setup wizard was allowing empty database names.
 
 ## 3.0.21 - 2018-08-21
 
