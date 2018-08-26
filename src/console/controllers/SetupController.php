@@ -167,7 +167,7 @@ EOD;
      */
     public function actionSecurityKey(): int
     {
-        $this->stdout(PHP_EOL . 'Generating a security key... ', Console::FG_YELLOW);
+        $this->stdout(PHP_EOL . 'Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -302,7 +302,7 @@ EOD;
         }
 
         // Test the DB connection
-        $this->stdout('Testing database credentials... ', Console::FG_YELLOW);
+        $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
         $dbConfig->updateDsn();
         /** @var Connection $db */
         $db = Craft::createObject(App::dbConfig($dbConfig));
@@ -335,7 +335,7 @@ EOD;
         Craft::$app->setIsInstalled(null);
 
         $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
-        $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
+        $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         if (
             !$this->_setEnvVar('DB_DRIVER', $dbConfig->driver) ||
