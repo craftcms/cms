@@ -192,6 +192,7 @@ EOD;
         }
 
         $firstTime = true;
+        $badUserCredentials = false;
 
         top:
 
@@ -238,6 +239,8 @@ EOD;
             ]);
         }
 
+        userCredentials:
+
         // user
         if ($this->user) {
             $dbConfig->user = $this->user;
@@ -253,6 +256,11 @@ EOD;
         } else if ($this->interactive) {
             $this->stdout('Database password: ');
             $dbConfig->password = CliPrompt::hiddenPrompt(true);
+        }
+
+        if ($badUserCredentials) {
+            $badUserCredentials = false;
+            goto test;
         }
 
         // database
@@ -344,6 +352,16 @@ EOD;
                 $this->stdout('Trying with port 8889 instead of 3306 ... ', Console::FG_YELLOW);
                 $dbConfig->port = 8889;
                 goto test;
+            }
+
+            if (
+                strpos($message, 'Access denied for user') !== false ||
+                strpos($message, 'no password supplied') !== false ||
+                strpos($message, 'password authentication failed for user') !== false
+            ) {
+                $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
+                $badUserCredentials = true;
+                goto userCredentials;
             }
 
             if (!$this->interactive) {
