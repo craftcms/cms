@@ -24,31 +24,15 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $this->addColumn('{{%info}}', 'configSnapshot', $this->mediumText()->null());
         $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null());
 
-        $path = Craft::$app->getPath()->getConfigPath();
 
         $data = $this->_getProjectConfigData();
 
-        $yaml = Yaml::dump($data, 20, 2);
-        $destination = $path.'/system.yml';
-        FileHelper::writeToFile($destination, $yaml);
-
-        $modTime = FileHelper::lastModifiedTime($destination);
-
         $snapshot = serialize($data);
-
-        $nodes = array_keys($data);
-        $configMap = [];
-
-        foreach ($nodes as $node) {
-            $configMap[$node] = $destination;
-        }
 
         $this->update('{{%info}}', [
             'configSnapshot' => $snapshot,
-            'configMap' => Json::encode($configMap)
         ]);
 
-        Craft::$app->getCache()->set(ProjectConfig::CACHE_KEY, [$destination => $modTime], ProjectConfig::CACHE_DURATION);
 
         $this->dropTableIfExists('{{%systemsettings}}');
 
