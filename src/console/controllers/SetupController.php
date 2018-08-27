@@ -342,7 +342,7 @@ EOD;
             if ($dbConfig->server === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
                 // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
                 // try 127.0.0.1 instead...
-                $this->stdout('Trying with 127.0.01 instead of localhost ... ', Console::FG_YELLOW);
+                $this->stdout('Trying with 127.0.0.1 instead of localhost ... ', Console::FG_YELLOW);
                 $dbConfig->server = '127.0.0.1';
                 goto test;
             }
