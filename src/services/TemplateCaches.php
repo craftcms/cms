@@ -391,7 +391,7 @@ class TemplateCaches extends Component
             return false;
         }
 
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -424,7 +424,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementType(string $elementType): bool
     {
-        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) === false) {
             return false;
         }
 
@@ -447,11 +447,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElement($elements): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
-            return false;
-        }
-
-        if (!$elements) {
+        if ($this->_deletedAllCaches || empty($elements)) {
             return false;
         }
 
@@ -485,16 +481,16 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
-            return false;
-        }
-
-        if (!$elementId) {
+        if ($this->_deletedAllCaches || !$elementId) {
             return false;
         }
 
         // Check the query caches too?
-        if ($deleteQueryCaches && Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
+        if (
+            $deleteQueryCaches &&
+            $this->_isTemplateCachingEnabled() &&
+            Craft::$app->getConfig()->getGeneral()->cacheElementQueries
+        ) {
             if ($this->_deleteCachesIndex === null) {
                 Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
                 $this->_deleteCachesIndex = [];
@@ -542,7 +538,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementQuery(ElementQuery $query): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -562,7 +558,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByKey($key): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -582,7 +578,7 @@ class TemplateCaches extends Component
      */
     public function deleteExpiredCaches(): bool
     {
-        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches) {
             return false;
         }
 
@@ -609,7 +605,7 @@ class TemplateCaches extends Component
     public function deleteExpiredCachesIfOverdue(): bool
     {
         // Ignore if we've already done this once during the request
-        if ($this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedExpiredCaches) {
             return false;
         }
 
@@ -632,7 +628,7 @@ class TemplateCaches extends Component
      */
     public function deleteAllCaches(): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
