@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Composer\CaBundle\CaBundle;
 use Composer\Config\JsonConfigSource;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -393,6 +394,23 @@ class Composer extends Component
             // Disable Packagist if it's not already disabled
             if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
                 $config['repositories'][] = ['packagist.org' => false];
+            }
+
+            // Are we relying on the bundled CA file?
+            $bundledCaPath = CaBundle::getBundledCaBundlePath();
+            if (
+                !isset($config['config']['cafile']) &&
+                CaBundle::getSystemCaRootBundlePath() === $bundledCaPath
+            ) {
+                // Make a copy of it in case it's about to get updated
+                $dir = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+                FileHelper::createDirectory($dir);
+                $dest = $dir . DIRECTORY_SEPARATOR . basename($bundledCaPath);
+                if (file_exists($dest)) {
+                    FileHelper::unlink($dest);
+                }
+                copy(CaBundle::getBundledCaBundlePath(), $dest);
+                $config['config']['cafile'] = $dest;
             }
         }
 
