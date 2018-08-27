@@ -747,7 +747,7 @@ class Categories extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups, true);
+            $projectConfig->save(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups);
         }
     }
 

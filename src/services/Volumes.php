@@ -814,7 +814,7 @@ class Volumes extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_VOLUME_KEY, $volumes, true);
+            $projectConfig->save(self::CONFIG_VOLUME_KEY, $volumes);
         }
     }
 

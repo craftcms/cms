@@ -202,10 +202,9 @@ class ProjectConfig extends Component
      *
      * @param string $path
      * @param mixed $value
-     * @param bool $updateSilently whether updates should be broadcast via updates. Defaults to true.
      * @return void
      */
-    public function save(string $path, $value, bool $updateSilently = false)
+    public function save(string $path, $value)
     {
         $pathParts = explode('.', $path);
 
@@ -234,10 +233,6 @@ class ProjectConfig extends Component
 
         // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
-
-        if ($updateSilently) {
-            return true;
-        }
 
         return $this->processConfigChanges($path);
     }

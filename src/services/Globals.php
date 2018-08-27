@@ -579,7 +579,7 @@ class Globals extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_GLOBALSETS_KEY, $globalSets, true);
+            $projectConfig->save(self::CONFIG_GLOBALSETS_KEY, $globalSets);
         }
     }
 
