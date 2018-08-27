@@ -367,10 +367,10 @@ class Composer extends Component
      *
      * @param IOInterface $io
      * @param string $jsonPath
-     * @param bool $swapPackagist
+     * @param bool $prepForUpdate
      * @return array
      */
-    protected function composerConfig(IOInterface $io, string $jsonPath, bool $swapPackagist = true): array
+    protected function composerConfig(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): array
     {
         // Copied from \Composer\Factory::createComposer()
         $file = new JsonFile($jsonPath, null, $io);
@@ -384,7 +384,7 @@ class Composer extends Component
         }
         $config = $file->read();
 
-        if ($swapPackagist) {
+        if ($prepForUpdate) {
             // Add composer.craftcms.com if it's not already in there
             if (!$this->findCraftRepo($config)) {
                 $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
@@ -434,12 +434,12 @@ class Composer extends Component
      *
      * @param IOInterface $io
      * @param string $jsonPath
-     * @param bool $swapPackagist
+     * @param bool $prepForUpdate
      * @return \Composer\Composer
      */
-    protected function createComposer(IOInterface $io, string $jsonPath, bool $swapPackagist = true): \Composer\Composer
+    protected function createComposer(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): \Composer\Composer
     {
-        $config = $this->composerConfig($io, $jsonPath, $swapPackagist);
+        $config = $this->composerConfig($io, $jsonPath, $prepForUpdate);
         $composer = Factory::create($io, $config);
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
             ? substr($jsonPath, 0, -4) . 'lock'
