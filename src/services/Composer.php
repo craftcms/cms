@@ -409,7 +409,7 @@ class Composer extends Component
                 if (file_exists($dest)) {
                     FileHelper::unlink($dest);
                 }
-                copy(CaBundle::getBundledCaBundlePath(), $dest);
+                copy($bundledCaPath, $dest);
                 $config['config']['cafile'] = $dest;
             }
         }
