@@ -20,7 +20,13 @@
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        $('#tabs').replaceWith(response.tabsHtml);
+                        var $tabs = $('#tabs');
+                        if ($tabs.length) {
+                            $tabs.replaceWith(response.tabsHtml);
+                        } else {
+                            $(response.tabsHtml).insertBefore($('#content'))
+                        }
+
                         Craft.cp.initTabs();
 
                         $('#fields').html(response.fieldsHtml);
@@ -32,6 +38,8 @@
                         if (typeof slugGenerator !== 'undefined') {
                             slugGenerator.setNewSource('#title');
                         }
+
+                        this.trigger('typeChange');
                     }
                 }, this));
             }

@@ -61,7 +61,7 @@ class DeleteAssets extends ElementAction
                 /**
                  * @var Asset $asset
                  */
-                if (Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:'.$asset->volumeId)) {
+                if (Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->volumeId)) {
                     Craft::$app->getElements()->deleteElement($asset);
                 }
             }

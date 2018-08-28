@@ -167,10 +167,10 @@ class MigrationHelper
             $transaction = $db->beginTransaction();
             try {
                 if ($migration !== null) {
-                    $migration->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq');
+                    $migration->renameSequence($rawOldName . '_id_seq', $rawNewName . '_id_seq');
                 } else {
                     $db->createCommand()
-                        ->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq')
+                        ->renameSequence($rawOldName . '_id_seq', $rawNewName . '_id_seq')
                         ->execute();
                 }
                 $transaction->commit();
@@ -545,21 +545,15 @@ class MigrationHelper
         $schema = $db->getSchema();
         $rawTableName = $schema->getRawTableName($tableName);
         $table = $db->getTableSchema($rawTableName);
-        $otherColumns = [];
 
         foreach ($table->getColumnNames() as $columnName) {
             $fks = static::findForeignKeysTo($rawTableName, $columnName);
 
             foreach ($fks as $otherTable => $row) {
-                foreach ($row as $columnInfo) {
-                    foreach ($columnInfo as $count => $value) {
-                        if ($count !== 0) {
-                            $otherColumns[] = $count;
-                        }
-                    }
+                foreach ($row as $fk) {
+                    $otherColumns = static::_getColumnsForFK($fk, true);
+                    static::dropForeignKeyIfExists($otherTable, $otherColumns, $migration);
                 }
-
-                static::dropForeignKeyIfExists($otherTable, $otherColumns, $migration);
             }
         }
     }

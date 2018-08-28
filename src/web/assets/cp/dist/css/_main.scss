@@ -524,6 +524,10 @@ td.right {
   color: $successColor !important;
 }
 
+.notice {
+  color: $noticeColor !important;
+}
+
 .warning {
   color: $warningColor !important;
 }
@@ -559,11 +563,11 @@ td.right {
 }
 
 .icon.delete:not(.disabled):hover:before {
-  color: $errorColor;
+  color: $red;
 }
 
 .icon.delete:not(.disabled):active:before {
-  color: #8c3b2e;
+  color: darken($red, 10%);
 }
 
 .hidden {
@@ -861,7 +865,7 @@ ul.icons li a:hover {
 
   &:focus {
     outline: none;
-    box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
   }
 
   &:active,
@@ -1778,7 +1782,7 @@ $checkboxPadding: 20px;
     .toggle {
       display: block;
       position: absolute;
-      top: 9px;
+      top: 13px;
       @include margin-left(-20px);
     }
 
@@ -2194,6 +2198,7 @@ table.editable {
 
     &:focus {
       border-style: solid;
+      border-color: $blue;
     }
   }
 }
@@ -2406,6 +2411,47 @@ ul.tree,
   z-index: 2;
 }
 
+// Plugin installers
+
+.missing-component {
+  padding: 7px 10px !important;
+  max-width: 400px;
+  background: $lightBgColor !important;
+
+  .error {
+    margin: 0;
+  }
+
+  .install-plugin {
+    margin: 7px 0 -7px;
+    border-top: 1px solid $hairlineColor;
+    position: relative;
+    @include padding(10px, 0, 10px, 40px);
+
+    .icon {
+      width: 32px;
+      height: 32px;
+      position: absolute;
+      top: calc(50% - 16px);
+      @include left(0);
+
+      img, svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    h3 {
+      flex: 1;
+      margin: 8px 0 !important;
+    }
+
+    .btn {
+      margin: 0;
+    }
+  }
+}
+
 /* ----------------------------------------
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
@@ -2420,7 +2466,6 @@ ul.tree,
   box-sizing: border-box;
 
   .pane {
-    box-shadow: none;
     background: $lightBgColor;
   }
 }
@@ -2863,6 +2908,8 @@ ul.tree,
 
           img {
             display: block;
+            max-width: 100%;
+            max-height: 190px;
           }
         }
 
@@ -3009,10 +3056,20 @@ ul.tree,
 }
 
 /* logout warning/login/elevated session modals */
+.logoutwarningmodalshade,
+.loginmodalshade {
+  z-index: 101;
+}
+
 #logoutwarningmodal,
 #loginmodal,
 #elevatedsessionmodal {
   width: 500px;
+}
+
+#logoutwarningmodal,
+#loginmodal {
+  z-index: 101;
 }
 
 #loginmodal,
@@ -3031,6 +3088,12 @@ ul.tree,
 
 /* delete user modal */
 .deleteusermodal {
+  .content-summary {
+    margin: -24px -24px 24px;
+    padding: 24px;
+    background: $lightBgColor;
+  }
+
   .options {
     label {
       display: inline-block;
@@ -3474,7 +3537,7 @@ div.checkbox.indeterminate:before {
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
   outline: none;
-  box-shadow: 0 0 0 1px $darkHairlineColorAlpha;
+  box-shadow: 0 0 0 1px $blue;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
@@ -3712,6 +3775,7 @@ input:-ms-input-placeholder {
 
 .select:not(.selectize) select {
   @include select-input-styles;
+  white-space: pre;
 
   option {
     background: #fff;
@@ -3842,7 +3906,7 @@ body .selectize-dropdown .active {
   @include margin-left(1px);
   -padding: 10px;
   width: 210px;
-  height: 240px;
+  height: 242px;
   z-index: 101 !important;
 }
 

@@ -154,4 +154,30 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             $array[$newKey] = static::remove($array, $oldKey, $default);
         }
     }
+
+    /**
+     * Returns a copy of an array without a given key.
+     *
+     * @param array $array
+     * @param string $key
+     * @return array
+     */
+    public static function without(array $array, string $key): array
+    {
+        static::remove($array, $key);
+        return $array;
+    }
+
+    /**
+     * Returns a copy of an array without items with matching the given value.
+     *
+     * @param array $array
+     * @param mixed $value
+     * @return array
+     */
+    public static function withoutValue(array $array, $value): array
+    {
+        static::removeValue($array, $value);
+        return $array;
+    }
 }

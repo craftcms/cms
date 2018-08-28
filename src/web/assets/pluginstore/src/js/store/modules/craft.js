@@ -17,6 +17,7 @@ const state = {
     installedPlugins: [],
     licensedEdition: null,
     poweredByStripe: null,
+    defaultPluginSvg: null,
 }
 
 /**
@@ -93,6 +94,7 @@ const mutations = {
         state.installedPlugins = response.data.installedPlugins
         state.licensedEdition = response.data.licensedEdition
         state.poweredByStripe = response.data.poweredByStripe
+        state.defaultPluginSvg = response.data.defaultPluginSvg
     },
 
     [types.RECEIVE_CRAFT_ID](state, {craftId}) {

@@ -74,7 +74,7 @@ class SystemReport extends Utility
             'PHP version' => App::phpVersion(),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
-            'Craft edition & version' => 'Craft '.App::editionName(Craft::$app->getEdition()).' '.Craft::$app->getVersion(),
+            'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
             'Yii version' => Yii::getVersion(),
             'Twig version' => Twig_Environment::VERSION,
             'Guzzle version' => Client::VERSION,
@@ -97,7 +97,7 @@ class SystemReport extends Utility
             $driverName = 'PostgreSQL';
         }
 
-        return $driverName.' '.$db->getVersion();
+        return $driverName . ' ' . $db->getVersion();
     }
 
     /**
@@ -115,7 +115,7 @@ class SystemReport extends Utility
             $driverName = 'Imagick';
         }
 
-        return $driverName.' '.$imagesService->getVersion();
+        return $driverName . ' ' . $imagesService->getVersion();
     }
 
     /**

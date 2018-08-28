@@ -58,7 +58,7 @@ class DeleteUsers extends ElementAction
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
         $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
-        $js = <<<EOD
+        $js = <<<JS
 (function()
 {
     var trigger = new Craft.ElementActionTrigger({
@@ -78,20 +78,28 @@ class DeleteUsers extends ElementAction
         },
         activate: function(\$selectedItems)
         {
-            var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
-                onSubmit: function()
-                {
-                    Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
-                    modal.hide();
-
-                    return false;
-                },
-                redirect: {$redirect}
+            Craft.elementIndex.setIndexBusy();
+            var ids = Craft.elementIndex.getSelectedElementIds();
+            Craft.postActionRequest('users/user-content-summary', {userId: ids}, function(response, textStatus) {
+                Craft.elementIndex.setIndexAvailable();
+                if (textStatus === 'success') {
+                    var modal = new Craft.DeleteUserModal(ids, {
+                        contentSummary: response,
+                        onSubmit: function()
+                        {
+                            Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
+                            modal.hide();
+        
+                            return false;
+                        },
+                        redirect: {$redirect}
+                    });                    
+                }
             });
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
     }

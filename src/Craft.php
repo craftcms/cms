@@ -129,8 +129,8 @@ class Craft extends Yii
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
 
-        $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
-        $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
+        $contentBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
+        $elementQueryBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php';
 
         $isContentBehaviorFileValid = self::_loadFieldAttributesFile($contentBehaviorFile, $storedFieldVersion);
         $isElementQueryBehaviorFileValid = self::_loadFieldAttributesFile($elementQueryBehaviorFile, $storedFieldVersion);
@@ -174,7 +174,7 @@ EOD;
             }
 
             self::_writeFieldAttributesFile(
-                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
                 ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
                 $contentBehaviorFile
@@ -191,7 +191,7 @@ EOD;
             }
 
             self::_writeFieldAttributesFile(
-                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
                 ['{VERSION}', '{METHOD_DOCS}'],
                 [$storedFieldVersion, implode("\n", $methods)],
                 $elementQueryBehaviorFile
@@ -210,7 +210,7 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/'.self::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . self::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
             ],
         ];
 

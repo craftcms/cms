@@ -141,7 +141,7 @@ class EntryType extends Model
      */
     public function getCpEditUrl(): string
     {
-        return UrlHelper::cpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return UrlHelper::cpUrl('settings/sections/' . $this->sectionId . '/entrytypes/' . $this->id);
     }
 
     /**
@@ -157,7 +157,7 @@ class EntryType extends Model
         }
 
         if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
         return $section;

@@ -96,15 +96,15 @@ class InstallController extends BaseUpdaterController
                 }
             }
 
-            Craft::error('Plugin installation failed: '.$e->getMessage(), __METHOD__);
+            Craft::error('Plugin installation failed: ' . $e->getMessage(), __METHOD__);
 
             $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
 
             return $this->send([
                 'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
-                'errorDetails' => $eName.': '.$e->getMessage().
-                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
-                    ($output ? "\n\nOutput:\n\n".$output : ''),
+                'errorDetails' => $eName . ': ' . $e->getMessage() .
+                    ($migration ? "\n\nMigration: " . get_class($migration) : '') .
+                    ($output ? "\n\nOutput:\n\n" . $output : ''),
                 'options' => [
                     $this->finishedState([
                         'label' => Craft::t('app', 'Leave it uninstalled'),
@@ -114,7 +114,7 @@ class InstallController extends BaseUpdaterController
                         'label' => Craft::t('app', 'Send for help'),
                         'submit' => true,
                         'email' => $email,
-                        'subject' => $pluginName.' update failure',
+                        'subject' => $pluginName . ' update failure',
                     ],
                 ],
             ]);

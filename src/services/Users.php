@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
@@ -34,7 +35,7 @@ use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
- * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|<code>Craft::$app->users</code>]].
+ * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -56,6 +57,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is activated.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
@@ -72,6 +74,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
@@ -83,6 +86,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
@@ -94,6 +98,7 @@ class Users extends Component
 
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
+     *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
@@ -105,6 +110,7 @@ class Users extends Component
 
     /**
      * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
+     *
      * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
@@ -116,6 +122,7 @@ class Users extends Component
 
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
+     *
      * You may set [[UserAssignGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
@@ -157,15 +164,30 @@ class Users extends Component
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail)
     {
-        return User::find()
-            ->where([
-                'or',
-                ['username' => $usernameOrEmail],
-                ['email' => $usernameOrEmail]
-            ])
+        $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null)
-            ->one();
+            ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query
+                ->where([
+                    'username' => $usernameOrEmail,
+                ])
+                ->orWhere([
+                    'email' => $usernameOrEmail,
+                ]);
+        } else {
+            // Postgres is case-sensitive
+            $query
+                ->where([
+                    'lower([[username]])' => mb_strtolower($usernameOrEmail),
+                ])
+                ->orWhere([
+                    'lower([[email]])' => mb_strtolower($usernameOrEmail),
+                ]);
+        }
+
+        return $query->one();
     }
 
     /**
@@ -182,15 +204,15 @@ class Users extends Component
     {
         return User::find()
             ->uid($uid)
-            ->status(null)
-            ->enabledForSite(false)
+            ->anyStatus()
             ->one();
     }
 
     /**
      * Returns whether a verification code is valid for the given user.
+     *
      * This method first checks if the code has expired past the
-     * [verificationCodeDuration](http://craftcms.com/docs/config-settings#verificationCodeDuration) config
+     * [[\craft\config\GeneralConfig::verificationCodeDuration|verificationCodeDuration]] config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
@@ -214,7 +236,7 @@ class Users extends Component
             $userRecord->verificationCode = null;
             $userRecord->save();
 
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' is expired.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', __METHOD__);
             return false;
         }
 
@@ -225,7 +247,7 @@ class Users extends Component
         }
 
         if (!$valid) {
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' does not match the hash in the database.', __METHOD__);
             return false;
         }
 
@@ -290,6 +312,7 @@ class Users extends Component
 
     /**
      * Sends a new account activation email for a user, regardless of their status.
+     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
@@ -312,6 +335,7 @@ class Users extends Component
 
     /**
      * Sends a new email verification email to a user, regardless of their status.
+     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
@@ -329,6 +353,7 @@ class Users extends Component
 
     /**
      * Sends a password reset email to a user.
+     *
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the forgot password email to.
@@ -827,8 +852,9 @@ class Users extends Component
 
     /**
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
+     *
      * This method will check the
-     * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
+     * [[\craft\config\GeneralConfig::purgePendingUsersDuration|purgePendingUsersDuration]] config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
      */
@@ -933,6 +959,7 @@ class Users extends Component
 
     /**
      * Assigns a user to the default user group.
+     *
      * This method is called toward the end of a public registration request.
      *
      * @param User $user The user that was just registered.
@@ -1002,6 +1029,10 @@ class Users extends Component
     {
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
         $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
@@ -1046,7 +1077,7 @@ class Users extends Component
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger.'/users/'.$action;
+        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1061,11 +1092,15 @@ class Users extends Component
                 return UrlHelper::cpUrl($path, $params, $scheme);
             }
 
-            $path = $generalConfig->cpTrigger.'/'.$path;
+            $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
-        // todo: should we factor in the user's preferred language (as we did in v2)?
-        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else {
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
         return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }

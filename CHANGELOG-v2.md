@@ -1,5 +1,75 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+## 2.7.0 - 2018-07-31
+
+### Added
+- Added PHP 7.2 compatibility.
+- Added `phpseclib/mcrypt_compat` as a shim for Mcrypt compatibility for people running PHP 7.2+.
+
+### Changed
+- When uploading a file to an Assets field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
+- Updated Twig to 1.35.4.
+- Updated Yii to 1.1.20.
+- Updated Garnish to 0.1.26.
+- Updated svg-sanitize to 0.9.0.
+- Updated LitEmoji to 1.4.1.
+
+### Fixed
+- Fixed a bug where Dropdown fields on an element index view could show an incorrect selected value in limited circumstances.
+- Fixed a bug where `JsonHelper::sendJsonHeaders()` was overriding the `Cache-Control` header even if it had already ben explicitly set. ([craftcms/element-api#74](https://github.com/craftcms/element-api/issues/74))
+
+## 2.6.3019 - 2018-06-29
+
+### Fixed
+- Fixed a bug where dropdowns in the Control Panel weren’t pre-selecting the correct value.
+
+## 2.6.3018 - 2018-06-25
+
+### Changed
+- Updated Garnish to 0.1.24.
+- From now on the root folder for Local Asset Sources will be created, if it doesn't exist.
+- Leading/trailing whitespace characters are now stripped from element titles on save. ([#3020](https://github.com/craftcms/cms/issues/3020))
+- The PHP Info utility no longer displays the original values for settings and only the current environment value. ([#2990](https://github.com/craftcms/cms/issues/2990))
+
+### Fixed
+- Fixed a bug where Craft would show a nag alert in the Control Panel when the licensed edition wasn’t cached.
+- Fixed a bug where Dropdown fields could show an incorrect selected value in limited circumstances.
+- Fixed a PHP error that would occur when trying to access Asset Sources from the command line.
+
+## 2.6.3017 - 2018-06-05
+
+### Changed
+- Improved the contrast of success and error notices in the Control Panel to meet WCAG AA requirements. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Craft will no longer discard any preloaded elements when setting the `with` param on an `ElementCriteriaModel`, fixing a bug where disabled Matrix blocks could show up in Live Preview if any nested fields were getting eager-loaded. ([#1576](https://github.com/craftcms/cms/issues/1576))
+- `email.beforeSendEmail` events now have a `sent` parameter, which can be set to `true` if a plugin has sent the email, and `EmailService::sendEmail()` should return `true`. ([#2917](https://github.com/craftcms/cms/pull/2917))
+- Improved the performance of element queries when a lot of values were passed into a param, such as `id`, by using `IN()` and `NOT IN()` conditions when possible. ([#2937](https://github.com/craftcms/cms/pull/2937))
+- Updated Redactor to 2.13.
+- Updated Garnish to 0.1.23.
+
+## 2.6.3016 - 2018-05-15
+
+### Added
+- Added the `preserveCmykColorspace` config setting, which can be set to `true` to prevent images’ colorspaces from getting converted to sRGB on environments running ImageMagick.
+- Added the `transformGifs` config setting, which can be set to `false` to prevent GIFs from getting transformed or cleansed. ([#2845](https://github.com/craftcms/cms/issues/2845))
+
+### Changed
+- Edit User pages will now warn editors when leaving the page with unsaved changes. ([#2832](https://github.com/craftcms/cms/issues/2832))
+- Rich Text fields with the “Clean up HTML?” setting enabled now convert non-breaking spaces to normal spaces.
+- Error text is now orange instead of red. ([#2885](https://github.com/craftcms/cms/issues/2885))
+- Updated Garnish to 0.1.22.
+
+### Removed
+- Removed `ConfigService::getActivateAccountPath()`.
+- Removed `ConfigService::getSetPasswordPath()`.
+- Removed `ConfigService::getCpSetPasswordPath()`.
+
+### Fixed
+- Fixed an error that occurred when saving a Single entry over Ajax. ([#2687](https://github.com/craftcms/cms/issues/2687))
+- Fixed a bug where the `id` param was ignored when used on an eager-loaded elements’ criteria. ([#2717](https://github.com/craftcms/cms/issues/2717))
+- Fixed a bug where email verification links weren’t working for publicly-registered users if the registration form contained a Password field and the default user group granted permission to access the Control Panel.
+
 ## 2.6.3015 - 2018-04-06
 
 ### Changed
@@ -3043,7 +3113,7 @@
 - [HeaderHelper::setHeader()](http://buildwithcraft.com/classreference/helpers/HeaderHelper#setHeader-detail) will now return `true` or `false` depending on whether the header was set successfully.
 - [HttpRequestService::close()](http://buildwithcraft.com/classreference/services/HttpRequestService#close-detail) will now throw an exception if any content had already been output to the browser before it was called.
 - [HttpRequestService::close()](http://buildwithcraft.com/classreference/services/HttpRequestService#close-detail) will now prepend any content it can find the active output buffer(s) to the passed-in `$content` argument.
-- [Image::saveAs()](http://buildwithcraft.com/classreference/etc/io/Image#saveAs-detail) now accepts an optional `$sanitizeAndAutoQuality`  argument.
+- [Image::saveAs()](http://buildwithcraft.com/classreference/etc/io/Image#saveAs-detail) now accepts an optional `$sanitizeAndAutoQuality` argument.
 - Refactored [ProfileLogRoute](http://buildwithcraft.com/classreference/etc/logging/ProfileLogRoute) and [WebLogRoute](http://buildwithcraft.com/classreference/etc/logging/WebLogRoute).
 - [UserModel::__toString()](http://buildwithcraft.com/classreference/models/UserModel#__toString-detail) now outputs the user’s email address, regardless of whether their username has been updated to match it, if the [useEmailAsUsername](http://buildwithcraft.com/docs/config-settings#useEmailAsUsername) config setting is enabled.
 - [UserSessionService](http://buildwithcraft.com/classreference/services/UserSessionService) will not extend the user session if a `dontExtendSession` param exists on the request, either in the query string or POST data.
@@ -3943,7 +4013,7 @@
 - Slugs and URL formats are now central element concepts, rather than entry-specific.
 - Removed excessive punctuation symbols in some of the language.
 - Updated jQuery to 2.1.0.
-- Updated jQuery UI to  1.10.4.
+- Updated jQuery UI to 1.10.4.
 - Updated jquery.fileUpload to 5.40.1.
 - Updated jquery.timepicker to 1.3.5.
 - Updated Redactor to 9.2.1.
@@ -3967,7 +4037,7 @@
 - Fixed a bug where it wasn’t possible to edit newly-created tags’ content until the form was saved.
 - Fixed a bug where Craft would show a new user registration page if accessing the edit page for a user that doesn’t exist.
 - Fixed a bug where saving a Single section’s entry type would redirect you to the section’s entry type index, even though there can only be one of them.
-- Fixed a bug where if you defined a custom title label other than “Title” for an entry type,  any validation error message would still use the word “Title”.
+- Fixed a bug where if you defined a custom title label other than “Title” for an entry type, any validation error message would still use the word “Title”.
 - Fixed a bug where the “Delete other authors’ entries” permission wasn’t being enforced.
 - Fixed a CSS glitch with the wildcard route token.
 - Fixed several known issues with the CP’s mobile/responsive support.
@@ -5033,7 +5103,7 @@
 - Tightened transform settings validation to prevent invalid transform handles from being saved.
 
 ### Fixed
-- Fixed a MySQL error that would occur when deleting elements that were related to other elements via an Entries, Users,  or Assets field.
+- Fixed a MySQL error that would occur when deleting elements that were related to other elements via an Entries, Users, or Assets field.
 - Fixed a bug where relation fields wouldn’t remember selected elements that were disabled/not-live.
 - Fixed a bug that prevented Dropdown and Radio Button fields’ values from being translatable (e.g. `entry.dropdownField | translate`).
 - Fixed a bug where deleting an asset wouldn’t delete its row in `craft_elements`.
@@ -5207,7 +5277,7 @@
 ### Added
 - Added support for protocol-relative URLs.
 - Added the `testToEmailAddress` config variable. If set, `EmailService` will send to it instead of the supplied email address.
-- Added config variables `defaultFolderPermissions`, `writableFolderPermissions` and `writableFilePermissions`.  Craft will use these when creating files and folders.
+- Added config variables `defaultFolderPermissions`, `writableFolderPermissions` and `writableFilePermissions`. Craft will use these when creating files and folders.
 
 ### Changed
 - If using the date/time picker and you only select time, Craft will now default to the current date.
@@ -5241,7 +5311,7 @@
 
 ### Changed
 - The “Forgot your password?” link is now visible right away on the Login page.
-- Renamed some config settings: `validateAccountPath` to  `activateAccountPath`, `validateSuccessPath` to `activateSuccessPath`,  `validateFailurePath` to `activateFailurePath` and `resetPasswordPath` to `setPasswordPath`
+- Renamed some config settings: `validateAccountPath` to `activateAccountPath`, `validateSuccessPath` to `activateSuccessPath`, `validateFailurePath` to `activateFailurePath` and `resetPasswordPath` to `setPasswordPath`
 - When attempting to log in with a user account that’s temporarily locked, the cooldown time duration now includes the number of seconds if it’s less than one minute.
 - Increased the max length of entry slugs to 255 characters.
 
@@ -5946,7 +6016,7 @@
 
 ### Fixed
 - Fixed a bug in the automatic updater that was causing updates to fail with newly added files.
-- Fixed a bug where some HTML would get encoded  in the installer if the server didn’t meet Blocks’ minimum requirements
+- Fixed a bug where some HTML would get encoded in the installer if the server didn’t meet Blocks’ minimum requirements
 
 ## 0.9.2104 - 2012-11-30
 
@@ -6131,7 +6201,7 @@
 ### Changed
 - The CP is now accessed via a trigger segment in the URL path (“admin” by default), rather than the `BLOCKS_CP_REQUEST` constant (previously found in `admin.php`)
 - Renamed the `logoutTriggerWord` config setting to `logoutTrigger`
-- The `index.php` redirect in the  bundled htaccess file now includes a `QSA` flag, so query strings aren’t lost in the redirect
+- The `index.php` redirect in the bundled htaccess file now includes a `QSA` flag, so query strings aren’t lost in the redirect
 - Plugins are now sorted by name in the sidebar and in Settings → Plugins
 - `{% includeCssFile %}`, `{% includeJsFile %}`, `{% includeCssResource %}`, and `{% includeJsResource %}` tags no longer require `.css` and `.js` extensions
 - Plugin hook methods must now begin with “hook”

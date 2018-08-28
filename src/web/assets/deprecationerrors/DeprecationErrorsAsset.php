@@ -20,7 +20,7 @@ class DeprecationErrorsAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,7 +31,7 @@ class DeprecationErrorsAsset extends AssetBundle
         ];
 
         $this->js = [
-            'deprecator'.$this->dotJs(),
+            'deprecator' . $this->dotJs(),
         ];
 
         parent::init();

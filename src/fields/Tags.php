@@ -82,8 +82,7 @@ class Tags extends BaseRelationField
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -105,7 +104,7 @@ class Tags extends BaseRelationField
                 ]);
         }
 
-        return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
+        return '<p class="error">' . Craft::t('app', 'This field is not set to a valid source.') . '</p>';
     }
 
     // Private Methods

@@ -79,6 +79,7 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Returns an array of all known locale IDs.
+     *
      * If the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded, then this will be based on
      * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
      * `vendor/craftcms/cms/src/config/locales/` and `config/locales/`.
@@ -92,8 +93,8 @@ class I18N extends \yii\i18n\I18N
             if ($this->getIsIntlLoaded()) {
                 $this->_allLocaleIds = ResourceBundle::getLocales(null);
             } else {
-                $appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
-                $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
+                $appLocalesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales';
+                $customLocalesPath = Craft::$app->getPath()->getConfigPath() . '/locales';
 
                 $localeFiles = FileHelper::findFiles($appLocalesPath, [
                     'only' => ['*.php'],
@@ -169,7 +170,7 @@ class I18N extends \yii\i18n\I18N
             if ($subDir === '.' || $subDir === '..' || $subDir === Craft::$app->sourceLanguage) {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            $path = $dir . DIRECTORY_SEPARATOR . $subDir;
             if (is_file($path)) {
                 continue;
             }
@@ -225,9 +226,8 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrimarySiteLocale(): Locale
     {
-        $locales = $this->getSiteLocales();
-
-        return $locales[0];
+        $site = Craft::$app->getSites()->getPrimarySite();
+        return new Locale($site->language);
     }
 
     /**
@@ -238,7 +238,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrimarySiteLocaleId(): string
     {
-        return $this->getPrimarySiteLocale()->id;
+        return Craft::$app->getSites()->getPrimarySite()->language;
     }
 
     /**
@@ -272,7 +272,7 @@ class I18N extends \yii\i18n\I18N
             $editableLocales = [];
 
             foreach ($locales as $locale) {
-                if (Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id)) {
+                if (Craft::$app->getUser()->checkPermission('editLocale:' . $locale->id)) {
                     $editableLocales[] = $locale;
                 }
             }
@@ -319,7 +319,7 @@ class I18N extends \yii\i18n\I18N
                     $char = '%';
             }
 
-            $translation = $char.$translation.$char;
+            $translation = $char . $translation . $char;
         }
 
         return $translation;

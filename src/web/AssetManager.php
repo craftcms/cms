@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\errors\DbConnectException;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
 
@@ -56,13 +57,13 @@ class AssetManager extends \yii\web\AssetManager
         }
 
         if ($filePath !== null) {
-            $url .= '/'.$filePath;
+            $url .= '/' . $filePath;
 
             // Should we append a timestamp?
             if ($this->appendTimestamp) {
-                $fullPath = FileHelper::normalizePath(Craft::getAlias($sourcePath).DIRECTORY_SEPARATOR.$filePath);
+                $fullPath = FileHelper::normalizePath(Craft::getAlias($sourcePath) . DIRECTORY_SEPARATOR . $filePath);
                 if (($timestamp = @filemtime($fullPath)) > 0) {
-                    $url .= '?v='.$timestamp;
+                    $url .= '?v=' . $timestamp;
                 }
             }
         }
@@ -84,7 +85,7 @@ class AssetManager extends \yii\web\AssetManager
 
         $dir = is_file($path) ? dirname($path) : $path;
         $alias = Craft::alias($dir);
-        $hash = sprintf('%x', crc32($alias.'|'.FileHelper::lastModifiedTime($path).'|'.$this->linkAssets));
+        $hash = sprintf('%x', crc32($alias . '|' . FileHelper::lastModifiedTime($path) . '|' . $this->linkAssets));
 
         // Store the hash for later
         try {
@@ -96,6 +97,8 @@ class AssetManager extends \yii\web\AssetManager
                 ], [], false)
                 ->execute();
         } catch (DbException $e) {
+            // Craft is either not installed or not updated to 3.0.3+ yet
+        } catch (DbConnectException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 
@@ -126,7 +129,7 @@ class AssetManager extends \yii\web\AssetManager
         $url = str_replace('\\', '/', $url);
 
         if ($this->appendTimestamp && strpos($url, '?') === false && ($timestamp = @filemtime($src)) > 0) {
-            $url .= '?v='.$timestamp;
+            $url .= '?v=' . $timestamp;
         }
 
         return [$file, $url];

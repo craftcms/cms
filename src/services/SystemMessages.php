@@ -17,7 +17,7 @@ use yii\base\Component;
 
 /**
  * System Messages service.
- * An instance of the System Messages service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemMessages()|<code>Craft::$app->systemMessages</code>]].
+ * An instance of the System Messages service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemMessages()|`Craft::$app->systemMessages`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -120,7 +120,7 @@ class SystemMessages extends Component
     public function getAllMessages(string $language = null): array
     {
         if ($language === null) {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         // Start with the defaults
@@ -164,7 +164,7 @@ class SystemMessages extends Component
         }
 
         if ($language === null) {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         // Fetch the customization (if there is one)

@@ -18,7 +18,7 @@ use yii\base\Component;
 
 /**
  * Tags service.
- * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|<code>Craft::$app->tags</code>]].
+ * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -249,26 +249,38 @@ class Tags extends Component
     /**
      * Deletes a tag group by its ID.
      *
-     * @param int $tagGroupId
+     * @param int $groupId The tag group's ID
      * @return bool Whether the tag group was deleted successfully
      * @throws \Throwable if reasons
      */
-    public function deleteTagGroupById(int $tagGroupId): bool
+    public function deleteTagGroupById(int $groupId): bool
     {
-        if (!$tagGroupId) {
+        if (!$groupId) {
             return false;
         }
 
-        $tagGroup = $this->getTagGroupById($tagGroupId);
+        $group = $this->getTagGroupById($groupId);
 
-        if (!$tagGroup) {
+        if (!$group) {
             return false;
         }
 
+        return $this->deleteTagGroup($group);
+    }
+
+    /**
+     * Deletes a tag group.
+     *
+     * @param TagGroup $group The tag group
+     * @return bool Whether the tag group was deleted successfully
+     * @throws \Throwable if reasons
+     */
+    public function deleteTagGroup(TagGroup $group): bool
+    {
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $group
             ]));
         }
 
@@ -278,7 +290,7 @@ class Tags extends Component
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
                 ->from(['{{%taggroups}}'])
-                ->where(['id' => $tagGroupId])
+                ->where(['id' => $group->id])
                 ->scalar();
 
             if ($fieldLayoutId) {
@@ -287,9 +299,8 @@ class Tags extends Component
 
             // Delete the tags
             $tags = Tag::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->groupId($tagGroupId)
+                ->anyStatus()
+                ->groupId($group->id)
                 ->all();
 
             foreach ($tags as $tag) {
@@ -297,7 +308,7 @@ class Tags extends Component
             }
 
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%taggroups}}', ['id' => $tagGroupId])
+                ->delete('{{%taggroups}}', ['id' => $group->id])
                 ->execute();
 
             $transaction->commit();
@@ -310,7 +321,7 @@ class Tags extends Component
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
             $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $group
             ]));
         }
 

@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Composer\CaBundle\CaBundle;
 use Composer\Config\JsonConfigSource;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -25,7 +26,7 @@ use yii\base\Exception;
 
 /**
  * Composer service.
- * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|<code>Craft::$app->composer</code>]].
+ * An instance of the Composer service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getComposer()|`Craft::$app->composer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -67,7 +68,7 @@ class Composer extends Component
     public function getJsonPath(): string
     {
         $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : Craft::getAlias('@root/composer.json');
-        if (!file_exists($jsonPath)) {
+        if (!is_file($jsonPath)) {
             throw new Exception('Could not locate your composer.json file.');
         }
         return $jsonPath;
@@ -84,8 +85,8 @@ class Composer extends Component
         $jsonPath = $this->getJsonPath();
         // Logic based on \Composer\Factory::createComposer()
         $lockPath = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
-            ? substr($jsonPath, 0, -4).'lock'
-            : $jsonPath.'.lock';
+            ? substr($jsonPath, 0, -4) . 'lock'
+            : $jsonPath . '.lock';
         return file_exists($lockPath) ? $lockPath : null;
     }
 
@@ -104,7 +105,6 @@ class Composer extends Component
 
         // Get composer.json
         $jsonPath = $this->getJsonPath();
-        $backup = file_get_contents($jsonPath);
 
         // Set the working directory to the composer.json dir, in case there are any relative repo paths
         $wd = getcwd();
@@ -113,9 +113,11 @@ class Composer extends Component
         // Ensure there's a home var
         $this->_ensureHomeVar();
 
-        // Update composer.json with the new (optimized) requirements
-        $optimized = Craft::$app->getApi()->getOptimizedComposerRequirements($requirements, []);
-        $this->updateRequirements($jsonPath, $optimized, false);
+        // Create a backup of composer.json in case something goes wrong
+        $backup = file_get_contents($jsonPath);
+
+        // Update composer.json
+        $this->updateRequirements($io, $jsonPath, $requirements);
 
         if ($this->updateComposerClassMap) {
             // Start logging newly-autoloaded classes
@@ -126,12 +128,16 @@ class Composer extends Component
             $this->preloadComposerClasses();
         }
 
+        // Get the whitelist of packages to update
+        $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
+
         // Run the installer
         $composer = $this->createComposer($io, $jsonPath);
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
             ->setUpdate()
+            ->setUpdateWhitelist($whitelist)
             ->setDumpAutoloader()
             ->setOptimizeAutoloader(true);
 
@@ -153,19 +159,13 @@ class Composer extends Component
                 $contents .= "    '{$class}',\n";
             }
             $contents .= "];\n";
-            FileHelper::writeToFile(dirname(__DIR__).'/config/composer-classes.php', $contents);
+            FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
         }
-
-        // Return composer.json to normal
-        file_put_contents($jsonPath, $backup);
 
         if ($status !== 0) {
+            file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
         }
-
-        // Update composer.json with the new (non-optimized) requirements
-        $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
-        $this->updateRequirements($jsonPath, $requirements, $sortPackages);
     }
 
     /**
@@ -211,7 +211,7 @@ class Composer extends Component
                 if (isset($composerConfig['require'][$package])) {
                     $jsonSource->removeLink('require', $composerConfig['require'][$package]);
                 } else {
-                    $io->writeError('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
+                    $io->writeError('<warning>' . $package . ' is not required in your composer.json and has not been removed</warning>');
                 }
             }
 
@@ -313,7 +313,7 @@ class Composer extends Component
         }
 
         // Just define one ourselves
-        $path = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'composer';
+        $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
         FileHelper::createDirectory($path);
         putenv("COMPOSER_HOME={$path}");
     }
@@ -321,11 +321,11 @@ class Composer extends Component
     /**
      * Updates the composer.json file with new requirements
      *
+     * @param IOInterface $io
      * @param string $jsonPath
      * @param array $requirements
-     * @param bool $sortPackages
      */
-    protected function updateRequirements(string $jsonPath, array $requirements, bool $sortPackages)
+    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements)
     {
         $requireKey = 'require';
         $removeKey = 'require-dev';
@@ -333,6 +333,7 @@ class Composer extends Component
         // First try using JsonManipulator
         $success = true;
         $manipulator = new JsonManipulator(file_get_contents($jsonPath));
+        $sortPackages = $this->createComposer($io, $jsonPath, false)->getConfig()->get('sort-packages');
 
         foreach ($requirements as $package => $constraint) {
             if (
@@ -367,10 +368,10 @@ class Composer extends Component
      *
      * @param IOInterface $io
      * @param string $jsonPath
-     * @param bool $swapPackagist
+     * @param bool $prepForUpdate
      * @return array
      */
-    protected function composerConfig(IOInterface $io, string $jsonPath, bool $swapPackagist = true): array
+    protected function composerConfig(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): array
     {
         // Copied from \Composer\Factory::createComposer()
         $file = new JsonFile($jsonPath, null, $io);
@@ -380,11 +381,11 @@ class Composer extends Component
             $jsonParser->parse(file_get_contents($jsonPath), JsonParser::DETECT_KEY_CONFLICTS);
         } catch (DuplicateKeyException $e) {
             $details = $e->getDetails();
-            $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$jsonPath.' at line '.$details['line'].'</warning>');
+            $io->writeError('<warning>Key ' . $details['key'] . ' is a duplicate in ' . $jsonPath . ' at line ' . $details['line'] . '</warning>');
         }
         $config = $file->read();
 
-        if ($swapPackagist) {
+        if ($prepForUpdate) {
             // Add composer.craftcms.com if it's not already in there
             if (!$this->findCraftRepo($config)) {
                 $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
@@ -393,6 +394,23 @@ class Composer extends Component
             // Disable Packagist if it's not already disabled
             if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
                 $config['repositories'][] = ['packagist.org' => false];
+            }
+
+            // Are we relying on the bundled CA file?
+            $bundledCaPath = CaBundle::getBundledCaBundlePath();
+            if (
+                !isset($config['config']['cafile']) &&
+                CaBundle::getSystemCaRootBundlePath() === $bundledCaPath
+            ) {
+                // Make a copy of it in case it's about to get updated
+                $dir = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+                FileHelper::createDirectory($dir);
+                $dest = $dir . DIRECTORY_SEPARATOR . basename($bundledCaPath);
+                if (file_exists($dest)) {
+                    FileHelper::unlink($dest);
+                }
+                copy($bundledCaPath, $dest);
+                $config['config']['cafile'] = $dest;
             }
         }
 
@@ -434,16 +452,16 @@ class Composer extends Component
      *
      * @param IOInterface $io
      * @param string $jsonPath
-     * @param bool $swapPackagist
+     * @param bool $prepForUpdate
      * @return \Composer\Composer
      */
-    protected function createComposer(IOInterface $io, string $jsonPath, bool $swapPackagist = true): \Composer\Composer
+    protected function createComposer(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): \Composer\Composer
     {
-        $config = $this->composerConfig($io, $jsonPath, $swapPackagist);
+        $config = $this->composerConfig($io, $jsonPath, $prepForUpdate);
         $composer = Factory::create($io, $config);
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
-            ? substr($jsonPath, 0, -4).'lock'
-            : $jsonPath.'.lock';
+            ? substr($jsonPath, 0, -4) . 'lock'
+            : $jsonPath . '.lock';
         $rm = $composer->getRepositoryManager();
         $im = $composer->getInstallationManager();
         $locker = new Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($jsonPath));
@@ -456,7 +474,7 @@ class Composer extends Component
      */
     protected function preloadComposerClasses()
     {
-        $classes = require dirname(__DIR__).'/config/composer-classes.php';
+        $classes = require dirname(__DIR__) . '/config/composer-classes.php';
 
         foreach ($classes as $class) {
             class_exists($class, true);

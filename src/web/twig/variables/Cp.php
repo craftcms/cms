@@ -57,7 +57,7 @@ class Cp extends Component
      */
     public function craftIdAccountUrl()
     {
-        return Craft::$app->getPluginStore()->craftIdEndpoint.'/account';
+        return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
     }
 
     /**
@@ -71,7 +71,7 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Dashboard'),
                 'url' => 'dashboard',
-                'icon' => 'gauge'
+                'fontIcon' => 'gauge'
             ],
         ];
 
@@ -79,7 +79,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
-                'icon' => 'section'
+                'fontIcon' => 'section'
             ];
         }
 
@@ -87,7 +87,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals',
-                'icon' => 'globe'
+                'fontIcon' => 'globe'
             ];
         }
 
@@ -95,7 +95,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'icon' => 'categories'
+                'fontIcon' => 'categories'
             ];
         }
 
@@ -103,7 +103,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
                 'url' => 'assets',
-                'icon' => 'assets'
+                'fontIcon' => 'assets'
             ];
         }
 
@@ -111,7 +111,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
-                'icon' => 'users'
+                'fontIcon' => 'users'
             ];
         }
 
@@ -122,7 +122,7 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->id) &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-' . $plugin->id) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;
@@ -142,7 +142,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
-                'icon' => 'tool',
+                'fontIcon' => 'tool',
                 'badgeCount' => $badgeCount
             ];
         }
@@ -151,12 +151,12 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => 'settings'
+                'fontIcon' => 'settings'
             ];
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
-                'icon' => 'plugin'
+                'fontIcon' => 'plugin'
             ];
         }
 
@@ -177,7 +177,7 @@ class Cp extends Component
         $foundSelectedItem = false;
 
         foreach ($navItems as &$item) {
-            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'].'/'))) {
+            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
                 $foundSelectedItem = true;
             } else {
@@ -185,7 +185,7 @@ class Cp extends Component
             }
 
             if (!isset($item['id'])) {
-                $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
+                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', $item['url']);
             }
 
             $item['url'] = UrlHelper::url($item['url']);
@@ -269,7 +269,7 @@ class Cp extends Component
             /** @var Plugin $plugin */
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
-                    'url' => 'settings/plugins/'.$plugin->id,
+                    'url' => 'settings/plugins/' . $plugin->id,
                     'icon' => $pluginsService->getPluginIconSvg($plugin->id),
                     'label' => $plugin->name
                 ];

@@ -128,7 +128,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 !Garnish.isMobileBrowser(true)
             ) {
                 this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
-                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$scrollContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -192,6 +192,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
             else if (this.settings.criteria && this.settings.criteria.siteId) {
                 this._setSite(this.settings.criteria.siteId);
+            } else {
+                this._setSite(Craft.siteId);
             }
 
             // Initialize the search input
@@ -283,7 +285,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.find('nav ul');
+            return this.$sidebar.find('nav>ul');
         },
 
         get $sources() {
@@ -362,7 +364,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         updateFixedToolbar: function(e) {
-            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
+            this.updateFixedToolbar._scrollTop = Garnish.$scrollContainer.scrollTop();
 
             if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
                 if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
@@ -372,7 +374,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
                     this.$toolbar.css({
-                        top: Craft.cp.$contentContainer.offset().top,
+                        top: Garnish.$scrollContainer.offset().top,
                         width: this.$main.width()
                     });
                 }

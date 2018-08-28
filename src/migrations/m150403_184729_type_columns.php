@@ -93,7 +93,7 @@ class m150403_184729_type_columns extends Migration
 
         foreach ($componentTypes as $componentType) {
             $columns = [
-                'type' => new Expression('concat(\''.addslashes($componentType['namespace'].'\\').'\', type)')
+                'type' => new Expression('concat(\'' . addslashes($componentType['namespace'] . '\\') . '\', type)')
             ];
 
             $condition = ['type' => $componentType['classes']];

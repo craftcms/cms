@@ -25,7 +25,7 @@ use yii\base\Exception;
 
 /**
  * Categories service.
- * An instance of the Categories service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getCategories()|<code>Craft::$app->categories</code>]].
+ * An instance of the Categories service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->categories`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -119,7 +119,7 @@ class Categories extends Component
         $this->_editableGroupIds = [];
 
         foreach ($this->getAllGroupIds() as $groupId) {
-            if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId)) {
+            if (Craft::$app->getUser()->checkPermission('editCategories:' . $groupId)) {
                 $this->_editableGroupIds[] = $groupId;
             }
         }
@@ -431,8 +431,7 @@ class Categories extends Component
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($group->id)
-                    ->status(null)
-                    ->limit(null)
+                    ->anyStatus()
                     ->ids();
 
                 // Are there any sites left?
@@ -458,7 +457,7 @@ class Categories extends Component
                                 $category = Category::find()
                                     ->id($categoryId)
                                     ->siteId($siteId)
-                                    ->status(null)
+                                    ->anyStatus()
                                     ->one();
 
                                 if ($category) {
@@ -491,7 +490,7 @@ class Categories extends Component
     /**
      * Deletes a category group by its ID.
      *
-     * @param int $groupId
+     * @param int $groupId The category group's ID
      * @return bool Whether the category group was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -507,6 +506,17 @@ class Categories extends Component
             return false;
         }
 
+        return $this->deleteGroup($group);
+    }
+
+    /**
+     * Deletes a category group.
+     *
+     * @param CategoryGroup $group The category group
+     * @return bool Whether the category group was deleted successfully
+     */
+    public function deleteGroup(CategoryGroup $group): bool
+    {
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
@@ -520,7 +530,7 @@ class Categories extends Component
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
                 ->from(['{{%categorygroups}}'])
-                ->where(['id' => $groupId])
+                ->where(['id' => $group->id])
                 ->scalar();
 
             if ($fieldLayoutId) {
@@ -529,9 +539,8 @@ class Categories extends Component
 
             // Delete the categories
             $categories = Category::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->groupId($groupId)
+                ->anyStatus()
+                ->groupId($group->id)
                 ->all();
 
             foreach ($categories as $category) {
@@ -541,7 +550,7 @@ class Categories extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     '{{%categorygroups}}',
-                    ['id' => $groupId])
+                    ['id' => $group->id])
                 ->execute();
 
             $transaction->commit();
@@ -625,9 +634,7 @@ class Categories extends Component
         $query->id($categoryId);
         $query->structureId($structureId);
         $query->siteId($siteId);
-        $query->status(null);
-        $query->enabledForSite(false);
-
+        $query->anyStatus();
         return $query->one();
     }
 
@@ -652,8 +659,7 @@ class Categories extends Component
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
                 $ancestorQuery = $category->getAncestors()
-                    ->status(null)
-                    ->enabledForSite(false);
+                    ->anyStatus();
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);

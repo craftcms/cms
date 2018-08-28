@@ -44,6 +44,7 @@ class UploadedFile extends \yii\web\UploadedFile
 
     /**
      * Returns an array of instances starting with specified array name.
+     *
      * If multiple files were uploaded and saved as 'Files[0]', 'Files[1]', 'Files[n]'..., you can have them all by
      * passing 'Files' as array name.
      *
@@ -94,8 +95,8 @@ class UploadedFile extends \yii\web\UploadedFile
             return false;
         }
 
-        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true).'.'.pathinfo($this->name, PATHINFO_EXTENSION);
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true) . '.' . pathinfo($this->name, PATHINFO_EXTENSION);
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
 
         if (!$this->saveAs($tempPath, $deleteTempFile)) {
             return false;
@@ -109,6 +110,7 @@ class UploadedFile extends \yii\web\UploadedFile
 
     /**
      * Swaps dot notation for the normal format.
+     *
      * ex: fields.assetsField => fields[assetsField]
      *
      * @param string $name The name to normalize.
@@ -118,7 +120,7 @@ class UploadedFile extends \yii\web\UploadedFile
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]
-            $name = substr($name, 0, $pos).'['.str_replace('.', '][', substr($name, $pos + 1)).']';
+            $name = substr($name, 0, $pos) . '[' . str_replace('.', '][', substr($name, $pos + 1)) . ']';
         }
 
         return $name;

@@ -20,7 +20,7 @@ use yii\base\Exception;
 
 /**
  * Content service.
- * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|<code>Craft::$app->content</code>]].
+ * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -177,7 +177,7 @@ class Content extends Component
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
-                    $column = $this->fieldColumnPrefix.$field->handle;
+                    $column = $this->fieldColumnPrefix . $field->handle;
                     $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
             }

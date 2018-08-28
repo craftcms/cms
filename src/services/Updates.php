@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
 
 /**
  * Updates service.
- * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|<code>Craft::$app->updates</code>]].
+ * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|`Craft::$app->updates`]].
  *
  * @property bool $isCraftDbMigrationNeeded Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
@@ -142,6 +142,7 @@ class Updates extends Component
 
     /**
      * Returns a list of things with updated schema versions.
+     *
      * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
      *
      * @param bool $includeContent Whether pending content migrations should be considered
@@ -233,7 +234,7 @@ class Updates extends Component
         } catch (InvalidArgumentException $e) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
-            Craft::error('Could not delete compiled templates: '.$e->getMessage());
+            Craft::error('Could not delete compiled templates: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
         }
     }

@@ -14,7 +14,7 @@ if (PHP_VERSION_ID < 70000) {
 
 // Check for this early because Craft uses it before the requirements checker gets a chance to run.
 if (!extension_loaded('mbstring') || (extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 0)) {
-    exit('Craft requires the <a href="http://php.net/manual/en/book.mbstring.php" target="_blank">PHP multibyte string</a> extension in order to run. Please talk to your host/IT department about enabling it on your server.');
+    exit('Craft requires the <a href="http://php.net/manual/en/book.mbstring.php" rel="noopener" target="_blank">PHP multibyte string</a> extension in order to run. Please talk to your host/IT department about enabling it on your server.');
 }
 
 // PHP environment normalization

@@ -48,7 +48,34 @@ abstract class Controller extends \yii\web\Controller
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * This method is invoked right before an action is executed.
+     *
+     * The method will trigger the [[EVENT_BEFORE_ACTION]] event. The return value of the method
+     * will determine whether the action should continue to run.
+     *
+     * In case the action should not run, the request should be handled inside of the `beforeAction` code
+     * by either providing the necessary output or redirecting the request. Otherwise the response will be empty.
+     *
+     * If you override this method, your code should look like the following:
+     *
+     * ```php
+     * public function beforeAction($action)
+     * {
+     *     // your custom code here, if you want the code to run before action filters,
+     *     // which are triggered on the [[EVENT_BEFORE_ACTION]] event, e.g. PageCache or AccessControl
+     *
+     *     if (!parent::beforeAction($action)) {
+     *         return false;
+     *     }
+     *
+     *     // other custom code here
+     *
+     *     return true; // or false to not run the action
+     * }
+     * ```
+     *
+     * @param Action $action the action to be executed.
+     * @return bool whether the action should continue to run.
      */
     public function beforeAction($action)
     {
@@ -117,11 +144,11 @@ abstract class Controller extends \yii\web\Controller
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null) {
+            if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
                 $mimeType = 'text/html';
             }
 
-            $headers->set('content-type', $mimeType.'; charset='.$response->charset);
+            $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }
 
         // Render and return the template

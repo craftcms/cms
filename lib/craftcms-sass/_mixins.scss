@@ -46,14 +46,14 @@ $secondarySubmitHoverColor: hsl($hue, 10%, 50%);
 $secondarySubmitActiveColor: hsl($hue, 10%, 40%);
 
 // alert/notice colors
-$errorColor: #da5a47;
-$warningColor: #e78640;
-$successColor: #00b007;
-$noticeColor: #5286d9;
+$errorColor: darken($orange, 17%);
+$warningColor: $errorColor;
+$successColor: darken($green, 10%);
+$noticeColor: darken($blue, 10%);
 
 // UI element styles
 $btnBorderRadius: 2px;
-$textBorderRadius: 0;
+$textBorderRadius: 2px;
 $paneBorderRadius: 5px;
 $menuBorderRadius: 2px;
 $elementBorderRadius: 2px;
@@ -351,7 +351,7 @@ $elementBorderRadius: 2px;
 }
 
 @mixin text-input-focused-styles {
-  border-color: $darkHairlineColorAlpha;
+  border-color: $blue;
   outline: none;
 }
 
@@ -415,33 +415,48 @@ $elementBorderRadius: 2px;
 
 @mixin select-input-focused-styles {
   outline: none;
-  box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 @mixin readable {
   font-size: 16px;
   line-height: 22px;
 
-  h1 {
+  h1, h2, h3, h4, h5, h6 {
     margin: 24px 0 16px;
+    font-weight: 600;
+  }
+
+  h1 {
     font-size: 32px;
     line-height: 40px;
-    font-weight: 600;
     color: #000;
   }
 
   h2 {
-    margin: 24px 0 16px;
     font-size: 24px;
     line-height: 30px;
-    font-weight: 600;
   }
 
   h3 {
-    margin: 24px 0 16px;
     font-size: 20px;
     line-height: 24px;
-    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  h5 {
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  h6 {
+    font-size: 13.6px;
+    line-height: 17px;
+    color: $mediumTextColor;
   }
 
   ul,

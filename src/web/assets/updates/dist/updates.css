@@ -6,11 +6,11 @@
 #content .update .update-header { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #e3e5e8; margin-bottom: 16px; }
 #content .update .update-header .readable { -webkit-box-flex: 1; -ms-flex-positive: 1; flex-grow: 1; margin: 0; }
 #content .update .update-header .buttons { margin: 0; }
-#content .update blockquote.ineligible { border: none; background: #e78640; color: #110902; }
+#content .update blockquote.ineligible { border: none; background: #bd5a0c; color: #110902; }
 #content .update blockquote.ineligible:before { content: 'ban'; color: #110902; }
 #content .update .releases { position: relative; }
 #content .update .releases .release { padding: 0; }
-#content .update .releases .release.critical h2 { color: #da5a47; }
+#content .update .releases .release.critical h2 { color: #D0021B; }
 #content .update .releases .release.critical .critical { display: inline-block; vertical-align: text-bottom; border-radius: 3px; padding: 0 5px; font-size: 14px; line-height: 24px; color: #fff; font-weight: normal; background: #d6301a; text-transform: uppercase; }
 body.ltr #content .update .releases .release.critical .critical { margin-left: 7px; }
 body.rtl #content .update .releases .release.critical .critical { margin-right: 7px; }

@@ -58,7 +58,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // If it is UNC, add those slashes back in front
         if ($isUnc) {
-            $path = $ds.$ds.ltrim($path, $ds);
+            $path = $ds . $ds . ltrim($path, $ds);
         }
 
         return $path;
@@ -172,7 +172,7 @@ class FileHelper extends \yii\helpers\FileHelper
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
         if ($separator !== null) {
-            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/u', $separator, $filename);
+            $filename = preg_replace('/(\s|' . preg_quote($separator, '/') . ')+/u', $separator, $filename);
         }
 
         // Nuke any trailing or leading .-_
@@ -208,7 +208,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$file;
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
             if (is_file($path) || !static::isDirectoryEmpty($path)) {
                 $empty = false;
                 break;
@@ -231,7 +231,7 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         // If it's a directory, test on a temp sub file
         if (is_dir($path)) {
-            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid('test_writable', true).'.tmp');
+            return static::isWritable($path . DIRECTORY_SEPARATOR . uniqid('test_writable', true) . '.tmp');
         }
 
         // Remember whether the file already existed
@@ -259,7 +259,7 @@ class FileHelper extends \yii\helpers\FileHelper
         $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && in_array($mimeType, ['text/plain', 'text/html'])) {
+        if ($checkExtension && in_array($mimeType, [null, 'text/plain', 'text/html', 'application/xml', 'text/xml'], true)) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
@@ -282,6 +282,24 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
         return strpos($mimeType, 'image/svg') === 0;
+    }
+
+    /**
+     * Returns whether the given file path is an GIF image.
+     *
+     * @param string $file the file name.
+     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
+     * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
+     * and this is null, it will use the file specified by [[mimeMagicFile]].
+     * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
+     * `finfo_open()` cannot determine it.
+     * @return bool
+     */
+    public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
+    {
+        $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
+        return $mimeType === 'image/gif';
     }
 
     /**
@@ -383,7 +401,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$file;
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
             if (static::filterPath($path, $options)) {
                 if (is_dir($path)) {
                     static::removeDirectory($path, $options);
@@ -397,6 +415,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * Returns the last modification time for the given path.
+     *
      * If the path is a directory, any nested files/directories will be checked as well.
      *
      * @param string $path the directory to be checked
@@ -447,8 +466,8 @@ class FileHelper extends \yii\helpers\FileHelper
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$file;
-            $refPath = $ref.DIRECTORY_SEPARATOR.$file;
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            $refPath = $ref . DIRECTORY_SEPARATOR . $file;
             if (is_dir($path)) {
                 if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
                     return true;
@@ -497,7 +516,7 @@ class FileHelper extends \yii\helpers\FileHelper
             }
             self::$_useFileLocks = true;
         } catch (\Throwable $e) {
-            Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
+            Craft::warning('Write lock test failed: ' . $e->getMessage(), __METHOD__);
         }
 
         // Cache for two months

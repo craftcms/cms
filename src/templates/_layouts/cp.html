@@ -101,7 +101,7 @@
 
             <div class="menu" data-align="left">
                 <ul>
-                    <li><a href="{{ siteUrl }}" target="_blank">{{ 'View site'|t('app') }}</a></li>
+                    <li><a href="{{ siteUrl }}" rel="noopener" target="_blank">{{ 'View site'|t('app') }}</a></li>
                 </ul>
                 <hr>
                 <ul>
@@ -118,7 +118,9 @@
                             <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
                                 <span class="icon icon-mask">
                                     {%- if item.icon is defined -%}
-                                        {{ (svg(item.icon) ?: "<span data-icon='#{item.icon}'></span>")|raw }}
+                                        {{ svg(item.icon) }}
+                                    {%- elseif item.fontIcon is defined -%}
+                                        <span data-icon="{{ item.fontIcon }}"></span>
                                     {%- else -%}
                                         {% include "_includes/defaulticon.svg" with { label: item.label } %}
                                     {%- endif -%}

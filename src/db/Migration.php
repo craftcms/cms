@@ -20,6 +20,19 @@ use yii\db\ColumnSchemaBuilder;
  */
 abstract class Migration extends \yii\db\Migration
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the migration is executed
+     */
+    const EVENT_AFTER_UP = 'afterUp';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the migration is reverted
+     */
+    const EVENT_AFTER_DOWN = 'afterDown';
+
     // Public Methods
     // =========================================================================
 
@@ -28,6 +41,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * This method contains the logic to be executed when applying this migration.
+     *
      * Child classes may override this method to provide actual migration logic.
      *
      * @param bool $throwExceptions Whether exceptions should be thrown
@@ -53,11 +67,17 @@ abstract class Migration extends \yii\db\Migration
             return false;
         }
 
+        // Fire an 'afterUp' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_UP)) {
+            $this->trigger(self::EVENT_AFTER_UP);
+        }
+
         return null;
     }
 
     /**
      * This method contains the logic to be executed when removing this migration.
+     *
      * The default implementation throws an exception indicating the migration cannot be removed.
      * Child classes may override this method if the corresponding migrations can be removed.
      *
@@ -84,6 +104,11 @@ abstract class Migration extends \yii\db\Migration
             return false;
         }
 
+        // Fire an 'afterDown' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DOWN)) {
+            $this->trigger(self::EVENT_AFTER_DOWN);
+        }
+
         return null;
     }
 
@@ -93,8 +118,8 @@ abstract class Migration extends \yii\db\Migration
     private function _printException($e)
     {
         // Copied from \yii\db\Migration::printException(), only because it’s private
-        echo 'Exception: '.$e->getMessage().' ('.$e->getFile().':'.$e->getLine().")\n";
-        echo $e->getTraceAsString()."\n";
+        echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";
+        echo $e->getTraceAsString() . "\n";
     }
 
     // Schema Builder Methods
@@ -182,6 +207,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * Creates and executes an INSERT SQL statement.
+     *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
      * @param string $table The table that new rows will be inserted into.
@@ -196,11 +222,12 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->insert($table, $columns, $includeAuditColumns)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
      * Creates and executes an batch INSERT SQL statement.
+     *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
      * @param string $table The table that new rows will be inserted into.
@@ -215,7 +242,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->batchInsert($table, $columns, $rows, $includeAuditColumns)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -246,6 +273,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * Creates and executes an UPDATE SQL statement.
+     *
      * The method will properly escape the column names and bind the values to be updated.
      *
      * @param string $table The table to be updated.
@@ -262,7 +290,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -283,7 +311,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->replace($table, $column, $find, $replace, $condition, $params)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     // Schema Manipulation Methods
@@ -301,7 +329,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->dropTableIfExists($table)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -317,7 +345,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->renameSequence($oldName, $newName)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**

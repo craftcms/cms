@@ -382,6 +382,7 @@ class Request
 
     /**
      * Returns the random token used to perform CSRF validation.
+     *
      * The token will be read from cookie first. If not found, a new token will be generated.
      *
      * @return string The random token for CSRF validation.

@@ -42,12 +42,12 @@
                                         <p class="links">
                                             {%- spaceless %}
                                             {#{% if config.developerUrl %}#}
-                                                {#<a href="{{ config.developerUrl }}" target="_blank">{{ config.developer ?: config.developerUrl }}</a>#}
+                                                {#<a href="{{ config.developerUrl }}" rel="noopener" target="_blank">{{ config.developer ?: config.developerUrl }}</a>#}
                                             {#{% elseif config.developer %}#}
                                                 {#{{ config.developer }}#}
                                             {#{% endif %}#}
                                             {% if config.documentationUrl %}
-                                                <a href="{{ config.documentationUrl }}" target="_blank">{{ "Documentation"|t('app') }}</a>
+                                                <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
                                             {% endif %}
                                             {% if config.hasCpSettings %}
                                                 <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>
@@ -57,9 +57,10 @@
                                     {% endif %}
                                     {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
                                     <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
-                                        <div>
+                                        <div class="pane">
                                             <input class="text code{% if config.hasIssues %} error{% endif %}" size="29" maxlength="29" value="{{ config.licenseKey|replace('/.{4}/', '$0-')|trim('-') }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
                                         </div>
+                                        <a class="btn{% if config.hasIssues %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle)}}">{{ "Buy now"|t('app') }}</a>
                                         <div class="spinner hidden"></div>
                                     </div>
                                     {% if showLicenseKey and config.licenseStatusMessage %}

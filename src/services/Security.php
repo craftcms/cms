@@ -15,7 +15,7 @@ use yii\helpers\Inflector;
 
 /**
  * Security component.
- * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|<code>Craft::$app->security</code>]].
+ * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|`Craft::$app->security`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -150,6 +150,8 @@ class Security extends \yii\base\Security
      * @param string|null $inputKey the input to use for encryption and authentication
      * @param string $info optional context and application specific information, see [[hkdf()]]
      * @return string the encrypted data
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws Exception on OpenSSL error
      * @see decryptByKey()
      * @see encryptByPassword()
      */
@@ -168,6 +170,8 @@ class Security extends \yii\base\Security
      * @param string|null $inputKey the input to use for encryption and authentication
      * @param string $info optional context and application specific information, see [[hkdf()]]
      * @return bool|string the decrypted data or false on authentication failure
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws Exception on OpenSSL error
      * @see encryptByKey()
      */
     public function decryptByKey($data, $inputKey = null, $info = null)
@@ -194,7 +198,7 @@ class Security extends \yii\base\Security
             }
         } else if (
             is_string($value) &&
-            preg_match('/\b('.implode('|', $this->sensitiveKeywords).')\b/', Inflector::camel2words($name, false))
+            preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Inflector::camel2words($name, false))
         ) {
             $value = str_repeat('•', strlen($value));
         }

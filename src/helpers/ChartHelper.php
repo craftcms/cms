@@ -26,6 +26,7 @@ class ChartHelper
 
     /**
      * Returns the data for a run chart, based on a given DB query, start/end dates, and the desired time interval unit.
+     *
      * The query’s SELECT clause should already be set to a column aliased as `value`.
      * The $options array can override the following defaults:
      *
@@ -77,7 +78,7 @@ class ChartHelper
                 $phpDateFormat = 'Y-m-d H:00:00';
                 break;
             default:
-                throw new Exception('Invalid interval unit: '.$intervalUnit);
+                throw new Exception('Invalid interval unit: ' . $intervalUnit);
         }
 
         // Assemble the data
@@ -88,7 +89,7 @@ class ChartHelper
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             $cursorEndDate = clone $cursorDate;
-            $cursorEndDate->modify('+1 '.$intervalUnit);
+            $cursorEndDate->modify('+1 ' . $intervalUnit);
             $total = (int)(clone $query)
                 ->andWhere(['>=', $dateColumn, Db::prepareDateForDb($cursorDate)])
                 ->andWhere(['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)])

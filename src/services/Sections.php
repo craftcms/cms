@@ -29,7 +29,7 @@ use yii\base\Exception;
 
 /**
  * Sections service.
- * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|<code>Craft::$app->sections</code>]].
+ * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -116,6 +116,15 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
+     * ---
+     *
+     * ```php
+     * $sectionIds = Craft::$app->sections->allSectionIds;
+     * ```
+     * ```twig
+     * {% set sectionIds = craft.app.sections.allSectionIds %}
+     * ```
+     *
      * @return int[] All the sections’ IDs.
      */
     public function getAllSectionIds(): array
@@ -136,6 +145,15 @@ class Sections extends Component
     /**
      * Returns all of the section IDs that are editable by the current user.
      *
+     * ---
+     *
+     * ```php
+     * $sectionIds = Craft::$app->sections->editableSectionIds;
+     * ```
+     * ```twig
+     * {% set sectionIds = craft.app.sections.editableSectionIds %}
+     * ```
+     *
      * @return array All the editable sections’ IDs.
      */
     public function getEditableSectionIds(): array
@@ -147,7 +165,7 @@ class Sections extends Component
         $this->_editableSectionIds = [];
 
         foreach ($this->getAllSectionIds() as $sectionId) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:' . $sectionId)) {
                 $this->_editableSectionIds[] = $sectionId;
             }
         }
@@ -157,6 +175,15 @@ class Sections extends Component
 
     /**
      * Returns all sections.
+     *
+     * ---
+     *
+     * ```php
+     * $sections = Craft::$app->sections->allSections;
+     * ```
+     * ```twig
+     * {% set sections = craft.app.sections.allSections %}
+     * ```
      *
      * @return Section[] All the sections.
      */
@@ -184,6 +211,15 @@ class Sections extends Component
     /**
      * Returns all editable sections.
      *
+     * ---
+     *
+     * ```php
+     * $sections = Craft::$app->sections->editableSections;
+     * ```
+     * ```twig
+     * {% set sections = craft.app.sections.editableSections %}
+     * ```
+     *
      * @return Section[] All the editable sections.
      */
     public function getEditableSections(): array
@@ -204,7 +240,18 @@ class Sections extends Component
     /**
      * Returns all sections of a given type.
      *
-     * @param string $type
+     * ---
+     *
+     * ```php
+     * use craft\models\Section;
+     *
+     * $singles = Craft::$app->sections->getSectionsByType(Section::TYPE_SINGLE);
+     * ```
+     * ```twig
+     * {% set singles = craft.app.sections.getSectionsByType('single') %}
+     * ```
+     *
+     * @param string $type The section type (`single`, `channel`, or `structure`)
      * @return Section[] All the sections of the given type.
      */
     public function getSectionsByType(string $type): array
@@ -223,6 +270,15 @@ class Sections extends Component
     /**
      * Gets the total number of sections.
      *
+     * ---
+     *
+     * ```php
+     * $total = Craft::$app->sections->totalSections;
+     * ```
+     * ```twig
+     * {% set total = craft.app.sections.totalSections %}
+     * ```
+     *
      * @return int
      */
     public function getTotalSections(): int
@@ -233,6 +289,15 @@ class Sections extends Component
     /**
      * Gets the total number of sections that are editable by the current user.
      *
+     * ---
+     *
+     * ```php
+     * $total = Craft::$app->sections->totalEditableSections;
+     * ```
+     * ```twig
+     * {% set total = craft.app.sections.totalEditableSections %}
+     * ```
+     *
      * @return int
      */
     public function getTotalEditableSections(): int
@@ -242,6 +307,15 @@ class Sections extends Component
 
     /**
      * Returns a section by its ID.
+     *
+     * ---
+     *
+     * ```php
+     * $section = Craft::$app->sections->getSectionById(1);
+     * ```
+     * ```twig
+     * {% set section = craft.app.sections.getSectionById(1) %}
+     * ```
      *
      * @param int $sectionId
      * @return Section|null
@@ -271,6 +345,15 @@ class Sections extends Component
 
     /**
      * Gets a section by its handle.
+     *
+     * ---
+     *
+     * ```php
+     * $section = Craft::$app->sections->getSectionByHandle('news');
+     * ```
+     * ```twig
+     * {% set section = craft.app.sections.getSectionByHandle('news') %}
+     * ```
      *
      * @param string $sectionHandle
      * @return Section|null
@@ -324,9 +407,12 @@ class Sections extends Component
     /**
      * Saves a section.
      *
+     * ---
+     *
      * ```php
      * use craft\models\Section;
      * use craft\models\Section_SiteSettings;
+     *
      * $section = new Section([
      *     'name' => 'News',
      *     'handle' => 'news',
@@ -341,6 +427,7 @@ class Sections extends Component
      *         ]),
      *     ]
      * ]);
+     *
      * $success = Craft::$app->sections->saveSection($section);
      * ```
      *
@@ -621,6 +708,12 @@ class Sections extends Component
     /**
      * Deletes a section by its ID.
      *
+     * ---
+     *
+     * ```php
+     * $success = Craft::$app->sections->deleteSectionById(1);
+     * ```
+     *
      * @param int $sectionId
      * @return bool Whether the section was deleted successfully
      * @throws \Throwable if reasons
@@ -638,6 +731,12 @@ class Sections extends Component
 
     /**
      * Deletes a section.
+     *
+     * ---
+     *
+     * ```php
+     * $success = Craft::$app->sections->deleteSection($section);
+     * ```
      *
      * @param Section $section
      * @return bool Whether the section was deleted successfully
@@ -674,14 +773,15 @@ class Sections extends Component
             }
 
             // Delete the entries
-            $entries = Entry::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->sectionId($section->id)
-                ->all();
-
-            foreach ($entries as $entry) {
-                Craft::$app->getElements()->deleteElement($entry);
+            // (loop through all the sites in case there are any lingering entries from unsupported sites)
+            $entryQuery = Entry::find()
+                ->anyStatus()
+                ->sectionId($section->id);
+            $elementsService = Craft::$app->getElements();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                    $elementsService->deleteElement($entry);
+                }
             }
 
             // Delete the structure, if there is one
@@ -754,6 +854,12 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
+     * ---
+     *
+     * ```php
+     * $entryTypes = Craft::$app->sections->getEntryTypesBySectionId(1);
+     * ```
+     *
      * @param int $sectionId
      * @return EntryType[]
      */
@@ -773,6 +879,12 @@ class Sections extends Component
 
     /**
      * Returns an entry type by its ID.
+     *
+     * ---
+     *
+     * ```php
+     * $entryType = Craft::$app->sections->getEntryTypeById(1);
+     * ```
      *
      * @param int $entryTypeId
      * @return EntryType|null
@@ -796,6 +908,12 @@ class Sections extends Component
 
     /**
      * Returns entry types that have a given handle.
+     *
+     * ---
+     *
+     * ```php
+     * $entryType = Craft::$app->sections->getEntryTypeByHandle('article');
+     * ```
      *
      * @param string $entryTypeHandle
      * @return EntryType[]
@@ -974,6 +1092,12 @@ class Sections extends Component
     /**
      * Deletes an entry type by its ID.
      *
+     * ---
+     *
+     * ```php
+     * $success = Craft::$app->sections->deleteEntryTypeById(1);
+     * ```
+     *
      * @param int $entryTypeId
      * @return bool Whether the entry type was deleted successfully
      * @throws \Throwable if reasons
@@ -991,6 +1115,12 @@ class Sections extends Component
 
     /**
      * Deletes an entry type.
+     *
+     * ---
+     *
+     * ```php
+     * $success = Craft::$app->sections->deleteEntry($entryType);
+     * ```
      *
      * @param EntryType $entryType
      * @return bool Whether the entry type was deleted successfully
@@ -1019,14 +1149,15 @@ class Sections extends Component
             }
 
             // Delete the entries
-            $entries = Entry::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->typeId($entryType->id)
-                ->all();
-
-            foreach ($entries as $entry) {
-                Craft::$app->getElements()->deleteElement($entry);
+            // (loop through all the sites in case there are any lingering entries from unsupported sites)
+            $entryQuery = Entry::find()
+                ->anyStatus()
+                ->typeId($entryType->id);
+            $elementsService = Craft::$app->getElements();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                    $elementsService->deleteElement($entry);
+                }
             }
 
             // Delete the entry type.
@@ -1118,7 +1249,7 @@ class Sections extends Component
         $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
 
         if (empty($entryTypes)) {
-            throw new Exception('Couldn’t find any entry types for the section: '.$section->id);
+            throw new Exception('Couldn’t find any entry types for the section: ' . $section->id);
         }
 
         // Get/save the entry
@@ -1132,8 +1263,7 @@ class Sections extends Component
                 $entry = Entry::find()
                     ->id($data['id'])
                     ->siteId($data['siteId'])
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->one();
                 break;
             }
@@ -1204,8 +1334,7 @@ class Sections extends Component
             /** @noinspection PhpUndefinedVariableInspection */
             $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
             $query->sectionId($section->id);
-            $query->status(null);
-            $query->enabledForSite(false);
+            $query->anyStatus();
             $query->orderBy('elements.id');
             $query->withStructure(false);
             /** @var Entry $entry */

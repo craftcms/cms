@@ -18,9 +18,9 @@ body.rtl #plugins tbody .plugin-infos .details h2 .light { margin-right: 6px; }
 #plugins tbody .plugin-infos .details p.links a + a { margin-left: 20px; }
 #plugins tbody .plugin-infos .details p.links a span[data-icon] { margin-right: 3px; }
 #plugins tbody .plugin-infos .details .license-key { margin-top: 1em; }
-#plugins tbody .plugin-infos .details .license-key div { margin: 0; }
-#plugins tbody .plugin-infos .details .license-key div input.text { font-weight: bold; font-size: 11px !important; border-radius: 3px; padding: 3px 7px 1px; width: 19em; }
-#plugins tbody .plugin-infos .details .license-key .spinner { height: 26px; }
+#plugins tbody .plugin-infos .details .license-key .pane { margin: 0; padding: 3px; background: #fbfcfd; border-radius: 2px; }
+#plugins tbody .plugin-infos .details .license-key .pane input.text { font-weight: bold; font-size: 11px !important; padding: 3px 7px 1px; width: 19em; }
+#plugins tbody .plugin-infos .details .license-key .btn, #plugins tbody .plugin-infos .details .license-key .spinner { margin: 0; }
 #plugins tbody:not(.collapsed) .plugin-infos .details { min-width: 150px; }
 
 /*# sourceMappingURL=plugins.css.map */

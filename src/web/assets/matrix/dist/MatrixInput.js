@@ -274,6 +274,9 @@
                     Garnish.requestAnimationFrame(function() {
                         // Scroll to the block
                         Garnish.scrollContainerToElement($block);
+
+                        // Focus on the first text input
+                        $block.find('.text:first').trigger('focus');
                     });
                 }, this));
             },

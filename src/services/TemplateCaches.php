@@ -24,7 +24,7 @@ use yii\web\Response;
 
 /**
  * Template Caches service.
- * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|<code>Craft::$app->templateCaches</code>]].
+ * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -286,7 +286,7 @@ class TemplateCaches extends Component
         }
 
         if (!$global && (strlen($path = $this->_getPath()) > 255)) {
-            Craft::warning('Skipped adding '.$key.' to template cache table because the path is > 255 characters: '.$path, __METHOD__);
+            Craft::warning('Skipped adding ' . $key . ' to template cache table because the path is > 255 characters: ' . $path, __METHOD__);
 
             return;
         }
@@ -310,7 +310,7 @@ class TemplateCaches extends Component
 
             $cacheDuration += time();
 
-            $expiration = new DateTime('@'.$cacheDuration);
+            $expiration = new DateTime('@' . $cacheDuration);
         }
 
         // Save it
@@ -391,7 +391,7 @@ class TemplateCaches extends Component
             return false;
         }
 
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -424,7 +424,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementType(string $elementType): bool
     {
-        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) === false) {
             return false;
         }
 
@@ -447,11 +447,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElement($elements): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
-            return false;
-        }
-
-        if (!$elements) {
+        if ($this->_deletedAllCaches || empty($elements)) {
             return false;
         }
 
@@ -485,16 +481,16 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
-            return false;
-        }
-
-        if (!$elementId) {
+        if ($this->_deletedAllCaches || !$elementId) {
             return false;
         }
 
         // Check the query caches too?
-        if ($deleteQueryCaches && Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
+        if (
+            $deleteQueryCaches &&
+            $this->_isTemplateCachingEnabled() &&
+            Craft::$app->getConfig()->getGeneral()->cacheElementQueries
+        ) {
             if ($this->_deleteCachesIndex === null) {
                 Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
                 $this->_deleteCachesIndex = [];
@@ -542,7 +538,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByElementQuery(ElementQuery $query): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -562,7 +558,7 @@ class TemplateCaches extends Component
      */
     public function deleteCachesByKey($key): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -582,7 +578,7 @@ class TemplateCaches extends Component
      */
     public function deleteExpiredCaches(): bool
     {
-        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches || $this->_deletedExpiredCaches) {
             return false;
         }
 
@@ -593,7 +589,11 @@ class TemplateCaches extends Component
             ->column();
 
         $success = $this->deleteCacheById($cacheIds);
+
+        // Don't do it again for a while
+        Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
         $this->_deletedExpiredCaches = true;
+
         return $success;
     }
 
@@ -605,19 +605,17 @@ class TemplateCaches extends Component
     public function deleteExpiredCachesIfOverdue(): bool
     {
         // Ignore if we've already done this once during the request
-        if ($this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedExpiredCaches) {
             return false;
         }
 
         $lastCleanupDate = Craft::$app->getCache()->get('lastTemplateCacheCleanupDate');
 
         if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > self::$_lastCleanupDateCacheDuration) {
-            // Don't do it again for a while
-            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
-
             return $this->deleteExpiredCaches();
         }
 
+        // Save ourselves some trouble if this gets called again in this request
         $this->_deletedExpiredCaches = true;
 
         return false;
@@ -630,7 +628,7 @@ class TemplateCaches extends Component
      */
     public function deleteAllCaches(): bool
     {
-        if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
+        if ($this->_deletedAllCaches) {
             return false;
         }
 
@@ -681,7 +679,7 @@ class TemplateCaches extends Component
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/'.Craft::$app->getConfig()->getGeneral()->pageTrigger.$pageNum;
+            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->pageTrigger . $pageNum;
         }
 
         return $this->_path;

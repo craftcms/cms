@@ -18,6 +18,11 @@
 {% endif %}
 {% set sortOptions = elementInstance.sortOptions() %}
 
+{% macro sortOptionLabel(sortOption) %}
+    {{ sortOption.label ?? sortOption  }}
+{% endmacro %}
+{% from _self import sortOptionLabel %}
+
 <div class="main">
     <div class="toolbar">
         <div class="flex">
@@ -46,11 +51,11 @@
                 <div class="clear hidden" title="{{ 'Clear'|t('app') }}"></div>
             </div>
             <div>
-                <div class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptions|first }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptions|first }}</div>
+                <div class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</div>
                 <div class="menu">
                     <ul class="padded sort-attributes">
-                        {% for key, label in sortOptions %}
-                            <li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ key }}">{{ label }}</a></li>
+                        {% for key, sortOption in sortOptions %}
+                            <li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ sortOption.attribute ?? sortOption.orderBy ?? key }}">{{ sortOptionLabel(sortOption) }}</a></li>
                         {% endfor %}
                     </ul>
                     <hr>
