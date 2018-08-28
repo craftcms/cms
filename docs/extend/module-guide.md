@@ -7,7 +7,7 @@
 Before you begin working on a module, you need to decide on a couple things:
 
 - **Namespace** – The root namespace that your module’s classes will live in. (See the [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloading specification for details.) Note that this should *not* begin with `craft\`; use something that identifies you (the developer), or the project.
-- **Module ID** – Something that uniquely identifies your plugin within the your project. (Module IDs must begin with a letter and contain only lowercase letters, numbers, and dashes. They should be `kebab-cased`.)
+- **Module ID** – Something that uniquely identifies your plugin within your project. (Module IDs must begin with a letter and contain only lowercase letters, numbers, and dashes. They should be `kebab-cased`.)
 
 ::: warning
 When choosing a module ID, try to avoid names that will conflict with Craft’s core [controllers](https://github.com/craftcms/cms/tree/develop/src/controllers) (e.g. `app` would conflict with `AppController.php`), as well as any installed plugin handles. Otherwise bad things will happen.
