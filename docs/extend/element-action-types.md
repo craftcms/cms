@@ -6,7 +6,7 @@ As a convenience, you can extend <api:craft\base\ElementAction>, which provides 
 
 You can refer to Craft’s own element action classes for examples. They are located in `vendor/craftcms/cms/src/elements/actions/`.
 
-## Registering Custom Field Types
+## Registering Custom Element Action Types
 
 To get an element action to show up on an element index page, it has to be registered with the element type.
 
