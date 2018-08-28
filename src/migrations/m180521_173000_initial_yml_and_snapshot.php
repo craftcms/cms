@@ -130,7 +130,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($sites as $site) {
             $uid = $site['uid'];
 
-            unset($site['uid']);
+            unset($site['uid'], $site['groupId']);
 
             $data[$uid] = $site;
         }
