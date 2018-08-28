@@ -36,12 +36,11 @@ class ProjectConfig extends Component
     const CACHE_KEY = 'project.config.files';
     const CACHE_DURATION = 60 * 60 * 24 * 30;
 
-    // Config entities
-    // -------------------------------------------------------------------------
-    const ENTITY_SITES = 'sites';
-    const ENTITY_SECTIONS = 'sections';
-    const ENTITY_FIELDS = 'fields';
-    const ENTITY_VOLUMES = 'volumes';
+    // Array key to use if not using config files.
+    const SNAPSHOT_KEY = 'snapshot';
+
+    // Filename for base config file
+    const CONFIG_FILENAME = 'system.yml';
 
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
@@ -135,7 +134,7 @@ class ProjectConfig extends Component
     private $_parsedConfigs = [];
 
     /**
-     * @var array A list of all config files, defined by import directives in system.yml.
+     * @var array A list of all config files, defined by import directives in configuration files.
      */
     private $_configFileList = [];
 
@@ -173,6 +172,13 @@ class ProjectConfig extends Component
      */
     public function init() {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
+
+        // If we're not using the project config file, load the snapshot to emulate config files.
+        // This is needed so we can make comparisions between the config and the snapshot, as we're firing events.
+        if (!$this->_useConfigFile()) {
+            $this->_getConfigurationFromConfigFiles();
+        }
+
         parent::init();
     }
 
@@ -208,28 +214,34 @@ class ProjectConfig extends Component
     {
         $pathParts = explode('.', $path);
 
-        $configMap = $this->_getStoredConfigMap();
+        $targetFilePath = null;
 
-        $topNode = array_shift($pathParts);
-        $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath().'/system.yml';
+        if ($this->_useConfigFile()) {
+            $configMap = $this->_getStoredConfigMap();
 
-        $targetYaml = $this->_parseYamlFile($targetFilePath);
+            $topNode = array_shift($pathParts);
+            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . '/'.self::CONFIG_FILENAME;
+
+            $config = $this->_parseYamlFile($targetFilePath);
+
+            // For new top nodes, update the map
+            if (empty($configMap[$topNode])) {
+                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath().'/'.self::CONFIG_FILENAME);
+                $this->_updateConfigMap = true;
+            }
+        } else {
+            $config = $this->_getConfigurationFromConfigFiles();
+        }
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
 
         if (null === $value) {
-            eval('unset($targetYaml'.$arrayAccess.');');
+            eval('unset($config'.$arrayAccess.');');
         } else {
-            eval('$targetYaml'.$arrayAccess.' = $value;');
+            eval('$config'.$arrayAccess.' = $value;');
         }
 
-        $this->_saveYaml($targetYaml, $targetFilePath);
-
-        // For new top nodes, update the map
-        if (empty($configMap[$topNode])) {
-            $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath().'/system.yml');
-            $this->_updateConfigMap = true;
-        }
+        $this->_saveConfig($config, $targetFilePath);
 
         // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
@@ -257,9 +269,9 @@ class ProjectConfig extends Component
         $snapshot = $this->_getCurrentSnapshot();
 
         $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/system.yml';
+        $baseFile = $basePath.'/'.self::CONFIG_FILENAME;
 
-        $this->_saveYaml($snapshot, $baseFile);
+        $this->_saveConfig($snapshot, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
     }
 
@@ -349,9 +361,9 @@ class ProjectConfig extends Component
     /**
      * Process config changes for a path.
      *
-     * @param $configPath
+     * @param string $configPath
      */
-    public function processConfigChanges($configPath)
+    public function processConfigChanges(string $configPath)
     {
         if (!empty($this->_parsedChanges[$configPath])) {
             return;
@@ -392,7 +404,7 @@ class ProjectConfig extends Component
      */
     public function updateParsedConfigTimesAfterRequest()
     {
-        if ($this->_waitingToUpdateParsedConfigTimes) {
+        if ($this->_waitingToUpdateParsedConfigTimes || !$this->_useConfigFile()) {
             return;
         }
 
@@ -412,7 +424,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Save all the Yaml files that have been modified up to now.
+     * Save all the config data that has been modified up to now.
      *
      * @throws \yii\base\ErrorException
      */
@@ -434,7 +446,7 @@ class ProjectConfig extends Component
             }
         };
 
-        if (!empty($this->_modifiedYamlFiles)) {
+        if (!empty($this->_modifiedYamlFiles) && $this->_useConfigFile()) {
             // Save modified yaml files
             $fileList = array_keys($this->_modifiedYamlFiles);
 
@@ -445,10 +457,10 @@ class ProjectConfig extends Component
             }
         }
 
-        if ($this->_updateConfigMap || $this->_updateSnapshot) {
+        if (($this->_updateConfigMap && $this->_useConfigFile())|| $this->_updateSnapshot) {
             $info = Craft::$app->getInfo();
 
-            if ($this->_updateConfigMap) {
+            if ($this->_updateConfigMap && $this->_useConfigFile()) {
                 $info->configMap = Json::encode($this->_generateConfigMap());
             }
 
@@ -465,7 +477,7 @@ class ProjectConfig extends Component
     // =========================================================================
 
     /**
-     * Retrieve a a config file tree with modified times based on the main `system.yml` configuration file.
+     * Retrieve a a config file tree with modified times based on the main configuration file.
      *
      * @return array
      */
@@ -490,13 +502,21 @@ class ProjectConfig extends Component
      */
     private function _getConfigurationFromConfigFiles(): array
     {
-        $fileList = $this->_getConfigFileList();
+        if ($this->_useConfigFile()) {
+            $fileList = $this->_getConfigFileList();
 
-        $snapshot = [];
+            $snapshot = [];
 
-        foreach ($fileList as $file) {
-            $config = $this->_parseYamlFile($file);
-            $snapshot = array_merge($snapshot, $config);
+            foreach ($fileList as $file) {
+                $config = $this->_parseYamlFile($file);
+                $snapshot = array_merge($snapshot, $config);
+            }
+        } else {
+            if (empty($this->_parsedConfigs[self::SNAPSHOT_KEY])) {
+                $this->_parsedConfigs[self::SNAPSHOT_KEY] = $this->_getCurrentSnapshot();
+            }
+
+            $snapshot = $this->_parsedConfigs[self::SNAPSHOT_KEY];
         }
 
         return $snapshot;
@@ -704,7 +724,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Load the system.yml file and figure out all the files imported and used.
+     * Load the config file and figure out all the files imported and used.
      *
      * @return array
      */
@@ -715,7 +735,7 @@ class ProjectConfig extends Component
         }
 
         $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/system.yml';
+        $baseFile = $basePath.'/'.self::CONFIG_FILENAME;
 
         $traverseFile = function($filePath) use (&$traverseFile) {
             $fileList = [$filePath];
@@ -751,15 +771,35 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Save YML data to a file, cleaning up empty values while doing so.
+     * Save configuration data to a path.
      *
      * @param array $data
-     * @param string $path
+     * @param string|null $configPath
      * @throws \yii\base\ErrorException
      */
-    private function _saveYaml(array $data, string $path)
+    private function _saveConfig(array $data, string $configPath = null)
     {
-        $this->_parsedConfigs[$path] = $data;
-        $this->_modifiedYamlFiles[$path] = true;
+        if ($this->_useConfigFile() && $configPath) {
+            $this->_parsedConfigs[$configPath] = $data;
+            $this->_modifiedYamlFiles[$configPath] = true;
+        } else {
+            $this->_parsedConfigs[self::SNAPSHOT_KEY] = $data;
+        }
+    }
+
+    /**
+     * Whether to use the config file or not.
+     *
+     * @return bool
+     */
+    private function _useConfigFile()
+    {
+        static $useConfigFile = null;
+
+        if (null === $useConfigFile) {
+            $useConfigFile = Craft::$app->getConfig()->getGeneral()->useProjectConfigFile;
+        }
+
+        return $useConfigFile;
     }
 }

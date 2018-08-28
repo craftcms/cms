@@ -679,6 +679,12 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
+     * @var bool Whether to use project configuration YAML file as the source of truth for the project configuration.
+     *
+     * If set to true, all changes will also be propagated to YAML file to allow for migration between environments.
+     */
+    public $useProjectConfigFile = false;
+    /**
      * @var bool Whether Craft should use XSendFile to serve files when possible.
      */
     public $useXSendFile = false;
