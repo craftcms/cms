@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.22 - 2018-08-28
 
 ### Changed
 - The “Deleting stale template caches” job now ensures all expired template caches have been deleted before it begins processing the caches.
