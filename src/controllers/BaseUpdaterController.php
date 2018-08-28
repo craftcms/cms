@@ -134,7 +134,15 @@ abstract class BaseUpdaterController extends Controller
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to install the updates.'), $e, $io);
+
+            $output = $io->getOutput();
+            if (strpos($output, 'Your requirements could not be resolved to an installable set of packages.') !== false) {
+                $error = Craft::t('app', 'Composer was unable to install the updates due to a dependency conflict.');
+            } else {
+                $error = Craft::t('app', 'Composer was unable to install the updates.');
+            }
+
+            return $this->sendComposerError($error, $e, $output);
         }
 
         return $this->send($this->postComposerInstallState());
@@ -157,7 +165,7 @@ abstract class BaseUpdaterController extends Controller
         } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io);
+            return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io->getOutput());
         }
 
         return $this->send($this->postComposerInstallState());
@@ -183,7 +191,7 @@ abstract class BaseUpdaterController extends Controller
             $continueOption['label'] = Craft::t('app', 'Continue');
             return $this->send([
                 'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),
-                'errorDetails' => $this->_composerErrorDetails($e, $io),
+                'errorDetails' => $this->_composerErrorDetails($e, $io->getOutput()),
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_COMPOSER_OPTIMIZE),
                     $continueOption,
@@ -324,14 +332,14 @@ abstract class BaseUpdaterController extends Controller
      *
      * @param string $error The status message to show
      * @param \Throwable $e The exception that was thrown
-     * @param BufferIO $io The IO object that Composer was instantiated with
+     * @param string $output The Composer output
      * @param array $state
      * @return Response
      */
-    protected function sendComposerError(string $error, \Throwable $e, BufferIO $io, array $state = []): Response
+    protected function sendComposerError(string $error, \Throwable $e, string $output, array $state = []): Response
     {
         $state['error'] = $error;
-        $state['errorDetails'] = $this->_composerErrorDetails($e, $io);
+        $state['errorDetails'] = $this->_composerErrorDetails($e, $output);
 
         $state['options'] = [
             [
@@ -509,12 +517,27 @@ abstract class BaseUpdaterController extends Controller
      * Returns the error details for a Composer error.
      *
      * @param \Throwable $e The exception that was thrown
-     * @param BufferIO $io The IO object that Composer was instantiated with
+     * @param string $output The Composer output
      * @return string
      */
-    private function _composerErrorDetails(\Throwable $e, BufferIO $io): string
+    private function _composerErrorDetails(\Throwable $e, string $output): string
     {
-        return Craft::t('app', 'Error:') . ' ' . $e->getMessage() . "\n\n" .
-            Craft::t('app', 'Output:') . ' ' . strip_tags($io->getOutput());
+        $details = [];
+
+        $message = trim($e->getMessage());
+        if ($message && $message !== 'An error occurred') {
+            $details[] = Craft::t('app', 'Error:') . ' ' . $message;
+        }
+
+        $output = trim(strip_tags($output));
+        if ($output) {
+            $details[] = Craft::t('app', 'Composer output:') . ' ' . $output;
+        }
+
+        if (empty($details)) {
+            $details[] = 'Exception of class '.get_class($e).' was thrown.';
+        }
+
+        return implode("\n\n", $details);
     }
 }

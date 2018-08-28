@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Composer\CaBundle\CaBundle;
 use Composer\Config\JsonConfigSource;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -112,6 +113,9 @@ class Composer extends Component
         // Ensure there's a home var
         $this->_ensureHomeVar();
 
+        // Create a backup of composer.json in case something goes wrong
+        $backup = file_get_contents($jsonPath);
+
         // Update composer.json
         $this->updateRequirements($io, $jsonPath, $requirements);
 
@@ -159,6 +163,7 @@ class Composer extends Component
         }
 
         if ($status !== 0) {
+            file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
         }
     }
@@ -363,10 +368,10 @@ class Composer extends Component
      *
      * @param IOInterface $io
      * @param string $jsonPath
-     * @param bool $swapPackagist
+     * @param bool $prepForUpdate
      * @return array
      */
-    protected function composerConfig(IOInterface $io, string $jsonPath, bool $swapPackagist = true): array
+    protected function composerConfig(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): array
     {
         // Copied from \Composer\Factory::createComposer()
         $file = new JsonFile($jsonPath, null, $io);
@@ -380,7 +385,7 @@ class Composer extends Component
         }
         $config = $file->read();
 
-        if ($swapPackagist) {
+        if ($prepForUpdate) {
             // Add composer.craftcms.com if it's not already in there
             if (!$this->findCraftRepo($config)) {
                 $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
@@ -389,6 +394,23 @@ class Composer extends Component
             // Disable Packagist if it's not already disabled
             if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
                 $config['repositories'][] = ['packagist.org' => false];
+            }
+
+            // Are we relying on the bundled CA file?
+            $bundledCaPath = CaBundle::getBundledCaBundlePath();
+            if (
+                !isset($config['config']['cafile']) &&
+                CaBundle::getSystemCaRootBundlePath() === $bundledCaPath
+            ) {
+                // Make a copy of it in case it's about to get updated
+                $dir = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+                FileHelper::createDirectory($dir);
+                $dest = $dir . DIRECTORY_SEPARATOR . basename($bundledCaPath);
+                if (file_exists($dest)) {
+                    FileHelper::unlink($dest);
+                }
+                copy($bundledCaPath, $dest);
+                $config['config']['cafile'] = $dest;
             }
         }
 
@@ -430,12 +452,12 @@ class Composer extends Component
      *
      * @param IOInterface $io
      * @param string $jsonPath
-     * @param bool $swapPackagist
+     * @param bool $prepForUpdate
      * @return \Composer\Composer
      */
-    protected function createComposer(IOInterface $io, string $jsonPath, bool $swapPackagist = true): \Composer\Composer
+    protected function createComposer(IOInterface $io, string $jsonPath, bool $prepForUpdate = true): \Composer\Composer
     {
-        $config = $this->composerConfig($io, $jsonPath, $swapPackagist);
+        $config = $this->composerConfig($io, $jsonPath, $prepForUpdate);
         $composer = Factory::create($io, $config);
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
             ? substr($jsonPath, 0, -4) . 'lock'

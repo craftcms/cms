@@ -164,15 +164,30 @@ class Users extends Component
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail)
     {
-        return User::find()
-            ->where([
-                'or',
-                ['username' => $usernameOrEmail],
-                ['email' => $usernameOrEmail]
-            ])
+        $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->anyStatus()
-            ->one();
+            ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query
+                ->where([
+                    'username' => $usernameOrEmail,
+                ])
+                ->orWhere([
+                    'email' => $usernameOrEmail,
+                ]);
+        } else {
+            // Postgres is case-sensitive
+            $query
+                ->where([
+                    'lower([[username]])' => mb_strtolower($usernameOrEmail),
+                ])
+                ->orWhere([
+                    'lower([[email]])' => mb_strtolower($usernameOrEmail),
+                ]);
+        }
+
+        return $query->one();
     }
 
     /**

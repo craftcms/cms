@@ -1,5 +1,28 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.22 - 2018-08-28
+
+### Changed
+- The “Deleting stale template caches” job now ensures all expired template caches have been deleted before it begins processing the caches.
+- Text inputs’ `autocomplete` attributes now get set to `off` by default, and they will only not be added if explicitly set to `null`.
+- Improved the error response when Composer is unable to perform an update due to a dependency conflict.
+- Email fields in the Control Panel now have `type="email"`.
+- `craft\helpers\Db::parseParam()` now has a `$caseInnensitive` argument, which can be set to `true` to force case-insensitive conditions on PostgreSQL installs.
+- `craft\validators\UniqueValidator` now has a `$caseInsensitive` property, which can be set to `true` to cause the unique validation to be case-insensitive on PostgreSQL installs.
+- The CLI setup wizard now detects common database connection errors that occur with MAMP, and automatically retests with adjusted settings.
+- The CLI setup wizard now detects common database authentication errors, and lets the user retry the username and password settings, skipping the others.
+- Updated Garnish to 0.1.27.
+
+### Fixed
+- Fixed a bug where Craft wasn’t reverting `composer.json` to its original state if something went wrong when running a Composer update.
+- Fixed a bug where string casing functions in `craft\helpers\StringHelper` were adding extra hyphens to strings that came in as `Upper-Kebab-Case`.
+- Fixed a bug where unique validation for element URIs, usernames, and user email address was not case-insensitive on PostgreSQL installs.
+- Fixed a bug where element queries’ `uri` params, and user queries’ `firstName`, `lastName`, `username`, and `email` params, were not case-insensitive on PostgreSQL installs.
+- Fixed a bug where the CLI setup wizard was allowing empty database names.
+- Fixed a bug where it wasn’t possible to clear template caches if template caching was disabled by the `enableTemplateCaching` config setting. ([#3229](https://github.com/craftcms/cms/issues/3229))
+- Fixed a bug where element index toolbars weren’t staying fixed to the top of the content area when scrolling down the page. ([#3233](https://github.com/craftcms/cms/issues/3233))
+- Fixed an error that could occur when updating Craft if the system was reliant on the SSL certificate provided by the`composer/ca-bundle` package.
+
 ## 3.0.21 - 2018-08-21
 
 ### Added

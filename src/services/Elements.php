@@ -222,9 +222,18 @@ class Elements extends Component
             ->from(['{{%elements}} elements'])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements_sites.uri' => $uri,
-                'elements_sites.siteId' => $siteId
+                'elements_sites.siteId' => $siteId,
             ]);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->andWhere([
+                'elements_sites.uri' => $uri,
+            ]);
+        } else {
+            $query->andWhere([
+                'lower([[elements_sites.uri]])' => mb_strtolower($uri),
+            ]);
+        }
 
         if ($enabledOnly) {
             $query->andWhere([

@@ -168,8 +168,18 @@ class ElementHelper
             ->from(['{{%elements_sites}}'])
             ->where([
                 'siteId' => $element->siteId,
-                'uri' => $testUri
             ]);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->andWhere([
+                'uri' => $testUri,
+            ]);
+        } else {
+            // Postgres is case-sensitive
+            $query->andWhere([
+                'lower([[uri]])' => mb_strtolower($testUri),
+            ]);
+        }
 
         if ($element->id) {
             $query->andWhere(['not', ['elementId' => $element->id]]);

@@ -8,7 +8,6 @@
 namespace craft\validators;
 
 use Craft;
-use craft\helpers\StringHelper;
 use yii\validators\Validator;
 
 /**
@@ -80,8 +79,8 @@ class HandleValidator extends Validator
         // Handles are always required, so if it's blank, the required validator will catch this.
         if ($handle) {
             $reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-            $reservedWords = array_map([StringHelper::class, 'toLowerCase'], $reservedWords);
-            $lcHandle = StringHelper::toLowerCase($handle);
+            $reservedWords = array_map('strtolower', $reservedWords);
+            $lcHandle = strtolower($handle);
 
             if (in_array($lcHandle, $reservedWords, true)) {
                 $message = Craft::t('app', '“{handle}” is a reserved word.',

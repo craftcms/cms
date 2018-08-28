@@ -981,7 +981,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encoding(string $string): string
     {
-        return static::toLowerCase(mb_detect_encoding($string, mb_detect_order(), true));
+        return mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
     }
 
     /**
@@ -1039,11 +1039,11 @@ class StringHelper extends \yii\helpers\StringHelper
     private static function _prepStringForCasing(string $string, bool $lower = true, bool $removePunctuation = true): array
     {
         // Convert CamelCase to multiple words
-        $string = preg_replace('/(?<![A-Z])[A-Z]/u', ' \0', $string);
+        $string = preg_replace('/(?<=[a-z])[A-Z]/u', ' \0', $string);
 
         if ($lower) {
             // Make it lowercase
-            $string = static::toLowerCase($string);
+            $string = mb_strtolower($string);
         }
 
         if ($removePunctuation) {

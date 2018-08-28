@@ -9,6 +9,15 @@
 ]) %}
 
 {% set username = (craft.app.config.general.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '') %}
+
+{% if craft.app.config.general.useEmailAsUsername %}
+    {% set usernamePlaceholder = 'Email'|t('app') %}
+    {% set usernameType = 'email' %}
+{% else %}
+    {% set usernamePlaceholder = 'Username or Email'|t('app') %}
+    {% set usernameType = 'text' %}
+{% endif %}
+
 {% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) %}
 
 {% block body %}
@@ -28,8 +37,7 @@
         class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
                 {%- endif %}>' +
             '{% if not hasLogo -%}<h1>{{ systemName }}</h1>{%- endif %}'+
-            '{% set placeHolderText = (craft.app.config.general.useEmailAsUsername ? "Email"|t('app') : "Username or Email"|t('app')) %}' +
-            "{{ forms.textField({ id: 'loginName', name: 'username', placeholder: placeHolderText, value: username, autocomplete: 'username' })|e('js') }}" +
+            "{{ forms.textField({ id: 'loginName', name: 'username', placeholder: usernamePlaceholder, value: username, autocomplete: 'username', type: usernameType })|e('js') }}" +
 
             '<div id="login-fields" class="nested-fields">' +
             "{{ forms.passwordField({ id: 'password', name: 'password', placeholder: 'Password'|t('app'), autocomplete: 'current-password' })|e('js') }}" +

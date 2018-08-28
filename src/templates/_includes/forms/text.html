@@ -1,9 +1,10 @@
 {%- set type = (type is defined ? type : 'text') %}
+{%- set autocomplete = (autocomplete is defined ? autocomplete : false) %}
 
 {%- set class = [
     'text',
     (class is defined and class ? class : null),
-    (type is defined and type == 'password' ? 'password' : null),
+    (type == 'password' ? 'password' : null),
     (disabled is defined and disabled ? 'disabled' : null),
     (size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
@@ -22,7 +23,7 @@
     {%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
     {%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
     {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if autocomplete is defined %} autocomplete="{{ autocomplete is same as(true) ? 'on' : (autocomplete ?: 'off') }}"{% endif %}
+    {%- if autocomplete is not same as(null) %} autocomplete="{{ autocomplete is same as(true) ? 'on' : (autocomplete ?: 'off') }}"{% endif %}
     {%- if disabled is defined and disabled %} disabled {% endif %}
     {%- if readonly is defined and readonly %} readonly {% endif %}
     {%- if title is defined %} title="{{ title }}"{% endif %}

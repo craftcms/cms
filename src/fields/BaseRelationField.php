@@ -586,7 +586,7 @@ JS;
             return null;
         }
 
-        $type = StringHelper::toLowerCase(static::displayName());
+        $type = mb_strtolower(static::displayName());
         $showTargetSite = !empty($this->targetSiteId);
 
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',

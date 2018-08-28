@@ -432,9 +432,10 @@ class Db
      * @param string|int|array $value The param value(s).
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=')
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
@@ -446,7 +447,7 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(reset($value));
+        $firstVal = strtolower(reset($value));
         $negate = false;
 
         switch ($firstVal) {
@@ -467,6 +468,11 @@ class Db
         $condition = [$glue];
         $isMysql = Craft::$app->getDb()->getIsMysql();
 
+        // Only PostgreSQL supports case-sensitive strings
+        if ($isMysql) {
+            $caseInsensitive = false;
+        }
+
         $inVals = [];
         $notInVals = [];
 
@@ -474,7 +480,7 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (is_string($val) && StringHelper::toLowerCase($val) === ':empty:') {
+            if (is_string($val) && strtolower($val) === ':empty:') {
                 if ($operator === '=') {
                     if ($isMysql) {
                         $condition[] = [
@@ -525,13 +531,17 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    $condition[] = [
-                        $operator === '=' ? 'like' : 'not like',
-                        $column,
-                        $val,
-                        false
-                    ];
+                    if ($caseInsensitive ) {
+                        $operator = $operator === '=' ? 'ilike' : 'not ilike';
+                    } else {
+                        $operator = $operator === '=' ? 'like' : 'not like';
+                    }
+                    $condition[] = [$operator, $column, $val, false];
                     continue;
+                }
+
+                if ($caseInsensitive) {
+                    $val = mb_strtolower($val);
                 }
             }
 
@@ -547,15 +557,27 @@ class Db
                 continue;
             }
 
-            $condition[] = [$operator, $column, $val];
+            if ($caseInsensitive) {
+                $condition[] = [$operator, "lower([[{$column}]])", $val];
+            } else {
+                $condition[] = [$operator, $column, $val];
+            }
         }
 
         if (!empty($inVals)) {
-            $condition[] = ['in', $column, $inVals];
+            if ($caseInsensitive) {
+                $condition[] = ['in', "lower([[{$column}]])", $inVals];
+            } else {
+                $condition[] = ['in', $column, $inVals];
+            }
         }
 
         if (!empty($notInVals)) {
-            $condition[] = ['not in', $column, $notInVals];
+            if ($caseInsensitive) {
+                $condition[] = ['not in', "lower([[{$column}]])", $notInVals];
+            } else {
+                $condition[] = ['not in', $column, $notInVals];
+            }
         }
 
         return $condition;
@@ -709,7 +731,7 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (is_string($value) && StringHelper::toLowerCase($value) === ':notempty:') {
+        } else if (is_string($value) && strtolower($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }

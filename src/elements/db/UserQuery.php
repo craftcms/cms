@@ -603,19 +603,19 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->email) {
-            $this->subQuery->andWhere(Db::parseParam('users.email', $this->email));
+            $this->subQuery->andWhere(Db::parseParam('users.email', $this->email, '=', true));
         }
 
         if ($this->username) {
-            $this->subQuery->andWhere(Db::parseParam('users.username', $this->username));
+            $this->subQuery->andWhere(Db::parseParam('users.username', $this->username, '=', true));
         }
 
         if ($this->firstName) {
-            $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName));
+            $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName, '=', true));
         }
 
         if ($this->lastName) {
-            $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName));
+            $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
         }
 
         if ($this->lastLoginDate) {

@@ -569,7 +569,7 @@ class m160807_144858_sites extends Migration
     protected function locale2handle(string $locale): string
     {
         // Make sure it's a valid handle
-        if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
+        if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $locale) || in_array(strtolower($locale), HandleValidator::$baseReservedWords, true)) {
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales

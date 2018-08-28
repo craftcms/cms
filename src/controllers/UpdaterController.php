@@ -142,7 +142,7 @@ class UpdaterController extends BaseUpdaterController
             $this->data['reverted'] = true;
         } catch (\Throwable $e) {
             Craft::error('Error reverting Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io);
+            return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io->getOutput());
         }
 
         return $this->send($this->postComposerInstallState());

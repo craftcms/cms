@@ -600,7 +600,7 @@ class Matrix extends Component
                 $handle = $matrixField->handle;
             }
 
-            $name = '_' . StringHelper::toLowerCase($handle) . $name;
+            $name = '_' . strtolower($handle) . $name;
         } while ($matrixField = $this->getParentMatrixField($matrixField));
 
         return '{{%matrixcontent' . $name . '}}';

@@ -1098,7 +1098,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
         if ($this->enabledForSite) {
@@ -1649,7 +1649,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $condition = ['or'];
 
         foreach ($statuses as $status) {
-            $status = StringHelper::toLowerCase($status);
+            $status = strtolower($status);
             $statusCondition = $this->statusCondition($status);
 
             if ($statusCondition === false) {
